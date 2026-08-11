@@ -257,11 +257,112 @@
         color: var(--muted);
       }
 
+      .market-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 14px;
+        margin-top: 16px;
+      }
+
+      .market-form {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: rgba(255,255,255,0.03);
+      }
+
+      .market-form label {
+        display: grid;
+        gap: 6px;
+        color: #dbeafe;
+        font-size: 14px;
+      }
+
+      .market-form input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(5, 8, 22, 0.65);
+        color: var(--text);
+      }
+
+      .market-summary {
+        display: grid;
+        gap: 10px;
+      }
+
+      .summary-card {
+        display: grid;
+        gap: 3px;
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: rgba(255,255,255,0.03);
+      }
+
+      .summary-card strong {
+        font-size: 28px;
+        color: #fff;
+      }
+
+      .summary-card span {
+        color: var(--muted);
+      }
+
+      .task-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .task-card {
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: rgba(255,255,255,0.03);
+      }
+
+      .task-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .task-title {
+        font-size: 18px;
+        color: #fff;
+      }
+
+      .task-meta {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      .task-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .btn.mini {
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+      }
+
       @media (max-width: 900px) {
         .card { grid-column: span 12; }
         .step { grid-template-columns: 1fr; }
         .hero { padding: 28px; }
         .trend-grid { grid-template-columns: 1fr; }
+        .market-grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -355,6 +456,32 @@
           </div>
         </section>
 
+        <section class="section" id="market">
+          <h2>Agent market prototype</h2>
+          <p>
+            A tiny, real marketplace loop: post a task, assign a specialist agent, accept the bid, and settle the work.
+            State persists locally so the demo behaves like a working product instead of a static pitch.
+          </p>
+          <div class="market-grid">
+            <form id="task-form" class="market-form">
+              <label>Task title<input id="task-title" required maxlength="80" placeholder="e.g. Discover yesterday's best agent pattern" /></label>
+              <label>Required skill<input id="task-skill" required maxlength="40" placeholder="research / negotiation / ops" /></label>
+              <label>Budget points<input id="task-budget" required type="number" min="1" max="100" value="8" /></label>
+              <button class="btn primary" type="submit">Post task</button>
+            </form>
+            <div class="market-summary">
+              <div class="summary-card"><strong id="open-count">0</strong><span>open tasks</span></div>
+              <div class="summary-card"><strong id="settled-count">0</strong><span>settled tasks</span></div>
+              <div class="summary-card"><strong id="avg-bid">0</strong><span>avg accepted bid</span></div>
+            </div>
+          </div>
+          <div id="task-list" class="task-list"></div>
+          <div class="footer" style="margin-top:16px;">
+            <span>Local-only prototype. No signup. No fee. No backend.</span>
+            <span>Built to model the missing middle between discovery and exchange.</span>
+          </div>
+        </section>
+
         <section class="section" id="runlog">
           <h2>Run log</h2>
           <p>
@@ -419,6 +546,26 @@
         }
       ];
 
+      const tasksKey = 'hermes-playground.market.tasks';
+      const defaultTasks = [
+        { id: crypto.randomUUID(), title: 'Map trending agents into market primitives', skill: 'research', budget: 8, bids: [], status: 'open' },
+        { id: crypto.randomUUID(), title: 'Compress the fastest winning workflow', skill: 'ops', budget: 5, bids: [], status: 'open' }
+      ];
+
+      const loadTasks = () => {
+        try {
+          const raw = localStorage.getItem(tasksKey);
+          if (!raw) return defaultTasks;
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) && parsed.length ? parsed : defaultTasks;
+        } catch {
+          return defaultTasks;
+        }
+      };
+
+      let tasks = loadTasks();
+      const saveTasks = () => localStorage.setItem(tasksKey, JSON.stringify(tasks));
+
       const grid = document.getElementById('trend-grid');
       grid.innerHTML = trendData.map(({ repo, signal, move }) => `
         <article class="trend-card">
@@ -427,6 +574,71 @@
           <p>${move}</p>
         </article>
       `).join('');
+
+      const taskList = document.getElementById('task-list');
+      const openCount = document.getElementById('open-count');
+      const settledCount = document.getElementById('settled-count');
+      const avgBid = document.getElementById('avg-bid');
+      const form = document.getElementById('task-form');
+
+      const render = () => {
+        openCount.textContent = tasks.filter(t => t.status !== 'settled').length;
+        settledCount.textContent = tasks.filter(t => t.status === 'settled').length;
+        const accepted = tasks.flatMap(t => t.bids.filter(b => b.accepted).map(b => b.amount));
+        avgBid.textContent = accepted.length ? Math.round(accepted.reduce((a, b) => a + b, 0) / accepted.length) : 0;
+
+        taskList.innerHTML = tasks.map(task => `
+          <article class="task-card">
+            <div class="task-head">
+              <div>
+                <div class="task-title">${task.title}</div>
+                <div class="task-meta">skill: ${task.skill} • budget: ${task.budget} points • status: ${task.status}</div>
+              </div>
+              <span class="chip">${task.bids.length} bids</span>
+            </div>
+            <div class="task-actions">
+              <button class="btn mini" data-action="bid" data-id="${task.id}">Bid -1</button>
+              <button class="btn mini" data-action="accept" data-id="${task.id}">Accept bid</button>
+              <button class="btn mini" data-action="settle" data-id="${task.id}">Settle</button>
+            </div>
+            <div class="task-meta">
+              ${task.bids.length ? task.bids.map(b => `${b.agent}: ${b.amount}${b.accepted ? ' (accepted)' : ''}`).join(' • ') : 'No bids yet'}
+            </div>
+          </article>
+        `).join('');
+        saveTasks();
+      };
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('task-title').value.trim();
+        const skill = document.getElementById('task-skill').value.trim();
+        const budget = Number(document.getElementById('task-budget').value);
+        tasks = [{ id: crypto.randomUUID(), title, skill, budget, bids: [], status: 'open' }, ...tasks];
+        form.reset();
+        document.getElementById('task-budget').value = 8;
+        render();
+      });
+
+      taskList.addEventListener('click', (e) => {
+        const button = e.target.closest('button[data-action]');
+        if (!button) return;
+        const task = tasks.find(t => t.id === button.dataset.id);
+        if (!task) return;
+        if (button.dataset.action === 'bid') {
+          const amount = Math.max(1, task.budget - task.bids.length - 1);
+          task.bids.push({ agent: ['Atlas', 'Nova', 'Echo', 'Milo'][task.bids.length % 4], amount, accepted: false });
+        }
+        if (button.dataset.action === 'accept' && task.bids.length) {
+          task.bids = task.bids.map((b, i) => ({ ...b, accepted: i === task.bids.length - 1 }));
+        }
+        if (button.dataset.action === 'settle') {
+          task.status = 'settled';
+        }
+        render();
+      });
+
+      render();
     </script>
   </body>
 </html>
