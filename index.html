@@ -273,20 +273,49 @@
         background: rgba(255,255,255,0.03);
       }
 
-      .market-form label {
-        display: grid;
-        gap: 6px;
-        color: #dbeafe;
-        font-size: 14px;
+      .service-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
       }
 
-      .market-form input {
-        width: 100%;
+      .service-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .service-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
         padding: 12px 14px;
-        border-radius: 12px;
-        border: 1px solid rgba(148, 163, 184, 0.22);
-        background: rgba(5, 8, 22, 0.65);
-        color: var(--text);
+        border-radius: 14px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+      }
+
+      .service-item.active {
+        border-color: rgba(34, 211, 238, 0.45);
+        box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.12);
+      }
+
+      .service-name {
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .service-desc {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 3px;
+      }
+
+      .service-list button {
+        white-space: nowrap;
       }
 
       .market-summary {
@@ -456,37 +485,41 @@
           </div>
         </section>
 
-        <section class="section" id="market">
-          <h2>Agent market prototype</h2>
+        <section class="section" id="services">
+          <h2>Agent services prototype</h2>
           <p>
-            A tiny, real marketplace loop: post a task, assign a specialist agent, accept the bid, and settle the work.
-            State persists locally so the demo behaves like a working product instead of a static pitch.
+            This is not a literal marketplace. It is a service layer for agents: memory, wallets, email, bank access,
+            social presence, identity, and other reusable capabilities that can be composed into a working stack.
           </p>
           <div class="market-grid">
-            <form id="task-form" class="market-form">
-              <label>Task title<input id="task-title" required maxlength="80" placeholder="e.g. Discover yesterday's best agent pattern" /></label>
-              <label>Required skill<input id="task-skill" required maxlength="40" placeholder="research / negotiation / ops" /></label>
-              <label>Budget points<input id="task-budget" required type="number" min="1" max="100" value="8" /></label>
-              <button class="btn primary" type="submit">Post task</button>
-            </form>
+            <div class="market-form">
+              <div class="service-head">
+                <div>
+                  <div class="task-title">Compose an agent stack</div>
+                  <div class="task-meta">Tap services on or off. The stack persists locally.</div>
+                </div>
+                <span class="chip" id="service-count">0 active</span>
+              </div>
+              <div id="service-list" class="service-list"></div>
+            </div>
             <div class="market-summary">
-              <div class="summary-card"><strong id="open-count">0</strong><span>open tasks</span></div>
-              <div class="summary-card"><strong id="settled-count">0</strong><span>settled tasks</span></div>
-              <div class="summary-card"><strong id="avg-bid">0</strong><span>avg accepted bid</span></div>
+              <div class="summary-card"><strong id="primary-service">—</strong><span>primary service</span></div>
+              <div class="summary-card"><strong id="stack-mode">—</strong><span>stack mode</span></div>
+              <div class="summary-card"><strong id="service-coverage">—</strong><span>coverage</span></div>
             </div>
           </div>
-          <div id="task-list" class="task-list"></div>
+          <div class="task-list" id="service-brief"></div>
           <div class="footer" style="margin-top:16px;">
             <span>Local-only prototype. No signup. No fee. No backend.</span>
-            <span>Built to model the missing middle between discovery and exchange.</span>
+            <span>Built to model agent memory, wallet, email, bank, and social services.</span>
           </div>
         </section>
 
         <section class="section" id="runlog">
           <h2>Run log</h2>
           <p>
-            Day 1 shipped a trend-informed landing page and Vercel deploy. Day 2 tightened the operating loop:
-            scheduled delivery, durable memory, and a clearer daily recap path.
+            Day 1 shipped a trend-informed landing page and Vercel deploy. Day 2 shifted the product from a literal
+            marketplace into an agent services layer with composed capabilities and durable recaps.
           </p>
           <div class="chips">
             <span class="chip">1pm AEST daily</span>
@@ -546,25 +579,30 @@
         }
       ];
 
-      const tasksKey = 'hermes-playground.market.tasks';
-      const defaultTasks = [
-        { id: crypto.randomUUID(), title: 'Map trending agents into market primitives', skill: 'research', budget: 8, bids: [], status: 'open' },
-        { id: crypto.randomUUID(), title: 'Compress the fastest winning workflow', skill: 'ops', budget: 5, bids: [], status: 'open' }
+      const servicesKey = 'hermes-playground.agent.services';
+      const serviceCatalog = [
+        { id: 'memory', name: 'Memory', desc: 'Shared context, recalls, and durable agent memory.' },
+        { id: 'wallets', name: 'Wallets', desc: 'Balances, permissions, and spend control for agent actions.' },
+        { id: 'email', name: 'Email', desc: 'Inbox operations, drafts, triage, and outbound communication.' },
+        { id: 'bank', name: 'Bank accounts', desc: 'Payments, settlement, invoices, and account-aware operations.' },
+        { id: 'social', name: 'Social media', desc: 'Posting, monitoring, and reputation surfaces across networks.' },
+        { id: 'identity', name: 'Identity', desc: 'Auth, credentials, and agent-to-agent trust context.' }
       ];
 
-      const loadTasks = () => {
+      const defaultServices = ['memory', 'email', 'wallets'];
+      const loadServices = () => {
         try {
-          const raw = localStorage.getItem(tasksKey);
-          if (!raw) return defaultTasks;
+          const raw = localStorage.getItem(servicesKey);
+          if (!raw) return defaultServices;
           const parsed = JSON.parse(raw);
-          return Array.isArray(parsed) && parsed.length ? parsed : defaultTasks;
+          return Array.isArray(parsed) && parsed.length ? parsed : defaultServices;
         } catch {
-          return defaultTasks;
+          return defaultServices;
         }
       };
 
-      let tasks = loadTasks();
-      const saveTasks = () => localStorage.setItem(tasksKey, JSON.stringify(tasks));
+      let selectedServices = loadServices();
+      const saveServices = () => localStorage.setItem(servicesKey, JSON.stringify(selectedServices));
 
       const grid = document.getElementById('trend-grid');
       grid.innerHTML = trendData.map(({ repo, signal, move }) => `
@@ -575,66 +613,51 @@
         </article>
       `).join('');
 
-      const taskList = document.getElementById('task-list');
-      const openCount = document.getElementById('open-count');
-      const settledCount = document.getElementById('settled-count');
-      const avgBid = document.getElementById('avg-bid');
-      const form = document.getElementById('task-form');
+      const serviceList = document.getElementById('service-list');
+      const serviceCount = document.getElementById('service-count');
+      const primaryService = document.getElementById('primary-service');
+      const stackMode = document.getElementById('stack-mode');
+      const serviceCoverage = document.getElementById('service-coverage');
+      const serviceBrief = document.getElementById('service-brief');
 
       const render = () => {
-        openCount.textContent = tasks.filter(t => t.status !== 'settled').length;
-        settledCount.textContent = tasks.filter(t => t.status === 'settled').length;
-        const accepted = tasks.flatMap(t => t.bids.filter(b => b.accepted).map(b => b.amount));
-        avgBid.textContent = accepted.length ? Math.round(accepted.reduce((a, b) => a + b, 0) / accepted.length) : 0;
+        const active = serviceCatalog.filter(s => selectedServices.includes(s.id));
+        serviceCount.textContent = `${active.length} active`;
+        primaryService.textContent = active[0]?.name || '—';
+        stackMode.textContent = active.length > 4 ? 'full-stack' : active.length > 2 ? 'core-stack' : 'lean';
+        serviceCoverage.textContent = `${active.length}/${serviceCatalog.length} services`;
 
-        taskList.innerHTML = tasks.map(task => `
-          <article class="task-card">
-            <div class="task-head">
+        serviceList.innerHTML = serviceCatalog.map(service => {
+          const isActive = selectedServices.includes(service.id);
+          return `
+            <div class="service-item ${isActive ? 'active' : ''}">
               <div>
-                <div class="task-title">${task.title}</div>
-                <div class="task-meta">skill: ${task.skill} • budget: ${task.budget} points • status: ${task.status}</div>
+                <div class="service-name">${service.name}</div>
+                <div class="service-desc">${service.desc}</div>
               </div>
-              <span class="chip">${task.bids.length} bids</span>
+              <button class="btn mini ${isActive ? '' : 'primary'}" data-action="toggle" data-id="${service.id}">${isActive ? 'Disable' : 'Enable'}</button>
             </div>
-            <div class="task-actions">
-              <button class="btn mini" data-action="bid" data-id="${task.id}">Bid -1</button>
-              <button class="btn mini" data-action="accept" data-id="${task.id}">Accept bid</button>
-              <button class="btn mini" data-action="settle" data-id="${task.id}">Settle</button>
-            </div>
-            <div class="task-meta">
-              ${task.bids.length ? task.bids.map(b => `${b.agent}: ${b.amount}${b.accepted ? ' (accepted)' : ''}`).join(' • ') : 'No bids yet'}
-            </div>
+          `;
+        }).join('');
+
+        const brief = active.length
+          ? `Active stack: ${active.map(s => s.name.toLowerCase()).join(', ')}. This supports an agent economy built from reusable services instead of a literal marketplace.`
+          : 'No services enabled yet. Start with memory, email, or wallets to give the agent a useful operating surface.';
+        serviceBrief.innerHTML = `
+          <article class="task-card">
+            <div class="task-title">Milestone brief</div>
+            <div class="task-meta">${brief}</div>
           </article>
-        `).join('');
-        saveTasks();
+        `;
+        saveServices();
       };
 
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const title = document.getElementById('task-title').value.trim();
-        const skill = document.getElementById('task-skill').value.trim();
-        const budget = Number(document.getElementById('task-budget').value);
-        tasks = [{ id: crypto.randomUUID(), title, skill, budget, bids: [], status: 'open' }, ...tasks];
-        form.reset();
-        document.getElementById('task-budget').value = 8;
-        render();
-      });
-
-      taskList.addEventListener('click', (e) => {
-        const button = e.target.closest('button[data-action]');
+      serviceList.addEventListener('click', (e) => {
+        const button = e.target.closest('button[data-action="toggle"]');
         if (!button) return;
-        const task = tasks.find(t => t.id === button.dataset.id);
-        if (!task) return;
-        if (button.dataset.action === 'bid') {
-          const amount = Math.max(1, task.budget - task.bids.length - 1);
-          task.bids.push({ agent: ['Atlas', 'Nova', 'Echo', 'Milo'][task.bids.length % 4], amount, accepted: false });
-        }
-        if (button.dataset.action === 'accept' && task.bids.length) {
-          task.bids = task.bids.map((b, i) => ({ ...b, accepted: i === task.bids.length - 1 }));
-        }
-        if (button.dataset.action === 'settle') {
-          task.status = 'settled';
-        }
+        const id = button.dataset.id;
+        if (selectedServices.includes(id)) selectedServices = selectedServices.filter(s => s !== id);
+        else selectedServices = [...selectedServices, id];
         render();
       });
 

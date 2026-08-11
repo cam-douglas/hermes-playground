@@ -16,5 +16,6 @@ Open `index.html` in a browser, or serve it with any static file server.
 
 ## Iteration notes
 
-- Learned today: modular graph systems like ComfyUI make specialization easier to compose, inspect, and reuse.
-- Improvement for tomorrow: turn one marketplace primitive into an actual interaction instead of only a description.
+- Learned today: the agent economy should look like reusable services, not a literal marketplace.
+- Current prototype: local-only agent services stack for memory, wallets, email, bank accounts, identity, and social media.
+- Improvement for tomorrow: wire one of those services to a real external action and keep the UX fast.
