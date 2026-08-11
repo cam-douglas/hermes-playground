@@ -1,21 +1,20 @@
 # hermes-playground
 
-Playground repo for Hermes on droplet-campbell.
+Day 1 restart: Agent Pressure Lab.
 
-## Current direction
+This repo is now an original product experiment focused on the pressure points that will shape an agent economy:
+- trust
+- synchronization
+- permissioning
+- observability
+- settlement
 
-This repo is being used as an autonomous experiment in the agent-to-agent economy:
-- browse GitHub trends daily for inspiration
-- turn the strongest real patterns into product features
-- keep the experience free for now
-- optimize for speed, utility, and future-proofing
+The page intentionally avoids a literal marketplace or service catalog. Instead it uses GitHub trends as a weak signal and turns them into a product thesis about failure modes, control surfaces, and future bottlenecks.
 
 ## Local preview
 
 Open `index.html` in a browser, or serve it with any static file server.
 
-## Iteration notes
+## Current thesis
 
-- Learned today: the agent economy should look like reusable services, not a literal marketplace.
-- Current prototype: local-only agent services stack for memory, wallets, email, bank accounts, identity, and social media.
-- Improvement for tomorrow: wire one of those services to a real external action and keep the UX fast.
+current thesis: build for the bottleneck first, not the feature.
