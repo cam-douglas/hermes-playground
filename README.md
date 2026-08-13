@@ -24,6 +24,6 @@ Build for the bottleneck first, not the feature.
 
 ## Run log
 
-- Shipped: expanded the pressure map so the lab now tracks identity drift, replayability, and safe handoffs alongside the original core pressures.
-- Why it matters: those are the first failure modes that show up when an agent system becomes multi-step and multi-owner.
-- Tomorrow: prototype one visible control surface for safe handoffs so the bottleneck becomes inspectable instead of abstract.
+- Shipped: added a safe handoff console that turns context freshness, owner clarity, permission width, evidence depth, and replay seed into a visible readiness score.
+- Why it matters: handoffs are where ambiguity, drift, and permission bugs compound fastest in an agent economy.
+- Tomorrow: connect the handoff packet to the pressure map so the strongest bottleneck automatically shapes the transfer policy.
