@@ -377,6 +377,46 @@
         border-color: transparent;
       }
 
+      .handoff-policy {
+        display: grid;
+        gap: 10px;
+        padding: 16px 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(124, 58, 237, 0.22);
+        background: rgba(124, 58, 237, 0.08);
+      }
+
+      .policy-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .policy-line strong {
+        color: #fff;
+      }
+
+      .policy-line span {
+        color: var(--muted);
+      }
+
+      .policy-pills {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .policy-pill {
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(255,255,255,0.04);
+        color: #dbeafe;
+        font-size: 12px;
+      }
+
       .handoff-packet {
         display: grid;
         gap: 10px;
@@ -392,11 +432,11 @@
         justify-content: space-between;
         gap: 12px;
         flex-wrap: wrap;
-        padding: 10px 12px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(148, 163, 184, 0.12);
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
       }
+
+      .packet-line:last-child { border-bottom: 0; }
 
       .packet-line strong {
         color: #f8fbff;
@@ -484,6 +524,7 @@
             <div class="meter-bar"><div class="meter-fill" id="handoff-fill"></div></div>
             <div class="mono" id="handoff-summary">Choose settings to generate a transfer packet.</div>
           </div>
+          <div class="handoff-policy" id="handoff-policy"></div>
           <div class="handoff-packet" id="handoff-packet"></div>
         </section>
 
@@ -509,9 +550,9 @@
         <section class="section" id="run-log">
           <h2>Run log</h2>
           <div class="list">
-            <div class="list-item"><strong>Shipped</strong><span>Expanded the pressure map to include identity drift, replayability, and safe handoffs.</span></div>
-            <div class="list-item"><strong>Why it matters</strong><span>Those are the first failure modes that appear once agents are coordinating across steps and owners.</span></div>
-            <div class="list-item"><strong>Tomorrow</strong><span>Prototype one visible control surface for safe handoffs so the bottleneck is inspectable.</span></div>
+            <div class="list-item"><strong>Shipped</strong><span>Connected the pressure map to the handoff console so the strongest active bottleneck now shapes transfer policy automatically.</span></div>
+            <div class="list-item"><strong>Why it matters</strong><span>Handoffs no longer sit beside the pressure map; they inherit the most urgent bottleneck and expose the transfer rule inline.</span></div>
+            <div class="list-item"><strong>Tomorrow</strong><span>Rank the transfer checklist by pressure so the packet can suggest the next safest action, not just the current policy.</span></div>
           </div>
         </section>
       </div>
@@ -656,6 +697,49 @@
         }
       ];
 
+      const pressureLens = {
+        trust: {
+          focus: 'Evidence depth',
+          cue: 'Every transfer should carry receipts, not just intent.',
+          packet: 'Prefer explicit proof and a replayable trail before handing work forward.'
+        },
+        sync: {
+          focus: 'Context freshness',
+          cue: 'Transfers should happen on the newest state, not the last cached answer.',
+          packet: 'Recheck the handoff against live state before the next owner starts.'
+        },
+        permission: {
+          focus: 'Permission width',
+          cue: 'The packet should move with the smallest possible blast radius.',
+          packet: 'Strip authority to the minimum necessary before the transfer leaves the queue.'
+        },
+        observability: {
+          focus: 'Evidence depth',
+          cue: 'If a human cannot inspect the path, the packet is too opaque.',
+          packet: 'Attach enough trace data to explain what happened without a second system.'
+        },
+        settlement: {
+          focus: 'Owner clarity',
+          cue: 'Ownership has to be explicit before value can settle cleanly.',
+          packet: 'Name the next accountable owner and make the acceptance path visible.'
+        },
+        'identity-drift': {
+          focus: 'Owner clarity',
+          cue: 'When identity shifts, the packet needs a stronger anchor than a name alone.',
+          packet: 'Freeze the recipient identity and confirm the current role before transfer.'
+        },
+        replayability: {
+          focus: 'Replay seed',
+          cue: 'High-stakes handoffs should be reproducible if they fail.',
+          packet: 'Preserve enough seed data to replay the transfer deterministically.'
+        },
+        'safe-handoffs': {
+          focus: 'Owner clarity',
+          cue: 'The handoff itself becomes the product when it is the bottleneck.',
+          packet: 'Keep the transfer narrow, explicit, and auditable from start to finish.'
+        }
+      };
+
       const activeKey = 'hermes-playground.pressure.active';
       const handoffKey = 'hermes-playground.handoff.state';
       const loadActive = () => {
@@ -709,6 +793,7 @@
       const handoffSummary = document.getElementById('handoff-summary');
       const handoffScore = document.getElementById('handoff-score');
       const handoffFill = document.getElementById('handoff-fill');
+      const handoffPolicy = document.getElementById('handoff-policy');
       const handoffPacket = document.getElementById('handoff-packet');
 
       handoffGrid.innerHTML = handoffFactors.map(f => `
@@ -793,6 +878,7 @@
         }
 
         saveActive();
+        renderHandoff();
       };
 
       const renderHandoff = () => {
@@ -804,20 +890,65 @@
         const max = selected.length * 2;
         const percent = Math.round((total / max) * 100);
         const ready = percent >= 80;
+        const selectedPressures = pressures
+          .filter(p => active.includes(p.id))
+          .sort((a, b) => b.weight - a.weight);
+        const anchorPressure = selectedPressures[0];
+        const lens = anchorPressure ? pressureLens[anchorPressure.id] : null;
 
         handoffScore.textContent = `${total} / ${max}`;
         handoffFill.style.width = `${Math.max(8, percent)}%`;
-        handoffSummaryTitle.textContent = ready ? 'Handoff packet ready' : 'Handoff packet needs tightening';
-        handoffSummary.textContent = ready
-          ? 'The packet is explicit enough to transfer with low ambiguity and a clean replay path.'
-          : 'The packet still hides drift or ambiguity. Tighten the weak factor before handing off.';
+        handoffSummaryTitle.textContent = anchorPressure
+          ? `${anchorPressure.name} shapes the packet`
+          : ready
+            ? 'Handoff packet ready'
+            : 'Handoff packet needs tightening';
+        handoffSummary.textContent = anchorPressure
+          ? `${lens.cue} The transfer should optimize for ${lens.focus.toLowerCase()}.`
+          : ready
+            ? 'The packet is explicit enough to transfer with low ambiguity and a clean replay path.'
+            : 'The packet still hides drift or ambiguity. Tighten the weak factor before handing off.';
 
-        handoffPacket.innerHTML = selected.map(f => `
-          <div class="packet-line">
-            <strong>${f.name}</strong>
-            <span>${f.option.label} • ${f.option.note}</span>
-          </div>
-        `).join('');
+        handoffPolicy.innerHTML = anchorPressure
+          ? `
+            <div class="policy-line">
+              <strong>Transfer policy</strong>
+              <span>${anchorPressure.name} is the strongest active bottleneck</span>
+            </div>
+            <div class="policy-pills">
+              <span class="policy-pill">Shape: ${lens.focus}</span>
+              <span class="policy-pill">Cue: ${lens.cue}</span>
+              <span class="policy-pill">Packet rule: ${lens.packet}</span>
+            </div>
+          `
+          : `
+            <div class="policy-line">
+              <strong>Transfer policy</strong>
+              <span>No active pressure yet — pick one to shape the packet</span>
+            </div>
+            <div class="policy-pills">
+              <span class="policy-pill">Default lens: balanced handoff</span>
+            </div>
+          `;
+
+        handoffPacket.innerHTML = [
+          anchorPressure ? `
+            <div class="packet-line">
+              <strong>Policy anchor</strong>
+              <span>${anchorPressure.name} → ${lens.focus}</span>
+            </div>
+            <div class="packet-line">
+              <strong>Transfer cue</strong>
+              <span>${lens.packet}</span>
+            </div>
+          ` : '',
+          ...selected.map(f => `
+            <div class="packet-line">
+              <strong>${f.name}</strong>
+              <span>${f.option.label} • ${f.option.note}</span>
+            </div>
+          `)
+        ].join('');
 
         saveHandoff();
       };

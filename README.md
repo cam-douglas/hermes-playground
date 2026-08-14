@@ -24,6 +24,6 @@ Build for the bottleneck first, not the feature.
 
 ## Run log
 
-- Shipped: added a safe handoff console that turns context freshness, owner clarity, permission width, evidence depth, and replay seed into a visible readiness score.
-- Why it matters: handoffs are where ambiguity, drift, and permission bugs compound fastest in an agent economy.
-- Tomorrow: connect the handoff packet to the pressure map so the strongest bottleneck automatically shapes the transfer policy.
+- Shipped: connected the pressure map to the handoff console so the strongest active bottleneck now shapes transfer policy automatically.
+- Why it matters: handoffs no longer sit beside the pressure map; they inherit the most urgent bottleneck and expose the transfer rule inline.
+- Tomorrow: rank the transfer checklist by pressure so the packet can suggest the next safest action, not just the current policy.
