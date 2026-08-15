@@ -26,4 +26,5 @@ Build for the bottleneck first, not the feature.
 
 - Shipped: connected the pressure map to the handoff console so the strongest active bottleneck now shapes transfer policy automatically.
 - Why it matters: handoffs no longer sit beside the pressure map; they inherit the most urgent bottleneck and expose the transfer rule inline.
-- Tomorrow: rank the transfer checklist by pressure so the packet can suggest the next safest action, not just the current policy.
+- Also shipped: a pressure-ranked transfer checklist that suggests the next safest action instead of only the current policy.
+- Tomorrow: see whether the checklist should adapt to incident severity, not just pressure weight.

@@ -427,6 +427,20 @@
         background: linear-gradient(180deg, rgba(8, 15, 27, 0.96), rgba(11, 15, 27, 0.84));
       }
 
+      .ranked-panel {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: rgba(255,255,255,0.03);
+      }
+
+      .ranked-panel .list {
+        margin-top: 0;
+      }
+
       .packet-line {
         display: flex;
         justify-content: space-between;
@@ -526,6 +540,13 @@
           </div>
           <div class="handoff-policy" id="handoff-policy"></div>
           <div class="handoff-packet" id="handoff-packet"></div>
+          <div class="ranked-panel">
+            <div class="meter-row">
+              <strong id="checklist-title">Next safest action</strong>
+              <span class="chip" id="checklist-lead">Ranked by the current bottleneck</span>
+            </div>
+            <div class="list" id="transfer-checklist"></div>
+          </div>
         </section>
 
         <section class="section" id="thesis">
@@ -699,46 +720,97 @@
 
       const pressureLens = {
         trust: {
+          focusId: 'evidence',
           focus: 'Evidence depth',
           cue: 'Every transfer should carry receipts, not just intent.',
           packet: 'Prefer explicit proof and a replayable trail before handing work forward.'
         },
         sync: {
+          focusId: 'freshness',
           focus: 'Context freshness',
           cue: 'Transfers should happen on the newest state, not the last cached answer.',
           packet: 'Recheck the handoff against live state before the next owner starts.'
         },
         permission: {
+          focusId: 'permission',
           focus: 'Permission width',
           cue: 'The packet should move with the smallest possible blast radius.',
           packet: 'Strip authority to the minimum necessary before the transfer leaves the queue.'
         },
         observability: {
+          focusId: 'evidence',
           focus: 'Evidence depth',
           cue: 'If a human cannot inspect the path, the packet is too opaque.',
           packet: 'Attach enough trace data to explain what happened without a second system.'
         },
         settlement: {
+          focusId: 'owner',
           focus: 'Owner clarity',
           cue: 'Ownership has to be explicit before value can settle cleanly.',
           packet: 'Name the next accountable owner and make the acceptance path visible.'
         },
         'identity-drift': {
+          focusId: 'owner',
           focus: 'Owner clarity',
           cue: 'When identity shifts, the packet needs a stronger anchor than a name alone.',
           packet: 'Freeze the recipient identity and confirm the current role before transfer.'
         },
         replayability: {
+          focusId: 'replay',
           focus: 'Replay seed',
           cue: 'High-stakes handoffs should be reproducible if they fail.',
           packet: 'Preserve enough seed data to replay the transfer deterministically.'
         },
         'safe-handoffs': {
+          focusId: 'owner',
           focus: 'Owner clarity',
           cue: 'The handoff itself becomes the product when it is the bottleneck.',
           packet: 'Keep the transfer narrow, explicit, and auditable from start to finish.'
         }
       };
+
+      const transferChecklist = [
+        {
+          id: 'owner-acceptance',
+          title: 'Confirm the next owner',
+          detail: 'Make the recipient explicit and verify the acceptance path before any work leaves the queue.',
+          factor: 'owner',
+          base: 16,
+          pressures: ['settlement', 'identity-drift', 'safe-handoffs']
+        },
+        {
+          id: 'evidence-pack',
+          title: 'Attach the evidence pack',
+          detail: 'Bundle receipts, trace data, and a compact explanation so the transfer can be audited later.',
+          factor: 'evidence',
+          base: 20,
+          pressures: ['trust', 'observability', 'replayability']
+        },
+        {
+          id: 'freshness-sweep',
+          title: 'Refresh the context snapshot',
+          detail: 'Recheck the packet against live state so the next owner does not inherit stale assumptions.',
+          factor: 'freshness',
+          base: 18,
+          pressures: ['sync', 'observability']
+        },
+        {
+          id: 'permission-scan',
+          title: 'Trim the permission surface',
+          detail: 'Reduce authority to the smallest useful scope before the handoff crosses a boundary.',
+          factor: 'permission',
+          base: 19,
+          pressures: ['permission', 'safe-handoffs']
+        },
+        {
+          id: 'replay-seed',
+          title: 'Preserve a replay seed',
+          detail: 'Keep enough state to reproduce the transfer if it needs to be investigated later.',
+          factor: 'replay',
+          base: 17,
+          pressures: ['replayability', 'trust']
+        }
+      ];
 
       const activeKey = 'hermes-playground.pressure.active';
       const handoffKey = 'hermes-playground.handoff.state';
@@ -795,6 +867,9 @@
       const handoffFill = document.getElementById('handoff-fill');
       const handoffPolicy = document.getElementById('handoff-policy');
       const handoffPacket = document.getElementById('handoff-packet');
+      const checklistTitle = document.getElementById('checklist-title');
+      const checklistLead = document.getElementById('checklist-lead');
+      const transferChecklistEl = document.getElementById('transfer-checklist');
 
       handoffGrid.innerHTML = handoffFactors.map(f => `
         <article class="handoff-factor">
@@ -896,6 +971,21 @@
         const anchorPressure = selectedPressures[0];
         const lens = anchorPressure ? pressureLens[anchorPressure.id] : null;
 
+        const checklistRanked = transferChecklist
+          .map(item => {
+            const current = selected.find(f => f.id === item.factor)?.option.value ?? 1;
+            const weakness = 2 - current;
+            const matchingPressureWeight = selectedPressures.reduce(
+              (sum, pressure) => sum + (item.pressures.includes(pressure.id) ? pressure.weight : 0),
+              0
+            );
+            const lensBonus = lens && item.factor === lens.focusId ? 14 : 0;
+            const anchorBonus = anchorPressure && item.pressures.includes(anchorPressure.id) ? anchorPressure.weight * 0.45 : 0;
+            const safetyScore = item.base + weakness * 10 + matchingPressureWeight + lensBonus + anchorBonus;
+            return { ...item, current, weakness, safetyScore };
+          })
+          .sort((a, b) => b.safetyScore - a.safetyScore);
+
         handoffScore.textContent = `${total} / ${max}`;
         handoffFill.style.width = `${Math.max(8, percent)}%`;
         handoffSummaryTitle.textContent = anchorPressure
@@ -949,6 +1039,17 @@
             </div>
           `)
         ].join('');
+
+        checklistTitle.textContent = ready ? 'Next safest action' : 'Next safest action';
+        checklistLead.textContent = anchorPressure
+          ? `Pressure-shaped by ${anchorPressure.name.toLowerCase()}`
+          : 'Ranked by the weakest handoff factor';
+        transferChecklistEl.innerHTML = checklistRanked.map((item, index) => `
+          <div class="list-item">
+            <strong>${index + 1}. ${item.title}</strong>
+            <span>${item.detail} • score ${Math.round(item.safetyScore)} • ${item.current === 2 ? 'already strong' : `${item.weakness} step${item.weakness === 1 ? '' : 's'} to tighten`}</span>
+          </div>
+        `).join('');
 
         saveHandoff();
       };
