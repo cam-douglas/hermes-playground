@@ -377,6 +377,16 @@
         border-color: transparent;
       }
 
+      .severity-card {
+        border-color: rgba(251, 191, 36, 0.22);
+        background: linear-gradient(180deg, rgba(36, 30, 10, 0.24), rgba(255,255,255,0.03));
+      }
+
+      .severity-note {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
       .handoff-policy {
         display: grid;
         gap: 10px;
@@ -530,6 +540,14 @@
           <h2>Safe handoff console</h2>
           <p>Turn a transfer into something inspectable: freshness, owner clarity, permission width, evidence depth, and replay seed each have a dial.</p>
           <div class="handoff-grid" id="handoff-grid"></div>
+          <div class="handoff-factor severity-card">
+            <div class="handoff-factor-head">
+              <strong>Incident severity</strong>
+              <span>How hard should the checklist lean toward containment?</span>
+            </div>
+            <div class="segmented" id="severity-segmented"></div>
+            <div class="mono severity-note" id="severity-note"></div>
+          </div>
           <div class="meter">
             <div class="meter-row">
               <strong id="handoff-summary-title">Handoff packet not yet tuned</strong>
@@ -571,9 +589,9 @@
         <section class="section" id="run-log">
           <h2>Run log</h2>
           <div class="list">
-            <div class="list-item"><strong>Shipped</strong><span>Connected the pressure map to the handoff console so the strongest active bottleneck now shapes transfer policy automatically.</span></div>
-            <div class="list-item"><strong>Why it matters</strong><span>Handoffs no longer sit beside the pressure map; they inherit the most urgent bottleneck and expose the transfer rule inline.</span></div>
-            <div class="list-item"><strong>Tomorrow</strong><span>Rank the transfer checklist by pressure so the packet can suggest the next safest action, not just the current policy.</span></div>
+            <div class="list-item"><strong>Shipped</strong><span>Connected the pressure map to the handoff console so the strongest active bottleneck and incident severity now shape transfer policy automatically.</span></div>
+            <div class="list-item"><strong>Why it matters</strong><span>Handoffs now inherit both the dominant pressure and the severity of the incident, which lets the packet reorder containment steps before a transfer leaves the queue.</span></div>
+            <div class="list-item"><strong>Tomorrow</strong><span>See whether the checklist should adapt to incident severity first, not just pressure weight.</span></div>
           </div>
         </section>
       </div>
@@ -812,8 +830,21 @@
         }
       ];
 
+      const severityLevels = [
+        { value: 0, label: 'Routine', note: 'Lean on clarity and ownership; the packet can optimize for stable flow.' },
+        { value: 1, label: 'Elevated', note: 'Balance speed with auditability; surface the weakest handoff factor first.' },
+        { value: 2, label: 'Critical', note: 'Containment rules the packet; evidence and replay outrank convenience.' }
+      ];
+
+      const severityProfiles = [
+        { focus: 'Flow', tag: 'routine', note: 'Keep the packet light unless a factor is clearly weak.', boosts: { owner: 4, evidence: 6, freshness: 5, permission: 4, replay: 5 } },
+        { focus: 'Containment', tag: 'elevated', note: 'Rank the weakest transfer risk first and preserve auditability.', boosts: { owner: 6, evidence: 10, freshness: 8, permission: 7, replay: 10 } },
+        { focus: 'Incident response', tag: 'critical', note: 'Evidence and replay dominate the checklist before the handoff moves.', boosts: { owner: 2, evidence: 18, freshness: 14, permission: 12, replay: 20 } }
+      ];
+
       const activeKey = 'hermes-playground.pressure.active';
       const handoffKey = 'hermes-playground.handoff.state';
+      const severityKey = 'hermes-playground.handoff.severity';
       const loadActive = () => {
         try {
           const raw = localStorage.getItem(activeKey);
@@ -840,10 +871,23 @@
         }
       };
 
+      const loadSeverity = () => {
+        try {
+          const raw = localStorage.getItem(severityKey);
+          if (raw === null) return 1;
+          const value = Number(raw);
+          return Number.isInteger(value) && value >= 0 && value <= 2 ? value : 1;
+        } catch {
+          return 1;
+        }
+      };
+
       let active = loadActive();
       const saveActive = () => localStorage.setItem(activeKey, JSON.stringify(active));
       let handoff = loadHandoff();
+      let severity = loadSeverity();
       const saveHandoff = () => localStorage.setItem(handoffKey, JSON.stringify(handoff));
+      const saveSeverity = () => localStorage.setItem(severityKey, String(severity));
 
       const trendGrid = document.getElementById('trend-grid');
       trendGrid.innerHTML = trendData.map(({ repo, signal, move }) => `
@@ -861,6 +905,8 @@
       const pressureScore = document.getElementById('pressure-score');
       const pressureFill = document.getElementById('pressure-fill');
       const handoffGrid = document.getElementById('handoff-grid');
+      const severitySegmented = document.getElementById('severity-segmented');
+      const severityNote = document.getElementById('severity-note');
       const handoffSummaryTitle = document.getElementById('handoff-summary-title');
       const handoffSummary = document.getElementById('handoff-summary');
       const handoffScore = document.getElementById('handoff-score');
@@ -870,6 +916,15 @@
       const checklistTitle = document.getElementById('checklist-title');
       const checklistLead = document.getElementById('checklist-lead');
       const transferChecklistEl = document.getElementById('transfer-checklist');
+
+      const renderSeverity = () => {
+        severitySegmented.innerHTML = severityLevels.map(level => `
+          <button class="btn mini segment ${severity === level.value ? 'active' : ''}" data-severity-value="${level.value}">${level.label}</button>
+        `).join('');
+        severityNote.textContent = severityLevels[severity].note;
+      };
+
+      renderSeverity();
 
       handoffGrid.innerHTML = handoffFactors.map(f => `
         <article class="handoff-factor">
@@ -970,6 +1025,7 @@
           .sort((a, b) => b.weight - a.weight);
         const anchorPressure = selectedPressures[0];
         const lens = anchorPressure ? pressureLens[anchorPressure.id] : null;
+        const severityProfile = severityProfiles[severity];
 
         const checklistRanked = transferChecklist
           .map(item => {
@@ -981,7 +1037,9 @@
             );
             const lensBonus = lens && item.factor === lens.focusId ? 14 : 0;
             const anchorBonus = anchorPressure && item.pressures.includes(anchorPressure.id) ? anchorPressure.weight * 0.45 : 0;
-            const safetyScore = item.base + weakness * 10 + matchingPressureWeight + lensBonus + anchorBonus;
+            const severityBonus = severityProfile.boosts[item.factor] || 0;
+            const severityMatchBonus = severity === 2 && (item.factor === 'evidence' || item.factor === 'replay') ? 6 : 0;
+            const safetyScore = item.base + weakness * 10 + matchingPressureWeight + lensBonus + anchorBonus + severityBonus + severityMatchBonus;
             return { ...item, current, weakness, safetyScore };
           })
           .sort((a, b) => b.safetyScore - a.safetyScore);
@@ -989,12 +1047,12 @@
         handoffScore.textContent = `${total} / ${max}`;
         handoffFill.style.width = `${Math.max(8, percent)}%`;
         handoffSummaryTitle.textContent = anchorPressure
-          ? `${anchorPressure.name} shapes the packet`
+          ? `${severityProfile.focus} mode • ${anchorPressure.name} shapes the packet`
           : ready
             ? 'Handoff packet ready'
             : 'Handoff packet needs tightening';
         handoffSummary.textContent = anchorPressure
-          ? `${lens.cue} The transfer should optimize for ${lens.focus.toLowerCase()}.`
+          ? `${severityProfile.note} ${lens.cue} The transfer should optimize for ${lens.focus.toLowerCase()}.`
           : ready
             ? 'The packet is explicit enough to transfer with low ambiguity and a clean replay path.'
             : 'The packet still hides drift or ambiguity. Tighten the weak factor before handing off.';
@@ -1009,6 +1067,7 @@
               <span class="policy-pill">Shape: ${lens.focus}</span>
               <span class="policy-pill">Cue: ${lens.cue}</span>
               <span class="policy-pill">Packet rule: ${lens.packet}</span>
+              <span class="policy-pill">Severity: ${severityProfile.focus}</span>
             </div>
           `
           : `
@@ -1018,10 +1077,15 @@
             </div>
             <div class="policy-pills">
               <span class="policy-pill">Default lens: balanced handoff</span>
+              <span class="policy-pill">Severity: ${severityProfile.focus}</span>
             </div>
           `;
 
         handoffPacket.innerHTML = [
+          `<div class="packet-line">
+            <strong>Incident mode</strong>
+            <span>${severityProfile.focus} • ${severityLevels[severity].label}</span>
+          </div>`,
           anchorPressure ? `
             <div class="packet-line">
               <strong>Policy anchor</strong>
@@ -1042,8 +1106,8 @@
 
         checklistTitle.textContent = ready ? 'Next safest action' : 'Next safest action';
         checklistLead.textContent = anchorPressure
-          ? `Pressure-shaped by ${anchorPressure.name.toLowerCase()}`
-          : 'Ranked by the weakest handoff factor';
+          ? `Pressure-shaped by ${anchorPressure.name.toLowerCase()} • ${severityProfile.tag} severity`
+          : `Ranked by the weakest handoff factor • ${severityProfile.tag} severity`;
         transferChecklistEl.innerHTML = checklistRanked.map((item, index) => `
           <div class="list-item">
             <strong>${index + 1}. ${item.title}</strong>
@@ -1060,6 +1124,15 @@
         const id = button.dataset.id;
         active = active.includes(id) ? active.filter(x => x !== id) : [...active, id];
         render();
+      });
+
+      severitySegmented.addEventListener('click', (e) => {
+        const button = e.target.closest('button[data-severity-value]');
+        if (!button) return;
+        severity = Number(button.dataset.severityValue);
+        renderSeverity();
+        saveSeverity();
+        renderHandoff();
       });
 
       handoffGrid.addEventListener('click', (e) => {
