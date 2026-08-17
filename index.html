@@ -591,7 +591,8 @@
           <div class="list">
             <div class="list-item"><strong>Shipped</strong><span>Connected the pressure map to the handoff console so the strongest active bottleneck and incident severity now shape transfer policy automatically.</span></div>
             <div class="list-item"><strong>Why it matters</strong><span>Handoffs now inherit both the dominant pressure and the severity of the incident, which lets the packet reorder containment steps before a transfer leaves the queue.</span></div>
-            <div class="list-item"><strong>Tomorrow</strong><span>See whether the checklist should adapt to incident severity first, not just pressure weight.</span></div>
+            <div class="list-item"><strong>Also shipped</strong><span>The checklist now goes severity-first in critical mode, putting evidence and replay ahead of convenience before a handoff moves.</span></div>
+            <div class="list-item"><strong>Tomorrow</strong><span>See whether severity should lead the checklist before pressure even when the pressure anchor is strong.</span></div>
           </div>
         </section>
       </div>
@@ -837,9 +838,9 @@
       ];
 
       const severityProfiles = [
-        { focus: 'Flow', tag: 'routine', note: 'Keep the packet light unless a factor is clearly weak.', boosts: { owner: 4, evidence: 6, freshness: 5, permission: 4, replay: 5 } },
-        { focus: 'Containment', tag: 'elevated', note: 'Rank the weakest transfer risk first and preserve auditability.', boosts: { owner: 6, evidence: 10, freshness: 8, permission: 7, replay: 10 } },
-        { focus: 'Incident response', tag: 'critical', note: 'Evidence and replay dominate the checklist before the handoff moves.', boosts: { owner: 2, evidence: 18, freshness: 14, permission: 12, replay: 20 } }
+        { focus: 'Flow', tag: 'routine', note: 'Keep the packet light unless a factor is clearly weak.', boosts: { owner: 4, evidence: 6, freshness: 5, permission: 4, replay: 5 }, priority: ['owner', 'freshness', 'permission', 'evidence', 'replay'] },
+        { focus: 'Containment', tag: 'elevated', note: 'Rank the weakest transfer risk first and preserve auditability.', boosts: { owner: 6, evidence: 10, freshness: 8, permission: 7, replay: 10 }, priority: ['permission', 'freshness', 'owner', 'evidence', 'replay'] },
+        { focus: 'Incident response', tag: 'critical', note: 'Severity leads the checklist; evidence and replay outrank convenience before the handoff moves.', boosts: { owner: 2, evidence: 18, freshness: 14, permission: 12, replay: 20 }, priority: ['evidence', 'replay', 'permission', 'freshness', 'owner'] }
       ];
 
       const activeKey = 'hermes-playground.pressure.active';
@@ -1039,10 +1040,15 @@
             const anchorBonus = anchorPressure && item.pressures.includes(anchorPressure.id) ? anchorPressure.weight * 0.45 : 0;
             const severityBonus = severityProfile.boosts[item.factor] || 0;
             const severityMatchBonus = severity === 2 && (item.factor === 'evidence' || item.factor === 'replay') ? 6 : 0;
-            const safetyScore = item.base + weakness * 10 + matchingPressureWeight + lensBonus + anchorBonus + severityBonus + severityMatchBonus;
-            return { ...item, current, weakness, safetyScore };
+            const priorityIndex = severityProfile.priority.indexOf(item.factor);
+            const priorityBonus = (severityProfile.priority.length - priorityIndex) * (severity === 2 ? 4 : 2);
+            const safetyScore = item.base + weakness * 10 + matchingPressureWeight + lensBonus + anchorBonus + severityBonus + severityMatchBonus + priorityBonus;
+            return { ...item, current, weakness, safetyScore, priorityIndex };
           })
-          .sort((a, b) => b.safetyScore - a.safetyScore);
+          .sort((a, b) => {
+            if (severity === 2 && a.priorityIndex !== b.priorityIndex) return a.priorityIndex - b.priorityIndex;
+            return b.safetyScore - a.safetyScore;
+          });
 
         handoffScore.textContent = `${total} / ${max}`;
         handoffFill.style.width = `${Math.max(8, percent)}%`;
@@ -1056,6 +1062,15 @@
           : ready
             ? 'The packet is explicit enough to transfer with low ambiguity and a clean replay path.'
             : 'The packet still hides drift or ambiguity. Tighten the weak factor before handing off.';
+
+        if (severity === 2) {
+          handoffSummaryTitle.textContent = anchorPressure
+            ? `Critical mode • severity-first containment around ${anchorPressure.name}`
+            : 'Critical mode • severity-first containment';
+          handoffSummary.textContent = anchorPressure
+            ? `${severityProfile.note} The checklist now opens with evidence and replay before it considers the pressure anchor.`
+            : 'Critical mode prioritizes evidence and replay before any convenience-oriented transfer step.';
+        }
 
         handoffPolicy.innerHTML = anchorPressure
           ? `
@@ -1106,8 +1121,12 @@
 
         checklistTitle.textContent = ready ? 'Next safest action' : 'Next safest action';
         checklistLead.textContent = anchorPressure
-          ? `Pressure-shaped by ${anchorPressure.name.toLowerCase()} • ${severityProfile.tag} severity`
-          : `Ranked by the weakest handoff factor • ${severityProfile.tag} severity`;
+          ? (severity === 2
+            ? `Severity-first • ${anchorPressure.name.toLowerCase()} continues to shape containment`
+            : `Pressure-shaped by ${anchorPressure.name.toLowerCase()} • ${severityProfile.tag} severity`)
+          : (severity === 2
+            ? 'Severity-first • evidence and replay lead containment'
+            : `Ranked by the weakest handoff factor • ${severityProfile.tag} severity`);
         transferChecklistEl.innerHTML = checklistRanked.map((item, index) => `
           <div class="list-item">
             <strong>${index + 1}. ${item.title}</strong>

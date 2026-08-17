@@ -20,11 +20,11 @@ Open `index.html` in a browser, or serve it with any static file server.
 
 ## Current thesis
 
-Build for the bottleneck first, not the feature.
+Build for the bottleneck first, then let incident severity reshape containment order.
 
 ## Run log
 
-- Shipped: connected the pressure map to the handoff console so the strongest active bottleneck now shapes transfer policy automatically.
-- Why it matters: handoffs no longer sit beside the pressure map; they inherit the most urgent bottleneck and expose the transfer rule inline.
-- Also shipped: a pressure-ranked transfer checklist that suggests the next safest action instead of only the current policy.
-- Tomorrow: see whether the checklist should adapt to incident severity, not just pressure weight.
+- Shipped: connected the pressure map to the handoff console so the strongest active bottleneck and incident severity now shape transfer policy automatically.
+- Why it matters: handoffs no longer sit beside the pressure map; they inherit both the dominant pressure and the incident mode, then expose the transfer rule inline.
+- Also shipped: a severity-first transfer checklist that pushes evidence and replay ahead of convenience in critical mode.
+- Tomorrow: see whether severity should lead the checklist before pressure even when the pressure anchor is strong.
