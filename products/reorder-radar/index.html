@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Reorder Radar — local-first inventory and replenishment cockpit for small retail." />
+    <title>Reorder Radar</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #050816;
+        --panel: rgba(15, 20, 34, 0.82);
+        --panel-2: rgba(10, 14, 24, 0.82);
+        --line: rgba(148, 163, 184, 0.16);
+        --text: #e8f1ff;
+        --muted: #9cb0d4;
+        --accent: #6d5efc;
+        --accent-2: #22d3ee;
+        --good: #34d399;
+        --warn: #fbbf24;
+        --bad: #fb7185;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(109, 94, 252, 0.18), transparent 28%),
+          radial-gradient(circle at 88% 0%, rgba(34, 211, 238, 0.12), transparent 24%),
+          linear-gradient(180deg, #050816 0%, #090d18 100%);
+        color: var(--text);
+      }
+      a { color: inherit; }
+      button, input, select { font: inherit; }
+      .wrap { width: min(1280px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 48px; }
+      .topbar {
+        display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+        margin-bottom: 18px; color: var(--muted); font-size: 14px;
+      }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px;
+        border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,0.03);
+      }
+      .dot { width: 9px; height: 9px; border-radius: 999px; background: var(--good); box-shadow: 0 0 18px rgba(52, 211, 153, 0.8); }
+      .hero {
+        position: relative; overflow: hidden; padding: 44px; border: 1px solid var(--line); border-radius: 30px;
+        background: linear-gradient(180deg, rgba(18, 24, 40, 0.96), rgba(10, 14, 24, 0.9));
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
+      }
+      .hero::after {
+        content: ""; position: absolute; inset: auto -8% -40% auto; width: 380px; height: 380px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.18), transparent 60%); pointer-events: none;
+      }
+      .eyebrow {
+        display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 999px;
+        border: 1px solid rgba(109, 94, 252, 0.28); background: rgba(109, 94, 252, 0.12);
+        color: #ddd4ff; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+      }
+      h1 { margin: 18px 0 14px; font-size: clamp(42px, 7vw, 88px); line-height: 0.94; letter-spacing: -0.06em; }
+      .lede { max-width: 900px; font-size: clamp(18px, 2.1vw, 22px); color: #d6e3f9; }
+      .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 14px;
+        border: 1px solid var(--line); background: rgba(255,255,255,0.04); text-decoration: none; color: var(--text);
+        cursor: pointer;
+      }
+      .btn.primary { background: linear-gradient(135deg, var(--accent), #4f46e5); border-color: transparent; }
+      .btn.ghost { background: transparent; }
+      .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; margin-top: 20px; }
+      .card, .section {
+        border-radius: 24px; border: 1px solid var(--line); background: var(--panel);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+      }
+      .card { grid-column: span 4; padding: 22px; }
+      .section { grid-column: span 12; padding: 24px 22px; background: var(--panel-2); }
+      .card h2, .section h2 { margin: 0 0 12px; font-size: 20px; }
+      .card p, .section p { margin: 0; color: var(--muted); }
+      .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+      .metric {
+        padding: 16px; border-radius: 18px; border: 1px solid rgba(148,163,184,0.14); background: rgba(255,255,255,0.03);
+      }
+      .metric strong { display: block; font-size: 28px; color: white; }
+      .metric span { color: var(--muted); font-size: 13px; }
+      .toolbar {
+        display: grid; grid-template-columns: 1.2fr repeat(3, minmax(0, 0.8fr)) auto; gap: 10px; margin-top: 16px;
+      }
+      .field {
+        width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(148,163,184,0.16);
+        background: rgba(255,255,255,0.03); color: var(--text);
+      }
+      .field::placeholder { color: #7f92b8; }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+      .chip {
+        padding: 8px 10px; border-radius: 999px; border: 1px solid rgba(148,163,184,0.16);
+        background: rgba(255,255,255,0.03); color: #d5e0f4; font-size: 12px; cursor: pointer;
+      }
+      .chip.active { background: linear-gradient(135deg, rgba(109, 94, 252, 0.92), rgba(79, 70, 229, 0.92)); border-color: transparent; }
+      .layout { display: grid; grid-template-columns: 1.5fr 0.9fr; gap: 18px; }
+      .table-wrap { overflow: auto; border-radius: 20px; border: 1px solid rgba(148,163,184,0.12); }
+      table { width: 100%; border-collapse: collapse; min-width: 900px; }
+      th, td { padding: 13px 14px; text-align: left; border-bottom: 1px solid rgba(148,163,184,0.10); }
+      th { color: #c9d9f5; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255,255,255,0.03); }
+      td { color: #edf3ff; vertical-align: top; }
+      tr.low { background: linear-gradient(90deg, rgba(251,191,36,0.08), transparent 42%); }
+      tr.urgent { background: linear-gradient(90deg, rgba(251,113,133,0.1), transparent 40%); }
+      .sku-name { font-weight: 700; }
+      .muted { color: var(--muted); }
+      .status {
+        display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; font-size: 12px;
+        border: 1px solid rgba(148,163,184,0.18);
+      }
+      .status.safe { background: rgba(52,211,153,0.08); color: #bbf7d0; }
+      .status.watch { background: rgba(251,191,36,0.08); color: #fef08a; }
+      .status.buy { background: rgba(251,113,133,0.12); color: #fecdd3; }
+      .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+      .mini {
+        padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.16);
+        background: rgba(255,255,255,0.03); color: var(--text); cursor: pointer;
+      }
+      .sidebar { display: grid; gap: 14px; align-content: start; }
+      .panel {
+        padding: 18px; border-radius: 20px; border: 1px solid rgba(148,163,184,0.14); background: rgba(255,255,255,0.03);
+      }
+      .panel h3 { margin: 0 0 10px; font-size: 18px; }
+      .queue { display: grid; gap: 10px; }
+      .queue-item {
+        padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(148,163,184,0.12);
+      }
+      .queue-item strong { color: white; }
+      .queue-item p { margin: 6px 0 0; color: var(--muted); }
+      .form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+      .form-grid .field { padding: 11px 12px; }
+      .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+      .footer {
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 18px; color: var(--muted); font-size: 14px;
+      }
+      .checklist { display: grid; gap: 10px; }
+      .check-item { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .check-item strong { color: white; }
+      .note { font-size: 13px; color: var(--muted); }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .tag {
+        padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.03); border: 1px solid rgba(148,163,184,0.14);
+        color: #dbe7fb; font-size: 12px;
+      }
+      .bar {
+        height: 10px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.08); margin-top: 10px;
+      }
+      .fill {
+        height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); width: 40%;
+      }
+      @media (max-width: 1080px) {
+        .card { grid-column: span 12; }
+        .layout { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 900px) {
+        .hero { padding: 28px; }
+        .summary-grid, .form-grid { grid-template-columns: 1fr; }
+        .toolbar { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="pill"><span class="dot"></span><span>local-first retail replenishment cockpit</span></div>
+        <div class="pill" id="clock"></div>
+      </div>
+
+      <main class="hero">
+        <div class="eyebrow">Reorder Radar</div>
+        <h1>Know what to buy before the shelf goes empty.</h1>
+        <p class="lede">
+          A lightweight inventory and replenishment cockpit for pop-up shops, kiosks, and small retailers.
+          Instead of a heavy ERP, it keeps the list small, the reorder queue clear, and the decision loop visible.
+        </p>
+        <div class="cta-row">
+          <a class="btn primary" href="#dashboard">Open dashboard</a>
+          <a class="btn" href="#add-sku">Add a SKU</a>
+          <a class="btn ghost" href="/">Back to catalogue</a>
+        </div>
+      </main>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Problem</h2>
+          <p>Teams know what sold yesterday, but not what should be reordered today or which items are about to miss lead time.</p>
+        </section>
+        <section class="card">
+          <h2>Users</h2>
+          <p>Pop-up operators, boutique managers, kiosk staff, and anyone who needs a reorder list without adopting a full POS stack.</p>
+        </section>
+        <section class="card">
+          <h2>Workflow</h2>
+          <p>Receive stock, record sales, watch coverage days fall, then buy the smallest safe quantity before the next shift.</p>
+        </section>
+
+        <section class="section" id="dashboard">
+          <h2>Dashboard</h2>
+          <div class="summary-grid" id="summary-grid"></div>
+          <div class="toolbar">
+            <input id="search" class="field" placeholder="Search SKU, supplier, category, or shelf" />
+            <select id="status-filter" class="field"></select>
+            <select id="supplier-filter" class="field"></select>
+            <select id="sort-filter" class="field"></select>
+            <button id="reset-demo" class="btn">Reset demo</button>
+          </div>
+          <div class="chips" id="category-chips"></div>
+        </section>
+
+        <section class="section">
+          <div class="layout">
+            <div>
+              <h2>Catalog</h2>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>SKU</th>
+                      <th>Stock</th>
+                      <th>Reorder point</th>
+                      <th>Daily rate</th>
+                      <th>Lead time</th>
+                      <th>Days cover</th>
+                      <th>Reorder qty</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="catalog-body"></tbody>
+                </table>
+              </div>
+            </div>
+            <aside class="sidebar">
+              <div class="panel">
+                <h3>Buy-now queue</h3>
+                <div class="queue" id="queue"></div>
+              </div>
+              <div class="panel">
+                <h3>Operational checklist</h3>
+                <div class="checklist" id="checklist"></div>
+                <div class="tag-row">
+                  <span class="tag">localStorage persistence</span>
+                  <span class="tag">deterministic urgency score</span>
+                  <span class="tag">static Vercel deployment</span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="section" id="add-sku">
+          <h2>Add SKU</h2>
+          <p>Extend the catalog without leaving the page. New items inherit the same scoring model as the demo stock.</p>
+          <div class="form-grid">
+            <input class="field" id="new-name" placeholder="Item name" />
+            <input class="field" id="new-category" placeholder="Category" />
+            <input class="field" id="new-supplier" placeholder="Supplier" />
+            <input class="field" id="new-on-hand" type="number" min="0" placeholder="On hand" />
+            <input class="field" id="new-reorder" type="number" min="0" placeholder="Reorder point" />
+            <input class="field" id="new-rate" type="number" min="0" step="0.1" placeholder="Daily rate" />
+            <input class="field" id="new-lead" type="number" min="0" placeholder="Lead days" />
+            <input class="field" id="new-cost" type="number" min="0" step="0.01" placeholder="Unit cost" />
+            <input class="field" id="new-shelf" placeholder="Shelf / bin" />
+          </div>
+          <div class="form-actions">
+            <button id="add-item" class="btn primary">Add item</button>
+            <button id="seed-fill" class="btn">Load sample mix</button>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>Product notes</h2>
+          <div class="footer">
+            <span>Architecture: static HTML/CSS/JS, no backend, local persistence.</span>
+            <span>Data model: stock, reorder point, demand velocity, lead time, and unit cost.</span>
+            <span>Deployment: ship to Vercel as a static product in its own folder.</span>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'reorder-radar.catalog';
+
+      const seedItems = [
+        { id: 'rr-001', name: 'Iced coffee cups', category: 'Beverage', supplier: 'North Roast', onHand: 18, reorderPoint: 22, dailyRate: 5, leadDays: 3, unitCost: 0.28, shelf: 'Front cooler' },
+        { id: 'rr-002', name: 'Canvas tote bags', category: 'Merch', supplier: 'Studio North', onHand: 41, reorderPoint: 20, dailyRate: 2.2, leadDays: 7, unitCost: 4.6, shelf: 'Wall rack' },
+        { id: 'rr-003', name: 'Phone grips', category: 'Accessories', supplier: 'ClipLine', onHand: 14, reorderPoint: 18, dailyRate: 3.1, leadDays: 6, unitCost: 1.1, shelf: 'Counter tray' },
+        { id: 'rr-004', name: 'Scented candles', category: 'Home', supplier: 'Wax & Co', onHand: 9, reorderPoint: 14, dailyRate: 1.4, leadDays: 8, unitCost: 5.2, shelf: 'Back shelf' },
+        { id: 'rr-005', name: 'Notebook packs', category: 'Stationery', supplier: 'Paper Orchard', onHand: 27, reorderPoint: 16, dailyRate: 2.0, leadDays: 5, unitCost: 2.4, shelf: 'Middle shelf' },
+        { id: 'rr-006', name: 'USB-C cables', category: 'Electronics', supplier: 'Volt Bridge', onHand: 7, reorderPoint: 12, dailyRate: 2.8, leadDays: 4, unitCost: 3.1, shelf: 'Lockbox' }
+      ];
+
+      const state = {
+        items: loadItems(),
+        search: '',
+        status: 'all',
+        supplier: 'all',
+        sort: 'urgency-desc',
+        category: 'all'
+      };
+
+      function cloneSeed() {
+        return JSON.parse(JSON.stringify(seedItems));
+      }
+
+      function loadItems() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return cloneSeed();
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) && parsed.length ? parsed : cloneSeed();
+        } catch {
+          return cloneSeed();
+        }
+      }
+
+      function saveItems() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+      }
+
+      function uid() {
+        return 'rr-' + Math.random().toString(36).slice(2, 8);
+      }
+
+      function clamp(n, min, max) {
+        return Math.min(max, Math.max(min, n));
+      }
+
+      function calc(item) {
+        const daysCover = item.dailyRate > 0 ? item.onHand / item.dailyRate : Infinity;
+        const target = item.reorderPoint + Math.ceil(item.dailyRate * item.leadDays * 1.2);
+        const reorderQty = Math.max(target - item.onHand, 0);
+        const urgency = reorderQty === 0 ? 0 : clamp(Math.round((item.leadDays + 2 - daysCover) * 20 + reorderQty * 2), 0, 100);
+        let status = 'safe';
+        if (item.onHand <= item.reorderPoint || daysCover <= item.leadDays + 1) status = 'buy';
+        else if (daysCover <= item.leadDays + 3) status = 'watch';
+        return { daysCover, reorderQty, urgency, status };
+      }
+
+      function formatDays(v) {
+        return Number.isFinite(v) ? `${v.toFixed(1)}d` : '∞';
+      }
+
+      function formatCurrency(v) {
+        return `$${v.toFixed(2)}`;
+      }
+
+      function render() {
+        saveItems();
+        document.getElementById('clock').textContent = new Date().toISOString().replace('T', ' ').replace('Z', ' UTC');
+
+        const items = state.items
+          .map(item => ({ ...item, ...calc(item) }))
+          .filter(item => {
+            const query = state.search.trim().toLowerCase();
+            const matchesQuery = !query || [item.name, item.category, item.supplier, item.shelf].join(' ').toLowerCase().includes(query);
+            const matchesStatus = state.status === 'all' || item.status === state.status;
+            const matchesSupplier = state.supplier === 'all' || item.supplier === state.supplier;
+            const matchesCategory = state.category === 'all' || item.category === state.category;
+            return matchesQuery && matchesStatus && matchesSupplier && matchesCategory;
+          })
+          .sort((a, b) => {
+            if (state.sort === 'urgency-desc') return b.urgency - a.urgency;
+            if (state.sort === 'stock-asc') return a.onHand - b.onHand;
+            if (state.sort === 'cover-asc') return a.daysCover - b.daysCover;
+            if (state.sort === 'lead-desc') return b.leadDays - a.leadDays;
+            return a.name.localeCompare(b.name);
+          });
+
+        const metrics = state.items.map(calc);
+        const urgent = metrics.filter(m => m.status === 'buy').length;
+        const watch = metrics.filter(m => m.status === 'watch').length;
+        const spend = state.items.reduce((sum, item) => sum + calc(item).reorderQty * item.unitCost, 0);
+        const avgCover = metrics.reduce((sum, m) => sum + (Number.isFinite(m.daysCover) ? m.daysCover : 0), 0) / Math.max(metrics.length, 1);
+
+        document.getElementById('summary-grid').innerHTML = [
+          { value: state.items.length, label: 'SKUs tracked' },
+          { value: urgent, label: 'buy-now items' },
+          { value: watch, label: 'watch items' },
+          { value: formatCurrency(spend), label: 'reserve spend' },
+        ].map(m => `<div class="metric"><strong>${m.value}</strong><span>${m.label}</span></div>`).join('');
+
+        const statuses = ['all', 'buy', 'watch', 'safe'];
+        document.getElementById('status-filter').innerHTML = statuses.map(s => `<option value="${s}" ${state.status === s ? 'selected' : ''}>${s === 'all' ? 'All statuses' : s === 'buy' ? 'Buy now' : s === 'watch' ? 'Watch' : 'Safe'}</option>`).join('');
+
+        const suppliers = ['all', ...new Set(state.items.map(i => i.supplier))];
+        document.getElementById('supplier-filter').innerHTML = suppliers.map(s => `<option value="${s}" ${state.supplier === s ? 'selected' : ''}>${s === 'all' ? 'All suppliers' : s}</option>`).join('');
+
+        const sortModes = [
+          ['urgency-desc', 'Sort: urgency'],
+          ['stock-asc', 'Sort: lowest stock'],
+          ['cover-asc', 'Sort: shortest cover'],
+          ['lead-desc', 'Sort: longest lead'],
+          ['name-asc', 'Sort: name']
+        ];
+        document.getElementById('sort-filter').innerHTML = sortModes.map(([value, label]) => `<option value="${value}" ${state.sort === value ? 'selected' : ''}>${label}</option>`).join('');
+
+        const categories = ['all', ...new Set(state.items.map(i => i.category))];
+        document.getElementById('category-chips').innerHTML = categories.map(cat => `<button class="chip ${state.category === cat ? 'active' : ''}" data-category="${cat}">${cat === 'all' ? 'All categories' : cat}</button>`).join('');
+
+        document.getElementById('catalog-body').innerHTML = items.map(item => {
+          const cls = item.status === 'buy' ? 'urgent' : item.status === 'watch' ? 'low' : '';
+          return `
+            <tr class="${cls}">
+              <td>
+                <div class="sku-name">${item.name}</div>
+                <div class="muted">${item.category} • ${item.supplier} • ${item.shelf}</div>
+              </td>
+              <td>${item.onHand}</td>
+              <td>${item.reorderPoint}</td>
+              <td>${item.dailyRate.toFixed(1)}</td>
+              <td>${item.leadDays}d</td>
+              <td>${formatDays(item.daysCover)}</td>
+              <td>${item.reorderQty}</td>
+              <td><span class="status ${item.status}">${item.status === 'buy' ? 'Buy now' : item.status === 'watch' ? 'Watch' : 'Safe'}</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="mini" data-action="sell" data-id="${item.id}">-1</button>
+                  <button class="mini" data-action="receive" data-id="${item.id}">+1</button>
+                  <button class="mini" data-action="stockout" data-id="${item.id}">Clear</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        const queue = state.items.map(item => ({ ...item, ...calc(item) }))
+          .filter(item => item.status !== 'safe')
+          .sort((a, b) => b.urgency - a.urgency)
+          .slice(0, 5);
+
+        document.getElementById('queue').innerHTML = queue.length ? queue.map(item => `
+          <div class="queue-item">
+            <strong>${item.name}</strong>
+            <p>${item.reorderQty} units to cover ${formatDays(item.daysCover)} of demand. Lead time: ${item.leadDays} days.</p>
+          </div>
+        `).join('') : `<div class="queue-item"><strong>No urgent buys</strong><p>Everything in the current filter is above reorder pressure.</p></div>`;
+
+        document.getElementById('checklist').innerHTML = [
+          ['Receive and count', 'Confirm the latest receiving count before the next shift.'],
+          ['Review buy-now queue', 'Order the top urgent SKUs before lead time runs out.'],
+          ['Adjust after sales', 'Use +1 / -1 controls to keep on-hand close to reality.'],
+          ['Persist the catalog', 'State stays in localStorage so refreshes do not wipe the list.']
+        ].map(([title, detail]) => `<div class="check-item"><strong>${title}</strong><span class="note">${detail}</span></div>`).join('');
+
+        document.getElementById('summary-grid').dataset.avgCover = avgCover.toFixed(1);
+      }
+
+      function setFilter(key, value) {
+        state[key] = value;
+        render();
+      }
+
+      document.getElementById('search').addEventListener('input', e => {
+        state.search = e.target.value;
+        render();
+      });
+      document.getElementById('status-filter').addEventListener('change', e => setFilter('status', e.target.value));
+      document.getElementById('supplier-filter').addEventListener('change', e => setFilter('supplier', e.target.value));
+      document.getElementById('sort-filter').addEventListener('change', e => setFilter('sort', e.target.value));
+
+      document.getElementById('category-chips').addEventListener('click', e => {
+        const button = e.target.closest('button[data-category]');
+        if (!button) return;
+        state.category = button.dataset.category;
+        render();
+      });
+
+      document.getElementById('catalog-body').addEventListener('click', e => {
+        const button = e.target.closest('button[data-action]');
+        if (!button) return;
+        const item = state.items.find(x => x.id === button.dataset.id);
+        if (!item) return;
+        const action = button.dataset.action;
+        if (action === 'sell') item.onHand = Math.max(0, item.onHand - 1);
+        if (action === 'receive') item.onHand = item.onHand + 1;
+        if (action === 'stockout') item.onHand = 0;
+        render();
+      });
+
+      document.getElementById('add-item').addEventListener('click', () => {
+        const name = document.getElementById('new-name').value.trim();
+        if (!name) return;
+        const item = {
+          id: uid(),
+          name,
+          category: document.getElementById('new-category').value.trim() || 'General',
+          supplier: document.getElementById('new-supplier').value.trim() || 'Unassigned',
+          onHand: Number(document.getElementById('new-on-hand').value || 0),
+          reorderPoint: Number(document.getElementById('new-reorder').value || 0),
+          dailyRate: Number(document.getElementById('new-rate').value || 0),
+          leadDays: Number(document.getElementById('new-lead').value || 0),
+          unitCost: Number(document.getElementById('new-cost').value || 0),
+          shelf: document.getElementById('new-shelf').value.trim() || 'Unassigned'
+        };
+        state.items = [item, ...state.items];
+        ['new-name', 'new-category', 'new-supplier', 'new-on-hand', 'new-reorder', 'new-rate', 'new-lead', 'new-cost', 'new-shelf'].forEach(id => document.getElementById(id).value = '');
+        render();
+      });
+
+      document.getElementById('seed-fill').addEventListener('click', () => {
+        state.items = cloneSeed();
+        render();
+      });
+
+      document.getElementById('reset-demo').addEventListener('click', () => {
+        state.items = cloneSeed();
+        state.search = '';
+        state.status = 'all';
+        state.supplier = 'all';
+        state.sort = 'urgency-desc';
+        state.category = 'all';
+        document.getElementById('search').value = '';
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>

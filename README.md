@@ -1,30 +1,31 @@
 # hermes-playground
 
-Day 1 restart: Agent Pressure Lab.
+Daily product-catalogue loop for the Campbell playground.
 
-This repo is now an original product experiment focused on the pressure points that will shape an agent economy:
-- trust
-- synchronization
-- permissioning
-- observability
-- settlement
-- identity drift
-- replayability
-- safe handoffs
+## Active product
 
-The page intentionally avoids a literal marketplace or service catalog. Instead it uses GitHub trends as a weak signal and turns them into a product thesis about failure modes, control surfaces, and future bottlenecks.
+- **Reorder Radar** — a lightweight inventory and replenishment cockpit for pop-up shops, kiosks, and small retailers.
+- Path: `products/reorder-radar/`
+- Live page: open the deployed site root, then follow the product link.
 
-## Local preview
+## Research signal
 
-Open `index.html` in a browser, or serve it with any static file server.
+GitHub already has plenty of full inventory/POS systems (for example StockPilot, FlowStock, InvenTree, and other inventory-management repos), but many are heavy, multi-role, or ERP-shaped.
 
-## Current thesis
+This prototype focuses on the sharper wedge:
 
-Build for the bottleneck first, then let incident severity reshape containment order.
+- fast movers falling below reorder point
+- stock coverage days vs supplier lead time
+- a simple buy-now queue instead of a full ERP
+- local-first state for tiny teams
 
-## Run log
+## Repository shape
 
-- Shipped: connected the pressure map to the handoff console so the strongest active bottleneck and incident severity now shape transfer policy automatically.
-- Why it matters: handoffs no longer sit beside the pressure map; they inherit both the dominant pressure and the incident mode, then expose the transfer rule inline.
-- Also shipped: a severity-first transfer checklist that pushes evidence and replay ahead of convenience in critical mode.
-- Tomorrow: see whether severity should lead the checklist before pressure even when the pressure anchor is strong.
+- `index.html` — catalogue hub
+- `products/reorder-radar/` — self-contained product prototype
+
+## Verification
+
+- Static site loads without a build step
+- Product state persists in `localStorage`
+- Reorder recommendations are derived from stock, velocity, and lead time
