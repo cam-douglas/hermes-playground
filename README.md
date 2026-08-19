@@ -2,7 +2,7 @@
 
 Daily product-catalogue loop for the Campbell playground.
 
-The hub is a **catalogue desk**: live search, tags, and a this-hour vs archive split over nine products.
+The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **URL-persisted filters** (`?q=` / `?tag=`) over nine products. A filtered desk is pasteable.
 
 ## Active products
 
@@ -36,11 +36,11 @@ The hub is a **catalogue desk**: live search, tags, and a this-hour vs archive s
 
 ## Research signal
 
-The feed is all agents (harnesses, skill packs, token compression, graphs). This hour picks a human ops problem instead: offboarding closes the HR ticket, while badges, seats, and break-glass keys stay live. Distinct from Ghost Briefs (fluency after merge) and Renew Trap (vendor money). Access after exit, not fluency, not skills.
+The feed is all agents (harnesses, skill packs, token compression, graphs). This hour does not add a tenth product. Nine prototypes, and a filter dies on refresh: persist search in `q` and the active tag in `tag` so a filtered desk is shareable. Still Inside stays featured. Distinct from cloning leftover access, another scanner, or a row-board.
 
 ## Repository shape
 
-- `index.html` — searchable catalogue hub (this hour vs archive, live search, tags)
+- `index.html` — searchable catalogue hub (this hour vs archive, live search, tags, URL-persisted `q` / `tag`)
 - `products/still-inside/` — featured this-hour product prototype
 - `products/quiet-landing/` — archive product prototype
 - `products/renew-trap/` — archive product prototype
@@ -56,11 +56,12 @@ The feed is all agents (harnesses, skill packs, token compression, graphs). This
 
 - Static site loads without a build step
 - Catalogue links resolve to all nine product folders
-- Search for `unicode` shows Unseen Ink
-- Tag `inventory` shows Reorder Radar
-- Tag `renewals` shows Renew Trap
-- Tag `timezone` shows Quiet Landing
-- Tag `offboarding` shows Still Inside
-- Empty query `zzzz-no-match` shows an empty state that names the query
+- `/?q=unicode` on load shows Unseen Ink, hides Reorder Radar, and fills the search field
+- `/?tag=inventory` on load shows only Reorder Radar with that tag active
+- `/?q=skill&tag=review` ANDs (Skill Clash visible; Unseen Ink hidden)
+- Typing a search updates `location.search` via `replaceState` (no extra history entries)
+- Clearing filters restores all nine and strips the query string
+- Empty query `/?q=zzzz-no-match` shows an empty state that names the query
+- Copy desk link yields a URL containing the current `q` and/or `tag`
 - Featured this-hour card for Still Inside
 - All nine product pages still load
