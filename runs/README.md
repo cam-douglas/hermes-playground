@@ -2,6 +2,7 @@
 
 One markdown file per ship day, plus hourly files when the loop is 30 minutes.
 
+- `2026-08-20-0250.md` — Quiet Landing (02:50 Sydney hourly run)
 - `2026-08-20-0150.md` — Renew Trap (01:50 Sydney hourly run)
 - `2026-08-20-0050.md` — Catalogue desk (00:50 Sydney hourly run; hub search / tags / archive)
 - `2026-08-19-2350.md` — Reread Clock (23:50 Sydney hourly run)

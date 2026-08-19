@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Quiet Landing — a local landing clock for scheduled sends. This hits them asleep." />
+    <title>Quiet Landing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #03040c;
+        --panel: #0a0d1c;
+        --line: rgba(148, 180, 255, 0.14);
+        --text: #e8eeff;
+        --muted: #8b97c2;
+        --cyan: #5ce1ff;
+        --ok: #7dffc3;
+        --quiet: #ff3d6e;
+        --weekend: #ffb14a;
+        --unknown: #c4b5ff;
+        --held: #6b7394;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        color: var(--text);
+        background:
+          radial-gradient(ellipse 90% 50% at 50% -20%, rgba(78, 64, 180, 0.4), transparent 55%),
+          radial-gradient(circle at 12% 18%, rgba(92, 225, 255, 0.12), transparent 22%),
+          radial-gradient(circle at 88% 8%, rgba(255, 61, 110, 0.12), transparent 18%),
+          var(--void);
+      }
+      body::before {
+        content: "";
+        position: fixed; inset: 0; pointer-events: none; z-index: 0;
+        background-image:
+          radial-gradient(1px 1px at 8% 12%, rgba(255,255,255,0.7), transparent),
+          radial-gradient(1px 1px at 22% 38%, rgba(255,255,255,0.45), transparent),
+          radial-gradient(1.5px 1.5px at 41% 16%, rgba(92,225,255,0.7), transparent),
+          radial-gradient(1px 1px at 63% 28%, rgba(255,255,255,0.35), transparent),
+          radial-gradient(1px 1px at 81% 14%, rgba(255,255,255,0.55), transparent),
+          radial-gradient(1px 1px at 91% 42%, rgba(196,181,255,0.6), transparent),
+          radial-gradient(1px 1px at 14% 72%, rgba(255,255,255,0.4), transparent),
+          radial-gradient(1.5px 1.5px at 48% 64%, rgba(255,255,255,0.5), transparent),
+          radial-gradient(1px 1px at 72% 78%, rgba(92,225,255,0.45), transparent),
+          radial-gradient(1px 1px at 33% 88%, rgba(255,255,255,0.35), transparent);
+      }
+      button, input, select { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { position: relative; z-index: 1; width: min(1380px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 56px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(10, 13, 28, 0.85);
+      }
+      .tick {
+        width: 8px; height: 8px; border-radius: 999px; background: var(--cyan);
+        box-shadow: 0 0 12px rgba(92, 225, 255, 0.85);
+      }
+      .mast {
+        display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 18px;
+        padding: 26px 28px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(16, 20, 42, 0.92), rgba(8, 10, 24, 0.92));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(92, 225, 255, 0.4);
+        color: var(--cyan); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: Syne, sans-serif; font-weight: 800;
+        margin: 12px 0 10px; font-size: clamp(40px, 6.5vw, 78px);
+        line-height: 0.88; letter-spacing: -0.05em;
+      }
+      .lede { max-width: 68ch; color: #c9d4f5; font-size: 14px; line-height: 1.55; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px;
+        border: 1px solid var(--line); background: #10142a;
+        letter-spacing: 0.06em; text-transform: uppercase; font-size: 12px;
+      }
+      .btn.primary { background: var(--quiet); border-color: transparent; color: #1a0410; font-weight: 700; }
+      .btn.ghost { color: var(--cyan); }
+      .dial-wrap { display: grid; place-items: center; }
+      .dial { width: min(220px, 100%); aspect-ratio: 1; }
+      .dial-label { margin-top: 8px; text-align: center; color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+      .stat { padding: 16px 18px; border: 1px solid var(--line); background: var(--panel); }
+      .stat b {
+        display: block; font-family: Syne, sans-serif;
+        font-size: 34px; letter-spacing: -0.04em; font-weight: 800;
+      }
+      .stat span { color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .stat.hot b { color: var(--quiet); }
+      .stat.unknown b { color: var(--unknown); }
+      .stat.ok b { color: var(--ok); }
+      .stat.cyan b { color: var(--cyan); font-size: 16px; line-height: 1.25; padding: 6px 0; }
+      .claim {
+        margin-top: 10px; padding: 12px 16px; border: 1px solid var(--line);
+        background: rgba(10, 13, 28, 0.9); color: #c9d4f5; font-size: 13px;
+      }
+      .claim strong { color: var(--cyan); }
+      .rail {
+        display: none; margin-top: 12px; padding: 14px 16px;
+        border: 1px solid rgba(255, 61, 110, 0.5); background: rgba(255, 61, 110, 0.08);
+      }
+      .rail.open { display: block; }
+      .rail h2 {
+        margin: 0 0 10px; font-size: 11px; letter-spacing: 0.18em;
+        text-transform: uppercase; color: #ffb3c5;
+      }
+      .rail-list { display: flex; flex-wrap: wrap; gap: 8px; }
+      .rail-chip {
+        padding: 8px 10px; border: 1px dashed rgba(255, 179, 197, 0.5);
+        background: rgba(0, 0, 0, 0.35); color: #ffe8ee; font-size: 12px;
+      }
+      .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .chip {
+        padding: 7px 11px; border: 1px solid var(--line); background: #0a0d1c;
+        color: #c9d4f5; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .chip.active { border-color: var(--cyan); color: var(--cyan); background: rgba(92, 225, 255, 0.08); }
+      .stage { display: grid; grid-template-columns: 1.7fr 0.7fr; gap: 12px; margin-top: 14px; }
+      .board { border: 1px solid var(--line); background: var(--panel); overflow: auto; }
+      table { width: 100%; border-collapse: collapse; min-width: 1080px; }
+      th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); font-size: 12px; }
+      th {
+        color: var(--muted); font-weight: 500; letter-spacing: 0.12em;
+        text-transform: uppercase; font-size: 10px;
+      }
+      tr.row { cursor: pointer; }
+      tr.row:hover { background: rgba(92, 225, 255, 0.04); }
+      tr.row.selected { background: rgba(92, 225, 255, 0.08); outline: 1px solid rgba(92, 225, 255, 0.28); }
+      tr.row.quiet { box-shadow: inset 3px 0 0 var(--quiet); }
+      tr.row.weekend { box-shadow: inset 3px 0 0 var(--weekend); }
+      tr.row.unknown-zone { box-shadow: inset 3px 0 0 var(--unknown); }
+      tr.row.held { box-shadow: inset 3px 0 0 var(--held); }
+      tr.row.ok { box-shadow: inset 3px 0 0 var(--ok); }
+      .title { font-family: Syne, sans-serif; font-size: 16px; color: white; font-weight: 700; }
+      .muted-cell { color: var(--unknown); font-style: italic; }
+      .stamp {
+        display: inline-block; padding: 3px 8px; border: 1px solid var(--line);
+        letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px;
+      }
+      .stamp.ok { color: var(--ok); border-color: rgba(125, 255, 195, 0.4); }
+      .stamp.quiet { color: #ffb3c5; border-color: rgba(255, 61, 110, 0.5); }
+      .stamp.weekend { color: var(--weekend); border-color: rgba(255, 177, 74, 0.5); }
+      .stamp.unknown-zone { color: var(--unknown); border-color: rgba(196, 181, 255, 0.5); }
+      .stamp.held { color: var(--held); }
+      .inspector { padding: 18px; border: 1px solid var(--line); background: var(--panel); }
+      .inspector h2 { font-family: Syne, sans-serif; margin: 0 0 8px; font-size: 22px; }
+      .inspector p { color: var(--muted); font-size: 12px; line-height: 1.5; }
+      .facts { display: grid; gap: 8px; margin: 14px 0; }
+      .facts div { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+      .facts b { color: var(--text); font-weight: 500; text-align: right; }
+      .zone-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+      .zone-row select, .zone-row input {
+        flex: 1; min-width: 160px; padding: 9px 10px; border: 1px solid var(--line);
+        background: #070917;
+      }
+      .toast {
+        position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(20px);
+        padding: 10px 14px; border: 1px solid var(--line); background: #10142a;
+        opacity: 0; pointer-events: none; transition: 0.2s ease; z-index: 5;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      @media (max-width: 980px) {
+        .mast, .stage, .strip { grid-template-columns: 1fr; }
+        .dial { width: 180px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="tick"></span> Quiet Landing · dispatch clock</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill" id="clock">—</span>
+          <span class="pill" id="sydney-clock">Sydney —</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <div>
+          <span class="eyebrow">this hits them asleep</span>
+          <h1>Quiet Landing</h1>
+          <p class="lede">
+            Scheduled Slack and email inherit the sender’s clock. Recipients eat 2am pings.
+            This desk is a landing clock: a send, their timezone, their quiet hours, and a red rail
+            of queued notes that land while they are asleep or off for the weekend.
+          </p>
+          <div class="actions">
+            <button class="btn primary" id="demo-fixture" type="button">Demo fixture</button>
+            <button class="btn" id="hold-send" type="button">Hold send</button>
+            <button class="btn" id="retarget" type="button">Retarget next open</button>
+            <button class="btn" id="set-zone" type="button">Set zone</button>
+            <button class="btn" id="clear-zone" type="button">Clear zone</button>
+            <button class="btn ghost" id="reset-seed" type="button">Reset seed</button>
+            <button class="btn ghost" id="export-json" type="button">Export JSON</button>
+            <button class="btn ghost" id="import-json" type="button">Import JSON</button>
+            <input id="import-file" type="file" accept="application/json" hidden />
+          </div>
+        </div>
+        <div class="dial-wrap">
+          <svg id="dial" class="dial" viewBox="0 0 200 200" aria-hidden="true">
+            <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(148,180,255,0.18)" stroke-width="1" />
+            <circle cx="100" cy="100" r="62" fill="none" stroke="rgba(92,225,255,0.12)" stroke-width="1" />
+            <g id="dial-ticks"></g>
+            <line id="hand-sydney" x1="100" y1="100" x2="100" y2="28" stroke="#5ce1ff" stroke-width="2" />
+            <line id="hand-land" x1="100" y1="100" x2="100" y2="42" stroke="#ff3d6e" stroke-width="2" />
+            <circle cx="100" cy="100" r="4" fill="#e8eeff" />
+          </svg>
+          <div class="dial-label" id="dial-label">24h dispatch · cyan Sydney · magenta lands</div>
+        </div>
+      </header>
+
+      <div class="strip">
+        <div class="stat hot"><b id="quiet-hit-count">0</b><span>quiet / weekend hits</span></div>
+        <div class="stat unknown"><b id="unknown-zone-count">0</b><span>unknown zone</span></div>
+        <div class="stat ok"><b id="ok-count">0</b><span>lands in workday</span></div>
+        <div class="stat cyan"><b id="next-safe">—</b><span>next safe send</span></div>
+      </div>
+      <div class="claim" id="claim-line"></div>
+      <div class="rail" id="hit-rail">
+        <h2>This hits them asleep</h2>
+        <div class="rail-list" id="hit-list"></div>
+      </div>
+
+      <div class="filters" id="filters"></div>
+
+      <div class="stage">
+        <div class="board">
+          <table>
+            <thead>
+              <tr>
+                <th>Send</th>
+                <th>From zone</th>
+                <th>To</th>
+                <th>To zone</th>
+                <th>Quiet hours</th>
+                <th>Scheduled-at</th>
+                <th>Lands-at local</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="board"></tbody>
+          </table>
+        </div>
+        <aside class="inspector" id="inspector"></aside>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const STORAGE_KEY = 'quiet-landing.state';
+      const FILTERS = ['all', 'ok', 'quiet', 'weekend', 'unknown-zone', 'held'];
+      const ZONES = [
+        'Australia/Sydney', 'Pacific/Auckland', 'Asia/Tokyo', 'Asia/Singapore',
+        'Europe/London', 'Europe/Berlin', 'Europe/Lisbon', 'Europe/Paris',
+        'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+        'America/Sao_Paulo', 'UTC'
+      ];
+      const FROM = 'Australia/Sydney';
+
+      function pad(n) { return String(n).padStart(2, '0'); }
+
+      function parts(date, timeZone) {
+        const dtf = new Intl.DateTimeFormat('en-US', {
+          timeZone,
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit',
+          weekday: 'short', hourCycle: 'h23', hour12: false
+        });
+        const map = {};
+        for (const { type, value } of dtf.formatToParts(date)) map[type] = value;
+        if (map.hour === '24') map.hour = '00';
+        return map;
+      }
+
+      function offsetMs(date, timeZone) {
+        const p = parts(date, timeZone);
+        const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
+        return asUTC - date.getTime();
+      }
+
+      function zonedLocalToUtc(localIso, timeZone) {
+        const [d, t = '00:00:00'] = localIso.split('T');
+        const [y, m, da] = d.split('-').map(Number);
+        const [hh, mm, ss] = t.split(':').map(Number);
+        const guess = Date.UTC(y, m - 1, da, hh, mm, ss || 0);
+        const utc = guess - offsetMs(new Date(guess), timeZone);
+        return new Date(guess - offsetMs(new Date(utc), timeZone));
+      }
+
+      function utcToZonedLocal(date, timeZone) {
+        const p = parts(date, timeZone);
+        return p.year + '-' + p.month + '-' + p.day + 'T' + p.hour + ':' + p.minute + ':' + p.second;
+      }
+
+      function addDaysIso(dateStr, days) {
+        const dt = new Date(dateStr + 'T12:00:00Z');
+        dt.setUTCDate(dt.getUTCDate() + days);
+        return dt.toISOString().slice(0, 10);
+      }
+
+      function hmToMin(hhmm) {
+        const [h, m] = String(hhmm || '00:00').split(':').map(Number);
+        return (h || 0) * 60 + (m || 0);
+      }
+
+      function inQuietHours(utcDate, timeZone, quietStart, quietEnd) {
+        const p = parts(utcDate, timeZone);
+        const mins = (+p.hour) * 60 + (+p.minute);
+        const start = hmToMin(quietStart);
+        const end = hmToMin(quietEnd);
+        if (start === end) return false;
+        if (start < end) return mins >= start && mins < end;
+        return mins >= start || mins < end;
+      }
+
+      function isWeekend(utcDate, timeZone) {
+        const wd = parts(utcDate, timeZone).weekday;
+        return wd === 'Sat' || wd === 'Sun';
+      }
+
+      function formatLocal(utcDate, timeZone) {
+        if (!timeZone) return '—';
+        try {
+          return new Intl.DateTimeFormat('en-GB', {
+            timeZone,
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23',
+            hour12: false,
+            timeZoneName: 'short'
+          }).format(utcDate).replace(',', '');
+        } catch {
+          return '—';
+        }
+      }
+
+      function landingUtc(row) {
+        return zonedLocalToUtc(row.scheduledAt, row.fromZone || FROM);
+      }
+
+      function seedRows() {
+        return [
+          {
+            id: 'nyc-notes',
+            title: 'Ship notes to NYC',
+            fromZone: FROM,
+            toPerson: 'Jordan Hale',
+            toZone: 'America/New_York',
+            quietStart: '22:00',
+            quietEnd: '07:00',
+            scheduledAt: '2026-08-20T02:50:00',
+            held: false
+          },
+          {
+            id: 'london-fyi',
+            title: 'FYI to London',
+            fromZone: FROM,
+            toPerson: 'Priya Shah',
+            toZone: 'Europe/London',
+            quietStart: '22:00',
+            quietEnd: '07:00',
+            scheduledAt: '2026-08-20T02:50:00',
+            held: false
+          },
+          {
+            id: 'berlin-pager',
+            title: 'Pager follow-up to Berlin',
+            fromZone: FROM,
+            toPerson: 'Lukas Weber',
+            toZone: 'Europe/Berlin',
+            quietStart: '21:00',
+            quietEnd: '08:00',
+            scheduledAt: '2026-08-20T06:30:00',
+            held: false
+          },
+          {
+            id: 'tokyo-reply',
+            title: 'Customer reply to Tokyo',
+            fromZone: FROM,
+            toPerson: 'Aiko Mori',
+            toZone: 'Asia/Tokyo',
+            quietStart: '23:00',
+            quietEnd: '08:00',
+            scheduledAt: '2026-08-20T02:50:00',
+            held: false
+          },
+          {
+            id: 'auckland-standup',
+            title: 'Standup ping to Auckland',
+            fromZone: FROM,
+            toPerson: 'Moana Rangi',
+            toZone: 'Pacific/Auckland',
+            quietStart: '22:00',
+            quietEnd: '07:00',
+            scheduledAt: '2026-08-22T10:00:00',
+            held: false
+          },
+          {
+            id: 'chicago-board',
+            title: 'Board pack to Chicago',
+            fromZone: FROM,
+            toPerson: 'Sam Ortiz',
+            toZone: '',
+            quietStart: '22:00',
+            quietEnd: '07:00',
+            scheduledAt: '2026-08-20T09:00:00',
+            held: false
+          },
+          {
+            id: 'lisbon-wrap',
+            title: 'Incident wrap to Lisbon',
+            fromZone: FROM,
+            toPerson: 'Sofia Costa',
+            toZone: 'Europe/Lisbon',
+            quietStart: '22:00',
+            quietEnd: '07:00',
+            scheduledAt: '2026-08-20T03:00:00',
+            held: true
+          },
+          {
+            id: 'sao-release',
+            title: 'Release notes to São Paulo',
+            fromZone: FROM,
+            toPerson: 'Rafael Dias',
+            toZone: 'America/Sao_Paulo',
+            quietStart: '22:00',
+            quietEnd: '07:00',
+            scheduledAt: '2026-08-20T14:00:00',
+            held: false
+          }
+        ];
+      }
+
+      function demoRows() {
+        const rows = seedRows();
+        const nyc = rows.find(r => r.id === 'nyc-notes');
+        nyc.scheduledAt = '2026-08-20T16:50:00';
+        nyc.held = false;
+        const lon = rows.find(r => r.id === 'london-fyi');
+        lon.scheduledAt = '2026-08-22T10:00:00';
+        lon.held = false;
+        const lis = rows.find(r => r.id === 'lisbon-wrap');
+        lis.held = false;
+        lis.scheduledAt = '2026-08-22T11:00:00';
+        return rows;
+      }
+
+      function emptyState() {
+        return { rows: seedRows(), selected: 'berlin-pager', filter: 'all' };
+      }
+
+      function normalizeRow(row) {
+        return {
+          id: String(row.id || ''),
+          title: String(row.title || 'untitled send'),
+          fromZone: String(row.fromZone || FROM),
+          toPerson: String(row.toPerson || ''),
+          toZone: String(row.toZone || ''),
+          quietStart: String(row.quietStart || '22:00'),
+          quietEnd: String(row.quietEnd || '07:00'),
+          scheduledAt: String(row.scheduledAt || '2026-08-20T02:50:00'),
+          held: Boolean(row.held)
+        };
+      }
+
+      function loadState() {
+        const next = emptyState();
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return next;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return next;
+          if (Array.isArray(parsed.rows) && parsed.rows.length) next.rows = parsed.rows.map(normalizeRow);
+          if (typeof parsed.selected === 'string') next.selected = parsed.selected;
+          if (typeof parsed.filter === 'string') next.filter = parsed.filter;
+        } catch {}
+        return next;
+      }
+
+      const state = loadState();
+
+      function persist() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          rows: state.rows,
+          selected: state.selected,
+          filter: state.filter
+        }));
+      }
+
+      function statusOf(row) {
+        if (row.held) return 'held';
+        if (!row.toZone) return 'unknown-zone';
+        const utc = landingUtc(row);
+        if (isWeekend(utc, row.toZone)) return 'weekend';
+        if (inQuietHours(utc, row.toZone, row.quietStart, row.quietEnd)) return 'quiet';
+        return 'ok';
+      }
+
+      function isQuietHit(row) {
+        const status = statusOf(row);
+        return status === 'quiet' || status === 'weekend';
+      }
+
+      function nextOpenUtc(afterUtc, toZone, quietStart, quietEnd) {
+        const afterLocal = utcToZonedLocal(afterUtc, toZone);
+        const baseDate = afterLocal.slice(0, 10);
+        const openStart = (quietEnd || '07:00') + ':00';
+        for (let d = 0; d < 16; d++) {
+          const date = addDaysIso(baseDate, d);
+          const noon = zonedLocalToUtc(date + 'T12:00:00', toZone);
+          if (isWeekend(noon, toZone)) continue;
+          const candidate = zonedLocalToUtc(date + 'T' + openStart.slice(0, 5) + ':00', toZone);
+          if (candidate.getTime() > afterUtc.getTime()) return candidate;
+        }
+        return null;
+      }
+
+      function nextSafeFor(row) {
+        if (!row.toZone || row.held) return null;
+        return nextOpenUtc(landingUtc(row), row.toZone, row.quietStart, row.quietEnd);
+      }
+
+      function metrics() {
+        const quietHits = state.rows.filter(isQuietHit).length;
+        const unknown = state.rows.filter(r => !r.held && !r.toZone).length;
+        const ok = state.rows.filter(r => statusOf(r) === 'ok').length;
+        const hits = state.rows.filter(isQuietHit);
+        let nextSafe = 'Board clear';
+        let nextIso = '';
+        if (hits.length) {
+          let best = null;
+          let bestRow = null;
+          hits.forEach(row => {
+            const n = nextSafeFor(row);
+            if (n && (!best || n < best)) {
+              best = n;
+              bestRow = row;
+            }
+          });
+          if (best && bestRow) {
+            nextSafe = formatLocal(best, bestRow.toZone);
+            nextIso = utcToZonedLocal(best, bestRow.toZone);
+          } else {
+            nextSafe = 'Set a zone';
+          }
+        } else if (unknown) {
+          nextSafe = 'Set a zone';
+        }
+        return { quietHits, unknown, ok, nextSafe, nextIso };
+      }
+
+      function toast(message) {
+        const el = document.getElementById('toast');
+        el.textContent = message;
+        el.classList.add('show');
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => el.classList.remove('show'), 2200);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function selectedRow() {
+        return state.rows.find(r => r.id === state.selected) || null;
+      }
+
+      function visibleRows() {
+        return state.rows.filter(row => state.filter === 'all' || statusOf(row) === state.filter);
+      }
+
+      function holdSend() {
+        const row = selectedRow();
+        if (!row) return toast('Pick a send first.');
+        if (row.held) return toast(row.title + ' is already held.');
+        row.held = true;
+        persist();
+        render();
+        toast('Held. ' + row.title + ' will not send.');
+      }
+
+      function retarget() {
+        const row = selectedRow();
+        if (!row) return toast('Pick a send first.');
+        if (row.held) return toast('Held sends stay off the wire. Reset or un-hold via import.');
+        if (!row.toZone) return toast('Set a zone before retargeting.');
+        const next = nextSafeFor(row);
+        if (!next) return toast('No open window found.');
+        if (statusOf(row) === 'ok') return toast('Already in an open window.');
+        row.scheduledAt = utcToZonedLocal(next, row.fromZone);
+        persist();
+        render();
+        toast('Retargeted to ' + formatLocal(next, row.toZone) + '.');
+      }
+
+      function setZone() {
+        const row = selectedRow();
+        if (!row) return toast('Pick a send first.');
+        const pick = document.getElementById('zone-pick');
+        const value = pick ? pick.value : '';
+        if (!value) return toast('Choose an IANA zone.');
+        row.toZone = value;
+        persist();
+        render();
+        toast('Zone set to ' + value + '.');
+      }
+
+      function clearZone() {
+        const row = selectedRow();
+        if (!row) return toast('Pick a send first.');
+        row.toZone = '';
+        persist();
+        render();
+        toast('Zone cleared. Landing unknown.');
+      }
+
+      function renderFilters() {
+        document.getElementById('filters').innerHTML = FILTERS.map(filter => (
+          '<button class="chip' + (state.filter === filter ? ' active' : '') + '" data-filter="' + filter + '" type="button">' + filter + '</button>'
+        )).join('');
+      }
+
+      function renderRail() {
+        const hot = state.rows.filter(isQuietHit);
+        const rail = document.getElementById('hit-rail');
+        const list = document.getElementById('hit-list');
+        rail.classList.toggle('open', hot.length > 0);
+        rail.dataset.count = String(hot.length);
+        list.innerHTML = hot.map(row => {
+          const status = statusOf(row);
+          const utc = landingUtc(row);
+          return (
+            '<button class="rail-chip" data-select="' + row.id + '" data-rail-status="' + status + '" type="button">' +
+              escapeHtml(row.title) + ' · ' + status + ' · ' + escapeHtml(formatLocal(utc, row.toZone)) +
+            '</button>'
+          );
+        }).join('');
+      }
+
+      function renderBoard() {
+        const items = visibleRows();
+        document.getElementById('board').innerHTML = items.length ? items.map(row => {
+          const status = statusOf(row);
+          const utc = landingUtc(row);
+          const lands = row.toZone ? formatLocal(utc, row.toZone) : '—';
+          const scheduled = formatLocal(utc, row.fromZone);
+          return (
+            '<tr class="row ' + status + (state.selected === row.id ? ' selected' : '') +
+              '" data-select="' + row.id + '" data-id="' + row.id + '" data-status="' + status +
+              '" data-scheduled-at="' + escapeHtml(row.scheduledAt) +
+              '" data-from-zone="' + escapeHtml(row.fromZone) +
+              '" data-to-zone="' + escapeHtml(row.toZone) +
+              '" data-lands-at="' + escapeHtml(lands) +
+              '" data-held="' + String(row.held) + '">' +
+              '<td class="title">' + escapeHtml(row.title) + '</td>' +
+              '<td>' + escapeHtml(row.fromZone) + '</td>' +
+              '<td>' + escapeHtml(row.toPerson) + '</td>' +
+              '<td class="' + (row.toZone ? '' : 'muted-cell') + '">' + escapeHtml(row.toZone || 'unknown') + '</td>' +
+              '<td>' + escapeHtml(row.quietStart + '–' + row.quietEnd) + '</td>' +
+              '<td>' + escapeHtml(scheduled) + '</td>' +
+              '<td id="lands-' + row.id + '">' + escapeHtml(lands) + '</td>' +
+              '<td><span class="stamp ' + status + '">' + status + '</span></td>' +
+            '</tr>'
+          );
+        }).join('') : '<tr><td colspan="8">No sends in this filter.</td></tr>';
+      }
+
+      function renderInspector() {
+        const row = selectedRow();
+        const el = document.getElementById('inspector');
+        if (!row) {
+          el.innerHTML = '<h2>No send selected</h2><p>Pick a queued ping to hold, retarget, or set a zone.</p>';
+          return;
+        }
+        const status = statusOf(row);
+        const utc = landingUtc(row);
+        const lands = row.toZone ? formatLocal(utc, row.toZone) : '—';
+        const next = row.toZone && !row.held ? nextSafeFor(row) : null;
+        const options = ZONES.map(z => (
+          '<option value="' + z + '"' + (row.toZone === z ? ' selected' : '') + '>' + z + '</option>'
+        )).join('');
+        el.innerHTML =
+          '<h2 id="inspect-name">' + escapeHtml(row.title) + '</h2>' +
+          '<p>Hold keeps it off the wire. Retarget jumps to the next weekday open window in their zone.</p>' +
+          '<div class="facts">' +
+            '<div>status <b id="inspect-status">' + status + '</b></div>' +
+            '<div>to <b>' + escapeHtml(row.toPerson) + '</b></div>' +
+            '<div>from <b>' + escapeHtml(row.fromZone) + '</b></div>' +
+            '<div>to zone <b id="inspect-zone">' + escapeHtml(row.toZone || 'unknown') + '</b></div>' +
+            '<div>quiet hours <b>' + escapeHtml(row.quietStart + '–' + row.quietEnd) + '</b></div>' +
+            '<div>scheduled <b id="inspect-scheduled">' + escapeHtml(formatLocal(utc, row.fromZone)) + '</b></div>' +
+            '<div>lands <b id="inspect-lands">' + escapeHtml(lands) + '</b></div>' +
+            '<div>next open <b id="inspect-next">' + (next ? escapeHtml(formatLocal(next, row.toZone)) : '—') + '</b></div>' +
+          '</div>' +
+          '<div class="zone-row">' +
+            '<select id="zone-pick" aria-label="IANA timezone">' + options + '</select>' +
+          '</div>' +
+          '<div class="actions">' +
+            '<button class="btn primary" id="inspect-hold" type="button">Hold</button>' +
+            '<button class="btn" id="inspect-retarget" type="button">Next open</button>' +
+            '<button class="btn" id="inspect-set-zone" type="button">Set zone</button>' +
+            '<button class="btn" id="inspect-clear-zone" type="button">Clear zone</button>' +
+          '</div>';
+      }
+
+      function setHand(id, angle) {
+        const el = document.getElementById(id);
+        const rad = (angle - 90) * Math.PI / 180;
+        const len = id === 'hand-sydney' ? 72 : 58;
+        el.setAttribute('x2', String(100 + Math.cos(rad) * len));
+        el.setAttribute('y2', String(100 + Math.sin(rad) * len));
+      }
+
+      function renderDial() {
+        const ticks = document.getElementById('dial-ticks');
+        if (!ticks.childElementCount) {
+          let html = '';
+          for (let i = 0; i < 24; i++) {
+            const a = (i / 24) * Math.PI * 2 - Math.PI / 2;
+            const x1 = 100 + Math.cos(a) * 80;
+            const y1 = 100 + Math.sin(a) * 80;
+            const x2 = 100 + Math.cos(a) * (i % 6 === 0 ? 70 : 75);
+            const y2 = 100 + Math.sin(a) * (i % 6 === 0 ? 70 : 75);
+            html += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="rgba(232,238,255,0.35)" stroke-width="' + (i % 6 === 0 ? 2 : 1) + '" />';
+          }
+          ticks.innerHTML = html;
+        }
+        const now = new Date();
+        const sydney = parts(now, FROM);
+        setHand('hand-sydney', ((+sydney.hour + +sydney.minute / 60) / 24) * 360);
+        const row = selectedRow();
+        if (row && row.toZone) {
+          const land = parts(landingUtc(row), row.toZone);
+          setHand('hand-land', ((+land.hour + +land.minute / 60) / 24) * 360);
+        }
+      }
+
+      function render() {
+        const m = metrics();
+        document.getElementById('quiet-hit-count').textContent = String(m.quietHits);
+        document.getElementById('unknown-zone-count').textContent = String(m.unknown);
+        document.getElementById('ok-count').textContent = String(m.ok);
+        document.getElementById('next-safe').textContent = m.nextSafe;
+        document.getElementById('next-safe').dataset.suggestion = m.nextSafe;
+        document.getElementById('claim-line').innerHTML =
+          '<strong>' + m.quietHits + '</strong> quiet/weekend hits · <strong>' + m.unknown +
+          '</strong> unknown zone · next safe send <strong>' + escapeHtml(m.nextSafe) + '</strong>';
+        renderFilters();
+        renderRail();
+        renderBoard();
+        renderInspector();
+        renderDial();
+      }
+
+      document.getElementById('demo-fixture').addEventListener('click', () => {
+        state.rows = demoRows();
+        state.selected = 'nyc-notes';
+        state.filter = 'all';
+        persist();
+        render();
+        toast('Night fixture applied. Quiet and weekend on the rail.');
+      });
+
+      document.getElementById('reset-seed').addEventListener('click', () => {
+        Object.assign(state, emptyState());
+        persist();
+        render();
+        toast('Seed dispatch board restored.');
+      });
+
+      document.getElementById('hold-send').addEventListener('click', holdSend);
+      document.getElementById('retarget').addEventListener('click', retarget);
+      document.getElementById('set-zone').addEventListener('click', setZone);
+      document.getElementById('clear-zone').addEventListener('click', clearZone);
+
+      document.getElementById('export-json').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify({ rows: state.rows }, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'quiet-landing.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('Exported dispatch board.');
+      });
+
+      document.getElementById('import-json').addEventListener('click', () => {
+        document.getElementById('import-file').click();
+      });
+
+      document.getElementById('import-file').addEventListener('change', async e => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+        try {
+          const parsed = JSON.parse(await file.text());
+          if (!parsed || !Array.isArray(parsed.rows)) throw new Error('bad');
+          state.rows = parsed.rows.map(normalizeRow);
+          state.selected = state.rows[0] ? state.rows[0].id : null;
+          persist();
+          render();
+          toast('Imported dispatch board.');
+        } catch {
+          toast('That JSON is not a quiet-landing export.');
+        }
+      });
+
+      document.body.addEventListener('click', e => {
+        const filter = e.target.closest('[data-filter]');
+        if (filter) {
+          state.filter = filter.getAttribute('data-filter');
+          persist();
+          render();
+          return;
+        }
+        const select = e.target.closest('[data-select]');
+        if (select) {
+          state.selected = select.getAttribute('data-select');
+          persist();
+          render();
+          return;
+        }
+        if (e.target.id === 'inspect-hold') holdSend();
+        if (e.target.id === 'inspect-retarget') retarget();
+        if (e.target.id === 'inspect-set-zone') setZone();
+        if (e.target.id === 'inspect-clear-zone') clearZone();
+      });
+
+      function tickClocks() {
+        const now = new Date();
+        document.getElementById('clock').textContent = now.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+        document.getElementById('sydney-clock').textContent = 'Sydney ' + formatLocal(now, FROM);
+        renderDial();
+      }
+      setInterval(tickClocks, 1000);
+      tickClocks();
+      render();
+    </script>
+  </body>
+</html>

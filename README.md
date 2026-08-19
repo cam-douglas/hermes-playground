@@ -2,11 +2,14 @@
 
 Daily product-catalogue loop for the Campbell playground.
 
-The hub is a **catalogue desk**: live search, tags, and a this-hour vs archive split over seven products.
+The hub is a **catalogue desk**: live search, tags, and a this-hour vs archive split over eight products.
 
 ## Active products
 
-- **Renew Trap** (featured this hour · shipped 20 Aug 2026, 01:50 Sydney) — a local notice-window board for vendor auto-renewals. Cancel-by dates, a named owner, and the red rail of silence that still bills you. Contracts, not SKUs. Tags: ops, contracts, renewals.
+- **Quiet Landing** (featured this hour · shipped 20 Aug 2026, 02:50 Sydney) — a local landing clock for scheduled Slack and email. A send, their timezone, their quiet hours, and the red rail of pings that hit them asleep. Timezone courtesy, not money. Tags: ops, timezone, courtesy.
+  - Path: `products/quiet-landing/`
+  - Live page: `/products/quiet-landing/`
+- **Renew Trap** (archive · 20 Aug 2026, 01:50 Sydney) — a local notice-window board for vendor auto-renewals. Cancel-by dates, a named owner, and the red rail of silence that still bills you. Contracts, not SKUs. Tags: ops, contracts, renewals.
   - Path: `products/renew-trap/`
   - Live page: `/products/renew-trap/`
 - **Reread Clock** (archive · 19 Aug 2026, 23:50 Sydney) — a local half-life board for attestations that are still live while nobody has re-read the pack. Calendar expiry is the wrong signal. Trust decays by last open. Tags: trust, half-life, attestation.
@@ -30,12 +33,13 @@ The hub is a **catalogue desk**: live search, tags, and a this-hour vs archive s
 
 ## Research signal
 
-The feed is all agents (harnesses, skill packs, token compression, graphs). This hour picks a human ops problem instead: SaaS auto-renews while the owner is in another thread. Distinct from Reorder Radar (stock levels) and Reread Clock (attestation decay). Contracts, not SKUs, not skills.
+The feed is all agents (harnesses, skill packs, token compression, graphs). This hour picks a human ops problem instead: scheduled sends inherit the sender’s clock, and recipients eat 2am pings. Distinct from Renew Trap (contracts) and Reread Clock (attestation decay). Timezone courtesy, not money, not skills.
 
 ## Repository shape
 
 - `index.html` — searchable catalogue hub (this hour vs archive, live search, tags)
-- `products/renew-trap/` — featured this-hour product prototype
+- `products/quiet-landing/` — featured this-hour product prototype
+- `products/renew-trap/` — archive product prototype
 - `products/reread-clock/` — archive product prototype
 - `products/vouch-slip/` — archive product prototype
 - `products/unseen-ink/` — archive product prototype
@@ -47,10 +51,11 @@ The feed is all agents (harnesses, skill packs, token compression, graphs). This
 ## Verification
 
 - Static site loads without a build step
-- Catalogue links resolve to all seven product folders
+- Catalogue links resolve to all eight product folders
 - Search for `unicode` shows Unseen Ink
 - Tag `inventory` shows Reorder Radar
 - Tag `renewals` shows Renew Trap
+- Tag `timezone` shows Quiet Landing
 - Empty query `zzzz-no-match` shows an empty state that names the query
-- Featured this-hour card for Renew Trap
-- All seven product pages still load
+- Featured this-hour card for Quiet Landing
+- All eight product pages still load
