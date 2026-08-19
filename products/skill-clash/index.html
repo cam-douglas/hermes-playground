@@ -300,10 +300,10 @@
       const DOMAINS = [
         { id: 'tests', label: 'tests', words: ['test', 'tests', 'testing', 'spec', 'coverage', 'regression', 'suite', 'untested'] },
         { id: 'auth', label: 'auth', words: ['auth', 'authentication', 'authorization', 'jwt', 'session', 'login', 'secret', 'secrets', 'credential', 'credentials'] },
-        { id: 'yagni', label: 'yagni', words: ['yagni', 'abstraction', 'unused', 'speculative', 'smallest'] },
+        { id: 'yagni', label: 'yagni', words: ['yagni', 'abstraction', 'unused', 'speculative'] },
         { id: 'skills', label: 'skills', words: ['skill', 'skills', 'agents.md', 'skill.md', 'pack', 'packs'] },
         { id: 'docs', label: 'docs', words: ['doc', 'docs', 'documentation', 'readme', 'brief'] },
-        { id: 'git', label: 'git', words: ['commit', 'commits', 'git', 'merge', 'pr'] }
+        { id: 'git', label: 'git', words: ['commit', 'commits', 'git', 'merge', 'pull-request'] }
       ];
 
       const STOP = new Set(['the','a','an','to','for','of','and','or','in','on','it','is','be','when','that','this','with','from','your','you','are','as','if','not','all','any','every','each','into','than','then','before','after','without','including']);
@@ -379,9 +379,13 @@
         return text.toLowerCase().replace(/[^a-z0-9./\s-]/g, ' ').split(/\s+/).filter(tok => tok.length > 2 && !STOP.has(tok));
       }
 
+      function hasWord(text, word) {
+        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp('(?:^|[^a-z0-9])' + escaped + '(?:[^a-z0-9]|$)', 'i').test(text);
+      }
+
       function domainsOf(text) {
-        const lower = text.toLowerCase();
-        return DOMAINS.filter(domain => domain.words.some(word => lower.includes(word)));
+        return DOMAINS.filter(domain => domain.words.some(word => hasWord(text, word)));
       }
 
       function parseSkill(skill) {
@@ -454,8 +458,17 @@
           }
         }
 
-        const score = Math.max(0, Math.min(100, 100 - clashes.length * 16 - overlaps.length * 7 - injections.length * 20));
+        const clashPairs = new Set(clashes.map(hit => pairKey(hit.a.id, hit.b.id)));
+        const overlapPairs = new Set(overlaps.map(hit => pairKey(hit.a.id, hit.b.id) + ':' + hit.domain));
+        const injectSkills = new Set(injections.map(hit => hit.skill.id));
+        const score = Math.max(0, Math.min(100,
+          100 - clashPairs.size * 18 - overlapPairs.size * 8 - injectSkills.size * 22
+        ));
         return { active: active, clashes: clashes, overlaps: overlaps, injections: injections, score: score };
+      }
+
+      function pairKey(a, b) {
+        return [a, b].sort().join('×');
       }
 
       function skillById(id) {
@@ -569,16 +582,21 @@
         return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'skill';
       }
 
+      function armFromToggle(toggle) {
+        const skill = skillById(toggle.getAttribute('data-toggle'));
+        if (!skill) return;
+        skill.enabled = toggle.checked;
+        render();
+      }
+
+      document.getElementById('stack').addEventListener('change', event => {
+        const toggle = event.target.closest('[data-toggle]');
+        if (toggle) armFromToggle(toggle);
+      });
+
       document.getElementById('stack').addEventListener('click', event => {
         const toggle = event.target.closest('[data-toggle]');
-        if (toggle) {
-          const skill = skillById(toggle.getAttribute('data-toggle'));
-          if (skill) {
-            skill.enabled = toggle.checked;
-            render();
-          }
-          return;
-        }
+        if (toggle) return;
         const remove = event.target.closest('[data-remove]');
         if (remove) {
           const id = remove.getAttribute('data-remove');
