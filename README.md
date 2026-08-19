@@ -2,11 +2,14 @@
 
 Daily product-catalogue loop for the Campbell playground.
 
-The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **URL-persisted filters** (`?q=` / `?tag=`) over ten products. A filtered desk is pasteable.
+The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **URL-persisted filters** (`?q=` / `?tag=`) over eleven products. A filtered desk is pasteable.
 
 ## Active products
 
-- **Pager Face** (featured this hour · shipped 20 Aug 2026, 05:50 Sydney) — a local 24-hour pager clock for on-call rotations. Shift arcs, a now-hand, and a center that names who is primary, who is backup, minutes to handoff, and whether the primary is inside their own quiet hours. Rotation geometry, not a roster table. Tags: ops, oncall, clock.
+- **Hold Stack** (featured this hour · shipped 20 Aug 2026, 06:50 Sydney) — a local day-strip map of overlapping calendar holds. Lanes for the pile, heat for depth, a play-head you can scrub. Release a hold or split it at now. Geometry of a day, not an on-call ring. Tags: ops, calendar, overlap.
+  - Path: `products/hold-stack/`
+  - Live page: `/products/hold-stack/`
+- **Pager Face** (archive · 20 Aug 2026, 05:50 Sydney) — a local 24-hour pager clock for on-call rotations. Shift arcs, a now-hand, and a center that names who is primary, who is backup, minutes to handoff, and whether the primary is inside their own quiet hours. Rotation geometry, not a roster table. Tags: ops, oncall, clock.
   - Path: `products/pager-face/`
   - Live page: `/products/pager-face/`
 - **Still Inside** (archive · 20 Aug 2026, 03:50 Sydney) — a local leftover-access board for people who already left. Badges, seats, and break-glass keys stay live after the HR ticket closes. A named revoker, and the red rail of “they can still get in.” Access after exit, not fluency. Tags: ops, offboarding, access.
@@ -39,12 +42,13 @@ The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **
 
 ## Research signal
 
-The feed is all agents (harnesses, skill packs, token compression, graphs). This hour adds a tenth product on a different interaction: a 24-hour clock face for on-call, not another table of rows. Distinct from Quiet Landing (outbound send courtesy) and Still Inside (leftover access).
+The feed is all agents (harnesses, skill packs, token compression, graphs). This hour adds an eleventh product on a different interaction: a day-strip of stacked calendar holds, not another table of rows and not an on-call clock face. Distinct from Pager Face (rotation ring) and Quiet Landing (outbound send courtesy).
 
 ## Repository shape
 
 - `index.html` — searchable catalogue hub (this hour vs archive, live search, tags, URL-persisted `q` / `tag`)
-- `products/pager-face/` — featured this-hour product prototype
+- `products/hold-stack/` — featured this-hour product prototype
+- `products/pager-face/` — archive product prototype
 - `products/still-inside/` — archive product prototype
 - `products/quiet-landing/` — archive product prototype
 - `products/renew-trap/` — archive product prototype
@@ -59,15 +63,16 @@ The feed is all agents (harnesses, skill packs, token compression, graphs). This
 ## Verification
 
 - Static site loads without a build step
-- Catalogue links resolve to all ten product folders
+- Catalogue links resolve to all eleven product folders
 - `/?q=unicode` on load shows Unseen Ink, hides Reorder Radar, and fills the search field
 - `/?tag=inventory` on load shows only Reorder Radar with that tag active
 - `/?tag=clock` on load shows Pager Face
 - `/?tag=offboarding` on load shows Still Inside
+- `/?tag=overlap` on load shows Hold Stack
 - `/?q=skill&tag=review` ANDs (Skill Clash visible; Unseen Ink hidden)
 - Typing a search updates `location.search` via `replaceState` (no extra history entries)
-- Clearing filters restores all ten and strips the query string
+- Clearing filters restores all eleven and strips the query string
 - Empty query `/?q=zzzz-no-match` shows an empty state that names the query
 - Copy desk link yields a URL containing the current `q` and/or `tag`
-- Featured this-hour card for Pager Face
-- All ten product pages still load
+- Featured this-hour card for Hold Stack
+- All eleven product pages still load
