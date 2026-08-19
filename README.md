@@ -4,7 +4,10 @@ Daily product-catalogue loop for the Campbell playground.
 
 ## Active products
 
-- **Skill Clash** (featured 19 Aug 2026, 20:50 Sydney) — a local collision board for stacked agent skills (`SKILL.md` / `AGENTS.md`). Flags MUST/NEVER contradictions, overlapping domains, and injection-shaped lines, then scores stack coherence.
+- **Unseen Ink** (featured 19 Aug 2026, 21:50 Sydney) — a local inspector for inbound hidden Unicode in PRs, READMEs, and skill files. Lights ZWSP, bidi overrides, tag characters, and homoglyph-adjacent lookalikes instead of stripping them.
+  - Path: `products/unseen-ink/`
+  - Live page: `/products/unseen-ink/`
+- **Skill Clash** (19 Aug 2026, 20:50 Sydney) — a local collision board for stacked agent skills (`SKILL.md` / `AGENTS.md`). Flags MUST/NEVER contradictions, overlapping domains, and injection-shaped lines, then scores stack coherence.
   - Path: `products/skill-clash/`
   - Live page: `/products/skill-clash/`
 - **Ghost Briefs** (19 Aug 2026) — a local, human-only map of which shipped subsystems still have a named person who can brief them.
@@ -16,12 +19,13 @@ Daily product-catalogue loop for the Campbell playground.
 
 ## Research signal
 
-GitHub this week is crowded with skill packs and harnesses. The shippable gap for this hour is not another pack and not another fluency or inventory board: it is a local view of how stacked skills cancel each other.
+This week’s tools strip hidden marks from content you own. The shippable gap for this hour is not another stripper, skill pack, fluency map, or inventory board: it is a local view of inbound hidden glyphs before they hit an agent or a merge. The catalogue now has four products.
 
 ## Repository shape
 
 - `index.html` — multi-product catalogue hub
-- `products/skill-clash/` — featured product prototype
+- `products/unseen-ink/` — featured product prototype
+- `products/skill-clash/` — 19 Aug 20:50 product prototype
 - `products/ghost-briefs/` — 19 Aug product prototype
 - `products/reorder-radar/` — 18 Aug product prototype
 - `runs/` — daily and hourly ship logs
@@ -29,7 +33,6 @@ GitHub this week is crowded with skill packs and harnesses. The shippable gap fo
 ## Verification
 
 - Static site loads without a build step
-- Catalogue links resolve to all three product folders
-- Skill Clash demo fixtures produce a red MUST/NEVER clash; add/remove moves the score; refresh persists; reset restores the seed
-- Ghost Briefs votes and briefs persist in `localStorage`
-- Reorder Radar still loads
+- Catalogue links resolve to all four product folders
+- Unseen Ink demo fixture lights bidi / ZWSP / tag hits by codepoint; clean control stays clean; reset restores the seed
+- Skill Clash, Ghost Briefs, and Reorder Radar still load
