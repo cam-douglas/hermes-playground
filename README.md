@@ -2,11 +2,14 @@
 
 Daily product-catalogue loop for the Campbell playground.
 
-The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **URL-persisted filters** (`?q=` / `?tag=`) over eleven products. A filtered desk is pasteable.
+The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **URL-persisted filters** (`?q=` / `?tag=`) over twelve products. A filtered desk is pasteable.
 
 ## Active products
 
-- **Hold Stack** (featured this hour · shipped 20 Aug 2026, 06:50 Sydney) — a local day-strip map of overlapping calendar holds. Lanes for the pile, heat for depth, a play-head you can scrub. Release a hold or split it at now. Geometry of a day, not an on-call ring. Tags: ops, calendar, overlap.
+- **Quote Drift** (featured this hour · shipped 20 Aug 2026, 07:50 Sydney) — a local two-well paste instrument for quote vs invoice. Money delta, the lines that appeared, a stacked strip of matched / extra / missing. Two ledgers, not hidden glyphs. Tags: ops, money, paste.
+  - Path: `products/quote-drift/`
+  - Live page: `/products/quote-drift/`
+- **Hold Stack** (archive · 20 Aug 2026, 06:50 Sydney) — a local day-strip map of overlapping calendar holds. Lanes for the pile, heat for depth, a play-head you can scrub. Release a hold or split it at now. Geometry of a day, not an on-call ring. Tags: ops, calendar, overlap.
   - Path: `products/hold-stack/`
   - Live page: `/products/hold-stack/`
 - **Pager Face** (archive · 20 Aug 2026, 05:50 Sydney) — a local 24-hour pager clock for on-call rotations. Shift arcs, a now-hand, and a center that names who is primary, who is backup, minutes to handoff, and whether the primary is inside their own quiet hours. Rotation geometry, not a roster table. Tags: ops, oncall, clock.
@@ -42,12 +45,13 @@ The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **
 
 ## Research signal
 
-The feed is all agents (harnesses, skill packs, token compression, graphs). This hour adds an eleventh product on a different interaction: a day-strip of stacked calendar holds, not another table of rows and not an on-call clock face. Distinct from Pager Face (rotation ring) and Quiet Landing (outbound send courtesy).
+The feed is all agents (harnesses, skill packs, token compression, graphs). This hour adds a twelfth product on a different interaction: paste a March quote and a Tuesday invoice, see the money delta. Distinct from Unseen Ink (hidden glyphs), Renew Trap (cancel-by dates), and Reorder Radar (SKU stock).
 
 ## Repository shape
 
 - `index.html` — searchable catalogue hub (this hour vs archive, live search, tags, URL-persisted `q` / `tag`)
-- `products/hold-stack/` — featured this-hour product prototype
+- `products/quote-drift/` — featured this-hour product prototype
+- `products/hold-stack/` — archive product prototype
 - `products/pager-face/` — archive product prototype
 - `products/still-inside/` — archive product prototype
 - `products/quiet-landing/` — archive product prototype
@@ -63,16 +67,18 @@ The feed is all agents (harnesses, skill packs, token compression, graphs). This
 ## Verification
 
 - Static site loads without a build step
-- Catalogue links resolve to all eleven product folders
+- Catalogue links resolve to all twelve product folders
 - `/?q=unicode` on load shows Unseen Ink, hides Reorder Radar, and fills the search field
 - `/?tag=inventory` on load shows only Reorder Radar with that tag active
 - `/?tag=clock` on load shows Pager Face
 - `/?tag=offboarding` on load shows Still Inside
 - `/?tag=overlap` on load shows Hold Stack
+- `/?tag=paste` on load shows Quote Drift
+- `/?q=money&tag=paste` isolates Quote Drift
 - `/?q=skill&tag=review` ANDs (Skill Clash visible; Unseen Ink hidden)
 - Typing a search updates `location.search` via `replaceState` (no extra history entries)
-- Clearing filters restores all eleven and strips the query string
+- Clearing filters restores all twelve and strips the query string
 - Empty query `/?q=zzzz-no-match` shows an empty state that names the query
 - Copy desk link yields a URL containing the current `q` and/or `tag`
-- Featured this-hour card for Hold Stack
-- All eleven product pages still load
+- Featured this-hour card for Quote Drift
+- All twelve product pages still load
