@@ -2,7 +2,7 @@
 
 Daily product-catalogue loop for the Campbell playground.
 
-The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **URL-persisted filters** (`?q=` / `?tag=`) over twelve products. A filtered desk is pasteable.
+The hub is a **catalogue desk**: live search, tags, this-hour vs dated archive shelves, and **URL-persisted filters** (`?q=` / `?tag=` / `?view=compact`) over twelve products. A filtered desk is pasteable. Press `/` to focus search.
 
 ## Active products
 
@@ -45,11 +45,11 @@ The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **
 
 ## Research signal
 
-The feed is all agents (harnesses, skill packs, token compression, graphs). This hour adds a twelfth product on a different interaction: paste a March quote and a Tuesday invoice, see the money delta. Distinct from Unseen Ink (hidden glyphs), Renew Trap (cancel-by dates), and Reorder Radar (SKU stock).
+The feed is all agents (harnesses, skill packs, token compression, graphs). This hour is a hub quality pass: Archive was a single scroll, so the desk now groups by ship day, densifies with Compact, and lets `/` focus search. Still twelve products. Quote Drift stays featured. Distinct from adding a thirteenth paste-and-see.
 
 ## Repository shape
 
-- `index.html` — searchable catalogue hub (this hour vs archive, live search, tags, URL-persisted `q` / `tag`)
+- `index.html` — searchable catalogue hub (this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
 - `products/quote-drift/` — featured this-hour product prototype
 - `products/hold-stack/` — archive product prototype
 - `products/pager-face/` — archive product prototype
@@ -68,6 +68,7 @@ The feed is all agents (harnesses, skill packs, token compression, graphs). This
 
 - Static site loads without a build step
 - Catalogue links resolve to all twelve product folders
+- Archive shows dated headings for 20 Aug 2026, 19 Aug 2026, and 18 Aug 2026
 - `/?q=unicode` on load shows Unseen Ink, hides Reorder Radar, and fills the search field
 - `/?tag=inventory` on load shows only Reorder Radar with that tag active
 - `/?tag=clock` on load shows Pager Face
@@ -76,9 +77,13 @@ The feed is all agents (harnesses, skill packs, token compression, graphs). This
 - `/?tag=paste` on load shows Quote Drift
 - `/?q=money&tag=paste` isolates Quote Drift
 - `/?q=skill&tag=review` ANDs (Skill Clash visible; Unseen Ink hidden)
+- `/?view=compact` on load engages compact archive (body class / `data-view` / Compact pressed)
+- Toggling compact updates `location.search` via `replaceState` (no extra history entries)
 - Typing a search updates `location.search` via `replaceState` (no extra history entries)
-- Clearing filters restores all twelve and strips the query string
+- Clearing filters restores all twelve and strips `q` / `tag` (compact `view` stays if set)
 - Empty query `/?q=zzzz-no-match` shows an empty state that names the query
-- Copy desk link yields a URL containing the current `q` and/or `tag`
+- Pressing `/` focuses the search field when not already in an input
+- Escape clears search and tags (same as Clear filters)
+- Copy desk link yields a URL containing the current `q`, `tag`, and `view` when compact
 - Featured this-hour card for Quote Drift
 - All twelve product pages still load
