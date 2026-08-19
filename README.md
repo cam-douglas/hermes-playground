@@ -2,11 +2,14 @@
 
 Daily product-catalogue loop for the Campbell playground.
 
-The hub is a **catalogue desk**: live search, tags, this-hour vs dated archive shelves, and **URL-persisted filters** (`?q=` / `?tag=` / `?view=compact`) over twelve products. A filtered desk is pasteable. Press `/` to focus search.
+The hub is a **catalogue desk**: live search, tags, this-hour vs dated archive shelves, and **URL-persisted filters** (`?q=` / `?tag=` / `?view=compact`) over thirteen products. A filtered desk is pasteable. Press `/` to focus search.
 
 ## Active products
 
-- **Quote Drift** (featured this hour · shipped 20 Aug 2026, 07:50 Sydney) — a local two-well paste instrument for quote vs invoice. Money delta, the lines that appeared, a stacked strip of matched / extra / missing. Two ledgers, not hidden glyphs. Tags: ops, money, paste.
+- **Twin Face** (featured this hour · shipped 20 Aug 2026, 09:50 Sydney) — a local paste instrument that decodes one timestamp onto two analog faces. Independently chosen IANA zones, a date-split flag, a compact hours/minutes delta. One paste, two clocks — not a send queue. Tags: time, paste, clock.
+  - Path: `products/twin-face/`
+  - Live page: `/products/twin-face/`
+- **Quote Drift** (archive · 20 Aug 2026, 07:50 Sydney) — a local two-well paste instrument for quote vs invoice. Money delta, the lines that appeared, a stacked strip of matched / extra / missing. Two ledgers, not hidden glyphs. Tags: ops, money, paste.
   - Path: `products/quote-drift/`
   - Live page: `/products/quote-drift/`
 - **Hold Stack** (archive · 20 Aug 2026, 06:50 Sydney) — a local day-strip map of overlapping calendar holds. Lanes for the pile, heat for depth, a play-head you can scrub. Release a hold or split it at now. Geometry of a day, not an on-call ring. Tags: ops, calendar, overlap.
@@ -45,12 +48,13 @@ The hub is a **catalogue desk**: live search, tags, this-hour vs dated archive s
 
 ## Research signal
 
-The feed is all agents (harnesses, skill packs, token compression, graphs). This hour is a hub quality pass: Archive was a single scroll, so the desk now groups by ship day, densifies with Compact, and lets `/` focus search. Still twelve products. Quote Drift stays featured. Distinct from adding a thirteenth paste-and-see.
+The feed is all agents (harnesses, skill packs, token compression, graphs). This hour is a paste-and-see that is not Unseen Ink and not Quiet Landing: one pasted timestamp decoded onto two analog faces. No send queue. Distinct from adding another row-board.
 
 ## Repository shape
 
 - `index.html` — searchable catalogue hub (this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
-- `products/quote-drift/` — featured this-hour product prototype
+- `products/twin-face/` — featured this-hour product prototype
+- `products/quote-drift/` — archive product prototype
 - `products/hold-stack/` — archive product prototype
 - `products/pager-face/` — archive product prototype
 - `products/still-inside/` — archive product prototype
@@ -67,23 +71,23 @@ The feed is all agents (harnesses, skill packs, token compression, graphs). This
 ## Verification
 
 - Static site loads without a build step
-- Catalogue links resolve to all twelve product folders
+- Catalogue links resolve to all thirteen product folders
 - Archive shows dated headings for 20 Aug 2026, 19 Aug 2026, and 18 Aug 2026
 - `/?q=unicode` on load shows Unseen Ink, hides Reorder Radar, and fills the search field
 - `/?tag=inventory` on load shows only Reorder Radar with that tag active
-- `/?tag=clock` on load shows Pager Face
-- `/?tag=offboarding` on load shows Still Inside
-- `/?tag=overlap` on load shows Hold Stack
-- `/?tag=paste` on load shows Quote Drift
-- `/?q=money&tag=paste` isolates Quote Drift
+- `/?tag=clock` on load shows Twin Face and Pager Face
+- `/?tag=money` on load shows Quote Drift
+- `/?tag=timezone` on load shows Quiet Landing
+- `/?tag=paste` on load shows Twin Face (and Quote Drift)
+- `/?q=time&tag=paste` isolates Twin Face
 - `/?q=skill&tag=review` ANDs (Skill Clash visible; Unseen Ink hidden)
 - `/?view=compact` on load engages compact archive (body class / `data-view` / Compact pressed)
 - Toggling compact updates `location.search` via `replaceState` (no extra history entries)
 - Typing a search updates `location.search` via `replaceState` (no extra history entries)
-- Clearing filters restores all twelve and strips `q` / `tag` (compact `view` stays if set)
+- Clearing filters restores all thirteen and strips `q` / `tag` (compact `view` stays if set)
 - Empty query `/?q=zzzz-no-match` shows an empty state that names the query
 - Pressing `/` focuses the search field when not already in an input
 - Escape clears search and tags (same as Clear filters)
 - Copy desk link yields a URL containing the current `q`, `tag`, and `view` when compact
-- Featured this-hour card for Quote Drift
-- All twelve product pages still load
+- Featured this-hour card for Twin Face
+- All thirteen product pages still load

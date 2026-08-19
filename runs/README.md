@@ -2,6 +2,7 @@
 
 One markdown file per ship day, plus hourly files when the loop is 30 minutes.
 
+- `2026-08-20-0950.md` — Twin Face (09:50 Sydney hourly run)
 - `2026-08-20-0850.md` — Week shelf hub upgrade (08:50 Sydney hourly run)
 - `2026-08-20-0750.md` — Quote Drift (07:50 Sydney hourly run)
 - `2026-08-20-0650.md` — Hold Stack (06:50 Sydney hourly run)
