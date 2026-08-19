@@ -2,30 +2,31 @@
 
 Daily product-catalogue loop for the Campbell playground.
 
-## Active product
+## Active products
 
-- **Reorder Radar** — a lightweight inventory and replenishment cockpit for pop-up shops, kiosks, and small retailers.
-- Path: `products/reorder-radar/`
-- Live page: open the deployed site root, then follow the product link.
+- **Ghost Briefs** (featured 19 Aug 2026) — a local, human-only map of which shipped subsystems still have a named person who can brief them.
+  - Path: `products/ghost-briefs/`
+  - Live page: `/products/ghost-briefs/`
+- **Reorder Radar** (18 Aug 2026) — a lightweight inventory and replenishment cockpit for pop-up shops, kiosks, and small retailers.
+  - Path: `products/reorder-radar/`
+  - Live page: `/products/reorder-radar/`
 
 ## Research signal
 
-GitHub already has plenty of full inventory/POS systems (for example StockPilot, FlowStock, InvenTree, and other inventory-management repos), but many are heavy, multi-role, or ERP-shaped.
+GitHub this week is crowded with agent harnesses, skill packs, routers, and memory layers. Faros *Acceleration Whiplash* and Storey’s Triple Debt (technical / cognitive / intent) describe the same gap: finished work can rise while the number of humans who can still brief a subsystem falls.
 
-This prototype focuses on the sharper wedge:
-
-- fast movers falling below reorder point
-- stock coverage days vs supplier lead time
-- a simple buy-now queue instead of a full ERP
-- local-first state for tiny teams
+Today’s prototype stays out of that harness pile. It also stays out of inventory/POS (already covered by Reorder Radar) and does not revive the older pressure/handoff console.
 
 ## Repository shape
 
-- `index.html` — catalogue hub
-- `products/reorder-radar/` — self-contained product prototype
+- `index.html` — multi-product catalogue hub
+- `products/ghost-briefs/` — featured product prototype
+- `products/reorder-radar/` — 18 Aug product prototype
+- `runs/` — daily ship logs
 
 ## Verification
 
 - Static site loads without a build step
-- Product state persists in `localStorage`
-- Reorder recommendations are derived from stock, velocity, and lead time
+- Catalogue links resolve to both product folders
+- Ghost Briefs votes and briefs persist in `localStorage`
+- Demo week surfaces two orphans; reset restores the seed
