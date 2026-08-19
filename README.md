@@ -4,7 +4,10 @@ Daily product-catalogue loop for the Campbell playground.
 
 ## Active products
 
-- **Ghost Briefs** (featured 19 Aug 2026) — a local, human-only map of which shipped subsystems still have a named person who can brief them.
+- **Skill Clash** (featured 19 Aug 2026, 20:50 Sydney) — a local collision board for stacked agent skills (`SKILL.md` / `AGENTS.md`). Flags MUST/NEVER contradictions, overlapping domains, and injection-shaped lines, then scores stack coherence.
+  - Path: `products/skill-clash/`
+  - Live page: `/products/skill-clash/`
+- **Ghost Briefs** (19 Aug 2026) — a local, human-only map of which shipped subsystems still have a named person who can brief them.
   - Path: `products/ghost-briefs/`
   - Live page: `/products/ghost-briefs/`
 - **Reorder Radar** (18 Aug 2026) — a lightweight inventory and replenishment cockpit for pop-up shops, kiosks, and small retailers.
@@ -13,20 +16,20 @@ Daily product-catalogue loop for the Campbell playground.
 
 ## Research signal
 
-GitHub this week is crowded with agent harnesses, skill packs, routers, and memory layers. Faros *Acceleration Whiplash* and Storey’s Triple Debt (technical / cognitive / intent) describe the same gap: finished work can rise while the number of humans who can still brief a subsystem falls.
-
-Today’s prototype stays out of that harness pile. It also stays out of inventory/POS (already covered by Reorder Radar) and does not revive the older pressure/handoff console.
+GitHub this week is crowded with skill packs and harnesses. The shippable gap for this hour is not another pack and not another fluency or inventory board: it is a local view of how stacked skills cancel each other.
 
 ## Repository shape
 
 - `index.html` — multi-product catalogue hub
-- `products/ghost-briefs/` — featured product prototype
+- `products/skill-clash/` — featured product prototype
+- `products/ghost-briefs/` — 19 Aug product prototype
 - `products/reorder-radar/` — 18 Aug product prototype
-- `runs/` — daily ship logs
+- `runs/` — daily and hourly ship logs
 
 ## Verification
 
 - Static site loads without a build step
-- Catalogue links resolve to both product folders
+- Catalogue links resolve to all three product folders
+- Skill Clash demo fixtures produce a red MUST/NEVER clash; add/remove moves the score; refresh persists; reset restores the seed
 - Ghost Briefs votes and briefs persist in `localStorage`
-- Demo week surfaces two orphans; reset restores the seed
+- Reorder Radar still loads
