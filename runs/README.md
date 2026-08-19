@@ -2,6 +2,7 @@
 
 One markdown file per ship day, plus hourly files when the loop is 30 minutes.
 
+- `2026-08-20-0550.md` — Pager Face (05:50 Sydney hourly run)
 - `2026-08-20-0450.md` — Shareable desk (04:50 Sydney hourly run; URL-persisted `q` / `tag` on the hub)
 - `2026-08-20-0350.md` — Still Inside (03:50 Sydney hourly run)
 - `2026-08-20-0250.md` — Quiet Landing (02:50 Sydney hourly run)

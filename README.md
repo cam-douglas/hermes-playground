@@ -2,11 +2,14 @@
 
 Daily product-catalogue loop for the Campbell playground.
 
-The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **URL-persisted filters** (`?q=` / `?tag=`) over nine products. A filtered desk is pasteable.
+The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **URL-persisted filters** (`?q=` / `?tag=`) over ten products. A filtered desk is pasteable.
 
 ## Active products
 
-- **Still Inside** (featured this hour · shipped 20 Aug 2026, 03:50 Sydney) — a local leftover-access board for people who already left. Badges, seats, and break-glass keys stay live after the HR ticket closes. A named revoker, and the red rail of “they can still get in.” Access after exit, not fluency. Tags: ops, offboarding, access.
+- **Pager Face** (featured this hour · shipped 20 Aug 2026, 05:50 Sydney) — a local 24-hour pager clock for on-call rotations. Shift arcs, a now-hand, and a center that names who is primary, who is backup, minutes to handoff, and whether the primary is inside their own quiet hours. Rotation geometry, not a roster table. Tags: ops, oncall, clock.
+  - Path: `products/pager-face/`
+  - Live page: `/products/pager-face/`
+- **Still Inside** (archive · 20 Aug 2026, 03:50 Sydney) — a local leftover-access board for people who already left. Badges, seats, and break-glass keys stay live after the HR ticket closes. A named revoker, and the red rail of “they can still get in.” Access after exit, not fluency. Tags: ops, offboarding, access.
   - Path: `products/still-inside/`
   - Live page: `/products/still-inside/`
 - **Quiet Landing** (archive · 20 Aug 2026, 02:50 Sydney) — a local landing clock for scheduled Slack and email. A send, their timezone, their quiet hours, and the red rail of pings that hit them asleep. Timezone courtesy, not money. Tags: ops, timezone, courtesy.
@@ -36,12 +39,13 @@ The hub is a **catalogue desk**: live search, tags, this-hour vs archive, and **
 
 ## Research signal
 
-The feed is all agents (harnesses, skill packs, token compression, graphs). This hour does not add a tenth product. Nine prototypes, and a filter dies on refresh: persist search in `q` and the active tag in `tag` so a filtered desk is shareable. Still Inside stays featured. Distinct from cloning leftover access, another scanner, or a row-board.
+The feed is all agents (harnesses, skill packs, token compression, graphs). This hour adds a tenth product on a different interaction: a 24-hour clock face for on-call, not another table of rows. Distinct from Quiet Landing (outbound send courtesy) and Still Inside (leftover access).
 
 ## Repository shape
 
 - `index.html` — searchable catalogue hub (this hour vs archive, live search, tags, URL-persisted `q` / `tag`)
-- `products/still-inside/` — featured this-hour product prototype
+- `products/pager-face/` — featured this-hour product prototype
+- `products/still-inside/` — archive product prototype
 - `products/quiet-landing/` — archive product prototype
 - `products/renew-trap/` — archive product prototype
 - `products/reread-clock/` — archive product prototype
@@ -55,13 +59,15 @@ The feed is all agents (harnesses, skill packs, token compression, graphs). This
 ## Verification
 
 - Static site loads without a build step
-- Catalogue links resolve to all nine product folders
+- Catalogue links resolve to all ten product folders
 - `/?q=unicode` on load shows Unseen Ink, hides Reorder Radar, and fills the search field
 - `/?tag=inventory` on load shows only Reorder Radar with that tag active
+- `/?tag=clock` on load shows Pager Face
+- `/?tag=offboarding` on load shows Still Inside
 - `/?q=skill&tag=review` ANDs (Skill Clash visible; Unseen Ink hidden)
 - Typing a search updates `location.search` via `replaceState` (no extra history entries)
-- Clearing filters restores all nine and strips the query string
+- Clearing filters restores all ten and strips the query string
 - Empty query `/?q=zzzz-no-match` shows an empty state that names the query
 - Copy desk link yields a URL containing the current `q` and/or `tag`
-- Featured this-hour card for Still Inside
-- All nine product pages still load
+- Featured this-hour card for Pager Face
+- All ten product pages still load
