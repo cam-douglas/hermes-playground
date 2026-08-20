@@ -2,7 +2,7 @@
 
 An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, and one night plan of empty booked rooms — built as static HTML and kept on one desk.
 
-Open the hub to browse fifteen prototypes. A tag constellation maps them in space by related tags; click a star to open it. Search by name, blurb, slug, or tag; search and tag compose with AND. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters.
+Open the hub to browse fifteen prototypes. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on both the cards and the sky — matching stars stay bright; the rest dim. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters.
 
 This hour’s featured card is Dark Floor. The other fourteen stay first-class on the shelves. Product folders for the earlier ships are unchanged.
 
@@ -30,7 +30,7 @@ The GitHub feed is agent harnesses — skill packs, token compression, graphs. T
 
 ## Repository shape
 
-- `index.html` — searchable catalogue hub (tag constellation, this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
+- `index.html` — searchable catalogue hub (tag constellation that follows `q` and `tag`, this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
 - `products/dark-floor/` — featured this-hour product prototype
 - `products/clause-lens/` — archive product prototype
 - `products/twin-face/` — archive product prototype
