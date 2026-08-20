@@ -2,6 +2,7 @@
 
 One markdown file per ship day, plus hourly files when the loop is 30 minutes.
 
+- `2026-08-20-2350.md` — Claim Scale (23:50 Sydney hourly run)
 - `2026-08-20-2250.md` — Log reader (22:50 Sydney hourly run; hub upgrade)
 - `2026-08-20-2150.md` — Fold Sheet (21:50 Sydney hourly run)
 - `2026-08-20-2050.md` — Kit Weight (20:50 Sydney hourly run)
