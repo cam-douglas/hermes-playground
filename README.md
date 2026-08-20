@@ -1,14 +1,15 @@
 # hermes-playground
 
-An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, a night plan of empty booked rooms, a tide of sentence lengths, one stick that shows leftover millimetres, one bag that shows leftover grams, one sheet that shows the creases, one beam that shows the tilt, and one mix whose faders sit on a bus — built as static HTML and kept on one desk.
+An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, a night plan of empty booked rooms, a tide of sentence lengths, one stick that shows leftover millimetres, one bag that shows leftover grams, one sheet that shows the creases, one beam that shows the tilt, one mix whose faders sit on a bus, and one hang whose bob is true while the wall is not — built as static HTML and kept on one desk.
 
-Open the hub to browse twenty-one prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (21 / 20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters. The hub persists `?day=` so a dated shelf is a shareable desk link. A run rail on the hub opens hourly logs in `runs/read.html`. The rail, the hours index, and the reader share `runs/hours.json`.
+Open the hub to browse twenty-two prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (21 / 20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters. The hub persists `?day=` so a dated shelf is a shareable desk link. A run rail on the hub opens hourly logs in `runs/read.html`. The rail, the hours index, and the reader share `runs/hours.json`.
 
-This hour’s featured card is Mix Bus, on the new 21 Aug shelf. The other twenty stay first-class on the shelves. Product folders for the earlier ships are unchanged.
+This hour’s featured card is Plumb, on the 21 Aug shelf. Mix Bus stays first-class on that day’s archive shelf. The other twenty stay first-class on the shelves. Product folders for the earlier ships are unchanged.
 
 ## Active products
 
-- **Mix Bus** (featured this hour · 21 Aug 2026, 00:50 Sydney) — three channels sit at unity. The mix lives on the bus. Pull the faders. See what’s loud. `products/mix-bus/` · mix, faders, meeting
+- **Plumb** (featured this hour · 21 Aug 2026, 02:50 Sydney) — a wall looks straight until the bob hangs. The line is true. The wall is not. See the offset. `products/plumb/` · plumb, wall, true
+- **Mix Bus** (archive · 21 Aug 2026, 00:50 Sydney) — three channels sit at unity. The mix lives on the bus. Pull the faders. See what’s loud. `products/mix-bus/` · mix, faders, meeting
 - **Claim Scale** (archive · 20 Aug 2026, 23:50 Sydney) — two claims sit in a thread; the weight lives on the beam. Put them on the pans. See the tilt. `products/claim-scale/` · weigh, claims, balance
 - **Fold Sheet** (archive · 20 Aug 2026, 21:50 Sydney) — one page, a fold type, crease lines on the sheet. See which face lands outside. `products/fold-sheet/` · paper, fold, print
 - **Kit Weight** (archive · 20 Aug 2026, 20:50 Sydney) — items on, bag fill by mass, leftover capacity. See the grams in the bag. `products/kit-weight/` · kit, weight, pack
@@ -32,14 +33,15 @@ This hour’s featured card is Mix Bus, on the new 21 Aug shelf. The other twent
 
 ## Research signal
 
-The GitHub feed is agent harnesses — skill packs, token compression, graphs. This catalogue is the other desk: human-ops instruments that sit beside that feed. Clocks, leftover-access boards, paste wells, fluency maps, a floor plan of empty booked rooms, a tide of sentence lengths, a stick that shows the offcut, a bag that shows leftover grams, a sheet that shows the creases, a beam that shows the tilt, a mix whose faders sit on a bus. Local-first, no backend, no new cron.
+The GitHub feed is agent harnesses — skill packs, token compression, graphs. This catalogue is the other desk: human-ops instruments that sit beside that feed. Clocks, leftover-access boards, paste wells, fluency maps, a floor plan of empty booked rooms, a tide of sentence lengths, a stick that shows the offcut, a bag that shows leftover grams, a sheet that shows the creases, a beam that shows the tilt, a mix whose faders sit on a bus, a hang whose bob is true. Local-first, no backend, no new cron.
 
 ## Repository shape
 
 - `index.html` — searchable catalogue hub (ship tape newest-left, run rail into the log reader, tag constellation that follows `q` and `tag`, this hour vs dated archive shelves including the 21 Aug shelf, live search, tags, URL-persisted `q` / `tag` / `view`)
 - `runs/hours.json` — one ordered hours list (rail, index, and reader share it)
 - `runs/read.html` — log reader (`?log=` stem → same-origin `.md` rendered as HTML; allowlist from `hours.json`)
-- `products/mix-bus/` — featured this-hour product prototype
+- `products/plumb/` — featured this-hour product prototype
+- `products/mix-bus/` — archive product prototype
 - `products/claim-scale/` — archive product prototype
 - `products/fold-sheet/` — archive product prototype
 - `products/kit-weight/` — archive product prototype
