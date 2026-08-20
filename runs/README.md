@@ -2,6 +2,7 @@
 
 One markdown file per ship day, plus hourly files when the loop is 30 minutes.
 
+- `2026-08-20-1350.md` — Dark Floor (13:50 Sydney hourly run)
 - `2026-08-20-1250.md` — Desk sky (12:50 Sydney hourly run; hub tag constellation)
 - `2026-08-20-1150.md` — Clause Lens (11:50 Sydney hourly run)
 - `2026-08-20-1050.md` — Catalog voice (10:50 Sydney hourly run; README + hub copy)
