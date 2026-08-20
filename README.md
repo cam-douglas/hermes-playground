@@ -2,7 +2,7 @@
 
 An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, a night plan of empty booked rooms, a tide of sentence lengths, one stick that shows leftover millimetres, one bag that shows leftover grams, one sheet that shows the creases, one beam that shows the tilt, one mix whose faders sit on a bus, one hang whose bob is true while the wall is not, one span whose leftover is the sag in the middle, one lamp whose leftover is the warmth, one road whose leftover is the rise in the middle, and one scene whose leftover is which plane is sharp — built as static HTML and kept on one desk.
 
-Open the hub to browse twenty-six prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (21 / 20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters. The hub persists `?day=` so a dated shelf is a shareable desk link. A run rail on the hub opens hourly logs in `runs/read.html`. The rail, the hours index, and the reader share `runs/hours.json`. Cards, the ship tape, and the desk sky share `catalog.json`.
+Open the hub to browse twenty-six prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (21 / 20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters. The hub persists `?day=` so a dated shelf is a shareable desk link. A compare well sits on the desk: two pickers, leftover overlap, shareable as `?compare=depth,camber`. A run rail on the hub opens hourly logs in `runs/read.html`. The rail, the hours index, and the reader share `runs/hours.json`. Cards, the ship tape, the desk sky, and the compare well share `catalog.json`.
 
 This hour’s featured card is Depth, on the 21 Aug shelf. Camber, Kelvin, Wire Sag, Plumb, and Mix Bus stay first-class on that day’s archive shelf. The other twenty stay first-class on the shelves. Product folders for the earlier ships are unchanged.
 
@@ -41,8 +41,8 @@ The GitHub feed is agent harnesses — skill packs, token compression, graphs. T
 
 ## Repository shape
 
-- `index.html` — searchable catalogue hub (ship tape newest-left, run rail into the log reader, tag constellation that follows `q` and `tag`, this hour vs dated archive shelves including the 21 Aug shelf, live search, tags, URL-persisted `q` / `tag` / `view`)
-- `catalog.json` — one ordered product list (cards, tape, and sky share it). Depth is featured this hour
+- `index.html` — searchable catalogue hub (ship tape newest-left, run rail into the log reader, tag constellation that follows `q` and `tag`, compare well as `?compare=`, this hour vs dated archive shelves including the 21 Aug shelf, live search, tags, URL-persisted `q` / `tag` / `view` / `day` / `compare`)
+- `catalog.json` — one ordered product list (cards, tape, sky, and the compare well share it). Depth is featured this hour
 - `runs/hours.json` — one ordered hours list (rail, index, and reader share it)
 - `runs/read.html` — log reader (`?log=` stem → same-origin `.md` rendered as HTML; allowlist from `hours.json`)
 - `products/depth/` — featured this-hour product prototype
