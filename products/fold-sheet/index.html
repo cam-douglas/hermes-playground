@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Fold Sheet — one page, a fold type, crease lines on the sheet. See which face lands outside." />
+    <title>Fold Sheet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08070a;
+        --panel: #141218;
+        --ink: #efe8dc;
+        --muted: #9a9084;
+        --line: rgba(232, 214, 180, 0.16);
+        --paper: #efe4ce;
+        --paper-edge: #d8c8a8;
+        --graphite: #3a342c;
+        --crease: #6a5840;
+        --valley: #c47a3a;
+        --mountain: #7a9ab0;
+        --accent: #e8c27a;
+        --good: #e8c27a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(232, 194, 122, 0.1), transparent 30%),
+          radial-gradient(circle at 88% 8%, rgba(122, 154, 176, 0.08), transparent 24%),
+          linear-gradient(180deg, #060508 0%, #100e12 100%);
+      }
+      button { font: inherit; color: inherit; cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(20, 18, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(232, 194, 122, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 20, 26, 0.96), rgba(10, 8, 12, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(232, 194, 122, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: Fraunces, "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e8dfd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn, .chip {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1a171c;
+        font-family: Fraunces, Georgia, serif; letter-spacing: 0.04em;
+        font-size: 15px;
+      }
+      .btn.primary, .chip[aria-pressed="true"] {
+        background: var(--accent); border-color: transparent; color: #1a1408;
+      }
+      .chip { min-height: 40px; }
+      .chip:hover, .chip:focus-visible, .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(232, 194, 122, 0.5); outline-offset: 2px;
+      }
+      .stage {
+        display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.7fr); gap: 12px; margin-top: 14px;
+      }
+      .sheet-panel, .packet-panel {
+        border: 1px solid var(--line); background: var(--panel);
+      }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: Fraunces, Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .fold-controls {
+        display: flex; flex-wrap: wrap; gap: 8px;
+        padding: 12px 14px; border-bottom: 1px solid var(--line);
+      }
+      .sheet-stage {
+        padding: 16px 14px 8px;
+        background:
+          radial-gradient(ellipse at 50% 12%, rgba(232, 194, 122, 0.05), transparent 48%),
+          #0c0a0e;
+      }
+      #fold-sheet, #fold-silhouette {
+        display: block; width: 100%; height: auto; margin: 0 auto;
+      }
+      #fold-sheet { max-width: 360px; }
+      #fold-silhouette { max-width: 220px; }
+      .sheet-body { fill: var(--paper); stroke: var(--paper-edge); stroke-width: 1.6; }
+      .sheet-grain { fill: none; stroke: rgba(90, 70, 40, 0.08); stroke-width: 0.6; }
+      .crease { fill: none; stroke-width: 1.8; stroke-linecap: round; }
+      .crease.valley { stroke: var(--valley); stroke-dasharray: 7 5; }
+      .crease.mountain { stroke: var(--mountain); stroke-dasharray: 2 5; }
+      .panel-label {
+        fill: #5a4a32; font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 650;
+      }
+      .panel-hint { fill: #8a7a62; font-size: 8px; letter-spacing: 0.08em; }
+      .outside-mark { fill: none; stroke: #8a6a38; stroke-width: 1; }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .packet-stage { padding: 18px 16px 10px; background: #0c0a0e; }
+      .packet-shell { fill: #1a1714; stroke: rgba(232, 194, 122, 0.28); stroke-width: 1.2; }
+      .layer { stroke: #2a241c; stroke-width: 0.8; }
+      .layer-label { fill: #1a1408; font-family: Fraunces, Georgia, serif; font-size: 13px; }
+      .packet-caption { fill: #9a9084; font-size: 9px; letter-spacing: 0.08em; }
+      .secondary {
+        display: flex; flex-wrap: wrap; gap: 14px; align-items: end;
+        padding: 12px 14px; border-top: 1px solid var(--line);
+      }
+      .field { display: grid; gap: 6px; }
+      .field span, .field legend {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      .field-row { display: flex; flex-wrap: wrap; gap: 6px; }
+      .mini {
+        padding: 6px 10px; border: 1px solid var(--line); background: #1a171c;
+        font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+      }
+      .mini[aria-pressed="true"] { background: #2a2418; border-color: rgba(232, 194, 122, 0.45); color: var(--accent); }
+      .mini:focus-visible { outline: 2px solid rgba(232, 194, 122, 0.5); outline-offset: 2px; }
+      .note { margin-top: 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+      .key { color: #c8b898; }
+      @media (max-width: 820px) {
+        .stage { grid-template-columns: 1fr; }
+        .readout { grid-template-columns: 1fr; }
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .mast { padding: 20px; }
+        #fold-sheet { max-width: 280px; }
+        #fold-silhouette { max-width: 200px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> paper · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">creases on the sheet</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">paper instrument · 20 Aug 2026 21:50</span>
+        <h1>Fold Sheet</h1>
+        <p class="lede">
+          A fold is a word until you see the creases. Choose the fold. See the sheet.
+          Not millimetres. Not grams. Not rooms.
+        </p>
+        <div class="actions" id="fold-chips" role="group" aria-label="Fold type">
+          <button type="button" class="chip" data-fold="letter" aria-pressed="true">Letter (C)</button>
+          <button type="button" class="chip" data-fold="z" aria-pressed="false">Z-fold</button>
+          <button type="button" class="chip" data-fold="half" aria-pressed="false">Half</button>
+          <button type="button" class="chip" data-fold="gate" aria-pressed="false">Gate</button>
+        </div>
+      </header>
+
+      <div class="stage">
+        <figure class="sheet-panel">
+          <div class="panel-head">
+            <div>
+              <div class="kicker">flat sheet</div>
+              <h2>The page</h2>
+            </div>
+            <span class="kicker" id="sheet-meta">letter · C-fold · 3 panels</span>
+          </div>
+          <div class="sheet-stage">
+            <svg id="fold-sheet" viewBox="0 0 255 330" role="img" aria-label="Letter C-fold on a portrait sheet, three panels, two parallel creases">
+              <title id="fold-sheet-title">Letter C-fold on a portrait sheet, three panels, two parallel creases</title>
+            </svg>
+          </div>
+          <p id="fold-alt" class="sr-only" aria-live="polite">Letter C-fold. Three panels. Two creases at one-third and two-thirds. Panel 2 is the outside face.</p>
+          <div class="readout">
+            <span><b id="stat-fold">Letter (C)</b> fold</span>
+            <span><b id="stat-panels">3</b> panels</span>
+            <span><b id="stat-creases">2</b> creases</span>
+          </div>
+        </figure>
+
+        <section class="packet-panel">
+          <div class="panel-head">
+            <div>
+              <div class="kicker">side view</div>
+              <h2>The packet</h2>
+            </div>
+            <span class="kicker" id="packet-meta">stacked thickness</span>
+          </div>
+          <div class="packet-stage">
+            <svg id="fold-silhouette" viewBox="0 0 200 260" role="img" aria-label="Folded letter packet, three panels stacked, panel 2 outside">
+              <title id="fold-silhouette-title">Folded letter packet, three panels stacked, panel 2 outside</title>
+            </svg>
+          </div>
+          <div class="secondary">
+            <fieldset class="field">
+              <legend>Orientation</legend>
+              <div class="field-row">
+                <button type="button" class="mini" data-orient="portrait" aria-pressed="true">Portrait</button>
+                <button type="button" class="mini" data-orient="landscape" aria-pressed="false">Landscape</button>
+              </div>
+            </fieldset>
+            <fieldset class="field">
+              <legend>Sheet</legend>
+              <div class="field-row">
+                <button type="button" class="mini" data-size="letter" aria-pressed="true">US Letter</button>
+                <button type="button" class="mini" data-size="a4" aria-pressed="false">A4</button>
+              </div>
+            </fieldset>
+          </div>
+        </section>
+      </div>
+
+      <p class="note">
+        Creases sit on the page. Valley folds are dashed ochre; mountain folds are dotted steel.
+        Panel numbers show which face lands outside. The silhouette is stacked thickness, not a 3D model.
+        <span class="key">Arrow keys</span> move between fold types.
+        Not a paste of instructions. Not a stick of millimetres. Not a bag of grams. Not a room plan.
+      </p>
+    </div>
+
+    <script>
+      const FOLDS = {
+        letter: {
+          id: "letter",
+          name: "Letter (C)",
+          short: "C-fold",
+          panels: 3,
+          axis: "horizontal",
+          lines: [1 / 3, 2 / 3],
+          valley: [true, true],
+          outside: 2,
+          stack: [2, 1, 3],
+          shape: "c"
+        },
+        z: {
+          id: "z",
+          name: "Z-fold",
+          short: "Z-fold",
+          panels: 3,
+          axis: "horizontal",
+          lines: [1 / 3, 2 / 3],
+          valley: [true, false],
+          outside: 1,
+          stack: [1, 2, 3],
+          shape: "z"
+        },
+        half: {
+          id: "half",
+          name: "Half",
+          short: "half fold",
+          panels: 2,
+          axis: "horizontal",
+          lines: [1 / 2],
+          valley: [true],
+          outside: 1,
+          stack: [1, 2],
+          shape: "half"
+        },
+        gate: {
+          id: "gate",
+          name: "Gate",
+          short: "gate fold",
+          panels: 3,
+          axis: "vertical",
+          lines: [0.25, 0.75],
+          valley: [true, true],
+          outside: 2,
+          stack: [2, 1, 3],
+          shape: "gate"
+        }
+      };
+
+      const SIZES = {
+        letter: { w: 255, h: 330, label: "US Letter" },
+        a4: { w: 210, h: 297, label: "A4" }
+      };
+
+      const sheetSvg = document.getElementById("fold-sheet");
+      const packetSvg = document.getElementById("fold-silhouette");
+      const foldAlt = document.getElementById("fold-alt");
+      const sheetMeta = document.getElementById("sheet-meta");
+      const packetMeta = document.getElementById("packet-meta");
+      const statFold = document.getElementById("stat-fold");
+      const statPanels = document.getElementById("stat-panels");
+      const statCreases = document.getElementById("stat-creases");
+
+      let foldId = "letter";
+      let orient = "portrait";
+      let sizeId = "letter";
+
+      function currentFold() {
+        return FOLDS[foldId];
+      }
+
+      function sheetBox() {
+        const size = SIZES[sizeId];
+        return orient === "portrait"
+          ? { w: size.w, h: size.h }
+          : { w: size.h, h: size.w };
+      }
+
+      function panelRects(fold, box) {
+        const { w, h } = box;
+        const cuts = [0, ...fold.lines, 1];
+        const rects = [];
+        if (fold.axis === "horizontal") {
+          for (let i = 0; i < cuts.length - 1; i += 1) {
+            const y = cuts[i] * h;
+            const hh = (cuts[i + 1] - cuts[i]) * h;
+            rects.push({ n: i + 1, x: 0, y, w, h: hh, cx: w / 2, cy: y + hh / 2 });
+          }
+        } else {
+          for (let i = 0; i < cuts.length - 1; i += 1) {
+            const x = cuts[i] * w;
+            const ww = (cuts[i + 1] - cuts[i]) * w;
+            rects.push({ n: i + 1, x, y: 0, w: ww, h, cx: x + ww / 2, cy: h / 2 });
+          }
+        }
+        return rects;
+      }
+
+      function creaseMarks(fold, box) {
+        const { w, h } = box;
+        return fold.lines.map((t, i) => {
+          const valley = fold.valley[i];
+          if (fold.axis === "horizontal") {
+            const y = t * h;
+            return { x1: 10, y1: y, x2: w - 10, y2: y, valley, t };
+          }
+          const x = t * w;
+          return { x1: x, y1: 10, x2: x, y2: h - 10, valley, t };
+        });
+      }
+
+      function grain(box) {
+        const lines = [];
+        for (let y = 18; y < box.h - 8; y += 14) {
+          lines.push(`<line class="sheet-grain" x1="12" y1="${y}" x2="${box.w - 12}" y2="${y}" />`);
+        }
+        return lines.join("");
+      }
+
+      function renderSheet() {
+        const fold = currentFold();
+        const box = sheetBox();
+        const pad = 8;
+        const vw = box.w + pad * 2;
+        const vh = box.h + pad * 2;
+        const rects = panelRects(fold, box);
+        const creases = creaseMarks(fold, box);
+        const creaseSvg = creases.map((c, i) => `
+          <line class="crease ${c.valley ? "valley" : "mountain"}" data-crease="${i}"
+            x1="${c.x1 + pad}" y1="${c.y1 + pad}" x2="${c.x2 + pad}" y2="${c.y2 + pad}" />
+        `).join("");
+        const labels = rects.map((p) => {
+          const outside = p.n === fold.outside;
+          return `
+            <text class="panel-label" x="${p.cx + pad}" y="${p.cy + pad + 6}" text-anchor="middle">${p.n}</text>
+            <text class="panel-hint" x="${p.cx + pad}" y="${p.cy + pad + 20}" text-anchor="middle">${outside ? "OUTSIDE" : "inside"}</text>
+          `;
+        }).join("");
+        const outside = rects.find((p) => p.n === fold.outside);
+        const mark = outside
+          ? `<rect class="outside-mark" x="${outside.x + pad + 6}" y="${outside.y + pad + 6}" width="${Math.max(12, outside.w - 12)}" height="${Math.max(12, outside.h - 12)}" />`
+          : "";
+
+        sheetSvg.setAttribute("viewBox", `0 0 ${vw} ${vh}`);
+        sheetSvg.innerHTML = `
+          <title id="fold-sheet-title">${fold.name} on a ${orient} ${SIZES[sizeId].label} sheet, ${fold.panels} panels, ${fold.lines.length} crease${fold.lines.length === 1 ? "" : "s"}</title>
+          <rect class="sheet-body" x="${pad}" y="${pad}" width="${box.w}" height="${box.h}" />
+          ${grain(box)}
+          ${mark}
+          ${creaseSvg}
+          ${labels}
+        `;
+        const frac = fold.lines.map((t) => (t === 1 / 3 ? "one-third" : t === 2 / 3 ? "two-thirds" : t === 1 / 2 ? "half" : `${Math.round(t * 100)} percent`)).join(" and ");
+        const alt = `${fold.name}. ${fold.panels} panels. ${fold.lines.length} crease${fold.lines.length === 1 ? "" : "s"} at ${frac}. Panel ${fold.outside} is the outside face.`;
+        sheetSvg.setAttribute("aria-label", alt);
+        foldAlt.textContent = alt;
+        sheetMeta.textContent = `${SIZES[sizeId].label} · ${fold.short} · ${fold.panels} panels`;
+        statFold.textContent = fold.name;
+        statPanels.textContent = String(fold.panels);
+        statCreases.textContent = String(fold.lines.length);
+      }
+
+      function renderPacket() {
+        const fold = currentFold();
+        const colors = ["#efe4ce", "#d8c49a", "#c4b086"];
+        let layers = "";
+        let caption = "";
+        if (fold.shape === "c" || fold.shape === "half") {
+          const h = 36;
+          const x = 48;
+          const w = 104;
+          const startY = fold.stack.length === 2 ? 70 : 48;
+          layers = fold.stack.map((n, i) => {
+            const y = startY + i * (h + 6);
+            return `
+              <rect class="layer" fill="${colors[i]}" x="${x}" y="${y}" width="${w}" height="${h}" />
+              <text class="layer-label" x="${x + w / 2}" y="${y + 23}" text-anchor="middle">${n}</text>
+            `;
+          }).join("");
+          caption = fold.shape === "c"
+            ? `<text class="packet-caption" x="100" y="196" text-anchor="middle">C packet · ${fold.stack.length} thick</text>`
+            : `<text class="packet-caption" x="100" y="176" text-anchor="middle">half packet · 2 thick</text>`;
+        } else if (fold.shape === "z") {
+          layers = `
+            <rect class="layer" fill="${colors[0]}" x="28" y="56" width="88" height="32" />
+            <text class="layer-label" x="72" y="77" text-anchor="middle">1</text>
+            <rect class="layer" fill="${colors[1]}" x="84" y="96" width="88" height="32" />
+            <text class="layer-label" x="128" y="117" text-anchor="middle">2</text>
+            <rect class="layer" fill="${colors[2]}" x="28" y="136" width="88" height="32" />
+            <text class="layer-label" x="72" y="157" text-anchor="middle">3</text>
+            <path fill="none" stroke="#8a7a62" stroke-width="1.2" d="M116 88 L116 96 M84 128 L84 136" />
+          `;
+          caption = `<text class="packet-caption" x="100" y="196" text-anchor="middle">Z packet · accordion</text>`;
+        } else {
+          layers = `
+            <rect class="layer" fill="${colors[1]}" x="36" y="88" width="128" height="56" />
+            <text class="layer-label" x="100" y="122" text-anchor="middle">2</text>
+            <rect class="layer" fill="${colors[0]}" x="36" y="70" width="52" height="28" />
+            <text class="layer-label" x="62" y="89" text-anchor="middle">1</text>
+            <rect class="layer" fill="${colors[2]}" x="112" y="70" width="52" height="28" />
+            <text class="layer-label" x="138" y="89" text-anchor="middle">3</text>
+          `;
+          caption = `<text class="packet-caption" x="100" y="176" text-anchor="middle">gate packet · flaps in</text>`;
+        }
+
+        packetSvg.innerHTML = `
+          <title id="fold-silhouette-title">Folded ${fold.short} packet, ${fold.panels} panels stacked, panel ${fold.outside} outside</title>
+          <rect class="packet-shell" x="16" y="16" width="168" height="228" rx="2" />
+          ${layers}
+          ${caption}
+        `;
+        packetSvg.setAttribute("aria-label", `Folded ${fold.short} packet, ${fold.panels} panels stacked, panel ${fold.outside} outside`);
+        packetMeta.textContent = `${fold.panels} thick · panel ${fold.outside} out`;
+      }
+
+      function syncChips() {
+        document.querySelectorAll("[data-fold]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", btn.dataset.fold === foldId ? "true" : "false");
+        });
+        document.querySelectorAll("[data-orient]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", btn.dataset.orient === orient ? "true" : "false");
+        });
+        document.querySelectorAll("[data-size]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", btn.dataset.size === sizeId ? "true" : "false");
+        });
+      }
+
+      function render() {
+        syncChips();
+        renderSheet();
+        renderPacket();
+      }
+
+      function setFold(id) {
+        if (!FOLDS[id]) return;
+        foldId = id;
+        render();
+      }
+
+      document.getElementById("fold-chips").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-fold]");
+        if (btn) setFold(btn.dataset.fold);
+      });
+      document.querySelectorAll("[data-orient]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          orient = btn.dataset.orient;
+          render();
+        });
+      });
+      document.querySelectorAll("[data-size]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          sizeId = btn.dataset.size;
+          render();
+        });
+      });
+      document.addEventListener("keydown", (event) => {
+        const order = ["letter", "z", "half", "gate"];
+        const typing = event.target && (event.target.matches("input, textarea, select") || event.target.isContentEditable);
+        if (typing) return;
+        if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+          event.preventDefault();
+          setFold(order[(order.indexOf(foldId) + 1) % order.length]);
+          document.querySelector(`[data-fold="${foldId}"]`).focus();
+        }
+        if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+          event.preventDefault();
+          setFold(order[(order.indexOf(foldId) + order.length - 1) % order.length]);
+          document.querySelector(`[data-fold="${foldId}"]`).focus();
+        }
+      });
+
+      render();
+    </script>
+  </body>
+</html>
