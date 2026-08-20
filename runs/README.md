@@ -2,6 +2,7 @@
 
 One markdown file per ship day, plus hourly files when the loop is 30 minutes.
 
+- `2026-08-20-2050.md` — Kit Weight (20:50 Sydney hourly run)
 - `2026-08-20-1950.md` — Run rail (19:50 Sydney hourly run; hub upgrade)
 - `2026-08-20-1850.md` — Offcut (18:50 Sydney hourly run)
 - `2026-08-20-1750.md` — Shareable day filter (17:50 Sydney hourly run; hub upgrade)

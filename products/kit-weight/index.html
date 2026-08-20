@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Kit Weight — items on, bag fill by mass, leftover capacity. See the grams in the bag." />
+    <title>Kit Weight</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #07090a;
+        --panel: #101612;
+        --ink: #e7efe4;
+        --muted: #8a9a86;
+        --line: rgba(168, 196, 148, 0.18);
+        --moss: #8fbf6a;
+        --moss-deep: #3d5a32;
+        --canvas: #c8b48a;
+        --fill: #5c7d4a;
+        --over: #e08a4a;
+        --warn: #ffb086;
+        --good: #8fbf6a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 14% -8%, rgba(143, 191, 106, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 6%, rgba(200, 180, 138, 0.08), transparent 24%),
+          linear-gradient(180deg, #050706 0%, #0c100e 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(16, 22, 18, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--moss);
+        box-shadow: 0 0 12px rgba(143, 191, 106, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(18, 26, 20, 0.96), rgba(8, 12, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(143, 191, 106, 0.45);
+        color: var(--moss); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: Sora, "Barlow Condensed", Impact, sans-serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #d5e4ce; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #141c16;
+        font-family: Sora, sans-serif; letter-spacing: 0.06em;
+        text-transform: uppercase; font-size: 14px;
+      }
+      .btn.primary { background: var(--moss); border-color: transparent; color: #13200e; }
+      .btn.warn { border-color: rgba(255, 176, 134, 0.4); color: var(--warn); }
+      .btn:disabled { opacity: 0.38; cursor: not-allowed; }
+      .stage {
+        display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 12px; margin-top: 14px;
+      }
+      .bag-panel, .tray-panel {
+        border: 1px solid var(--line); background: var(--panel);
+      }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: Sora, sans-serif; font-weight: 600;
+        margin: 0; font-size: 20px; letter-spacing: 0.02em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .stock-controls {
+        display: flex; flex-wrap: wrap; gap: 14px; align-items: end;
+        padding: 12px 14px; border-bottom: 1px solid var(--line);
+      }
+      .field { display: grid; gap: 6px; }
+      .field label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      .field input {
+        width: 140px; padding: 8px 10px;
+        border: 1px solid rgba(143, 191, 106, 0.28); background: #0a0e0b;
+        color: var(--ink); font-variant-numeric: tabular-nums;
+      }
+      .field input:focus { outline: 2px solid rgba(143, 191, 106, 0.55); outline-offset: 2px; }
+      .bag-stage {
+        padding: 10px 12px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(143, 191, 106, 0.06), transparent 46%),
+          #090d0a;
+      }
+      #kit-bag {
+        display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto;
+      }
+      .bag-shell { fill: #161c16; stroke: rgba(200, 180, 138, 0.45); stroke-width: 2; }
+      .strap { fill: none; stroke: #c8b48a; stroke-width: 8; stroke-linecap: round; }
+      .strap-inner { fill: none; stroke: #3d5a32; stroke-width: 3; stroke-linecap: round; }
+      .flap { fill: #1c241c; stroke: rgba(200, 180, 138, 0.4); stroke-width: 1.6; }
+      .buckle { fill: #c8b48a; }
+      .capacity-line { stroke: #e8d5a3; stroke-width: 1.6; stroke-dasharray: 5 4; }
+      .capacity-label { fill: #c8b48a; font-size: 10px; letter-spacing: 0.08em; }
+      .fill { fill: #4e6d40; }
+      .fill.over { fill: #8a4a28; }
+      .mass {
+        cursor: pointer; outline: none;
+      }
+      .mass-body { fill: #6f9258; stroke: #c8e0b0; stroke-width: 0.8; }
+      .mass:hover .mass-body, .mass:focus-visible .mass-body {
+        fill: #8fbf6a; stroke: #e8f6d8;
+        filter: drop-shadow(0 0 8px rgba(143, 191, 106, 0.4));
+      }
+      .mass-label {
+        fill: #13200e; font-family: Sora, sans-serif; font-size: 11px;
+        pointer-events: none;
+      }
+      .warning-copy {
+        min-height: 1.4em; margin: 0; padding: 8px 14px 0;
+        color: var(--muted); font-size: 12px;
+      }
+      .warning-copy.is-over { color: var(--warn); }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 22px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .tray-body { padding: 14px; }
+      .subhead {
+        margin: 0 0 8px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      .tray, .packed-list {
+        display: flex; flex-wrap: wrap; gap: 8px;
+        min-height: 56px;
+      }
+      .packed-list { margin-bottom: 16px; }
+      .chip {
+        display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px;
+        padding: 8px 12px; border: 1px solid rgba(143, 191, 106, 0.35);
+        background: #161c16; color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+      .chip strong { font-family: Sora, sans-serif; font-size: 15px; letter-spacing: 0.02em; }
+      .chip small { color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+      .chip:hover, .chip:focus-visible {
+        border-color: #8fbf6a; background: #1e2a1a;
+        outline: 2px solid rgba(143, 191, 106, 0.45); outline-offset: 2px;
+      }
+      .chip.packed { border-color: rgba(200, 180, 138, 0.4); background: #1a1810; }
+      .chip.wont-fit {
+        border-style: dashed; border-color: rgba(255, 176, 134, 0.45);
+        background: #1a100c; color: #c9b09a; opacity: 0.86;
+      }
+      .chip.wont-fit small { color: var(--warn); }
+      .add-row {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: end;
+        margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);
+      }
+      .note { margin-top: 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+      @media (max-width: 820px) {
+        .stage { grid-template-columns: 1fr; }
+        .readout { grid-template-columns: 1fr; }
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .mast { padding: 20px; }
+        .stock-controls { flex-direction: column; align-items: stretch; }
+        .field input { width: 100%; }
+        #kit-bag { max-width: 320px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> kit · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">grams in the bag</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">kit instrument · 20 Aug 2026 20:50</span>
+        <h1>Kit Weight</h1>
+        <p class="lede">
+          A packing list hides the load. Put the kit in the bag. See the grams.
+          Not millimetres. Not SKUs. Not rooms.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-empty">Empty bag</button>
+          <button type="button" class="btn warn" id="btn-reseed">Restore seed</button>
+        </div>
+      </header>
+
+      <div class="stage">
+        <figure class="bag-panel">
+          <div class="panel-head">
+            <div>
+              <div class="kicker">daypack</div>
+              <h2>The bag</h2>
+            </div>
+            <span class="kicker" id="bag-meta">7000 g capacity</span>
+          </div>
+          <div class="stock-controls">
+            <div class="field">
+              <label for="capacity-g">Capacity (g)</label>
+              <input id="capacity-g" type="number" min="500" max="30000" step="50" value="7000" />
+            </div>
+          </div>
+          <div class="bag-stage">
+            <svg id="kit-bag" viewBox="0 0 360 480" role="img" aria-label="Daypack, packed 5660 grams, remaining 1340 grams">
+              <title id="kit-bag-title">Daypack, packed 5660 grams, remaining 1340 grams</title>
+            </svg>
+          </div>
+          <p id="weight-alt" class="sr-only" aria-live="polite">Packed 5660 grams. Remaining 1340 grams. 10 items in the bag.</p>
+          <p id="warning-copy" class="warning-copy">Leftover capacity sits above the fill.</p>
+          <div class="readout">
+            <span><b id="stat-packed">5660</b> packed g</span>
+            <span><b id="stat-remaining">1340</b> remaining g</span>
+            <span><b id="stat-count">10</b> items in the bag</span>
+          </div>
+        </figure>
+
+        <section class="tray-panel">
+          <div class="panel-head">
+            <div>
+              <div class="kicker">kit</div>
+              <h2>On and off</h2>
+            </div>
+            <span class="kicker" id="tray-meta">click to pack or unpack</span>
+          </div>
+          <div class="tray-body">
+            <p class="subhead">In the bag</p>
+            <div id="packed-list" class="packed-list" aria-label="Packed items"></div>
+            <p class="subhead">Tray</p>
+            <div id="tray" class="tray" aria-label="Unplaced items"></div>
+            <div class="add-row">
+              <div class="field">
+                <label for="custom-name">Add an item</label>
+                <input id="custom-name" type="text" maxlength="28" value="cast skillet" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label for="custom-g">Grams</label>
+                <input id="custom-g" type="number" min="1" max="20000" step="1" value="2800" />
+              </div>
+              <button type="button" class="btn" id="btn-add">Add to tray</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <p class="note">
+        Fill height is packed grams against capacity. Click a tray chip or press Enter to pack;
+        click a packed chip, a mass on the fill, or press Enter to return it. An item heavier than
+        leftover capacity stays in the tray marked won't-fit. Not a paste well. Not a room plan.
+        Not a SKU table. Not a stick of millimetres.
+      </p>
+    </div>
+
+    <script>
+      const SEED = [
+        { name: "laptop", grams: 1420, packed: true },
+        { name: "charger", grams: 220, packed: true },
+        { name: "bottle", grams: 650, packed: true },
+        { name: "jacket", grams: 380, packed: true },
+        { name: "book", grams: 490, packed: true },
+        { name: "shoes", grams: 720, packed: true },
+        { name: "meds", grams: 40, packed: false },
+        { name: "snack", grams: 90, packed: true },
+        { name: "headphones", grams: 250, packed: true },
+        { name: "tripod", grams: 1100, packed: true },
+        { name: "power bank", grams: 340, packed: true },
+        { name: "rain shell", grams: 180, packed: false },
+        { name: "tent", grams: 2800, packed: false }
+      ];
+
+      const capacityInput = document.getElementById("capacity-g");
+      const customName = document.getElementById("custom-name");
+      const customGrams = document.getElementById("custom-g");
+      const svg = document.getElementById("kit-bag");
+      const weightAlt = document.getElementById("weight-alt");
+      const bagMeta = document.getElementById("bag-meta");
+      const trayMeta = document.getElementById("tray-meta");
+      const trayEl = document.getElementById("tray");
+      const packedEl = document.getElementById("packed-list");
+      const warningEl = document.getElementById("warning-copy");
+      const statPacked = document.getElementById("stat-packed");
+      const statRemaining = document.getElementById("stat-remaining");
+      const statCount = document.getElementById("stat-count");
+
+      let nextId = 1;
+      let items = [];
+
+      function makeItem(name, grams, packed) {
+        return {
+          id: "k" + (nextId++),
+          name: String(name).trim() || "item",
+          grams: Number(grams),
+          packed: Boolean(packed)
+        };
+      }
+
+      function seed() {
+        nextId = 1;
+        items = SEED.map((row) => makeItem(row.name, row.grams, row.packed));
+      }
+
+      function capacityG() {
+        const n = Number(capacityInput.value);
+        return Number.isFinite(n) && n >= 500 ? n : 7000;
+      }
+
+      function packedItems() {
+        return items.filter((item) => item.packed);
+      }
+
+      function packedG() {
+        return packedItems().reduce((sum, item) => sum + item.grams, 0);
+      }
+
+      function remainingG() {
+        return capacityG() - packedG();
+      }
+
+      function markFits() {
+        const room = remainingG();
+        items.forEach((item) => {
+          item.wontFit = !item.packed && item.grams > Math.max(0, room);
+        });
+      }
+
+      function packItem(id) {
+        const item = items.find((row) => row.id === id);
+        if (!item || item.packed) return false;
+        if (item.grams > Math.max(0, remainingG())) {
+          item.wontFit = true;
+          render();
+          return false;
+        }
+        item.packed = true;
+        item.wontFit = false;
+        render();
+        return true;
+      }
+
+      function unpackItem(id) {
+        const item = items.find((row) => row.id === id);
+        if (!item || !item.packed) return false;
+        item.packed = false;
+        render();
+        return true;
+      }
+
+      function emptyBag() {
+        items.forEach((item) => { item.packed = false; item.wontFit = false; });
+        render();
+      }
+
+      function addCustom() {
+        const grams = Number(customGrams.value);
+        if (!Number.isFinite(grams) || grams < 1) return;
+        items.push(makeItem(customName.value, Math.round(grams), false));
+        render();
+      }
+
+      function hatch(x, y, w, h) {
+        const lines = [];
+        const step = 9;
+        for (let t = -h; t < w; t += step) {
+          const x1 = x + Math.max(0, t);
+          const y1 = y + Math.max(0, -t);
+          const x2 = x + Math.min(w, t + h);
+          const y2 = y + Math.min(h, w - t);
+          lines.push(`<line stroke="rgba(232,213,163,0.16)" stroke-width="1" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" />`);
+        }
+        return lines.join("");
+      }
+
+      function renderBag() {
+        const capacity = capacityG();
+        const packed = packedG();
+        const remaining = remainingG();
+        const over = packed > capacity;
+        const ratio = capacity > 0 ? packed / capacity : 0;
+        const innerX = 108;
+        const innerW = 144;
+        const innerTop = 156;
+        const innerBottom = 392;
+        const innerH = innerBottom - innerTop;
+        const fillH = Math.min(innerH + 36, Math.max(0, ratio * innerH));
+        const fillY = innerBottom - fillH;
+        const lineY = innerTop;
+        const ordered = packedItems().slice().sort((a, b) => b.grams - a.grams);
+        let cursor = innerBottom;
+        const masses = ordered.map((item) => {
+          const h = Math.max(10, (item.grams / Math.max(packed, 1)) * fillH);
+          const y = cursor - h;
+          cursor = y;
+          const show = h > 16;
+          return `
+            <g class="mass" data-item="${item.id}" data-name="${item.name}" tabindex="0" role="button" aria-label="Packed ${item.name}, ${item.grams} grams, return to tray">
+              <rect class="mass-body" x="${innerX + 4}" y="${y.toFixed(1)}" width="${innerW - 8}" height="${Math.max(8, h - 1.2).toFixed(1)}" />
+              ${show ? `<text class="mass-label" x="${innerX + innerW / 2}" y="${(y + h / 2 + 4).toFixed(1)}" text-anchor="middle">${item.name} ${item.grams}</text>` : ""}
+            </g>`;
+        }).join("");
+
+        svg.innerHTML = `
+          <title id="kit-bag-title">Daypack, packed ${packed} grams, remaining ${remaining} grams</title>
+          <path class="strap" d="M118 168 C 72 120, 64 88, 86 62 C 104 92, 118 128, 132 168" />
+          <path class="strap" d="M242 168 C 288 120, 296 88, 274 62 C 256 92, 242 128, 228 168" />
+          <path class="strap-inner" d="M118 168 C 72 120, 64 88, 86 62 C 104 92, 118 128, 132 168" />
+          <path class="strap-inner" d="M242 168 C 288 120, 296 88, 274 62 C 256 92, 242 128, 228 168" />
+          <path class="bag-shell" d="M96 152 C 96 128, 126 112, 180 112 C 234 112, 264 128, 264 152 L 272 214 C 278 268, 274 338, 258 392 C 250 416, 222 428, 180 428 C 138 428, 110 416, 102 392 C 86 338, 82 268, 88 214 Z" />
+          <path class="flap" d="M104 148 C 110 118, 138 102, 180 102 C 222 102, 250 118, 256 148 L 248 176 C 230 164, 206 158, 180 158 C 154 158, 130 164, 112 176 Z" />
+          <rect class="buckle" x="168" y="168" width="24" height="8" rx="1" />
+          <defs>
+            <clipPath id="bag-clip">
+              <path d="M108 156 L 252 156 L 260 214 C 266 266, 262 334, 248 386 C 242 404, 218 414, 180 414 C 142 414, 118 404, 112 386 C 98 334, 94 266, 100 214 Z" />
+            </clipPath>
+          </defs>
+          <g clip-path="url(#bag-clip)">
+            <rect class="fill${over ? " over" : ""}" x="96" y="${fillY.toFixed(1)}" width="168" height="${(innerBottom - fillY + 8).toFixed(1)}" />
+            ${over ? hatch(108, fillY, 144, innerBottom - fillY) : ""}
+            ${masses}
+          </g>
+          <line class="capacity-line" x1="92" y1="${lineY}" x2="268" y2="${lineY}" />
+          <text class="capacity-label" x="274" y="${lineY + 3}">cap</text>
+        `;
+        svg.setAttribute("aria-label", `Daypack, packed ${packed} grams, remaining ${remaining} grams`);
+        weightAlt.textContent = `Packed ${packed} grams. Remaining ${remaining} grams. ${ordered.length} items in the bag.`;
+        statPacked.textContent = String(packed);
+        statRemaining.textContent = String(remaining);
+        statCount.textContent = String(ordered.length);
+        bagMeta.textContent = `${capacity} g capacity`;
+        warningEl.classList.toggle("is-over", over);
+        warningEl.textContent = over
+          ? `Over capacity by ${packed - capacity} g. The fill is past the capacity line.`
+          : remaining >= 0
+            ? `Leftover capacity ${remaining} g sits above the fill.`
+            : `Over capacity.`;
+      }
+
+      function chip(item, packed) {
+        const cls = item.wontFit ? "chip wont-fit" : packed ? "chip packed" : "chip";
+        const mark = item.wontFit ? "won't-fit" : packed ? "in the bag" : "unplaced";
+        return `<button type="button" class="${cls}" data-item="${item.id}" data-name="${item.name}" data-grams="${item.grams}" aria-label="${item.name}, ${item.grams} grams, ${mark}">
+          <strong>${item.name}</strong>
+          <small>${item.grams} g · ${mark}</small>
+        </button>`;
+      }
+
+      function renderLists() {
+        const waiting = items.filter((item) => !item.packed);
+        const packed = packedItems();
+        packedEl.innerHTML = packed.map((item) => chip(item, true)).join("");
+        trayEl.innerHTML = waiting.map((item) => chip(item, false)).join("");
+        trayMeta.textContent = waiting.length
+          ? `${waiting.length} in the tray`
+          : "tray empty";
+      }
+
+      function render() {
+        markFits();
+        renderBag();
+        renderLists();
+      }
+
+      function onItemActivate(id, packed) {
+        if (packed) unpackItem(id);
+        else packItem(id);
+      }
+
+      packedEl.addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-item]");
+        if (btn) unpackItem(btn.dataset.item);
+      });
+      trayEl.addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-item]");
+        if (btn) packItem(btn.dataset.item);
+      });
+      [packedEl, trayEl].forEach((el) => {
+        el.addEventListener("keydown", (event) => {
+          const btn = event.target.closest("[data-item]");
+          if (!btn) return;
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onItemActivate(btn.dataset.item, el === packedEl);
+          }
+        });
+      });
+      svg.addEventListener("click", (event) => {
+        const mass = event.target.closest(".mass[data-item]");
+        if (mass) unpackItem(mass.dataset.item);
+      });
+      svg.addEventListener("keydown", (event) => {
+        const mass = event.target.closest(".mass[data-item]");
+        if (!mass) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          unpackItem(mass.dataset.item);
+        }
+      });
+      document.getElementById("btn-empty").addEventListener("click", emptyBag);
+      document.getElementById("btn-reseed").addEventListener("click", () => { seed(); render(); });
+      document.getElementById("btn-add").addEventListener("click", addCustom);
+      customGrams.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addCustom();
+        }
+      });
+      customName.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addCustom();
+        }
+      });
+      capacityInput.addEventListener("input", render);
+
+      seed();
+      render();
+    </script>
+  </body>
+</html>
