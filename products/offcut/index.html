@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Offcut — one stock bar, placed cuts, leftover length after kerf. See the remainder on the stick." />
+    <title>Offcut</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080604;
+        --panel: #120e0a;
+        --ink: #f3e6d2;
+        --muted: #9a8670;
+        --line: rgba(226, 160, 74, 0.2);
+        --timber: #d3923a;
+        --timber-deep: #8a5a1e;
+        --offcut: #6d7d74;
+        --offcut-fill: #24302c;
+        --kerf: #1c1410;
+        --warn: #ffb086;
+        --good: #e2a04a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% -6%, rgba(226, 160, 74, 0.12), transparent 28%),
+          radial-gradient(circle at 88% 4%, rgba(109, 125, 116, 0.1), transparent 24%),
+          linear-gradient(180deg, #050403 0%, #0e0b08 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 14, 10, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--timber);
+        box-shadow: 0 0 12px rgba(226, 160, 74, 0.75);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 16, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(226, 160, 74, 0.45);
+        color: var(--timber); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: Oswald, Impact, sans-serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(52px, 9vw, 96px);
+        line-height: 0.82; letter-spacing: 0.04em; text-transform: uppercase;
+      }
+      .lede { max-width: 76ch; color: #ead9c0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #17120c;
+        font-family: Oswald, Impact, sans-serif; letter-spacing: 0.1em;
+        text-transform: uppercase; font-size: 16px;
+      }
+      .btn.primary { background: var(--timber); border-color: transparent; color: #1a1206; }
+      .btn.warn { border-color: rgba(255, 176, 134, 0.4); color: var(--warn); }
+      .btn:disabled { opacity: 0.38; cursor: not-allowed; }
+      .stage { display: grid; gap: 12px; margin-top: 14px; }
+      .stick-panel, .tray-panel {
+        border: 1px solid var(--line); background: var(--panel);
+      }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: Oswald, Impact, sans-serif; font-weight: 600;
+        margin: 0; font-size: 22px; letter-spacing: 0.04em; text-transform: uppercase;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .stock-controls {
+        display: flex; flex-wrap: wrap; gap: 14px; align-items: end;
+        padding: 12px 14px; border-bottom: 1px solid var(--line);
+      }
+      .field { display: grid; gap: 6px; }
+      .field label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      .field input {
+        width: 110px; padding: 8px 10px;
+        border: 1px solid rgba(226, 160, 74, 0.28); background: #0a0806;
+        color: var(--ink); font-variant-numeric: tabular-nums;
+      }
+      .field input:focus { outline: 2px solid rgba(226, 160, 74, 0.55); outline-offset: 2px; }
+      .stick-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        background:
+          repeating-linear-gradient(90deg, rgba(226, 160, 74, 0.03) 0 1px, transparent 1px 40px),
+          #0a0806;
+      }
+      #stock-bar {
+        display: block; width: 100%; min-width: 520px; height: auto;
+      }
+      .bar-shell { fill: #16110c; stroke: rgba(226, 160, 74, 0.35); stroke-width: 1.4; }
+      .cut {
+        cursor: pointer; outline: none;
+      }
+      .cut-body { fill: #c48432; stroke: #f0c27a; stroke-width: 1.2; }
+      .cut-grain { stroke: rgba(90, 48, 12, 0.35); stroke-width: 1; pointer-events: none; }
+      .cut:hover .cut-body, .cut:focus-visible .cut-body {
+        fill: #e2a04a; stroke: #ffe4b0;
+        filter: drop-shadow(0 0 8px rgba(226, 160, 74, 0.45));
+      }
+      .cut-label {
+        fill: #2a1808; font-family: Oswald, sans-serif; font-size: 15px; letter-spacing: 0.04em;
+        pointer-events: none;
+      }
+      .kerf-slot { fill: #1c1410; stroke: #3a2a1c; stroke-width: 0.6; }
+      .offcut-body { fill: #24302c; stroke: #7d8b82; stroke-width: 1.2; stroke-dasharray: 5 4; }
+      .offcut-hatch { stroke: rgba(125, 139, 130, 0.28); stroke-width: 1; pointer-events: none; }
+      .offcut-label { fill: #b8c6bc; font-size: 11px; letter-spacing: 0.08em; pointer-events: none; }
+      .rule { stroke: rgba(226, 160, 74, 0.35); stroke-width: 1; }
+      .rule-tick { stroke: rgba(226, 160, 74, 0.45); stroke-width: 1; }
+      .rule-label { fill: #9a8670; font-size: 10px; font-variant-numeric: tabular-nums; }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 22px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .tray-body { padding: 14px; }
+      .tray {
+        display: flex; flex-wrap: wrap; gap: 8px;
+        min-height: 56px;
+      }
+      .chip {
+        display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px;
+        padding: 8px 12px; border: 1px solid rgba(226, 160, 74, 0.35);
+        background: #1a140e; color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+      .chip strong { font-family: Oswald, sans-serif; font-size: 20px; letter-spacing: 0.04em; }
+      .chip small { color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-size: 10px; }
+      .chip:hover, .chip:focus-visible {
+        border-color: #e2a04a; background: #2a1c10;
+        outline: 2px solid rgba(226, 160, 74, 0.45); outline-offset: 2px;
+      }
+      .chip.wont-fit {
+        border-style: dashed; border-color: rgba(255, 176, 134, 0.45);
+        background: #1a100c; color: #c9b09a; opacity: 0.86;
+      }
+      .chip.wont-fit small { color: var(--warn); }
+      .add-row {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: end;
+        margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);
+      }
+      .note { margin-top: 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+      @media (max-width: 720px) {
+        .readout { grid-template-columns: 1fr; }
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .mast { padding: 20px; }
+        .stock-controls { flex-direction: column; align-items: stretch; }
+        .field input { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> workshop · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">stock on the stick</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">workshop instrument · 20 Aug 2026 18:50</span>
+        <h1>Offcut</h1>
+        <p class="lede">
+          Walls of millimetres hide the leftover. Place the cuts on the stick. See the offcut.
+          Not rooms. Not holds. Not SKUs.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-autopack">Auto-pack</button>
+          <button type="button" class="btn warn" id="btn-clear">Clear bar</button>
+        </div>
+      </header>
+
+      <div class="stage">
+        <figure class="stick-panel">
+          <div class="panel-head">
+            <div>
+              <div class="kicker">stock</div>
+              <h2>The stick</h2>
+            </div>
+            <span class="kicker" id="stick-meta">2400 mm · kerf 3 mm</span>
+          </div>
+          <div class="stock-controls">
+            <div class="field">
+              <label for="stock-mm">Stock length (mm)</label>
+              <input id="stock-mm" type="number" min="100" max="12000" step="1" value="2400" />
+            </div>
+            <div class="field">
+              <label for="kerf-mm">Kerf (mm)</label>
+              <input id="kerf-mm" type="number" min="0" max="20" step="0.5" value="3" />
+            </div>
+          </div>
+          <div class="stick-scroll">
+            <svg id="stock-bar" viewBox="0 0 1000 168" role="img" aria-label="Stock bar, remaining 441 millimetres">
+              <title id="stock-bar-title">Stock bar, remaining 441 millimetres</title>
+            </svg>
+          </div>
+          <p id="remaining-alt" class="sr-only" aria-live="polite">Remaining 441 millimetres. Waste 9 millimetres.</p>
+          <div class="readout">
+            <span><b id="stat-remaining">441</b> remaining mm</span>
+            <span><b id="stat-waste">9</b> waste mm</span>
+            <span><b id="stat-placed">3</b> cuts on the stick</span>
+          </div>
+        </figure>
+
+        <section class="tray-panel">
+          <div class="panel-head">
+            <div>
+              <div class="kicker">unplaced</div>
+              <h2>Tray</h2>
+            </div>
+            <span class="kicker" id="tray-meta">click a length to pack</span>
+          </div>
+          <div class="tray-body">
+            <div id="tray" class="tray" aria-label="Unplaced pieces"></div>
+            <div class="add-row">
+              <div class="field">
+                <label for="custom-mm">Add a length (mm)</label>
+                <input id="custom-mm" type="number" min="1" max="12000" step="1" value="210" />
+              </div>
+              <button type="button" class="btn" id="btn-add">Add to tray</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <p class="note">
+        First-fit on one stick. Kerf sits after each placed cut. Click a tray chip or press Enter to pack;
+        click a cut on the bar or press Enter to return it. A piece larger than the leftover stays in the tray marked won't-fit.
+        Not a paste well. Not a room plan. Not a SKU table.
+      </p>
+    </div>
+
+    <script>
+      const SEED_LENGTHS = [450, 600, 900, 180, 320, 1100, 75, 240];
+      const SEED_PLACED = [450, 600, 900];
+
+      const stockInput = document.getElementById("stock-mm");
+      const kerfInput = document.getElementById("kerf-mm");
+      const customInput = document.getElementById("custom-mm");
+      const svg = document.getElementById("stock-bar");
+      const titleEl = document.getElementById("stock-bar-title");
+      const remainingAlt = document.getElementById("remaining-alt");
+      const stickMeta = document.getElementById("stick-meta");
+      const trayMeta = document.getElementById("tray-meta");
+      const trayEl = document.getElementById("tray");
+      const statRemaining = document.getElementById("stat-remaining");
+      const statWaste = document.getElementById("stat-waste");
+      const statPlaced = document.getElementById("stat-placed");
+
+      let nextId = 1;
+      let pieces = [];
+
+      function makePiece(length, placed) {
+        return { id: "p" + (nextId++), length: Number(length), placed: Boolean(placed), start: 0 };
+      }
+
+      function seed() {
+        nextId = 1;
+        pieces = SEED_LENGTHS.map((length) => makePiece(length, SEED_PLACED.includes(length)));
+        layoutPlaced();
+      }
+
+      function stockMm() {
+        const n = Number(stockInput.value);
+        return Number.isFinite(n) && n >= 100 ? n : 2400;
+      }
+
+      function kerfMm() {
+        const n = Number(kerfInput.value);
+        return Number.isFinite(n) && n >= 0 ? n : 3;
+      }
+
+      function placedPieces() {
+        return pieces.filter((p) => p.placed).sort((a, b) => a.start - b.start);
+      }
+
+      function layoutPlaced() {
+        const stock = stockMm();
+        const kerf = kerfMm();
+        const ordered = placedPieces();
+        let cursor = 0;
+        ordered.forEach((p) => {
+          p.start = cursor;
+          cursor += p.length + kerf;
+        });
+        while (ordered.length) {
+          const last = ordered[ordered.length - 1];
+          const end = last.start + last.length;
+          if (end <= stock) break;
+          last.placed = false;
+          last.start = 0;
+          ordered.pop();
+        }
+      }
+
+      function gaps() {
+        const stock = stockMm();
+        const kerf = kerfMm();
+        const ordered = placedPieces();
+        const out = [];
+        let cursor = 0;
+        ordered.forEach((p) => {
+          if (p.start > cursor) out.push({ start: cursor, end: p.start, kind: "gap" });
+          cursor = p.start + p.length + kerf;
+        });
+        if (cursor < stock) out.push({ start: cursor, end: stock, kind: "offcut" });
+        else if (!ordered.length) out.push({ start: 0, end: stock, kind: "offcut" });
+        return out;
+      }
+
+      function largestGap() {
+        return gaps().reduce((max, g) => Math.max(max, g.end - g.start), 0);
+      }
+
+      function firstFitStart(length) {
+        const gap = gaps().find((g) => length <= g.end - g.start);
+        return gap ? gap.start : null;
+      }
+
+      function remainingMm() {
+        return gaps().reduce((sum, g) => sum + (g.end - g.start), 0);
+      }
+
+      function wasteMm() {
+        return placedPieces().length * kerfMm();
+      }
+
+      function markFits() {
+        const room = largestGap();
+        pieces.forEach((p) => {
+          p.wontFit = !p.placed && p.length > room;
+        });
+      }
+
+      function packPiece(id) {
+        const piece = pieces.find((p) => p.id === id);
+        if (!piece || piece.placed) return false;
+        const start = firstFitStart(piece.length);
+        if (start == null) {
+          piece.wontFit = true;
+          render();
+          return false;
+        }
+        piece.placed = true;
+        piece.start = start;
+        piece.wontFit = false;
+        layoutPlaced();
+        render();
+        return true;
+      }
+
+      function unpackPiece(id) {
+        const piece = pieces.find((p) => p.id === id);
+        if (!piece || !piece.placed) return false;
+        piece.placed = false;
+        piece.start = 0;
+        layoutPlaced();
+        render();
+        return true;
+      }
+
+      function autoPack() {
+        const waiting = pieces.filter((p) => !p.placed).sort((a, b) => b.length - a.length);
+        waiting.forEach((p) => {
+          const start = firstFitStart(p.length);
+          if (start == null) {
+            p.wontFit = true;
+            return;
+          }
+          p.placed = true;
+          p.start = start;
+          p.wontFit = false;
+          layoutPlaced();
+        });
+        render();
+      }
+
+      function clearBar() {
+        pieces.forEach((p) => {
+          p.placed = false;
+          p.start = 0;
+          p.wontFit = false;
+        });
+        render();
+      }
+
+      function addCustom() {
+        const length = Number(customInput.value);
+        if (!Number.isFinite(length) || length < 1) return;
+        const piece = makePiece(Math.round(length), false);
+        pieces.push(piece);
+        render();
+      }
+
+      function hatch(x, y, w, h) {
+        const lines = [];
+        const step = 8;
+        for (let t = -h; t < w; t += step) {
+          const x1 = x + Math.max(0, t);
+          const y1 = y + Math.max(0, -t);
+          const x2 = x + Math.min(w, t + h);
+          const y2 = y + Math.min(h, w - t);
+          lines.push(`<line class="offcut-hatch" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" />`);
+        }
+        return lines.join("");
+      }
+
+      function grain(x, y, w, h) {
+        const lines = [];
+        const mid = y + h * 0.38;
+        const low = y + h * 0.68;
+        lines.push(`<line class="cut-grain" x1="${(x + 6).toFixed(1)}" y1="${mid.toFixed(1)}" x2="${(x + w - 6).toFixed(1)}" y2="${(mid + 2).toFixed(1)}" />`);
+        lines.push(`<line class="cut-grain" x1="${(x + 8).toFixed(1)}" y1="${low.toFixed(1)}" x2="${(x + w - 8).toFixed(1)}" y2="${(low - 1).toFixed(1)}" />`);
+        return lines.join("");
+      }
+
+      function renderBar() {
+        const stock = stockMm();
+        const kerf = kerfMm();
+        const remaining = remainingMm();
+        const waste = wasteMm();
+        const width = 1000;
+        const height = 168;
+        const padL = 28;
+        const padR = 20;
+        const barY = 28;
+        const barH = 72;
+        const barW = width - padL - padR;
+        const xFor = (mm) => padL + (mm / stock) * barW;
+        const wFor = (mm) => Math.max(mm > 0 ? 1.2 : 0, (mm / stock) * barW);
+
+        const ticks = [];
+        const step = stock <= 3000 ? 300 : 600;
+        for (let mm = 0; mm <= stock; mm += step) {
+          const x = xFor(mm);
+          ticks.push(`<line class="rule-tick" x1="${x.toFixed(1)}" y1="${barY + barH + 6}" x2="${x.toFixed(1)}" y2="${barY + barH + 14}" />`);
+          ticks.push(`<text class="rule-label" x="${x.toFixed(1)}" y="${barY + barH + 28}" text-anchor="${mm === 0 ? "start" : mm >= stock ? "end" : "middle"}">${mm}</text>`);
+        }
+
+        const ordered = placedPieces();
+        const cuts = ordered.map((p) => {
+          const x = xFor(p.start);
+          const w = wFor(p.length);
+          const kx = xFor(p.start + p.length);
+          const kw = wFor(kerf);
+          const label = w > 36 ? `<text class="cut-label" x="${(x + w / 2).toFixed(1)}" y="${(barY + barH / 2 + 5).toFixed(1)}" text-anchor="middle">${p.length}</text>` : "";
+          const kerfRect = kerf > 0 && p.start + p.length < stock
+            ? `<rect class="kerf-slot" data-kerf="${p.id}" x="${kx.toFixed(1)}" y="${barY}" width="${Math.max(1.4, kw).toFixed(1)}" height="${barH}" />`
+            : "";
+          return `
+            <g class="cut" data-piece="${p.id}" data-length="${p.length}" tabindex="0" role="button" aria-label="Placed ${p.length} millimetres, return to tray">
+              <rect class="cut-body" x="${x.toFixed(1)}" y="${barY}" width="${w.toFixed(1)}" height="${barH}" />
+              ${grain(x, barY, w, barH)}
+              ${label}
+            </g>
+            ${kerfRect}`;
+        }).join("");
+
+        const leftovers = gaps().map((g) => {
+          const x = xFor(g.start);
+          const w = wFor(g.end - g.start);
+          const len = g.end - g.start;
+          const label = w > 48 ? `<text class="offcut-label" x="${(x + w / 2).toFixed(1)}" y="${(barY + barH / 2 + 4).toFixed(1)}" text-anchor="middle">${len} offcut</text>` : "";
+          return `
+            <g class="offcut" data-offcut="${len}">
+              <rect class="offcut-body" x="${x.toFixed(1)}" y="${barY}" width="${w.toFixed(1)}" height="${barH}" />
+              ${hatch(x, barY, w, barH)}
+              ${label}
+            </g>`;
+        }).join("");
+
+        svg.innerHTML = `
+          <title id="stock-bar-title">Stock bar, remaining ${remaining} millimetres</title>
+          <rect class="bar-shell" x="${padL}" y="${barY}" width="${barW}" height="${barH}" />
+          ${leftovers}
+          ${cuts}
+          <line class="rule" x1="${padL}" y1="${barY + barH + 6}" x2="${padL + barW}" y2="${barY + barH + 6}" />
+          ${ticks.join("")}
+        `;
+        svg.setAttribute("aria-label", `Stock bar, remaining ${remaining} millimetres`);
+        remainingAlt.textContent = `Remaining ${remaining} millimetres. Waste ${waste} millimetres.`;
+        statRemaining.textContent = String(remaining);
+        statWaste.textContent = String(waste);
+        statPlaced.textContent = String(ordered.length);
+        stickMeta.textContent = `${stock} mm · kerf ${kerf} mm`;
+      }
+
+      function renderTray() {
+        const waiting = pieces.filter((p) => !p.placed);
+        trayEl.innerHTML = waiting.map((p) => {
+          const cls = p.wontFit ? "chip wont-fit" : "chip";
+          const mark = p.wontFit ? "won't-fit" : "unplaced";
+          return `<button type="button" class="${cls}" data-piece="${p.id}" data-length="${p.length}" aria-label="${p.length} millimetres, ${mark}">
+            <strong>${p.length}</strong>
+            <small>${mark}</small>
+          </button>`;
+        }).join("");
+        trayMeta.textContent = waiting.length
+          ? `${waiting.length} in the tray`
+          : "tray empty";
+      }
+
+      function render() {
+        markFits();
+        renderBar();
+        renderTray();
+      }
+
+      function onStockChange() {
+        layoutPlaced();
+        render();
+      }
+
+      trayEl.addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-piece]");
+        if (btn) packPiece(btn.dataset.piece);
+      });
+      trayEl.addEventListener("keydown", (event) => {
+        const btn = event.target.closest("[data-piece]");
+        if (!btn) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          packPiece(btn.dataset.piece);
+        }
+      });
+      svg.addEventListener("click", (event) => {
+        const cut = event.target.closest(".cut[data-piece]");
+        if (cut) unpackPiece(cut.dataset.piece);
+      });
+      svg.addEventListener("keydown", (event) => {
+        const cut = event.target.closest(".cut[data-piece]");
+        if (!cut) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          unpackPiece(cut.dataset.piece);
+        }
+      });
+      document.getElementById("btn-autopack").addEventListener("click", autoPack);
+      document.getElementById("btn-clear").addEventListener("click", clearBar);
+      document.getElementById("btn-add").addEventListener("click", addCustom);
+      customInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addCustom();
+        }
+      });
+      stockInput.addEventListener("input", onStockChange);
+      kerfInput.addEventListener("input", onStockChange);
+
+      seed();
+      render();
+    </script>
+  </body>
+</html>

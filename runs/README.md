@@ -2,6 +2,7 @@
 
 One markdown file per ship day, plus hourly files when the loop is 30 minutes.
 
+- `2026-08-20-1850.md` — Offcut (18:50 Sydney hourly run)
 - `2026-08-20-1750.md` — Shareable day filter (17:50 Sydney hourly run; hub upgrade)
 - `2026-08-20-1650.md` — Ship tape (16:50 Sydney hourly run; hub upgrade)
 - `2026-08-20-1550.md` — Sentence Tide (15:50 Sydney hourly run)
