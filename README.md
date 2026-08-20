@@ -2,7 +2,7 @@
 
 An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, a night plan of empty booked rooms, a tide of sentence lengths, one stick that shows leftover millimetres, one bag that shows leftover grams, one sheet that shows the creases, one beam that shows the tilt, and one mix whose faders sit on a bus — built as static HTML and kept on one desk.
 
-Open the hub to browse twenty-one prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (21 / 20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters. The hub persists `?day=` so a dated shelf is a shareable desk link. A run rail on the hub opens hourly logs in `runs/read.html`.
+Open the hub to browse twenty-one prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (21 / 20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters. The hub persists `?day=` so a dated shelf is a shareable desk link. A run rail on the hub opens hourly logs in `runs/read.html`. The rail, the hours index, and the reader share `runs/hours.json`.
 
 This hour’s featured card is Mix Bus, on the new 21 Aug shelf. The other twenty stay first-class on the shelves. Product folders for the earlier ships are unchanged.
 
@@ -37,7 +37,8 @@ The GitHub feed is agent harnesses — skill packs, token compression, graphs. T
 ## Repository shape
 
 - `index.html` — searchable catalogue hub (ship tape newest-left, run rail into the log reader, tag constellation that follows `q` and `tag`, this hour vs dated archive shelves including the 21 Aug shelf, live search, tags, URL-persisted `q` / `tag` / `view`)
-- `runs/read.html` — log reader (`?log=` stem → same-origin `.md` rendered as HTML)
+- `runs/hours.json` — one ordered hours list (rail, index, and reader share it)
+- `runs/read.html` — log reader (`?log=` stem → same-origin `.md` rendered as HTML; allowlist from `hours.json`)
 - `products/mix-bus/` — featured this-hour product prototype
 - `products/claim-scale/` — archive product prototype
 - `products/fold-sheet/` — archive product prototype

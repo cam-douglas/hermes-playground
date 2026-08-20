@@ -107,41 +107,8 @@
       </main>
     </div>
     <script>
-      const LOGS = [
-        { stem: '2026-08-21-0050', title: 'Mix Bus' },
-        { stem: '2026-08-20-2350', title: 'Claim Scale' },
-        { stem: '2026-08-20-2250', title: 'Log reader' },
-        { stem: '2026-08-20-2150', title: 'Fold Sheet' },
-        { stem: '2026-08-20-2050', title: 'Kit Weight' },
-        { stem: '2026-08-20-1950', title: 'Run rail' },
-        { stem: '2026-08-20-1850', title: 'Offcut' },
-        { stem: '2026-08-20-1750', title: 'Shareable day filter' },
-        { stem: '2026-08-20-1650', title: 'Ship tape' },
-        { stem: '2026-08-20-1550', title: 'Sentence Tide' },
-        { stem: '2026-08-20-1450', title: 'Sky follows search' },
-        { stem: '2026-08-20-1350', title: 'Dark Floor' },
-        { stem: '2026-08-20-1250', title: 'Desk sky' },
-        { stem: '2026-08-20-1150', title: 'Clause Lens' },
-        { stem: '2026-08-20-1050', title: 'Catalog voice' },
-        { stem: '2026-08-20-0950', title: 'Twin Face' },
-        { stem: '2026-08-20-0850', title: 'Week shelf' },
-        { stem: '2026-08-20-0750', title: 'Quote Drift' },
-        { stem: '2026-08-20-0650', title: 'Hold Stack' },
-        { stem: '2026-08-20-0550', title: 'Pager Face' },
-        { stem: '2026-08-20-0450', title: 'Shareable desk' },
-        { stem: '2026-08-20-0350', title: 'Still Inside' },
-        { stem: '2026-08-20-0250', title: 'Quiet Landing' },
-        { stem: '2026-08-20-0150', title: 'Renew Trap' },
-        { stem: '2026-08-20-0050', title: 'Catalogue desk' },
-        { stem: '2026-08-19-2350', title: 'Reread Clock' },
-        { stem: '2026-08-19-2250', title: 'Vouch Slip' },
-        { stem: '2026-08-19-2150', title: 'Unseen Ink' },
-        { stem: '2026-08-19-2050', title: 'Skill Clash' },
-        { stem: '2026-08-19', title: 'Ghost Briefs' },
-        { stem: 'README', title: 'About these logs' }
-      ];
-
       const STEM_RE = /^(README|[0-9]{4}-[0-9]{2}-[0-9]{2}(-[0-9]{4})?)$/;
+      const README_ENTRY = { stem: 'README', title: 'About these logs', kind: 'about' };
 
       function escapeHtml(value) {
         return String(value)
@@ -214,7 +181,7 @@
         if (disabled) href.removeAttribute('href');
       }
 
-      function resolveStem(raw) {
+      function resolveStem(raw, logs) {
         if (raw == null || raw === '') {
           return { error: 'No log specified. Use a filename stem, for example ?log=2026-08-20-2250.' };
         }
@@ -224,16 +191,22 @@
         if (!STEM_RE.test(raw)) {
           return { error: 'That is not a log on this desk. Hours look like 2026-08-20-2250; days look like 2026-08-19.' };
         }
-        const entry = LOGS.find((item) => item.stem === raw);
+        const entry = logs.find((item) => item.stem === raw);
         if (!entry) {
           return { error: 'That stem is not on the allowlist of files that exist under /runs/.' };
         }
         return { entry: entry };
       }
 
-      (function start() {
+      function withReadme(hours) {
+        const logs = Array.isArray(hours) ? hours.slice() : [];
+        if (!logs.some((item) => item.stem === 'README')) logs.push(README_ENTRY);
+        return logs;
+      }
+
+      function startWithLogs(logs) {
         const params = new URLSearchParams(window.location.search);
-        const resolved = resolveStem(params.get('log'));
+        const resolved = resolveStem(params.get('log'), logs);
         const newer = document.getElementById('nav-newer');
         const older = document.getElementById('nav-older');
         if (resolved.error) {
@@ -243,15 +216,15 @@
           return;
         }
 
-        const index = LOGS.indexOf(resolved.entry);
+        const index = logs.findIndex((item) => item.stem === resolved.entry.stem);
         if (index > 0) {
-          newer.href = '/runs/read.html?log=' + encodeURIComponent(LOGS[index - 1].stem);
+          newer.href = '/runs/read.html?log=' + encodeURIComponent(logs[index - 1].stem);
           newer.removeAttribute('aria-disabled');
         } else {
           setNav(newer, true);
         }
-        if (index >= 0 && index < LOGS.length - 1) {
-          older.href = '/runs/read.html?log=' + encodeURIComponent(LOGS[index + 1].stem);
+        if (index >= 0 && index < logs.length - 1) {
+          older.href = '/runs/read.html?log=' + encodeURIComponent(logs[index + 1].stem);
           older.removeAttribute('aria-disabled');
         } else {
           setNav(older, true);
@@ -283,6 +256,25 @@
           })
           .catch(function () {
             showError('The allowlisted file could not be fetched. The markdown may be missing from this origin.');
+          });
+      }
+
+      (function start() {
+        const newer = document.getElementById('nav-newer');
+        const older = document.getElementById('nav-older');
+        fetch('/runs/hours.json')
+          .then(function (response) {
+            if (!response.ok) throw new Error('hours-' + response.status);
+            return response.json();
+          })
+          .then(function (hours) {
+            if (!Array.isArray(hours) || !hours.length) throw new Error('hours-empty');
+            startWithLogs(withReadme(hours));
+          })
+          .catch(function () {
+            setNav(newer, true);
+            setNav(older, true);
+            showError('The hours list could not be loaded. No stem is allowed until /runs/hours.json returns.');
           });
       })();
     </script>

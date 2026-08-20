@@ -2,6 +2,8 @@
 
 One markdown file per ship day, plus hourly files when the loop is 30 minutes.
 
+- `hours.json` — one ordered hours list (rail, index, and reader share it)
+- `2026-08-21-0150.md` — Hours list (01:50 Sydney hourly run; hub upgrade)
 - `2026-08-21-0050.md` — Mix Bus (00:50 Sydney hourly run)
 - `2026-08-20-2350.md` — Claim Scale (23:50 Sydney hourly run)
 - `2026-08-20-2250.md` — Log reader (22:50 Sydney hourly run; hub upgrade)
