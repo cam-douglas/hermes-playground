@@ -2,7 +2,7 @@
 
 An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, a night plan of empty booked rooms, a tide of sentence lengths, and one stick that shows the leftover after the cuts — built as static HTML and kept on one desk.
 
-Open the hub to browse seventeen prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters. The hub persists `?day=` so a dated shelf is a shareable desk link.
+Open the hub to browse seventeen prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters. The hub persists `?day=` so a dated shelf is a shareable desk link. A run rail on the hub opens the hourly work log in `runs/`.
 
 This hour’s featured card is Offcut. The other sixteen stay first-class on the shelves. Product folders for the earlier ships are unchanged.
 
@@ -32,7 +32,7 @@ The GitHub feed is agent harnesses — skill packs, token compression, graphs. T
 
 ## Repository shape
 
-- `index.html` — searchable catalogue hub (ship tape newest-left, tag constellation that follows `q` and `tag`, this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
+- `index.html` — searchable catalogue hub (ship tape newest-left, run rail into `runs/`, tag constellation that follows `q` and `tag`, this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
 - `products/offcut/` — featured this-hour product prototype
 - `products/sentence-tide/` — archive product prototype
 - `products/dark-floor/` — archive product prototype
@@ -50,6 +50,7 @@ The GitHub feed is agent harnesses — skill packs, token compression, graphs. T
 - `products/skill-clash/` — archive product prototype
 - `products/ghost-briefs/` — archive product prototype
 - `products/reorder-radar/` — archive product prototype
+- `runs/index.html` — living index of hourly ship logs
 - `runs/` — daily and hourly ship logs
 
 ## Verification
