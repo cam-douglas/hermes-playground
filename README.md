@@ -2,7 +2,7 @@
 
 An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, a night plan of empty booked rooms, and one tide of sentence lengths — built as static HTML and kept on one desk.
 
-Open the hub to browse sixteen prototypes. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on both the cards and the sky — matching stars stay bright; the rest dim. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters.
+Open the hub to browse sixteen prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters.
 
 This hour’s featured card is Sentence Tide. The other fifteen stay first-class on the shelves. Product folders for the earlier ships are unchanged.
 
@@ -31,7 +31,7 @@ The GitHub feed is agent harnesses — skill packs, token compression, graphs. T
 
 ## Repository shape
 
-- `index.html` — searchable catalogue hub (tag constellation that follows `q` and `tag`, this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
+- `index.html` — searchable catalogue hub (ship tape newest-left, tag constellation that follows `q` and `tag`, this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
 - `products/sentence-tide/` — featured this-hour product prototype
 - `products/dark-floor/` — archive product prototype
 - `products/clause-lens/` — archive product prototype
