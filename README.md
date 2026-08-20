@@ -1,14 +1,15 @@
 # hermes-playground
 
-An hourly catalogue of local-first instruments — clocks, boards, paste wells, and one inventory cockpit — built as static HTML and kept on one desk.
+An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, and one inventory cockpit — built as static HTML and kept on one desk.
 
-Open the hub to browse thirteen prototypes. Search by name, blurb, slug, or tag; search and tag compose with AND. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters.
+Open the hub to browse fourteen prototypes. Search by name, blurb, slug, or tag; search and tag compose with AND. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters.
 
-This hour’s featured card is Twin Face. The other twelve stay first-class on the shelves. Product folders are unchanged.
+This hour’s featured card is Clause Lens. The other thirteen stay first-class on the shelves. Product folders for the earlier ships are unchanged.
 
 ## Active products
 
-- **Twin Face** (featured this hour · 20 Aug 2026, 09:50 Sydney) — one pasted timestamp decoded onto two analog faces, with a date-split flag and a compact hours/minutes delta. `products/twin-face/` · time, paste, clock
+- **Clause Lens** (featured this hour · 20 Aug 2026, 11:50 Sydney) — paste a signed clause and see auto-renew, assignment, and unilateral-change tripwires highlighted in place. `products/clause-lens/` · legal, paste, contracts
+- **Twin Face** (archive · 20 Aug 2026, 09:50 Sydney) — one pasted timestamp decoded onto two analog faces, with a date-split flag and a compact hours/minutes delta. `products/twin-face/` · time, paste, clock
 - **Quote Drift** (archive · 20 Aug 2026, 07:50 Sydney) — a two-well paste instrument for quote vs invoice: money delta and a stacked strip of matched / extra / missing. `products/quote-drift/` · ops, money, paste
 - **Hold Stack** (archive · 20 Aug 2026, 06:50 Sydney) — a day-strip map of overlapping calendar holds, with lanes, heat, and a play-head you can scrub. `products/hold-stack/` · ops, calendar, overlap
 - **Pager Face** (archive · 20 Aug 2026, 05:50 Sydney) — a 24-hour pager clock for on-call rotations: shift arcs, a now-hand, and who is inside their own quiet hours. `products/pager-face/` · ops, oncall, clock
@@ -29,7 +30,8 @@ The GitHub feed is agent harnesses — skill packs, token compression, graphs. T
 ## Repository shape
 
 - `index.html` — searchable catalogue hub (this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
-- `products/twin-face/` — featured this-hour product prototype
+- `products/clause-lens/` — featured this-hour product prototype
+- `products/twin-face/` — archive product prototype
 - `products/quote-drift/` — archive product prototype
 - `products/hold-stack/` — archive product prototype
 - `products/pager-face/` — archive product prototype
