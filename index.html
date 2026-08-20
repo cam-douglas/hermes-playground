@@ -99,6 +99,18 @@
       .tag-btn.active {
         border-color: rgba(45, 212, 191, 0.5); background: rgba(45, 212, 191, 0.16); color: #b8fff3;
       }
+      .day-chips {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      }
+      .day-chips-label { color: var(--muted); font-size: 13px; margin-right: 2px; }
+      .day-chip {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px;
+        border-radius: 999px; border: 1px solid rgba(148,163,184,0.16); background: rgba(255,255,255,0.03);
+        color: #d8e7ff; font-size: 13px;
+      }
+      .day-chip[aria-pressed="true"], .day-chip.active {
+        border-color: rgba(45, 212, 191, 0.5); background: rgba(45, 212, 191, 0.16); color: #b8fff3;
+      }
       .lane { display: grid; gap: 14px; }
       .lane + .lane { margin-top: 22px; }
       .lane-head {
@@ -123,7 +135,15 @@
       }
       .shelf { display: grid; gap: 12px; }
       .shelf + .shelf { margin-top: 8px; }
-      .shelf-head { margin: 4px 0 0; font-size: 15px; letter-spacing: 0.01em; color: #e9f1ff; }
+      .shelf-head {
+        display: inline-flex; align-items: center; justify-self: start;
+        margin: 4px 0 0; padding: 6px 12px;
+        font-size: 15px; letter-spacing: 0.01em; color: #e9f1ff;
+        border-radius: 999px; border: 1px solid transparent; background: transparent;
+      }
+      .shelf-head[aria-pressed="true"] {
+        border-color: rgba(45, 212, 191, 0.5); background: rgba(45, 212, 191, 0.16); color: #b8fff3;
+      }
       .product-index { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
       body.view-compact .shelf .product-index {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -349,6 +369,7 @@
         .product-index, .metric-grid, body.view-compact .shelf .product-index { grid-template-columns: 1fr; }
         .footer { flex-direction: column; }
         .hero { padding: 28px; }
+        .day-chips { width: 100%; }
       }
     </style>
   </head>
@@ -360,12 +381,12 @@
       </div>
 
       <main class="hero">
-        <div class="eyebrow">Hermes product catalogue · desk 20 Aug 2026 16:50 Sydney</div>
+        <div class="eyebrow">Hermes product catalogue · desk 20 Aug 2026 17:50 Sydney</div>
         <h1>Sixteen local instruments.</h1>
         <p class="lede">
           Sixteen local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, a night plan of empty booked rooms, and one tide of sentence lengths — sit beside the agent-harness feed.
-          Dated shelves still hold them. The desk sky maps them in tag space. A ship tape now reads the same sixteen hours as one horizontal row — newest / this hour on the left.
-          Search, tags, dated shelves, and shareable <code>?q=</code> / <code>?tag=</code> / <code>?view=compact</code>. Press <kbd>/</kbd> to search.
+          Dated shelves still hold them. A shelf is now a desk link: shareable <code>?day=</code> sits beside <code>?q=</code> / <code>?tag=</code> / <code>?view=compact</code>. The desk sky maps them in tag space. The ship tape still reads the sixteen hours as one horizontal row — newest / this hour on the left.
+          Search, tags, dated shelves, and shareable <code>?q=</code> / <code>?tag=</code> / <code>?day=</code> / <code>?view=compact</code>. Press <kbd>/</kbd> to search.
           This hour’s featured card is still Sentence Tide; the other fifteen stay first-class on the shelves.
         </p>
         <div class="cta-row">
@@ -383,26 +404,33 @@
         </section>
         <section class="card">
           <h2>Problem</h2>
-          <p>Sixteen instruments, and the only chronology is dated headings. The sky is tag space. The missing local product is a ship tape — one horizontal row of hours, newest first, click to open.</p>
+          <p>Sixteen instruments, and you still cannot paste a single day. Dated headings exist; they are not shareable. The missing local product is <code>?day=</code> so a shelf is a desk link.</p>
         </section>
         <section class="card">
           <h2>Prototype scope</h2>
-          <p>Upgrade the hub: one ship tape of all sixteen hours. Leave every product folder alone. Not Hold Stack. Not a seventeenth card.</p>
+          <p>Upgrade the hub: persist a day filter as <code>?day=YYYY-MM-DD</code>. Leave every product folder alone. Not Hold Stack. Not a seventeenth card.</p>
         </section>
 
         <section class="section" id="catalogue-desk">
           <h2>Catalogue desk</h2>
-          <p class="desk-intro">Filter the sixteen live products by name, blurb, slug, or tag. Search and tag compose with AND, persist as <code>?q=</code> and <code>?tag=</code>, and copy as a desk link. Compact archive is <code>?view=compact</code>. Press <kbd>/</kbd> to focus search; Escape clears. The ship tape and the desk sky follow that same AND filter — matching ticks and stars stay bright; the rest dim. Product URLs for all sixteen are unchanged.</p>
+          <p class="desk-intro">Filter the sixteen live products by name, blurb, slug, tag, or ship day. Search, tag, and day compose with AND, persist as <code>?q=</code>, <code>?tag=</code>, and <code>?day=</code>, and copy as a desk link. Compact archive is <code>?view=compact</code>. Press <kbd>/</kbd> to focus search; Escape clears. The ship tape and the desk sky follow that same AND filter — matching ticks and stars stay bright; the rest dim. Product URLs for all sixteen are unchanged.</p>
 
           <div class="desk-controls">
             <div class="search-row">
               <label for="catalogue-search">Search products</label>
               <input id="catalogue-search" type="search" placeholder="Search name, blurb, slug, or tag…" autocomplete="off" />
               <span id="active-tag" class="filter-chip" hidden></span>
+              <span id="active-day" class="filter-chip" hidden></span>
               <button id="clear-filters" class="clear-btn" type="button" hidden>Clear filters</button>
               <button id="copy-desk-link" class="copy-btn" type="button">Copy desk link</button>
             </div>
             <p id="match-count" class="match-count" aria-live="polite">Showing <strong>16</strong> of 16 products</p>
+            <div id="day-chips" class="day-chips" role="group" aria-label="Ship day">
+              <span class="day-chips-label">Day</span>
+              <button type="button" class="day-chip" data-day="2026-08-20" aria-pressed="false">20 Aug</button>
+              <button type="button" class="day-chip" data-day="2026-08-19" aria-pressed="false">19 Aug</button>
+              <button type="button" class="day-chip" data-day="2026-08-18" aria-pressed="false">18 Aug</button>
+            </div>
             <div id="tag-cloud" class="tag-cloud" aria-label="Product tags"></div>
           </div>
 
@@ -413,97 +441,97 @@
             </div>
             <div class="tape-scroll" role="list" aria-label="Ship tape, newest first">
               <div class="tape-rail">
-                <a class="tape-tick is-featured" role="listitem" href="/products/sentence-tide/" data-tape-slug="sentence-tide" data-featured="true" title="Sentence Tide · 20 Aug 2026 15:50" aria-label="Sentence Tide · 20 Aug 2026 15:50, featured this hour">
+                <a class="tape-tick is-featured" role="listitem" href="/products/sentence-tide/" data-tape-slug="sentence-tide" data-featured="true" title="Sentence Tide · 20 Aug 2026 15:50" aria-label="Sentence Tide · 20 Aug 2026 15:50, featured this hour" data-day="2026-08-20">
                   <span class="tape-hour">15:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Tide</span>
                   <span class="tape-tip">Sentence Tide · 20 Aug 2026 15:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/dark-floor/" data-tape-slug="dark-floor" title="Dark Floor · 20 Aug 2026 13:50" aria-label="Dark Floor · 20 Aug 2026 13:50">
+                <a class="tape-tick" role="listitem" href="/products/dark-floor/" data-tape-slug="dark-floor" title="Dark Floor · 20 Aug 2026 13:50" aria-label="Dark Floor · 20 Aug 2026 13:50" data-day="2026-08-20">
                   <span class="tape-hour">13:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Floor</span>
                   <span class="tape-tip">Dark Floor · 20 Aug 2026 13:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/clause-lens/" data-tape-slug="clause-lens" title="Clause Lens · 20 Aug 2026 11:50" aria-label="Clause Lens · 20 Aug 2026 11:50">
+                <a class="tape-tick" role="listitem" href="/products/clause-lens/" data-tape-slug="clause-lens" title="Clause Lens · 20 Aug 2026 11:50" aria-label="Clause Lens · 20 Aug 2026 11:50" data-day="2026-08-20">
                   <span class="tape-hour">11:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Lens</span>
                   <span class="tape-tip">Clause Lens · 20 Aug 2026 11:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/twin-face/" data-tape-slug="twin-face" title="Twin Face · 20 Aug 2026 09:50" aria-label="Twin Face · 20 Aug 2026 09:50">
+                <a class="tape-tick" role="listitem" href="/products/twin-face/" data-tape-slug="twin-face" title="Twin Face · 20 Aug 2026 09:50" aria-label="Twin Face · 20 Aug 2026 09:50" data-day="2026-08-20">
                   <span class="tape-hour">09:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Twin</span>
                   <span class="tape-tip">Twin Face · 20 Aug 2026 09:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/quote-drift/" data-tape-slug="quote-drift" title="Quote Drift · 20 Aug 2026 07:50" aria-label="Quote Drift · 20 Aug 2026 07:50">
+                <a class="tape-tick" role="listitem" href="/products/quote-drift/" data-tape-slug="quote-drift" title="Quote Drift · 20 Aug 2026 07:50" aria-label="Quote Drift · 20 Aug 2026 07:50" data-day="2026-08-20">
                   <span class="tape-hour">07:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Drift</span>
                   <span class="tape-tip">Quote Drift · 20 Aug 2026 07:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/hold-stack/" data-tape-slug="hold-stack" title="Hold Stack · 20 Aug 2026 06:50" aria-label="Hold Stack · 20 Aug 2026 06:50">
+                <a class="tape-tick" role="listitem" href="/products/hold-stack/" data-tape-slug="hold-stack" title="Hold Stack · 20 Aug 2026 06:50" aria-label="Hold Stack · 20 Aug 2026 06:50" data-day="2026-08-20">
                   <span class="tape-hour">06:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Holds</span>
                   <span class="tape-tip">Hold Stack · 20 Aug 2026 06:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/pager-face/" data-tape-slug="pager-face" title="Pager Face · 20 Aug 2026 05:50" aria-label="Pager Face · 20 Aug 2026 05:50">
+                <a class="tape-tick" role="listitem" href="/products/pager-face/" data-tape-slug="pager-face" title="Pager Face · 20 Aug 2026 05:50" aria-label="Pager Face · 20 Aug 2026 05:50" data-day="2026-08-20">
                   <span class="tape-hour">05:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Pager</span>
                   <span class="tape-tip">Pager Face · 20 Aug 2026 05:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/still-inside/" data-tape-slug="still-inside" title="Still Inside · 20 Aug 2026 03:50" aria-label="Still Inside · 20 Aug 2026 03:50">
+                <a class="tape-tick" role="listitem" href="/products/still-inside/" data-tape-slug="still-inside" title="Still Inside · 20 Aug 2026 03:50" aria-label="Still Inside · 20 Aug 2026 03:50" data-day="2026-08-20">
                   <span class="tape-hour">03:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Inside</span>
                   <span class="tape-tip">Still Inside · 20 Aug 2026 03:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/quiet-landing/" data-tape-slug="quiet-landing" title="Quiet Landing · 20 Aug 2026 02:50" aria-label="Quiet Landing · 20 Aug 2026 02:50">
+                <a class="tape-tick" role="listitem" href="/products/quiet-landing/" data-tape-slug="quiet-landing" title="Quiet Landing · 20 Aug 2026 02:50" aria-label="Quiet Landing · 20 Aug 2026 02:50" data-day="2026-08-20">
                   <span class="tape-hour">02:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Quiet</span>
                   <span class="tape-tip">Quiet Landing · 20 Aug 2026 02:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/renew-trap/" data-tape-slug="renew-trap" title="Renew Trap · 20 Aug 2026 01:50" aria-label="Renew Trap · 20 Aug 2026 01:50">
+                <a class="tape-tick" role="listitem" href="/products/renew-trap/" data-tape-slug="renew-trap" title="Renew Trap · 20 Aug 2026 01:50" aria-label="Renew Trap · 20 Aug 2026 01:50" data-day="2026-08-20">
                   <span class="tape-hour">01:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Renew</span>
                   <span class="tape-tip">Renew Trap · 20 Aug 2026 01:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/reread-clock/" data-tape-slug="reread-clock" title="Reread Clock · 19 Aug 2026 23:50" aria-label="Reread Clock · 19 Aug 2026 23:50">
+                <a class="tape-tick" role="listitem" href="/products/reread-clock/" data-tape-slug="reread-clock" title="Reread Clock · 19 Aug 2026 23:50" aria-label="Reread Clock · 19 Aug 2026 23:50" data-day="2026-08-19">
                   <span class="tape-hour">23:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Reread</span>
                   <span class="tape-tip">Reread Clock · 19 Aug 2026 23:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/vouch-slip/" data-tape-slug="vouch-slip" title="Vouch Slip · 19 Aug 2026 22:50" aria-label="Vouch Slip · 19 Aug 2026 22:50">
+                <a class="tape-tick" role="listitem" href="/products/vouch-slip/" data-tape-slug="vouch-slip" title="Vouch Slip · 19 Aug 2026 22:50" aria-label="Vouch Slip · 19 Aug 2026 22:50" data-day="2026-08-19">
                   <span class="tape-hour">22:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Vouch</span>
                   <span class="tape-tip">Vouch Slip · 19 Aug 2026 22:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/unseen-ink/" data-tape-slug="unseen-ink" title="Unseen Ink · 19 Aug 2026 21:50" aria-label="Unseen Ink · 19 Aug 2026 21:50">
+                <a class="tape-tick" role="listitem" href="/products/unseen-ink/" data-tape-slug="unseen-ink" title="Unseen Ink · 19 Aug 2026 21:50" aria-label="Unseen Ink · 19 Aug 2026 21:50" data-day="2026-08-19">
                   <span class="tape-hour">21:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Ink</span>
                   <span class="tape-tip">Unseen Ink · 19 Aug 2026 21:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/skill-clash/" data-tape-slug="skill-clash" title="Skill Clash · 19 Aug 2026 20:50" aria-label="Skill Clash · 19 Aug 2026 20:50">
+                <a class="tape-tick" role="listitem" href="/products/skill-clash/" data-tape-slug="skill-clash" title="Skill Clash · 19 Aug 2026 20:50" aria-label="Skill Clash · 19 Aug 2026 20:50" data-day="2026-08-19">
                   <span class="tape-hour">20:50</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Clash</span>
                   <span class="tape-tip">Skill Clash · 19 Aug 2026 20:50</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/ghost-briefs/" data-tape-slug="ghost-briefs" title="Ghost Briefs · 19 Aug 2026" aria-label="Ghost Briefs · 19 Aug 2026">
+                <a class="tape-tick" role="listitem" href="/products/ghost-briefs/" data-tape-slug="ghost-briefs" title="Ghost Briefs · 19 Aug 2026" aria-label="Ghost Briefs · 19 Aug 2026" data-day="2026-08-19">
                   <span class="tape-hour">19 Aug</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Ghosts</span>
                   <span class="tape-tip">Ghost Briefs · 19 Aug 2026</span>
                 </a>
-                <a class="tape-tick" role="listitem" href="/products/reorder-radar/" data-tape-slug="reorder-radar" title="Reorder Radar · 18 Aug 2026" aria-label="Reorder Radar · 18 Aug 2026">
+                <a class="tape-tick" role="listitem" href="/products/reorder-radar/" data-tape-slug="reorder-radar" title="Reorder Radar · 18 Aug 2026" aria-label="Reorder Radar · 18 Aug 2026" data-day="2026-08-18">
                   <span class="tape-hour">18 Aug</span>
                   <span class="tape-mark" aria-hidden="true"></span>
                   <span class="tape-name">Radar</span>
@@ -517,7 +545,7 @@
           <figure class="desk-sky" id="desk-sky">
             <div class="sky-head">
               <h3>Desk sky</h3>
-              <p>Sixteen instruments in tag space — paste, writing, clock, contracts, trust, review, ops, space. Click a star to open it. Hover or focus for name and tags. Search and tag compose with AND here too: matching stars stay bright; the rest dim.</p>
+              <p>Sixteen instruments in tag space — paste, writing, clock, contracts, trust, review, ops, space. Click a star to open it. Hover or focus for name and tags. Search, tag, and day compose with AND here too: matching stars stay bright; the rest dim.</p>
             </div>
             <div id="sky-legend" class="sky-legend" aria-label="Constellation tag legend">
               <button type="button" class="tag-btn" data-tag="paste" aria-pressed="false">paste</button>
@@ -589,7 +617,7 @@
                 <line class="sky-edge" data-sky-tags="review" x1="248" y1="388" x2="86" y2="458" />
                 <line class="sky-edge" data-sky-tags="fluency,ownership,handoff" x1="428" y1="408" x2="588" y2="458" />
               </g>
-              <a class="sky-node" id="sky-clause-lens" href="/products/clause-lens/" data-sky-slug="clause-lens" data-sky-tags="legal,paste,contracts" aria-label="Clause Lens — legal, paste, contracts">
+              <a class="sky-node" id="sky-clause-lens" href="/products/clause-lens/" data-sky-slug="clause-lens" data-sky-tags="legal,paste,contracts" aria-label="Clause Lens — legal, paste, contracts" data-day="2026-08-20">
                 <title>Clause Lens — legal, paste, contracts</title>
                 <circle class="sky-halo" cx="198" cy="128" r="15" />
                 <circle class="sky-star" cx="198" cy="128" r="5.5" />
@@ -600,7 +628,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">legal · paste · contracts</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-renew-trap" href="/products/renew-trap/" data-sky-slug="renew-trap" data-sky-tags="ops,contracts,renewals" aria-label="Renew Trap — ops, contracts, renewals">
+              <a class="sky-node" id="sky-renew-trap" href="/products/renew-trap/" data-sky-slug="renew-trap" data-sky-tags="ops,contracts,renewals" aria-label="Renew Trap — ops, contracts, renewals" data-day="2026-08-20">
                 <title>Renew Trap — ops, contracts, renewals</title>
                 <circle class="sky-halo" cx="72" cy="208" r="15" />
                 <circle class="sky-star" cx="72" cy="208" r="5.5" />
@@ -611,7 +639,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">ops · contracts · renewals</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-quote-drift" href="/products/quote-drift/" data-sky-slug="quote-drift" data-sky-tags="ops,money,paste" aria-label="Quote Drift — ops, money, paste">
+              <a class="sky-node" id="sky-quote-drift" href="/products/quote-drift/" data-sky-slug="quote-drift" data-sky-tags="ops,money,paste" aria-label="Quote Drift — ops, money, paste" data-day="2026-08-20">
                 <title>Quote Drift — ops, money, paste</title>
                 <circle class="sky-halo" cx="128" cy="318" r="15" />
                 <circle class="sky-star" cx="128" cy="318" r="5.5" />
@@ -622,7 +650,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">ops · money · paste</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-twin-face" href="/products/twin-face/" data-sky-slug="twin-face" data-sky-tags="time,paste,clock" aria-label="Twin Face — time, paste, clock">
+              <a class="sky-node" id="sky-twin-face" href="/products/twin-face/" data-sky-slug="twin-face" data-sky-tags="time,paste,clock" aria-label="Twin Face — time, paste, clock" data-day="2026-08-20">
                 <title>Twin Face — time, paste, clock</title>
                 <circle class="sky-halo" cx="348" cy="248" r="15" />
                 <circle class="sky-star" cx="348" cy="248" r="5.5" />
@@ -633,7 +661,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">time · paste · clock</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-unseen-ink" href="/products/unseen-ink/" data-sky-slug="unseen-ink" data-sky-tags="unicode,inbound,review" aria-label="Unseen Ink — unicode, inbound, review">
+              <a class="sky-node" id="sky-unseen-ink" href="/products/unseen-ink/" data-sky-slug="unseen-ink" data-sky-tags="unicode,inbound,review" aria-label="Unseen Ink — unicode, inbound, review" data-day="2026-08-19">
                 <title>Unseen Ink — unicode, inbound, review</title>
                 <circle class="sky-halo" cx="248" cy="388" r="15" />
                 <circle class="sky-star" cx="248" cy="388" r="5.5" />
@@ -644,7 +672,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">unicode · inbound · review</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-pager-face" href="/products/pager-face/" data-sky-slug="pager-face" data-sky-tags="ops,oncall,clock" aria-label="Pager Face — ops, oncall, clock">
+              <a class="sky-node" id="sky-pager-face" href="/products/pager-face/" data-sky-slug="pager-face" data-sky-tags="ops,oncall,clock" aria-label="Pager Face — ops, oncall, clock" data-day="2026-08-20">
                 <title>Pager Face — ops, oncall, clock</title>
                 <circle class="sky-halo" cx="518" cy="108" r="15" />
                 <circle class="sky-star" cx="518" cy="108" r="5.5" />
@@ -655,7 +683,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">ops · oncall · clock</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-quiet-landing" href="/products/quiet-landing/" data-sky-slug="quiet-landing" data-sky-tags="ops,timezone,courtesy" aria-label="Quiet Landing — ops, timezone, courtesy">
+              <a class="sky-node" id="sky-quiet-landing" href="/products/quiet-landing/" data-sky-slug="quiet-landing" data-sky-tags="ops,timezone,courtesy" aria-label="Quiet Landing — ops, timezone, courtesy" data-day="2026-08-20">
                 <title>Quiet Landing — ops, timezone, courtesy</title>
                 <circle class="sky-halo" cx="658" cy="178" r="15" />
                 <circle class="sky-star" cx="658" cy="178" r="5.5" />
@@ -666,7 +694,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">ops · timezone · courtesy</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-hold-stack" href="/products/hold-stack/" data-sky-slug="hold-stack" data-sky-tags="ops,calendar,overlap" aria-label="Hold Stack — ops, calendar, overlap">
+              <a class="sky-node" id="sky-hold-stack" href="/products/hold-stack/" data-sky-slug="hold-stack" data-sky-tags="ops,calendar,overlap" aria-label="Hold Stack — ops, calendar, overlap" data-day="2026-08-20">
                 <title>Hold Stack — ops, calendar, overlap</title>
                 <circle class="sky-halo" cx="498" cy="278" r="15" />
                 <circle class="sky-star" cx="498" cy="278" r="5.5" />
@@ -677,7 +705,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">ops · calendar · overlap</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-reread-clock" href="/products/reread-clock/" data-sky-slug="reread-clock" data-sky-tags="trust,half-life,attestation" aria-label="Reread Clock — trust, half-life, attestation">
+              <a class="sky-node" id="sky-reread-clock" href="/products/reread-clock/" data-sky-slug="reread-clock" data-sky-tags="trust,half-life,attestation" aria-label="Reread Clock — trust, half-life, attestation" data-day="2026-08-19">
                 <title>Reread Clock — trust, half-life, attestation</title>
                 <circle class="sky-halo" cx="798" cy="78" r="15" />
                 <circle class="sky-star" cx="798" cy="78" r="5.5" />
@@ -688,7 +716,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">trust · half-life · attestation</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-vouch-slip" href="/products/vouch-slip/" data-sky-slug="vouch-slip" data-sky-tags="trust,attestation,inbound" aria-label="Vouch Slip — trust, attestation, inbound">
+              <a class="sky-node" id="sky-vouch-slip" href="/products/vouch-slip/" data-sky-slug="vouch-slip" data-sky-tags="trust,attestation,inbound" aria-label="Vouch Slip — trust, attestation, inbound" data-day="2026-08-19">
                 <title>Vouch Slip — trust, attestation, inbound</title>
                 <circle class="sky-halo" cx="908" cy="138" r="15" />
                 <circle class="sky-star" cx="908" cy="138" r="5.5" />
@@ -699,7 +727,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">trust · attestation · inbound</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-skill-clash" href="/products/skill-clash/" data-sky-slug="skill-clash" data-sky-tags="skills,collision,review" aria-label="Skill Clash — skills, collision, review">
+              <a class="sky-node" id="sky-skill-clash" href="/products/skill-clash/" data-sky-slug="skill-clash" data-sky-tags="skills,collision,review" aria-label="Skill Clash — skills, collision, review" data-day="2026-08-19">
                 <title>Skill Clash — skills, collision, review</title>
                 <circle class="sky-halo" cx="86" cy="458" r="15" />
                 <circle class="sky-star" cx="86" cy="458" r="5.5" />
@@ -710,7 +738,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">skills · collision · review</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-still-inside" href="/products/still-inside/" data-sky-slug="still-inside" data-sky-tags="ops,offboarding,access" aria-label="Still Inside — ops, offboarding, access">
+              <a class="sky-node" id="sky-still-inside" href="/products/still-inside/" data-sky-slug="still-inside" data-sky-tags="ops,offboarding,access" aria-label="Still Inside — ops, offboarding, access" data-day="2026-08-20">
                 <title>Still Inside — ops, offboarding, access</title>
                 <circle class="sky-halo" cx="428" cy="408" r="15" />
                 <circle class="sky-star" cx="428" cy="408" r="5.5" />
@@ -721,7 +749,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">ops · offboarding · access</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-ghost-briefs" href="/products/ghost-briefs/" data-sky-slug="ghost-briefs" data-sky-tags="fluency,ownership,handoff" aria-label="Ghost Briefs — fluency, ownership, handoff">
+              <a class="sky-node" id="sky-ghost-briefs" href="/products/ghost-briefs/" data-sky-slug="ghost-briefs" data-sky-tags="fluency,ownership,handoff" aria-label="Ghost Briefs — fluency, ownership, handoff" data-day="2026-08-19">
                 <title>Ghost Briefs — fluency, ownership, handoff</title>
                 <circle class="sky-halo" cx="588" cy="458" r="15" />
                 <circle class="sky-star" cx="588" cy="458" r="5.5" />
@@ -732,7 +760,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">fluency · ownership · handoff</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-reorder-radar" href="/products/reorder-radar/" data-sky-slug="reorder-radar" data-sky-tags="inventory,ops" aria-label="Reorder Radar — inventory, ops">
+              <a class="sky-node" id="sky-reorder-radar" href="/products/reorder-radar/" data-sky-slug="reorder-radar" data-sky-tags="inventory,ops" aria-label="Reorder Radar — inventory, ops" data-day="2026-08-18">
                 <title>Reorder Radar — inventory, ops</title>
                 <circle class="sky-halo" cx="818" cy="378" r="15" />
                 <circle class="sky-star" cx="818" cy="378" r="5.5" />
@@ -743,7 +771,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">inventory · ops</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-dark-floor" href="/products/dark-floor/" data-sky-slug="dark-floor" data-sky-tags="ops,space,rooms" aria-label="Dark Floor — ops, space, rooms">
+              <a class="sky-node" id="sky-dark-floor" href="/products/dark-floor/" data-sky-slug="dark-floor" data-sky-tags="ops,space,rooms" aria-label="Dark Floor — ops, space, rooms" data-day="2026-08-20">
                 <title>Dark Floor — ops, space, rooms</title>
                 <circle class="sky-halo" cx="688" cy="318" r="15" />
                 <circle class="sky-star" cx="688" cy="318" r="5.5" />
@@ -754,7 +782,7 @@
                   <text class="sky-tip-tags" x="0" y="10" text-anchor="middle">ops · space · rooms</text>
                 </g>
               </a>
-              <a class="sky-node" id="sky-sentence-tide" href="/products/sentence-tide/" data-sky-slug="sentence-tide" data-sky-tags="writing,paste,prose" data-featured="true" aria-label="Sentence Tide — writing, paste, prose">
+              <a class="sky-node" id="sky-sentence-tide" href="/products/sentence-tide/" data-sky-slug="sentence-tide" data-sky-tags="writing,paste,prose" data-featured="true" aria-label="Sentence Tide — writing, paste, prose" data-day="2026-08-20">
                 <title>Sentence Tide — writing, paste, prose</title>
                 <circle class="sky-halo" cx="218" cy="268" r="22" />
                 <circle class="sky-star" cx="218" cy="268" r="8.5" />
@@ -781,7 +809,7 @@
                 data-slug="sentence-tide"
                 data-blurb="Walls of text hide the long sentences. Paste prose. See a tide of sentence lengths. Click a swell to find the sentence. Not hidden glyphs. Not invoices. Not clauses."
                 data-tags="writing,paste,prose"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge featured">featured this hour</span>
                   <h3>Sentence Tide</h3>
@@ -807,8 +835,8 @@
               </div>
             </div>
             <p class="lane-note">Earlier ships, grouped by day — still first-class and linked</p>
-            <div class="shelf" data-shelf="20 Aug 2026">
-              <h4 class="shelf-head">20 Aug 2026</h4>
+            <div class="shelf" data-shelf="20 Aug 2026" data-day="2026-08-20">
+              <button type="button" class="shelf-head" data-day="2026-08-20" aria-pressed="false">20 Aug 2026</button>
               <div class="product-index">
               <article
                 class="product-card"
@@ -817,7 +845,7 @@
                 data-slug="dark-floor"
                 data-blurb="Room calendars say booked. The floor is empty. A night plan of rooms vs presence: booked-and-empty (dark), booked-and-occupied, free. Space geometry, not a day strip of holds."
                 data-tags="ops,space,rooms"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge">20 Aug 2026 13:50</span>
                   <h3>Dark Floor</h3>
@@ -838,7 +866,7 @@
                 data-slug="clause-lens"
                 data-blurb="Auto-renew, assignment, and “we may change these terms” hide in paragraphs you already signed. Paste the clause. See the tripwires in place. Not a vendor table."
                 data-tags="legal,paste,contracts"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge">20 Aug 2026 11:50</span>
                   <h3>Clause Lens</h3>
@@ -859,7 +887,7 @@
                 data-slug="twin-face"
                 data-blurb="A timestamp is one string. Two people hear two times. Paste once, see two analog faces. No send queue. No quiet-hours rail."
                 data-tags="time,paste,clock"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge">20 Aug 2026 09:50</span>
                   <h3>Twin Face</h3>
@@ -880,7 +908,7 @@
                 data-slug="quote-drift"
                 data-blurb="A two-well paste instrument for quote vs invoice. Money delta, the lines that appeared, a stacked strip of matched / extra / missing. Two ledgers, not hidden glyphs."
                 data-tags="ops,money,paste"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge">20 Aug 2026 07:50</span>
                   <h3>Quote Drift</h3>
@@ -901,7 +929,7 @@
                 data-slug="hold-stack"
                 data-blurb="A day-strip map of overlapping calendar holds. Lanes for the pile, heat for depth, a play-head you can scrub. Release a hold or split it at now. Geometry of a day, not an on-call ring."
                 data-tags="ops,calendar,overlap"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge">20 Aug 2026 06:50</span>
                   <h3>Hold Stack</h3>
@@ -922,7 +950,7 @@
                 data-slug="pager-face"
                 data-blurb="A 24-hour pager clock for on-call rotations. Shift arcs, a now-hand, and a center that names who is primary, who is backup, minutes to handoff, and whether the primary is inside their own quiet hours. Rotation geometry, not a roster table."
                 data-tags="ops,oncall,clock"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge">20 Aug 2026 05:50</span>
                   <h3>Pager Face</h3>
@@ -943,7 +971,7 @@
                 data-slug="still-inside"
                 data-blurb="A leftover-access board for people who left. Files badges, seats, break-glass keys, VPN, and vaults that still open, a named revoker, and the red rail of leftover access. Access after exit, not fluency."
                 data-tags="ops,offboarding,access"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge">20 Aug 2026 03:50</span>
                   <h3>Still Inside</h3>
@@ -964,7 +992,7 @@
                 data-slug="quiet-landing"
                 data-blurb="A landing clock for scheduled Slack and email. Files a send, their timezone, their quiet hours, and the red rail of pings that hit them asleep. Timezone courtesy, not contracts."
                 data-tags="ops,timezone,courtesy"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge">20 Aug 2026 02:50</span>
                   <h3>Quiet Landing</h3>
@@ -985,7 +1013,7 @@
                 data-slug="renew-trap"
                 data-blurb="A notice-window board for vendor auto-renewals. Files cancel-by dates, a named owner, and the red rail of silence that still bills you. Contracts, not SKUs."
                 data-tags="ops,contracts,renewals"
-              >
+                data-day="2026-08-20">
                 <div>
                   <span class="badge">20 Aug 2026 01:50</span>
                   <h3>Renew Trap</h3>
@@ -1001,8 +1029,8 @@
               </article>
               </div>
             </div>
-            <div class="shelf" data-shelf="19 Aug 2026">
-              <h4 class="shelf-head">19 Aug 2026</h4>
+            <div class="shelf" data-shelf="19 Aug 2026" data-day="2026-08-19">
+              <button type="button" class="shelf-head" data-day="2026-08-19" aria-pressed="false">19 Aug 2026</button>
               <div class="product-index">
               <article
                 class="product-card"
@@ -1011,7 +1039,7 @@
                 data-slug="reread-clock"
                 data-blurb="A decision half-life board for live attestations. Clocks last-opened timestamps, remaining trust, and the red rail of signatures that are stale but still signed."
                 data-tags="trust,half-life,attestation"
-              >
+                data-day="2026-08-19">
                 <div>
                   <span class="badge">19 Aug 2026 23:50</span>
                   <h3>Reread Clock</h3>
@@ -1032,7 +1060,7 @@
                 data-slug="vouch-slip"
                 data-blurb="A named-owner attestation board for inbound skill packs. Files who vouches, what the pack may do, what they will be paged for, and which slips are unsigned or expired."
                 data-tags="trust,attestation,inbound"
-              >
+                data-day="2026-08-19">
                 <div>
                   <span class="badge">19 Aug 2026 22:50</span>
                   <h3>Vouch Slip</h3>
@@ -1053,7 +1081,7 @@
                 data-slug="unseen-ink"
                 data-blurb="A local inspector for inbound hidden Unicode. Lights ZWSP, bidi overrides, tag characters, and homoglyph-adjacent lookalikes before they hit an agent or a merge."
                 data-tags="unicode,inbound,review"
-              >
+                data-day="2026-08-19">
                 <div>
                   <span class="badge">19 Aug 2026 21:50</span>
                   <h3>Unseen Ink</h3>
@@ -1074,7 +1102,7 @@
                 data-slug="skill-clash"
                 data-blurb="A collision board for stacked agent skills. Flags MUST/NEVER contradictions, overlapping domains, and injection-shaped lines, then scores stack coherence."
                 data-tags="skills,collision,review"
-              >
+                data-day="2026-08-19">
                 <div>
                   <span class="badge">19 Aug 2026 20:50</span>
                   <h3>Skill Clash</h3>
@@ -1095,7 +1123,7 @@
                 data-slug="ghost-briefs"
                 data-blurb="A fluency map of shipped subsystems. Names who can still brief each surface in ninety seconds, and which are ghosts after an agent-heavy week. Fluency after merge, not a roster table."
                 data-tags="fluency,ownership,handoff"
-              >
+                data-day="2026-08-19">
                 <div>
                   <span class="badge">19 Aug 2026</span>
                   <h3>Ghost Briefs</h3>
@@ -1111,8 +1139,8 @@
               </article>
               </div>
             </div>
-            <div class="shelf" data-shelf="18 Aug 2026">
-              <h4 class="shelf-head">18 Aug 2026</h4>
+            <div class="shelf" data-shelf="18 Aug 2026" data-day="2026-08-18">
+              <button type="button" class="shelf-head" data-day="2026-08-18" aria-pressed="false">18 Aug 2026</button>
               <div class="product-index">
               <article
                 class="product-card"
@@ -1121,7 +1149,7 @@
                 data-slug="reorder-radar"
                 data-blurb="A local inventory cockpit for pop-up shops and kiosks. Low-stock SKUs, a buy-now queue, reorder quantities and lead days. Stock cover, not a full ERP."
                 data-tags="inventory,ops"
-              >
+                data-day="2026-08-18">
                 <div>
                   <span class="badge">18 Aug 2026</span>
                   <h3>Reorder Radar</h3>
@@ -1154,8 +1182,8 @@
         <section class="section">
           <h2>Why this wedge</h2>
           <div class="list">
-            <div class="list-item"><strong>Problem fit</strong><span>Sixteen instruments, and the only chronology is dated headings. This hour is a ship tape of those hours — not Hold Stack, not a seventeenth product, not a restyle of the cards.</span></div>
-            <div class="list-item"><strong>Operational value</strong><span>Newest first on the left. Click a tick to open the hour. Featured Sentence Tide stays marked. Search and tag dim non-matching ticks the same way as sky stars.</span></div>
+            <div class="list-item"><strong>Problem fit</strong><span>Sixteen instruments, and dated headings are not a link. This hour is <code>?day=</code> so a shelf is a desk link — not Hold Stack, not a seventeenth product, not a restyle of the cards.</span></div>
+            <div class="list-item"><strong>Operational value</strong><span>Click a shelf heading or a day chip. Copy the desk link. Featured Sentence Tide stays marked. Search, tag, and day dim non-matching ticks the same way as sky stars.</span></div>
             <div class="list-item"><strong>Buildability</strong><span>Static HTML/CSS/JS on the hub only. No new product folder, no backend, no npm, no new cron.</span></div>
             <div class="list-item"><strong>Deployment</strong><span>Same Vercel static app. Root <code>index.html</code> only. All sixteen product URLs stay.</span></div>
           </div>
@@ -1164,7 +1192,7 @@
         <section class="section">
           <h2>Repo shape</h2>
           <div class="footer">
-            <span><code>index.html</code> — week-shelf catalogue hub + ship tape (newest left) + tag constellation that follows <code>q</code> and <code>tag</code> (URL-persisted <code>q</code> / <code>tag</code> / <code>view</code>)</span>
+            <span><code>index.html</code> — week-shelf catalogue hub + ship tape (newest left) + tag constellation that follows <code>q</code>, <code>tag</code>, and <code>day</code> (URL-persisted <code>q</code> / <code>tag</code> / <code>day</code> / <code>view</code>)</span>
             <span><code>products/sentence-tide/</code> — featured this hour</span>
             <span><code>products/dark-floor/</code> — archive · 20 Aug 13:50</span>
             <span><code>products/clause-lens/</code> — archive · 20 Aug 11:50</span>
@@ -1195,6 +1223,7 @@
       const matchCount = document.getElementById('match-count');
       const emptyState = document.getElementById('empty-state');
       const activeTagEl = document.getElementById('active-tag');
+      const activeDayEl = document.getElementById('active-day');
       const clearBtn = document.getElementById('clear-filters');
       const copyBtn = document.getElementById('copy-desk-link');
       const tagCloud = document.getElementById('tag-cloud');
@@ -1205,9 +1234,15 @@
       const viewCompact = document.getElementById('view-compact');
       const constellation = document.getElementById('constellation');
       const shipTape = document.getElementById('ship-tape');
+      const CANONICAL_DAYS = new Set(['2026-08-20', '2026-08-19', '2026-08-18']);
       let activeTag = '';
+      let activeDay = '';
       let compact = false;
       let copyResetTimer = 0;
+
+      function normalizeDay(value) {
+        return CANONICAL_DAYS.has(value) ? value : '';
+      }
 
       function tagsOf(card) {
         return (card.dataset.tags || '').split(',').map((tag) => tag.trim()).filter(Boolean);
@@ -1266,6 +1301,7 @@
         const q = searchInput.value.trim();
         if (q) params.set('q', q);
         if (activeTag) params.set('tag', activeTag);
+        if (activeDay) params.set('day', activeDay);
         if (compact) params.set('view', 'compact');
         return params;
       }
@@ -1289,12 +1325,19 @@
         const params = new URLSearchParams(location.search);
         searchInput.value = params.get('q') || '';
         activeTag = params.get('tag') || '';
+        activeDay = normalizeDay(params.get('day') || '');
         compact = params.get('view') === 'compact';
         applyView();
       }
 
       function setTag(tag) {
         activeTag = tag;
+        applyFilters();
+      }
+
+      function setDay(day) {
+        const next = normalizeDay(day);
+        activeDay = activeDay === next ? '' : next;
         applyFilters();
       }
 
@@ -1308,21 +1351,23 @@
         return tagOk && searchOk;
       }
 
-      function cardMatches(card, needle, tag) {
-        return matchesFilter(haystack(card), tagsOf(card), needle, tag);
+      function cardMatches(card, needle, tag, day = activeDay) {
+        const dayOk = !day || card.dataset.day === day;
+        return dayOk && matchesFilter(haystack(card), tagsOf(card), needle, tag);
       }
 
       function cardBySlug(slug) {
         return cards.find((card) => card.dataset.slug === slug || card.dataset.product === slug);
       }
 
-      function skyNodeMatches(node, needle, tag) {
+      function skyNodeMatches(node, needle, tag, day = activeDay) {
         const slug = node.dataset.skySlug;
         const card = cardBySlug(slug);
-        if (card) return cardMatches(card, needle, tag);
+        if (card) return cardMatches(card, needle, tag, day);
         const tags = tagList(node.dataset.skyTags);
         const hay = [slug, node.textContent, node.dataset.skyTags].join(' ').toLowerCase();
-        return matchesFilter(hay, tags, needle, tag);
+        const dayOk = !day || node.dataset.day === day;
+        return dayOk && matchesFilter(hay, tags, needle, tag);
       }
 
       function skyNodeAt(x, y) {
@@ -1338,13 +1383,14 @@
         if (!shipTape) return;
         const query = searchInput.value.trim();
         const needle = query.toLowerCase();
-        const filtering = Boolean(query || activeTag);
+        const filtering = Boolean(query || activeTag || activeDay);
         shipTape.classList.toggle('is-filtering', filtering);
 
         shipTape.querySelectorAll('.tape-tick').forEach((tick) => {
           const slug = tick.dataset.tapeSlug;
           const card = cardBySlug(slug);
-          const matches = card ? cardMatches(card, needle, activeTag) : !filtering;
+          const dayOk = !activeDay || tick.dataset.day === activeDay || (card && card.dataset.day === activeDay);
+          const matches = (card ? cardMatches(card, needle, activeTag) : !filtering) && dayOk;
           tick.classList.toggle('match', matches);
           tick.classList.toggle('is-dim', filtering && !matches);
         });
@@ -1354,7 +1400,7 @@
         if (!constellation) return;
         const query = searchInput.value.trim();
         const needle = query.toLowerCase();
-        const filtering = Boolean(query || activeTag);
+        const filtering = Boolean(query || activeTag || activeDay);
         constellation.classList.toggle('is-filtering', filtering);
 
         const nodeMatch = new Map();
@@ -1397,14 +1443,22 @@
         archive.hidden = !archive.querySelector('[data-product]:not([hidden])');
 
         const total = cards.length;
-        matchCount.innerHTML = shown === total && !query && !activeTag
+        matchCount.innerHTML = shown === total && !query && !activeTag && !activeDay
           ? `Showing <strong>${total}</strong> of ${total} products`
           : `<strong>${shown}</strong> match${shown === 1 ? '' : 'es'} of ${total}`;
 
-        const filtering = Boolean(query || activeTag);
+        const filtering = Boolean(query || activeTag || activeDay);
         clearBtn.hidden = !filtering;
         activeTagEl.hidden = !activeTag;
         activeTagEl.textContent = activeTag ? `tag: ${activeTag}` : '';
+        activeDayEl.hidden = !activeDay;
+        activeDayEl.textContent = activeDay ? `day: ${activeDay}` : '';
+
+        document.querySelectorAll('.day-chip, button.shelf-head[data-day]').forEach((el) => {
+          const on = Boolean(activeDay) && el.dataset.day === activeDay;
+          el.classList.toggle('active', on);
+          el.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
 
         document.querySelectorAll('[data-tag]').forEach((el) => {
           const on = el.dataset.tag === activeTag;
@@ -1419,6 +1473,7 @@
           const bits = [];
           if (query) bits.push(`“${query}”`);
           if (activeTag) bits.push(`tag “${activeTag}”`);
+          if (activeDay) bits.push(`day “${activeDay}”`);
           emptyState.hidden = false;
           emptyState.innerHTML = `No products match ${bits.join(' and ')}.`;
         } else {
@@ -1432,6 +1487,7 @@
       function clearFilters() {
         searchInput.value = '';
         activeTag = '';
+        activeDay = '';
         applyFilters();
         searchInput.focus();
       }
@@ -1439,8 +1495,12 @@
       document.querySelectorAll('#sky-legend [data-tag]').forEach((btn) => {
         btn.addEventListener('click', () => setTag(activeTag === btn.dataset.tag ? '' : btn.dataset.tag));
       });
+      document.querySelectorAll('.day-chip, button.shelf-head[data-day]').forEach((btn) => {
+        btn.addEventListener('click', () => setDay(btn.dataset.day));
+      });
       searchInput.addEventListener('input', applyFilters);
       clearBtn.addEventListener('click', clearFilters);
+      activeDayEl.addEventListener('click', () => { activeDay = ''; applyFilters(); });
       viewComfortable.addEventListener('click', () => setView('comfortable'));
       viewCompact.addEventListener('click', () => setView('compact'));
       document.addEventListener('keydown', (event) => {
@@ -1452,7 +1512,7 @@
           searchInput.select();
           return;
         }
-        if (event.key === 'Escape' && (searchInput.value || activeTag)) {
+        if (event.key === 'Escape' && (searchInput.value || activeTag || activeDay)) {
           event.preventDefault();
           clearFilters();
         }
