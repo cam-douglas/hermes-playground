@@ -2,6 +2,7 @@
 
 One markdown file per ship day, plus hourly files when the loop is 30 minutes.
 
+- `2026-08-20-1550.md` — Sentence Tide (15:50 Sydney hourly run)
 - `2026-08-20-1450.md` — Sky follows search (14:50 Sydney hourly run; hub upgrade)
 - `2026-08-20-1350.md` — Dark Floor (13:50 Sydney hourly run)
 - `2026-08-20-1250.md` — Desk sky (12:50 Sydney hourly run; hub tag constellation)

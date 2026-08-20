@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Sentence Tide — paste prose, see a tide of sentence lengths, click a swell to find the long one." />
+    <title>Sentence Tide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #02080b;
+        --panel: #061014;
+        --ink: #d8fff0;
+        --muted: #6d8f86;
+        --line: rgba(92, 255, 178, 0.16);
+        --phos: #5cffb2;
+        --phos-dim: #1c6b4c;
+        --swell: #7dffc4;
+        --tall: #c8ff6a;
+        --warn: #ffb86b;
+        --grid: rgba(92, 255, 178, 0.08);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(92, 255, 178, 0.1), transparent 30%),
+          radial-gradient(circle at 88% 0%, rgba(200, 255, 106, 0.06), transparent 26%),
+          linear-gradient(180deg, #010506 0%, #041014 100%);
+      }
+      button, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1080px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(6, 16, 20, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 50%; background: var(--phos);
+        box-shadow: 0 0 12px rgba(92, 255, 178, 0.8);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(8, 22, 26, 0.96), rgba(3, 10, 14, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(92, 255, 178, 0.4);
+        color: var(--phos); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Syne", ui-sans-serif, system-ui, sans-serif; font-weight: 800;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 92px);
+        line-height: 0.84; letter-spacing: -0.04em;
+      }
+      .lede { max-width: 76ch; color: #c8f5e4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #0a1a18;
+      }
+      .btn.primary { background: var(--phos); border-color: transparent; color: #042018; font-weight: 600; }
+      .btn.warn { border-color: rgba(255, 184, 107, 0.4); color: #ffc08a; }
+      .stage { display: grid; gap: 12px; margin-top: 14px; }
+      .tide-panel, .well {
+        border: 1px solid var(--line); background: var(--panel);
+      }
+      .panel-head, .well-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2, .well-head h2 {
+        font-family: "Syne", ui-sans-serif, system-ui, sans-serif;
+        font-weight: 700; margin: 0; font-size: 22px; letter-spacing: -0.03em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .tide-body {
+        position: relative;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            transparent 0 11px,
+            rgba(92, 255, 178, 0.03) 11px 12px
+          ),
+          #03110f;
+      }
+      #tide {
+        display: block; width: 100%; height: auto; min-height: 260px;
+      }
+      .tide-grid { stroke: var(--grid); stroke-width: 1; }
+      .tide-water { stroke: rgba(200, 255, 106, 0.45); stroke-dasharray: 5 6; stroke-width: 1.2; }
+      .tide-water-label { fill: #c8ff6a; font-size: 10px; letter-spacing: 0.12em; }
+      .tide-base { stroke: rgba(92, 255, 178, 0.28); stroke-width: 1.4; }
+      .tide-crest {
+        fill: none; stroke: rgba(125, 255, 196, 0.7); stroke-width: 1.8;
+        filter: drop-shadow(0 0 6px rgba(92, 255, 178, 0.45));
+      }
+      .swell { cursor: pointer; outline: none; }
+      .swell-body { fill: rgba(92, 255, 178, 0.28); stroke: rgba(92, 255, 178, 0.7); stroke-width: 1.2; }
+      .swell.is-tall .swell-body { fill: rgba(200, 255, 106, 0.38); stroke: #c8ff6a; }
+      .swell.is-lit .swell-body,
+      .swell:focus-visible .swell-body {
+        fill: rgba(200, 255, 106, 0.62); stroke: #f4ffe0; stroke-width: 2;
+        filter: drop-shadow(0 0 10px rgba(200, 255, 106, 0.55));
+      }
+      .swell-cap { fill: var(--swell); }
+      .swell.is-tall .swell-cap { fill: var(--tall); }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 22px; color: white; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .well-body { position: relative; min-height: 240px; }
+      .sentence-layer, #paste-well {
+        margin: 0; padding: 16px 16px 20px; min-height: 240px;
+        font-size: 15px; line-height: 1.7; letter-spacing: 0.01em;
+        white-space: pre-wrap; word-wrap: break-word; overflow-wrap: anywhere;
+      }
+      .sentence-layer {
+        position: absolute; inset: 0;
+        color: #b7e8d4; pointer-events: none; overflow: auto;
+        background: #03110f;
+      }
+      #paste-well {
+        position: relative; z-index: 1; width: 100%; resize: vertical;
+        border: 0; background: transparent; color: transparent;
+        caret-color: var(--phos);
+      }
+      #paste-well:focus { outline: 1px solid rgba(92, 255, 178, 0.28); outline-offset: -1px; }
+      mark.sent {
+        color: inherit; background: transparent; border-radius: 2px;
+      }
+      mark.sent.is-lit {
+        background: rgba(200, 255, 106, 0.16);
+        box-shadow: inset 0 -2px 0 #c8ff6a;
+        color: #f4ffe0;
+      }
+      mark.sent.is-tall { box-shadow: inset 0 -1px 0 rgba(200, 255, 106, 0.45); }
+      .note { margin-top: 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+      @media (max-width: 720px) {
+        .readout { grid-template-columns: 1fr; }
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .mast { padding: 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> phosphor · local</span>
+        </div>
+        <div class="cmd-right">
+          <span id="persist-state" class="pill">local · seed</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">writing instrument · 20 Aug 2026 15:50</span>
+        <h1>Sentence Tide</h1>
+        <p class="lede">
+          Walls of text hide the long sentences. Paste prose. See a tide of sentence lengths.
+          Click a swell to find the sentence. Not unicode. Not invoices. Not clauses.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-seed">Load seed</button>
+          <button type="button" class="btn warn" id="btn-reset">Reset</button>
+        </div>
+      </header>
+
+      <div class="stage">
+        <figure class="tide-panel">
+          <div class="panel-head">
+            <div>
+              <div class="kicker">waveform</div>
+              <h2>Tide</h2>
+            </div>
+            <span class="kicker" id="tide-meta">word count by sentence</span>
+          </div>
+          <div class="tide-body">
+            <svg id="tide" viewBox="0 0 1000 280" role="img" aria-label="Waveform of sentence lengths"></svg>
+          </div>
+          <div class="readout" id="readout">
+            <span><b id="stat-count">0</b> sentences</span>
+            <span><b id="stat-longest">0</b> longest words</span>
+            <span><b id="stat-over">0%</b> over 25 words</span>
+          </div>
+        </figure>
+
+        <section class="well" id="paste-well-wrap">
+          <div class="well-head">
+            <div>
+              <div class="kicker">paste</div>
+              <h2>Well</h2>
+            </div>
+            <span class="kicker" id="well-meta">seed</span>
+          </div>
+          <div class="well-body">
+            <div id="sentence-layer" class="sentence-layer" aria-hidden="true"></div>
+            <textarea id="paste-well" spellcheck="false" aria-label="Paste prose"></textarea>
+          </div>
+        </section>
+      </div>
+
+      <p class="note">
+        Split is a simple <code>. ? !</code> cut. Height is word count. The 25-word waterline is a courtesy, not a style guide.
+        Last paste stays in this browser. Not a clock. Not a floor plan. Not a money strip.
+      </p>
+    </div>
+
+    <script>
+      const STORAGE_KEY = "sentence-tide:v1";
+      const SEED = [
+        "Ship the brief. Keep sentences short. The desk already has fifteen instruments. Walls of text hide the long ones.",
+        "The first swell is this sentence, which runs on because the writer kept adding clauses about cadence, about how a wall of prose can bury the one thought that actually matters, and about how nobody notices until someone counts the words out loud and finds forty-plus sitting in a single breath.",
+        "Paste again. Read the tide. Click a swell.",
+        "A second long sentence is here on purpose so the waveform has two tall marks because it lists the things this instrument is not including a unicode UV board a quote versus invoice money strip a legal loupe and a pair of analog faces and then it still keeps going so the word count climbs past forty and the swell stands up against the short ones.",
+        "Reset restores this seed."
+      ].join(" ");
+
+      const paste = document.getElementById("paste-well");
+      const layer = document.getElementById("sentence-layer");
+      const tide = document.getElementById("tide");
+      const persistState = document.getElementById("persist-state");
+      const wellMeta = document.getElementById("well-meta");
+      const tideMeta = document.getElementById("tide-meta");
+      const statCount = document.getElementById("stat-count");
+      const statLongest = document.getElementById("stat-longest");
+      const statOver = document.getElementById("stat-over");
+
+      let mode = "seed";
+      let sentences = [];
+      let lit = -1;
+
+      function escapeHtml(value) {
+        return value
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function wordCount(text) {
+        return text.replace(/[.?!]+$/g, "").trim().split(/\s+/).filter(Boolean).length;
+      }
+
+      function parseSentences(text) {
+        const out = [];
+        const re = /[^.?!]+(?:[.?!]+|$)/g;
+        let match;
+        while ((match = re.exec(text))) {
+          const raw = match[0];
+          const lead = raw.search(/\S/);
+          if (lead < 0) continue;
+          const start = match.index + lead;
+          const trimmed = raw.slice(lead).replace(/\s+$/, "");
+          if (!trimmed) continue;
+          const words = wordCount(trimmed);
+          if (!words) continue;
+          out.push({
+            text: trimmed,
+            start,
+            end: start + trimmed.length,
+            words
+          });
+        }
+        return out;
+      }
+
+      function median(values) {
+        if (!values.length) return 0;
+        const sorted = [...values].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      }
+
+      function renderLayer(text) {
+        if (!text) {
+          layer.innerHTML = "";
+          return;
+        }
+        let html = "";
+        let cursor = 0;
+        sentences.forEach((sent, index) => {
+          if (sent.start > cursor) html += escapeHtml(text.slice(cursor, sent.start));
+          const tall = sent.words > 25 ? " is-tall" : "";
+          const on = index === lit ? " is-lit" : "";
+          html += `<mark class="sent${tall}${on}" data-index="${index}">${escapeHtml(text.slice(sent.start, sent.end))}</mark>`;
+          cursor = sent.end;
+        });
+        if (cursor < text.length) html += escapeHtml(text.slice(cursor));
+        layer.innerHTML = html;
+      }
+
+      function renderTide() {
+        const width = 1000;
+        const height = 280;
+        const padL = 36;
+        const padR = 18;
+        const padT = 22;
+        const padB = 28;
+        const chartW = width - padL - padR;
+        const chartH = height - padT - padB;
+        const maxWords = Math.max(40, ...sentences.map((s) => s.words), 1);
+        const mid = median(sentences.map((s) => s.words));
+        const n = sentences.length;
+        const slot = n ? chartW / n : chartW;
+        const barW = Math.max(10, Math.min(42, slot * 0.58));
+
+        const yFor = (words) => padT + chartH - (words / maxWords) * chartH;
+        const waterY = yFor(25);
+
+        const grid = [10, 25, 40].map((w) => {
+          const y = yFor(w);
+          return `<line class="tide-grid" x1="${padL}" y1="${y}" x2="${width - padR}" y2="${y}" />`;
+        }).join("");
+
+        const swells = sentences.map((sent, index) => {
+          const x = padL + slot * index + (slot - barW) / 2;
+          const y = yFor(sent.words);
+          const h = Math.max(4, padT + chartH - y);
+          const tall = sent.words > mid ? " is-tall" : "";
+          const on = index === lit ? " is-lit" : "";
+          return `
+            <g class="swell${tall}${on}" data-index="${index}" data-words="${sent.words}" tabindex="0" role="button" aria-label="Sentence ${index + 1}, ${sent.words} words">
+              <rect class="swell-body" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="9" />
+              <rect class="swell-cap" x="${x.toFixed(1)}" y="${(y - 4).toFixed(1)}" width="${barW.toFixed(1)}" height="5" rx="2" />
+            </g>`;
+        }).join("");
+
+        const points = sentences.map((sent, index) => {
+          const x = padL + slot * index + slot / 2;
+          const y = yFor(sent.words) - 2;
+          return `${x.toFixed(1)},${y.toFixed(1)}`;
+        }).join(" ");
+
+        const crest = points
+          ? `<polyline class="tide-crest" points="${points}" />`
+          : "";
+
+        tide.innerHTML = `
+          ${grid}
+          <line class="tide-water" x1="${padL}" y1="${waterY.toFixed(1)}" x2="${width - padR}" y2="${waterY.toFixed(1)}" />
+          <text class="tide-water-label" x="${width - padR}" y="${(waterY - 6).toFixed(1)}" text-anchor="end">25 WORDS</text>
+          <line class="tide-base" x1="${padL}" y1="${padT + chartH}" x2="${width - padR}" y2="${padT + chartH}" />
+          ${crest}
+          ${swells || `<text class="tide-water-label" x="500" y="140" text-anchor="middle">paste to raise a tide</text>`}
+        `;
+
+        tide.querySelectorAll(".swell").forEach((node) => {
+          const index = Number(node.dataset.index);
+          node.addEventListener("click", () => lightSentence(index));
+          node.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              lightSentence(index);
+            }
+          });
+        });
+      }
+
+      function renderChrome() {
+        const count = sentences.length;
+        const longest = sentences.reduce((max, sent) => Math.max(max, sent.words), 0);
+        const over = count ? Math.round((sentences.filter((s) => s.words > 25).length / count) * 100) : 0;
+        statCount.textContent = String(count);
+        statLongest.textContent = String(longest);
+        statOver.textContent = `${over}%`;
+        persistState.textContent = `local · ${mode}`;
+        wellMeta.textContent = mode;
+        tideMeta.textContent = count ? `${count} swells · word count` : "word count by sentence";
+      }
+
+      function persist() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ text: paste.value, mode }));
+        } catch (_) { /* private mode */ }
+      }
+
+      function apply(text, nextMode, { store = true } = {}) {
+        paste.value = text;
+        mode = nextMode;
+        sentences = parseSentences(text);
+        if (lit >= sentences.length) lit = -1;
+        renderLayer(text);
+        renderTide();
+        renderChrome();
+        if (store) persist();
+      }
+
+      function lightSentence(index) {
+        const sent = sentences[index];
+        if (!sent) return;
+        lit = index;
+        renderLayer(paste.value);
+        renderTide();
+        const mark = layer.querySelector(`mark[data-index="${index}"]`);
+        if (mark) mark.scrollIntoView({ block: "center", behavior: "smooth" });
+        paste.focus({ preventScroll: true });
+        try {
+          paste.setSelectionRange(sent.start, sent.end);
+        } catch (_) { /* ignore */ }
+      }
+
+      function loadStored() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed.text !== "string") return null;
+          return parsed;
+        } catch (_) {
+          return null;
+        }
+      }
+
+      paste.addEventListener("input", () => {
+        lit = -1;
+        apply(paste.value, paste.value === SEED ? "seed" : "paste");
+      });
+      paste.addEventListener("scroll", () => {
+        layer.scrollTop = paste.scrollTop;
+        layer.scrollLeft = paste.scrollLeft;
+      });
+      document.getElementById("btn-seed").addEventListener("click", () => {
+        lit = -1;
+        apply(SEED, "seed");
+      });
+      document.getElementById("btn-reset").addEventListener("click", () => {
+        lit = -1;
+        apply(SEED, "seed");
+      });
+
+      const stored = loadStored();
+      if (stored && stored.text) {
+        apply(stored.text, stored.mode === "seed" && stored.text === SEED ? "seed" : (stored.mode || "paste"));
+      } else {
+        apply(SEED, "seed");
+      }
+    </script>
+  </body>
+</html>

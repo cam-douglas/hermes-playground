@@ -1,14 +1,15 @@
 # hermes-playground
 
-An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, and one night plan of empty booked rooms — built as static HTML and kept on one desk.
+An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, a night plan of empty booked rooms, and one tide of sentence lengths — built as static HTML and kept on one desk.
 
-Open the hub to browse fifteen prototypes. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on both the cards and the sky — matching stars stay bright; the rest dim. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters.
+Open the hub to browse sixteen prototypes. A tag constellation maps them in space by related tags; click a star to open it. Search and tag compose with AND on both the cards and the sky — matching stars stay bright; the rest dim. Dated archive shelves group ships by day (20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters.
 
-This hour’s featured card is Dark Floor. The other fourteen stay first-class on the shelves. Product folders for the earlier ships are unchanged.
+This hour’s featured card is Sentence Tide. The other fifteen stay first-class on the shelves. Product folders for the earlier ships are unchanged.
 
 ## Active products
 
-- **Dark Floor** (featured this hour · 20 Aug 2026, 13:50 Sydney) — a night plan of rooms vs actual presence: booked-and-empty rooms go dark, occupied rooms keep their lights, free rooms stay outline. `products/dark-floor/` · ops, space, rooms
+- **Sentence Tide** (featured this hour · 20 Aug 2026, 15:50 Sydney) — paste prose and see a tide of sentence lengths; click a swell to find the long sentence. `products/sentence-tide/` · writing, paste, prose
+- **Dark Floor** (archive · 20 Aug 2026, 13:50 Sydney) — a night plan of rooms vs actual presence: booked-and-empty rooms go dark, occupied rooms keep their lights, free rooms stay outline. `products/dark-floor/` · ops, space, rooms
 - **Clause Lens** (archive · 20 Aug 2026, 11:50 Sydney) — paste a signed clause and see auto-renew, assignment, and unilateral-change tripwires highlighted in place. `products/clause-lens/` · legal, paste, contracts
 - **Twin Face** (archive · 20 Aug 2026, 09:50 Sydney) — one pasted timestamp decoded onto two analog faces, with a date-split flag and a compact hours/minutes delta. `products/twin-face/` · time, paste, clock
 - **Quote Drift** (archive · 20 Aug 2026, 07:50 Sydney) — a two-well paste instrument for quote vs invoice: money delta and a stacked strip of matched / extra / missing. `products/quote-drift/` · ops, money, paste
@@ -26,12 +27,13 @@ This hour’s featured card is Dark Floor. The other fourteen stay first-class o
 
 ## Research signal
 
-The GitHub feed is agent harnesses — skill packs, token compression, graphs. This catalogue is the other desk: human-ops instruments that sit beside that feed. Clocks, leftover-access boards, paste wells, fluency maps, a floor plan of empty booked rooms. Local-first, no backend, no new cron.
+The GitHub feed is agent harnesses — skill packs, token compression, graphs. This catalogue is the other desk: human-ops instruments that sit beside that feed. Clocks, leftover-access boards, paste wells, fluency maps, a floor plan of empty booked rooms, a tide of sentence lengths. Local-first, no backend, no new cron.
 
 ## Repository shape
 
 - `index.html` — searchable catalogue hub (tag constellation that follows `q` and `tag`, this hour vs dated archive shelves, live search, tags, URL-persisted `q` / `tag` / `view`)
-- `products/dark-floor/` — featured this-hour product prototype
+- `products/sentence-tide/` — featured this-hour product prototype
+- `products/dark-floor/` — archive product prototype
 - `products/clause-lens/` — archive product prototype
 - `products/twin-face/` — archive product prototype
 - `products/quote-drift/` — archive product prototype
