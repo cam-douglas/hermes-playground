@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Wire Sag — a span looks tight until you see the dip. Two poles. One cable. See the sag." />
+    <title>Wire Sag</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #07090c;
+        --panel: #12161c;
+        --ink: #e6eef4;
+        --muted: #8a96a4;
+        --line: rgba(170, 190, 210, 0.14);
+        --accent: #c9a06a;
+        --pole: #6b7380;
+        --pole-deep: #3a414c;
+        --cable: #e0c090;
+        --sag: #7eb8d4;
+        --tight: #8fd4c4;
+        --too-much: #e07a6a;
+        --ground: #2a3038;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(201, 160, 106, 0.1), transparent 30%),
+          radial-gradient(circle at 88% 8%, rgba(126, 184, 212, 0.08), transparent 24%),
+          linear-gradient(180deg, #050608 0%, #0c0f14 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 22, 28, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(201, 160, 106, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 26, 34, 0.96), rgba(8, 10, 14, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(201, 160, 106, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #dce4ee; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #171a22;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a1206; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(201, 160, 106, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(201, 160, 106, 0.05), transparent 46%),
+          #0a0c11;
+        overflow: hidden;
+      }
+      #sag-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl + .strip-ctrl { border-left: 1px solid var(--line); }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--accent);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(201, 160, 106, 0.7); outline-offset: 4px;
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-off b { color: var(--too-much); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      @media (max-width: 720px) {
+        .controls, .readout { grid-template-columns: 1fr; }
+        .strip-ctrl + .strip-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> wire sag · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover dip</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">wire instrument · 21 Aug 2026 03:50</span>
+        <h1>Wire Sag</h1>
+        <p class="lede">
+          A span looks tight until you see the dip. Two poles. One cable. See the sag.
+          Not a plumb. Not leftover millimetres on a stick. Not a mix.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the hang</div>
+            <h2>The poles and the cable</h2>
+          </div>
+          <span class="kicker" id="desk-meta">span 20 m · sag 2.4 m</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="sag-svg" viewBox="0 0 800 460" role="img" aria-labelledby="sag-title sag-desc">
+            <title id="sag-title">Span 20 metres. Midspan sag 2.4 metres.</title>
+            <desc id="sag-desc">Two poles hold a cable. The leftover is the dip at midspan.</desc>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#0d1016" stroke="rgba(180,200,230,0.16)" />
+            <text x="36" y="42" fill="#8a96a4" font-size="11" letter-spacing="2">POLE · CABLE · MIDSPAN SAG</text>
+            <g id="sag-scene"></g>
+          </svg>
+        </div>
+        <p id="sag-alt" class="sr-only" aria-live="polite">Span 20 metres. Midspan sag 2.4 metres.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="span-input">Span (metres)</label>
+            <input id="span-input" type="range" min="8" max="40" step="0.5" value="20" />
+          </div>
+          <div class="strip-ctrl">
+            <label for="sag-input">Midspan sag (metres)</label>
+            <input id="sag-input" type="range" min="0.2" max="6" step="0.1" value="2.4" />
+          </div>
+        </div>
+        <div class="readout">
+          <span>Span <b id="stat-span">20 m</b></span>
+          <span id="stat-sag-wrap" class="is-off">Midspan sag <b id="stat-sag">2.4 m</b></span>
+          <span>Sketch tension <b id="stat-tension">0.41 kN</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        Two poles. One cable. The leftover is the dip in the middle. Sketch tension is
+        H ≈ (w · S²) / (8 · d) with w = 2 kg/m — a picture, not an engineering sign-off.
+        Seed is already too much sag — 2.4 m on a 20 m span. Arrow keys move the focused control.
+        Refresh restores the seed. Not a plumb. Not leftover millimetres on a stick. Not a mix.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { span: 20, sag: 2.4 };
+      const VIEW_W = 800;
+      const GROUND_Y = 400;
+      const ATTACH_Y = 88;
+      const POLE_W = 14;
+      const MIN_VISUAL = 280;
+      const MAX_VISUAL = 680;
+      const SPAN_MIN = 8;
+      const SPAN_MAX = 40;
+      const WEIGHT = 2;
+      const G = 9.81;
+      const VERTICAL_EXAGGERATION = 2.8;
+
+      let span = SEED.span;
+      let sag = SEED.sag;
+
+      const scene = document.getElementById("sag-scene");
+      const svg = document.getElementById("sag-svg");
+      const titleEl = document.getElementById("sag-title");
+      const altEl = document.getElementById("sag-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const spanInput = document.getElementById("span-input");
+      const sagInput = document.getElementById("sag-input");
+      const statSpan = document.getElementById("stat-span");
+      const statSag = document.getElementById("stat-sag");
+      const statSagWrap = document.getElementById("stat-sag-wrap");
+      const statTension = document.getElementById("stat-tension");
+
+      function ns(name) {
+        return document.createElementNS("http://www.w3.org/2000/svg", name);
+      }
+
+      function visualSpan() {
+        const t = (span - SPAN_MIN) / (SPAN_MAX - SPAN_MIN);
+        return MIN_VISUAL + t * (MAX_VISUAL - MIN_VISUAL);
+      }
+
+      function poleXs() {
+        const width = visualSpan();
+        const mid = VIEW_W / 2;
+        return { left: mid - width / 2, right: mid + width / 2, width: width };
+      }
+
+      function sagPx() {
+        const scale = visualSpan() / span;
+        const raw = sag * scale * VERTICAL_EXAGGERATION;
+        const maxDip = GROUND_Y - ATTACH_Y - 40;
+        return Math.max(18, Math.min(maxDip, raw));
+      }
+
+      function tensionKn() {
+        const d = Math.max(sag, 0.05);
+        const newtons = (WEIGHT * G * span * span) / (8 * d);
+        return newtons / 1000;
+      }
+
+      function fmtM(value) {
+        const n = Math.round(value * 10) / 10;
+        return (Number.isInteger(n) ? n.toFixed(0) : n.toFixed(1)) + " m";
+      }
+
+      function fmtKn(value) {
+        if (value >= 10) return Math.round(value) + " kN";
+        if (value >= 1) return value.toFixed(1) + " kN";
+        return value.toFixed(2) + " kN";
+      }
+
+      function tooMuch() {
+        return sag / span >= 0.08;
+      }
+
+      function picture() {
+        const alt = "Span " + fmtM(span).replace(" m", " metres") + ". Midspan sag " + fmtM(sag).replace(" m", " metres") + ".";
+        return { alt: alt, tooMuch: tooMuch() };
+      }
+
+      function drawPole(x, id) {
+        const g = ns("g");
+        g.setAttribute("id", id);
+        g.setAttribute("data-pole-x", String(Math.round(x)));
+
+        const post = ns("rect");
+        post.setAttribute("x", String(x - POLE_W / 2));
+        post.setAttribute("y", String(ATTACH_Y - 8));
+        post.setAttribute("width", String(POLE_W));
+        post.setAttribute("height", String(GROUND_Y - ATTACH_Y + 8));
+        post.setAttribute("fill", "#6b7380");
+        post.setAttribute("stroke", "#3a414c");
+        g.appendChild(post);
+
+        const grain = ns("line");
+        grain.setAttribute("x1", String(x - 2));
+        grain.setAttribute("x2", String(x - 2));
+        grain.setAttribute("y1", String(ATTACH_Y + 18));
+        grain.setAttribute("y2", String(GROUND_Y - 16));
+        grain.setAttribute("stroke", "rgba(30, 36, 44, 0.45)");
+        g.appendChild(grain);
+
+        const cap = ns("rect");
+        cap.setAttribute("x", String(x - 18));
+        cap.setAttribute("y", String(ATTACH_Y - 16));
+        cap.setAttribute("width", "36");
+        cap.setAttribute("height", "10");
+        cap.setAttribute("rx", "1");
+        cap.setAttribute("fill", "#4a5560");
+        cap.setAttribute("stroke", "#2a323c");
+        g.appendChild(cap);
+
+        const pin = ns("circle");
+        pin.setAttribute("cx", String(x));
+        pin.setAttribute("cy", String(ATTACH_Y));
+        pin.setAttribute("r", "4.5");
+        pin.setAttribute("fill", "#e6eef4");
+        g.appendChild(pin);
+
+        return g;
+      }
+
+      function draw() {
+        scene.replaceChildren();
+        const poles = poleXs();
+        const dip = sagPx();
+        const midX = (poles.left + poles.right) / 2;
+        const midY = ATTACH_Y + dip;
+        const pic = picture();
+
+        const ground = ns("line");
+        ground.setAttribute("id", "ground-line");
+        ground.setAttribute("x1", "36");
+        ground.setAttribute("x2", "764");
+        ground.setAttribute("y1", String(GROUND_Y));
+        ground.setAttribute("y2", String(GROUND_Y));
+        ground.setAttribute("stroke", "rgba(180,200,230,0.28)");
+        ground.setAttribute("stroke-width", "2");
+        scene.appendChild(ground);
+
+        const taut = ns("line");
+        taut.setAttribute("id", "taut-line");
+        taut.setAttribute("x1", String(poles.left));
+        taut.setAttribute("x2", String(poles.right));
+        taut.setAttribute("y1", String(ATTACH_Y));
+        taut.setAttribute("y2", String(ATTACH_Y));
+        taut.setAttribute("stroke", "rgba(180,200,230,0.16)");
+        taut.setAttribute("stroke-dasharray", "5 6");
+        scene.appendChild(taut);
+
+        scene.appendChild(drawPole(poles.left, "pole-left"));
+        scene.appendChild(drawPole(poles.right, "pole-right"));
+
+        const cable = ns("path");
+        cable.setAttribute("id", "cable-path");
+        cable.setAttribute("d", "M " + poles.left + " " + ATTACH_Y + " Q " + midX + " " + (ATTACH_Y + 2 * dip) + " " + poles.right + " " + ATTACH_Y);
+        cable.setAttribute("fill", "none");
+        cable.setAttribute("stroke", "#e0c090");
+        cable.setAttribute("stroke-width", "2.4");
+        cable.setAttribute("stroke-linecap", "round");
+        cable.setAttribute("data-span", String(span));
+        cable.setAttribute("data-sag", String(sag));
+        cable.setAttribute("data-mid-y", String(Math.round(midY)));
+        scene.appendChild(cable);
+
+        const drop = ns("line");
+        drop.setAttribute("id", "sag-drop");
+        drop.setAttribute("x1", String(midX));
+        drop.setAttribute("x2", String(midX));
+        drop.setAttribute("y1", String(ATTACH_Y));
+        drop.setAttribute("y2", String(midY));
+        drop.setAttribute("stroke", pic.tooMuch ? "#e07a6a" : "#7eb8d4");
+        drop.setAttribute("stroke-width", "1.4");
+        drop.setAttribute("stroke-dasharray", "3 4");
+        scene.appendChild(drop);
+
+        const midDot = ns("circle");
+        midDot.setAttribute("id", "sag-mid");
+        midDot.setAttribute("cx", String(midX));
+        midDot.setAttribute("cy", String(midY));
+        midDot.setAttribute("r", "4");
+        midDot.setAttribute("fill", pic.tooMuch ? "#e07a6a" : "#7eb8d4");
+        scene.appendChild(midDot);
+
+        const brace = ns("line");
+        brace.setAttribute("id", "span-brace");
+        brace.setAttribute("x1", String(poles.left));
+        brace.setAttribute("x2", String(poles.right));
+        brace.setAttribute("y1", String(GROUND_Y + 18));
+        brace.setAttribute("y2", String(GROUND_Y + 18));
+        brace.setAttribute("stroke", "#c9a06a");
+        brace.setAttribute("stroke-width", "1.4");
+        scene.appendChild(brace);
+
+        const t1 = ns("line");
+        t1.setAttribute("x1", String(poles.left));
+        t1.setAttribute("x2", String(poles.left));
+        t1.setAttribute("y1", String(GROUND_Y + 10));
+        t1.setAttribute("y2", String(GROUND_Y + 26));
+        t1.setAttribute("stroke", "#c9a06a");
+        scene.appendChild(t1);
+
+        const t2 = ns("line");
+        t2.setAttribute("x1", String(poles.right));
+        t2.setAttribute("x2", String(poles.right));
+        t2.setAttribute("y1", String(GROUND_Y + 10));
+        t2.setAttribute("y2", String(GROUND_Y + 26));
+        t2.setAttribute("stroke", "#c9a06a");
+        scene.appendChild(t2);
+
+        const spanLbl = ns("text");
+        spanLbl.setAttribute("id", "span-label");
+        spanLbl.setAttribute("x", String(midX));
+        spanLbl.setAttribute("y", String(GROUND_Y + 40));
+        spanLbl.setAttribute("text-anchor", "middle");
+        spanLbl.setAttribute("fill", "#c9a06a");
+        spanLbl.setAttribute("font-size", "13");
+        spanLbl.textContent = fmtM(span) + " span";
+        scene.appendChild(spanLbl);
+
+        const sagLbl = ns("text");
+        sagLbl.setAttribute("id", "sag-label");
+        sagLbl.setAttribute("x", String(midX + 16));
+        sagLbl.setAttribute("y", String((ATTACH_Y + midY) / 2 + 4));
+        sagLbl.setAttribute("fill", pic.tooMuch ? "#e07a6a" : "#7eb8d4");
+        sagLbl.setAttribute("font-size", "13");
+        sagLbl.textContent = fmtM(sag) + " sag";
+        scene.appendChild(sagLbl);
+      }
+
+      function render() {
+        const pic = picture();
+        draw();
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = "span " + fmtM(span) + " · sag " + fmtM(sag);
+        statSpan.textContent = fmtM(span);
+        statSag.textContent = fmtM(sag);
+        statSagWrap.classList.toggle("is-off", pic.tooMuch);
+        statTension.textContent = fmtKn(tensionKn());
+        if (Number(spanInput.value) !== span) spanInput.value = String(span);
+        if (Number(sagInput.value) !== sag) sagInput.value = String(sag);
+        spanInput.setAttribute("aria-valuetext", fmtM(span) + ", poles apart");
+        sagInput.setAttribute("aria-valuetext", fmtM(sag) + " midspan sag");
+      }
+
+      function resetSeed() {
+        span = SEED.span;
+        sag = SEED.sag;
+        render();
+      }
+
+      spanInput.addEventListener("input", (event) => {
+        span = Number(event.target.value);
+        render();
+      });
+      sagInput.addEventListener("input", (event) => {
+        sag = Number(event.target.value);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
