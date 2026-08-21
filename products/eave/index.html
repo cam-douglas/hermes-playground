@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Eave — a roof looks flush until you see the eave. Move the overhang. See the leftover shade." />
+    <title>Eave</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08090b;
+        --panel: #14161a;
+        --ink: #e6e4de;
+        --muted: #8a8680;
+        --line: rgba(196, 176, 152, 0.14);
+        --accent: #c4a888;
+        --roof: #8a6248;
+        --wall: #3a3e42;
+        --shade: #c9a46a;
+        --showing: #d4b070;
+        --flush: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 22% -8%, rgba(196, 168, 136, 0.1), transparent 30%),
+          radial-gradient(circle at 86% 14%, rgba(201, 164, 106, 0.07), transparent 24%),
+          linear-gradient(180deg, #060708 0%, #121416 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(20, 22, 26, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 168, 136, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 26, 30, 0.96), rgba(8, 10, 12, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 168, 136, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4e0d8; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1a1c20;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 168, 136, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 72% 18%, rgba(201, 164, 106, 0.08), transparent 46%),
+          #0a0c0e;
+        overflow: hidden;
+      }
+      #eave-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 176, 112, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-flush b { color: var(--flush); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #08090b;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #eave-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> eave · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover overhang</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">roof instrument · 22 Aug 2026 04:50</span>
+        <h1>Eave</h1>
+        <p class="lede">
+          A roof looks flush until you see the eave. Move the overhang. See the leftover shade.
+          Not a ceiling. Not a window. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the roof still sticks past the wall</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 480 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="eave-svg" viewBox="0 0 800 460" role="img" aria-labelledby="eave-title eave-desc">
+            <title id="eave-title">Eave is showing. Four hundred eighty millimetres of leftover overhang still stick past the wall.</title>
+            <desc id="eave-desc">A roof in section: a wall, a roof line that still sticks past it, leftover eave overhang and the shade it casts. A picture, not a roofing spec.</desc>
+            <defs>
+              <linearGradient id="sky-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1c2228" />
+                <stop offset="100%" stop-color="#101418" />
+              </linearGradient>
+              <linearGradient id="roof-face" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#b47a58" />
+                <stop offset="100%" stop-color="#5a3a2c" />
+              </linearGradient>
+              <linearGradient id="wall-face" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#4a5054" />
+                <stop offset="100%" stop-color="#2a2e32" />
+              </linearGradient>
+              <linearGradient id="shade-wash" x1="0%" y1="0%" x2="100%" y2="20%">
+                <stop offset="0%" stop-color="rgba(201,164,106,0.42)" />
+                <stop offset="100%" stop-color="rgba(201,164,106,0.08)" />
+              </linearGradient>
+              <pattern id="masonry" width="14" height="10" patternUnits="userSpaceOnUse">
+                <rect width="14" height="10" fill="none" />
+                <line x1="0" y1="10" x2="14" y2="10" stroke="rgba(176,184,180,0.12)" stroke-width="1" />
+                <line x1="7" y1="0" x2="7" y2="10" stroke="rgba(176,184,180,0.08)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#0a0c0e" stroke="rgba(196,176,152,0.14)" />
+            <text x="36" y="42" fill="#8a8680" font-size="11" letter-spacing="2">SECTION · ROOF · WALL · LEFTOVER EAVE OVERHANG</text>
+            <g id="eave-scene" data-view="section" data-overhang="480" data-leftover="showing" data-verdict="showing">
+              <g id="ground-layer"></g>
+              <g id="shade-layer"></g>
+              <g id="wall-layer"></g>
+              <g id="roof-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#d4b070" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 480 MM LEFTOVER OVERHANG</text>
+              <text id="scene-sketch" x="400" y="434" fill="#5a5854" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER OVERHANG PAST A WALL · NOT A CEILING</text>
+            </g>
+          </svg>
+        </div>
+        <p id="eave-alt" class="sr-only" aria-live="polite">Eave is showing. Four hundred eighty millimetres of leftover overhang still stick past the wall.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="overhang-input">Overhang (mm · leftover eave past the wall)</label>
+            <input id="overhang-input" type="range" min="0" max="900" step="10" value="480" />
+            <div class="ticks" aria-hidden="true">
+              <span>flush</span>
+              <span>seed showing</span>
+              <span>wide</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Overhang <b id="stat-overhang">480 mm</b></span>
+          <span>Roof past wall <b id="stat-past">showing</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A roof looks flush until you see the eave. Eave is leftover overhang — how far the roof still sticks past the wall, and the leftover shade it casts, as seen in section.
+        Seed is already showing — 480 mm of leftover overhang past the wall, not flush / not zero. Arrow keys move the focused control.
+        Refresh restores the seed. Not a ceiling. Not a window. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { overhangMm: 480 };
+      const OVER_MIN = 0;
+      const OVER_MAX = 900;
+      const FLUSH_AT = 40;
+      const SCALE = 0.34;
+      const WALL_X = 268;
+      const WALL_W = 168;
+      const WALL_TOP = 196;
+      const WALL_BOTTOM = 388;
+      const WALL_FACE = WALL_X + WALL_W;
+      const RIDGE_X = 148;
+      const RIDGE_Y = 88;
+      const ROOF_THICK = 18;
+      const GROUND_Y = 400;
+
+      let overhangMm = SEED.overhangMm;
+
+      const svg = document.getElementById("eave-svg");
+      const scene = document.getElementById("eave-scene");
+      const titleEl = document.getElementById("eave-title");
+      const altEl = document.getElementById("eave-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const overhangInput = document.getElementById("overhang-input");
+      const groundLayer = document.getElementById("ground-layer");
+      const shadeLayer = document.getElementById("shade-layer");
+      const wallLayer = document.getElementById("wall-layer");
+      const roofLayer = document.getElementById("roof-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statOverhang = document.getElementById("stat-overhang");
+      const statPast = document.getElementById("stat-past");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenMm(n) {
+        if (n === 0) return "zero";
+        if (n === 40) return "forty";
+        if (n === 480) return "four hundred eighty";
+        if (n === 900) return "nine hundred";
+        return String(n);
+      }
+
+      function picture() {
+        const leftover = overhangMm <= FLUSH_AT ? "flush" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + overhangMm + " MM LEFTOVER OVERHANG";
+          alt = "Eave is showing. " + spokenMm(overhangMm).charAt(0).toUpperCase() + spokenMm(overhangMm).slice(1) + " millimetres of leftover overhang still stick past the wall.";
+        } else {
+          status = "FLUSH · ROOF MEETS THE WALL";
+          alt = "Eave is flush. The roof meets the wall. A sketch, not a roofing sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4b070" : "#8ec8b4",
+          overPx: overhangMm * SCALE
+        };
+      }
+
+      function paint(pic) {
+        const tipX = WALL_FACE + pic.overPx;
+        const fasciaY = 168;
+        const soffitY = fasciaY + ROOF_THICK;
+        const leftEaveX = WALL_X - 36;
+        const leftEaveY = 214;
+
+        groundLayer.replaceChildren();
+        groundLayer.appendChild(el("rect", {
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#sky-wash)",
+          stroke: "rgba(196,176,152,0.16)",
+          "stroke-width": "1.2"
+        }));
+        groundLayer.appendChild(el("circle", {
+          class: "sun",
+          cx: "668",
+          cy: "108",
+          r: "16",
+          fill: "rgba(232,196,128,0.55)",
+          stroke: "rgba(232,196,128,0.8)",
+          "stroke-width": "1.2"
+        }));
+        groundLayer.appendChild(el("rect", {
+          class: "ground",
+          x: "64",
+          y: String(GROUND_Y),
+          width: "672",
+          height: "16",
+          fill: "#1c1a16"
+        }));
+        groundLayer.appendChild(el("text", {
+          x: "80",
+          y: String(GROUND_Y + 12),
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "GROUND";
+
+        shadeLayer.replaceChildren();
+        if (pic.leftover === "showing" && pic.overPx > 2) {
+          const shade = el("g", { class: "leftover-shade", id: "leftover-shade" });
+          shade.appendChild(el("polygon", {
+            class: "shade",
+            id: "eave-shade",
+            points: WALL_FACE + "," + soffitY + " " + tipX + "," + soffitY + " " + Math.min(tipX + 88, 736) + "," + GROUND_Y + " " + WALL_FACE + "," + GROUND_Y,
+            fill: "url(#shade-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.1",
+            "stroke-dasharray": "4 5"
+          }));
+          shade.appendChild(el("text", {
+            x: String(WALL_FACE + pic.overPx / 2 + 18),
+            y: String((soffitY + GROUND_Y) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4"
+          })).textContent = "SHADE";
+          shadeLayer.appendChild(shade);
+        }
+
+        wallLayer.replaceChildren();
+        const wall = el("g", { class: "wall", id: "section-wall" });
+        wall.appendChild(el("rect", {
+          class: "wall-body",
+          x: String(WALL_X),
+          y: String(WALL_TOP),
+          width: String(WALL_W),
+          height: String(WALL_BOTTOM - WALL_TOP),
+          fill: "url(#wall-face)",
+          stroke: "rgba(196,176,152,0.35)",
+          "stroke-width": "1.2"
+        }));
+        wall.appendChild(el("rect", {
+          x: String(WALL_X),
+          y: String(WALL_TOP),
+          width: String(WALL_W),
+          height: String(WALL_BOTTOM - WALL_TOP),
+          fill: "url(#masonry)"
+        }));
+        wall.appendChild(el("line", {
+          class: "wall-face",
+          x1: String(WALL_FACE),
+          y1: String(WALL_TOP),
+          x2: String(WALL_FACE),
+          y2: String(WALL_BOTTOM),
+          stroke: pic.accent,
+          "stroke-width": "1.8"
+        }));
+        wall.appendChild(el("text", {
+          x: String(WALL_X + WALL_W / 2),
+          y: String((WALL_TOP + WALL_BOTTOM) / 2 + 4),
+          fill: "#c8c4bc",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "WALL";
+        wallLayer.appendChild(wall);
+
+        roofLayer.replaceChildren();
+        const roof = el("g", {
+          class: "roof",
+          id: "section-roof",
+          "data-overhang": String(overhangMm)
+        });
+        const roofTop = [
+          leftEaveX + "," + leftEaveY,
+          RIDGE_X + "," + RIDGE_Y,
+          tipX + "," + fasciaY
+        ].join(" ");
+        const roofBottom = [
+          tipX + "," + soffitY,
+          RIDGE_X + "," + (RIDGE_Y + ROOF_THICK + 8),
+          leftEaveX + "," + (leftEaveY + ROOF_THICK)
+        ].join(" ");
+        roof.appendChild(el("polygon", {
+          class: "roof-line",
+          id: "roof-line",
+          points: roofTop + " " + roofBottom,
+          fill: "url(#roof-face)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        for (let i = 0; i < 7; i += 1) {
+          const t = i / 6;
+          const x1 = RIDGE_X + (tipX - RIDGE_X) * t;
+          const y1 = RIDGE_Y + (fasciaY - RIDGE_Y) * t;
+          roof.appendChild(el("line", {
+            x1: String(x1),
+            y1: String(y1),
+            x2: String(x1 - 10),
+            y2: String(y1 + 16),
+            stroke: "rgba(40,24,16,0.28)",
+            "stroke-width": "1"
+          }));
+        }
+        roof.appendChild(el("line", {
+          class: "fascia",
+          x1: String(tipX),
+          y1: String(fasciaY),
+          x2: String(tipX),
+          y2: String(soffitY),
+          stroke: pic.accent,
+          "stroke-width": "2.2"
+        }));
+        roof.appendChild(el("text", {
+          x: String((RIDGE_X + tipX) / 2),
+          y: String((RIDGE_Y + fasciaY) / 2 - 8),
+          fill: "#f0d8c4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "ROOF";
+        roofLayer.appendChild(roof);
+
+        markLayer.replaceChildren();
+        markLayer.appendChild(el("text", {
+          x: String(Math.min(tipX + 12, 736)),
+          y: String(fasciaY - 10),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = pic.leftover === "showing" ? "EAVE" : "FLUSH";
+        if (pic.leftover === "showing" && pic.overPx > 8) {
+          const dimY = soffitY + 22;
+          markLayer.appendChild(el("line", {
+            class: "overhang-dim",
+            x1: String(WALL_FACE),
+            y1: String(dimY),
+            x2: String(tipX),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(WALL_FACE),
+            y1: String(dimY - 7),
+            x2: String(WALL_FACE),
+            y2: String(dimY + 7),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(tipX),
+            y1: String(dimY - 7),
+            x2: String(tipX),
+            y2: String(dimY + 7),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          markLayer.appendChild(el("text", {
+            x: String(WALL_FACE + pic.overPx / 2),
+            y: String(dimY - 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = overhangMm + " MM";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-overhang", String(overhangMm));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "section");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-flush";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + overhangMm + " mm showing"
+          : "leftover flush";
+        statOverhang.textContent = overhangMm + " mm";
+        statPast.textContent = pic.leftover;
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-flush");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(overhangInput.value) !== overhangMm) overhangInput.value = String(overhangMm);
+        overhangInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        overhangMm = SEED.overhangMm;
+        render();
+      }
+
+      overhangInput.addEventListener("input", function (event) {
+        overhangMm = clamp(Number(event.target.value), OVER_MIN, OVER_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
