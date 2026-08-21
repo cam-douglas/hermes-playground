@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Throw — a room looks even until you feel the register. Move the throw. See the leftover air." />
+    <title>Throw</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #07090c;
+        --panel: #12181c;
+        --ink: #e6eef3;
+        --muted: #8a96a2;
+        --line: rgba(170, 200, 210, 0.14);
+        --accent: #7eb4c8;
+        --plume: #8ec8d8;
+        --short: #e08a6a;
+        --enough: #8fd4b8;
+        --wall: #2a3438;
+        --floor: #1a2226;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(126, 180, 200, 0.1), transparent 30%),
+          radial-gradient(circle at 88% 12%, rgba(142, 200, 216, 0.06), transparent 24%),
+          linear-gradient(180deg, #05080a 0%, #0c1014 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 24, 28, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(126, 180, 200, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 28, 34, 0.96), rgba(8, 12, 14, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(126, 180, 200, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #dce4ee; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #171c20;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #0c1418; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(126, 180, 200, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 12% 42%, rgba(126, 180, 200, 0.06), transparent 42%),
+          #080c10;
+        overflow: hidden;
+      }
+      #throw-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl + .strip-ctrl { border-left: 1px solid var(--line); }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--plume);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(142, 200, 216, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-short b { color: var(--short); }
+      .readout .is-enough b { color: var(--enough); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #07090c;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .strip-ctrl + .strip-ctrl,
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> throw · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">plume leftover</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">vent instrument · 21 Aug 2026 19:50</span>
+        <h1>Throw</h1>
+        <p class="lede">
+          A room looks even until you feel the register. Move the throw. See the leftover air.
+          Not a lamp. Not a mix. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>One register, one plume, the far wall</h2>
+          </div>
+          <span class="kicker" id="desk-meta">throw 3.2 m · room 7.5 m</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="throw-svg" viewBox="0 0 800 440" role="img" aria-labelledby="throw-title throw-desc">
+            <title id="throw-title">Throw is short. A 3.2 metre plume dies 4.3 metres short of a 7.5 metre room.</title>
+            <desc id="throw-desc">A side-on room section. A wall register throws a plume of air. The leftover is throw — how far the air travels before it dies, short of the far wall or enough.</desc>
+            <defs>
+              <linearGradient id="room-air" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#10161a" />
+                <stop offset="100%" stop-color="#0c1216" />
+              </linearGradient>
+              <linearGradient id="plume-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8ec8d8" stop-opacity="0.55" />
+                <stop offset="55%" stop-color="#6aa8bc" stop-opacity="0.28" />
+                <stop offset="100%" stop-color="#8ec8d8" stop-opacity="0.02" />
+              </linearGradient>
+              <linearGradient id="plume-enough" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8fd4b8" stop-opacity="0.48" />
+                <stop offset="70%" stop-color="#7eb4c8" stop-opacity="0.22" />
+                <stop offset="100%" stop-color="#8fd4b8" stop-opacity="0.16" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="416" rx="6" fill="#0b1014" stroke="rgba(170,200,210,0.14)" />
+            <text x="36" y="42" fill="#8a96a2" font-size="11" letter-spacing="2">REGISTER · PLUME · FAR WALL · THROW IS THE REACH</text>
+            <g id="throw-scene" data-throw="3.2" data-room="7.5" data-leftover="-4.3" data-verdict="short">
+              <g id="room-layer"></g>
+              <g id="leftover-gap"></g>
+              <g id="plume" class="plume"></g>
+              <g id="vent" class="vent"></g>
+              <g id="far-wall"></g>
+              <text id="scene-status" x="400" y="64" fill="#e08a6a" font-size="12" letter-spacing="1.6" text-anchor="middle">SHORT · 3.2 M THROW · 4.3 M SHY</text>
+              <text id="throw-label" x="220" y="168" fill="#8ec8d8" font-size="11" letter-spacing="1.4">THROW</text>
+              <text id="leftover-label" x="520" y="168" fill="#e08a6a" font-size="11" letter-spacing="1.4">LEFTOVER</text>
+              <text id="scene-sketch" x="400" y="408" fill="#5a6570" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · PLUME VS THE FAR WALL · NOT A LAMP</text>
+            </g>
+          </svg>
+        </div>
+        <p id="throw-alt" class="sr-only" aria-live="polite">Throw is short. A 3.2 metre plume dies 4.3 metres short of a 7.5 metre room.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="throw-reach">Throw (m)</label>
+            <input id="throw-reach" type="range" min="1.5" max="10" step="0.1" value="3.2" />
+            <div class="ticks" aria-hidden="true">
+              <span>dies</span>
+              <span>reach</span>
+              <span>plenty</span>
+            </div>
+          </div>
+          <div class="strip-ctrl">
+            <label for="room-length">Room (m)</label>
+            <input id="room-length" type="range" min="4.5" max="12" step="0.1" value="7.5" />
+            <div class="ticks" aria-hidden="true">
+              <span>short</span>
+              <span>room</span>
+              <span>long</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Throw <b id="stat-throw">3.2 m</b></span>
+          <span>Room <b id="stat-room">7.5 m</b></span>
+          <span id="stat-leftover-wrap" class="is-short">Leftover (sketch) <b id="stat-leftover">4.3 m short</b></span>
+          <span id="stat-sketch-wrap" class="is-short">Sketch <b id="stat-sketch">short</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A room looks even until you feel the register. Throw is leftover air — how far the plume travels before it dies, short of the far wall or enough.
+        Seed is already short — 3.2 m throw in a 7.5 m room, 4.3 m shy. Arrow keys move the focused control.
+        Refresh restores the seed. Not a lamp. Not a mix. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { throwM: 3.2, roomM: 7.5 };
+      const THROW_MIN = 1.5;
+      const THROW_MAX = 10;
+      const ROOM_MIN = 4.5;
+      const ROOM_MAX = 12;
+      const ROOM_LEFT = 88;
+      const ROOM_RIGHT = 748;
+      const ROOM_TOP = 86;
+      const ROOM_FLOOR = 356;
+      const REG_X = 88;
+      const REG_Y = 208;
+      const REG_H = 44;
+
+      let throwM = SEED.throwM;
+      let roomM = SEED.roomM;
+
+      const svg = document.getElementById("throw-svg");
+      const scene = document.getElementById("throw-scene");
+      const titleEl = document.getElementById("throw-title");
+      const altEl = document.getElementById("throw-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const throwInput = document.getElementById("throw-reach");
+      const roomInput = document.getElementById("room-length");
+      const roomLayer = document.getElementById("room-layer");
+      const leftoverG = document.getElementById("leftover-gap");
+      const plumeG = document.getElementById("plume");
+      const ventG = document.getElementById("vent");
+      const wallG = document.getElementById("far-wall");
+      const sceneStatus = document.getElementById("scene-status");
+      const throwLabel = document.getElementById("throw-label");
+      const leftoverLabel = document.getElementById("leftover-label");
+      const statThrow = document.getElementById("stat-throw");
+      const statRoom = document.getElementById("stat-room");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+      const statSketch = document.getElementById("stat-sketch");
+      const statSketchWrap = document.getElementById("stat-sketch-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function roundTenth(n) {
+        return Math.round(n * 10) / 10;
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function picture() {
+        const leftover = roundTenth(throwM - roomM);
+        const short = leftover < 0;
+        const verdict = short ? "short" : "enough";
+        let leftoverLabelText;
+        let status;
+        let alt;
+        if (short) {
+          leftoverLabelText = Math.abs(leftover).toFixed(1) + " m short";
+          status = "SHORT · " + throwM.toFixed(1) + " M THROW · " + Math.abs(leftover).toFixed(1) + " M SHY";
+          alt = "Throw is short. A " + throwM.toFixed(1) + " metre plume dies " + Math.abs(leftover).toFixed(1) + " metres short of a " + roomM.toFixed(1) + " metre room.";
+        } else if (leftover === 0) {
+          leftoverLabelText = "enough";
+          status = "ENOUGH · " + throwM.toFixed(1) + " M THROW · ON THE FAR WALL";
+          alt = "Throw is enough. A " + throwM.toFixed(1) + " metre plume meets a " + roomM.toFixed(1) + " metre room. A sketch, not a commissioning sign-off.";
+        } else {
+          leftoverLabelText = leftover.toFixed(1) + " m extra";
+          status = "ENOUGH · " + throwM.toFixed(1) + " M THROW · REACHES THE WALL";
+          alt = "Throw is enough. A " + throwM.toFixed(1) + " metre plume reaches a " + roomM.toFixed(1) + " metre room, " + leftover.toFixed(1) + " metres extra. A sketch, not a commissioning sign-off.";
+        }
+        return {
+          leftover: leftover,
+          short: short,
+          verdict: verdict,
+          leftoverLabel: leftoverLabelText,
+          status: status,
+          alt: alt
+        };
+      }
+
+      function reachX() {
+        const span = ROOM_RIGHT - ROOM_LEFT;
+        const t = Math.min(throwM / roomM, 1);
+        return ROOM_LEFT + t * span;
+      }
+
+      function paint(pic) {
+        const dieX = reachX();
+        const wallX = ROOM_RIGHT;
+        const midThrowX = (ROOM_LEFT + dieX) / 2;
+        const midGapX = (dieX + wallX) / 2;
+        const openTop = REG_Y - REG_H / 2;
+        const openBot = REG_Y + REG_H / 2;
+        const endSpread = pic.short ? 18 : 26;
+        const midSpread = pic.short ? 36 : 42;
+
+        roomLayer.replaceChildren();
+        roomLayer.appendChild(el("rect", {
+          x: String(ROOM_LEFT),
+          y: String(ROOM_TOP),
+          width: String(ROOM_RIGHT - ROOM_LEFT),
+          height: String(ROOM_FLOOR - ROOM_TOP),
+          fill: "url(#room-air)"
+        }));
+        roomLayer.appendChild(el("rect", {
+          x: "36",
+          y: String(ROOM_TOP),
+          width: String(ROOM_LEFT - 36),
+          height: String(ROOM_FLOOR - ROOM_TOP),
+          fill: "#1c2428",
+          stroke: "#6a7a82",
+          "stroke-width": "1.2"
+        }));
+        roomLayer.appendChild(el("line", {
+          x1: String(ROOM_LEFT),
+          y1: String(ROOM_TOP),
+          x2: String(ROOM_RIGHT),
+          y2: String(ROOM_TOP),
+          stroke: "rgba(170,200,210,0.28)",
+          "stroke-width": "1.4"
+        }));
+        roomLayer.appendChild(el("line", {
+          x1: String(ROOM_LEFT),
+          y1: String(ROOM_FLOOR),
+          x2: String(ROOM_RIGHT),
+          y2: String(ROOM_FLOOR),
+          stroke: "rgba(170,200,210,0.34)",
+          "stroke-width": "2"
+        }));
+        roomLayer.appendChild(el("text", {
+          x: "48",
+          y: String(ROOM_TOP + 18),
+          fill: "#7eb4c8",
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "CEILING";
+        roomLayer.appendChild(el("text", {
+          x: "400",
+          y: String(ROOM_FLOOR + 22),
+          fill: "#7eb4c8",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = roomM.toFixed(1) + " M ROOM";
+
+        leftoverG.replaceChildren();
+        if (pic.short) {
+          leftoverG.appendChild(el("rect", {
+            id: "leftover-band",
+            x: dieX.toFixed(1),
+            y: String(ROOM_TOP + 8),
+            width: Math.max(8, wallX - dieX).toFixed(1),
+            height: String(ROOM_FLOOR - ROOM_TOP - 16),
+            fill: "rgba(224,138,106,0.08)"
+          }));
+          leftoverG.appendChild(el("line", {
+            id: "leftover-span",
+            x1: dieX.toFixed(1),
+            y1: "168",
+            x2: wallX.toFixed(1),
+            y2: "168",
+            stroke: "#e08a6a",
+            "stroke-width": "1.4",
+            "stroke-dasharray": "5 6"
+          }));
+          leftoverG.appendChild(el("line", {
+            x1: dieX.toFixed(1), y1: "162", x2: dieX.toFixed(1), y2: "174",
+            stroke: "#e08a6a", "stroke-width": "1.4"
+          }));
+          leftoverG.appendChild(el("line", {
+            x1: wallX.toFixed(1), y1: "162", x2: wallX.toFixed(1), y2: "174",
+            stroke: "#e08a6a", "stroke-width": "1.4"
+          }));
+        }
+
+        plumeG.replaceChildren();
+        const tipX = pic.short ? dieX : wallX;
+        const plumeD =
+          "M " + REG_X + " " + openTop +
+          " C " + (REG_X + 40).toFixed(1) + " " + (openTop - 6) +
+          " " + midThrowX.toFixed(1) + " " + (REG_Y - midSpread) +
+          " " + tipX.toFixed(1) + " " + (REG_Y - endSpread) +
+          " L " + tipX.toFixed(1) + " " + (REG_Y + endSpread) +
+          " C " + midThrowX.toFixed(1) + " " + (REG_Y + midSpread) +
+          " " + (REG_X + 40).toFixed(1) + " " + (openBot + 6) +
+          " " + REG_X + " " + openBot + " Z";
+        plumeG.appendChild(el("path", {
+          id: "plume-body",
+          class: "plume-body",
+          d: plumeD,
+          fill: pic.short ? "url(#plume-wash)" : "url(#plume-enough)",
+          stroke: pic.short ? "rgba(142,200,216,0.55)" : "rgba(143,212,184,0.55)",
+          "stroke-width": "1.4"
+        }));
+        [0.28, 0.5, 0.72].forEach(function (t) {
+          const x = REG_X + (tipX - REG_X) * t;
+          const y = REG_Y + Math.sin(t * 5.2) * 7;
+          plumeG.appendChild(el("line", {
+            x1: (x - 18).toFixed(1),
+            y1: (y - 3).toFixed(1),
+            x2: (x + 16).toFixed(1),
+            y2: (y + 1).toFixed(1),
+            stroke: pic.short ? "rgba(142,200,216,0.35)" : "rgba(143,212,184,0.4)",
+            "stroke-width": "1.1",
+            "stroke-linecap": "round"
+          }));
+        });
+        if (pic.short) {
+          plumeG.appendChild(el("circle", {
+            id: "plume-die",
+            cx: tipX.toFixed(1),
+            cy: String(REG_Y),
+            r: "5",
+            fill: "#e08a6a",
+            stroke: "#f0c0a8",
+            "stroke-width": "1.2"
+          }));
+        }
+
+        ventG.replaceChildren();
+        ventG.appendChild(el("rect", {
+          id: "vent-face",
+          class: "vent-face",
+          x: String(ROOM_LEFT - 18),
+          y: String(openTop - 6),
+          width: "22",
+          height: String(REG_H + 12),
+          rx: "2",
+          fill: "#2a3438",
+          stroke: "#8ec8d8",
+          "stroke-width": "1.5"
+        }));
+        for (let i = 0; i < 5; i += 1) {
+          ventG.appendChild(el("line", {
+            x1: String(ROOM_LEFT - 14),
+            y1: String(openTop + 4 + i * 8),
+            x2: String(ROOM_LEFT),
+            y2: String(openTop + 6 + i * 8),
+            stroke: "#8ec8d8",
+            "stroke-width": "1.3"
+          }));
+        }
+        ventG.appendChild(el("text", {
+          x: String(ROOM_LEFT - 22),
+          y: String(openTop - 12),
+          fill: "#8ec8d8",
+          "font-size": "11",
+          "letter-spacing": "1.4"
+        })).textContent = "VENT";
+
+        wallG.replaceChildren();
+        wallG.appendChild(el("rect", {
+          id: "far-wall-face",
+          x: String(ROOM_RIGHT),
+          y: String(ROOM_TOP),
+          width: "28",
+          height: String(ROOM_FLOOR - ROOM_TOP),
+          fill: "#1c2428",
+          stroke: "#6a7a82",
+          "stroke-width": "1.2"
+        }));
+        wallG.appendChild(el("text", {
+          x: String(ROOM_RIGHT + 14),
+          y: "236",
+          fill: "#8a96a2",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle",
+          transform: "rotate(-90 " + (ROOM_RIGHT + 14) + " 236)"
+        })).textContent = "FAR WALL";
+
+        throwLabel.setAttribute("x", midThrowX.toFixed(1));
+        throwLabel.setAttribute("y", String(REG_Y - midSpread - 10));
+        throwLabel.setAttribute("text-anchor", "middle");
+        throwLabel.setAttribute("fill", pic.short ? "#8ec8d8" : "#8fd4b8");
+        throwLabel.textContent = throwM.toFixed(1) + " M THROW";
+
+        leftoverLabel.setAttribute("x", pic.short ? midGapX.toFixed(1) : (wallX - 36).toFixed(1));
+        leftoverLabel.setAttribute("y", "158");
+        leftoverLabel.setAttribute("text-anchor", "middle");
+        leftoverLabel.setAttribute("fill", pic.short ? "#e08a6a" : "#8fd4b8");
+        leftoverLabel.textContent = pic.short ? Math.abs(pic.leftover).toFixed(1) + " M SHY" : "ON THE WALL";
+
+        sceneStatus.setAttribute("fill", pic.short ? "#e08a6a" : "#8fd4b8");
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-throw", throwM.toFixed(1));
+        scene.setAttribute("data-room", roomM.toFixed(1));
+        scene.setAttribute("data-leftover", String(pic.leftover));
+        scene.setAttribute("data-verdict", pic.verdict);
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = "throw " + throwM.toFixed(1) + " m · room " + roomM.toFixed(1) + " m";
+        statThrow.textContent = throwM.toFixed(1) + " m";
+        statRoom.textContent = roomM.toFixed(1) + " m";
+        statLeftover.textContent = pic.leftoverLabel;
+        statSketch.textContent = pic.verdict;
+        statLeftoverWrap.classList.remove("is-short", "is-enough");
+        statSketchWrap.classList.remove("is-short", "is-enough");
+        statLeftoverWrap.classList.add(pic.short ? "is-short" : "is-enough");
+        statSketchWrap.classList.add(pic.short ? "is-short" : "is-enough");
+        if (Number(throwInput.value) !== throwM) throwInput.value = String(throwM);
+        if (Number(roomInput.value) !== roomM) roomInput.value = String(roomM);
+        throwInput.setAttribute("aria-valuetext", throwM.toFixed(1) + " metres of throw, " + pic.verdict);
+        roomInput.setAttribute("aria-valuetext", roomM.toFixed(1) + " metre room, throw " + pic.verdict);
+      }
+
+      function resetSeed() {
+        throwM = SEED.throwM;
+        roomM = SEED.roomM;
+        render();
+      }
+
+      throwInput.addEventListener("input", function (event) {
+        throwM = clamp(roundTenth(Number(event.target.value)), THROW_MIN, THROW_MAX);
+        render();
+      });
+      roomInput.addEventListener("input", function (event) {
+        roomM = clamp(roundTenth(Number(event.target.value)), ROOM_MIN, ROOM_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
