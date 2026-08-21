@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Bank — a wing looks level until you see the bank. Move the roll. See the leftover bank." />
+    <title>Bank</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080a12;
+        --panel: #12161c;
+        --ink: #e6e8ee;
+        --muted: #8890a0;
+        --line: rgba(138, 164, 200, 0.16);
+        --accent: #8aa4c8;
+        --wing: #c8d0dc;
+        --showing: #e0a060;
+        --level: #88c8b8;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(138, 164, 200, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 12%, rgba(224, 160, 96, 0.07), transparent 24%),
+          linear-gradient(180deg, #06080e 0%, #10141c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 22, 28, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(138, 164, 200, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 28, 38, 0.96), rgba(8, 10, 16, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(138, 164, 200, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4e6ee; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1a1e26;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #10141a; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(138, 164, 200, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 18%, rgba(138, 164, 200, 0.08), transparent 46%),
+          #080a10;
+        overflow: hidden;
+      }
+      #bank-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(224, 160, 96, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-level b { color: var(--level); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080a12;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #bank-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> bank · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover wing roll</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">wing instrument · 22 Aug 2026 09:50</span>
+        <h1>Bank</h1>
+        <p class="lede">
+          A wing looks level until you see the bank. Move the roll. See the leftover bank.
+          Not a hull. Not a heading. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the wings still roll from level</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 18° showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="bank-svg" viewBox="0 0 800 440" role="img" aria-labelledby="bank-title bank-desc">
+            <title id="bank-title">Bank is showing. Eighteen degrees of leftover roll. The wings still roll from level.</title>
+            <desc id="bank-desc">An aircraft in front view: two wings and a fuselage. The leftover is bank — how far the wings still roll from level. A picture, not a pilot sign-off. No hull. No heading. No approach range.</desc>
+            <defs>
+              <linearGradient id="sky-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a2438" />
+                <stop offset="54%" stop-color="#101820" />
+                <stop offset="100%" stop-color="#0c1016" />
+              </linearGradient>
+              <linearGradient id="wing-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#e8eef4" />
+                <stop offset="46%" stop-color="#b8c4d0" />
+                <stop offset="100%" stop-color="#6e7a88" />
+              </linearGradient>
+              <linearGradient id="body-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8a94a0" />
+                <stop offset="50%" stop-color="#d4dce4" />
+                <stop offset="100%" stop-color="#6a7480" />
+              </linearGradient>
+              <linearGradient id="canopy-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#9ec4e0" />
+                <stop offset="100%" stop-color="#2a4058" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="416" rx="6" fill="#080a10" stroke="rgba(138,164,200,0.16)" />
+            <text x="36" y="42" fill="#8890a0" font-size="11" letter-spacing="2">FRONT VIEW · TWO WINGS · FUSELAGE · LEFTOVER BANK</text>
+            <g id="bank-scene" data-view="front" data-bank="18" data-leftover="showing" data-verdict="showing">
+              <g id="sky-layer"></g>
+              <g id="level-layer"></g>
+              <g id="craft-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#e0a060" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 18° LEFTOVER BANK</text>
+              <text id="scene-sketch" x="400" y="414" fill="#4a5460" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER WING ROLL · NOT A HULL · NOT A HEADING</text>
+            </g>
+          </svg>
+        </div>
+        <p id="bank-alt" class="sr-only" aria-live="polite">Bank is showing. Eighteen degrees of leftover roll. The wings still roll from level.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="bank-input">Bank (degrees of leftover roll from level)</label>
+            <input id="bank-input" type="range" min="0" max="36" step="1" value="18" />
+            <div class="ticks" aria-hidden="true">
+              <span>level</span>
+              <span>seed showing</span>
+              <span>steep</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Bank <b id="stat-bank">18°</b></span>
+          <span>Wings <b id="stat-wings">showing</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A wing looks level until you see the bank. Bank is leftover roll — how far the wings still roll from level, as seen in front view.
+        Seed is already showing — 18° of leftover bank, not level / not zero. Arrow keys move the focused control.
+        Refresh restores the seed. Not a hull. Not a heading. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { bankDeg: 18 };
+      const BANK_MIN = 0;
+      const BANK_MAX = 36;
+      const LEVEL_AT = 2;
+      const CX = 400;
+      const CY = 232;
+
+      let bankDeg = SEED.bankDeg;
+
+      const svg = document.getElementById("bank-svg");
+      const scene = document.getElementById("bank-scene");
+      const titleEl = document.getElementById("bank-title");
+      const altEl = document.getElementById("bank-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const bankInput = document.getElementById("bank-input");
+      const skyLayer = document.getElementById("sky-layer");
+      const levelLayer = document.getElementById("level-layer");
+      const craftLayer = document.getElementById("craft-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statBank = document.getElementById("stat-bank");
+      const statWings = document.getElementById("stat-wings");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenDeg(n) {
+        const words = {
+          0: "zero",
+          2: "two",
+          18: "eighteen",
+          36: "thirty-six"
+        };
+        return words[n] || String(n);
+      }
+
+      function picture() {
+        const leftover = bankDeg <= LEVEL_AT ? "level" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + bankDeg + "° LEFTOVER BANK";
+          alt = "Bank is showing. " + spokenDeg(bankDeg).charAt(0).toUpperCase() + spokenDeg(bankDeg).slice(1) + " degrees of leftover roll. The wings still roll from level.";
+        } else {
+          status = "LEVEL · WINGS SIT ON THE HORIZON";
+          alt = "Bank is level. The wings sit on the horizon. A sketch, not a pilot sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e0a060" : "#88c8b8",
+          rad: (bankDeg * Math.PI) / 180
+        };
+      }
+
+      function paint(pic) {
+        skyLayer.replaceChildren();
+        skyLayer.appendChild(el("rect", {
+          x: "48",
+          y: "80",
+          width: "704",
+          height: "300",
+          rx: "8",
+          fill: "url(#sky-wash)",
+          stroke: "rgba(138,164,200,0.16)",
+          "stroke-width": "1.2"
+        }));
+        skyLayer.appendChild(el("text", {
+          x: "72",
+          y: "108",
+          fill: "#8890a0",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "LEVEL HORIZON";
+        skyLayer.appendChild(el("text", {
+          x: "628",
+          y: "108",
+          fill: "#8890a0",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "FRONT VIEW";
+
+        levelLayer.replaceChildren();
+        levelLayer.appendChild(el("line", {
+          id: "horizon",
+          class: "horizon",
+          x1: "80",
+          y1: String(CY),
+          x2: "720",
+          y2: String(CY),
+          stroke: "rgba(136,200,184,0.42)",
+          "stroke-width": "1.4",
+          "stroke-dasharray": "7 6"
+        }));
+        levelLayer.appendChild(el("circle", {
+          cx: String(CX),
+          cy: String(CY),
+          r: "3",
+          fill: "#88c8b8"
+        }));
+
+        craftLayer.replaceChildren();
+        const craft = el("g", {
+          id: "craft",
+          class: "craft",
+          transform: "rotate(" + bankDeg + " " + CX + " " + CY + ")"
+        });
+
+        const leftWing = el("polygon", {
+          id: "left-wing",
+          class: "wing",
+          points: "400,222 112,208 88,232 112,256 400,242",
+          fill: "url(#wing-wash)",
+          stroke: "rgba(40,48,56,0.55)",
+          "stroke-width": "1.2"
+        });
+        leftWing.setAttribute("data-wing", "left");
+        craft.appendChild(leftWing);
+
+        const rightWing = el("polygon", {
+          id: "right-wing",
+          class: "wing",
+          points: "400,222 688,208 712,232 688,256 400,242",
+          fill: "url(#wing-wash)",
+          stroke: "rgba(40,48,56,0.55)",
+          "stroke-width": "1.2"
+        });
+        rightWing.setAttribute("data-wing", "right");
+        craft.appendChild(rightWing);
+
+        craft.appendChild(el("ellipse", {
+          id: "fuselage",
+          class: "fuselage",
+          cx: String(CX),
+          cy: String(CY + 6),
+          rx: "28",
+          ry: "38",
+          fill: "url(#body-wash)",
+          stroke: "rgba(40,48,56,0.5)",
+          "stroke-width": "1.2"
+        }));
+        craft.appendChild(el("ellipse", {
+          id: "canopy",
+          class: "canopy",
+          cx: String(CX),
+          cy: String(CY - 18),
+          rx: "15",
+          ry: "13",
+          fill: "url(#canopy-wash)",
+          stroke: "rgba(80,110,140,0.55)",
+          "stroke-width": "1"
+        }));
+        craft.appendChild(el("ellipse", {
+          id: "belly",
+          cx: String(CX),
+          cy: String(CY + 28),
+          rx: "12",
+          ry: "8",
+          fill: "#6a7480",
+          opacity: "0.7"
+        }));
+        craftLayer.appendChild(craft);
+
+        markLayer.replaceChildren();
+        if (pic.leftover === "showing") {
+          const r = 86;
+          const endX = CX + r * Math.cos(pic.rad);
+          const endY = CY + r * Math.sin(pic.rad);
+          markLayer.appendChild(el("path", {
+            id: "bank-arc",
+            class: "bank-arc",
+            d: "M " + (CX + r) + " " + CY + " A " + r + " " + r + " 0 0 1 " + endX.toFixed(1) + " " + endY.toFixed(1),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.8"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(CX),
+            y1: String(CY),
+            x2: endX.toFixed(1),
+            y2: endY.toFixed(1),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          const labelX = CX + (r + 28) * Math.cos(pic.rad / 2);
+          const labelY = CY + (r + 28) * Math.sin(pic.rad / 2);
+          markLayer.appendChild(el("text", {
+            id: "bank-label",
+            class: "bank-label",
+            x: labelX.toFixed(1),
+            y: labelY.toFixed(1),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "start"
+          })).textContent = bankDeg + "° BANK";
+          markLayer.appendChild(el("text", {
+            x: "620",
+            y: "118",
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4"
+          })).textContent = "LEFTOVER ROLL";
+        } else {
+          markLayer.appendChild(el("text", {
+            x: "400",
+            y: "118",
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "LEVEL";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-bank", String(bankDeg));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "front");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-level";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + bankDeg + "° showing"
+          : "leftover level";
+        statBank.textContent = bankDeg + "°";
+        statWings.textContent = pic.leftover;
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-level");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(bankInput.value) !== bankDeg) bankInput.value = String(bankDeg);
+        bankInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        bankDeg = SEED.bankDeg;
+        render();
+      }
+
+      bankInput.addEventListener("input", function (event) {
+        bankDeg = clamp(Number(event.target.value), BANK_MIN, BANK_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
