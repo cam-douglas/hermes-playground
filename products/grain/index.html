@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Grain — a board looks ready until you see the grain. Move the cut. See the leftover mismatch." />
+    <title>Grain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080704;
+        --panel: #14110c;
+        --ink: #efe6d6;
+        --muted: #9a8d78;
+        --line: rgba(210, 180, 130, 0.16);
+        --accent: #c9a36a;
+        --grain: #b8925a;
+        --cut: #e8c48a;
+        --with: #7eb8a8;
+        --across: #d4a05c;
+        --against: #e07a6a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(201, 163, 106, 0.1), transparent 30%),
+          radial-gradient(circle at 86% 12%, rgba(224, 122, 106, 0.06), transparent 24%),
+          linear-gradient(180deg, #060504 0%, #0e0c08 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(20, 17, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(201, 163, 106, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(26, 22, 16, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(201, 163, 106, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e8ddcc; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1a1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a1206; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(201, 163, 106, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(201, 163, 106, 0.05), transparent 46%),
+          #0a0907;
+        overflow: hidden;
+      }
+      #grain-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl + .strip-ctrl { border-left: 1px solid var(--line); }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--accent);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(201, 163, 106, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-with b { color: var(--with); }
+      .readout .is-across b { color: var(--across); }
+      .readout .is-against b { color: var(--against); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      @media (max-width: 720px) {
+        .controls, .readout { grid-template-columns: 1fr; }
+        .strip-ctrl + .strip-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> grain · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover mismatch</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">grain instrument · 21 Aug 2026 10:50</span>
+        <h1>Grain</h1>
+        <p class="lede">
+          A board looks ready until you see the grain. Move the cut. See the leftover mismatch.
+          Not leftover millimetres. Not creases. Not a partition.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the plank</div>
+            <h2>One board, one cut</h2>
+          </div>
+          <span class="kicker" id="desk-meta">56° · across</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="grain-svg" viewBox="0 0 800 420" role="img" aria-labelledby="grain-title grain-desc">
+            <title id="grain-title">Cut sits 56 degrees across the grain. Leftover mismatch is a sketch, not a mill sign-off.</title>
+            <desc id="grain-desc">A single plank with visible grain lines and a saw cut across it. The leftover is the angle between the cut and the grain.</desc>
+            <defs>
+              <clipPath id="plank-clip">
+                <rect id="plank-clip-rect" x="72" y="118" width="656" height="168" rx="10" />
+              </clipPath>
+              <linearGradient id="plank-tone" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#6a4a28" />
+                <stop offset="42%" stop-color="#4e361c" />
+                <stop offset="100%" stop-color="#2c1e12" />
+              </linearGradient>
+              <linearGradient id="bench-tone" x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stop-color="#16120c" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="396" rx="6" fill="#0d0b08" stroke="rgba(210,180,130,0.16)" />
+            <text x="36" y="42" fill="#9a8d78" font-size="11" letter-spacing="2">PLANK · GRAIN · CUT</text>
+            <g id="grain-scene" data-stop="across" data-leftover="56" data-cut="64" data-grain="8">
+              <rect x="36" y="64" width="728" height="292" fill="url(#bench-tone)" />
+              <text x="36" y="88" fill="#6a5c48" font-size="10" letter-spacing="1.2">0° WITH THE GRAIN</text>
+
+              <g id="plank">
+                <rect id="plank-shadow" x="78" y="126" width="656" height="168" rx="10" fill="#0a0806" />
+                <rect id="plank-face" x="72" y="118" width="656" height="168" rx="10" fill="url(#plank-tone)" stroke="#8a6a3c" stroke-width="1.4" />
+                <rect id="plank-end-l" x="72" y="118" width="14" height="168" rx="4" fill="#3a2814" opacity="0.55" />
+                <rect id="plank-end-r" x="714" y="118" width="14" height="168" rx="4" fill="#3a2814" opacity="0.55" />
+              </g>
+
+              <g id="grain-lines" clip-path="url(#plank-clip)"></g>
+
+              <g id="cut">
+                <line id="cut-guide" x1="80" y1="80" x2="720" y2="340" stroke="rgba(232,196,138,0.18)" stroke-width="1" stroke-dasharray="4 7" />
+                <line id="cut-line" x1="200" y1="80" x2="600" y2="340" stroke="#e8c48a" stroke-width="2.4" stroke-linecap="round" />
+                <circle id="cut-hub" cx="400" cy="202" r="4.5" fill="#e8c48a" />
+              </g>
+
+              <g id="mismatch-arc">
+                <path id="leftover-arc" d="" fill="none" stroke="#d4a05c" stroke-width="2" />
+                <line id="grain-arm" x1="400" y1="202" x2="480" y2="214" stroke="#c9a36a" stroke-width="1.6" />
+              </g>
+
+              <text id="scene-status" x="400" y="68" fill="#d4a05c" font-size="12" letter-spacing="1.6" text-anchor="middle">ACROSS · 56°</text>
+              <text id="scene-sketch" x="400" y="338" fill="#6a5c48" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · NOT A MILL SIGN-OFF</text>
+            </g>
+          </svg>
+        </div>
+        <p id="grain-alt" class="sr-only" aria-live="polite">Cut sits 56 degrees across the grain. Leftover mismatch is a sketch, not a mill sign-off.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="cut-input">Cut angle (degrees)</label>
+            <input id="cut-input" type="range" min="0" max="90" step="1" value="64" />
+            <div class="ticks" aria-hidden="true">
+              <span>with</span>
+              <span>across</span>
+              <span>against</span>
+            </div>
+          </div>
+          <div class="strip-ctrl">
+            <label for="grain-input">Grain direction (degrees)</label>
+            <input id="grain-input" type="range" min="0" max="40" step="1" value="8" />
+            <div class="ticks" aria-hidden="true">
+              <span>along</span>
+              <span>drift</span>
+              <span>bias</span>
+            </div>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Cut vs grain <b id="stat-leftover">56°</b></span>
+          <span id="stat-stop-wrap" class="is-across">Named stop <b id="stat-stop">across</b></span>
+          <span>Sketch, not a mill <b id="stat-note">mismatch</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks ready until you see the grain. One plank. One cut. The leftover is the angle, not leftover millimetres on a stick.
+        0° is with the grain. Seed is already across — 64° on an 8° grain, 56° of mismatch. Arrow keys move the focused control.
+        Refresh restores the seed. Not leftover millimetres. Not creases. Not a partition.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { cut: 64, grain: 8 };
+      const CX = 400;
+      const CY = 202;
+      const PLANK = { x: 72, y: 118, w: 656, h: 168 };
+
+      let cut = SEED.cut;
+      let grain = SEED.grain;
+
+      const svg = document.getElementById("grain-svg");
+      const scene = document.getElementById("grain-scene");
+      const titleEl = document.getElementById("grain-title");
+      const altEl = document.getElementById("grain-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const cutInput = document.getElementById("cut-input");
+      const grainInput = document.getElementById("grain-input");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statStop = document.getElementById("stat-stop");
+      const statStopWrap = document.getElementById("stat-stop-wrap");
+      const sceneStatus = document.getElementById("scene-status");
+      const grainLines = document.getElementById("grain-lines");
+      const cutLine = document.getElementById("cut-line");
+      const cutGuide = document.getElementById("cut-guide");
+      const leftoverArc = document.getElementById("leftover-arc");
+      const grainArm = document.getElementById("grain-arm");
+
+      function leftoverDeg(cutAngle, grainAngle) {
+        let d = Math.abs(cutAngle - grainAngle) % 180;
+        if (d > 90) d = 180 - d;
+        return Math.round(d);
+      }
+
+      function stopName(deg) {
+        if (deg < 18) return "with";
+        if (deg <= 62) return "across";
+        return "against";
+      }
+
+      function stopColor(name) {
+        if (name === "with") return "#7eb8a8";
+        if (name === "against") return "#e07a6a";
+        return "#d4a05c";
+      }
+
+      function toRad(deg) {
+        return (deg * Math.PI) / 180;
+      }
+
+      function lineThrough(cx, cy, deg, half) {
+        const r = toRad(deg);
+        return {
+          x1: cx - Math.cos(r) * half,
+          y1: cy - Math.sin(r) * half,
+          x2: cx + Math.cos(r) * half,
+          y2: cy + Math.sin(r) * half
+        };
+      }
+
+      function applyLine(el, line) {
+        el.setAttribute("x1", line.x1.toFixed(1));
+        el.setAttribute("y1", line.y1.toFixed(1));
+        el.setAttribute("x2", line.x2.toFixed(1));
+        el.setAttribute("y2", line.y2.toFixed(1));
+      }
+
+      function arcPath(cx, cy, radius, fromDeg, toDeg) {
+        const sweep = toDeg - fromDeg;
+        if (Math.abs(sweep) < 0.5) return "";
+        const start = toRad(fromDeg);
+        const end = toRad(toDeg);
+        const x1 = cx + Math.cos(start) * radius;
+        const y1 = cy + Math.sin(start) * radius;
+        const x2 = cx + Math.cos(end) * radius;
+        const y2 = cy + Math.sin(end) * radius;
+        const large = Math.abs(sweep) > 180 ? 1 : 0;
+        const sweepFlag = sweep >= 0 ? 1 : 0;
+        return "M " + x1.toFixed(1) + " " + y1.toFixed(1) + " A " + radius + " " + radius + " 0 " + large + " " + sweepFlag + " " + x2.toFixed(1) + " " + y2.toFixed(1);
+      }
+
+      function drawGrain(grainAngle) {
+        const lines = [];
+        const step = 14;
+        const span = 900;
+        const nx = -Math.sin(toRad(grainAngle));
+        const ny = Math.cos(toRad(grainAngle));
+        for (let i = -18; i <= 18; i++) {
+          const ox = CX + nx * i * step;
+          const oy = CY + ny * i * step;
+          const line = lineThrough(ox, oy, grainAngle, span / 2);
+          const wobble = (i % 3) * 0.6;
+          lines.push(
+            '<path class="grain-stroke" d="M ' +
+              line.x1.toFixed(1) + " " + (line.y1 + wobble).toFixed(1) +
+              " Q " + (ox + 40).toFixed(1) + " " + (oy + wobble * 2).toFixed(1) + " " +
+              line.x2.toFixed(1) + " " + (line.y2 - wobble).toFixed(1) +
+              '" fill="none" stroke="rgba(232, 196, 138, ' + (0.16 + (i % 2) * 0.05) + ')" stroke-width="' +
+              (i % 4 === 0 ? "1.6" : "1") + '" />'
+          );
+        }
+        grainLines.innerHTML = lines.join("");
+      }
+
+      function picture() {
+        const leftover = leftoverDeg(cut, grain);
+        const stop = stopName(leftover);
+        const alt = "Cut sits " + leftover + " degrees " + stop + " the grain. Leftover mismatch is a sketch, not a mill sign-off.";
+        return { leftover: leftover, stop: stop, alt: alt };
+      }
+
+      function paint(pic) {
+        drawGrain(grain);
+        const saw = lineThrough(CX, CY, cut, 268);
+        const guide = lineThrough(CX, CY, cut, 340);
+        applyLine(cutLine, saw);
+        applyLine(cutGuide, guide);
+        const arm = lineThrough(CX, CY, grain, 88);
+        grainArm.setAttribute("x1", String(CX));
+        grainArm.setAttribute("y1", String(CY));
+        grainArm.setAttribute("x2", arm.x2.toFixed(1));
+        grainArm.setAttribute("y2", arm.y2.toFixed(1));
+        leftoverArc.setAttribute("d", arcPath(CX, CY, 54, grain, cut));
+        leftoverArc.setAttribute("stroke", stopColor(pic.stop));
+        cutLine.setAttribute("stroke", pic.stop === "with" ? "#7eb8a8" : "#e8c48a");
+        sceneStatus.setAttribute("fill", stopColor(pic.stop));
+        sceneStatus.textContent = pic.stop.toUpperCase() + " · " + pic.leftover + "°";
+        scene.setAttribute("data-stop", pic.stop);
+        scene.setAttribute("data-leftover", String(pic.leftover));
+        scene.setAttribute("data-cut", String(cut));
+        scene.setAttribute("data-grain", String(grain));
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover + "° · " + pic.stop;
+        statLeftover.textContent = pic.leftover + "°";
+        statStop.textContent = pic.stop;
+        statStopWrap.classList.remove("is-with", "is-across", "is-against");
+        statStopWrap.classList.add("is-" + pic.stop);
+        if (Number(cutInput.value) !== cut) cutInput.value = String(cut);
+        if (Number(grainInput.value) !== grain) grainInput.value = String(grain);
+        cutInput.setAttribute("aria-valuetext", cut + " degrees, " + pic.stop + " the grain");
+        grainInput.setAttribute("aria-valuetext", grain + " degrees grain direction");
+      }
+
+      function resetSeed() {
+        cut = SEED.cut;
+        grain = SEED.grain;
+        render();
+      }
+
+      cutInput.addEventListener("input", (event) => {
+        cut = Number(event.target.value);
+        render();
+      });
+      grainInput.addEventListener("input", (event) => {
+        grain = Number(event.target.value);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
