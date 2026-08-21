@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Batter — a wall looks plumb until you see the batter. Move the slope. See the leftover set." />
+    <title>Batter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08090b;
+        --panel: #161410;
+        --ink: #e8e4dc;
+        --muted: #8e887c;
+        --line: rgba(196, 176, 140, 0.16);
+        --accent: #c4b48a;
+        --fill: #b89258;
+        --face: #9aa0a4;
+        --showing: #d4a060;
+        --plumb: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(196, 180, 138, 0.1), transparent 30%),
+          radial-gradient(circle at 84% 12%, rgba(184, 146, 88, 0.08), transparent 24%),
+          linear-gradient(180deg, #060706 0%, #12110e 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(22, 20, 16, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 180, 138, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(28, 26, 20, 0.96), rgba(10, 10, 8, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 180, 138, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e6e2d8; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1a16;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16140e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 180, 138, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 28% 18%, rgba(184, 146, 88, 0.1), transparent 46%),
+          #0c0b09;
+        overflow: hidden;
+      }
+      #batter-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 160, 96, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-plumb b { color: var(--plumb); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #08090b;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #batter-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> batter · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover retain slope</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">retain instrument · 22 Aug 2026 07:50</span>
+        <h1>Batter</h1>
+        <p class="lede">
+          A wall looks plumb until you see the batter. Move the slope. See the leftover set.
+          Not a bob. Not a hull. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the face still leans from plumb</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 14° showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="batter-svg" viewBox="0 0 800 460" role="img" aria-labelledby="batter-title batter-desc">
+            <title id="batter-title">Batter is showing. Fourteen degrees of leftover retaining-wall slope. The face still leans from plumb.</title>
+            <desc id="batter-desc">A retaining wall in section. Fill sits behind. The face slopes back. The leftover is batter — how far the face still leans from plumb. A picture, not a soils spec. No hanging bob.</desc>
+            <defs>
+              <linearGradient id="sky-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#181612" />
+                <stop offset="100%" stop-color="#0e100e" />
+              </linearGradient>
+              <linearGradient id="fill-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#6a5030" />
+                <stop offset="52%" stop-color="#b89258" />
+                <stop offset="100%" stop-color="#8a6840" />
+              </linearGradient>
+              <linearGradient id="face-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#c8ccc8" />
+                <stop offset="46%" stop-color="#8a9094" />
+                <stop offset="100%" stop-color="#4a4e50" />
+              </linearGradient>
+              <linearGradient id="grade-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#3a3428" />
+                <stop offset="100%" stop-color="#1c1a14" />
+              </linearGradient>
+              <pattern id="fill-grain" width="16" height="16" patternUnits="userSpaceOnUse">
+                <rect width="16" height="16" fill="none" />
+                <path d="M0 16 L16 0" fill="none" stroke="rgba(80,56,28,0.28)" stroke-width="1" />
+                <path d="M8 16 L16 8" fill="none" stroke="rgba(80,56,28,0.16)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#0c0b09" stroke="rgba(196,176,140,0.16)" />
+            <text x="36" y="42" fill="#8e887c" font-size="11" letter-spacing="2">SECTION · FILL · FACE · LEFTOVER BATTER</text>
+            <g id="batter-scene" data-view="section" data-batter="14" data-leftover="showing" data-verdict="showing">
+              <g id="ground-layer"></g>
+              <g id="fill-layer"></g>
+              <g id="plumb-layer"></g>
+              <g id="wall-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#d4a060" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 14° LEFTOVER BATTER</text>
+              <text id="scene-sketch" x="400" y="434" fill="#5a564c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER RETAIN SLOPE · NOT A BOB · NOT A HULL</text>
+            </g>
+          </svg>
+        </div>
+        <p id="batter-alt" class="sr-only" aria-live="polite">Batter is showing. Fourteen degrees of leftover retaining-wall slope. The face still leans from plumb.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="batter-input">Batter (degrees · leftover slope from plumb)</label>
+            <input id="batter-input" type="range" min="0" max="28" step="1" value="14" />
+            <div class="ticks" aria-hidden="true">
+              <span>plumb</span>
+              <span>seed showing</span>
+              <span>hard set</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Batter <b id="stat-batter">14°</b></span>
+          <span>Face <b id="stat-face">showing</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A wall looks plumb until you see the batter. Batter is leftover slope — how far the retaining-wall face still leans from plumb, as seen in section.
+        Seed is already showing — 14° of leftover set, not plumb / not zero. Arrow keys move the focused control.
+        Refresh restores the seed. Not a bob. Not a hull. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { batterDeg: 14 };
+      const BATTER_MIN = 0;
+      const BATTER_MAX = 28;
+      const PLUMB_AT = 2;
+      const TOE_X = 430;
+      const GRADE_Y = 372;
+      const WALL_H = 236;
+      const STEM = 36;
+
+      let batterDeg = SEED.batterDeg;
+
+      const svg = document.getElementById("batter-svg");
+      const scene = document.getElementById("batter-scene");
+      const titleEl = document.getElementById("batter-title");
+      const altEl = document.getElementById("batter-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const batterInput = document.getElementById("batter-input");
+      const groundLayer = document.getElementById("ground-layer");
+      const fillLayer = document.getElementById("fill-layer");
+      const plumbLayer = document.getElementById("plumb-layer");
+      const wallLayer = document.getElementById("wall-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statBatter = document.getElementById("stat-batter");
+      const statFace = document.getElementById("stat-face");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenDeg(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          14: "fourteen",
+          28: "twenty-eight"
+        };
+        return words[n] || String(n);
+      }
+
+      function picture() {
+        const leftover = batterDeg <= PLUMB_AT ? "plumb" : "showing";
+        const ang = leftover === "showing" ? (batterDeg * Math.PI / 180) : 0;
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + batterDeg + "° LEFTOVER BATTER";
+          alt = "Batter is showing. " + spokenDeg(batterDeg).charAt(0).toUpperCase() + spokenDeg(batterDeg).slice(1) + " degrees of leftover retaining-wall slope. The face still leans from plumb.";
+        } else {
+          status = "PLUMB · FACE ON THE VERTICAL";
+          alt = "Batter is plumb. The face sits on the vertical. A sketch, not a soils sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4a060" : "#8ec8b4",
+          ang: ang
+        };
+      }
+
+      function paint(pic) {
+        const heelRun = Math.tan(pic.ang) * WALL_H;
+        const topFaceX = TOE_X - heelRun;
+        const backX = topFaceX - STEM;
+        const topY = GRADE_Y - WALL_H;
+
+        groundLayer.replaceChildren();
+        groundLayer.appendChild(el("rect", {
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#sky-wash)",
+          stroke: "rgba(196,176,140,0.16)",
+          "stroke-width": "1.2"
+        }));
+        groundLayer.appendChild(el("rect", {
+          class: "grade",
+          id: "grade-body",
+          x: "48",
+          y: String(GRADE_Y),
+          width: "704",
+          height: String(400 - GRADE_Y),
+          fill: "url(#grade-wash)"
+        }));
+        groundLayer.appendChild(el("line", {
+          class: "grade-line",
+          id: "grade-line",
+          x1: "56",
+          y1: String(GRADE_Y),
+          x2: "744",
+          y2: String(GRADE_Y),
+          stroke: "rgba(196,176,140,0.45)",
+          "stroke-width": "1.6"
+        }));
+        groundLayer.appendChild(el("text", {
+          x: "620",
+          y: String(GRADE_Y + 22),
+          fill: "#8e887c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "GRADE";
+
+        fillLayer.replaceChildren();
+        const fillTop = Math.max(88, topY + 8);
+        fillLayer.appendChild(el("path", {
+          class: "fill",
+          id: "retain-fill",
+          d: "M 56 " + GRADE_Y + " L 56 " + fillTop + " L " + backX.toFixed(1) + " " + fillTop + " L " + backX.toFixed(1) + " " + topY + " L " + (TOE_X - STEM).toFixed(1) + " " + GRADE_Y + " Z",
+          fill: "url(#fill-wash)"
+        }));
+        fillLayer.appendChild(el("path", {
+          d: "M 56 " + GRADE_Y + " L 56 " + fillTop + " L " + backX.toFixed(1) + " " + fillTop + " L " + backX.toFixed(1) + " " + topY + " L " + (TOE_X - STEM).toFixed(1) + " " + GRADE_Y + " Z",
+          fill: "url(#fill-grain)"
+        }));
+        fillLayer.appendChild(el("text", {
+          x: "96",
+          y: String((fillTop + GRADE_Y) / 2),
+          fill: "#3a2c18",
+          "font-size": "11",
+          "letter-spacing": "1.8"
+        })).textContent = "FILL";
+
+        plumbLayer.replaceChildren();
+        plumbLayer.appendChild(el("line", {
+          class: "plumb-line",
+          id: "plumb-line",
+          x1: String(TOE_X),
+          y1: String(topY - 18),
+          x2: String(TOE_X),
+          y2: String(GRADE_Y + 8),
+          stroke: pic.leftover === "showing" ? "rgba(212,160,96,0.42)" : "rgba(142,200,180,0.55)",
+          "stroke-width": "1.2",
+          "stroke-dasharray": "5 6"
+        }));
+        plumbLayer.appendChild(el("text", {
+          x: String(TOE_X + 10),
+          y: String(topY - 6),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "PLUMB";
+
+        wallLayer.replaceChildren();
+        const wall = el("g", {
+          class: "wall",
+          id: "section-wall",
+          "data-batter": String(batterDeg)
+        });
+        wall.appendChild(el("path", {
+          class: "wall-body",
+          d: "M " + TOE_X + " " + GRADE_Y +
+            " L " + topFaceX.toFixed(1) + " " + topY +
+            " L " + backX.toFixed(1) + " " + topY +
+            " L " + (TOE_X - STEM).toFixed(1) + " " + GRADE_Y + " Z",
+          fill: "url(#face-wash)",
+          stroke: "rgba(220,224,220,0.45)",
+          "stroke-width": "1.4"
+        }));
+        wall.appendChild(el("line", {
+          class: "wall-face",
+          id: "wall-face",
+          x1: String(TOE_X),
+          y1: String(GRADE_Y),
+          x2: topFaceX.toFixed(1),
+          y2: String(topY),
+          stroke: pic.accent,
+          "stroke-width": "2.2"
+        }));
+        wall.appendChild(el("text", {
+          x: String((TOE_X + backX) / 2),
+          y: String(topY + 28),
+          fill: "#d8d4cc",
+          "font-size": "10",
+          "letter-spacing": "1.6",
+          "text-anchor": "middle"
+        })).textContent = "FACE";
+        wallLayer.appendChild(wall);
+
+        markLayer.replaceChildren();
+        if (pic.leftover === "showing") {
+          const r = 86;
+          const start = -Math.PI / 2;
+          const end = -Math.PI / 2 - pic.ang;
+          const sx = TOE_X + r * Math.cos(start);
+          const sy = GRADE_Y + r * Math.sin(start);
+          const ex = TOE_X + r * Math.cos(end);
+          const ey = GRADE_Y + r * Math.sin(end);
+          markLayer.appendChild(el("path", {
+            class: "batter-arc",
+            id: "batter-arc",
+            d: "M " + sx.toFixed(1) + " " + sy.toFixed(1) + " A " + r + " " + r + " 0 0 0 " + ex.toFixed(1) + " " + ey.toFixed(1),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.8"
+          }));
+          markLayer.appendChild(el("text", {
+            class: "batter-label",
+            id: "batter-label",
+            x: String(TOE_X + 22),
+            y: String(GRADE_Y - r + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4"
+          })).textContent = batterDeg + "° BATTER";
+          markLayer.appendChild(el("text", {
+            x: "620",
+            y: "118",
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4"
+          })).textContent = "LEFTOVER SLOPE";
+        } else {
+          markLayer.appendChild(el("text", {
+            x: "400",
+            y: "118",
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "PLUMB";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-batter", String(batterDeg));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "section");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-plumb";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + batterDeg + "° showing"
+          : "leftover plumb";
+        statBatter.textContent = batterDeg + "°";
+        statFace.textContent = pic.leftover;
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-plumb");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(batterInput.value) !== batterDeg) batterInput.value = String(batterDeg);
+        batterInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        batterDeg = SEED.batterDeg;
+        render();
+      }
+
+      batterInput.addEventListener("input", function (event) {
+        batterDeg = clamp(Number(event.target.value), BATTER_MIN, BATTER_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
