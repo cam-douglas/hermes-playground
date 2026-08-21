@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Backlash — two gears look meshed until you turn. Move the play. See the leftover slop." />
+    <title>Backlash</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #07080b;
+        --panel: #12151a;
+        --ink: #e8eef4;
+        --muted: #8a96a4;
+        --line: rgba(170, 190, 210, 0.14);
+        --accent: #c4b08a;
+        --driver: #d4b896;
+        --driven: #8aa4b8;
+        --leftover: #c9907a;
+        --floor: #5a6570;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(196, 176, 138, 0.1), transparent 30%),
+          radial-gradient(circle at 86% 10%, rgba(201, 144, 122, 0.06), transparent 24%),
+          linear-gradient(180deg, #050608 0%, #0c0f14 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 21, 26, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 176, 138, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 26, 32, 0.96), rgba(8, 10, 14, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 176, 138, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #dce4ee; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #171a20;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a1408; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 176, 138, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(196, 176, 138, 0.05), transparent 46%),
+          #090b0e;
+        overflow: hidden;
+      }
+      #backlash-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl + .strip-ctrl { border-left: 1px solid var(--line); }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--accent);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(196, 176, 138, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-play b { color: var(--accent); }
+      .readout .is-takeup b { color: var(--driven); }
+      .readout .is-leftover b { color: var(--leftover); }
+      .readout .is-tight b { color: var(--muted); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #07080b;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .strip-ctrl + .strip-ctrl,
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> backlash · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover play</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">backlash instrument · 21 Aug 2026 15:50</span>
+        <h1>Backlash</h1>
+        <p class="lede">
+          Two gears look meshed until you turn. Move the play. See the leftover slop.
+          Not a mix. Not a beam of claims. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the mesh</div>
+            <h2>Two gears, leftover play</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 11°</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="backlash-svg" viewBox="0 0 800 420" role="img" aria-labelledby="backlash-title backlash-desc">
+            <title id="backlash-title">Leftover play is 11 degrees. The driven gear has not taken up. A sketch, not an engineering sign-off.</title>
+            <desc id="backlash-desc">Two meshing gears, driver and driven. The leftover is play — the lost motion before the driven gear takes up.</desc>
+            <defs>
+              <pattern id="play-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+                <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(201,144,122,0.5)" stroke-width="1.4" />
+              </pattern>
+              <linearGradient id="gear-driver" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#e8d2ae" />
+                <stop offset="100%" stop-color="#8a7048" />
+              </linearGradient>
+              <linearGradient id="gear-driven" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#b4c8d6" />
+                <stop offset="100%" stop-color="#4a6274" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="396" rx="6" fill="#0b0d11" stroke="rgba(170,190,210,0.14)" />
+            <text x="36" y="42" fill="#8a96a4" font-size="11" letter-spacing="2">MESH · TWO GEARS · LEFTOVER PLAY</text>
+            <g id="backlash-scene" data-play="16" data-turn="5" data-takeup="5" data-leftover="11">
+              <g id="gear-driver" class="mesh-gear" data-role="driver"></g>
+              <g id="gear-driven" class="mesh-gear" data-role="driven"></g>
+              <path id="play-wedge" d="" fill="url(#play-hatch)" stroke="#c9907a" stroke-width="1.2" />
+              <path id="play-arc" d="" fill="none" stroke="#c9907a" stroke-width="2.2" stroke-linecap="round" />
+              <text id="scene-status" x="400" y="68" fill="#c9907a" font-size="12" letter-spacing="1.6" text-anchor="middle">LEFTOVER PLAY · 11°</text>
+              <text id="driver-label" x="260" y="384" fill="#d4b896" font-size="12" letter-spacing="1.6" text-anchor="middle">DRIVER</text>
+              <text id="driven-label" x="540" y="384" fill="#8aa4b8" font-size="12" letter-spacing="1.6" text-anchor="middle">DRIVEN</text>
+              <text id="scene-sketch" x="400" y="404" fill="#5a6570" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · NOT AN ENGINEERING SIGN-OFF</text>
+            </g>
+          </svg>
+        </div>
+        <p id="backlash-alt" class="sr-only" aria-live="polite">Leftover play is 11 degrees. The driven gear has not taken up. A sketch, not an engineering sign-off.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="play-slop">Play (degrees of slop)</label>
+            <input id="play-slop" type="range" min="0" max="28" step="1" value="16" />
+            <div class="ticks" aria-hidden="true">
+              <span>tight</span>
+              <span>slop</span>
+              <span>loose</span>
+            </div>
+          </div>
+          <div class="strip-ctrl">
+            <label for="driver-turn">Turn the driver</label>
+            <input id="driver-turn" type="range" min="0" max="48" step="1" value="5" />
+            <div class="ticks" aria-hidden="true">
+              <span>rest</span>
+              <span>lost</span>
+              <span>taken</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span class="is-play">Play <b id="stat-play">16°</b></span>
+          <span class="is-takeup">Take-up <b id="stat-takeup">5°</b></span>
+          <span id="stat-leftover-wrap" class="is-leftover">Leftover slop <b id="stat-leftover">11°</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        Two gears look meshed until you turn. The leftover is play — the lost motion before the driven gear takes up.
+        Seed is already loose — 16° of slop, driver turned 5°, leftover 11°. Arrow keys move the focused control.
+        Refresh restores the seed. Not a mix. Not a beam of claims. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { play: 16, turn: 5 };
+      const TEETH = 12;
+      const DRIVER = { x: 260, y: 228, rRoot: 96, rTip: 124, rHub: 34 };
+      const DRIVEN = { x: 540, y: 228, rRoot: 96, rTip: 124, rHub: 34 };
+      const MESH_X = 400;
+      const MESH_Y = 228;
+
+      let playDeg = SEED.play;
+      let turnDeg = SEED.turn;
+
+      const svg = document.getElementById("backlash-svg");
+      const scene = document.getElementById("backlash-scene");
+      const titleEl = document.getElementById("backlash-title");
+      const altEl = document.getElementById("backlash-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const playInput = document.getElementById("play-slop");
+      const turnInput = document.getElementById("driver-turn");
+      const gearDriver = document.getElementById("gear-driver");
+      const gearDriven = document.getElementById("gear-driven");
+      const playWedge = document.getElementById("play-wedge");
+      const playArc = document.getElementById("play-arc");
+      const sceneStatus = document.getElementById("scene-status");
+      const statPlay = document.getElementById("stat-play");
+      const statTakeup = document.getElementById("stat-takeup");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, Math.round(n)));
+      }
+
+      function deg(n) {
+        return (n * Math.PI) / 180;
+      }
+
+      function pt(cx, cy, r, a) {
+        return [cx + r * Math.cos(deg(a)), cy + r * Math.sin(deg(a))];
+      }
+
+      function picture() {
+        const takeup = Math.min(turnDeg, playDeg);
+        const leftover = Math.max(0, playDeg - turnDeg);
+        const drivenMove = Math.max(0, turnDeg - playDeg);
+        const tight = leftover === 0 && playDeg === 0;
+        let alt;
+        let status;
+        if (leftover > 0) {
+          status = "LEFTOVER PLAY · " + leftover + "°";
+          alt = "Leftover play is " + leftover + " degrees. The driven gear has not taken up. A sketch, not an engineering sign-off.";
+        } else if (playDeg === 0) {
+          status = "TIGHT · NO PLAY";
+          alt = "The mesh is tight. No leftover play. A sketch, not an engineering sign-off.";
+        } else {
+          status = "TAKEN UP · DRIVEN MOVES " + drivenMove + "°";
+          alt = "Play of " + playDeg + " degrees is taken up. The driven gear has started. A sketch, not an engineering sign-off.";
+        }
+        return {
+          takeup: takeup,
+          leftover: leftover,
+          drivenMove: drivenMove,
+          tight: tight,
+          status: status,
+          alt: alt
+        };
+      }
+
+      function gearPath(cx, cy, rRoot, rTip, rot) {
+        const pitch = 360 / TEETH;
+        const tooth = pitch * 0.38;
+        const tipInset = pitch * 0.08;
+        const parts = [];
+        for (let i = 0; i < TEETH; i++) {
+          const a0 = rot + i * pitch;
+          const a1 = a0 + tooth;
+          const tip0 = a0 + tipInset;
+          const tip1 = a1 - tipInset;
+          const p0 = pt(cx, cy, rRoot, a0);
+          const p1 = pt(cx, cy, rTip, tip0);
+          const p2 = pt(cx, cy, rTip, tip1);
+          const p3 = pt(cx, cy, rRoot, a1);
+          const gap = a0 + pitch;
+          const p4 = pt(cx, cy, rRoot, gap);
+          parts.push(
+            (i === 0 ? "M" : "L") + p0[0].toFixed(1) + " " + p0[1].toFixed(1) +
+            " L" + p1[0].toFixed(1) + " " + p1[1].toFixed(1) +
+            " L" + p2[0].toFixed(1) + " " + p2[1].toFixed(1) +
+            " L" + p3[0].toFixed(1) + " " + p3[1].toFixed(1) +
+            " L" + p4[0].toFixed(1) + " " + p4[1].toFixed(1)
+          );
+        }
+        return parts.join(" ") + " Z";
+      }
+
+      function drawGear(target, spec, rot, fill, stroke, role) {
+        target.replaceChildren();
+        const body = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        body.setAttribute("class", "gear-body");
+        body.setAttribute("data-role", role);
+        body.setAttribute("d", gearPath(spec.x, spec.y, spec.rRoot, spec.rTip, rot));
+        body.setAttribute("fill", fill);
+        body.setAttribute("stroke", stroke);
+        body.setAttribute("stroke-width", "1.2");
+        target.appendChild(body);
+
+        const rim = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        rim.setAttribute("cx", String(spec.x));
+        rim.setAttribute("cy", String(spec.y));
+        rim.setAttribute("r", String(spec.rRoot - 8));
+        rim.setAttribute("fill", "#0d1014");
+        rim.setAttribute("stroke", stroke);
+        rim.setAttribute("stroke-width", "1");
+        rim.setAttribute("opacity", "0.55");
+        target.appendChild(rim);
+
+        const hub = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        hub.setAttribute("cx", String(spec.x));
+        hub.setAttribute("cy", String(spec.y));
+        hub.setAttribute("r", String(spec.rHub));
+        hub.setAttribute("fill", fill);
+        hub.setAttribute("stroke", stroke);
+        hub.setAttribute("stroke-width", "1.4");
+        target.appendChild(hub);
+
+        const bore = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        bore.setAttribute("cx", String(spec.x));
+        bore.setAttribute("cy", String(spec.y));
+        bore.setAttribute("r", "8");
+        bore.setAttribute("fill", "#090b0e");
+        target.appendChild(bore);
+
+        const mark = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        const m0 = pt(spec.x, spec.y, 10, rot);
+        const m1 = pt(spec.x, spec.y, spec.rHub - 4, rot);
+        mark.setAttribute("x1", m0[0].toFixed(1));
+        mark.setAttribute("y1", m0[1].toFixed(1));
+        mark.setAttribute("x2", m1[0].toFixed(1));
+        mark.setAttribute("y2", m1[1].toFixed(1));
+        mark.setAttribute("stroke", "#0b0d11");
+        mark.setAttribute("stroke-width", "3");
+        mark.setAttribute("stroke-linecap", "round");
+        target.appendChild(mark);
+      }
+
+      function arcPath(cx, cy, r, a0, a1) {
+        const sweep = a1 >= a0 ? 1 : 0;
+        const large = Math.abs(a1 - a0) > 180 ? 1 : 0;
+        const p0 = pt(cx, cy, r, a0);
+        const p1 = pt(cx, cy, r, a1);
+        return "M " + p0[0].toFixed(1) + " " + p0[1].toFixed(1) +
+          " A " + r + " " + r + " 0 " + large + " " + sweep + " " +
+          p1[0].toFixed(1) + " " + p1[1].toFixed(1);
+      }
+
+      function paint(pic) {
+        const halfPitch = 180 / TEETH;
+        const driverRot = turnDeg;
+        const drivenRot = 180 + halfPitch + playDeg - pic.drivenMove;
+        drawGear(gearDriver, DRIVER, driverRot, "url(#gear-driver)", "#d4b896", "driver");
+        drawGear(gearDriven, DRIVEN, drivenRot, "url(#gear-driven)", "#8aa4b8", "driven");
+
+        const leftover = pic.leftover;
+        if (leftover > 0.4) {
+          const a0 = 180 - leftover / 2;
+          const a1 = 180 + leftover / 2;
+          const inner = DRIVEN.rRoot + 4;
+          const outer = DRIVEN.rTip + 10;
+          const p0 = pt(DRIVEN.x, DRIVEN.y, inner, a0);
+          const p1 = pt(DRIVEN.x, DRIVEN.y, outer, a0);
+          const p2 = pt(DRIVEN.x, DRIVEN.y, outer, a1);
+          const p3 = pt(DRIVEN.x, DRIVEN.y, inner, a1);
+          const large = leftover > 180 ? 1 : 0;
+          playWedge.setAttribute(
+            "d",
+            "M " + p0[0].toFixed(1) + " " + p0[1].toFixed(1) +
+            " L " + p1[0].toFixed(1) + " " + p1[1].toFixed(1) +
+            " A " + outer + " " + outer + " 0 " + large + " 1 " + p2[0].toFixed(1) + " " + p2[1].toFixed(1) +
+            " L " + p3[0].toFixed(1) + " " + p3[1].toFixed(1) +
+            " A " + inner + " " + inner + " 0 " + large + " 0 " + p0[0].toFixed(1) + " " + p0[1].toFixed(1) +
+            " Z"
+          );
+          playWedge.setAttribute("visibility", "visible");
+          playArc.setAttribute("d", arcPath(DRIVEN.x, DRIVEN.y, DRIVEN.rTip + 16, a0, a1));
+          playArc.setAttribute("visibility", "visible");
+        } else {
+          playWedge.setAttribute("visibility", "hidden");
+          playArc.setAttribute("visibility", "hidden");
+        }
+
+        sceneStatus.setAttribute("fill", leftover > 0 ? "#c9907a" : "#8a96a4");
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-play", String(playDeg));
+        scene.setAttribute("data-turn", String(turnDeg));
+        scene.setAttribute("data-takeup", String(pic.takeup));
+        scene.setAttribute("data-leftover", String(pic.leftover));
+        scene.setAttribute("data-driven", String(pic.drivenMove));
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover > 0 ? "leftover " + pic.leftover + "°" : (pic.tight ? "tight" : "taken up");
+        statPlay.textContent = playDeg + "°";
+        statTakeup.textContent = pic.takeup + "°";
+        statLeftover.textContent = pic.leftover + "°";
+        statLeftoverWrap.classList.remove("is-leftover", "is-tight");
+        statLeftoverWrap.classList.add(pic.leftover > 0 ? "is-leftover" : "is-tight");
+        if (Number(playInput.value) !== playDeg) playInput.value = String(playDeg);
+        if (Number(turnInput.value) !== turnDeg) turnInput.value = String(turnDeg);
+        playInput.setAttribute("aria-valuetext", playDeg + " degrees of play, leftover " + pic.leftover);
+        turnInput.setAttribute("aria-valuetext", turnDeg + " degrees of driver turn, leftover " + pic.leftover);
+      }
+
+      function resetSeed() {
+        playDeg = SEED.play;
+        turnDeg = SEED.turn;
+        render();
+      }
+
+      playInput.addEventListener("input", function (event) {
+        playDeg = clamp(Number(event.target.value), 0, 28);
+        render();
+      });
+      turnInput.addEventListener("input", function (event) {
+        turnDeg = clamp(Number(event.target.value), 0, 48);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
