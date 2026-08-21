@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Bite — a pedal looks ready until you feel the bite. Move the travel. See the leftover gap." />
+    <title>Bite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #090706;
+        --panel: #161210;
+        --ink: #ece6dc;
+        --muted: #8a8278;
+        --line: rgba(200, 176, 152, 0.14);
+        --accent: #c8a888;
+        --steel: #8a847c;
+        --pad: #3a3230;
+        --free: #d4a06a;
+        --grab: #8fd4b8;
+        --floor: #5a524c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(200, 168, 136, 0.1), transparent 30%),
+          radial-gradient(circle at 88% 10%, rgba(212, 160, 106, 0.06), transparent 24%),
+          linear-gradient(180deg, #070504 0%, #100c0a 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(22, 18, 16, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 168, 136, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(28, 22, 18, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 168, 136, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e8e0d4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1814;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a140c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 168, 136, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 38% 24%, rgba(200, 168, 136, 0.06), transparent 46%),
+          #0c0a08;
+        overflow: hidden;
+      }
+      #bite-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl + .strip-ctrl { border-left: 1px solid var(--line); }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--free);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 160, 106, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-free b { color: var(--free); }
+      .readout .is-grab b { color: var(--grab); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #090706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .strip-ctrl + .strip-ctrl,
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> bite · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover travel</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">pedal instrument · 21 Aug 2026 23:50</span>
+        <h1>Bite</h1>
+        <p class="lede">
+          A pedal looks ready until you feel the bite. Move the travel. See the leftover gap.
+          Not a mesh. Not a wheel. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>Pedal in side view</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 16 mm free</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="bite-svg" viewBox="0 0 800 460" role="img" aria-labelledby="bite-title bite-desc">
+            <title id="bite-title">Travel is still free. Sixteen millimetres of leftover sit before the bite.</title>
+            <desc id="bite-desc">A brake pedal in side view. The leftover is free travel before bite — a dashed bite point versus how far the pedal has already moved.</desc>
+            <defs>
+              <linearGradient id="arm-face" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d4c0a4" />
+                <stop offset="100%" stop-color="#6a5c4c" />
+              </linearGradient>
+              <linearGradient id="pad-face" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#5a5048" />
+                <stop offset="100%" stop-color="#2a2420" />
+              </linearGradient>
+              <linearGradient id="well-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1612" />
+                <stop offset="100%" stop-color="#0e0c0a" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#0c0a08" stroke="rgba(200,176,152,0.14)" />
+            <text x="36" y="42" fill="#8a8278" font-size="11" letter-spacing="2">SIDE · PEDAL · FREE TRAVEL BEFORE BITE</text>
+            <g id="bite-scene" data-view="side" data-pedal="1" data-travel="24" data-position="8" data-leftover="16" data-verdict="free">
+              <g id="well-layer"></g>
+              <g id="refs-layer"></g>
+              <g id="pedal-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#d4a06a" font-size="12" letter-spacing="1.6" text-anchor="middle">FREE · 16 MM LEFTOVER</text>
+              <text id="scene-sketch" x="400" y="434" fill="#5a524c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER TRAVEL BEFORE THE BITE · NOT A MESH</text>
+            </g>
+          </svg>
+        </div>
+        <p id="bite-alt" class="sr-only" aria-live="polite">Travel is still free. Sixteen millimetres of leftover sit before the bite.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="travel-input">Free travel (mm)</label>
+            <input id="travel-input" type="range" min="4" max="40" step="1" value="24" />
+            <div class="ticks" aria-hidden="true">
+              <span>tight</span>
+              <span>travel</span>
+              <span>long</span>
+            </div>
+          </div>
+          <div class="strip-ctrl">
+            <label for="position-input">Pedal position (mm)</label>
+            <input id="position-input" type="range" min="0" max="40" step="1" value="8" />
+            <div class="ticks" aria-hidden="true">
+              <span>rest</span>
+              <span>press</span>
+              <span>bite</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Travel <b id="stat-travel">24 mm</b></span>
+          <span id="stat-leftover-wrap" class="is-free">Leftover (sketch) <b id="stat-leftover">free</b></span>
+          <span id="stat-sketch-wrap" class="is-free">Sketch <b id="stat-sketch">free</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A pedal looks ready until you feel the bite. Bite is leftover travel — how much free travel sits before the bite, in side view of a pedal.
+        Seed is already free — 24 mm of travel, pedal 8 mm in, 16 mm leftover before a dashed bite point. Arrow keys move the focused control.
+        Refresh restores the seed. Not a mesh. Not a wheel. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { travelMm: 24, positionMm: 8 };
+      const TRAVEL_MIN = 4;
+      const TRAVEL_MAX = 40;
+      const POS_MIN = 0;
+      const POS_MAX = 40;
+      const PIVOT = { x: 248, y: 126 };
+      const ARM = 236;
+      const PX_PER_MM = 3.35;
+      const REST_DEG = 18;
+      const PAD_W = 78;
+      const PAD_H = 16;
+
+      let travelMm = SEED.travelMm;
+      let positionMm = SEED.positionMm;
+
+      const svg = document.getElementById("bite-svg");
+      const scene = document.getElementById("bite-scene");
+      const titleEl = document.getElementById("bite-title");
+      const altEl = document.getElementById("bite-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const travelInput = document.getElementById("travel-input");
+      const positionInput = document.getElementById("position-input");
+      const wellLayer = document.getElementById("well-layer");
+      const refsLayer = document.getElementById("refs-layer");
+      const pedalLayer = document.getElementById("pedal-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statTravel = document.getElementById("stat-travel");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+      const statSketch = document.getElementById("stat-sketch");
+      const statSketchWrap = document.getElementById("stat-sketch-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function leftoverMm() {
+        return Math.max(0, travelMm - positionMm);
+      }
+
+      function angleFromMm(mm) {
+        return REST_DEG + (mm * PX_PER_MM / ARM) * (180 / Math.PI);
+      }
+
+      function pointAt(deg) {
+        const rad = (deg * Math.PI) / 180;
+        return {
+          x: PIVOT.x + Math.sin(rad) * ARM,
+          y: PIVOT.y + Math.cos(rad) * ARM
+        };
+      }
+
+      function picture() {
+        const left = leftoverMm();
+        const verdict = left <= 0 ? "at bite" : "free";
+        const travelLabel = travelMm + " mm";
+        let status;
+        let alt;
+        if (verdict === "free") {
+          status = "FREE · " + left + " MM LEFTOVER";
+          alt = "Travel is still free. " + left + " millimetres of leftover sit before the bite.";
+        } else {
+          status = "AT BITE · NO LEFTOVER";
+          alt = "Travel is at bite. The pedal has taken up the free travel. A sketch, not a workshop sign-off.";
+        }
+        return {
+          leftover: left,
+          verdict: verdict,
+          travelLabel: travelLabel,
+          status: status,
+          alt: alt,
+          accent: verdict === "free" ? "#d4a06a" : "#8fd4b8"
+        };
+      }
+
+      function padTransform(pt, deg) {
+        return "translate(" + pt.x + " " + pt.y + ") rotate(" + (-deg) + ")";
+      }
+
+      function paint(pic) {
+        const restDeg = REST_DEG;
+        const nowDeg = angleFromMm(positionMm);
+        const biteDeg = angleFromMm(travelMm);
+        const restPt = pointAt(restDeg);
+        const nowPt = pointAt(nowDeg);
+        const bitePt = pointAt(biteDeg);
+
+        wellLayer.replaceChildren();
+        wellLayer.appendChild(el("rect", {
+          x: "48",
+          y: "86",
+          width: "704",
+          height: "318",
+          rx: "8",
+          fill: "url(#well-wash)",
+          stroke: "rgba(200,176,152,0.16)",
+          "stroke-width": "1.2"
+        }));
+        wellLayer.appendChild(el("rect", {
+          class: "firewall",
+          x: "72",
+          y: "104",
+          width: "28",
+          height: "248",
+          fill: "#2a2622",
+          stroke: "#6a645c",
+          "stroke-width": "1.2"
+        }));
+        wellLayer.appendChild(el("text", {
+          x: "86",
+          y: "128",
+          fill: "#8a8278",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "FIRE";
+        wellLayer.appendChild(el("line", {
+          x1: "72",
+          y1: "368",
+          x2: "728",
+          y2: "368",
+          stroke: "#6a645c",
+          "stroke-width": "3",
+          "stroke-linecap": "round"
+        }));
+        wellLayer.appendChild(el("text", {
+          x: "120",
+          y: "390",
+          fill: "#5a524c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "FLOOR";
+
+        refsLayer.replaceChildren();
+        const sweep = "M " + nowPt.x.toFixed(1) + " " + nowPt.y.toFixed(1) +
+          " A " + ARM + " " + ARM + " 0 0 1 " + bitePt.x.toFixed(1) + " " + bitePt.y.toFixed(1);
+        if (pic.verdict === "free") {
+          refsLayer.appendChild(el("path", {
+            class: "leftover-arc",
+            d: sweep,
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "2.2",
+            "stroke-linecap": "round"
+          }));
+        }
+        refsLayer.appendChild(el("line", {
+          class: "bite-mark",
+          x1: String(bitePt.x),
+          y1: String(bitePt.y - 54),
+          x2: String(bitePt.x),
+          y2: String(bitePt.y + 28),
+          stroke: "rgba(200,188,168,0.55)",
+          "stroke-width": "1.6",
+          "stroke-dasharray": "5 6"
+        }));
+        refsLayer.appendChild(el("rect", {
+          class: "bite-ghost",
+          x: String(-PAD_W / 2),
+          y: String(-PAD_H / 2),
+          width: String(PAD_W),
+          height: String(PAD_H),
+          rx: "4",
+          fill: "none",
+          stroke: "rgba(200,188,168,0.55)",
+          "stroke-width": "1.4",
+          "stroke-dasharray": "5 6",
+          transform: padTransform(bitePt, biteDeg)
+        }));
+        refsLayer.appendChild(el("text", {
+          x: String(bitePt.x + 18),
+          y: String(bitePt.y - 62),
+          fill: "#8a8278",
+          "font-size": "10",
+          "letter-spacing": "1.2"
+        })).textContent = "BITE";
+
+        pedalLayer.replaceChildren();
+        const pedal = el("g", {
+          id: "pedal",
+          "data-view": "side",
+          "data-travel": String(travelMm),
+          "data-position": String(positionMm)
+        });
+        pedal.appendChild(el("line", {
+          class: "rest-ghost",
+          x1: String(PIVOT.x),
+          y1: String(PIVOT.y),
+          x2: String(restPt.x),
+          y2: String(restPt.y),
+          stroke: "rgba(200,188,168,0.22)",
+          "stroke-width": "2",
+          "stroke-dasharray": "3 5"
+        }));
+        pedal.appendChild(el("line", {
+          class: "pedal-arm",
+          x1: String(PIVOT.x),
+          y1: String(PIVOT.y),
+          x2: String(nowPt.x),
+          y2: String(nowPt.y),
+          stroke: "url(#arm-face)",
+          "stroke-width": "10",
+          "stroke-linecap": "round"
+        }));
+        pedal.appendChild(el("circle", {
+          class: "pivot",
+          cx: String(PIVOT.x),
+          cy: String(PIVOT.y),
+          r: "10",
+          fill: "#2a2420",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        pedal.appendChild(el("rect", {
+          class: "pedal-pad",
+          x: String(-PAD_W / 2),
+          y: String(-PAD_H / 2),
+          width: String(PAD_W),
+          height: String(PAD_H),
+          rx: "4",
+          fill: "url(#pad-face)",
+          stroke: pic.accent,
+          "stroke-width": "1.6",
+          transform: padTransform(nowPt, nowDeg)
+        }));
+        pedal.appendChild(el("text", {
+          x: String(nowPt.x - 8),
+          y: String(nowPt.y + 36),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = "PAD " + positionMm + " MM IN";
+        if (pic.verdict === "free") {
+          pedal.appendChild(el("text", {
+            x: String((nowPt.x + bitePt.x) / 2 + 10),
+            y: String((nowPt.y + bitePt.y) / 2 - 10),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2"
+          })).textContent = "LEFTOVER " + pic.leftover + " MM";
+        }
+        pedalLayer.appendChild(pedal);
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-travel", String(travelMm));
+        scene.setAttribute("data-position", String(positionMm));
+        scene.setAttribute("data-leftover", String(pic.leftover));
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "side");
+        scene.setAttribute("data-pedal", "1");
+      }
+
+      function toneClass(verdict) {
+        return verdict === "at bite" ? "is-grab" : "is-free";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = "leftover " + pic.leftover + " mm " + pic.verdict;
+        statTravel.textContent = pic.travelLabel;
+        statLeftover.textContent = pic.verdict;
+        statSketch.textContent = pic.verdict;
+        statLeftoverWrap.classList.remove("is-free", "is-grab");
+        statSketchWrap.classList.remove("is-free", "is-grab");
+        statLeftoverWrap.classList.add(toneClass(pic.verdict));
+        statSketchWrap.classList.add(toneClass(pic.verdict));
+        if (Number(travelInput.value) !== travelMm) travelInput.value = String(travelMm);
+        if (Number(positionInput.value) !== positionMm) positionInput.value = String(positionMm);
+        travelInput.setAttribute("aria-valuetext", pic.alt);
+        positionInput.setAttribute("aria-valuetext", "Pedal is " + positionMm + " millimetres in. Travel is " + pic.verdict + ".");
+      }
+
+      function resetSeed() {
+        travelMm = SEED.travelMm;
+        positionMm = SEED.positionMm;
+        render();
+      }
+
+      travelInput.addEventListener("input", function (event) {
+        travelMm = clamp(Math.round(Number(event.target.value)), TRAVEL_MIN, TRAVEL_MAX);
+        render();
+      });
+      positionInput.addEventListener("input", function (event) {
+        positionMm = clamp(Math.round(Number(event.target.value)), POS_MIN, POS_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
