@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Flue — a stack looks still until you see the flue. Move the fire. See the leftover pull." />
+    <title>Flue</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #090806;
+        --panel: #16130f;
+        --ink: #eee6da;
+        --muted: #8e8578;
+        --line: rgba(196, 176, 148, 0.16);
+        --accent: #c4a882;
+        --stack: #8a7460;
+        --showing: #e8c89a;
+        --cold: #6a6860;
+        --soot: #2a2218;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 28% -6%, rgba(196, 168, 130, 0.1), transparent 30%),
+          radial-gradient(circle at 82% 14%, rgba(232, 200, 154, 0.06), transparent 24%),
+          linear-gradient(180deg, #080704 0%, #14110c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(22, 19, 15, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 168, 130, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(28, 24, 18, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 168, 130, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #eee6da; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1814;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 168, 130, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 88%, rgba(196, 168, 130, 0.07), transparent 46%),
+          #0c0a08;
+        overflow: hidden;
+      }
+      #flue-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(232, 200, 154, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-cold b { color: var(--cold); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #090806;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #flue-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> flue · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover chimney pull</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">chimney instrument · 22 Aug 2026 20:50</span>
+        <h1>Flue</h1>
+        <p class="lede">
+          A stack looks still until you see the flue. Move the fire. See the leftover pull.
+          Not a throw. Not a lamp. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the stack still draws</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 4.5 m showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="flue-svg" viewBox="0 0 800 440" role="img" aria-labelledby="flue-title flue-desc">
+            <title id="flue-title">Flue is showing. Four point five metres of leftover chimney pull still rise in the stack.</title>
+            <desc id="flue-desc">A chimney stack in elevation. The leftover is flue — how far the stack still draws, leftover pull. A picture, not a heating spec. No vent plume. No lamp. No hanging catenary.</desc>
+            <defs>
+              <linearGradient id="sky-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1610" />
+                <stop offset="100%" stop-color="#0e0c08" />
+              </linearGradient>
+              <linearGradient id="ground-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#2a241c" />
+                <stop offset="100%" stop-color="#14110c" />
+              </linearGradient>
+              <linearGradient id="stack-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#4a3c30" />
+                <stop offset="38%" stop-color="#8a7460" />
+                <stop offset="100%" stop-color="#3a3028" />
+              </linearGradient>
+              <linearGradient id="liner-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="50%" stop-color="#2c2218" />
+                <stop offset="100%" stop-color="#16120e" />
+              </linearGradient>
+              <linearGradient id="pull-wash" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#c47840" />
+                <stop offset="42%" stop-color="#d4a060" />
+                <stop offset="100%" stop-color="#e8c89a" />
+              </linearGradient>
+              <pattern id="flue-hatch" width="8" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 10 L8 0" fill="none" stroke="rgba(232,200,154,0.34)" stroke-width="1" />
+              </pattern>
+              <pattern id="brick-bond" width="28" height="14" patternUnits="userSpaceOnUse">
+                <path d="M0 14 H28 M0 7 H28 M14 0 V7 M0 7 V14 M28 7 V14" fill="none" stroke="rgba(28,22,16,0.45)" stroke-width="1" />
+              </pattern>
+              <clipPath id="liner-clip">
+                <rect id="liner-clip-rect" x="368" y="108" width="64" height="252" />
+              </clipPath>
+            </defs>
+            <rect x="12" y="12" width="776" height="416" rx="6" fill="#0c0a08" stroke="rgba(196,176,148,0.16)" />
+            <text x="36" y="42" fill="#8e8578" font-size="11" letter-spacing="2">ELEVATION · STACK · CHIMNEY · FLUE IS THE LEFTOVER PULL</text>
+            <g id="flue-scene" data-view="elevation" data-hero="chimney-flue" data-flue="4.5" data-leftover="showing" data-verdict="showing">
+              <g id="site-layer"></g>
+              <g id="stack-layer"></g>
+              <g id="pull-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#e8c89a" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 4.5 M LEFTOVER FLUE</text>
+              <text id="scene-sketch" x="400" y="414" fill="#4a443c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER CHIMNEY PULL · NOT A THROW · NOT A LAMP</text>
+            </g>
+          </svg>
+        </div>
+        <p id="flue-alt" class="sr-only" aria-live="polite">Flue is showing. Four point five metres of leftover chimney pull still rise in the stack.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="flue-input">Flue (metres of leftover pull)</label>
+            <input id="flue-input" type="range" min="0" max="8" step="0.1" value="4.5" />
+            <div class="ticks" aria-hidden="true">
+              <span>cold</span>
+              <span>seed showing</span>
+              <span>full draw</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Flue <b id="stat-flue">4.5 m</b></span>
+          <span>Pull (sketch) <b id="stat-pull">4.5 m leftover</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A stack looks still until you see the flue. Flue is leftover chimney pull — how far the stack still draws, as seen in elevation.
+        Seed is already showing — 4.5 m of leftover pull in the stack, not cold / not flush. Arrow keys move the focused control.
+        Refresh restores the seed. Not a throw. Not a lamp. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { flueM: 4.5 };
+      const FLUE_MIN = 0;
+      const FLUE_MAX = 8;
+      const COLD_AT = 0.4;
+      const HEARTH_Y = 360;
+      const POT_Y = 100;
+      const STACK_X = 340;
+      const STACK_W = 120;
+      const LINER_X = 368;
+      const LINER_W = 64;
+      const PX_PER_M = (HEARTH_Y - POT_Y - 8) / FLUE_MAX;
+
+      let flueM = SEED.flueM;
+
+      const svg = document.getElementById("flue-svg");
+      const scene = document.getElementById("flue-scene");
+      const titleEl = document.getElementById("flue-title");
+      const altEl = document.getElementById("flue-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const flueInput = document.getElementById("flue-input");
+      const siteLayer = document.getElementById("site-layer");
+      const stackLayer = document.getElementById("stack-layer");
+      const pullLayer = document.getElementById("pull-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const linerClipRect = document.getElementById("liner-clip-rect");
+      const statFlue = document.getElementById("stat-flue");
+      const statPull = document.getElementById("stat-pull");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function prettyM(n) {
+        return n.toFixed(1).replace(/\.0$/, ".0");
+      }
+
+      function spokenM(n) {
+        const words = {
+          "0.0": "zero", "0.4": "zero point four", "0.5": "zero point five",
+          "1.0": "one", "1.5": "one point five", "2.0": "two",
+          "2.5": "two point five", "3.0": "three", "3.5": "three point five",
+          "4.0": "four", "4.5": "four point five", "5.0": "five",
+          "5.5": "five point five", "6.0": "six", "6.5": "six point five",
+          "7.0": "seven", "7.5": "seven point five", "8.0": "eight"
+        };
+        const key = prettyM(n);
+        if (words[key]) return words[key];
+        return key.replace(".", " point ");
+      }
+
+      function picture() {
+        const leftover = flueM <= COLD_AT ? "cold" : "showing";
+        const pretty = prettyM(flueM);
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pretty + " M LEFTOVER FLUE";
+          alt = "Flue is showing. " + spokenM(flueM).charAt(0).toUpperCase() + spokenM(flueM).slice(1) + " metres of leftover chimney pull still rise in the stack.";
+        } else {
+          status = "COLD · STACK LOOKS STILL";
+          alt = "Flue is cold. The stack looks still. A sketch, not a heating sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e8c89a" : "#6a6860"
+        };
+      }
+
+      function paint(pic) {
+        const leftoverPx = Math.max(0, flueM * PX_PER_M);
+        const cold = pic.leftover === "cold";
+        const pullTop = HEARTH_Y - leftoverPx;
+        linerClipRect.setAttribute("y", String(POT_Y + 8));
+        linerClipRect.setAttribute("height", String(HEARTH_Y - POT_Y - 8));
+
+        siteLayer.replaceChildren();
+        siteLayer.appendChild(el("rect", {
+          id: "site",
+          class: "site",
+          x: "28",
+          y: "76",
+          width: "744",
+          height: "320",
+          rx: "6",
+          fill: "url(#sky-wash)"
+        }));
+        siteLayer.appendChild(el("rect", {
+          id: "ground",
+          class: "ground",
+          x: "28",
+          y: "368",
+          width: "744",
+          height: "28",
+          fill: "url(#ground-wash)"
+        }));
+        siteLayer.appendChild(el("rect", {
+          id: "hearth-plinth",
+          class: "hearth",
+          x: "300",
+          y: "360",
+          width: "200",
+          height: "16",
+          fill: "#3a3228",
+          stroke: "rgba(196,176,148,0.22)",
+          "stroke-width": "1"
+        }));
+
+        stackLayer.replaceChildren();
+        const stack = el("g", {
+          id: "elevation-stack",
+          class: cold ? "stack leftover-cold" : "stack leftover-flue leftover-showing"
+        });
+        stack.appendChild(el("rect", {
+          id: "stack-body",
+          class: "stack-body leftover-stack",
+          x: String(STACK_X),
+          y: String(POT_Y + 16),
+          width: String(STACK_W),
+          height: String(HEARTH_Y - POT_Y - 16),
+          fill: "url(#stack-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        stack.appendChild(el("rect", {
+          x: String(STACK_X),
+          y: String(POT_Y + 16),
+          width: String(STACK_W),
+          height: String(HEARTH_Y - POT_Y - 16),
+          fill: "url(#brick-bond)"
+        }));
+        stack.appendChild(el("rect", {
+          id: "flue-liner",
+          class: "flue-liner leftover-liner",
+          x: String(LINER_X),
+          y: String(POT_Y + 8),
+          width: String(LINER_W),
+          height: String(HEARTH_Y - POT_Y - 8),
+          fill: "url(#liner-wash)",
+          stroke: "rgba(232,200,154,0.18)",
+          "stroke-width": "1"
+        }));
+        stack.appendChild(el("rect", {
+          id: "chimney-pot",
+          class: "pot",
+          x: "356",
+          y: String(POT_Y),
+          width: "88",
+          height: "18",
+          fill: "#5a4a3c",
+          stroke: pic.accent,
+          "stroke-width": "1.2"
+        }));
+        stack.appendChild(el("rect", {
+          id: "pot-mouth",
+          class: "pot-mouth",
+          x: "372",
+          y: String(POT_Y + 2),
+          width: "56",
+          height: "8",
+          fill: "#120e0a"
+        }));
+        stack.appendChild(el("text", {
+          x: "292",
+          y: "230",
+          fill: pic.accent,
+          "font-size": "11",
+          "letter-spacing": "1.6",
+          "text-anchor": "end"
+        })).textContent = "STACK";
+        stack.appendChild(el("text", {
+          x: "400",
+          y: "386",
+          fill: "#8a7a64",
+          "font-size": "10",
+          "letter-spacing": "1.6",
+          "text-anchor": "middle"
+        })).textContent = "HEARTH";
+        stack.appendChild(el("text", {
+          x: "400",
+          y: String(POT_Y - 8),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.6",
+          "text-anchor": "middle"
+        })).textContent = "POT";
+        stackLayer.appendChild(stack);
+
+        pullLayer.replaceChildren();
+        const pull = el("g", {
+          id: "leftover-pull",
+          class: cold ? "pull leftover-cold" : "pull leftover-flue leftover-showing leftover-pull"
+        });
+        if (!cold) {
+          pull.appendChild(el("rect", {
+            id: "flue-pocket",
+            class: "leftover-pocket leftover-flue leftover-showing leftover-chimney-pull",
+            x: String(LINER_X + 2),
+            y: String(pullTop),
+            width: String(LINER_W - 4),
+            height: String(Math.max(0, HEARTH_Y - pullTop)),
+            fill: "url(#pull-wash)",
+            opacity: "0.42",
+            "clip-path": "url(#liner-clip)"
+          }));
+          pull.appendChild(el("rect", {
+            x: String(LINER_X + 2),
+            y: String(pullTop),
+            width: String(LINER_W - 4),
+            height: String(Math.max(0, HEARTH_Y - pullTop)),
+            fill: "url(#flue-hatch)",
+            stroke: pic.accent,
+            "stroke-width": "1.1",
+            "stroke-dasharray": "4 3",
+            "clip-path": "url(#liner-clip)"
+          }));
+          pull.appendChild(el("ellipse", {
+            id: "hearth-fire",
+            class: "hearth-fire leftover-fire",
+            cx: "400",
+            cy: String(HEARTH_Y - 4),
+            rx: "18",
+            ry: "7",
+            fill: "#c47840",
+            opacity: "0.85"
+          }));
+        } else {
+          pull.appendChild(el("text", {
+            x: "400",
+            y: "240",
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "COLD";
+        }
+        pullLayer.appendChild(pull);
+
+        markLayer.replaceChildren();
+        const markX = 458;
+        if (!cold) {
+          markLayer.appendChild(el("line", {
+            id: "flue-mark",
+            class: "flue-mark leftover-label leftover-flue leftover-chimney-pull",
+            x1: String(markX),
+            y1: String(pullTop),
+            x2: String(markX),
+            y2: String(HEARTH_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(markX - 7),
+            y1: String(pullTop),
+            x2: String(markX + 7),
+            y2: String(pullTop),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(markX - 7),
+            y1: String(HEARTH_Y),
+            x2: String(markX + 7),
+            y2: String(HEARTH_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "flue-label",
+            class: "flue-label leftover-label leftover-flue leftover-showing leftover-chimney-pull",
+            x: String(markX + 12),
+            y: String((pullTop + HEARTH_Y) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "start"
+          })).textContent = "FLUE " + prettyM(flueM) + " m";
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "flue-label",
+            class: "flue-label leftover-label leftover-cold",
+            x: "400",
+            y: String(POT_Y + 48),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "COLD";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-flue", prettyM(flueM));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "elevation");
+        scene.setAttribute("data-hero", "chimney-flue");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-cold";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + prettyM(flueM) + " m showing"
+          : "leftover cold";
+        statFlue.textContent = prettyM(flueM) + " m";
+        statPull.textContent = pic.leftover === "showing"
+          ? prettyM(flueM) + " m leftover"
+          : "cold";
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-cold");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(flueInput.value) !== flueM) flueInput.value = String(flueM);
+        flueInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        flueM = SEED.flueM;
+        render();
+      }
+
+      flueInput.addEventListener("input", function (event) {
+        flueM = clamp(Math.round(Number(event.target.value) * 10) / 10, FLUE_MIN, FLUE_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
