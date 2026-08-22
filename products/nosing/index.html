@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Nosing — a stair looks flush until you see the nosing. Move the tread. See the leftover hang." />
+    <title>Nosing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #0b0a08;
+        --panel: #16130f;
+        --ink: #eee6da;
+        --muted: #8a8478;
+        --line: rgba(196, 168, 136, 0.16);
+        --accent: #c4a070;
+        --masonry: #5c4636;
+        --tread: #6a5644;
+        --riser: #4a3a2c;
+        --showing: #e0c48a;
+        --flush: #6e6860;
+        --hang: #d4b07a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 22% -8%, rgba(196, 160, 112, 0.11), transparent 30%),
+          radial-gradient(circle at 86% 14%, rgba(224, 196, 138, 0.06), transparent 24%),
+          linear-gradient(180deg, #080704 0%, #14110c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(22, 19, 15, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 160, 112, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(28, 24, 18, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 160, 112, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #eee6da; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1814;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 160, 112, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 88%, rgba(196, 160, 112, 0.07), transparent 46%),
+          #0c0a08;
+        overflow: hidden;
+      }
+      #nosing-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(224, 196, 138, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-flush b { color: var(--flush); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #0b0a08;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #nosing-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> nosing · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover tread hang past the riser</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">masonry instrument · 22 Aug 2026 23:50</span>
+        <h1>Nosing</h1>
+        <p class="lede">
+          A stair looks flush until you see the nosing. Move the tread. See the leftover hang.
+          Not a going. Not a rake. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the tread still hangs past the riser</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 25 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="nosing-svg" viewBox="0 0 800 440" role="img" aria-labelledby="nosing-title nosing-desc">
+            <title id="nosing-title">Nosing is showing. Twenty-five millimetres of leftover tread still hang past the riser.</title>
+            <desc id="nosing-desc">A stair in section: two or three treads and risers, leftover nosing hanging past the riser face as leftover hang. A picture, not a stair sign-off. No going. No chair rake. No loft headroom figure. No brick stagger. No wheel toe. No parapet wall. No eave overhang. No rebate.</desc>
+            <defs>
+              <linearGradient id="sky-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1610" />
+                <stop offset="100%" stop-color="#0e0c08" />
+              </linearGradient>
+              <linearGradient id="tread-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#7a6048" />
+                <stop offset="42%" stop-color="#6a5644" />
+                <stop offset="100%" stop-color="#4a3a2c" />
+              </linearGradient>
+              <linearGradient id="riser-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#5c4636" />
+                <stop offset="100%" stop-color="#3e2e22" />
+              </linearGradient>
+              <linearGradient id="hang-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#c4a070" />
+                <stop offset="100%" stop-color="#e0c48a" />
+              </linearGradient>
+              <pattern id="nosing-hatch" width="8" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 10 L8 0" fill="none" stroke="rgba(224,196,138,0.38)" stroke-width="1" />
+              </pattern>
+              <pattern id="masonry-bond" width="16" height="10" patternUnits="userSpaceOnUse">
+                <rect width="16" height="10" fill="none" />
+                <path d="M0 10 H16 M8 0 V10" fill="none" stroke="rgba(224,196,138,0.1)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="416" rx="6" fill="#0c0a08" stroke="rgba(196,168,136,0.16)" />
+            <text x="36" y="42" fill="#8a8478" font-size="11" letter-spacing="2">SECTION · TREAD · RISER · NOSING IS THE LEFTOVER HANG</text>
+            <g id="nosing-scene" data-view="section" data-hero="leftover-hang" data-nosing="25" data-leftover="showing" data-verdict="showing">
+              <g id="sky-layer"></g>
+              <g id="wall-layer"></g>
+              <g id="stair-layer"></g>
+              <g id="nosing-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#e0c48a" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 25 MM LEFTOVER HANG</text>
+              <text id="scene-sketch" x="400" y="414" fill="#4a443c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER TREAD HANG PAST THE RISER · NOT A GOING · NOT A RAKE</text>
+            </g>
+          </svg>
+        </div>
+        <p id="nosing-alt" class="sr-only" aria-live="polite">Nosing is showing. Twenty-five millimetres of leftover tread still hang past the riser.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="nosing-input">Nosing (millimetres of leftover hang)</label>
+            <input id="nosing-input" type="range" min="0" max="50" step="1" value="25" />
+            <div class="ticks" aria-hidden="true">
+              <span>flush</span>
+              <span>seed showing</span>
+              <span>full hang</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Nosing <b id="stat-nosing">25 mm</b></span>
+          <span>Hang (sketch) <b id="stat-hang">25 mm leftover</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A stair looks flush until you see the nosing. Nosing is leftover tread hang past the riser — how far the tread still hangs past the riser face, as seen in section.
+        Seed is already showing — 25 mm of leftover hang, not flush. Arrow keys move the focused control.
+        Refresh restores the seed. Not a going. Not a rake. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { nosingMm: 25 };
+      const NOSING_MIN = 0;
+      const NOSING_MAX = 50;
+      const FLUSH_AT = 2;
+      const PX_PER_MM = 2;
+      const STEPS = 3;
+      const RUN = 148;
+      const RISE = 78;
+      const TREAD_THICK = 18;
+      const RISER_W = 20;
+      const BASE_X = 196;
+      const GROUND_Y = 384;
+      const LANDING_LEFT = 72;
+
+      let nosingMm = SEED.nosingMm;
+
+      const svg = document.getElementById("nosing-svg");
+      const scene = document.getElementById("nosing-scene");
+      const titleEl = document.getElementById("nosing-title");
+      const altEl = document.getElementById("nosing-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const nosingInput = document.getElementById("nosing-input");
+      const skyLayer = document.getElementById("sky-layer");
+      const wallLayer = document.getElementById("wall-layer");
+      const stairLayer = document.getElementById("stair-layer");
+      const nosingLayer = document.getElementById("nosing-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statNosing = document.getElementById("stat-nosing");
+      const statHang = document.getElementById("stat-hang");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function prettyMm(n) {
+        return String(Math.round(n));
+      }
+
+      function spokenMm(n) {
+        const words = {
+          0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+          6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+          12: "twelve", 15: "fifteen", 18: "eighteen", 20: "twenty",
+          24: "twenty-four", 25: "twenty-five", 30: "thirty",
+          35: "thirty-five", 40: "forty", 45: "forty-five", 50: "fifty"
+        };
+        if (words[n] != null) return words[n];
+        return prettyMm(n);
+      }
+
+      function picture() {
+        const leftover = nosingMm <= FLUSH_AT ? "flush" : "showing";
+        const pretty = prettyMm(nosingMm);
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pretty + " MM LEFTOVER HANG";
+          alt = "Nosing is showing. " + spokenMm(nosingMm).charAt(0).toUpperCase() + spokenMm(nosingMm).slice(1) + " millimetres of leftover tread still hang past the riser.";
+        } else {
+          status = "FLUSH · TREAD MEETS THE RISER";
+          alt = "Nosing is flush. The tread meets the riser. A sketch, not a stair sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e0c48a" : "#6e6860"
+        };
+      }
+
+      function riserFaceX(i) {
+        return BASE_X + i * RUN;
+      }
+
+      function treadTop(i) {
+        return GROUND_Y - (i + 1) * RISE;
+      }
+
+      function paint(pic) {
+        const hangPx = Math.max(0, nosingMm * PX_PER_MM);
+        const flush = pic.leftover === "flush";
+
+        skyLayer.replaceChildren();
+        skyLayer.appendChild(el("rect", {
+          id: "section-sky",
+          class: "section-sky",
+          x: "28",
+          y: "76",
+          width: "744",
+          height: "320",
+          rx: "6",
+          fill: "url(#sky-wash)"
+        }));
+        skyLayer.appendChild(el("rect", {
+          id: "ground",
+          class: "ground leftover-ground",
+          x: "64",
+          y: String(GROUND_Y),
+          width: "672",
+          height: "16",
+          fill: "#2a241c",
+          stroke: "rgba(196,168,136,0.18)",
+          "stroke-width": "1"
+        }));
+
+        wallLayer.replaceChildren();
+        const wallTop = treadTop(STEPS - 1) - 28;
+        wallLayer.appendChild(el("rect", {
+          id: "back-wall",
+          class: "back-wall leftover-masonry",
+          x: String(LANDING_LEFT),
+          y: String(wallTop),
+          width: "36",
+          height: String(GROUND_Y - wallTop),
+          fill: "url(#riser-wash)",
+          stroke: "rgba(196,168,136,0.18)",
+          "stroke-width": "1"
+        }));
+        wallLayer.appendChild(el("rect", {
+          x: String(LANDING_LEFT),
+          y: String(wallTop),
+          width: "36",
+          height: String(GROUND_Y - wallTop),
+          fill: "url(#masonry-bond)",
+          "pointer-events": "none"
+        }));
+
+        stairLayer.replaceChildren();
+        const stair = el("g", {
+          id: "section-stair",
+          class: flush ? "stair leftover-flush" : "stair leftover-nosing leftover-showing leftover-hang"
+        });
+
+        stair.appendChild(el("rect", {
+          id: "lower-landing",
+          class: "landing leftover-landing",
+          x: String(LANDING_LEFT),
+          y: String(GROUND_Y - TREAD_THICK),
+          width: String(riserFaceX(0) - LANDING_LEFT + RISER_W),
+          height: String(TREAD_THICK),
+          fill: "url(#tread-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.2"
+        }));
+
+        for (let i = 0; i < STEPS; i += 1) {
+          const face = riserFaceX(i);
+          const top = treadTop(i);
+          const prevFace = i === 0 ? LANDING_LEFT + 36 : riserFaceX(i - 1);
+          const riserBottom = i === 0 ? GROUND_Y - TREAD_THICK : treadTop(i - 1);
+          const treadRight = face + (flush ? 0 : hangPx);
+          const treadLeft = prevFace;
+
+          stair.appendChild(el("rect", {
+            id: "riser-" + (i + 1),
+            class: "riser leftover-riser",
+            x: String(face),
+            y: String(top + TREAD_THICK),
+            width: String(RISER_W),
+            height: String(Math.max(4, riserBottom - (top + TREAD_THICK))),
+            fill: "url(#riser-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          stair.appendChild(el("rect", {
+            id: "tread-" + (i + 1),
+            class: "tread leftover-tread",
+            x: String(treadLeft),
+            y: String(top),
+            width: String(Math.max(RISER_W, treadRight - treadLeft + RISER_W)),
+            height: String(TREAD_THICK),
+            fill: "url(#tread-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          if (i === 1) {
+            stair.appendChild(el("text", {
+              x: String(face - 36),
+              y: String((top + TREAD_THICK + riserBottom) / 2 + 4),
+              fill: pic.accent,
+              "font-size": "11",
+              "letter-spacing": "1.6",
+              "text-anchor": "end"
+            })).textContent = "RISER";
+            stair.appendChild(el("text", {
+              x: String((treadLeft + face) / 2),
+              y: String(top - 8),
+              fill: pic.accent,
+              "font-size": "11",
+              "letter-spacing": "1.6",
+              "text-anchor": "middle"
+            })).textContent = "TREAD";
+          }
+        }
+        stairLayer.appendChild(stair);
+
+        nosingLayer.replaceChildren();
+        const pocket = el("g", {
+          id: "leftover-nosing",
+          class: flush ? "nosing leftover-flush" : "nosing leftover-nosing leftover-showing leftover-hang leftover-tread-hang"
+        });
+        if (!flush && hangPx > 0) {
+          for (let i = 0; i < STEPS; i += 1) {
+            const face = riserFaceX(i);
+            const top = treadTop(i);
+            const hangLeft = face + RISER_W;
+            pocket.appendChild(el("rect", {
+              id: "nosing-hang-" + (i + 1),
+              class: "leftover-hang leftover-nosing leftover-showing leftover-tread-hang",
+              x: String(hangLeft),
+              y: String(top),
+              width: String(hangPx),
+              height: String(TREAD_THICK),
+              fill: "url(#nosing-hatch)",
+              stroke: pic.accent,
+              "stroke-width": "1.1"
+            }));
+            pocket.appendChild(el("line", {
+              id: "riser-meet-" + (i + 1),
+              class: "riser-meet leftover-hang",
+              x1: String(hangLeft),
+              y1: String(top),
+              x2: String(hangLeft),
+              y2: String(top + TREAD_THICK),
+              stroke: "url(#hang-wash)",
+              "stroke-width": "2.4"
+            }));
+          }
+        } else {
+          pocket.appendChild(el("text", {
+            x: "400",
+            y: "132",
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "FLUSH";
+        }
+        nosingLayer.appendChild(pocket);
+
+        markLayer.replaceChildren();
+        const markStep = 2;
+        const markFace = riserFaceX(markStep);
+        const markTop = treadTop(markStep);
+        const hangLeft = markFace + RISER_W;
+        if (!flush && hangPx > 0) {
+          const markY = markTop - 22;
+          markLayer.appendChild(el("line", {
+            id: "nosing-mark",
+            class: "nosing-mark leftover-label leftover-nosing leftover-hang",
+            x1: String(hangLeft),
+            y1: String(markY),
+            x2: String(hangLeft + hangPx),
+            y2: String(markY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(hangLeft),
+            y1: String(markY - 7),
+            x2: String(hangLeft),
+            y2: String(markY + 7),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(hangLeft + hangPx),
+            y1: String(markY - 7),
+            x2: String(hangLeft + hangPx),
+            y2: String(markY + 7),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "nosing-label",
+            class: "nosing-label leftover-label leftover-nosing leftover-showing leftover-hang",
+            x: String(hangLeft + hangPx / 2),
+            y: String(markY - 8),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "NOSING " + prettyMm(nosingMm) + " mm";
+          markLayer.appendChild(el("text", {
+            id: "hang-label",
+            class: "hang-label leftover-hang leftover-tread-hang",
+            x: String(hangLeft + hangPx + 10),
+            y: String(markTop + 14),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "start"
+          })).textContent = "HANG";
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "nosing-label",
+            class: "nosing-label leftover-label leftover-flush",
+            x: "400",
+            y: String(treadTop(1) - 16),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "FLUSH";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-nosing", prettyMm(nosingMm));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "section");
+        scene.setAttribute("data-hero", "leftover-hang");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-flush";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + prettyMm(nosingMm) + " mm showing"
+          : "leftover flush";
+        statNosing.textContent = prettyMm(nosingMm) + " mm";
+        statHang.textContent = pic.leftover === "showing"
+          ? prettyMm(nosingMm) + " mm leftover"
+          : "flush";
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-flush");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(nosingInput.value) !== nosingMm) nosingInput.value = String(nosingMm);
+        nosingInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        nosingMm = SEED.nosingMm;
+        render();
+      }
+
+      nosingInput.addEventListener("input", function (event) {
+        nosingMm = clamp(Math.round(Number(event.target.value)), NOSING_MIN, NOSING_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
