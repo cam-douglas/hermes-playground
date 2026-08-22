@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Setback — a lot looks full until you see the setback. Move the line. See the leftover yard." />
+    <title>Setback</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080b0a;
+        --panel: #101612;
+        --ink: #e4ece6;
+        --muted: #849288;
+        --line: rgba(160, 184, 168, 0.16);
+        --accent: #9ab48a;
+        --lot: #2a342c;
+        --yard: #6a8a58;
+        --building: #3a4440;
+        --showing: #c4d070;
+        --flush: #8ec8b4;
+        --street: #2a2e2c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(154, 180, 138, 0.11), transparent 30%),
+          radial-gradient(circle at 86% 12%, rgba(196, 208, 112, 0.07), transparent 24%),
+          linear-gradient(180deg, #060806 0%, #101410 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(16, 22, 18, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(154, 180, 138, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 28, 22, 0.96), rgba(8, 12, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(154, 180, 138, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e2e8e4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #171e18;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #10140e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(154, 180, 138, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 28% 42%, rgba(154, 180, 138, 0.08), transparent 46%),
+          #080b0a;
+        overflow: hidden;
+      }
+      #setback-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(196, 208, 112, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-flush b { color: var(--flush); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080b0a;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #setback-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> setback · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover yard</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">lot instrument · 22 Aug 2026 11:50</span>
+        <h1>Setback</h1>
+        <p class="lede">
+          A lot looks full until you see the setback. Move the line. See the leftover yard.
+          Not a slope. Not an eave. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the building still sits back from the lot line</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 6 m showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="setback-svg" viewBox="0 0 800 460" role="img" aria-labelledby="setback-title setback-desc">
+            <title id="setback-title">Setback is showing. Six metres of leftover yard. The building still sits back from the lot line.</title>
+            <desc id="setback-desc">A lot in plan: lot line, building footprint, leftover setback — how far the building still sits back from the lot line, leftover yard. A picture, not a zoning spec. No sloping wall. No roof eave. No rooms.</desc>
+            <defs>
+              <linearGradient id="street-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#2a2e2c" />
+                <stop offset="100%" stop-color="#1a1e1c" />
+              </linearGradient>
+              <linearGradient id="lot-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1c241c" />
+                <stop offset="100%" stop-color="#141a14" />
+              </linearGradient>
+              <linearGradient id="yard-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#4a6840" />
+                <stop offset="55%" stop-color="#6a8a58" />
+                <stop offset="100%" stop-color="#3a5234" />
+              </linearGradient>
+              <linearGradient id="building-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4a5450" />
+                <stop offset="100%" stop-color="#2a322e" />
+              </linearGradient>
+              <pattern id="yard-hatch" width="12" height="12" patternUnits="userSpaceOnUse">
+                <path d="M0 12 L12 0" fill="none" stroke="rgba(196,208,112,0.22)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080b0a" stroke="rgba(160,184,168,0.16)" />
+            <text x="36" y="42" fill="#849288" font-size="11" letter-spacing="2">PLAN · LOT LINE · BUILDING · LEFTOVER SETBACK</text>
+            <g id="setback-scene" data-view="plan" data-setback="6" data-leftover="showing" data-verdict="showing">
+              <g id="street-layer"></g>
+              <g id="lot-layer"></g>
+              <g id="yard-layer"></g>
+              <g id="building-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#c4d070" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 6 M LEFTOVER YARD</text>
+              <text id="scene-sketch" x="400" y="434" fill="#4a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER YARD · NOT A SLOPE · NOT AN EAVE</text>
+            </g>
+          </svg>
+        </div>
+        <p id="setback-alt" class="sr-only" aria-live="polite">Setback is showing. Six metres of leftover yard. The building still sits back from the lot line.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="setback-input">Setback (metres of leftover yard from the lot line)</label>
+            <input id="setback-input" type="range" min="0" max="12" step="0.5" value="6" />
+            <div class="ticks" aria-hidden="true">
+              <span>flush</span>
+              <span>seed showing</span>
+              <span>deep yard</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Setback <b id="stat-setback">6 m</b></span>
+          <span>Yard (sketch) <b id="stat-yard">6 m leftover</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A lot looks full until you see the setback. Setback is leftover yard — how far the building still sits back from the lot line, as seen in plan.
+        Seed is already showing — 6 m of leftover setback, not flush / not zero. Arrow keys move the focused control.
+        Refresh restores the seed. Not a slope. Not an eave. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { setbackM: 6 };
+      const SETBACK_MIN = 0;
+      const SETBACK_MAX = 12;
+      const FLUSH_AT = 1;
+      const LOT = { x: 188, y: 86, w: 424, h: 292 };
+      const STREET_H = 36;
+      const BUILDING_W = 248;
+      const BUILDING_H = 148;
+      const PX_PER_M = 18;
+
+      let setbackM = SEED.setbackM;
+
+      const svg = document.getElementById("setback-svg");
+      const scene = document.getElementById("setback-scene");
+      const titleEl = document.getElementById("setback-title");
+      const altEl = document.getElementById("setback-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const setbackInput = document.getElementById("setback-input");
+      const streetLayer = document.getElementById("street-layer");
+      const lotLayer = document.getElementById("lot-layer");
+      const yardLayer = document.getElementById("yard-layer");
+      const buildingLayer = document.getElementById("building-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statSetback = document.getElementById("stat-setback");
+      const statYard = document.getElementById("stat-yard");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenM(n) {
+        const words = {
+          0: "zero",
+          0.5: "half a",
+          1: "one",
+          6: "six",
+          12: "twelve"
+        };
+        return words[n] || String(n);
+      }
+
+      function fmtM(n) {
+        return Number.isInteger(n) ? String(n) : n.toFixed(1);
+      }
+
+      function picture() {
+        const leftover = setbackM <= FLUSH_AT ? "flush" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + fmtM(setbackM) + " M LEFTOVER YARD";
+          alt = "Setback is showing. " + spokenM(setbackM).charAt(0).toUpperCase() + spokenM(setbackM).slice(1) + " metres of leftover yard. The building still sits back from the lot line.";
+        } else {
+          status = "FLUSH · BUILDING ON THE LOT LINE";
+          alt = "Setback is flush. The building sits on the lot line. A sketch, not a zoning sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#c4d070" : "#8ec8b4",
+          yardPx: setbackM * PX_PER_M
+        };
+      }
+
+      function paint(pic) {
+        const lotFront = LOT.y + LOT.h;
+        const lotLeft = LOT.x;
+        const lotRight = LOT.x + LOT.w;
+        const lotMid = LOT.x + LOT.w / 2;
+        const yardPx = Math.max(0, pic.yardPx);
+        const bW = BUILDING_W;
+        const bH = BUILDING_H;
+        const bX = lotMid - bW / 2;
+        const bFront = lotFront - yardPx;
+        const bY = bFront - bH;
+        const sideGap = (LOT.w - bW) / 2;
+
+        streetLayer.replaceChildren();
+        streetLayer.appendChild(el("rect", {
+          id: "street",
+          class: "street",
+          x: String(lotLeft - 36),
+          y: String(lotFront),
+          width: String(LOT.w + 72),
+          height: String(STREET_H),
+          fill: "url(#street-wash)",
+          stroke: "rgba(160,184,168,0.18)"
+        }));
+        streetLayer.appendChild(el("line", {
+          x1: String(lotLeft - 28),
+          y1: String(lotFront + 18),
+          x2: String(lotRight + 28),
+          y2: String(lotFront + 18),
+          stroke: "rgba(200,208,180,0.28)",
+          "stroke-width": "2",
+          "stroke-dasharray": "10 8"
+        }));
+        streetLayer.appendChild(el("text", {
+          x: String(lotMid),
+          y: String(lotFront + 28),
+          fill: "#8a9288",
+          "font-size": "10",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "STREET";
+
+        lotLayer.replaceChildren();
+        lotLayer.appendChild(el("rect", {
+          id: "lot-pad",
+          class: "lot",
+          x: String(LOT.x),
+          y: String(LOT.y),
+          width: String(LOT.w),
+          height: String(LOT.h),
+          fill: "url(#lot-wash)",
+          stroke: "none"
+        }));
+        lotLayer.appendChild(el("rect", {
+          id: "lot-line",
+          class: "lot-line",
+          x: String(LOT.x),
+          y: String(LOT.y),
+          width: String(LOT.w),
+          height: String(LOT.h),
+          fill: "none",
+          stroke: pic.leftover === "showing" ? "rgba(196,208,112,0.72)" : "rgba(142,200,180,0.55)",
+          "stroke-width": "2.2",
+          "stroke-dasharray": "8 5"
+        }));
+        lotLayer.appendChild(el("text", {
+          x: String(LOT.x + 12),
+          y: String(LOT.y + 18),
+          fill: "#849288",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "LOT LINE";
+
+        yardLayer.replaceChildren();
+        const leftoverYard = el("g", {
+          id: "leftover-yard",
+          class: "leftover-yard"
+        });
+        if (yardPx > 2) {
+          leftoverYard.appendChild(el("rect", {
+            id: "yard-band",
+            class: "yard",
+            x: String(bX),
+            y: String(bFront),
+            width: String(bW),
+            height: String(yardPx),
+            fill: "url(#yard-wash)",
+            stroke: "none"
+          }));
+          leftoverYard.appendChild(el("rect", {
+            x: String(bX),
+            y: String(bFront),
+            width: String(bW),
+            height: String(yardPx),
+            fill: "url(#yard-hatch)",
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          leftoverYard.appendChild(el("text", {
+            x: String(lotMid),
+            y: String(bFront + Math.max(16, yardPx / 2 + 4)),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER YARD";
+        } else {
+          leftoverYard.appendChild(el("text", {
+            x: String(lotMid),
+            y: String(lotFront - 10),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "FLUSH";
+        }
+        yardLayer.appendChild(leftoverYard);
+
+        buildingLayer.replaceChildren();
+        const footprint = el("rect", {
+          id: "building-footprint",
+          class: "building",
+          x: String(bX),
+          y: String(Math.max(LOT.y + 10, bY)),
+          width: String(bW),
+          height: String(bH),
+          fill: "url(#building-wash)",
+          stroke: "rgba(200,208,196,0.35)",
+          "stroke-width": "1.4"
+        });
+        buildingLayer.appendChild(footprint);
+        buildingLayer.appendChild(el("text", {
+          x: String(lotMid),
+          y: String(Math.max(LOT.y + 10, bY) + bH / 2 + 4),
+          fill: "#c8d0c8",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "BUILDING";
+        buildingLayer.appendChild(el("text", {
+          x: String(lotMid),
+          y: String(Math.max(LOT.y + 10, bY) + bH / 2 + 20),
+          fill: "#849288",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "FOOTPRINT";
+
+        markLayer.replaceChildren();
+        const dimX = bX - 28;
+        markLayer.appendChild(el("line", {
+          id: "setback-span",
+          class: "setback-span",
+          x1: String(dimX),
+          y1: String(bFront),
+          x2: String(dimX),
+          y2: String(lotFront),
+          stroke: pic.accent,
+          "stroke-width": "1.4"
+        }));
+        markLayer.appendChild(el("line", {
+          x1: String(dimX - 6),
+          y1: String(bFront),
+          x2: String(dimX + 6),
+          y2: String(bFront),
+          stroke: pic.accent,
+          "stroke-width": "1.4"
+        }));
+        markLayer.appendChild(el("line", {
+          x1: String(dimX - 6),
+          y1: String(lotFront),
+          x2: String(dimX + 6),
+          y2: String(lotFront),
+          stroke: pic.accent,
+          "stroke-width": "1.4"
+        }));
+        markLayer.appendChild(el("text", {
+          id: "setback-label",
+          class: "setback-label",
+          x: String(dimX - 10),
+          y: String(bFront + Math.max(yardPx / 2, 8) + 4),
+          fill: pic.accent,
+          "font-size": "11",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = fmtM(setbackM) + " M SETBACK";
+        markLayer.appendChild(el("text", {
+          x: String(lotRight + 10),
+          y: String(LOT.y + 18),
+          fill: "#849288",
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "SIDE " + Math.round(sideGap / PX_PER_M) + " M";
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-setback", String(setbackM));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "plan");
+        scene.setAttribute("data-yard", fmtM(setbackM));
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-flush";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + fmtM(setbackM) + " m showing"
+          : "leftover flush";
+        statSetback.textContent = fmtM(setbackM) + " m";
+        statYard.textContent = pic.leftover === "showing"
+          ? fmtM(setbackM) + " m leftover"
+          : "flush";
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-flush");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(setbackInput.value) !== setbackM) setbackInput.value = String(setbackM);
+        setbackInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        setbackM = SEED.setbackM;
+        render();
+      }
+
+      setbackInput.addEventListener("input", function (event) {
+        setbackM = clamp(Number(event.target.value), SETBACK_MIN, SETBACK_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
