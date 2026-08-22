@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Threshold — a door looks open until you see the threshold. Move the bar. See the leftover rise." />
+    <title>Threshold</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #14110e;
+        --ink: #e8e4dc;
+        --muted: #8a8478;
+        --line: rgba(196, 176, 148, 0.16);
+        --accent: #c4b49a;
+        --showing: #d8b070;
+        --flush: #8cb8a8;
+        --floor: #3a3228;
+        --bar: #c8b080;
+        --wall: #2a2620;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 22% -8%, rgba(196, 180, 154, 0.1), transparent 30%),
+          radial-gradient(circle at 82% 14%, rgba(216, 176, 112, 0.07), transparent 24%),
+          linear-gradient(180deg, #070605 0%, #14110e 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(20, 17, 14, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 180, 154, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(28, 24, 18, 0.96), rgba(8, 7, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 180, 154, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4e0d6; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1814;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 180, 154, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 18%, rgba(196, 180, 154, 0.07), transparent 46%),
+          #080706;
+        overflow: hidden;
+      }
+      #threshold-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(216, 176, 112, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-open b,
+      .readout .is-flush b { color: var(--flush); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #threshold-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> threshold · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover doorway bar</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">doorway instrument · 23 Aug 2026 03:50</span>
+        <h1>Threshold</h1>
+        <p class="lede">
+          A door looks open until you see the threshold. Move the bar. See the leftover rise.
+          Not a swing. Not a plinth. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover bar still rises above the floor</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 22 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="threshold-svg" viewBox="0 0 800 460" role="img" aria-labelledby="threshold-title threshold-desc">
+            <title id="threshold-title">Threshold is showing. Twenty-two millimetres of leftover bar still rise above the floor.</title>
+            <desc id="threshold-desc">An elevation: a doorway with a leftover bar across the floor. The leftover is the threshold — how far the leftover bar still rises above the floor. You still have to step over. A picture, not a joinery sign-off. No door swing. No plinth wall-base. No stair nosing. No stair going. No window mullion. No sash leftover frame. No lintel span.</desc>
+            <defs>
+              <linearGradient id="wall-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#2e2a24" />
+                <stop offset="100%" stop-color="#16120e" />
+              </linearGradient>
+              <linearGradient id="floor-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#4a4034" />
+                <stop offset="100%" stop-color="#241c16" />
+              </linearGradient>
+              <linearGradient id="room-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#3a3430" />
+                <stop offset="46%" stop-color="#1c1814" />
+                <stop offset="100%" stop-color="#12100e" />
+              </linearGradient>
+              <linearGradient id="bar-face" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#e4c888" />
+                <stop offset="46%" stop-color="#c8b080" />
+                <stop offset="100%" stop-color="#8a7048" />
+              </linearGradient>
+              <linearGradient id="jamb-face" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8a8070" />
+                <stop offset="100%" stop-color="#4a4438" />
+              </linearGradient>
+              <pattern id="wall-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+                <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(196,180,154,0.08)" stroke-width="1" />
+              </pattern>
+              <pattern id="floor-hatch" width="14" height="8" patternUnits="userSpaceOnUse">
+                <path d="M0 8 L14 0" fill="none" stroke="rgba(196,180,154,0.1)" stroke-width="1" />
+              </pattern>
+              <pattern id="bar-hatch" width="6" height="8" patternUnits="userSpaceOnUse">
+                <path d="M0 8 L6 0" fill="none" stroke="rgba(216,176,112,0.42)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(196,180,154,0.16)" />
+            <text x="36" y="42" fill="#8a8478" font-size="11" letter-spacing="2">ELEVATION · DOORWAY · FLOOR · LEFTOVER IS THE THRESHOLD BAR</text>
+            <g id="threshold-scene" data-view="elevation" data-hero="leftover-threshold" data-rise="22" data-leftover="showing" data-verdict="showing">
+              <g id="site-layer"></g>
+              <g id="wall-layer"></g>
+              <g id="opening-layer"></g>
+              <g id="threshold-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#d8b070" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 22 MM LEFTOVER RISE</text>
+              <text id="scene-sketch" x="400" y="434" fill="#5a5248" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER BAR ACROSS THE FLOOR · NOT A SWING · NOT A PLINTH</text>
+            </g>
+          </svg>
+        </div>
+        <p id="threshold-alt" class="sr-only" aria-live="polite">Threshold is showing. Twenty-two millimetres of leftover bar still rise above the floor.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="threshold-input">Rise (mm · leftover bar above the floor)</label>
+            <input id="threshold-input" type="range" min="0" max="80" step="1" value="22" />
+            <div class="ticks" aria-hidden="true">
+              <span>flush</span>
+              <span>seed showing</span>
+              <span>high bar</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Rise <b id="stat-rise">22 mm</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+          <span>Leftover bar (sketch) <b id="stat-bar-sketch">22 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A door looks open until you see the threshold. Threshold is leftover doorway bar — how far the leftover bar still rises above the floor, as seen in elevation.
+        Seed is already showing — 22 mm of leftover rise, not flush. You still have to step over. Arrow keys move the focused control.
+        Refresh restores the seed. Not a swing. Not a plinth. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { riseMm: 22 };
+      const RISE_MIN = 0;
+      const RISE_MAX = 80;
+      const FLUSH_AT = 3;
+      const PX_PER_MM = 1.7;
+      const FLOOR_Y = 356;
+      const WALL_Y = 78;
+      const WALL_H = 278;
+      const OPEN_X = 248;
+      const OPEN_W = 304;
+      const JAMB = 28;
+
+      let riseMm = SEED.riseMm;
+
+      const svg = document.getElementById("threshold-svg");
+      const scene = document.getElementById("threshold-scene");
+      const titleEl = document.getElementById("threshold-title");
+      const altEl = document.getElementById("threshold-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const riseInput = document.getElementById("threshold-input");
+      const siteLayer = document.getElementById("site-layer");
+      const wallLayer = document.getElementById("wall-layer");
+      const openingLayer = document.getElementById("opening-layer");
+      const thresholdLayer = document.getElementById("threshold-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statRise = document.getElementById("stat-rise");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+      const statBarSketch = document.getElementById("stat-bar-sketch");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function prettyMm(n) {
+        return String(Math.round(n));
+      }
+
+      function spokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          6: "six",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          28: "twenty-eight",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return prettyMm(n);
+      }
+
+      function picture() {
+        const leftover = riseMm <= FLUSH_AT ? "flush" : "showing";
+        const pretty = prettyMm(riseMm);
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pretty + " MM LEFTOVER RISE";
+          alt = "Threshold is showing. " + spokenMm(riseMm).charAt(0).toUpperCase() + spokenMm(riseMm).slice(1) + " millimetres of leftover bar still rise above the floor.";
+        } else {
+          status = "FLUSH · THE FLOOR LOOKS CONTINUOUS";
+          alt = "Threshold is flush. The floor looks continuous. The door looks open. A sketch, not a joinery sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d8b070" : "#8cb8a8"
+        };
+      }
+
+      function paint(pic) {
+        const flush = pic.leftover === "flush";
+        const risePx = flush ? 0 : Math.max(0, riseMm * PX_PER_MM);
+        const barTop = FLOOR_Y - risePx;
+        const innerX = OPEN_X + JAMB;
+        const innerW = OPEN_W - JAMB * 2;
+
+        siteLayer.replaceChildren();
+        siteLayer.appendChild(el("rect", {
+          id: "site-ground",
+          class: "ground leftover-floor",
+          x: "36",
+          y: "72",
+          width: "728",
+          height: "348",
+          rx: "8",
+          fill: "url(#wall-wash)",
+          stroke: "rgba(196,180,154,0.14)",
+          "stroke-width": "1.2"
+        }));
+        siteLayer.appendChild(el("rect", {
+          class: "wall-hatch",
+          x: "36",
+          y: "72",
+          width: "728",
+          height: String(FLOOR_Y - 72),
+          rx: "8",
+          fill: "url(#wall-hatch)"
+        }));
+        siteLayer.appendChild(el("rect", {
+          id: "floor-plane",
+          class: "floor leftover-floor",
+          x: "36",
+          y: String(FLOOR_Y),
+          width: "728",
+          height: "64",
+          fill: "url(#floor-wash)"
+        }));
+        siteLayer.appendChild(el("rect", {
+          class: "floor-hatch leftover-floor",
+          x: "36",
+          y: String(FLOOR_Y),
+          width: "728",
+          height: "64",
+          fill: "url(#floor-hatch)"
+        }));
+        siteLayer.appendChild(el("line", {
+          id: "floor-line",
+          class: "floor leftover-floor",
+          x1: "36",
+          y1: String(FLOOR_Y),
+          x2: "764",
+          y2: String(FLOOR_Y),
+          stroke: "rgba(196,180,154,0.38)",
+          "stroke-width": "1.4"
+        }));
+        siteLayer.appendChild(el("text", {
+          x: "52",
+          y: String(FLOOR_Y + 38),
+          fill: "#8a8478",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "FLOOR";
+        siteLayer.appendChild(el("text", {
+          x: "748",
+          y: String(FLOOR_Y + 38),
+          fill: "#8a8478",
+          "font-size": "10",
+          "letter-spacing": "1.6",
+          "text-anchor": "end"
+        })).textContent = "FLOOR";
+
+        wallLayer.replaceChildren();
+        wallLayer.appendChild(el("text", {
+          x: "56",
+          y: "96",
+          fill: "#6a6458",
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "WALL";
+        wallLayer.appendChild(el("text", {
+          x: "744",
+          y: "96",
+          fill: "#6a6458",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = "WALL";
+
+        openingLayer.replaceChildren();
+        const opening = el("g", { id: "doorway", class: "doorway leftover-opening" });
+        opening.appendChild(el("rect", {
+          id: "doorway-opening",
+          class: "doorway leftover-opening leftover-doorway",
+          x: String(OPEN_X),
+          y: String(WALL_Y),
+          width: String(OPEN_W),
+          height: String(WALL_H),
+          fill: "url(#jamb-face)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        opening.appendChild(el("rect", {
+          id: "doorway-room",
+          class: "doorway leftover-opening leftover-room",
+          x: String(innerX),
+          y: String(WALL_Y + 18),
+          width: String(innerW),
+          height: String(FLOOR_Y - (WALL_Y + 18)),
+          fill: "url(#room-wash)"
+        }));
+        opening.appendChild(el("text", {
+          x: String(OPEN_X + 10),
+          y: String(WALL_Y + 14),
+          fill: "#d8d0c4",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "HEAD";
+        opening.appendChild(el("text", {
+          x: String(OPEN_X + 10),
+          y: "210",
+          fill: "#d8d0c4",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "JAMB";
+        opening.appendChild(el("text", {
+          x: String(OPEN_X + OPEN_W - 10),
+          y: "210",
+          fill: "#d8d0c4",
+          "font-size": "10",
+          "letter-spacing": "1.6",
+          "text-anchor": "end"
+        })).textContent = "JAMB";
+        opening.appendChild(el("text", {
+          x: "400",
+          y: "168",
+          fill: flush ? pic.accent : "#9a9488",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = flush ? "OPEN" : "DOORWAY";
+        openingLayer.appendChild(opening);
+
+        thresholdLayer.replaceChildren();
+        const pocket = el("g", {
+          id: "leftover-threshold",
+          class: flush
+            ? "threshold leftover-flush leftover-open leftover-empty"
+            : "threshold leftover-threshold leftover-showing leftover-bar leftover-rise"
+        });
+        if (!flush && risePx > 0) {
+          pocket.appendChild(el("rect", {
+            id: "threshold-bar",
+            class: "leftover-bar leftover-threshold leftover-showing leftover-rise leftover-strip",
+            x: String(innerX),
+            y: String(barTop),
+            width: String(innerW),
+            height: String(risePx),
+            fill: "url(#bar-face)",
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          pocket.appendChild(el("rect", {
+            id: "threshold-hatch",
+            class: "leftover-bar leftover-hatch leftover-strip",
+            x: String(innerX),
+            y: String(barTop),
+            width: String(innerW),
+            height: String(risePx),
+            fill: "url(#bar-hatch)",
+            "pointer-events": "none"
+          }));
+          if (risePx > 14) {
+            pocket.appendChild(el("text", {
+              x: "400",
+              y: String(barTop + risePx / 2 + 4),
+              fill: "#16120c",
+              "font-size": "10",
+              "letter-spacing": "1.4",
+              "text-anchor": "middle"
+            })).textContent = "BAR";
+          }
+        } else {
+          pocket.appendChild(el("line", {
+            id: "flush-floor",
+            class: "leftover-flush leftover-floor leftover-open",
+            x1: String(innerX),
+            y1: String(FLOOR_Y),
+            x2: String(innerX + innerW),
+            y2: String(FLOOR_Y),
+            stroke: pic.accent,
+            "stroke-width": "2"
+          }));
+        }
+        thresholdLayer.appendChild(pocket);
+
+        markLayer.replaceChildren();
+        if (!flush && risePx > 0) {
+          const markX = innerX + innerW + 18;
+          markLayer.appendChild(el("line", {
+            id: "threshold-mark",
+            class: "threshold-mark leftover-label leftover-bar leftover-rise leftover-threshold",
+            x1: String(markX),
+            y1: String(barTop),
+            x2: String(markX),
+            y2: String(FLOOR_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(markX - 7),
+            y1: String(barTop),
+            x2: String(markX + 7),
+            y2: String(barTop),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(markX - 7),
+            y1: String(FLOOR_Y),
+            x2: String(markX + 7),
+            y2: String(FLOOR_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "threshold-label",
+            class: "threshold-label leftover-label leftover-threshold leftover-showing leftover-bar leftover-rise leftover-strip",
+            x: String(markX + 12),
+            y: String(barTop + risePx / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "start"
+          })).textContent = "RISE " + prettyMm(riseMm) + " mm";
+          markLayer.appendChild(el("text", {
+            id: "step-label",
+            class: "step-label leftover-bar leftover-threshold leftover-rise",
+            x: String(innerX - 10),
+            y: String(barTop - 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "end"
+          })).textContent = "STEP OVER";
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "threshold-label",
+            class: "threshold-label leftover-label leftover-flush leftover-open leftover-floor",
+            x: "400",
+            y: String(FLOOR_Y - 16),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "FLUSH / OPEN";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-rise", prettyMm(riseMm));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "elevation");
+        scene.setAttribute("data-hero", "leftover-threshold");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-open is-flush";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + prettyMm(riseMm) + " mm showing"
+          : "leftover flush";
+        statRise.textContent = prettyMm(riseMm) + " mm";
+        statLeftover.textContent = pic.leftover;
+        statBarSketch.textContent = pic.leftover === "showing"
+          ? prettyMm(riseMm) + " mm leftover"
+          : "flush";
+        statLeftoverWrap.classList.remove("is-showing", "is-open", "is-flush");
+        if (pic.leftover === "showing") {
+          statLeftoverWrap.classList.add("is-showing");
+        } else {
+          statLeftoverWrap.classList.add("is-open", "is-flush");
+        }
+        if (Number(riseInput.value) !== riseMm) riseInput.value = String(riseMm);
+        riseInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        riseMm = SEED.riseMm;
+        render();
+      }
+
+      riseInput.addEventListener("input", function (event) {
+        riseMm = clamp(Math.round(Number(event.target.value)), RISE_MIN, RISE_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
