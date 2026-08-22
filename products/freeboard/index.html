@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Freeboard — a hull looks sunk until you see the freeboard. Move the water. See the leftover hull." />
+    <title>Freeboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #07090d;
+        --panel: #12161c;
+        --ink: #e6eaf0;
+        --muted: #84909c;
+        --line: rgba(160, 184, 196, 0.16);
+        --accent: #8ec4d4;
+        --hull: #c8b494;
+        --showing: #d8e8c8;
+        --awash: #6a8898;
+        --water: #123040;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 22% -8%, rgba(142, 196, 212, 0.11), transparent 30%),
+          radial-gradient(circle at 84% 12%, rgba(216, 232, 200, 0.07), transparent 24%),
+          linear-gradient(180deg, #06080c 0%, #101418 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 22, 28, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(142, 196, 212, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 28, 34, 0.96), rgba(8, 10, 14, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(142, 196, 212, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4e8ee; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181e24;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #101618; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(142, 196, 212, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 42% 8%, rgba(142, 196, 212, 0.07), transparent 46%),
+          #080c10;
+        overflow: hidden;
+      }
+      #freeboard-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(216, 232, 200, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-awash b { color: var(--awash); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #07090d;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #freeboard-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> freeboard · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover hull above the water</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">hull instrument · 22 Aug 2026 19:50</span>
+        <h1>Freeboard</h1>
+        <p class="lede">
+          A hull looks sunk until you see the freeboard. Move the water. See the leftover hull.
+          Not a list. Not a rode. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the hull still sits above the water</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 140 cm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="freeboard-svg" viewBox="0 0 800 440" role="img" aria-labelledby="freeboard-title freeboard-desc">
+            <title id="freeboard-title">Freeboard is showing. One hundred forty centimetres of leftover hull still sit above the water.</title>
+            <desc id="freeboard-desc">A hull in elevation versus a waterline. The leftover is freeboard — how far the hull still sits above the water. A picture, not a load spec. No hull list. No rode. No wind-run fetch.</desc>
+            <defs>
+              <linearGradient id="sky-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161c22" />
+                <stop offset="100%" stop-color="#0c1218" />
+              </linearGradient>
+              <linearGradient id="sea-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1e4a58" />
+                <stop offset="42%" stop-color="#123040" />
+                <stop offset="100%" stop-color="#0a181e" />
+              </linearGradient>
+              <linearGradient id="hull-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#ead8b4" />
+                <stop offset="48%" stop-color="#b89868" />
+                <stop offset="100%" stop-color="#4a3824" />
+              </linearGradient>
+              <linearGradient id="deck-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#d8c8a4" />
+                <stop offset="100%" stop-color="#6a5840" />
+              </linearGradient>
+              <pattern id="freeboard-hatch" width="10" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 10 L10 0" fill="none" stroke="rgba(216,232,200,0.28)" stroke-width="1" />
+              </pattern>
+              <pattern id="sea-grain" width="28" height="12" patternUnits="userSpaceOnUse">
+                <path d="M0 6 Q 7 3 14 6 T 28 6" fill="none" stroke="rgba(180,214,224,0.12)" stroke-width="1" />
+              </pattern>
+              <clipPath id="hull-clip">
+                <path id="hull-clip-path" d="" />
+              </clipPath>
+            </defs>
+            <rect x="12" y="12" width="776" height="416" rx="6" fill="#080c10" stroke="rgba(160,184,196,0.16)" />
+            <text x="36" y="42" fill="#84909c" font-size="11" letter-spacing="2">ELEVATION · HULL · WATERLINE · FREEBOARD IS THE LEFTOVER</text>
+            <g id="freeboard-scene" data-view="elevation" data-hero="hull-freeboard" data-freeboard="140" data-leftover="showing" data-verdict="showing">
+              <g id="site-layer"></g>
+              <g id="water-layer"></g>
+              <g id="hull-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#d8e8c8" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 140 CM LEFTOVER FREEBOARD</text>
+              <text id="scene-sketch" x="400" y="414" fill="#3e4850" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER HULL ABOVE THE WATER · NOT A LIST · NOT A RODE</text>
+            </g>
+          </svg>
+        </div>
+        <p id="freeboard-alt" class="sr-only" aria-live="polite">Freeboard is showing. One hundred forty centimetres of leftover hull still sit above the water.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="freeboard-input">Freeboard (centimetres of leftover hull above the water)</label>
+            <input id="freeboard-input" type="range" min="0" max="220" step="5" value="140" />
+            <div class="ticks" aria-hidden="true">
+              <span>awash</span>
+              <span>seed showing</span>
+              <span>high freeboard</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Freeboard <b id="stat-freeboard">140 cm</b></span>
+          <span>Hull (sketch) <b id="stat-hull">140 cm leftover</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A hull looks sunk until you see the freeboard. Freeboard is leftover hull above the water — how far the hull still sits above the waterline, as seen in elevation.
+        Seed is already showing — 140 cm of leftover hull above the water, not awash / not flush. Arrow keys move the focused control.
+        Refresh restores the seed. Not a list. Not a rode. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { freeboardCm: 140 };
+      const FREEBOARD_MIN = 0;
+      const FREEBOARD_MAX = 220;
+      const AWASH_AT = 10;
+      const GUNWALE_Y = 168;
+      const KEEL_Y = 328;
+      const PX_PER_CM = 0.82;
+      const HULL_BOW = 168;
+      const HULL_STERN = 648;
+
+      let freeboardCm = SEED.freeboardCm;
+
+      const svg = document.getElementById("freeboard-svg");
+      const scene = document.getElementById("freeboard-scene");
+      const titleEl = document.getElementById("freeboard-title");
+      const altEl = document.getElementById("freeboard-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const freeboardInput = document.getElementById("freeboard-input");
+      const siteLayer = document.getElementById("site-layer");
+      const waterLayer = document.getElementById("water-layer");
+      const hullLayer = document.getElementById("hull-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const hullClipPath = document.getElementById("hull-clip-path");
+      const statFreeboard = document.getElementById("stat-freeboard");
+      const statHull = document.getElementById("stat-hull");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenCm(n) {
+        const words = {
+          0: "zero", 5: "five", 10: "ten", 15: "fifteen", 20: "twenty",
+          25: "twenty-five", 30: "thirty", 40: "forty", 50: "fifty",
+          60: "sixty", 70: "seventy", 80: "eighty", 90: "ninety",
+          100: "one hundred", 110: "one hundred ten", 120: "one hundred twenty",
+          130: "one hundred thirty", 140: "one hundred forty",
+          150: "one hundred fifty", 160: "one hundred sixty",
+          170: "one hundred seventy", 180: "one hundred eighty",
+          190: "one hundred ninety", 200: "two hundred",
+          210: "two hundred ten", 220: "two hundred twenty"
+        };
+        if (words[n]) return words[n];
+        return String(n);
+      }
+
+      function hullPath() {
+        return "M 176 " + (GUNWALE_Y + 18) +
+          " C 188 " + (GUNWALE_Y + 4) + " 204 " + GUNWALE_Y + " 224 " + GUNWALE_Y +
+          " L 352 " + GUNWALE_Y +
+          " L 368 " + (GUNWALE_Y - 30) +
+          " L 508 " + (GUNWALE_Y - 30) +
+          " L 524 " + GUNWALE_Y +
+          " L 620 " + GUNWALE_Y +
+          " L 644 " + (GUNWALE_Y + 10) +
+          " L 640 " + (GUNWALE_Y + 46) +
+          " C 636 " + (GUNWALE_Y + 88) + " 600 " + KEEL_Y + " 400 " + KEEL_Y +
+          " C 248 " + KEEL_Y + " 196 " + (GUNWALE_Y + 96) + " 176 " + (GUNWALE_Y + 18) + " Z";
+      }
+
+      function picture() {
+        const leftover = freeboardCm <= AWASH_AT ? "awash" : "showing";
+        const pretty = String(freeboardCm);
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pretty + " CM LEFTOVER FREEBOARD";
+          alt = "Freeboard is showing. " + spokenCm(freeboardCm).charAt(0).toUpperCase() + spokenCm(freeboardCm).slice(1) + " centimetres of leftover hull still sit above the water.";
+        } else {
+          status = "AWASH · HULL LOOKS SUNK";
+          alt = "Freeboard is awash. The hull looks sunk. A sketch, not a load sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d8e8c8" : "#6a8898"
+        };
+      }
+
+      function paint(pic) {
+        const leftoverPx = Math.max(0, freeboardCm * PX_PER_CM);
+        const awash = pic.leftover === "awash";
+        const waterY = GUNWALE_Y + leftoverPx;
+        const path = hullPath();
+        hullClipPath.setAttribute("d", path);
+
+        siteLayer.replaceChildren();
+        siteLayer.appendChild(el("rect", {
+          id: "site",
+          class: "site",
+          x: "28",
+          y: "76",
+          width: "744",
+          height: "320",
+          rx: "6",
+          fill: "url(#sky-wash)"
+        }));
+
+        waterLayer.replaceChildren();
+        const water = el("g", { id: "water", class: "water leftover-water" });
+        water.appendChild(el("rect", {
+          id: "water-body",
+          class: "water-body leftover-waterline",
+          x: "28",
+          y: String(waterY),
+          width: "744",
+          height: String(396 - waterY),
+          fill: "url(#sea-wash)"
+        }));
+        water.appendChild(el("rect", {
+          x: "28",
+          y: String(waterY),
+          width: "744",
+          height: String(396 - waterY),
+          fill: "url(#sea-grain)"
+        }));
+        water.appendChild(el("line", {
+          id: "waterline",
+          class: "waterline leftover-waterline",
+          x1: "36",
+          y1: String(waterY),
+          x2: "764",
+          y2: String(waterY),
+          stroke: awash ? "rgba(106,136,152,0.7)" : "rgba(216,232,200,0.72)",
+          "stroke-width": "2"
+        }));
+        water.appendChild(el("text", {
+          x: "48",
+          y: String(Math.min(392, waterY + 22)),
+          fill: "#8ab0bc",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WATERLINE";
+        waterLayer.appendChild(water);
+
+        hullLayer.replaceChildren();
+        const hull = el("g", {
+          id: "elevation-hull",
+          class: awash ? "hull leftover-awash" : "hull leftover-freeboard leftover-showing"
+        });
+        hull.appendChild(el("path", {
+          id: "hull-body",
+          class: "hull-body leftover-hull",
+          d: path,
+          fill: "url(#hull-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        hull.appendChild(el("rect", {
+          id: "cabin",
+          class: "cabin",
+          x: "372",
+          y: String(GUNWALE_Y - 30),
+          width: "132",
+          height: "30",
+          fill: "url(#deck-wash)",
+          stroke: "rgba(232,216,176,0.4)",
+          "stroke-width": "1"
+        }));
+        hull.appendChild(el("text", {
+          x: "438",
+          y: String(GUNWALE_Y - 38),
+          fill: pic.accent,
+          "font-size": "11",
+          "letter-spacing": "1.6",
+          "text-anchor": "middle"
+        })).textContent = "HULL";
+        hull.appendChild(el("text", {
+          x: "400",
+          y: String(KEEL_Y + 18),
+          fill: "#8a7a64",
+          "font-size": "10",
+          "letter-spacing": "1.6",
+          "text-anchor": "middle"
+        })).textContent = "KEEL";
+        if (!awash) {
+          hull.appendChild(el("rect", {
+            id: "freeboard-pocket",
+            class: "leftover-pocket leftover-freeboard leftover-showing",
+            x: String(HULL_BOW + 40),
+            y: String(GUNWALE_Y),
+            width: String(HULL_STERN - HULL_BOW - 88),
+            height: String(leftoverPx),
+            fill: "url(#freeboard-hatch)",
+            stroke: pic.accent,
+            "stroke-width": "1.1",
+            "stroke-dasharray": "4 3",
+            "clip-path": "url(#hull-clip)"
+          }));
+        }
+        hullLayer.appendChild(hull);
+
+        markLayer.replaceChildren();
+        const markX = 292;
+        if (!awash) {
+          markLayer.appendChild(el("line", {
+            id: "freeboard-mark",
+            class: "freeboard-mark leftover-label leftover-freeboard",
+            x1: String(markX),
+            y1: String(GUNWALE_Y),
+            x2: String(markX),
+            y2: String(waterY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(markX - 7),
+            y1: String(GUNWALE_Y),
+            x2: String(markX + 7),
+            y2: String(GUNWALE_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(markX - 7),
+            y1: String(waterY),
+            x2: String(markX + 7),
+            y2: String(waterY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "freeboard-label",
+            class: "freeboard-label leftover-label leftover-freeboard leftover-showing",
+            x: String(markX - 12),
+            y: String((GUNWALE_Y + waterY) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "end"
+          })).textContent = "FREEBOARD " + freeboardCm + " cm";
+          markLayer.appendChild(el("line", {
+            class: "gunwale-face",
+            x1: "224",
+            y1: String(GUNWALE_Y),
+            x2: "620",
+            y2: String(GUNWALE_Y),
+            stroke: "rgba(216,232,200,0.28)",
+            "stroke-width": "1",
+            "stroke-dasharray": "3 4"
+          }));
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "freeboard-label",
+            class: "freeboard-label leftover-label leftover-awash",
+            x: "400",
+            y: String(GUNWALE_Y - 12),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "AWASH";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-freeboard", String(freeboardCm));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "elevation");
+        scene.setAttribute("data-hero", "hull-freeboard");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-awash";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + freeboardCm + " cm showing"
+          : "leftover awash";
+        statFreeboard.textContent = freeboardCm + " cm";
+        statHull.textContent = pic.leftover === "showing"
+          ? freeboardCm + " cm leftover"
+          : "awash";
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-awash");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(freeboardInput.value) !== freeboardCm) freeboardInput.value = String(freeboardCm);
+        freeboardInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        freeboardCm = SEED.freeboardCm;
+        render();
+      }
+
+      freeboardInput.addEventListener("input", function (event) {
+        freeboardCm = clamp(Math.round(Number(event.target.value) / 5) * 5, FREEBOARD_MIN, FREEBOARD_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
