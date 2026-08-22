@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Crown — a wire looks clear until you see the crown. Move the tree. See the leftover gap." />
+    <title>Crown</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080a08;
+        --panel: #121610;
+        --ink: #e6ece4;
+        --muted: #868c82;
+        --line: rgba(168, 196, 156, 0.16);
+        --accent: #9cba78;
+        --canopy: #6a8a52;
+        --showing: #c4c46a;
+        --brushing: #d4886a;
+        --bark: #4a3c2c;
+        --wire: #c8d0c4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 22% -8%, rgba(156, 186, 120, 0.11), transparent 30%),
+          radial-gradient(circle at 86% 12%, rgba(196, 196, 106, 0.06), transparent 24%),
+          linear-gradient(180deg, #070806 0%, #101410 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 22, 16, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(156, 186, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 26, 20, 0.96), rgba(8, 10, 8, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(156, 186, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e2e6dc; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181c16;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #14180e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(156, 186, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 18%, rgba(156, 186, 120, 0.07), transparent 46%),
+          #080a08;
+        overflow: hidden;
+      }
+      #crown-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(196, 196, 106, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-brushing b { color: var(--brushing); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080a08;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #crown-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> crown · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover canopy gap</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">tree instrument · 22 Aug 2026 13:50</span>
+        <h1>Crown</h1>
+        <p class="lede">
+          A wire looks clear until you see the crown. Move the tree. See the leftover gap.
+          Not a sag. Not a ceiling. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the canopy still sits clear of the wire</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 2.8 m showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="crown-svg" viewBox="0 0 800 460" role="img" aria-labelledby="crown-title crown-desc">
+            <title id="crown-title">Crown is showing. Two point eight metres of leftover canopy sit clear of the wire.</title>
+            <desc id="crown-desc">A tree in elevation versus a straight overhead wire. The leftover is crown — how far the canopy still sits clear of the wire. A picture, not a line-clearance spec. No hanging catenary. No standing figure. No crowned road.</desc>
+            <defs>
+              <linearGradient id="dusk-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161a16" />
+                <stop offset="100%" stop-color="#0c100c" />
+              </linearGradient>
+              <linearGradient id="ground-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#2a3224" />
+                <stop offset="100%" stop-color="#141810" />
+              </linearGradient>
+              <linearGradient id="bark-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#3a3024" />
+                <stop offset="50%" stop-color="#6a5840" />
+                <stop offset="100%" stop-color="#2e261c" />
+              </linearGradient>
+              <linearGradient id="canopy-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#8aaa62" />
+                <stop offset="100%" stop-color="#3a542c" />
+              </linearGradient>
+              <pattern id="crown-hatch" width="8" height="8" patternUnits="userSpaceOnUse">
+                <path d="M0 8 L8 0" fill="none" stroke="rgba(196,196,106,0.28)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080a08" stroke="rgba(168,196,156,0.16)" />
+            <text x="36" y="42" fill="#868c82" font-size="11" letter-spacing="2">ELEVATION · TREE · CANOPY · STRAIGHT WIRE · LEFTOVER CROWN</text>
+            <g id="crown-scene" data-view="elevation" data-crown="2.8" data-leftover="showing" data-verdict="showing">
+              <g id="site-layer"></g>
+              <g id="gap-layer"></g>
+              <g id="tree-layer"></g>
+              <g id="wire-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#c4c46a" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 2.8 M LEFTOVER CROWN</text>
+              <text id="scene-sketch" x="400" y="434" fill="#4a4e44" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER CANOPY GAP · NOT A SAG · NOT A CEILING</text>
+            </g>
+          </svg>
+        </div>
+        <p id="crown-alt" class="sr-only" aria-live="polite">Crown is showing. Two point eight metres of leftover canopy sit clear of the wire.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="crown-input">Crown (metres of leftover canopy gap under the wire)</label>
+            <input id="crown-input" type="range" min="0" max="5" step="0.1" value="2.8" />
+            <div class="ticks" aria-hidden="true">
+              <span>brushing</span>
+              <span>seed showing</span>
+              <span>wide clear</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Crown <b id="stat-crown">2.8 m</b></span>
+          <span>Gap (sketch) <b id="stat-gap">2.8 m leftover</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A wire looks clear until you see the crown. Crown is leftover canopy — how far the tree still sits clear of a straight overhead wire, as seen in elevation.
+        Seed is already showing — 2.8 m of leftover crown, not brushing / not flush. Arrow keys move the focused control.
+        Refresh restores the seed. Not a sag. Not a ceiling. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { crownM: 2.8 };
+      const CROWN_MIN = 0;
+      const CROWN_MAX = 5;
+      const BRUSHING_AT = 0.35;
+      const WIRE_M = 12;
+      const GROUND_Y = 400;
+      const PX_PER_M = 22;
+      const TREE_X = 400;
+      const WIRE_Y = GROUND_Y - WIRE_M * PX_PER_M;
+
+      let crownM = SEED.crownM;
+
+      const svg = document.getElementById("crown-svg");
+      const scene = document.getElementById("crown-scene");
+      const titleEl = document.getElementById("crown-title");
+      const altEl = document.getElementById("crown-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const crownInput = document.getElementById("crown-input");
+      const siteLayer = document.getElementById("site-layer");
+      const gapLayer = document.getElementById("gap-layer");
+      const treeLayer = document.getElementById("tree-layer");
+      const wireLayer = document.getElementById("wire-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statCrown = document.getElementById("stat-crown");
+      const statGap = document.getElementById("stat-gap");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenMetres(n) {
+        const tenths = Math.round(n * 10);
+        const whole = Math.floor(tenths / 10);
+        const frac = tenths % 10;
+        const words = {
+          0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five"
+        };
+        const fracWords = {
+          0: "", 1: "one", 2: "two", 3: "three", 4: "four",
+          5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine"
+        };
+        if (frac === 0) return words[whole] || String(whole);
+        return (words[whole] || String(whole)) + " point " + (fracWords[frac] || String(frac));
+      }
+
+      function picture() {
+        const leftover = crownM <= BRUSHING_AT ? "brushing" : "showing";
+        const pretty = crownM.toFixed(1);
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pretty + " M LEFTOVER CROWN";
+          alt = "Crown is showing. " + spokenMetres(crownM).charAt(0).toUpperCase() + spokenMetres(crownM).slice(1) + " metres of leftover canopy sit clear of the wire.";
+        } else {
+          status = "BRUSHING · CANOPY ON THE WIRE";
+          alt = "Crown is brushing. The canopy sits on the wire. A sketch, not a line-clearance sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#c4c46a" : "#d4886a"
+        };
+      }
+
+      function metresToY(m) {
+        return GROUND_Y - m * PX_PER_M;
+      }
+
+      function paint(pic) {
+        const canopyTopM = WIRE_M - crownM;
+        const canopyTopY = metresToY(canopyTopM);
+        const canopyH = Math.max(72, (canopyTopM - 3.4) * PX_PER_M);
+        const canopyCy = canopyTopY + canopyH * 0.46;
+        const canopyRx = 78 + (5 - crownM) * 6;
+        const canopyRy = canopyH * 0.52;
+
+        siteLayer.replaceChildren();
+        siteLayer.appendChild(el("rect", {
+          id: "site-dusk",
+          class: "site",
+          x: "28",
+          y: "76",
+          width: "744",
+          height: "328",
+          rx: "6",
+          fill: "url(#dusk-wash)"
+        }));
+        siteLayer.appendChild(el("rect", {
+          id: "ground",
+          class: "ground",
+          x: "28",
+          y: String(GROUND_Y - 8),
+          width: "744",
+          height: "36",
+          fill: "url(#ground-wash)"
+        }));
+        siteLayer.appendChild(el("line", {
+          x1: "28",
+          y1: String(GROUND_Y),
+          x2: "772",
+          y2: String(GROUND_Y),
+          stroke: "rgba(168,196,156,0.28)",
+          "stroke-width": "2"
+        }));
+        siteLayer.appendChild(el("text", {
+          x: "40",
+          y: String(GROUND_Y + 20),
+          fill: "#6a7064",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "GROUND";
+
+        gapLayer.replaceChildren();
+        if (pic.leftover === "showing") {
+          const leftoverCrown = el("g", {
+            id: "leftover-crown",
+            class: "leftover-crown"
+          });
+          leftoverCrown.appendChild(el("rect", {
+            id: "crown-gap",
+            class: "crown-gap leftover-gap",
+            x: String(TREE_X - 28),
+            y: String(WIRE_Y),
+            width: "56",
+            height: String(Math.max(8, canopyTopY - WIRE_Y)),
+            fill: "url(#crown-hatch)",
+            stroke: "none"
+          }));
+          leftoverCrown.appendChild(el("rect", {
+            x: String(TREE_X - 28),
+            y: String(WIRE_Y),
+            width: "56",
+            height: String(Math.max(8, canopyTopY - WIRE_Y)),
+            fill: "rgba(196,196,106,0.10)",
+            stroke: pic.accent,
+            "stroke-width": "1.1"
+          }));
+          gapLayer.appendChild(leftoverCrown);
+        } else {
+          gapLayer.appendChild(el("g", {
+            id: "leftover-crown",
+            class: "leftover-crown leftover-brushing"
+          }));
+        }
+
+        treeLayer.replaceChildren();
+        const tree = el("g", {
+          id: "tree",
+          class: "tree"
+        });
+        tree.appendChild(el("rect", {
+          id: "tree-trunk",
+          class: "trunk",
+          x: String(TREE_X - 11),
+          y: String(canopyCy + canopyRy * 0.35),
+          width: "22",
+          height: String(GROUND_Y - (canopyCy + canopyRy * 0.35)),
+          rx: "3",
+          fill: "url(#bark-wash)",
+          stroke: "#3a3228",
+          "stroke-width": "1"
+        }));
+        const canopy = el("g", {
+          id: "canopy",
+          class: "canopy"
+        });
+        const lobes = [
+          { dx: 0, dy: -canopyRy * 0.18, rx: canopyRx * 0.72, ry: canopyRy * 0.7 },
+          { dx: -canopyRx * 0.42, dy: canopyRy * 0.08, rx: canopyRx * 0.62, ry: canopyRy * 0.58 },
+          { dx: canopyRx * 0.42, dy: canopyRy * 0.1, rx: canopyRx * 0.64, ry: canopyRy * 0.56 },
+          { dx: 0, dy: canopyRy * 0.22, rx: canopyRx * 0.78, ry: canopyRy * 0.5 }
+        ];
+        lobes.forEach(function (lobe) {
+          canopy.appendChild(el("ellipse", {
+            class: "canopy-lobe",
+            cx: String(TREE_X + lobe.dx),
+            cy: String(canopyCy + lobe.dy),
+            rx: String(lobe.rx),
+            ry: String(lobe.ry),
+            fill: "url(#canopy-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+        });
+        canopy.appendChild(el("text", {
+          x: String(TREE_X),
+          y: String(canopyCy + 4),
+          fill: "#dce8c8",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "CANOPY";
+        tree.appendChild(canopy);
+        treeLayer.appendChild(tree);
+
+        wireLayer.replaceChildren();
+        const poles = [
+          { x: 96, label: "POLE" },
+          { x: 704, label: "POLE" }
+        ];
+        poles.forEach(function (pole) {
+          wireLayer.appendChild(el("rect", {
+            class: "pole",
+            x: String(pole.x - 5),
+            y: String(WIRE_Y - 10),
+            width: "10",
+            height: String(GROUND_Y - WIRE_Y + 10),
+            rx: "1",
+            fill: "#3a4038",
+            stroke: "rgba(200,208,196,0.35)"
+          }));
+          wireLayer.appendChild(el("text", {
+            x: String(pole.x),
+            y: String(GROUND_Y - 12),
+            fill: "#6a7064",
+            "font-size": "9",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = pole.label;
+        });
+        wireLayer.appendChild(el("line", {
+          id: "overhead-wire",
+          class: "overhead-wire straight-wire",
+          x1: "96",
+          y1: String(WIRE_Y),
+          x2: "704",
+          y2: String(WIRE_Y),
+          stroke: "#c8d0c4",
+          "stroke-width": "2.4",
+          "stroke-linecap": "square"
+        }));
+        wireLayer.appendChild(el("text", {
+          x: "124",
+          y: String(WIRE_Y - 10),
+          fill: "#c8d0c4",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WIRE · STRAIGHT";
+
+        markLayer.replaceChildren();
+        if (pic.leftover === "showing") {
+          const midY = WIRE_Y + (canopyTopY - WIRE_Y) / 2;
+          markLayer.appendChild(el("line", {
+            id: "crown-mark",
+            class: "crown-mark",
+            x1: String(TREE_X + 46),
+            y1: String(WIRE_Y),
+            x2: String(TREE_X + 46),
+            y2: String(canopyTopY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(TREE_X + 40),
+            y1: String(WIRE_Y),
+            x2: String(TREE_X + 52),
+            y2: String(WIRE_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(TREE_X + 40),
+            y1: String(canopyTopY),
+            x2: String(TREE_X + 52),
+            y2: String(canopyTopY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "crown-label",
+            class: "crown-label",
+            x: String(TREE_X + 86),
+            y: String(midY + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "start"
+          })).textContent = "CROWN " + crownM.toFixed(1) + " m";
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "crown-label",
+            class: "crown-label",
+            x: String(TREE_X + 92),
+            y: String(WIRE_Y + 18),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "start"
+          })).textContent = "BRUSHING";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-crown", crownM.toFixed(1));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "elevation");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-brushing";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + crownM.toFixed(1) + " m showing"
+          : "leftover brushing";
+        statCrown.textContent = crownM.toFixed(1) + " m";
+        statGap.textContent = pic.leftover === "showing"
+          ? crownM.toFixed(1) + " m leftover"
+          : "brushing";
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-brushing");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(crownInput.value) !== crownM) crownInput.value = String(crownM);
+        crownInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        crownM = SEED.crownM;
+        render();
+      }
+
+      crownInput.addEventListener("input", function (event) {
+        crownM = clamp(Number(event.target.value), CROWN_MIN, CROWN_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
