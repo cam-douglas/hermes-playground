@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Keystone — a vault looks closed until you see the keystone. Move the stone. See the leftover lock." />
+    <title>Keystone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08090c;
+        --panel: #12141a;
+        --ink: #e6e8ee;
+        --muted: #848a96;
+        --line: rgba(168, 180, 200, 0.16);
+        --accent: #9aa8bc;
+        --stone: #6a7484;
+        --showing: #d4c8a0;
+        --seated: #7a9aaa;
+        --lock: #c8d0d8;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 20% -8%, rgba(154, 168, 188, 0.1), transparent 30%),
+          radial-gradient(circle at 82% 12%, rgba(212, 200, 160, 0.07), transparent 24%),
+          linear-gradient(180deg, #07080b 0%, #111318 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 20, 26, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(154, 168, 188, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 24, 32, 0.96), rgba(8, 10, 14, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(154, 168, 188, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4e6ec; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181c24;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #12141a; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(154, 168, 188, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 28%, rgba(154, 168, 188, 0.08), transparent 46%),
+          #08090c;
+        overflow: hidden;
+      }
+      #keystone-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 200, 160, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-seated b { color: var(--seated); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #08090c;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #keystone-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> keystone · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover arch lock</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">arch instrument · 22 Aug 2026 16:50</span>
+        <h1>Keystone</h1>
+        <p class="lede">
+          A vault looks closed until you see the keystone. Move the stone. See the leftover lock.
+          Not a bond. Not a slope. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the stone still sits as leftover lock</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 48 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="keystone-svg" viewBox="0 0 800 440" role="img" aria-labelledby="keystone-title keystone-desc">
+            <title id="keystone-title">Keystone is showing. Forty-eight millimetres of leftover drop still sit as leftover lock.</title>
+            <desc id="keystone-desc">An arch in elevation with a keystone at the crown. The leftover is keystone — how far the stone still sits as leftover lock. A picture, not a masonry spec. No brick bond. No retaining-wall slope.</desc>
+            <defs>
+              <linearGradient id="ground-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161820" />
+                <stop offset="100%" stop-color="#0a0c10" />
+              </linearGradient>
+              <linearGradient id="pier-wash" x1="0%" y1="0%" x2="20%" y2="100%">
+                <stop offset="0%" stop-color="#6a7484" />
+                <stop offset="52%" stop-color="#3e4652" />
+                <stop offset="100%" stop-color="#222830" />
+              </linearGradient>
+              <linearGradient id="arch-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#8a94a4" />
+                <stop offset="100%" stop-color="#3a424c" />
+              </linearGradient>
+              <linearGradient id="stone-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#e8e0c8" />
+                <stop offset="48%" stop-color="#c8c0a8" />
+                <stop offset="100%" stop-color="#8a8468" />
+              </linearGradient>
+              <pattern id="vault-hatch" width="10" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 10 L10 0" fill="none" stroke="rgba(212,200,160,0.22)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="416" rx="6" fill="#08090c" stroke="rgba(168,180,200,0.16)" />
+            <text x="36" y="42" fill="#848a96" font-size="11" letter-spacing="2">ELEVATION · ONE ARCH · KEYSTONE IS THE LOCK</text>
+            <g id="keystone-scene" data-view="elevation" data-hero="arch-keystone" data-keystone="48" data-leftover="showing" data-verdict="showing">
+              <g id="site-layer"></g>
+              <g id="pier-layer"></g>
+              <g id="arch-layer"></g>
+              <g id="stone-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#d4c8a0" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 48 MM LEFTOVER KEYSTONE</text>
+              <text id="scene-sketch" x="400" y="414" fill="#3e4450" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER ARCH LOCK · NOT A BOND · NOT A SLOPE</text>
+            </g>
+          </svg>
+        </div>
+        <p id="keystone-alt" class="sr-only" aria-live="polite">Keystone is showing. Forty-eight millimetres of leftover drop still sit as leftover lock.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="keystone-input">Keystone (millimetres of leftover drop)</label>
+            <input id="keystone-input" type="range" min="0" max="80" step="2" value="48" />
+            <div class="ticks" aria-hidden="true">
+              <span>seated</span>
+              <span>seed showing</span>
+              <span>proud lock</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Keystone <b id="stat-keystone">48 mm</b></span>
+          <span>Lock (sketch) <b id="stat-lock">48 mm leftover</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A vault looks closed until you see the keystone. Keystone is leftover arch lock — how far the stone still sits as leftover lock, as seen in elevation.
+        Seed is already showing — 48 mm of leftover drop, not seated / not flush. Arrow keys move the focused control.
+        Refresh restores the seed. Not a bond. Not a slope. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { keystoneMm: 48 };
+      const KEY_MIN = 0;
+      const KEY_MAX = 80;
+      const SEATED_AT = 6;
+      const GROUND_Y = 348;
+      const SPRING_Y = 276;
+      const CX = 400;
+      const CY = 276;
+      const R_OUT = 196;
+      const R_IN = 150;
+      const PX_PER_MM = 1.35;
+
+      let keystoneMm = SEED.keystoneMm;
+
+      const svg = document.getElementById("keystone-svg");
+      const scene = document.getElementById("keystone-scene");
+      const titleEl = document.getElementById("keystone-title");
+      const altEl = document.getElementById("keystone-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const keyInput = document.getElementById("keystone-input");
+      const siteLayer = document.getElementById("site-layer");
+      const pierLayer = document.getElementById("pier-layer");
+      const archLayer = document.getElementById("arch-layer");
+      const stoneLayer = document.getElementById("stone-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statKeystone = document.getElementById("stat-keystone");
+      const statLock = document.getElementById("stat-lock");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenMm(n) {
+        const words = {
+          0: "zero", 2: "two", 4: "four", 6: "six", 8: "eight", 10: "ten",
+          12: "twelve", 16: "sixteen", 20: "twenty", 24: "twenty-four",
+          30: "thirty", 32: "thirty-two", 40: "forty", 48: "forty-eight",
+          50: "fifty", 56: "fifty-six", 60: "sixty", 64: "sixty-four",
+          70: "seventy", 72: "seventy-two", 80: "eighty"
+        };
+        if (words[n]) return words[n];
+        if (n < 100) {
+          const tens = Math.floor(n / 10) * 10;
+          const ones = n % 10;
+          const tensWords = { 20: "twenty", 30: "thirty", 40: "forty", 50: "fifty", 60: "sixty", 70: "seventy" };
+          const onesWords = { 0: "", 2: "two", 4: "four", 6: "six", 8: "eight" };
+          if (tensWords[tens] && onesWords[ones] !== undefined) {
+            return ones ? tensWords[tens] + "-" + onesWords[ones] : tensWords[tens];
+          }
+        }
+        return String(n);
+      }
+
+      function picture() {
+        const leftover = keystoneMm <= SEATED_AT ? "seated" : "showing";
+        const pretty = String(keystoneMm);
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pretty + " MM LEFTOVER KEYSTONE";
+          alt = "Keystone is showing. " + spokenMm(keystoneMm).charAt(0).toUpperCase() + spokenMm(keystoneMm).slice(1) + " millimetres of leftover drop still sit as leftover lock.";
+        } else {
+          status = "SEATED · VAULT LOOKS CLOSED";
+          alt = "Keystone is seated. The vault looks closed. A sketch, not a masonry sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4c8a0" : "#7a9aaa"
+        };
+      }
+
+      function polar(r, deg) {
+        const rad = (deg * Math.PI) / 180;
+        return {
+          x: CX + r * Math.cos(rad),
+          y: CY - r * Math.sin(rad)
+        };
+      }
+
+      function wedgePath(rIn, rOut, a0, a1) {
+        const o0 = polar(rOut, a0);
+        const o1 = polar(rOut, a1);
+        const i1 = polar(rIn, a1);
+        const i0 = polar(rIn, a0);
+        return [
+          "M " + o0.x.toFixed(1) + " " + o0.y.toFixed(1),
+          "A " + rOut + " " + rOut + " 0 0 0 " + o1.x.toFixed(1) + " " + o1.y.toFixed(1),
+          "L " + i1.x.toFixed(1) + " " + i1.y.toFixed(1),
+          "A " + rIn + " " + rIn + " 0 0 1 " + i0.x.toFixed(1) + " " + i0.y.toFixed(1),
+          "Z"
+        ].join(" ");
+      }
+
+      function paint(pic) {
+        const dropPx = Math.max(0, keystoneMm * PX_PER_MM);
+        const seated = pic.leftover === "seated";
+
+        siteLayer.replaceChildren();
+        siteLayer.appendChild(el("rect", {
+          id: "ground",
+          class: "ground",
+          x: "28",
+          y: "76",
+          width: "744",
+          height: "320",
+          rx: "6",
+          fill: "url(#ground-wash)"
+        }));
+        siteLayer.appendChild(el("rect", {
+          x: "28",
+          y: String(GROUND_Y),
+          width: "744",
+          height: "48",
+          fill: "#161820"
+        }));
+        siteLayer.appendChild(el("text", {
+          x: "40",
+          y: String(GROUND_Y + 32),
+          fill: "#6a7080",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "GROUND";
+
+        pierLayer.replaceChildren();
+        const piers = el("g", { id: "piers", class: "piers" });
+        const leftX = CX - R_OUT;
+        const rightX = CX + R_IN;
+        piers.appendChild(el("rect", {
+          id: "pier-left",
+          class: "pier",
+          x: String(leftX),
+          y: String(SPRING_Y),
+          width: String(R_OUT - R_IN),
+          height: String(GROUND_Y - SPRING_Y),
+          fill: "url(#pier-wash)",
+          stroke: "#3a424c",
+          "stroke-width": "1.2"
+        }));
+        piers.appendChild(el("rect", {
+          id: "pier-right",
+          class: "pier",
+          x: String(rightX),
+          y: String(SPRING_Y),
+          width: String(R_OUT - R_IN),
+          height: String(GROUND_Y - SPRING_Y),
+          fill: "url(#pier-wash)",
+          stroke: "#3a424c",
+          "stroke-width": "1.2"
+        }));
+        piers.appendChild(el("text", {
+          x: String(leftX + 23),
+          y: String(SPRING_Y + 48),
+          fill: "#d0d4dc",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "PIER";
+        piers.appendChild(el("text", {
+          x: String(rightX + 23),
+          y: String(SPRING_Y + 48),
+          fill: "#d0d4dc",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "PIER";
+        pierLayer.appendChild(piers);
+
+        archLayer.replaceChildren();
+        const arch = el("g", { id: "arch", class: "arch vault" });
+        const pocketHalf = 14;
+        const leftRing = wedgePath(R_IN, R_OUT, 180, 90 + pocketHalf);
+        const rightRing = wedgePath(R_IN, R_OUT, 90 - pocketHalf, 0);
+        arch.appendChild(el("path", {
+          id: "arch-left",
+          class: "arch-ring",
+          d: leftRing,
+          fill: "url(#arch-wash)",
+          stroke: "#4a5260",
+          "stroke-width": "1.1"
+        }));
+        arch.appendChild(el("path", {
+          id: "arch-right",
+          class: "arch-ring",
+          d: rightRing,
+          fill: "url(#arch-wash)",
+          stroke: "#4a5260",
+          "stroke-width": "1.1"
+        }));
+        const joints = [160, 140, 120, 60, 40, 20];
+        joints.forEach(function (deg) {
+          const a = polar(R_OUT, deg);
+          const b = polar(R_IN, deg);
+          arch.appendChild(el("line", {
+            class: "voussoir-joint",
+            x1: a.x.toFixed(1),
+            y1: a.y.toFixed(1),
+            x2: b.x.toFixed(1),
+            y2: b.y.toFixed(1),
+            stroke: "rgba(200,208,216,0.18)",
+            "stroke-width": "1"
+          }));
+        });
+        if (!seated) {
+          const pocket = el("path", {
+            id: "keystone-pocket",
+            class: "leftover-pocket leftover-lock",
+            d: wedgePath(R_IN, R_OUT, 90 + pocketHalf, 90 - pocketHalf),
+            fill: "url(#vault-hatch)",
+            stroke: pic.accent,
+            "stroke-width": "1.2",
+            "stroke-dasharray": "4 3"
+          });
+          arch.appendChild(pocket);
+        }
+        arch.appendChild(el("text", {
+          x: String(CX),
+          y: String(CY - 36),
+          fill: "#9aa2ae",
+          "font-size": "11",
+          "letter-spacing": "1.6",
+          "text-anchor": "middle"
+        })).textContent = "VAULT";
+        archLayer.appendChild(arch);
+
+        stoneLayer.replaceChildren();
+        const stone = el("g", {
+          id: "leftover-keystone",
+          class: seated ? "leftover-keystone leftover-seated" : "leftover-keystone leftover-lock leftover-showing"
+        });
+        const lift = seated ? 0 : dropPx;
+        const stoneGroup = el("g", {
+          id: "keystone-stone",
+          class: "keystone-stone",
+          transform: "translate(0," + (-lift).toFixed(1) + ")"
+        });
+        stoneGroup.appendChild(el("path", {
+          id: "keystone-face",
+          class: "keystone-face leftover-lock",
+          d: wedgePath(R_IN - 2, R_OUT + 4, 90 + pocketHalf, 90 - pocketHalf),
+          fill: "url(#stone-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        const cap = polar(R_OUT + 10, 90);
+        stoneGroup.appendChild(el("text", {
+          x: cap.x.toFixed(1),
+          y: (cap.y - 8).toFixed(1),
+          fill: pic.accent,
+          "font-size": "11",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "KEYSTONE";
+        stone.appendChild(stoneGroup);
+        stoneLayer.appendChild(stone);
+
+        markLayer.replaceChildren();
+        const seatedCrown = polar(R_OUT + 4, 90);
+        if (!seated) {
+          const topY = seatedCrown.y - lift;
+          markLayer.appendChild(el("line", {
+            id: "keystone-mark",
+            class: "keystone-mark leftover-label",
+            x1: String(CX + 58),
+            y1: seatedCrown.y.toFixed(1),
+            x2: String(CX + 58),
+            y2: topY.toFixed(1),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(CX + 52),
+            y1: seatedCrown.y.toFixed(1),
+            x2: String(CX + 64),
+            y2: seatedCrown.y.toFixed(1),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(CX + 52),
+            y1: topY.toFixed(1),
+            x2: String(CX + 64),
+            y2: topY.toFixed(1),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "keystone-label",
+            class: "keystone-label leftover-label leftover-lock",
+            x: String(CX + 72),
+            y: ((seatedCrown.y + topY) / 2 + 4).toFixed(1),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "start"
+          })).textContent = "KEYSTONE " + keystoneMm + " mm";
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "keystone-label",
+            class: "keystone-label leftover-label leftover-seated",
+            x: String(CX),
+            y: String(seatedCrown.y - 18),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SEATED";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-keystone", String(keystoneMm));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "elevation");
+        scene.setAttribute("data-hero", "arch-keystone");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-seated";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + keystoneMm + " mm showing"
+          : "leftover seated";
+        statKeystone.textContent = keystoneMm + " mm";
+        statLock.textContent = pic.leftover === "showing"
+          ? keystoneMm + " mm leftover"
+          : "seated";
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-seated");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(keyInput.value) !== keystoneMm) keyInput.value = String(keystoneMm);
+        keyInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        keystoneMm = SEED.keystoneMm;
+        render();
+      }
+
+      keyInput.addEventListener("input", function (event) {
+        keystoneMm = clamp(Math.round(Number(event.target.value) / 2) * 2, KEY_MIN, KEY_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
