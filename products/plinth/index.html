@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Plinth — a wall looks grounded until you see the plinth. Move the base. See the leftover step." />
+    <title>Plinth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #090a0c;
+        --panel: #121418;
+        --ink: #e6e8ee;
+        --muted: #848a96;
+        --line: rgba(176, 172, 160, 0.16);
+        --accent: #b8b0a0;
+        --wall: #6a7280;
+        --showing: #d8c8a8;
+        --flush: #7a9aaa;
+        --step: #c8c0b0;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 22% -8%, rgba(184, 176, 160, 0.1), transparent 30%),
+          radial-gradient(circle at 80% 14%, rgba(216, 200, 168, 0.07), transparent 24%),
+          linear-gradient(180deg, #08090b 0%, #121418 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 20, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(184, 176, 160, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 24, 28, 0.96), rgba(8, 10, 12, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(184, 176, 160, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4e6ec; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181c20;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #121418; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(184, 176, 160, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 28%, rgba(184, 176, 160, 0.08), transparent 46%),
+          #090a0c;
+        overflow: hidden;
+      }
+      #plinth-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(216, 200, 168, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-flush b { color: var(--flush); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #090a0c;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #plinth-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> plinth · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover base step</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">base instrument · 22 Aug 2026 17:50</span>
+        <h1>Plinth</h1>
+        <p class="lede">
+          A wall looks grounded until you see the plinth. Move the base. See the leftover step.
+          Not a slope. Not a lot line. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the base still steps out</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 80 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="plinth-svg" viewBox="0 0 800 440" role="img" aria-labelledby="plinth-title plinth-desc">
+            <title id="plinth-title">Plinth is showing. Eighty millimetres of leftover step still project from the wall.</title>
+            <desc id="plinth-desc">A wall in elevation sitting on a plinth. The leftover is plinth — how far the base still steps out, leftover step. A picture, not a masonry spec. No retaining-wall slope. No lot line. No arch keystone.</desc>
+            <defs>
+              <linearGradient id="ground-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#16181c" />
+                <stop offset="100%" stop-color="#0a0c10" />
+              </linearGradient>
+              <linearGradient id="wall-wash" x1="0%" y1="0%" x2="12%" y2="100%">
+                <stop offset="0%" stop-color="#8a929c" />
+                <stop offset="46%" stop-color="#5a6270" />
+                <stop offset="100%" stop-color="#2a3038" />
+              </linearGradient>
+              <linearGradient id="plinth-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#e8e0cc" />
+                <stop offset="48%" stop-color="#c8c0ac" />
+                <stop offset="100%" stop-color="#8a846c" />
+              </linearGradient>
+              <pattern id="step-hatch" width="10" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 10 L10 0" fill="none" stroke="rgba(216,200,168,0.22)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="416" rx="6" fill="#090a0c" stroke="rgba(176,172,160,0.16)" />
+            <text x="36" y="42" fill="#848a96" font-size="11" letter-spacing="2">ELEVATION · ONE WALL · PLINTH IS THE STEP</text>
+            <g id="plinth-scene" data-view="elevation" data-hero="wall-plinth" data-plinth="80" data-leftover="showing" data-verdict="showing">
+              <g id="site-layer"></g>
+              <g id="wall-layer"></g>
+              <g id="plinth-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#d8c8a8" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 80 MM LEFTOVER PLINTH</text>
+              <text id="scene-sketch" x="400" y="414" fill="#3e4450" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER BASE STEP · NOT A SLOPE · NOT A LOT LINE</text>
+            </g>
+          </svg>
+        </div>
+        <p id="plinth-alt" class="sr-only" aria-live="polite">Plinth is showing. Eighty millimetres of leftover step still project from the wall.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="plinth-input">Plinth (millimetres of leftover projection)</label>
+            <input id="plinth-input" type="range" min="0" max="120" step="4" value="80" />
+            <div class="ticks" aria-hidden="true">
+              <span>flush</span>
+              <span>seed showing</span>
+              <span>proud step</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Plinth <b id="stat-plinth">80 mm</b></span>
+          <span>Step (sketch) <b id="stat-step">80 mm leftover</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A wall looks grounded until you see the plinth. Plinth is leftover base step — how far the base still steps out, as seen in elevation.
+        Seed is already showing — 80 mm of leftover projection, not flush / not flush-to-wall. Arrow keys move the focused control.
+        Refresh restores the seed. Not a slope. Not a lot line. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { plinthMm: 80 };
+      const PLINTH_MIN = 0;
+      const PLINTH_MAX = 120;
+      const FLUSH_AT = 8;
+      const GROUND_Y = 356;
+      const PLINTH_H = 56;
+      const WALL_W = 168;
+      const WALL_TOP = 92;
+      const CX = 400;
+      const PX_PER_MM = 1.1;
+
+      let plinthMm = SEED.plinthMm;
+
+      const svg = document.getElementById("plinth-svg");
+      const scene = document.getElementById("plinth-scene");
+      const titleEl = document.getElementById("plinth-title");
+      const altEl = document.getElementById("plinth-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const plinthInput = document.getElementById("plinth-input");
+      const siteLayer = document.getElementById("site-layer");
+      const wallLayer = document.getElementById("wall-layer");
+      const plinthLayer = document.getElementById("plinth-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statPlinth = document.getElementById("stat-plinth");
+      const statStep = document.getElementById("stat-step");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenMm(n) {
+        const words = {
+          0: "zero", 4: "four", 8: "eight", 12: "twelve", 16: "sixteen",
+          20: "twenty", 24: "twenty-four", 28: "twenty-eight", 32: "thirty-two",
+          36: "thirty-six", 40: "forty", 48: "forty-eight", 52: "fifty-two",
+          56: "fifty-six", 60: "sixty", 64: "sixty-four", 72: "seventy-two",
+          80: "eighty", 88: "eighty-eight", 96: "ninety-six", 100: "one hundred",
+          104: "one hundred four", 112: "one hundred twelve", 120: "one hundred twenty"
+        };
+        if (words[n]) return words[n];
+        return String(n);
+      }
+
+      function picture() {
+        const leftover = plinthMm <= FLUSH_AT ? "flush" : "showing";
+        const pretty = String(plinthMm);
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pretty + " MM LEFTOVER PLINTH";
+          alt = "Plinth is showing. " + spokenMm(plinthMm).charAt(0).toUpperCase() + spokenMm(plinthMm).slice(1) + " millimetres of leftover step still project from the wall.";
+        } else {
+          status = "FLUSH · WALL LOOKS GROUNDED";
+          alt = "Plinth is flush. The wall looks grounded. A sketch, not a masonry sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d8c8a8" : "#7a9aaa"
+        };
+      }
+
+      function paint(pic) {
+        const stepPx = Math.max(0, plinthMm * PX_PER_MM);
+        const flush = pic.leftover === "flush";
+        const wallX = CX - WALL_W / 2;
+        const wallBottom = GROUND_Y - PLINTH_H;
+        const wallH = wallBottom - WALL_TOP;
+        const plinthW = WALL_W + (flush ? 0 : stepPx * 2);
+        const plinthX = CX - plinthW / 2;
+        const plinthY = GROUND_Y - PLINTH_H;
+
+        siteLayer.replaceChildren();
+        siteLayer.appendChild(el("rect", {
+          id: "ground",
+          class: "ground",
+          x: "28",
+          y: "76",
+          width: "744",
+          height: "320",
+          rx: "6",
+          fill: "url(#ground-wash)"
+        }));
+        siteLayer.appendChild(el("rect", {
+          x: "28",
+          y: String(GROUND_Y),
+          width: "744",
+          height: "40",
+          fill: "#16181c"
+        }));
+        siteLayer.appendChild(el("text", {
+          x: "40",
+          y: String(GROUND_Y + 26),
+          fill: "#6a7080",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "GROUND";
+
+        wallLayer.replaceChildren();
+        const wall = el("g", { id: "wall", class: "wall" });
+        wall.appendChild(el("rect", {
+          id: "wall-face",
+          class: "wall-face",
+          x: String(wallX),
+          y: String(WALL_TOP),
+          width: String(WALL_W),
+          height: String(wallH),
+          fill: "url(#wall-wash)",
+          stroke: "#3a424c",
+          "stroke-width": "1.2"
+        }));
+        wall.appendChild(el("line", {
+          x1: String(wallX + 18),
+          y1: String(WALL_TOP + 16),
+          x2: String(wallX + 18),
+          y2: String(wallBottom - 10),
+          stroke: "rgba(230,232,238,0.08)",
+          "stroke-width": "8"
+        }));
+        wall.appendChild(el("text", {
+          x: String(CX),
+          y: String(WALL_TOP + wallH / 2 + 4),
+          fill: "#d0d4dc",
+          "font-size": "12",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "WALL";
+        wallLayer.appendChild(wall);
+
+        plinthLayer.replaceChildren();
+        const base = el("g", {
+          id: "leftover-plinth",
+          class: flush ? "leftover-plinth leftover-flush" : "leftover-plinth leftover-step leftover-showing"
+        });
+        if (!flush) {
+          base.appendChild(el("rect", {
+            id: "plinth-pocket",
+            class: "leftover-pocket leftover-step",
+            x: String(plinthX - 4),
+            y: String(plinthY - 2),
+            width: String(plinthW + 8),
+            height: String(PLINTH_H + 4),
+            fill: "url(#step-hatch)",
+            stroke: pic.accent,
+            "stroke-width": "1.1",
+            "stroke-dasharray": "4 3"
+          }));
+        }
+        base.appendChild(el("rect", {
+          id: "plinth-block",
+          class: flush ? "plinth-block leftover-flush" : "plinth-block leftover-step leftover-showing",
+          x: String(plinthX),
+          y: String(plinthY),
+          width: String(plinthW),
+          height: String(PLINTH_H),
+          fill: "url(#plinth-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        base.appendChild(el("text", {
+          x: String(CX),
+          y: String(plinthY + 34),
+          fill: flush ? "#2a3038" : "#2a2820",
+          "font-size": "11",
+          "letter-spacing": "1.6",
+          "text-anchor": "middle"
+        })).textContent = "PLINTH";
+        plinthLayer.appendChild(base);
+
+        markLayer.replaceChildren();
+        if (!flush) {
+          const leftWall = wallX;
+          const leftPlinth = plinthX;
+          const markY = plinthY - 18;
+          markLayer.appendChild(el("line", {
+            id: "plinth-mark",
+            class: "plinth-mark leftover-label leftover-step",
+            x1: String(leftPlinth),
+            y1: String(markY),
+            x2: String(leftWall),
+            y2: String(markY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(leftPlinth),
+            y1: String(markY - 6),
+            x2: String(leftPlinth),
+            y2: String(markY + 6),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(leftWall),
+            y1: String(markY - 6),
+            x2: String(leftWall),
+            y2: String(markY + 6),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "plinth-label",
+            class: "plinth-label leftover-label leftover-step",
+            x: String((leftPlinth + leftWall) / 2),
+            y: String(markY - 10),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PLINTH " + plinthMm + " mm";
+          markLayer.appendChild(el("line", {
+            class: "flush-face",
+            x1: String(leftWall),
+            y1: String(WALL_TOP + 8),
+            x2: String(leftWall),
+            y2: String(GROUND_Y - 4),
+            stroke: "rgba(216,200,168,0.28)",
+            "stroke-width": "1",
+            "stroke-dasharray": "3 4"
+          }));
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "plinth-label",
+            class: "plinth-label leftover-label leftover-flush",
+            x: String(CX),
+            y: String(plinthY - 14),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "FLUSH";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-plinth", String(plinthMm));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "elevation");
+        scene.setAttribute("data-hero", "wall-plinth");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-flush";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + plinthMm + " mm showing"
+          : "leftover flush";
+        statPlinth.textContent = plinthMm + " mm";
+        statStep.textContent = pic.leftover === "showing"
+          ? plinthMm + " mm leftover"
+          : "flush";
+        statLeftover.textContent = pic.leftover;
+        statLeftoverWrap.classList.remove("is-showing", "is-flush");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(plinthInput.value) !== plinthMm) plinthInput.value = String(plinthMm);
+        plinthInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        plinthMm = SEED.plinthMm;
+        render();
+      }
+
+      plinthInput.addEventListener("input", function (event) {
+        plinthMm = clamp(Math.round(Number(event.target.value) / 4) * 4, PLINTH_MIN, PLINTH_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
