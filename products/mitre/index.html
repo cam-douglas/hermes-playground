@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Mitre — a joint looks square until you see the mitre. Move the angle. See the leftover meet." />
+    <title>Mitre</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(184, 128, 48, 0.2);
+        --accent: #c88830;
+        --timber: #7a501c;
+        --meet: #e0a850;
+        --showing: #e0a850;
+        --square: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(200, 136, 48, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(48, 24, 6, 0.2), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 136, 48, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 136, 48, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 136, 48, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(200, 136, 48, 0.08), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #mitre-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(224, 168, 80, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-square b { color: var(--square); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #mitre-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> mitre · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover angle that still meets two cuts</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 23 Aug 2026 23:50</span>
+        <h1>Mitre</h1>
+        <p class="lede">
+          A joint looks square until you see the mitre. Move the angle. See the leftover meet.
+          Not a scarf. Not a chamfer. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover angle still cuts the square meet</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 45° showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="mitre-svg" viewBox="0 0 800 460" role="img" aria-labelledby="mitre-title mitre-desc">
+            <title id="mitre-title">Mitre is showing. Forty-five degrees of leftover angle still cut the square meet.</title>
+            <desc id="mitre-desc">Two boards whose leftover is the mitre — how far the leftover angle still cuts the square meet. An angle, not a tongue, not a pocket, not a scarf overlap. A sketch, not a mill sign-off. No scarf overlap as the hero. No chamfer single-edge bevel as the hero. No tenon tongue as the hero. No mortise pocket as the hero. No dado groove. No rabbet rebate. No kerf gap.</desc>
+            <defs>
+              <linearGradient id="bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="board-a-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#563414" />
+                <stop offset="46%" stop-color="#7a501c" />
+                <stop offset="100%" stop-color="#c88830" />
+              </linearGradient>
+              <linearGradient id="board-b-wash" x1="0%" y1="0%" x2="80%" y2="100%">
+                <stop offset="0%" stop-color="#4a2c10" />
+                <stop offset="50%" stop-color="#6e4418" />
+                <stop offset="100%" stop-color="#a86c24" />
+              </linearGradient>
+              <linearGradient id="meet-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f0c878" />
+                <stop offset="100%" stop-color="#c88830" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(184,128,48,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">PLAN · TWO BOARDS · LEFTOVER IS THE MITRE</text>
+            <g id="mitre-scene" data-view="plan-two-boards" data-hero="leftover-mitre" data-mitre="45" data-leftover="showing" data-verdict="showing">
+              <g id="bench-layer"></g>
+              <g id="board-layer"></g>
+              <g id="mitre-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#e0a850" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 45° LEFTOVER MITRE</text>
+              <text id="scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER ANGLE THAT STILL MEETS TWO CUTS · NOT A SCARF · NOT A CHAMFER</text>
+            </g>
+          </svg>
+        </div>
+        <p id="mitre-alt" class="sr-only" aria-live="polite">Mitre is showing. Forty-five degrees of leftover angle still cut the square meet.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="mitre-input">Mitre (° · leftover angle from square that still cuts the meet)</label>
+            <input id="mitre-input" type="range" min="0" max="45" step="1" value="45" />
+            <div class="ticks" aria-hidden="true">
+              <span>square / no leftover mitre</span>
+              <span>seed showing</span>
+              <span>classic 45°</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Mitre <b id="stat-mitre">45°</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+          <span>Leftover meet (sketch) <b id="stat-meet">45° leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A joint looks square until you see the mitre. Mitre is leftover angle — how far the leftover bevelled meet of two boards still cuts the square. A sketch, not a mill sign-off.
+        Seed is already showing — 45° classic mitre, not a square butt. Arrow keys move the focused control.
+        Refresh restores the seed. Not a scarf. Not a chamfer. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { mitreDeg: 45 };
+      const MITRE_MIN = 0;
+      const MITRE_MAX = 45;
+      const SQUARE_AT = 2;
+      const LEFT = 72;
+      const TOP = 118;
+      const OUTER_X = 628;
+      const BOTTOM = 372;
+      const THICK = 96;
+      const INNER_X = OUTER_X - THICK;
+      const INNER_Y = TOP + THICK;
+
+      let mitreDeg = SEED.mitreDeg;
+
+      const svg = document.getElementById("mitre-svg");
+      const scene = document.getElementById("mitre-scene");
+      const titleEl = document.getElementById("mitre-title");
+      const altEl = document.getElementById("mitre-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const mitreInput = document.getElementById("mitre-input");
+      const benchLayer = document.getElementById("bench-layer");
+      const boardLayer = document.getElementById("board-layer");
+      const mitreLayer = document.getElementById("mitre-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statMitre = document.getElementById("stat-mitre");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+      const statMeet = document.getElementById("stat-meet");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenDeg(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          15: "fifteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          30: "thirty",
+          36: "thirty-six",
+          40: "forty",
+          45: "forty-five"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function picture() {
+        const leftover = mitreDeg <= SQUARE_AT ? "square" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + mitreDeg + "° LEFTOVER MITRE";
+          alt = "Mitre is showing. " + spokenDeg(mitreDeg).charAt(0).toUpperCase() + spokenDeg(mitreDeg).slice(1) + " degrees of leftover angle still cut the square meet.";
+        } else {
+          status = "SQUARE · NO LEFTOVER MITRE";
+          alt = "Mitre is square. The joint looks square. No leftover meet. A sketch, not a mill sign-off.";
+        }
+        const t = leftover === "showing" ? mitreDeg / MITRE_MAX : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e0a850" : "#8ec8b4",
+          t: t,
+          p1x: INNER_X + t * THICK,
+          p1y: TOP,
+          p2x: INNER_X,
+          p2y: INNER_Y
+        };
+      }
+
+      function poly(points) {
+        return points.map(function (pt) { return pt[0] + "," + pt[1]; }).join(" ");
+      }
+
+      function paint(pic) {
+        const isSquare = pic.leftover === "square";
+
+        benchLayer.replaceChildren();
+        benchLayer.appendChild(el("rect", {
+          class: "site leftover-elevation leftover-mitre leftover-boards leftover-angle leftover-meet leftover-plan leftover-two-boards",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#bench-wash)",
+          stroke: "rgba(184,128,48,0.16)",
+          "stroke-width": "1.2"
+        }));
+        benchLayer.appendChild(el("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "TWO BOARDS · PLAN / CORNER MEET";
+
+        boardLayer.replaceChildren();
+        const boards = el("g", {
+          id: "sawn-boards",
+          class: isSquare
+            ? "boards leftover-square leftover-no-mitre leftover-mitre leftover-boards leftover-no-angle leftover-no-meet leftover-plan leftover-two-boards leftover-butt"
+            : "boards leftover-showing leftover-mitre leftover-angle leftover-meet leftover-boards leftover-plan leftover-two-boards leftover-bevelled"
+        });
+
+        const horizPts = [
+          [LEFT, TOP],
+          [pic.p1x, pic.p1y],
+          [pic.p2x, pic.p2y],
+          [LEFT, INNER_Y]
+        ];
+        const vertPts = [
+          [pic.p1x, pic.p1y],
+          [OUTER_X, TOP],
+          [OUTER_X, BOTTOM],
+          [INNER_X, BOTTOM],
+          [pic.p2x, pic.p2y]
+        ];
+
+        boards.appendChild(el("polygon", {
+          id: "board-horizontal",
+          class: isSquare
+            ? "board-a leftover-board leftover-square leftover-mitre leftover-no-angle leftover-two-boards leftover-butt"
+            : "board-a leftover-board leftover-showing leftover-mitre leftover-angle leftover-meet leftover-two-boards leftover-bevelled",
+          points: poly(horizPts),
+          fill: "url(#board-a-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        boards.appendChild(el("text", {
+          x: String((LEFT + INNER_X) / 2),
+          y: String(INNER_Y - 14),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "BOARD · A";
+
+        boards.appendChild(el("polygon", {
+          id: "board-vertical",
+          class: isSquare
+            ? "board-b leftover-board leftover-square leftover-mitre leftover-no-angle leftover-two-boards leftover-butt"
+            : "board-b leftover-board leftover-showing leftover-mitre leftover-angle leftover-meet leftover-two-boards leftover-bevelled",
+          points: poly(vertPts),
+          fill: "url(#board-b-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        boards.appendChild(el("text", {
+          x: String((INNER_X + OUTER_X) / 2),
+          y: String(BOTTOM - 16),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "BOARD · B";
+        boardLayer.appendChild(boards);
+
+        mitreLayer.replaceChildren();
+        const meet = el("g", {
+          id: "leftover-mitre",
+          class: isSquare
+            ? "mitre leftover-mitre leftover-square leftover-empty leftover-no-angle leftover-no-meet leftover-plan leftover-two-boards leftover-butt"
+            : "mitre leftover-mitre leftover-showing leftover-angle leftover-meet leftover-plan leftover-two-boards leftover-bevelled leftover-cut"
+        });
+
+        if (!isSquare) {
+          meet.appendChild(el("line", {
+            id: "square-ghost",
+            class: "leftover-mitre leftover-square leftover-ghost leftover-plan leftover-two-boards",
+            x1: String(INNER_X),
+            y1: String(TOP),
+            x2: String(INNER_X),
+            y2: String(INNER_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.1",
+            "stroke-dasharray": "3 5",
+            opacity: "0.35"
+          }));
+          meet.appendChild(el("line", {
+            id: "leftover-meet",
+            class: "leftover-mitre leftover-showing leftover-angle leftover-meet leftover-cut leftover-plan leftover-two-boards leftover-bevelled",
+            x1: String(pic.p1x),
+            y1: String(pic.p1y),
+            x2: String(pic.p2x),
+            y2: String(pic.p2y),
+            stroke: "url(#meet-wash)",
+            "stroke-width": "4.2",
+            "stroke-linecap": "round"
+          }));
+          meet.appendChild(el("text", {
+            id: "mitre-label",
+            class: "mitre-label leftover-label leftover-mitre leftover-showing leftover-angle leftover-meet leftover-plan",
+            x: String((pic.p1x + pic.p2x) / 2 + 18),
+            y: String((pic.p1y + pic.p2y) / 2 - 8),
+            fill: "#f0d4a8",
+            "font-size": "11",
+            "letter-spacing": "1.6"
+          })).textContent = "MITRE";
+        } else {
+          meet.appendChild(el("line", {
+            id: "mitre-square",
+            class: "leftover-mitre leftover-square leftover-empty leftover-no-angle leftover-no-meet leftover-plan leftover-two-boards leftover-butt",
+            x1: String(INNER_X),
+            y1: String(TOP),
+            x2: String(INNER_X),
+            y2: String(INNER_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "3 5",
+            opacity: "0.55"
+          }));
+        }
+        mitreLayer.appendChild(meet);
+
+        markLayer.replaceChildren();
+        markLayer.appendChild(el("text", {
+          x: String(LEFT),
+          y: String(INNER_Y + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "END";
+        markLayer.appendChild(el("text", {
+          x: String(OUTER_X),
+          y: String(BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSquare ? "CORNER · SQUARE BUTT" : "CORNER · LEFTOVER ANGLE STILL CUTS";
+
+        if (!isSquare) {
+          const midX = (pic.p1x + pic.p2x) / 2;
+          const midY = (pic.p1y + pic.p2y) / 2;
+          markLayer.appendChild(el("text", {
+            id: "mitre-deg-label",
+            class: "mitre-label leftover-label leftover-mitre leftover-showing leftover-angle leftover-meet leftover-plan leftover-bevelled",
+            x: String(midX - 14),
+            y: String(midY + 22),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = mitreDeg + "°";
+          markLayer.appendChild(el("text", {
+            id: "meet-label",
+            class: "meet-label leftover-meet leftover-mitre leftover-angle leftover-plan leftover-two-boards leftover-bevelled",
+            x: String(midX + 76),
+            y: String(midY + 18),
+            fill: "#c8a078",
+            "font-size": "10",
+            "letter-spacing": "1.4"
+          })).textContent = "LEFTOVER MEET";
+          markLayer.appendChild(el("text", {
+            id: "angle-label",
+            class: "angle-label leftover-angle leftover-mitre leftover-meet leftover-plan leftover-two-boards leftover-bevelled",
+            x: String(INNER_X - 12),
+            y: String(TOP + 16),
+            fill: "#1a1008",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "end"
+          })).textContent = "FROM SQUARE";
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "mitre-label",
+            class: "mitre-label leftover-label leftover-square leftover-no-angle leftover-no-meet leftover-plan leftover-two-boards leftover-butt",
+            x: String((LEFT + INNER_X) / 2),
+            y: String((TOP + INNER_Y) / 2),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SQUARE / NO LEFTOVER MITRE";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-mitre", String(mitreDeg));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "plan-two-boards");
+        scene.setAttribute("data-hero", "leftover-mitre");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-square";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + mitreDeg + "° showing"
+          : "leftover square";
+        statMitre.textContent = mitreDeg + "°";
+        statLeftover.textContent = pic.leftover;
+        statMeet.textContent = pic.leftover === "showing"
+          ? mitreDeg + "° leftover"
+          : "square";
+        statLeftoverWrap.classList.remove("is-showing", "is-square");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(mitreInput.value) !== mitreDeg) mitreInput.value = String(mitreDeg);
+        mitreInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        mitreDeg = SEED.mitreDeg;
+        render();
+      }
+
+      mitreInput.addEventListener("input", function (event) {
+        mitreDeg = clamp(Math.round(Number(event.target.value)), MITRE_MIN, MITRE_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
