@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Heart — a board looks sap until you see the heart. Move the core. See the leftover inner." />
+    <title>Heart</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(200, 168, 120, 0.22);
+        --accent: #c8a060;
+        --timber: #5a3014;
+        --pale: #efe6c8;
+        --core: #6a3e18;
+        --showing: #c8a060;
+        --sap: #d8cc9c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(200, 160, 96, 0.14), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(48, 32, 12, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 160, 96, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 160, 96, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 160, 96, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(200, 160, 96, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #heart-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(200, 160, 96, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-sap b { color: var(--sap); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #heart-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> heart · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover heart that still sits in the core</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 24 Aug 2026 07:50</span>
+        <h1>Heart</h1>
+        <p class="lede">
+          A board looks sap until you see the heart. Move the core. See the leftover inner.
+          Not a knot. Not sap. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover inner still occupies the core</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 26 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="heart-svg" viewBox="0 0 800 460" role="img" aria-labelledby="heart-title heart-desc">
+            <title id="heart-title">Heart is showing. Twenty-six millimetres of leftover inner still occupy the core.</title>
+            <desc id="heart-desc">A board whose leftover is the heart — how far the leftover inner still occupies the core. An elongated darker heartwood zone down the middle of a pale sapwood face, not a circular knot, not rings of a pith, not a pale edge-band, not a medullary flash, not a resin pocket. A sketch, not a mill sign-off. No knot dark as the hero. No sap edge-band as the hero. No ray flash as the hero. No pitch resin as the hero. No grain-angle mismatch as the hero.</desc>
+            <defs>
+              <linearGradient id="bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="pale-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#d8cc9c" />
+                <stop offset="46%" stop-color="#efe6c8" />
+                <stop offset="100%" stop-color="#f4ecd4" />
+              </linearGradient>
+              <linearGradient id="core-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#4a2c10" stop-opacity="0.96" />
+                <stop offset="38%" stop-color="#6a3e18" stop-opacity="0.98" />
+                <stop offset="100%" stop-color="#8a5424" stop-opacity="0.94" />
+              </linearGradient>
+              <linearGradient id="core-gloss" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#c88840" stop-opacity="0.22" />
+                <stop offset="50%" stop-color="#6a3e18" stop-opacity="0.08" />
+                <stop offset="100%" stop-color="#2a1808" stop-opacity="0.18" />
+              </linearGradient>
+              <clipPath id="board-clip">
+                <rect x="72" y="118" width="656" height="224" />
+              </clipPath>
+              <clipPath id="core-clip">
+                <rect id="core-clip-rect" x="366" y="126" width="68" height="208" rx="18" />
+              </clipPath>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(200,168,120,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">FACE · ONE BOARD · LEFTOVER IS THE HEART</text>
+            <g id="heart-scene" data-view="face-one-board" data-hero="leftover-heart" data-heart="26" data-leftover="showing" data-verdict="showing">
+              <g id="bench-layer"></g>
+              <g id="board-layer"></g>
+              <g id="heart-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#c8a060" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 26 MM LEFTOVER HEART</text>
+              <text id="scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER INNER THAT STILL SITS IN THE CORE · NOT A KNOT · NOT SAP · NOT A RAY</text>
+            </g>
+          </svg>
+        </div>
+        <p id="heart-alt" class="sr-only" aria-live="polite">Heart is showing. Twenty-six millimetres of leftover inner still occupy the core.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="heart-input">Heart (mm · leftover inner that still sits in the core)</label>
+            <input id="heart-input" type="range" min="0" max="80" step="1" value="26" />
+            <div class="ticks" aria-hidden="true">
+              <span>sap / no leftover heart</span>
+              <span>seed showing</span>
+              <span>wide core</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Heart <b id="stat-heart">26 mm</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+          <span>Leftover core (sketch) <b id="stat-core">26 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks sap until you see the heart. Heart is leftover inner — how far the leftover core still occupies the middle of the face. A sketch, not a mill sign-off.
+        Seed is already showing — 26 mm of leftover inner, not a sap-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a knot. Not sap. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { heartMm: 26 };
+      const HEART_MIN = 0;
+      const HEART_MAX = 80;
+      const SAP_AT = 4;
+      const SCALE = 2.6;
+      const LEFT = 72;
+      const RIGHT = 728;
+      const TOP = 118;
+      const BOTTOM = 342;
+      const MID_X = (LEFT + RIGHT) / 2;
+      const CORE_INSET = 8;
+
+      let heartMm = SEED.heartMm;
+
+      const heartSvg = document.getElementById("heart-svg");
+      const heartScene = document.getElementById("heart-scene");
+      const heartTitle = document.getElementById("heart-title");
+      const heartAlt = document.getElementById("heart-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const heartInput = document.getElementById("heart-input");
+      const benchLayer = document.getElementById("bench-layer");
+      const boardLayer = document.getElementById("board-layer");
+      const heartLayer = document.getElementById("heart-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statHeart = document.getElementById("stat-heart");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+      const statCore = document.getElementById("stat-core");
+      const coreClipRect = document.getElementById("core-clip-rect");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          15: "fifteen",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          36: "thirty-six",
+          40: "forty",
+          45: "forty-five",
+          50: "fifty",
+          60: "sixty",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function picture() {
+        const leftover = heartMm <= SAP_AT ? "sap" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + heartMm + " MM LEFTOVER HEART";
+          alt = "Heart is showing. " + spokenMm(heartMm).charAt(0).toUpperCase() + spokenMm(heartMm).slice(1) + " millimetres of leftover inner still occupy the core.";
+        } else {
+          status = "SAP · NO LEFTOVER HEART";
+          alt = "Heart is sap. The board looks sap. No leftover inner. A sketch, not a mill sign-off.";
+        }
+        const showing = leftover === "showing" ? heartMm * SCALE : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#c8a060" : "#d8cc9c",
+          showing: showing,
+          core: showing
+        };
+      }
+
+      function paint(pic) {
+        const isSap = pic.leftover === "sap";
+        const coreW = Math.max(0, pic.core);
+        const coreH = (BOTTOM - TOP) - CORE_INSET * 2;
+        const coreX = MID_X - coreW / 2;
+        const coreY = TOP + CORE_INSET;
+        const coreRx = Math.min(18, Math.max(6, coreW / 3.6));
+
+        if (coreClipRect) {
+          coreClipRect.setAttribute("x", String(isSap ? MID_X : coreX));
+          coreClipRect.setAttribute("y", String(coreY));
+          coreClipRect.setAttribute("width", String(isSap ? 0 : Math.max(0, coreW)));
+          coreClipRect.setAttribute("height", String(coreH));
+          coreClipRect.setAttribute("rx", String(coreRx));
+        }
+
+        benchLayer.replaceChildren();
+        benchLayer.appendChild(el("rect", {
+          class: "site leftover-elevation leftover-heart leftover-board leftover-inner leftover-core leftover-face leftover-one-board",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#bench-wash)",
+          stroke: "rgba(200,168,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        benchLayer.appendChild(el("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · FACE / LEFTOVER HEARTWOOD CORE";
+
+        boardLayer.replaceChildren();
+        const board = el("g", {
+          id: "sawn-board",
+          class: isSap
+            ? "board leftover-sap leftover-no-heart leftover-heart leftover-board leftover-no-inner leftover-no-core leftover-face leftover-one-board leftover-true"
+            : "board leftover-showing leftover-heart leftover-inner leftover-core leftover-board leftover-face leftover-one-board leftover-inclusion"
+        });
+        board.appendChild(el("rect", {
+          id: "board-face",
+          class: isSap
+            ? "board-face leftover-board leftover-sap leftover-heart leftover-no-inner leftover-one-board leftover-true"
+            : "board-face leftover-board leftover-showing leftover-heart leftover-inner leftover-core leftover-one-board leftover-inclusion",
+          x: String(LEFT),
+          y: String(TOP),
+          width: String(RIGHT - LEFT),
+          height: String(BOTTOM - TOP),
+          fill: "url(#pale-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        const fibreGroup = el("g", {
+          id: "board-fibres",
+          class: "board-fibres leftover-board leftover-face leftover-one-board leftover-heart",
+          "clip-path": "url(#board-clip)"
+        });
+        for (let i = 0; i < 8; i++) {
+          const y = TOP + 18 + i * 26;
+          fibreGroup.appendChild(el("line", {
+            class: "board-fibre leftover-board leftover-face leftover-one-board leftover-heart leftover-sap",
+            x1: String(LEFT + 10),
+            y1: String(y),
+            x2: String(RIGHT - 10),
+            y2: String(y),
+            stroke: "rgba(90, 70, 28, 0.22)",
+            "stroke-width": "1.15"
+          }));
+        }
+        board.appendChild(fibreGroup);
+        board.appendChild(el("text", {
+          x: String(LEFT + 18),
+          y: String(TOP + 22),
+          fill: "#5a4830",
+          "font-size": "11",
+          "letter-spacing": "2"
+        })).textContent = "SAP · FACE";
+        boardLayer.appendChild(board);
+
+        heartLayer.replaceChildren();
+        const leftover = el("g", {
+          id: "leftover-heart",
+          class: isSap
+            ? "heart leftover-heart leftover-sap leftover-empty leftover-no-inner leftover-no-core leftover-face leftover-one-board leftover-true"
+            : "heart leftover-heart leftover-showing leftover-inner leftover-core leftover-inclusion leftover-face leftover-one-board leftover-zone"
+        });
+
+        if (!isSap) {
+          leftover.appendChild(el("rect", {
+            id: "leftover-core",
+            class: "leftover-heart leftover-showing leftover-inner leftover-core leftover-inclusion leftover-face leftover-one-board leftover-zone",
+            x: String(coreX),
+            y: String(coreY),
+            width: String(Math.max(2, coreW)),
+            height: String(coreH),
+            rx: String(coreRx),
+            fill: "url(#core-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          leftover.appendChild(el("rect", {
+            id: "leftover-gloss",
+            class: "leftover-heart leftover-showing leftover-inner leftover-core leftover-inclusion leftover-face leftover-one-board leftover-zone",
+            x: String(coreX),
+            y: String(coreY),
+            width: String(Math.max(2, coreW)),
+            height: String(coreH),
+            rx: String(coreRx),
+            fill: "url(#core-gloss)",
+            stroke: "none"
+          }));
+          leftover.appendChild(el("line", {
+            id: "heart-sap-meet-left",
+            class: "leftover-heart leftover-showing leftover-inner leftover-core leftover-face leftover-one-board leftover-zone",
+            x1: String(coreX),
+            y1: String(coreY + 10),
+            x2: String(coreX),
+            y2: String(coreY + coreH - 10),
+            stroke: "#2a1808",
+            "stroke-width": "1.1",
+            opacity: "0.4"
+          }));
+          leftover.appendChild(el("line", {
+            id: "heart-sap-meet-right",
+            class: "leftover-heart leftover-showing leftover-inner leftover-core leftover-face leftover-one-board leftover-zone",
+            x1: String(coreX + coreW),
+            y1: String(coreY + 10),
+            x2: String(coreX + coreW),
+            y2: String(coreY + coreH - 10),
+            stroke: "#2a1808",
+            "stroke-width": "1.1",
+            opacity: "0.4"
+          }));
+          leftover.appendChild(el("text", {
+            id: "heart-label",
+            class: "heart-label leftover-label leftover-heart leftover-showing leftover-inner leftover-core leftover-face leftover-inclusion leftover-zone",
+            x: String(MID_X),
+            y: String((TOP + BOTTOM) / 2 + 4),
+            fill: "#f0d8c4",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "HEART";
+        } else {
+          leftover.appendChild(el("rect", {
+            id: "heart-sap",
+            class: "leftover-heart leftover-sap leftover-empty leftover-no-inner leftover-no-core leftover-face leftover-one-board leftover-true",
+            x: String(MID_X - 9),
+            y: String(coreY),
+            width: "18",
+            height: String(coreH),
+            rx: "8",
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "3 5",
+            opacity: "0.45"
+          }));
+        }
+        heartLayer.appendChild(leftover);
+
+        markLayer.replaceChildren();
+        markLayer.appendChild(el("text", {
+          x: String(LEFT),
+          y: String(BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "SAPWOOD";
+        markLayer.appendChild(el("text", {
+          x: String(RIGHT),
+          y: String(BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSap ? "CORE · SAP / NO LEFTOVER HEART" : "CORE · LEFTOVER INNER STILL SITS";
+
+        if (!isSap) {
+          const dimY = TOP - 14;
+          markLayer.appendChild(el("line", {
+            x1: String(coreX),
+            y1: String(dimY),
+            x2: String(coreX + coreW),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(coreX),
+            y1: String(dimY - 4),
+            x2: String(coreX),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(coreX + coreW),
+            y1: String(dimY - 4),
+            x2: String(coreX + coreW),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "heart-mm-label",
+            class: "heart-label leftover-label leftover-heart leftover-showing leftover-inner leftover-core leftover-face leftover-inclusion leftover-zone",
+            x: String(MID_X),
+            y: String(dimY - 6),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = heartMm + " mm";
+          markLayer.appendChild(el("text", {
+            id: "core-label",
+            class: "core-label leftover-core leftover-heart leftover-inner leftover-face leftover-one-board leftover-inclusion leftover-zone",
+            x: String(MID_X),
+            y: String(BOTTOM + 40),
+            fill: "#c8a060",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER INNER · HEARTWOOD CORE";
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "heart-label",
+            class: "heart-label leftover-label leftover-sap leftover-no-inner leftover-no-core leftover-face leftover-one-board leftover-true",
+            x: String(MID_X),
+            y: String((TOP + BOTTOM) / 2 - 8),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SAP / NO LEFTOVER HEART";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        heartScene.setAttribute("data-heart", String(heartMm));
+        heartScene.setAttribute("data-leftover", pic.leftover);
+        heartScene.setAttribute("data-verdict", pic.verdict);
+        heartScene.setAttribute("data-view", "face-one-board");
+        heartScene.setAttribute("data-hero", "leftover-heart");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-sap";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        heartTitle.textContent = pic.alt;
+        heartAlt.textContent = pic.alt;
+        heartSvg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + heartMm + " mm showing"
+          : "leftover sap";
+        statHeart.textContent = heartMm + " mm";
+        statLeftover.textContent = pic.leftover;
+        statCore.textContent = pic.leftover === "showing"
+          ? heartMm + " mm leftover"
+          : "sap";
+        statLeftoverWrap.classList.remove("is-showing", "is-sap");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(heartInput.value) !== heartMm) heartInput.value = String(heartMm);
+        heartInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        heartMm = SEED.heartMm;
+        render();
+      }
+
+      heartInput.addEventListener("input", function (event) {
+        heartMm = clamp(Math.round(Number(event.target.value)), HEART_MIN, HEART_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
