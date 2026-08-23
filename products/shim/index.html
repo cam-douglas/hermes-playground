@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Shim — a joint looks closed until you see the shim. Move the pack. See the leftover fill." />
+    <title>Shim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08090b;
+        --panel: #131418;
+        --ink: #e8e4dc;
+        --muted: #8a8680;
+        --line: rgba(196, 168, 120, 0.16);
+        --accent: #c4a878;
+        --member-a: #5a4636;
+        --member-b: #46382c;
+        --pack: #d4b070;
+        --showing: #d8b878;
+        --closed: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(196, 168, 120, 0.1), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(212, 176, 112, 0.07), transparent 24%),
+          linear-gradient(180deg, #07080a 0%, #121416 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(20, 22, 26, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 168, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 26, 30, 0.96), rgba(8, 10, 12, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 168, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4e0d8; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1a1c20;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 168, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 52% 28%, rgba(212, 176, 112, 0.08), transparent 46%),
+          #0a0c0e;
+        overflow: hidden;
+      }
+      #shim-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(216, 184, 120, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-closed b { color: var(--closed); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #08090b;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #shim-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> shim · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover packing that still fills a gap</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 23 Aug 2026 11:50</span>
+        <h1>Shim</h1>
+        <p class="lede">
+          A joint looks closed until you see the shim. Move the pack. See the leftover fill.
+          Not an arris. Not a kerf. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover pack still fills the gap</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 3 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="shim-svg" viewBox="0 0 800 460" role="img" aria-labelledby="shim-title shim-desc">
+            <title id="shim-title">Shim is showing. Three millimetres of leftover pack still fill the gap between two members.</title>
+            <desc id="shim-desc">Two members whose leftover is the shim — how far the leftover pack still fills the gap. A sketch, not a joinery sign-off. No arris sharp. No kerf gap. No offcut stick. No rabbet shoulder.</desc>
+            <defs>
+              <linearGradient id="bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1c20" />
+                <stop offset="100%" stop-color="#0c0e10" />
+              </linearGradient>
+              <linearGradient id="member-a-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#3e2e22" />
+                <stop offset="46%" stop-color="#5a4636" />
+                <stop offset="100%" stop-color="#6a5644" />
+              </linearGradient>
+              <linearGradient id="member-b-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2e241c" />
+                <stop offset="50%" stop-color="#46382c" />
+                <stop offset="100%" stop-color="#5a4a3c" />
+              </linearGradient>
+              <linearGradient id="pack-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#e8c888" />
+                <stop offset="100%" stop-color="#b89048" />
+              </linearGradient>
+              <pattern id="member-grain" width="14" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 5 L14 5" fill="none" stroke="rgba(40,24,12,0.18)" stroke-width="1" />
+              </pattern>
+              <pattern id="pack-grain" width="6" height="12" patternUnits="userSpaceOnUse">
+                <path d="M3 0 L3 12" fill="none" stroke="rgba(80,48,12,0.22)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#08090b" stroke="rgba(196,168,120,0.14)" />
+            <text x="36" y="42" fill="#8a8680" font-size="11" letter-spacing="2">ELEVATION · TWO MEMBERS · LEFTOVER IS THE SHIM</text>
+            <g id="shim-scene" data-view="elevation" data-hero="leftover-shim" data-pack="3" data-leftover="showing" data-verdict="showing">
+              <g id="bench-layer"></g>
+              <g id="members-layer"></g>
+              <g id="shim-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#d8b878" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 3 MM LEFTOVER PACK</text>
+              <text id="scene-sketch" x="400" y="434" fill="#5a5854" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER PACK THAT STILL FILLS A GAP · NOT AN ARRIS · NOT A KERF</text>
+            </g>
+          </svg>
+        </div>
+        <p id="shim-alt" class="sr-only" aria-live="polite">Shim is showing. Three millimetres of leftover pack still fill the gap between two members.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="pack-input">Pack (mm · leftover packing that still fills the gap)</label>
+            <input id="pack-input" type="range" min="0" max="12" step="0.1" value="3" />
+            <div class="ticks" aria-hidden="true">
+              <span>closed</span>
+              <span>seed showing</span>
+              <span>full pack</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Pack <b id="stat-pack">3 mm</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+          <span>Leftover pack (sketch) <b id="stat-fill">3 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A joint looks closed until you see the shim. Shim is leftover packing — how far the leftover pack still fills the gap. A sketch, not a joinery sign-off.
+        Seed is already showing — 3 mm of leftover pack, not closed / not flush. Arrow keys move the focused control.
+        Refresh restores the seed. Not an arris. Not a kerf. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { packMm: 3 };
+      const PACK_MIN = 0;
+      const PACK_MAX = 12;
+      const CLOSED_AT = 0.3;
+      const SCALE = 10;
+      const JOINT_X = 400;
+      const MEMBER_TOP = 128;
+      const MEMBER_H = 196;
+      const MEMBER_W = 236;
+      const MEMBER_A_LEFT = JOINT_X - MEMBER_W;
+      const MEMBER_B_RIGHT = JOINT_X + MEMBER_W;
+
+      let packMm = SEED.packMm;
+
+      const svg = document.getElementById("shim-svg");
+      const scene = document.getElementById("shim-scene");
+      const titleEl = document.getElementById("shim-title");
+      const altEl = document.getElementById("shim-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const packInput = document.getElementById("pack-input");
+      const benchLayer = document.getElementById("bench-layer");
+      const membersLayer = document.getElementById("members-layer");
+      const shimLayer = document.getElementById("shim-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statPack = document.getElementById("stat-pack");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+      const statFill = document.getElementById("stat-fill");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function prettyMm(n) {
+        const rounded = Math.round(n * 10) / 10;
+        if (Math.abs(rounded - Math.round(rounded)) < 0.05) return String(Math.round(rounded));
+        return rounded.toFixed(1);
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve"
+        };
+        const rounded = Math.round(n * 10) / 10;
+        if (words[rounded] != null) return words[rounded];
+        return prettyMm(n);
+      }
+
+      function picture() {
+        const leftover = packMm <= CLOSED_AT ? "closed" : "showing";
+        const pretty = prettyMm(packMm);
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pretty + " MM LEFTOVER PACK";
+          alt = "Shim is showing. " + spokenMm(packMm).charAt(0).toUpperCase() + spokenMm(packMm).slice(1) + " millimetres of leftover pack still fill the gap between two members.";
+        } else {
+          status = "CLOSED · FLUSH · NO LEFTOVER FILL";
+          alt = "Shim is closed. The joint looks closed. No leftover fill. A sketch, not a joinery sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          pretty: pretty,
+          accent: leftover === "showing" ? "#d8b878" : "#8ec8b4",
+          packPx: Math.max(packMm, 0) * SCALE
+        };
+      }
+
+      function paint(pic) {
+        const closed = pic.leftover === "closed";
+        const gap = closed ? 0 : Math.max(pic.packPx, 4);
+        const half = gap / 2;
+        const aRight = JOINT_X - half;
+        const bLeft = JOINT_X + half;
+        const memberBottom = MEMBER_TOP + MEMBER_H;
+        const memberMid = MEMBER_TOP + MEMBER_H / 2;
+
+        benchLayer.replaceChildren();
+        benchLayer.appendChild(el("rect", {
+          class: "site leftover-elevation leftover-shim leftover-members leftover-pack leftover-fill",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#bench-wash)",
+          stroke: "rgba(196,168,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        benchLayer.appendChild(el("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "TWO MEMBERS";
+
+        membersLayer.replaceChildren();
+        const members = el("g", {
+          id: "meeting-members",
+          class: closed
+            ? "members leftover-closed leftover-flush leftover-shim leftover-members"
+            : "members leftover-showing leftover-shim leftover-pack leftover-fill leftover-members leftover-gap"
+        });
+
+        const aPath = [
+          "M" + MEMBER_A_LEFT + " " + MEMBER_TOP,
+          "H" + aRight,
+          "V" + memberBottom,
+          "H" + MEMBER_A_LEFT,
+          "Z"
+        ].join(" ");
+        members.appendChild(el("path", {
+          id: "member-a",
+          class: closed
+            ? "member member-a leftover-member leftover-closed leftover-flush"
+            : "member member-a leftover-member leftover-showing leftover-shim leftover-pack",
+          d: aPath,
+          fill: "url(#member-a-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        members.appendChild(el("path", {
+          class: "member-grain leftover-member",
+          d: aPath,
+          fill: "url(#member-grain)",
+          "pointer-events": "none"
+        }));
+
+        const bPath = [
+          "M" + bLeft + " " + MEMBER_TOP,
+          "H" + MEMBER_B_RIGHT,
+          "V" + memberBottom,
+          "H" + bLeft,
+          "Z"
+        ].join(" ");
+        members.appendChild(el("path", {
+          id: "member-b",
+          class: closed
+            ? "member member-b leftover-member leftover-closed leftover-flush"
+            : "member member-b leftover-member leftover-showing leftover-shim leftover-pack",
+          d: bPath,
+          fill: "url(#member-b-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        members.appendChild(el("path", {
+          class: "member-grain leftover-member",
+          d: bPath,
+          fill: "url(#member-grain)",
+          "pointer-events": "none"
+        }));
+
+        members.appendChild(el("text", {
+          x: String((MEMBER_A_LEFT + aRight) / 2),
+          y: String(memberMid + 4),
+          fill: "#f0d8c4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "MEMBER";
+        members.appendChild(el("text", {
+          x: String((bLeft + MEMBER_B_RIGHT) / 2),
+          y: String(memberMid + 4),
+          fill: "#d8c8b4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "MEMBER";
+        membersLayer.appendChild(members);
+
+        shimLayer.replaceChildren();
+        const pocket = el("g", {
+          id: "leftover-shim",
+          class: closed
+            ? "shim leftover-shim leftover-closed leftover-flush leftover-empty"
+            : "shim leftover-shim leftover-showing leftover-pack leftover-fill leftover-opening leftover-gap"
+        });
+        if (!closed) {
+          const taper = Math.min(8, gap * 0.28);
+          pocket.appendChild(el("polygon", {
+            id: "shim-pack",
+            class: "leftover-shim leftover-showing leftover-pack leftover-fill leftover-void leftover-gap",
+            points: [
+              aRight + "," + MEMBER_TOP,
+              bLeft + "," + MEMBER_TOP,
+              (bLeft - taper) + "," + memberBottom,
+              (aRight + taper) + "," + memberBottom
+            ].join(" "),
+            fill: "url(#pack-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.8"
+          }));
+          pocket.appendChild(el("polygon", {
+            class: "pack-grain leftover-pack leftover-fill leftover-shim",
+            points: [
+              aRight + "," + MEMBER_TOP,
+              bLeft + "," + MEMBER_TOP,
+              (bLeft - taper) + "," + memberBottom,
+              (aRight + taper) + "," + memberBottom
+            ].join(" "),
+            fill: "url(#pack-grain)",
+            "pointer-events": "none"
+          }));
+        } else {
+          pocket.appendChild(el("line", {
+            id: "shim-closed",
+            class: "leftover-shim leftover-closed leftover-flush leftover-empty",
+            x1: String(JOINT_X),
+            y1: String(MEMBER_TOP),
+            x2: String(JOINT_X),
+            y2: String(memberBottom),
+            stroke: pic.accent,
+            "stroke-width": "2.2"
+          }));
+        }
+        shimLayer.appendChild(pocket);
+
+        markLayer.replaceChildren();
+        markLayer.appendChild(el("text", {
+          x: String(JOINT_X),
+          y: String(MEMBER_TOP - 14),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = closed ? "CLOSED" : "SHIM";
+        if (!closed && gap > 10) {
+          const dimY = MEMBER_TOP - 28;
+          markLayer.appendChild(el("line", {
+            class: "shim-dim leftover-shim leftover-pack leftover-fill leftover-opening leftover-gap",
+            x1: String(aRight),
+            y1: String(dimY),
+            x2: String(bLeft),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(aRight),
+            y1: String(dimY - 5),
+            x2: String(aRight),
+            y2: String(dimY + 5),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(bLeft),
+            y1: String(dimY - 5),
+            x2: String(bLeft),
+            y2: String(dimY + 5),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "shim-label",
+            class: "shim-label leftover-label leftover-shim leftover-showing leftover-pack leftover-fill leftover-opening leftover-gap",
+            x: String(JOINT_X),
+            y: String(dimY - 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = prettyMm(packMm) + " MM";
+          markLayer.appendChild(el("text", {
+            id: "pack-label",
+            class: "pack-label leftover-pack leftover-shim leftover-fill leftover-opening leftover-gap",
+            x: String(JOINT_X),
+            y: String(memberBottom + 22),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER PACK";
+        } else if (closed) {
+          markLayer.appendChild(el("text", {
+            id: "shim-label",
+            class: "shim-label leftover-label leftover-closed leftover-flush",
+            x: String(JOINT_X + 28),
+            y: String(memberMid),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4"
+          })).textContent = "CLOSED / FLUSH";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-pack", prettyMm(packMm));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "elevation");
+        scene.setAttribute("data-hero", "leftover-shim");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-closed";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + prettyMm(packMm) + " mm showing"
+          : "leftover closed";
+        statPack.textContent = prettyMm(packMm) + " mm";
+        statLeftover.textContent = pic.leftover;
+        statFill.textContent = pic.leftover === "showing"
+          ? prettyMm(packMm) + " mm leftover"
+          : "closed";
+        statLeftoverWrap.classList.remove("is-showing", "is-closed");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(packInput.value) !== packMm) packInput.value = String(packMm);
+        packInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        packMm = SEED.packMm;
+        render();
+      }
+
+      packInput.addEventListener("input", function (event) {
+        packMm = clamp(Math.round(Number(event.target.value) * 10) / 10, PACK_MIN, PACK_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
