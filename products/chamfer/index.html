@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Chamfer — a joint looks sharp until you see the chamfer. Move the bevel. See the leftover ease." />
+    <title>Chamfer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08090c;
+        --panel: #131518;
+        --ink: #e6e2da;
+        --muted: #86827c;
+        --line: rgba(196, 168, 128, 0.16);
+        --accent: #c4a878;
+        --plane-a: #6a4e36;
+        --plane-b: #4a3c30;
+        --bevel: #d4b070;
+        --showing: #d4b888;
+        --sharp: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 22% -8%, rgba(196, 168, 120, 0.1), transparent 30%),
+          radial-gradient(circle at 84% 16%, rgba(212, 176, 112, 0.07), transparent 24%),
+          linear-gradient(180deg, #07080a 0%, #121416 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 20, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 168, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 24, 28, 0.96), rgba(8, 10, 12, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 168, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4e0d8; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1a1c20;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 168, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 64% 20%, rgba(212, 176, 112, 0.08), transparent 46%),
+          #0a0c0e;
+        overflow: hidden;
+      }
+      #chamfer-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 184, 136, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-sharp b { color: var(--sharp); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #08090c;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #chamfer-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> chamfer · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover bevel that still takes the sharp off</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">joinery instrument · 23 Aug 2026 13:50</span>
+        <h1>Chamfer</h1>
+        <p class="lede">
+          A joint looks sharp until you see the chamfer. Move the bevel. See the leftover ease.
+          Not an arris. Not a fillet. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover bevel still takes the sharp off the corner</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 18 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="chamfer-svg" viewBox="0 0 800 460" role="img" aria-labelledby="chamfer-title chamfer-desc">
+            <title id="chamfer-title">Chamfer is showing. Eighteen millimetres of leftover bevel still take the sharp off the corner.</title>
+            <desc id="chamfer-desc">Two planes whose leftover is the chamfer — how far the leftover bevel still takes the sharp off the corner. A sketch, not a joinery sign-off. No arris sharp as the hero. No fillet radius. No rabbet shoulder. No ridge peak. No shim pack.</desc>
+            <defs>
+              <linearGradient id="bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1c20" />
+                <stop offset="100%" stop-color="#0c0e10" />
+              </linearGradient>
+              <linearGradient id="plane-a-wash" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#3e2e22" />
+                <stop offset="46%" stop-color="#6a4e36" />
+                <stop offset="100%" stop-color="#8a6a48" />
+              </linearGradient>
+              <linearGradient id="plane-b-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2a241c" />
+                <stop offset="50%" stop-color="#4a3c30" />
+                <stop offset="100%" stop-color="#6a5848" />
+              </linearGradient>
+              <linearGradient id="bevel-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f0d8a0" />
+                <stop offset="100%" stop-color="#b89048" />
+              </linearGradient>
+              <pattern id="plane-grain" width="10" height="16" patternUnits="userSpaceOnUse">
+                <path d="M0 0 L0 16" fill="none" stroke="rgba(40,24,12,0.18)" stroke-width="1" />
+              </pattern>
+              <pattern id="bevel-grain" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <path d="M0 0 L0 8" fill="none" stroke="rgba(40,24,8,0.22)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#08090c" stroke="rgba(196,168,128,0.14)" />
+            <text x="36" y="42" fill="#86827c" font-size="11" letter-spacing="2">ELEVATION · TWO PLANES · LEFTOVER IS THE CHAMFER</text>
+            <g id="chamfer-scene" data-view="elevation" data-hero="leftover-chamfer" data-bevel="18" data-leftover="showing" data-verdict="showing">
+              <g id="bench-layer"></g>
+              <g id="planes-layer"></g>
+              <g id="chamfer-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#d4b888" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 18 MM LEFTOVER BEVEL</text>
+              <text id="scene-sketch" x="400" y="434" fill="#5a5854" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER BEVEL THAT STILL TAKES THE SHARP OFF · NOT AN ARRIS · NOT A FILLET</text>
+            </g>
+          </svg>
+        </div>
+        <p id="chamfer-alt" class="sr-only" aria-live="polite">Chamfer is showing. Eighteen millimetres of leftover bevel still take the sharp off the corner.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="bevel-input">Bevel (mm · leftover bevel that still takes the sharp off)</label>
+            <input id="bevel-input" type="range" min="0" max="80" step="1" value="18" />
+            <div class="ticks" aria-hidden="true">
+              <span>sharp / no leftover</span>
+              <span>seed showing</span>
+              <span>wide bevel</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Bevel <b id="stat-bevel">18 mm</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+          <span>Leftover ease (sketch) <b id="stat-ease">18 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A joint looks sharp until you see the chamfer. Chamfer is leftover bevel — how far the leftover bevel still takes the sharp off the corner. A sketch, not a joinery sign-off.
+        Seed is already showing — 18 mm of leftover bevel, not a sharp corner. Arrow keys move the focused control.
+        Refresh restores the seed. Not an arris. Not a fillet. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { bevelMm: 18 };
+      const BEVEL_MIN = 0;
+      const BEVEL_MAX = 80;
+      const SHARP_AT = 4;
+      const SCALE = 2.4;
+      const MEET_X = 412;
+      const MEET_Y = 168;
+      const PLANE_A_LEFT = 96;
+      const PLANE_B_BOTTOM = 372;
+      const THICK = 92;
+
+      let bevelMm = SEED.bevelMm;
+
+      const svg = document.getElementById("chamfer-svg");
+      const scene = document.getElementById("chamfer-scene");
+      const titleEl = document.getElementById("chamfer-title");
+      const altEl = document.getElementById("chamfer-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const bevelInput = document.getElementById("bevel-input");
+      const benchLayer = document.getElementById("bench-layer");
+      const planesLayer = document.getElementById("planes-layer");
+      const chamferLayer = document.getElementById("chamfer-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statBevel = document.getElementById("stat-bevel");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+      const statEase = document.getElementById("stat-ease");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          8: "eight",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          28: "twenty-eight",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function picture() {
+        const leftover = bevelMm <= SHARP_AT ? "sharp" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + bevelMm + " MM LEFTOVER BEVEL";
+          alt = "Chamfer is showing. " + spokenMm(bevelMm).charAt(0).toUpperCase() + spokenMm(bevelMm).slice(1) + " millimetres of leftover bevel still take the sharp off the corner.";
+        } else {
+          status = "SHARP · NO LEFTOVER BEVEL";
+          alt = "Chamfer is sharp. The joint looks like an arris. No leftover bevel. A sketch, not a joinery sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4b888" : "#8ec8b4",
+          bevelPx: bevelMm * SCALE
+        };
+      }
+
+      function paint(pic) {
+        const sharp = pic.leftover === "sharp";
+        const cut = sharp ? 0 : Math.max(pic.bevelPx, 10);
+        const cutX = MEET_X - cut;
+        const cutY = MEET_Y + cut;
+        const planeABottom = MEET_Y + THICK;
+        const planeBRight = MEET_X + THICK;
+
+        benchLayer.replaceChildren();
+        benchLayer.appendChild(el("rect", {
+          class: "site leftover-elevation leftover-chamfer leftover-planes leftover-bevel leftover-ease",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#bench-wash)",
+          stroke: "rgba(196,168,128,0.16)",
+          "stroke-width": "1.2"
+        }));
+        benchLayer.appendChild(el("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "TWO PLANES";
+
+        planesLayer.replaceChildren();
+        const planes = el("g", {
+          id: "meeting-planes",
+          class: sharp
+            ? "planes leftover-sharp leftover-arris-look leftover-chamfer leftover-planes"
+            : "planes leftover-showing leftover-chamfer leftover-bevel leftover-ease leftover-planes"
+        });
+
+        if (sharp) {
+          planes.appendChild(el("polygon", {
+            id: "plane-a",
+            class: "plane plane-a leftover-plane leftover-sharp leftover-chamfer leftover-planes",
+            points: [
+              PLANE_A_LEFT + "," + MEET_Y,
+              MEET_X + "," + MEET_Y,
+              MEET_X + "," + planeABottom,
+              PLANE_A_LEFT + "," + planeABottom
+            ].join(" "),
+            fill: "url(#plane-a-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          planes.appendChild(el("rect", {
+            class: "plane-grain leftover-plane leftover-sharp",
+            x: String(PLANE_A_LEFT),
+            y: String(MEET_Y),
+            width: String(MEET_X - PLANE_A_LEFT),
+            height: String(THICK),
+            fill: "url(#plane-grain)",
+            "pointer-events": "none"
+          }));
+          planes.appendChild(el("polygon", {
+            id: "plane-b",
+            class: "plane plane-b leftover-plane leftover-sharp leftover-chamfer leftover-planes",
+            points: [
+              MEET_X + "," + MEET_Y,
+              planeBRight + "," + MEET_Y,
+              planeBRight + "," + PLANE_B_BOTTOM,
+              MEET_X + "," + PLANE_B_BOTTOM
+            ].join(" "),
+            fill: "url(#plane-b-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+        } else {
+          const aPath = [
+            PLANE_A_LEFT + "," + MEET_Y,
+            cutX + "," + MEET_Y,
+            MEET_X + "," + cutY,
+            MEET_X + "," + planeABottom,
+            PLANE_A_LEFT + "," + planeABottom
+          ].join(" ");
+          planes.appendChild(el("polygon", {
+            id: "plane-a",
+            class: "plane plane-a leftover-plane leftover-showing leftover-chamfer leftover-bevel leftover-ease",
+            points: aPath,
+            fill: "url(#plane-a-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          planes.appendChild(el("polygon", {
+            class: "plane-grain leftover-plane leftover-showing",
+            points: aPath,
+            fill: "url(#plane-grain)",
+            "pointer-events": "none"
+          }));
+          const bPath = [
+            MEET_X + "," + cutY,
+            planeBRight + "," + cutY,
+            planeBRight + "," + PLANE_B_BOTTOM,
+            MEET_X + "," + PLANE_B_BOTTOM
+          ].join(" ");
+          planes.appendChild(el("polygon", {
+            id: "plane-b",
+            class: "plane plane-b leftover-plane leftover-showing leftover-chamfer leftover-bevel leftover-ease",
+            points: bPath,
+            fill: "url(#plane-b-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+        }
+
+        planes.appendChild(el("text", {
+          x: String((PLANE_A_LEFT + MEET_X) / 2),
+          y: String(MEET_Y + THICK / 2 + 4),
+          fill: "#f0d8c4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "PLANE";
+        planes.appendChild(el("text", {
+          x: String(MEET_X + THICK / 2),
+          y: String((MEET_Y + PLANE_B_BOTTOM) / 2 + 4),
+          fill: "#d8c8b4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "PLANE";
+        planesLayer.appendChild(planes);
+
+        chamferLayer.replaceChildren();
+        const pocket = el("g", {
+          id: "leftover-chamfer",
+          class: sharp
+            ? "chamfer leftover-chamfer leftover-sharp leftover-empty leftover-no-bevel"
+            : "chamfer leftover-chamfer leftover-showing leftover-bevel leftover-ease leftover-opening"
+        });
+        if (!sharp) {
+          const faceHalf = Math.max(10, Math.min(18, pic.bevelPx * 0.18));
+          pocket.appendChild(el("polygon", {
+            id: "chamfer-bevel",
+            class: "leftover-chamfer leftover-showing leftover-bevel leftover-ease leftover-void leftover-opening",
+            points: [
+              cutX + "," + MEET_Y,
+              MEET_X + "," + cutY,
+              (MEET_X - faceHalf * 0.2) + "," + (cutY + faceHalf),
+              (cutX - faceHalf) + "," + (MEET_Y + faceHalf * 0.2)
+            ].join(" "),
+            fill: "url(#bevel-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.8"
+          }));
+          pocket.appendChild(el("polygon", {
+            class: "bevel-grain leftover-chamfer leftover-bevel leftover-ease",
+            points: [
+              cutX + "," + MEET_Y,
+              MEET_X + "," + cutY,
+              (MEET_X - faceHalf * 0.2) + "," + (cutY + faceHalf),
+              (cutX - faceHalf) + "," + (MEET_Y + faceHalf * 0.2)
+            ].join(" "),
+            fill: "url(#bevel-grain)",
+            "pointer-events": "none"
+          }));
+          pocket.appendChild(el("line", {
+            class: "chamfer-cut leftover-chamfer leftover-bevel leftover-ease leftover-opening",
+            x1: String(cutX),
+            y1: String(MEET_Y),
+            x2: String(MEET_X),
+            y2: String(cutY),
+            stroke: pic.accent,
+            "stroke-width": "2.2"
+          }));
+          pocket.appendChild(el("text", {
+            id: "chamfer-label",
+            class: "chamfer-label leftover-label leftover-chamfer leftover-showing leftover-bevel leftover-ease leftover-opening",
+            x: String((cutX + MEET_X) / 2 - 8),
+            y: String((MEET_Y + cutY) / 2 + 4),
+            fill: "#16120e",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle",
+            transform: "rotate(45 " + ((cutX + MEET_X) / 2 - 8) + " " + ((MEET_Y + cutY) / 2 + 4) + ")"
+          })).textContent = "CHAMFER";
+        } else {
+          pocket.appendChild(el("polyline", {
+            id: "chamfer-sharp",
+            class: "leftover-chamfer leftover-sharp leftover-empty leftover-no-bevel",
+            points: [
+              (MEET_X - 36) + "," + MEET_Y,
+              MEET_X + "," + MEET_Y,
+              MEET_X + "," + (MEET_Y + 36)
+            ].join(" "),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "2.4"
+          }));
+        }
+        chamferLayer.appendChild(pocket);
+
+        markLayer.replaceChildren();
+        markLayer.appendChild(el("text", {
+          x: String(Math.min(MEET_X + 28, 736)),
+          y: String(MEET_Y - 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = sharp ? "SHARP" : "CHAMFER";
+        if (!sharp && pic.bevelPx > 8) {
+          const dimX = cutX - 28;
+          const dimY = MEET_Y - 8;
+          markLayer.appendChild(el("line", {
+            class: "bevel-dim leftover-chamfer leftover-bevel leftover-ease leftover-opening",
+            x1: String(cutX),
+            y1: String(MEET_Y - 14),
+            x2: String(MEET_X),
+            y2: String(MEET_Y - 14),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(cutX),
+            y1: String(MEET_Y - 20),
+            x2: String(cutX),
+            y2: String(MEET_Y - 8),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(MEET_X),
+            y1: String(MEET_Y - 20),
+            x2: String(MEET_X),
+            y2: String(MEET_Y - 8),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "bevel-label",
+            class: "bevel-label leftover-label leftover-chamfer leftover-showing leftover-bevel leftover-ease leftover-opening",
+            x: String((cutX + MEET_X) / 2),
+            y: String(dimY - 12),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = bevelMm + " MM";
+          markLayer.appendChild(el("text", {
+            id: "ease-label",
+            class: "ease-label leftover-ease leftover-chamfer leftover-bevel leftover-opening",
+            x: String(MEET_X + 36),
+            y: String(cutY + 18),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4"
+          })).textContent = "LEFTOVER EASE";
+        } else if (sharp) {
+          markLayer.appendChild(el("text", {
+            id: "chamfer-label",
+            class: "chamfer-label leftover-label leftover-sharp leftover-no-bevel",
+            x: String(MEET_X + 28),
+            y: String(MEET_Y + 36),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4"
+          })).textContent = "SHARP / NO LEFTOVER BEVEL";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-bevel", String(bevelMm));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "elevation");
+        scene.setAttribute("data-hero", "leftover-chamfer");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-sharp";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + bevelMm + " mm showing"
+          : "leftover sharp";
+        statBevel.textContent = bevelMm + " mm";
+        statLeftover.textContent = pic.leftover;
+        statEase.textContent = pic.leftover === "showing"
+          ? bevelMm + " mm leftover"
+          : "sharp";
+        statLeftoverWrap.classList.remove("is-showing", "is-sharp");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(bevelInput.value) !== bevelMm) bevelInput.value = String(bevelMm);
+        bevelInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        bevelMm = SEED.bevelMm;
+        render();
+      }
+
+      bevelInput.addEventListener("input", function (event) {
+        bevelMm = clamp(Math.round(Number(event.target.value)), BEVEL_MIN, BEVEL_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
