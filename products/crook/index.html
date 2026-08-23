@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Crook — a board looks straight until you see the crook. Move the edge. See the leftover sweep." />
+    <title>Crook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(176, 140, 48, 0.2);
+        --accent: #c89430;
+        --timber: #7a5418;
+        --sweep: #e0b050;
+        --showing: #e0b050;
+        --straight: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(200, 148, 48, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(48, 28, 6, 0.2), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 148, 48, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 148, 48, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 148, 48, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(200, 148, 48, 0.08), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #crook-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(224, 176, 80, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-straight b { color: var(--straight); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #crook-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> crook · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover sweep that still curves the edge in plan</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 24 Aug 2026 02:50</span>
+        <h1>Crook</h1>
+        <p class="lede">
+          A board looks straight until you see the crook. Move the edge. See the leftover sweep.
+          Not a bow. Not a twist. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover sweep still curves the edge in plan</h2>
+          </div>
+          <span class="kicker" id="desk-meta">leftover 20 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="crook-svg" viewBox="0 0 800 460" role="img" aria-labelledby="crook-title crook-desc">
+            <title id="crook-title">Crook is showing. Twenty millimetres of leftover sweep still curve the edge in plan.</title>
+            <desc id="crook-desc">A plan of a board whose leftover is the crook — how far the leftover sweep still curves the edge in plan. An edge-curve looking down on the board, not a face-arch along the length, not a spiral wind, not a dish across the width. A sketch, not a mill sign-off. No bow length-arch as the hero. No twist wind as the hero. No cup dish as the hero. No knot dark as the hero. No wane bark. No kerf gap.</desc>
+            <defs>
+              <linearGradient id="bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="board-wash" x1="0%" y1="0%" x2="100%" y2="40%">
+                <stop offset="0%" stop-color="#563414" />
+                <stop offset="46%" stop-color="#7a5418" />
+                <stop offset="100%" stop-color="#c89430" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(176,140,48,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">PLAN · ONE BOARD · LEFTOVER IS THE CROOK</text>
+            <g id="crook-scene" data-view="plan-one-board" data-hero="leftover-crook" data-crook="20" data-leftover="showing" data-verdict="showing">
+              <g id="bench-layer"></g>
+              <g id="board-layer"></g>
+              <g id="crook-layer"></g>
+              <g id="mark-layer"></g>
+              <text id="scene-status" x="400" y="64" fill="#e0b050" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 20 MM LEFTOVER SWEEP</text>
+              <text id="scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER SWEEP THAT STILL CURVES THE EDGE IN PLAN · NOT A BOW · NOT A TWIST · NOT A DISH</text>
+            </g>
+          </svg>
+        </div>
+        <p id="crook-alt" class="sr-only" aria-live="polite">Crook is showing. Twenty millimetres of leftover sweep still curve the edge in plan.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="crook-input">Crook (mm · leftover sweep that still curves the edge in plan)</label>
+            <input id="crook-input" type="range" min="0" max="80" step="1" value="20" />
+            <div class="ticks" aria-hidden="true">
+              <span>straight / no leftover crook</span>
+              <span>seed showing</span>
+              <span>wide sweep</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Crook <b id="stat-crook">20 mm</b></span>
+          <span id="stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="stat-leftover">showing</b></span>
+          <span>Leftover sweep (sketch) <b id="stat-sweep">20 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks straight until you see the crook. Crook is leftover sweep — how far the leftover sweep still curves the edge in plan. A sketch, not a mill sign-off.
+        Seed is already showing — 20 mm of leftover sweep, not a straight edge. Arrow keys move the focused control.
+        Refresh restores the seed. Not a bow. Not a twist. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SEED = { crookMm: 20 };
+      const CROOK_MIN = 0;
+      const CROOK_MAX = 80;
+      const STRAIGHT_AT = 4;
+      const SCALE = 2.2;
+      const LEFT = 72;
+      const RIGHT = 728;
+      const TOP = 142;
+      const BOTTOM = 268;
+      const MID = 400;
+
+      let crookMm = SEED.crookMm;
+
+      const svg = document.getElementById("crook-svg");
+      const scene = document.getElementById("crook-scene");
+      const titleEl = document.getElementById("crook-title");
+      const altEl = document.getElementById("crook-alt");
+      const deskMeta = document.getElementById("desk-meta");
+      const crookInput = document.getElementById("crook-input");
+      const benchLayer = document.getElementById("bench-layer");
+      const boardLayer = document.getElementById("board-layer");
+      const crookLayer = document.getElementById("crook-layer");
+      const markLayer = document.getElementById("mark-layer");
+      const sceneStatus = document.getElementById("scene-status");
+      const statCrook = document.getElementById("stat-crook");
+      const statLeftover = document.getElementById("stat-leftover");
+      const statLeftoverWrap = document.getElementById("stat-leftover-wrap");
+      const statSweep = document.getElementById("stat-sweep");
+
+      function clamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function el(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function spokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          15: "fifteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          30: "thirty",
+          36: "thirty-six",
+          40: "forty",
+          45: "forty-five",
+          50: "fifty",
+          60: "sixty",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function picture() {
+        const leftover = crookMm <= STRAIGHT_AT ? "straight" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + crookMm + " MM LEFTOVER SWEEP";
+          alt = "Crook is showing. " + spokenMm(crookMm).charAt(0).toUpperCase() + spokenMm(crookMm).slice(1) + " millimetres of leftover sweep still curve the edge in plan.";
+        } else {
+          status = "STRAIGHT · NO LEFTOVER CROOK";
+          alt = "Crook is straight. The board looks straight. No leftover sweep. A sketch, not a mill sign-off.";
+        }
+        const sweep = leftover === "showing" ? crookMm * SCALE : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e0b050" : "#8ec8b4",
+          sweep: sweep
+        };
+      }
+
+      function boardPath(sweep) {
+        const topMid = TOP + sweep;
+        const botMid = BOTTOM + sweep;
+        return [
+          "M", LEFT, TOP,
+          "Q", MID, topMid, RIGHT, TOP,
+          "L", RIGHT, BOTTOM,
+          "Q", MID, botMid, LEFT, BOTTOM,
+          "Z"
+        ].join(" ");
+      }
+
+      function paint(pic) {
+        const isStraight = pic.leftover === "straight";
+
+        benchLayer.replaceChildren();
+        benchLayer.appendChild(el("rect", {
+          class: "site leftover-plan leftover-crook leftover-board leftover-sweep leftover-edge leftover-one-board",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#bench-wash)",
+          stroke: "rgba(176,140,48,0.16)",
+          "stroke-width": "1.2"
+        }));
+        benchLayer.appendChild(el("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · PLAN / EDGE-CURVE LOOKING DOWN";
+
+        boardLayer.replaceChildren();
+        const board = el("g", {
+          id: "sawn-board",
+          class: isStraight
+            ? "board leftover-straight leftover-no-crook leftover-crook leftover-board leftover-no-sweep leftover-plan leftover-one-board leftover-true"
+            : "board leftover-showing leftover-crook leftover-sweep leftover-edge leftover-board leftover-plan leftover-one-board leftover-curve"
+        });
+        board.appendChild(el("path", {
+          id: "board-plan",
+          class: isStraight
+            ? "board-plan leftover-board leftover-straight leftover-crook leftover-no-sweep leftover-one-board leftover-true"
+            : "board-plan leftover-board leftover-showing leftover-crook leftover-sweep leftover-edge leftover-one-board leftover-curve",
+          d: boardPath(pic.sweep),
+          fill: "url(#board-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        const fibreCount = 5;
+        for (let i = 0; i < fibreCount; i++) {
+          const t = (i + 1) / (fibreCount + 1);
+          const y = TOP + (BOTTOM - TOP) * t;
+          board.appendChild(el("path", {
+            class: "board-fibre leftover-board leftover-plan leftover-one-board",
+            d: "M " + LEFT + " " + y + " Q " + MID + " " + (y + pic.sweep) + " " + RIGHT + " " + y,
+            fill: "none",
+            stroke: "rgba(40, 22, 8, 0.28)",
+            "stroke-width": "1.1"
+          }));
+        }
+        board.appendChild(el("text", {
+          x: String(LEFT + 28),
+          y: String((TOP + BOTTOM) / 2 + 4 + pic.sweep * 0.5),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2"
+        })).textContent = "BOARD · PLAN";
+        boardLayer.appendChild(board);
+
+        crookLayer.replaceChildren();
+        const leftover = el("g", {
+          id: "leftover-crook",
+          class: isStraight
+            ? "crook leftover-crook leftover-straight leftover-empty leftover-no-sweep leftover-plan leftover-one-board leftover-true"
+            : "crook leftover-crook leftover-showing leftover-sweep leftover-edge leftover-plan leftover-one-board leftover-curve leftover-looking-down"
+        });
+
+        leftover.appendChild(el("line", {
+          id: "true-edge",
+          class: "true-edge leftover-crook leftover-plan leftover-one-board leftover-edge",
+          x1: String(LEFT),
+          y1: String(BOTTOM),
+          x2: String(RIGHT),
+          y2: String(BOTTOM),
+          stroke: isStraight ? pic.accent : "rgba(142, 200, 180, 0.55)",
+          "stroke-width": "1.2",
+          "stroke-dasharray": "4 5"
+        }));
+
+        if (!isStraight) {
+          leftover.appendChild(el("path", {
+            id: "leftover-sweep",
+            class: "leftover-crook leftover-showing leftover-sweep leftover-edge leftover-plan leftover-one-board leftover-curve leftover-looking-down",
+            d: "M " + LEFT + " " + BOTTOM + " Q " + MID + " " + (BOTTOM + pic.sweep) + " " + RIGHT + " " + BOTTOM,
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "2.2"
+          }));
+          leftover.appendChild(el("circle", {
+            id: "sweep-peak",
+            class: "leftover-crook leftover-showing leftover-sweep leftover-edge leftover-plan leftover-one-board leftover-curve",
+            cx: String(MID),
+            cy: String(BOTTOM + pic.sweep),
+            r: "4.5",
+            fill: pic.accent
+          }));
+        }
+        crookLayer.appendChild(leftover);
+
+        markLayer.replaceChildren();
+        markLayer.appendChild(el("text", {
+          x: String(LEFT),
+          y: String(TOP - 14),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "END";
+        markLayer.appendChild(el("text", {
+          x: String(RIGHT),
+          y: String(TOP - 14),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isStraight ? "PLAN · STRAIGHT / NO LEFTOVER SWEEP" : "PLAN · LEFTOVER SWEEP STILL CURVES";
+
+        if (!isStraight) {
+          const dimX = MID + 18;
+          const peakY = BOTTOM + pic.sweep;
+          markLayer.appendChild(el("line", {
+            x1: String(dimX),
+            y1: String(BOTTOM),
+            x2: String(dimX),
+            y2: String(peakY),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(dimX - 5),
+            y1: String(BOTTOM),
+            x2: String(dimX + 5),
+            y2: String(BOTTOM),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          markLayer.appendChild(el("line", {
+            x1: String(dimX - 5),
+            y1: String(peakY),
+            x2: String(dimX + 5),
+            y2: String(peakY),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          markLayer.appendChild(el("text", {
+            id: "crook-mm-label",
+            class: "crook-label leftover-label leftover-crook leftover-showing leftover-sweep leftover-edge leftover-plan",
+            x: String(dimX + 10),
+            y: String((BOTTOM + peakY) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2"
+          })).textContent = crookMm + " mm";
+          markLayer.appendChild(el("text", {
+            id: "sweep-label",
+            class: "sweep-label leftover-sweep leftover-crook leftover-edge leftover-plan leftover-one-board leftover-curve leftover-looking-down",
+            x: String(MID),
+            y: String(peakY + 22),
+            fill: "#c8a078",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER SWEEP · EDGE-CURVE LOOKING DOWN";
+        } else {
+          markLayer.appendChild(el("text", {
+            id: "crook-label",
+            class: "crook-label leftover-label leftover-straight leftover-no-sweep leftover-plan leftover-one-board leftover-true",
+            x: String(MID),
+            y: String(BOTTOM + 28),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "STRAIGHT / NO LEFTOVER CROOK";
+        }
+
+        sceneStatus.setAttribute("fill", pic.accent);
+        sceneStatus.textContent = pic.status;
+        scene.setAttribute("data-crook", String(crookMm));
+        scene.setAttribute("data-leftover", pic.leftover);
+        scene.setAttribute("data-verdict", pic.verdict);
+        scene.setAttribute("data-view", "plan-one-board");
+        scene.setAttribute("data-hero", "leftover-crook");
+      }
+
+      function toneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-straight";
+      }
+
+      function render() {
+        const pic = picture();
+        paint(pic);
+        titleEl.textContent = pic.alt;
+        altEl.textContent = pic.alt;
+        svg.setAttribute("aria-label", pic.alt);
+        deskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + crookMm + " mm showing"
+          : "leftover straight";
+        statCrook.textContent = crookMm + " mm";
+        statLeftover.textContent = pic.leftover;
+        statSweep.textContent = pic.leftover === "showing"
+          ? crookMm + " mm leftover"
+          : "straight";
+        statLeftoverWrap.classList.remove("is-showing", "is-straight");
+        statLeftoverWrap.classList.add(toneClass(pic.leftover));
+        if (Number(crookInput.value) !== crookMm) crookInput.value = String(crookMm);
+        crookInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function resetSeed() {
+        crookMm = SEED.crookMm;
+        render();
+      }
+
+      crookInput.addEventListener("input", function (event) {
+        crookMm = clamp(Math.round(Number(event.target.value)), CROOK_MIN, CROOK_MAX);
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", resetSeed);
+      document.getElementById("btn-reset-stage").addEventListener("click", resetSeed);
+
+      render();
+    </script>
+  </body>
+</html>
