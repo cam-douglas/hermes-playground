@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Flute — a board looks even until you see the flute. Move the hollow. See the leftover channel." />
+    <title>Flute</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(168, 184, 136, 0.22);
+        --accent: #b8c490;
+        --timber: #6a5438;
+        --hollow: #1a1610;
+        --showing: #c8d490;
+        --even: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(184, 196, 144, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(28, 24, 14, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(184, 196, 144, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(184, 196, 144, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(184, 196, 144, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(184, 196, 144, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #flute-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(200, 212, 144, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-even b { color: var(--even); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #flute-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> flute · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover hollow that still sits in the face</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 24 Aug 2026 23:50</span>
+        <h1>Flute</h1>
+        <p class="lede">
+          A board looks even until you see the flute. Move the hollow. See the leftover channel.
+          Not a dado. Not a bead. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="flute-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How deep the leftover hollow still sits in the face</h2>
+          </div>
+          <span class="kicker" id="flute-desk-meta">leftover 26 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="flute-svg" viewBox="0 0 800 460" role="img" aria-labelledby="flute-title flute-desc">
+            <title id="flute-title">Flute is showing. Twenty-six millimetres of leftover parallel concave hollows still sit in the face.</title>
+            <desc id="flute-desc">One board in face, with a slight section, whose leftover is the flute — leftover parallel concave channels running along the length of the face (fluted board / fluted column), not Dado (leftover single housing groove across the grain for a shelf), not Bead (leftover convex half-round still sitting on one long edge), not Reed (leftover parallel convex beads), not Drip (leftover liquid run), not Check (leftover drying split), not a ribbon of figure, not a paper fold-sheet. Default fill is an even face. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="flute-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1610" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="flute-board-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#4a3824" />
+                <stop offset="46%" stop-color="#6a5438" />
+                <stop offset="100%" stop-color="#8a6c44" />
+              </linearGradient>
+              <linearGradient id="flute-hollow-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#2a2418" />
+                <stop offset="42%" stop-color="#14110c" />
+                <stop offset="100%" stop-color="#3a3020" />
+              </linearGradient>
+              <linearGradient id="flute-section-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#3e3020" />
+                <stop offset="50%" stop-color="#6a5438" />
+                <stop offset="100%" stop-color="#8a6c44" />
+              </linearGradient>
+              <pattern id="flute-board-grain" width="18" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 5 L18 5" fill="none" stroke="rgba(40,28,12,0.18)" stroke-width="1" />
+                <path d="M0 2 L18 2" fill="none" stroke="rgba(40,28,12,0.08)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(168,184,136,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">FACE / SECTION · ONE BOARD · LEFTOVER IS THE FLUTE</text>
+            <g id="flute-scene" data-view="face-section-one-board" data-hero="leftover-flute" data-flute="26" data-leftover="showing" data-verdict="showing">
+              <g id="flute-bench-layer"></g>
+              <g id="flute-board-layer"></g>
+              <g id="flute-layer"></g>
+              <g id="flute-mark-layer"></g>
+              <text id="flute-scene-status" x="400" y="64" fill="#c8d490" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 26 MM LEFTOVER HOLLOW</text>
+              <text id="flute-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER HOLLOW THAT STILL SITS IN THE FACE · NOT A DADO · NOT A BEAD · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="flute-alt" class="sr-only" aria-live="polite">Flute is showing. Twenty-six millimetres of leftover parallel concave hollows still sit in the face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="flute-input">Flute (mm · leftover parallel concave hollow still sitting in the face)</label>
+            <input id="flute-input" type="range" min="0" max="80" step="1" value="26" />
+            <div class="ticks" aria-hidden="true">
+              <span>even / no leftover flute</span>
+              <span>seed showing</span>
+              <span>deep hollow</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="flute-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Flute <b id="flute-stat-mm">26 mm</b></span>
+          <span id="flute-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="flute-stat-leftover">showing</b></span>
+          <span>Leftover hollow (sketch) <b id="flute-stat-hollow">26 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks even until you see the flute. Flute is leftover hollow — leftover parallel concave channels still sitting along the length of the face. A sketch, not a mill sign-off.
+        Seed is already showing — 26 mm of leftover hollow, not an even face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a dado. Not a bead. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const FLUTE_SEED = { fluteMm: 26 };
+      const FLUTE_MIN = 0;
+      const FLUTE_MAX = 80;
+      const FLUTE_EVEN_AT = 4;
+      const FLUTE_SCALE = 1.15;
+      const FLUTE_FACE_LEFT = 72;
+      const FLUTE_FACE_RIGHT = 468;
+      const FLUTE_FACE_TOP = 118;
+      const FLUTE_FACE_BOTTOM = 348;
+      const FLUTE_SECTION_LEFT = 536;
+      const FLUTE_SECTION_RIGHT = 728;
+      const FLUTE_SECTION_TOP = 118;
+      const FLUTE_SECTION_BOTTOM = 348;
+      const FLUTE_CHANNEL_COUNT = 5;
+
+      let fluteMm = FLUTE_SEED.fluteMm;
+
+      const fluteSvg = document.getElementById("flute-svg");
+      const fluteScene = document.getElementById("flute-scene");
+      const fluteTitle = document.getElementById("flute-title");
+      const fluteAlt = document.getElementById("flute-alt");
+      const fluteDeskMeta = document.getElementById("flute-desk-meta");
+      const fluteInput = document.getElementById("flute-input");
+      const fluteBenchLayer = document.getElementById("flute-bench-layer");
+      const fluteBoardLayer = document.getElementById("flute-board-layer");
+      const fluteLayer = document.getElementById("flute-layer");
+      const fluteMarkLayer = document.getElementById("flute-mark-layer");
+      const fluteSceneStatus = document.getElementById("flute-scene-status");
+      const fluteStatMm = document.getElementById("flute-stat-mm");
+      const fluteStatLeftover = document.getElementById("flute-stat-leftover");
+      const fluteStatLeftoverWrap = document.getElementById("flute-stat-leftover-wrap");
+      const fluteStatHollow = document.getElementById("flute-stat-hollow");
+      const fluteBtnReset = document.getElementById("flute-btn-reset");
+      const fluteBtnResetStage = document.getElementById("flute-btn-reset-stage");
+
+      function fluteClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function fluteEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function fluteSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function fluteHollowPx(mm) {
+        return mm * FLUTE_SCALE;
+      }
+
+      function flutePicture() {
+        const leftover = fluteMm <= FLUTE_EVEN_AT ? "even" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + fluteMm + " MM LEFTOVER HOLLOW";
+          alt = "Flute is showing. " + fluteSpokenMm(fluteMm).charAt(0).toUpperCase() + fluteSpokenMm(fluteMm).slice(1) + " millimetres of leftover parallel concave hollows still sit in the face.";
+        } else {
+          status = "EVEN · NO LEFTOVER FLUTE";
+          alt = "Flute is even. The board looks even throughout. No leftover flute. A sketch, not a mill sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#c8d490" : "#8ec8b4",
+          hollowPx: leftover === "showing" ? fluteHollowPx(fluteMm) : 0
+        };
+      }
+
+      function fluteSectionLipParts(depth) {
+        const left = FLUTE_SECTION_LEFT;
+        const right = FLUTE_SECTION_RIGHT;
+        const top = FLUTE_SECTION_TOP;
+        const span = right - left;
+        const parts = ["M " + left + " " + top];
+        if (depth <= 0) {
+          parts.push("L " + right + " " + top);
+          return parts;
+        }
+        for (let i = 0; i < FLUTE_CHANNEL_COUNT; i += 1) {
+          const x0 = left + (span * i) / FLUTE_CHANNEL_COUNT;
+          const x1 = left + (span * (i + 1)) / FLUTE_CHANNEL_COUNT;
+          const mid = (x0 + x1) / 2;
+          parts.push("L " + x0.toFixed(1) + " " + top);
+          parts.push("Q " + mid.toFixed(1) + " " + (top + depth).toFixed(1) + " " + x1.toFixed(1) + " " + top);
+        }
+        parts.push("L " + right + " " + top);
+        return parts;
+      }
+
+      function fluteSectionPath(depth) {
+        const left = FLUTE_SECTION_LEFT;
+        const right = FLUTE_SECTION_RIGHT;
+        const bottom = FLUTE_SECTION_BOTTOM;
+        return fluteSectionLipParts(depth).concat([
+          "L " + right + " " + bottom,
+          "L " + left + " " + bottom,
+          "Z"
+        ]).join(" ");
+      }
+
+      function fluteSectionLipPath(depth) {
+        return fluteSectionLipParts(depth).join(" ");
+      }
+
+      function flutePaint(pic) {
+        const isEven = pic.leftover === "even";
+        const depth = isEven ? 0 : Math.max(pic.hollowPx, 10);
+        const faceW = FLUTE_FACE_RIGHT - FLUTE_FACE_LEFT;
+        const faceH = FLUTE_FACE_BOTTOM - FLUTE_FACE_TOP;
+        const channelPad = 22;
+        const usableH = faceH - channelPad * 2;
+        const channelH = Math.min(28, 10 + depth * 0.42);
+        const channelGap = usableH / FLUTE_CHANNEL_COUNT;
+
+        fluteBenchLayer.replaceChildren();
+        fluteBenchLayer.appendChild(fluteEl("rect", {
+          class: "site leftover-face leftover-section leftover-flute leftover-board leftover-hollow leftover-channel leftover-one-board",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#flute-bench-wash)",
+          stroke: "rgba(168,184,136,0.16)",
+          "stroke-width": "1.2"
+        }));
+        fluteBenchLayer.appendChild(fluteEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · FACE / SLIGHT SECTION · PARALLEL CONCAVE HOLLOWS ALONG THE LENGTH";
+
+        fluteBoardLayer.replaceChildren();
+        const board = fluteEl("g", {
+          id: "flute-sawn-board",
+          class: isEven
+            ? "board leftover-even leftover-no-flute leftover-flute leftover-board leftover-no-hollow leftover-one-board leftover-face leftover-section leftover-closed"
+            : "board leftover-showing leftover-flute leftover-hollow leftover-channel leftover-board leftover-one-board leftover-face leftover-section leftover-parallel leftover-concave"
+        });
+
+        board.appendChild(fluteEl("rect", {
+          id: "flute-board-face",
+          class: isEven
+            ? "board-face leftover-board leftover-even leftover-flute leftover-no-hollow leftover-one-board leftover-face leftover-closed"
+            : "board-face leftover-board leftover-showing leftover-flute leftover-hollow leftover-channel leftover-one-board leftover-face leftover-parallel leftover-concave",
+          x: String(FLUTE_FACE_LEFT),
+          y: String(FLUTE_FACE_TOP),
+          width: String(faceW),
+          height: String(faceH),
+          fill: "url(#flute-board-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        board.appendChild(fluteEl("rect", {
+          class: "board-grain leftover-board leftover-face leftover-one-board leftover-flute leftover-length",
+          x: String(FLUTE_FACE_LEFT),
+          y: String(FLUTE_FACE_TOP),
+          width: String(faceW),
+          height: String(faceH),
+          fill: "url(#flute-board-grain)",
+          "pointer-events": "none"
+        }));
+        board.appendChild(fluteEl("text", {
+          x: String((FLUTE_FACE_LEFT + FLUTE_FACE_RIGHT) / 2),
+          y: String(FLUTE_FACE_BOTTOM - 14),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "BOARD · FACE";
+        board.appendChild(fluteEl("text", {
+          x: String(FLUTE_FACE_LEFT + 10),
+          y: String(FLUTE_FACE_TOP + 16),
+          fill: "#d8c0a8",
+          "font-size": "9",
+          "letter-spacing": "1.4"
+        })).textContent = "LENGTH →";
+
+        board.appendChild(fluteEl("path", {
+          id: "flute-board-section",
+          class: isEven
+            ? "board-section leftover-board leftover-even leftover-flute leftover-no-hollow leftover-one-board leftover-section leftover-closed"
+            : "board-section leftover-board leftover-showing leftover-flute leftover-hollow leftover-channel leftover-one-board leftover-section leftover-parallel leftover-concave",
+          d: fluteSectionPath(depth),
+          fill: "url(#flute-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        board.appendChild(fluteEl("text", {
+          x: String((FLUTE_SECTION_LEFT + FLUTE_SECTION_RIGHT) / 2),
+          y: String(FLUTE_SECTION_BOTTOM - 14),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "BOARD · SECTION";
+        fluteBoardLayer.appendChild(board);
+
+        fluteLayer.replaceChildren();
+        const leftover = fluteEl("g", {
+          id: "leftover-flute",
+          class: isEven
+            ? "flute leftover-flute leftover-even leftover-empty leftover-no-hollow leftover-one-board leftover-face leftover-section leftover-closed"
+            : "flute leftover-flute leftover-showing leftover-hollow leftover-channel leftover-parallel leftover-concave leftover-one-board leftover-face leftover-section leftover-length",
+          "data-hollow-mm": String(fluteMm),
+          "data-hollow-px": String(depth)
+        });
+
+        if (!isEven) {
+          const channels = fluteEl("g", {
+            id: "leftover-flute-channels",
+            class: "leftover-flute leftover-showing leftover-hollow leftover-channel leftover-parallel leftover-concave leftover-face leftover-length leftover-one-board"
+          });
+          for (let i = 0; i < FLUTE_CHANNEL_COUNT; i += 1) {
+            const cy = FLUTE_FACE_TOP + channelPad + channelGap * i + channelGap / 2;
+            const y = cy - channelH / 2;
+            const x = FLUTE_FACE_LEFT + 14;
+            const w = faceW - 28;
+            channels.appendChild(fluteEl("rect", {
+              id: "leftover-flute-channel-" + i,
+              class: "leftover-flute leftover-showing leftover-hollow leftover-channel leftover-parallel leftover-concave leftover-face leftover-length leftover-one-board",
+              x: String(x),
+              y: String(y),
+              width: String(w),
+              height: String(channelH),
+              rx: String(channelH / 2),
+              fill: "url(#flute-hollow-wash)",
+              stroke: pic.accent,
+              "stroke-width": "1.2",
+              opacity: "0.94"
+            }));
+            channels.appendChild(fluteEl("line", {
+              class: "leftover-flute leftover-showing leftover-hollow leftover-channel leftover-lip leftover-concave leftover-face leftover-length",
+              x1: String(x + channelH / 2),
+              y1: String(y + 3),
+              x2: String(x + w - channelH / 2),
+              y2: String(y + 3),
+              stroke: "rgba(232, 228, 196, 0.22)",
+              "stroke-width": "1.4"
+            }));
+          }
+          leftover.appendChild(channels);
+
+          leftover.appendChild(fluteEl("path", {
+            id: "leftover-flute-section",
+            class: "leftover-flute leftover-showing leftover-hollow leftover-channel leftover-parallel leftover-concave leftover-section leftover-one-board",
+            d: fluteSectionLipPath(depth),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "2"
+          }));
+          leftover.appendChild(fluteEl("text", {
+            id: "leftover-flute-label",
+            class: "flute-label leftover-label leftover-flute leftover-showing leftover-hollow leftover-channel leftover-face leftover-one-board",
+            x: String((FLUTE_FACE_LEFT + FLUTE_FACE_RIGHT) / 2),
+            y: String(FLUTE_FACE_TOP - 12),
+            fill: "#f0e8c4",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "FLUTE";
+        }
+        fluteLayer.appendChild(leftover);
+
+        fluteMarkLayer.replaceChildren();
+        fluteMarkLayer.appendChild(fluteEl("text", {
+          x: String(FLUTE_FACE_LEFT),
+          y: String(FLUTE_FACE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "END";
+        fluteMarkLayer.appendChild(fluteEl("text", {
+          x: String(FLUTE_FACE_RIGHT),
+          y: String(FLUTE_FACE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isEven ? "FACE · EVEN / NO LEFTOVER FLUTE" : "FACE · LEFTOVER HOLLOWS STILL SIT";
+        fluteMarkLayer.appendChild(fluteEl("text", {
+          x: String(FLUTE_SECTION_RIGHT),
+          y: String(FLUTE_SECTION_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isEven ? "SECTION · EVEN" : "SECTION · CONCAVE INTO THE FACE";
+
+        if (!isEven) {
+          const dimX = FLUTE_SECTION_RIGHT + 16;
+          const topY = FLUTE_SECTION_TOP;
+          const botY = FLUTE_SECTION_TOP + depth;
+          fluteMarkLayer.appendChild(fluteEl("line", {
+            id: "flute-dim",
+            class: "flute-dim leftover-flute leftover-showing leftover-hollow leftover-channel leftover-section leftover-one-board",
+            x1: String(dimX),
+            y1: String(topY),
+            x2: String(dimX),
+            y2: String(botY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          fluteMarkLayer.appendChild(fluteEl("line", {
+            x1: String(dimX - 8),
+            y1: String(topY),
+            x2: String(dimX + 8),
+            y2: String(topY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          fluteMarkLayer.appendChild(fluteEl("line", {
+            x1: String(dimX - 8),
+            y1: String(botY),
+            x2: String(dimX + 8),
+            y2: String(botY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          fluteMarkLayer.appendChild(fluteEl("text", {
+            id: "flute-mm-label",
+            class: "flute-label leftover-label leftover-flute leftover-showing leftover-hollow leftover-channel leftover-section leftover-one-board",
+            x: String(dimX - 10),
+            y: String((topY + botY) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "end"
+          })).textContent = fluteMm + " mm";
+          fluteMarkLayer.appendChild(fluteEl("text", {
+            id: "flute-hollow-label",
+            class: "hollow-label leftover-hollow leftover-flute leftover-channel leftover-face leftover-section leftover-parallel leftover-concave leftover-one-board",
+            x: String((FLUTE_FACE_LEFT + FLUTE_FACE_RIGHT) / 2),
+            y: String(FLUTE_FACE_TOP + 34),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER HOLLOW";
+          fluteMarkLayer.appendChild(fluteEl("text", {
+            id: "flute-channel-label",
+            class: "channel-label leftover-channel leftover-flute leftover-hollow leftover-face leftover-length leftover-parallel leftover-concave leftover-one-board",
+            x: String((FLUTE_FACE_LEFT + FLUTE_FACE_RIGHT) / 2),
+            y: String(FLUTE_FACE_BOTTOM + 40),
+            fill: "#c8d490",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER CHANNEL · ALONG THE LENGTH · INTO THE FACE";
+        } else {
+          fluteMarkLayer.appendChild(fluteEl("text", {
+            id: "flute-label",
+            class: "flute-label leftover-label leftover-even leftover-no-hollow leftover-one-board leftover-face leftover-section leftover-closed",
+            x: String((FLUTE_FACE_LEFT + FLUTE_FACE_RIGHT) / 2),
+            y: String((FLUTE_FACE_TOP + FLUTE_FACE_BOTTOM) / 2),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "EVEN / NO LEFTOVER FLUTE";
+        }
+
+        fluteSceneStatus.setAttribute("fill", pic.accent);
+        fluteSceneStatus.textContent = pic.status;
+        fluteScene.setAttribute("data-flute", String(fluteMm));
+        fluteScene.setAttribute("data-leftover", pic.leftover);
+        fluteScene.setAttribute("data-verdict", pic.verdict);
+        fluteScene.setAttribute("data-view", "face-section-one-board");
+        fluteScene.setAttribute("data-hero", "leftover-flute");
+        fluteScene.setAttribute("data-hollow-mm", String(fluteMm));
+      }
+
+      function fluteToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-even";
+      }
+
+      function fluteRender() {
+        const pic = flutePicture();
+        flutePaint(pic);
+        fluteTitle.textContent = pic.alt;
+        fluteAlt.textContent = pic.alt;
+        fluteSvg.setAttribute("aria-label", pic.alt);
+        fluteDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + fluteMm + " mm showing"
+          : "leftover even";
+        fluteStatMm.textContent = fluteMm + " mm";
+        fluteStatLeftover.textContent = pic.leftover;
+        fluteStatHollow.textContent = pic.leftover === "showing"
+          ? fluteMm + " mm leftover"
+          : "even";
+        fluteStatLeftoverWrap.classList.remove("is-showing", "is-even");
+        fluteStatLeftoverWrap.classList.add(fluteToneClass(pic.leftover));
+        if (Number(fluteInput.value) !== fluteMm) fluteInput.value = String(fluteMm);
+        fluteInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function fluteResetSeed() {
+        fluteMm = FLUTE_SEED.fluteMm;
+        fluteRender();
+      }
+
+      fluteInput.addEventListener("input", function (event) {
+        fluteMm = fluteClamp(Math.round(Number(event.target.value)), FLUTE_MIN, FLUTE_MAX);
+        fluteRender();
+      });
+      fluteBtnReset.addEventListener("click", fluteResetSeed);
+      fluteBtnResetStage.addEventListener("click", fluteResetSeed);
+
+      fluteRender();
+    </script>
+  </body>
+</html>
