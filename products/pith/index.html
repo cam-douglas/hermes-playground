@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Pith — a board looks solid until you see the pith. Move the center. See the leftover pith." />
+    <title>Pith</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(196, 168, 106, 0.22);
+        --accent: #c4a86a;
+        --timber: #8a6840;
+        --spongy: #e8d4a0;
+        --soft: #f0e4b8;
+        --showing: #e0c878;
+        --solid: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(196, 168, 106, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(40, 28, 12, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 168, 106, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 168, 106, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 168, 106, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(196, 168, 106, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #pith-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(224, 200, 120, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-solid b { color: var(--solid); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #pith-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> pith · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover spongy center that still sits in the core</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 25 Aug 2026 07:50</span>
+        <h1>Pith</h1>
+        <p class="lede">
+          A board looks solid until you see the pith. Move the center. See the leftover pith.
+          Not heart. Not a knot. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="pith-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover spongy center still sits in the core</h2>
+          </div>
+          <span class="kicker" id="pith-desk-meta">leftover 22 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="pith-svg" viewBox="0 0 800 460" role="img" aria-labelledby="pith-title pith-desc">
+            <title id="pith-title">Pith is showing. Twenty-two millimetres of leftover spongy center still sit in the core.</title>
+            <desc id="pith-desc">One board in face whose leftover is the pith — leftover tiny spongy/soft first-year center still sitting in the middle of the face (leftover first-year pith still sitting as a soft center), not Heart (leftover darker heartwood zone occupying the core as a band), not Knot (leftover circular dark of branch wood), not Cambium (leftover living layer under bark at the edge), not Ring (leftover year-band), not Pecky (leftover fungal cavities), not a paper fold-sheet. Default fill is solid timber through the center. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="pith-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#181410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="pith-board-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#6a4e28" />
+                <stop offset="46%" stop-color="#8a6840" />
+                <stop offset="100%" stop-color="#c4a060" />
+              </linearGradient>
+              <radialGradient id="pith-spongy-wash" cx="46%" cy="42%" r="62%">
+                <stop offset="0%" stop-color="#f4e8c0" stop-opacity="0.98" />
+                <stop offset="42%" stop-color="#e8d4a0" stop-opacity="0.96" />
+                <stop offset="78%" stop-color="#d4b878" stop-opacity="0.94" />
+                <stop offset="100%" stop-color="#c4a86a" stop-opacity="0.9" />
+              </radialGradient>
+              <radialGradient id="pith-spongy-gloss" cx="40%" cy="34%" r="58%">
+                <stop offset="0%" stop-color="#fff6d8" stop-opacity="0.32" />
+                <stop offset="55%" stop-color="#e8d4a0" stop-opacity="0.08" />
+                <stop offset="100%" stop-color="#8a6840" stop-opacity="0" />
+              </radialGradient>
+              <pattern id="pith-board-grain" width="22" height="12" patternUnits="userSpaceOnUse">
+                <path d="M0 6 L22 6" fill="none" stroke="rgba(40,28,12,0.16)" stroke-width="1" />
+                <path d="M0 2 L22 2" fill="none" stroke="rgba(40,28,12,0.07)" stroke-width="1" />
+              </pattern>
+              <clipPath id="pith-board-clip">
+                <rect x="72" y="118" width="656" height="224" />
+              </clipPath>
+              <clipPath id="pith-center-clip">
+                <ellipse id="pith-center-clip-ellipse" cx="400" cy="230" rx="26" ry="22" />
+              </clipPath>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(196,168,106,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">FACE · ONE BOARD · LEFTOVER IS THE PITH</text>
+            <g id="pith-scene" data-view="face-one-board" data-hero="leftover-pith" data-pith="22" data-leftover="showing" data-verdict="showing">
+              <g id="pith-bench-layer"></g>
+              <g id="pith-board-layer"></g>
+              <g id="pith-layer"></g>
+              <g id="pith-mark-layer"></g>
+              <text id="pith-scene-status" x="400" y="64" fill="#e0c878" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 22 MM LEFTOVER PITH</text>
+              <text id="pith-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER SPONGY CENTER THAT STILL SITS IN THE CORE · NOT HEART · NOT A KNOT · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="pith-alt" class="sr-only" aria-live="polite">Pith is showing. Twenty-two millimetres of leftover spongy center still sit in the core.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="pith-input">Pith (mm · leftover spongy center still sitting in the core)</label>
+            <input id="pith-input" type="range" min="0" max="80" step="1" value="22" />
+            <div class="ticks" aria-hidden="true">
+              <span>solid / no leftover pith</span>
+              <span>seed showing</span>
+              <span>larger leftover center</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="pith-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Pith <b id="pith-stat-mm">22 mm</b></span>
+          <span id="pith-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="pith-stat-leftover">showing</b></span>
+          <span>Leftover center (sketch) <b id="pith-stat-center">22 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks solid until you see the pith. Pith is leftover spongy center — leftover first-year soft still sitting in the middle of the face. A sketch, not a mill sign-off.
+        Seed is already showing — 22 mm of leftover pith, not a solid center. Arrow keys move the focused control.
+        Refresh restores the seed. Not heart. Not a knot. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const PITH_SEED = { pithMm: 22 };
+      const PITH_MIN = 0;
+      const PITH_MAX = 80;
+      const PITH_SOLID_AT = 4;
+      const PITH_SCALE = 2.2;
+      const PITH_FACE_LEFT = 72;
+      const PITH_FACE_RIGHT = 728;
+      const PITH_FACE_TOP = 118;
+      const PITH_FACE_BOTTOM = 342;
+      const PITH_CX = (PITH_FACE_LEFT + PITH_FACE_RIGHT) / 2;
+      const PITH_CY = (PITH_FACE_TOP + PITH_FACE_BOTTOM) / 2;
+
+      let pithMm = PITH_SEED.pithMm;
+
+      const pithSvg = document.getElementById("pith-svg");
+      const pithScene = document.getElementById("pith-scene");
+      const pithTitle = document.getElementById("pith-title");
+      const pithAlt = document.getElementById("pith-alt");
+      const pithDeskMeta = document.getElementById("pith-desk-meta");
+      const pithInput = document.getElementById("pith-input");
+      const pithBenchLayer = document.getElementById("pith-bench-layer");
+      const pithBoardLayer = document.getElementById("pith-board-layer");
+      const pithLayer = document.getElementById("pith-layer");
+      const pithMarkLayer = document.getElementById("pith-mark-layer");
+      const pithSceneStatus = document.getElementById("pith-scene-status");
+      const pithStatMm = document.getElementById("pith-stat-mm");
+      const pithStatLeftover = document.getElementById("pith-stat-leftover");
+      const pithStatLeftoverWrap = document.getElementById("pith-stat-leftover-wrap");
+      const pithStatCenter = document.getElementById("pith-stat-center");
+      const pithBtnReset = document.getElementById("pith-btn-reset");
+      const pithBtnResetStage = document.getElementById("pith-btn-reset-stage");
+      const pithCenterClipEllipse = document.getElementById("pith-center-clip-ellipse");
+
+      function pithClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function pithEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function pithSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function pithSpongyPath(cx, cy, rx, ry) {
+        const steps = 14;
+        const wobble = [1.08, 0.92, 1.06, 0.88, 1.12, 0.94, 1.04, 0.9, 1.1, 0.96, 1.02, 0.86, 1.07, 0.93];
+        const parts = [];
+        for (let i = 0; i <= steps; i++) {
+          const t = (i / steps) * Math.PI * 2;
+          const w = wobble[i % wobble.length];
+          const x = cx + Math.cos(t) * rx * w;
+          const y = cy + Math.sin(t) * ry * w;
+          parts.push((i === 0 ? "M" : "L") + x.toFixed(1) + " " + y.toFixed(1));
+        }
+        parts.push("Z");
+        return parts.join(" ");
+      }
+
+      function pithPicture() {
+        const leftover = pithMm <= PITH_SOLID_AT ? "solid" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pithMm + " MM LEFTOVER PITH";
+          alt = "Pith is showing. " + pithSpokenMm(pithMm).charAt(0).toUpperCase() + pithSpokenMm(pithMm).slice(1) + " millimetres of leftover spongy center still sit in the core.";
+        } else {
+          status = "SOLID · NO LEFTOVER PITH";
+          alt = "Pith is solid. The center looks solid throughout. No leftover pith. A sketch, not a mill sign-off.";
+        }
+        const diameter = leftover === "showing" ? pithMm * PITH_SCALE : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e0c878" : "#8ec8b4",
+          diameter: diameter,
+          rx: diameter / 2,
+          ry: diameter / 2 * 0.82
+        };
+      }
+
+      function pithPaint(pic) {
+        const isSolid = pic.leftover === "solid";
+        const faceW = PITH_FACE_RIGHT - PITH_FACE_LEFT;
+        const faceH = PITH_FACE_BOTTOM - PITH_FACE_TOP;
+        const rx = Math.max(0, pic.rx);
+        const ry = Math.max(0, pic.ry);
+
+        if (pithCenterClipEllipse) {
+          pithCenterClipEllipse.setAttribute("cx", String(PITH_CX));
+          pithCenterClipEllipse.setAttribute("cy", String(PITH_CY));
+          pithCenterClipEllipse.setAttribute("rx", String(isSolid ? 0 : Math.max(0, rx)));
+          pithCenterClipEllipse.setAttribute("ry", String(isSolid ? 0 : Math.max(0, ry)));
+        }
+
+        pithBenchLayer.replaceChildren();
+        pithBenchLayer.appendChild(pithEl("rect", {
+          class: "site leftover-face leftover-pith leftover-board leftover-center leftover-spongy leftover-one-board leftover-core leftover-soft",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#pith-bench-wash)",
+          stroke: "rgba(196,168,106,0.16)",
+          "stroke-width": "1.2"
+        }));
+        pithBenchLayer.appendChild(pithEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · FACE · LEFTOVER SPONGY CENTER STILL SITS";
+
+        pithBoardLayer.replaceChildren();
+        const board = pithEl("g", {
+          id: "pith-sawn-board",
+          class: isSolid
+            ? "board leftover-solid leftover-no-pith leftover-pith leftover-board leftover-no-center leftover-one-board leftover-face leftover-true leftover-core leftover-timber"
+            : "board leftover-showing leftover-pith leftover-center leftover-spongy leftover-soft leftover-board leftover-face leftover-one-board leftover-core leftover-first-year"
+        });
+        board.appendChild(pithEl("rect", {
+          id: "pith-board-face",
+          class: isSolid
+            ? "board-face leftover-board leftover-solid leftover-pith leftover-no-center leftover-one-board leftover-face leftover-timber leftover-true leftover-core"
+            : "board-face leftover-board leftover-showing leftover-pith leftover-center leftover-spongy leftover-one-board leftover-face leftover-core leftover-timber",
+          x: String(PITH_FACE_LEFT),
+          y: String(PITH_FACE_TOP),
+          width: String(faceW),
+          height: String(faceH),
+          fill: "url(#pith-board-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        board.appendChild(pithEl("rect", {
+          class: "board-grain leftover-board leftover-face leftover-one-board leftover-pith leftover-center leftover-timber leftover-core",
+          x: String(PITH_FACE_LEFT),
+          y: String(PITH_FACE_TOP),
+          width: String(faceW),
+          height: String(faceH),
+          fill: "url(#pith-board-grain)",
+          "pointer-events": "none"
+        }));
+        board.appendChild(pithEl("text", {
+          x: String(PITH_FACE_LEFT + 28),
+          y: String(PITH_FACE_TOP + 22),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2"
+        })).textContent = "TIMBER · FACE";
+        pithBoardLayer.appendChild(board);
+
+        pithLayer.replaceChildren();
+        const leftover = pithEl("g", {
+          id: "leftover-pith",
+          class: isSolid
+            ? "pith leftover-pith leftover-solid leftover-empty leftover-no-center leftover-one-board leftover-face leftover-timber leftover-true leftover-core"
+            : "pith leftover-pith leftover-showing leftover-center leftover-spongy leftover-soft leftover-first-year leftover-face leftover-one-board leftover-core",
+          "data-center-mm": String(pithMm),
+          "data-center-px": String(pic.diameter.toFixed(1)),
+          "clip-path": "url(#pith-board-clip)"
+        });
+
+        if (!isSolid) {
+          leftover.appendChild(pithEl("path", {
+            id: "leftover-pith-center",
+            class: "leftover-pith leftover-showing leftover-center leftover-spongy leftover-soft leftover-first-year leftover-face leftover-one-board leftover-core",
+            d: pithSpongyPath(PITH_CX, PITH_CY, rx, ry),
+            fill: "url(#pith-spongy-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.3"
+          }));
+          leftover.appendChild(pithEl("path", {
+            class: "leftover-pith leftover-showing leftover-center leftover-spongy leftover-gloss leftover-face leftover-one-board leftover-core",
+            d: pithSpongyPath(PITH_CX, PITH_CY, rx, ry),
+            fill: "url(#pith-spongy-gloss)",
+            "pointer-events": "none"
+          }));
+          const pores = pithEl("g", {
+            id: "leftover-pith-pores",
+            class: "leftover-pith leftover-showing leftover-center leftover-spongy leftover-pores leftover-soft leftover-face leftover-one-board leftover-core",
+            "clip-path": "url(#pith-center-clip)"
+          });
+          const poreSeed = [
+            [-0.28, -0.18, 1.4], [0.22, -0.32, 1.1], [0.08, 0.12, 1.6],
+            [-0.42, 0.22, 1.0], [0.36, 0.18, 1.2], [-0.12, 0.38, 0.9],
+            [0.18, 0.42, 1.1], [-0.34, -0.36, 0.8], [0.44, -0.08, 1.0],
+            [-0.06, -0.42, 0.9], [0.02, 0.28, 1.3], [-0.22, 0.06, 1.0]
+          ];
+          poreSeed.forEach(function (pore, index) {
+            pores.appendChild(pithEl("ellipse", {
+              class: "leftover-pith leftover-showing leftover-center leftover-spongy leftover-pore leftover-soft leftover-face leftover-one-board leftover-core",
+              cx: String(PITH_CX + pore[0] * rx),
+              cy: String(PITH_CY + pore[1] * ry),
+              rx: String(Math.max(1.1, rx * 0.08 * pore[2])),
+              ry: String(Math.max(0.9, ry * 0.07 * pore[2])),
+              fill: index % 2 === 0 ? "rgba(90, 62, 28, 0.22)" : "rgba(248, 236, 196, 0.35)",
+              stroke: "none"
+            }));
+          });
+          leftover.appendChild(pores);
+          leftover.appendChild(pithEl("text", {
+            id: "leftover-pith-label",
+            class: "pith-label leftover-label leftover-pith leftover-showing leftover-center leftover-spongy leftover-face leftover-one-board leftover-core leftover-soft",
+            x: String(PITH_CX),
+            y: String(PITH_CY + 4),
+            fill: "#4a3820",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "PITH";
+        } else {
+          leftover.appendChild(pithEl("ellipse", {
+            id: "pith-solid",
+            class: "leftover-pith leftover-solid leftover-empty leftover-no-center leftover-face leftover-one-board leftover-timber leftover-true leftover-core",
+            cx: String(PITH_CX),
+            cy: String(PITH_CY),
+            rx: "16",
+            ry: "13",
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.3",
+            "stroke-dasharray": "3 5",
+            opacity: "0.4"
+          }));
+        }
+        pithLayer.appendChild(leftover);
+
+        pithMarkLayer.replaceChildren();
+        pithMarkLayer.appendChild(pithEl("text", {
+          x: String(PITH_FACE_LEFT),
+          y: String(PITH_FACE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "TIMBER";
+        pithMarkLayer.appendChild(pithEl("text", {
+          x: String(PITH_FACE_RIGHT),
+          y: String(PITH_FACE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSolid ? "CENTER · SOLID / NO LEFTOVER PITH" : "CENTER · LEFTOVER SPONGY STILL SITS";
+
+        if (!isSolid) {
+          const dimY = PITH_CY - ry - 16;
+          pithMarkLayer.appendChild(pithEl("line", {
+            id: "pith-dim",
+            class: "pith-dim leftover-pith leftover-showing leftover-center leftover-spongy leftover-face leftover-one-board leftover-core leftover-soft",
+            x1: String(PITH_CX - rx),
+            y1: String(dimY),
+            x2: String(PITH_CX + rx),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          pithMarkLayer.appendChild(pithEl("line", {
+            x1: String(PITH_CX - rx),
+            y1: String(dimY - 4),
+            x2: String(PITH_CX - rx),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          pithMarkLayer.appendChild(pithEl("line", {
+            x1: String(PITH_CX + rx),
+            y1: String(dimY - 4),
+            x2: String(PITH_CX + rx),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          pithMarkLayer.appendChild(pithEl("text", {
+            id: "pith-mm-label",
+            class: "pith-label leftover-label leftover-pith leftover-showing leftover-center leftover-spongy leftover-face leftover-one-board leftover-core leftover-soft",
+            x: String(PITH_CX),
+            y: String(dimY - 6),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = pithMm + " mm";
+          pithMarkLayer.appendChild(pithEl("text", {
+            id: "pith-center-label",
+            class: "center-label leftover-center leftover-pith leftover-spongy leftover-face leftover-one-board leftover-core leftover-soft leftover-first-year",
+            x: String(PITH_CX),
+            y: String(PITH_FACE_BOTTOM + 40),
+            fill: "#d4c090",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER CENTER · SPONGY FIRST-YEAR STILL SITS · NOT HEART · NOT A KNOT";
+        } else {
+          pithMarkLayer.appendChild(pithEl("text", {
+            id: "pith-label",
+            class: "pith-label leftover-label leftover-solid leftover-no-center leftover-one-board leftover-face leftover-timber leftover-true leftover-empty leftover-core",
+            x: String(PITH_CX),
+            y: String(PITH_CY),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SOLID / NO LEFTOVER PITH";
+        }
+
+        pithSceneStatus.setAttribute("fill", pic.accent);
+        pithSceneStatus.textContent = pic.status;
+        pithScene.setAttribute("data-pith", String(pithMm));
+        pithScene.setAttribute("data-leftover", pic.leftover);
+        pithScene.setAttribute("data-verdict", pic.verdict);
+        pithScene.setAttribute("data-view", "face-one-board");
+        pithScene.setAttribute("data-hero", "leftover-pith");
+        pithScene.setAttribute("data-center-mm", String(pithMm));
+        pithScene.setAttribute("data-center-px", String(pic.diameter.toFixed(1)));
+      }
+
+      function pithToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-solid";
+      }
+
+      function pithRender() {
+        const pic = pithPicture();
+        pithPaint(pic);
+        pithTitle.textContent = pic.alt;
+        pithAlt.textContent = pic.alt;
+        pithSvg.setAttribute("aria-label", pic.alt);
+        pithDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + pithMm + " mm showing"
+          : "leftover solid";
+        pithStatMm.textContent = pithMm + " mm";
+        pithStatLeftover.textContent = pic.leftover;
+        pithStatCenter.textContent = pic.leftover === "showing"
+          ? pithMm + " mm leftover"
+          : "solid";
+        pithStatLeftoverWrap.classList.remove("is-showing", "is-solid");
+        pithStatLeftoverWrap.classList.add(pithToneClass(pic.leftover));
+        if (Number(pithInput.value) !== pithMm) pithInput.value = String(pithMm);
+        pithInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function pithResetSeed() {
+        pithMm = PITH_SEED.pithMm;
+        pithRender();
+      }
+
+      pithInput.addEventListener("input", function (event) {
+        pithMm = pithClamp(Math.round(Number(event.target.value)), PITH_MIN, PITH_MAX);
+        pithRender();
+      });
+      pithBtnReset.addEventListener("click", pithResetSeed);
+      pithBtnResetStage.addEventListener("click", pithResetSeed);
+
+      pithRender();
+    </script>
+  </body>
+</html>
