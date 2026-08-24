@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Quilt — a board looks even until you see the quilt. Move the figure. See the leftover blister." />
+    <title>Quilt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(224, 192, 144, 0.22);
+        --accent: #e0c090;
+        --timber: #c89454;
+        --blister-light: #fff4d0;
+        --blister-dark: #6a4018;
+        --showing: #e0c090;
+        --even: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(224, 192, 144, 0.14), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(48, 32, 12, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(224, 192, 144, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(224, 192, 144, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(224, 192, 144, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(224, 192, 144, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #quilt-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(224, 192, 144, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-even b { color: var(--even); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #quilt-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> quilt · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover blister that still sits in the figure</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 24 Aug 2026 11:50</span>
+        <h1>Quilt</h1>
+        <p class="lede">
+          A board looks even until you see the quilt. Move the figure. See the leftover blister.
+          Not curl. Not an eye. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="quilt-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover blister still sits in the figure</h2>
+          </div>
+          <span class="kicker" id="quilt-desk-meta">leftover 30 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="quilt-svg" viewBox="0 0 800 460" role="img" aria-labelledby="quilt-title quilt-desc">
+            <title id="quilt-title">Quilt is showing. Thirty millimetres of leftover blister still sit in the figure.</title>
+            <desc id="quilt-desc">A board whose leftover is the quilt — leftover pillowy 3D blister-patches of figure that still sit in the face as leftover balloons of light and dark (quilted maple). Not curl waves, not bird's-eye dimples, not a burl swirl, not annual rings, not a radial medullary spoke, not a heartwood core occupying the middle, not a pale sap stripe along the edge, not a cut-to-fibre mismatch, not a paper fold-sheet. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="quilt-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="quilt-even-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#9a6a34" />
+                <stop offset="46%" stop-color="#b88248" />
+                <stop offset="100%" stop-color="#c89454" />
+              </linearGradient>
+              <radialGradient id="quilt-blister-halo-wash" cx="38%" cy="32%" r="72%">
+                <stop offset="0%" stop-color="#fff4d0" stop-opacity="0.42" />
+                <stop offset="48%" stop-color="#e0c090" stop-opacity="0.18" />
+                <stop offset="100%" stop-color="#a87438" stop-opacity="0" />
+              </radialGradient>
+              <radialGradient id="quilt-blister-body-wash" cx="34%" cy="30%" r="74%">
+                <stop offset="0%" stop-color="#fff0c4" stop-opacity="0.78" />
+                <stop offset="28%" stop-color="#e8c878" stop-opacity="0.52" />
+                <stop offset="62%" stop-color="#a86c30" stop-opacity="0.72" />
+                <stop offset="100%" stop-color="#4a2810" stop-opacity="0.88" />
+              </radialGradient>
+              <radialGradient id="quilt-blister-shadow-wash" cx="62%" cy="68%" r="70%">
+                <stop offset="0%" stop-color="#3a1c08" stop-opacity="0.55" />
+                <stop offset="100%" stop-color="#2a1408" stop-opacity="0" />
+              </radialGradient>
+              <radialGradient id="quilt-blister-light-wash" cx="32%" cy="28%" r="68%">
+                <stop offset="0%" stop-color="#fff8dc" stop-opacity="0.72" />
+                <stop offset="55%" stop-color="#f0d8a0" stop-opacity="0.18" />
+                <stop offset="100%" stop-color="#c89454" stop-opacity="0" />
+              </radialGradient>
+              <clipPath id="quilt-board-clip">
+                <rect id="quilt-board-clip-rect" x="72" y="118" width="656" height="224" />
+              </clipPath>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(224,192,144,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">FACE · ONE BOARD · LEFTOVER IS THE QUILT</text>
+            <g id="quilt-scene" data-view="face-one-board" data-hero="leftover-quilt" data-quilt="30" data-leftover="showing" data-verdict="showing">
+              <g id="quilt-bench-layer"></g>
+              <g id="quilt-board-layer"></g>
+              <g id="quilt-layer"></g>
+              <g id="quilt-mark-layer"></g>
+              <text id="quilt-scene-status" x="400" y="64" fill="#e0c090" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 30 MM LEFTOVER BLISTER</text>
+              <text id="quilt-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER BLISTER THAT STILL SITS IN THE FIGURE · NOT CURL · NOT AN EYE · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="quilt-alt" class="sr-only" aria-live="polite">Quilt is showing. Thirty millimetres of leftover blister still sit in the figure.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="quilt-input">Quilt (mm · leftover blister-figure that still sits in the face)</label>
+            <input id="quilt-input" type="range" min="0" max="80" step="1" value="30" />
+            <div class="ticks" aria-hidden="true">
+              <span>even / no leftover quilt</span>
+              <span>seed showing</span>
+              <span>wide blister</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="quilt-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Quilt <b id="quilt-stat-mm">30 mm</b></span>
+          <span id="quilt-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="quilt-stat-leftover">showing</b></span>
+          <span>Leftover blister (sketch) <b id="quilt-stat-blister">30 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks even until you see the quilt. Quilt is leftover blister — leftover pillowy 3D blister-patches of figure that still sit in the face as leftover balloons of light and dark. A sketch, not a mill sign-off.
+        Seed is already showing — 30 mm of leftover blister-figure, not an even face. Arrow keys move the focused control.
+        Refresh restores the seed. Not curl. Not an eye. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const QUILT_SEED = { quiltMm: 30 };
+      const QUILT_MIN = 0;
+      const QUILT_MAX = 80;
+      const QUILT_EVEN_AT = 4;
+      const QUILT_LEFT = 72;
+      const QUILT_RIGHT = 728;
+      const QUILT_TOP = 118;
+      const QUILT_BOTTOM = 342;
+      const QUILT_MID_X = (QUILT_LEFT + QUILT_RIGHT) / 2;
+      const QUILT_MID_Y = (QUILT_TOP + QUILT_BOTTOM) / 2;
+      const QUILT_WIDTH = QUILT_RIGHT - QUILT_LEFT;
+      const QUILT_HEIGHT = QUILT_BOTTOM - QUILT_TOP;
+
+      // Leftover quilted blister-patches — overlapping 3D pouches tiled across the face.
+      // Not a grid of tiny circular dimples, not linear curl waves, not one burl swirl.
+      const QUILT_SITES = [
+        { u: 0.16, v: 0.30, min: 5,  size: 1.18, rot: -18 },
+        { u: 0.36, v: 0.20, min: 6,  size: 1.34, rot: 14 },
+        { u: 0.56, v: 0.34, min: 7,  size: 1.26, rot: -10 },
+        { u: 0.74, v: 0.22, min: 8,  size: 1.12, rot: 18 },
+        { u: 0.24, v: 0.56, min: 9,  size: 1.30, rot: 8 },
+        { u: 0.46, v: 0.50, min: 10, size: 1.42, rot: -16 },
+        { u: 0.66, v: 0.60, min: 11, size: 1.16, rot: 22 },
+        { u: 0.84, v: 0.46, min: 12, size: 1.10, rot: -8 },
+        { u: 0.12, v: 0.76, min: 16, size: 1.08, rot: 6 },
+        { u: 0.34, v: 0.78, min: 20, size: 1.24, rot: -20 },
+        { u: 0.54, v: 0.74, min: 24, size: 1.14, rot: 12 },
+        { u: 0.76, v: 0.80, min: 28, size: 1.22, rot: -6 },
+        { u: 0.88, v: 0.68, min: 36, size: 1.00, rot: 16 },
+        { u: 0.08, v: 0.46, min: 44, size: 0.96, rot: -14 },
+        { u: 0.42, v: 0.38, min: 52, size: 1.04, rot: 4 },
+        { u: 0.62, v: 0.16, min: 60, size: 0.92, rot: -12 },
+        { u: 0.90, v: 0.30, min: 68, size: 0.90, rot: 10 },
+        { u: 0.22, v: 0.12, min: 76, size: 0.88, rot: -4 }
+      ];
+
+      let quiltMm = QUILT_SEED.quiltMm;
+
+      const quiltSvg = document.getElementById("quilt-svg");
+      const quiltScene = document.getElementById("quilt-scene");
+      const quiltTitle = document.getElementById("quilt-title");
+      const quiltAlt = document.getElementById("quilt-alt");
+      const quiltDeskMeta = document.getElementById("quilt-desk-meta");
+      const quiltInput = document.getElementById("quilt-input");
+      const quiltBenchLayer = document.getElementById("quilt-bench-layer");
+      const quiltBoardLayer = document.getElementById("quilt-board-layer");
+      const quiltLayer = document.getElementById("quilt-layer");
+      const quiltMarkLayer = document.getElementById("quilt-mark-layer");
+      const quiltSceneStatus = document.getElementById("quilt-scene-status");
+      const quiltStatMm = document.getElementById("quilt-stat-mm");
+      const quiltStatLeftover = document.getElementById("quilt-stat-leftover");
+      const quiltStatLeftoverWrap = document.getElementById("quilt-stat-leftover-wrap");
+      const quiltStatBlister = document.getElementById("quilt-stat-blister");
+      const quiltBtnReset = document.getElementById("quilt-btn-reset");
+      const quiltBtnResetStage = document.getElementById("quilt-btn-reset-stage");
+
+      function quiltClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function quiltEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function quiltSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          15: "fifteen",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          36: "thirty-six",
+          40: "forty",
+          45: "forty-five",
+          50: "fifty",
+          60: "sixty",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function quiltVisibleSites(mm) {
+        if (mm <= QUILT_EVEN_AT) return [];
+        return QUILT_SITES.filter(function (site) {
+          return site.min <= mm;
+        });
+      }
+
+      function quiltBlisterRadius(mm, site) {
+        return (15.5 + mm * 0.26) * site.size;
+      }
+
+      function quiltPicture() {
+        const leftover = quiltMm <= QUILT_EVEN_AT ? "even" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + quiltMm + " MM LEFTOVER BLISTER";
+          alt = "Quilt is showing. " + quiltSpokenMm(quiltMm).charAt(0).toUpperCase() + quiltSpokenMm(quiltMm).slice(1) + " millimetres of leftover blister still sit in the figure.";
+        } else {
+          status = "EVEN · NO LEFTOVER QUILT";
+          alt = "Quilt is even. The board looks even. No leftover quilt. A sketch, not a mill sign-off.";
+        }
+        const sites = quiltVisibleSites(quiltMm);
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e0c090" : "#8ec8b4",
+          sites: sites,
+          count: sites.length
+        };
+      }
+
+      function quiltPaintBlister(group, site, index, pic) {
+        const x = QUILT_LEFT + 28 + site.u * (QUILT_WIDTH - 56);
+        const y = QUILT_TOP + 32 + site.v * (QUILT_HEIGHT - 56);
+        const r = quiltBlisterRadius(quiltMm, site);
+        const rx = r * 1.18;
+        const ry = r * 0.78;
+        const n = index + 1;
+        const blister = quiltEl("g", {
+          id: "leftover-quilt-blister-" + n,
+          class: "leftover-quilt leftover-showing leftover-blister leftover-figure leftover-inclusion leftover-face leftover-one-board leftover-zone leftover-quilted",
+          "data-blister": String(n),
+          "data-radius": r.toFixed(1),
+          "data-min": String(site.min),
+          transform: "translate(" + x.toFixed(1) + " " + y.toFixed(1) + ") rotate(" + site.rot + ")"
+        });
+        blister.appendChild(quiltEl("ellipse", {
+          id: "leftover-quilt-halo-" + n,
+          class: "leftover-quilt leftover-showing leftover-blister leftover-halo leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone",
+          cx: "0",
+          cy: "0",
+          rx: (rx * 1.55).toFixed(1),
+          ry: (ry * 1.48).toFixed(1),
+          fill: "url(#quilt-blister-halo-wash)",
+          opacity: "0.86"
+        }));
+        blister.appendChild(quiltEl("ellipse", {
+          id: "leftover-quilt-shadow-" + n,
+          class: "leftover-quilt leftover-showing leftover-blister leftover-shadow leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone",
+          cx: (rx * 0.18).toFixed(1),
+          cy: (ry * 0.22).toFixed(1),
+          rx: (rx * 0.92).toFixed(1),
+          ry: (ry * 0.86).toFixed(1),
+          fill: "url(#quilt-blister-shadow-wash)",
+          opacity: "0.78"
+        }));
+        blister.appendChild(quiltEl("ellipse", {
+          id: "leftover-quilt-body-" + n,
+          class: "leftover-quilt leftover-showing leftover-blister leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone",
+          cx: "0",
+          cy: "0",
+          rx: rx.toFixed(1),
+          ry: ry.toFixed(1),
+          fill: "url(#quilt-blister-body-wash)",
+          stroke: pic.accent,
+          "stroke-width": "0.95"
+        }));
+        blister.appendChild(quiltEl("ellipse", {
+          id: "leftover-quilt-light-" + n,
+          class: "leftover-quilt leftover-showing leftover-blister leftover-light leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone",
+          cx: (-rx * 0.22).toFixed(1),
+          cy: (-ry * 0.26).toFixed(1),
+          rx: (rx * 0.58).toFixed(1),
+          ry: (ry * 0.42).toFixed(1),
+          fill: "url(#quilt-blister-light-wash)",
+          opacity: "0.82"
+        }));
+        blister.appendChild(quiltEl("ellipse", {
+          id: "leftover-quilt-spec-" + n,
+          class: "leftover-quilt leftover-showing leftover-blister leftover-spec leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone",
+          cx: (-rx * 0.32).toFixed(1),
+          cy: (-ry * 0.34).toFixed(1),
+          rx: (rx * 0.22).toFixed(1),
+          ry: (ry * 0.12).toFixed(1),
+          fill: "#fff8dc",
+          opacity: "0.38"
+        }));
+        group.appendChild(blister);
+      }
+
+      function quiltPaint(pic) {
+        const isEven = pic.leftover === "even";
+
+        quiltBenchLayer.replaceChildren();
+        quiltBenchLayer.appendChild(quiltEl("rect", {
+          class: "site leftover-elevation leftover-quilt leftover-board leftover-blister leftover-figure leftover-face leftover-one-board",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#quilt-bench-wash)",
+          stroke: "rgba(224,192,144,0.16)",
+          "stroke-width": "1.2"
+        }));
+        quiltBenchLayer.appendChild(quiltEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · FACE / LEFTOVER BLISTER-FIGURE";
+
+        quiltBoardLayer.replaceChildren();
+        const board = quiltEl("g", {
+          id: "quilt-sawn-board",
+          class: isEven
+            ? "board leftover-even leftover-no-quilt leftover-quilt leftover-board leftover-no-blister leftover-no-figure leftover-face leftover-one-board leftover-true"
+            : "board leftover-showing leftover-quilt leftover-blister leftover-figure leftover-board leftover-face leftover-one-board leftover-inclusion"
+        });
+        board.appendChild(quiltEl("rect", {
+          id: "quilt-board-face",
+          class: isEven
+            ? "board-face leftover-board leftover-even leftover-quilt leftover-no-blister leftover-one-board leftover-true"
+            : "board-face leftover-board leftover-showing leftover-quilt leftover-blister leftover-figure leftover-one-board leftover-inclusion",
+          x: String(QUILT_LEFT),
+          y: String(QUILT_TOP),
+          width: String(QUILT_WIDTH),
+          height: String(QUILT_HEIGHT),
+          fill: "url(#quilt-even-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        const fibreGroup = quiltEl("g", {
+          id: "quilt-board-fibres",
+          class: "board-fibres leftover-board leftover-face leftover-one-board leftover-quilt",
+          "clip-path": "url(#quilt-board-clip)"
+        });
+        for (let i = 0; i < 9; i++) {
+          const y = QUILT_TOP + 16 + i * 24;
+          fibreGroup.appendChild(quiltEl("line", {
+            class: "board-fibre leftover-board leftover-face leftover-one-board leftover-quilt leftover-even",
+            x1: String(QUILT_LEFT + 10),
+            y1: String(y),
+            x2: String(QUILT_RIGHT - 10),
+            y2: String(y),
+            stroke: "rgba(74, 42, 16, 0.14)",
+            "stroke-width": "1.05"
+          }));
+        }
+        board.appendChild(fibreGroup);
+        board.appendChild(quiltEl("text", {
+          x: String(QUILT_LEFT + 18),
+          y: String(QUILT_TOP + 22),
+          fill: "#5a3c1c",
+          "font-size": "11",
+          "letter-spacing": "2"
+        })).textContent = "EVEN · FACE";
+        quiltBoardLayer.appendChild(board);
+
+        quiltLayer.replaceChildren();
+        const leftover = quiltEl("g", {
+          id: "leftover-quilt",
+          class: isEven
+            ? "quilt leftover-quilt leftover-even leftover-empty leftover-no-blister leftover-no-figure leftover-face leftover-one-board leftover-true"
+            : "quilt leftover-quilt leftover-showing leftover-blister leftover-figure leftover-inclusion leftover-face leftover-one-board leftover-zone leftover-quilted",
+          "clip-path": "url(#quilt-board-clip)",
+          "data-blister-mm": String(quiltMm),
+          "data-blister-count": String(pic.count)
+        });
+
+        if (!isEven) {
+          pic.sites.forEach(function (site, index) {
+            quiltPaintBlister(leftover, site, index, pic);
+          });
+        } else {
+          leftover.appendChild(quiltEl("path", {
+            id: "quilt-even",
+            class: "leftover-quilt leftover-even leftover-empty leftover-no-blister leftover-no-figure leftover-face leftover-one-board leftover-true",
+            d: "M " + (QUILT_LEFT + 10).toFixed(1) + " " + QUILT_MID_Y.toFixed(1) + " L " + (QUILT_RIGHT - 10).toFixed(1) + " " + QUILT_MID_Y.toFixed(1),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "3 5",
+            opacity: "0.45"
+          }));
+        }
+        quiltLayer.appendChild(leftover);
+
+        quiltMarkLayer.replaceChildren();
+        quiltMarkLayer.appendChild(quiltEl("text", {
+          x: String(QUILT_LEFT),
+          y: String(QUILT_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "EVEN TIMBER";
+        quiltMarkLayer.appendChild(quiltEl("text", {
+          x: String(QUILT_RIGHT),
+          y: String(QUILT_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isEven ? "BLISTER · EVEN / NO LEFTOVER QUILT" : "BLISTER · LEFTOVER FIGURE STILL SITS";
+
+        if (!isEven) {
+          const dimY = QUILT_TOP - 14;
+          const sample = pic.sites[0] || { size: 1 };
+          const dimHalf = Math.max(10, quiltBlisterRadius(quiltMm, sample));
+          quiltMarkLayer.appendChild(quiltEl("line", {
+            x1: String(QUILT_MID_X - dimHalf),
+            y1: String(dimY),
+            x2: String(QUILT_MID_X + dimHalf),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          quiltMarkLayer.appendChild(quiltEl("line", {
+            x1: String(QUILT_MID_X - dimHalf),
+            y1: String(dimY - 4),
+            x2: String(QUILT_MID_X - dimHalf),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          quiltMarkLayer.appendChild(quiltEl("line", {
+            x1: String(QUILT_MID_X + dimHalf),
+            y1: String(dimY - 4),
+            x2: String(QUILT_MID_X + dimHalf),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          quiltMarkLayer.appendChild(quiltEl("text", {
+            id: "quilt-mm-label",
+            class: "quilt-label leftover-label leftover-quilt leftover-showing leftover-blister leftover-figure leftover-face leftover-inclusion leftover-zone",
+            x: String(QUILT_MID_X),
+            y: String(dimY - 6),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = quiltMm + " mm";
+          quiltMarkLayer.appendChild(quiltEl("text", {
+            id: "quilt-blister-label",
+            class: "blister-label leftover-blister leftover-quilt leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone leftover-quilted",
+            x: String(QUILT_MID_X),
+            y: String(QUILT_BOTTOM + 40),
+            fill: "#e0c090",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER BLISTER · QUILTED FIGURE · " + pic.count + " PATCHES";
+        } else {
+          quiltMarkLayer.appendChild(quiltEl("text", {
+            id: "quilt-label",
+            class: "quilt-label leftover-label leftover-even leftover-no-blister leftover-no-figure leftover-face leftover-one-board leftover-true",
+            x: String(QUILT_MID_X),
+            y: String(QUILT_MID_Y - 8),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "EVEN / NO LEFTOVER QUILT";
+        }
+
+        quiltSceneStatus.setAttribute("fill", pic.accent);
+        quiltSceneStatus.textContent = pic.status;
+        quiltScene.setAttribute("data-quilt", String(quiltMm));
+        quiltScene.setAttribute("data-leftover", pic.leftover);
+        quiltScene.setAttribute("data-verdict", pic.verdict);
+        quiltScene.setAttribute("data-view", "face-one-board");
+        quiltScene.setAttribute("data-hero", "leftover-quilt");
+        quiltScene.setAttribute("data-blister-count", String(pic.count));
+      }
+
+      function quiltToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-even";
+      }
+
+      function quiltRender() {
+        const pic = quiltPicture();
+        quiltPaint(pic);
+        quiltTitle.textContent = pic.alt;
+        quiltAlt.textContent = pic.alt;
+        quiltSvg.setAttribute("aria-label", pic.alt);
+        quiltDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + quiltMm + " mm showing"
+          : "leftover even";
+        quiltStatMm.textContent = quiltMm + " mm";
+        quiltStatLeftover.textContent = pic.leftover;
+        quiltStatBlister.textContent = pic.leftover === "showing"
+          ? quiltMm + " mm leftover"
+          : "even";
+        quiltStatLeftoverWrap.classList.remove("is-showing", "is-even");
+        quiltStatLeftoverWrap.classList.add(quiltToneClass(pic.leftover));
+        if (Number(quiltInput.value) !== quiltMm) quiltInput.value = String(quiltMm);
+        quiltInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function quiltResetSeed() {
+        quiltMm = QUILT_SEED.quiltMm;
+        quiltRender();
+      }
+
+      quiltInput.addEventListener("input", function (event) {
+        quiltMm = quiltClamp(Math.round(Number(event.target.value)), QUILT_MIN, QUILT_MAX);
+        quiltRender();
+      });
+      quiltBtnReset.addEventListener("click", quiltResetSeed);
+      quiltBtnResetStage.addEventListener("click", quiltResetSeed);
+
+      quiltRender();
+    </script>
+  </body>
+</html>
