@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Drip — a board looks even until you see the drip. Move the figure. See the leftover run." />
+    <title>Drip</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(200, 176, 112, 0.22);
+        --accent: #c8b070;
+        --timber: #a86838;
+        --drip-sap: #5a3818;
+        --drip-finish: #8a5828;
+        --drip-water: #6a5840;
+        --showing: #c8b070;
+        --even: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(200, 176, 112, 0.14), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(40, 28, 10, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 176, 112, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 176, 112, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 176, 112, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(200, 176, 112, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #drip-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(200, 176, 112, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-even b { color: var(--even); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #drip-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> drip · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover run that still sits in the face</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 24 Aug 2026 17:50</span>
+        <h1>Drip</h1>
+        <p class="lede">
+          A board looks even until you see the drip. Move the figure. See the leftover run.
+          Not a stain. Not pitch. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="drip-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover run still sits in the face</h2>
+          </div>
+          <span class="kicker" id="drip-desk-meta">leftover 32 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="drip-svg" viewBox="0 0 800 460" role="img" aria-labelledby="drip-title drip-desc">
+            <title id="drip-title">Drip is showing. Thirty-two millimetres of leftover run still sit in the face.</title>
+            <desc id="drip-desc">A board whose leftover is the drip — leftover trails of liquid that still sit in the face as leftover vertical runs (water, finish, or sap that ran and dried), not Stain (leftover grey-blue mineral/blue-stain wash flooding the fibres as a color cloud), not Pitch (leftover resin pocket / gum occupying a hole in the face), not Mottle (broken blotch-patches of figure), not Quilt (3D blister-patches), not Curl (fiddleback waves), not Ribbon (vertical quartered stripe of figure — grain, not a liquid trail), not Spalt (fungal zone-lines), not Throw (leftover vent plume reach in air), not Crotch (plume figure at a trunk/limb fork), not a check/split, not a knot, not paper folds. Thin, slightly wavering leftover trails: a bead at the top, a tail down the face, a leftover puddle at the stop. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="drip-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="drip-even-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#8a5428" />
+                <stop offset="46%" stop-color="#a86838" />
+                <stop offset="100%" stop-color="#c88848" />
+              </linearGradient>
+              <radialGradient id="drip-bead-sap" cx="38%" cy="32%" r="68%">
+                <stop offset="0%" stop-color="#f0d8a0" />
+                <stop offset="42%" stop-color="#c88848" />
+                <stop offset="100%" stop-color="#5a3818" />
+              </radialGradient>
+              <radialGradient id="drip-bead-finish" cx="36%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#ecd090" />
+                <stop offset="46%" stop-color="#a86830" />
+                <stop offset="100%" stop-color="#4a280c" />
+              </radialGradient>
+              <radialGradient id="drip-bead-water" cx="40%" cy="34%" r="66%">
+                <stop offset="0%" stop-color="#e8dcc4" />
+                <stop offset="48%" stop-color="#8a7860" />
+                <stop offset="100%" stop-color="#4a4034" />
+              </radialGradient>
+              <clipPath id="drip-board-clip">
+                <rect id="drip-board-clip-rect" x="72" y="118" width="656" height="224" />
+              </clipPath>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(200,176,112,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">FACE · ONE BOARD · LEFTOVER IS THE DRIP</text>
+            <g id="drip-scene" data-view="face-one-board" data-hero="leftover-drip" data-drip="32" data-leftover="showing" data-verdict="showing">
+              <g id="drip-bench-layer"></g>
+              <g id="drip-board-layer"></g>
+              <g id="drip-layer"></g>
+              <g id="drip-mark-layer"></g>
+              <text id="drip-scene-status" x="400" y="64" fill="#c8b070" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 32 MM LEFTOVER RUN</text>
+              <text id="drip-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER RUN THAT STILL SITS IN THE FACE · NOT A STAIN · NOT PITCH · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="drip-alt" class="sr-only" aria-live="polite">Drip is showing. Thirty-two millimetres of leftover run still sit in the face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="drip-input">Drip (mm · leftover run that still sits in the face)</label>
+            <input id="drip-input" type="range" min="0" max="80" step="1" value="32" />
+            <div class="ticks" aria-hidden="true">
+              <span>even / no leftover drip</span>
+              <span>seed showing</span>
+              <span>long run</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="drip-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Drip <b id="drip-stat-mm">32 mm</b></span>
+          <span id="drip-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="drip-stat-leftover">showing</b></span>
+          <span>Leftover run (sketch) <b id="drip-stat-run">32 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks even until you see the drip. Drip is leftover run — leftover trails of liquid that still sit in the face as leftover vertical runs (water, finish, or sap that ran and dried). A sketch, not a mill sign-off.
+        Seed is already showing — 32 mm of leftover runs, not an even face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a stain. Not pitch. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const DRIP_SEED = { dripMm: 32 };
+      const DRIP_MIN = 0;
+      const DRIP_MAX = 80;
+      const DRIP_EVEN_AT = 4;
+      const DRIP_LEFT = 72;
+      const DRIP_RIGHT = 728;
+      const DRIP_TOP = 118;
+      const DRIP_BOTTOM = 342;
+      const DRIP_MID_X = (DRIP_LEFT + DRIP_RIGHT) / 2;
+      const DRIP_MID_Y = (DRIP_TOP + DRIP_BOTTOM) / 2;
+      const DRIP_WIDTH = DRIP_RIGHT - DRIP_LEFT;
+      const DRIP_HEIGHT = DRIP_BOTTOM - DRIP_TOP;
+
+      // Leftover drip runs — thin, slightly wavering vertical trails of dried
+      // liquid that still sit in the face (a bead at the top, a tail down the
+      // face, a leftover puddle at the stop). Not a stain flood, not a resin
+      // pocket, not ribbon grain-stripes, not zone-lines, not blotch-patches.
+      const DRIP_SITES = [
+        { u: 0.22, v: 0.10, min: 5,  length: 1.00, wobble: 0.82, width: 1.10, tone: "sap" },
+        { u: 0.48, v: 0.07, min: 5,  length: 1.12, wobble: 1.18, width: 1.00, tone: "finish" },
+        { u: 0.72, v: 0.14, min: 6,  length: 0.92, wobble: 0.64, width: 1.22, tone: "water" },
+        { u: 0.36, v: 0.18, min: 8,  length: 0.86, wobble: 1.04, width: 0.92, tone: "sap" },
+        { u: 0.60, v: 0.09, min: 10, length: 1.06, wobble: 0.70, width: 1.06, tone: "finish" },
+        { u: 0.14, v: 0.16, min: 14, length: 0.78, wobble: 1.12, width: 0.88, tone: "water" },
+        { u: 0.84, v: 0.12, min: 18, length: 0.96, wobble: 0.52, width: 1.14, tone: "sap" },
+        { u: 0.28, v: 0.06, min: 26, length: 0.70, wobble: 0.94, width: 0.84, tone: "finish" },
+        { u: 0.54, v: 0.20, min: 36, length: 0.64, wobble: 1.26, width: 0.96, tone: "water" },
+        { u: 0.78, v: 0.08, min: 44, length: 0.80, wobble: 0.58, width: 1.08, tone: "sap" },
+        { u: 0.08, v: 0.22, min: 52, length: 0.58, wobble: 1.08, width: 0.80, tone: "finish" },
+        { u: 0.92, v: 0.16, min: 60, length: 0.72, wobble: 0.46, width: 1.00, tone: "water" },
+        { u: 0.42, v: 0.04, min: 68, length: 0.54, wobble: 0.88, width: 0.86, tone: "sap" },
+        { u: 0.66, v: 0.24, min: 76, length: 0.48, wobble: 1.16, width: 0.90, tone: "finish" }
+      ];
+
+      let dripMm = DRIP_SEED.dripMm;
+
+      const dripSvg = document.getElementById("drip-svg");
+      const dripScene = document.getElementById("drip-scene");
+      const dripTitle = document.getElementById("drip-title");
+      const dripAlt = document.getElementById("drip-alt");
+      const dripDeskMeta = document.getElementById("drip-desk-meta");
+      const dripInput = document.getElementById("drip-input");
+      const dripBenchLayer = document.getElementById("drip-bench-layer");
+      const dripBoardLayer = document.getElementById("drip-board-layer");
+      const dripLayer = document.getElementById("drip-layer");
+      const dripMarkLayer = document.getElementById("drip-mark-layer");
+      const dripSceneStatus = document.getElementById("drip-scene-status");
+      const dripStatMm = document.getElementById("drip-stat-mm");
+      const dripStatLeftover = document.getElementById("drip-stat-leftover");
+      const dripStatLeftoverWrap = document.getElementById("drip-stat-leftover-wrap");
+      const dripStatRun = document.getElementById("drip-stat-run");
+      const dripBtnReset = document.getElementById("drip-btn-reset");
+      const dripBtnResetStage = document.getElementById("drip-btn-reset-stage");
+
+      function dripClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function dripEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function dripSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          14: "fourteen",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          44: "forty-four",
+          50: "fifty",
+          52: "fifty-two",
+          60: "sixty",
+          68: "sixty-eight",
+          76: "seventy-six",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function dripVisibleSites(mm) {
+        if (mm <= DRIP_EVEN_AT) return [];
+        return DRIP_SITES.filter(function (site) {
+          return site.min <= mm;
+        });
+      }
+
+      function dripRunLength(site, mm) {
+        const reveal = Math.max(0.22, Math.min(1, (mm - site.min + 6) / Math.max(12, DRIP_MAX - site.min)));
+        return Math.max(18, (mm / DRIP_MAX) * DRIP_HEIGHT * 0.92 * site.length * reveal);
+      }
+
+      function dripGeometry(site, mm) {
+        const x0 = DRIP_LEFT + site.u * DRIP_WIDTH;
+        const y0 = DRIP_TOP + site.v * DRIP_HEIGHT;
+        const run = dripRunLength(site, mm);
+        const y1 = Math.min(DRIP_BOTTOM - 8, y0 + run);
+        const steps = 14;
+        const parts = [];
+        let lastX = x0;
+        let lastY = y0;
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const y = y0 + (y1 - y0) * t;
+          const wander = Math.sin(t * Math.PI * 2.35 + site.wobble * 3.1) * (1.6 + site.wobble * 1.8);
+          const settle = Math.sin(t * Math.PI * 4.1 + site.u * 7) * (0.7 + t * 1.1);
+          const x = x0 + (wander + settle) * (0.35 + t * 0.85);
+          parts.push((i === 0 ? "M " : "L ") + x.toFixed(1) + " " + y.toFixed(1));
+          lastX = x;
+          lastY = y;
+        }
+        return {
+          d: parts.join(" "),
+          x0: x0,
+          y0: y0,
+          x1: lastX,
+          y1: lastY,
+          run: y1 - y0
+        };
+      }
+
+      function dripBeadFill(tone) {
+        if (tone === "finish") return "url(#drip-bead-finish)";
+        if (tone === "water") return "url(#drip-bead-water)";
+        return "url(#drip-bead-sap)";
+      }
+
+      function dripTailStroke(tone) {
+        if (tone === "finish") return "#6a3810";
+        if (tone === "water") return "#5a4c3a";
+        return "#4a2c10";
+      }
+
+      function dripHighlightStroke(tone) {
+        if (tone === "water") return "rgba(232, 220, 196, 0.42)";
+        if (tone === "finish") return "rgba(236, 208, 144, 0.38)";
+        return "rgba(240, 216, 160, 0.40)";
+      }
+
+      function dripPicture() {
+        const leftover = dripMm <= DRIP_EVEN_AT ? "even" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + dripMm + " MM LEFTOVER RUN";
+          alt = "Drip is showing. " + dripSpokenMm(dripMm).charAt(0).toUpperCase() + dripSpokenMm(dripMm).slice(1) + " millimetres of leftover run still sit in the face.";
+        } else {
+          status = "EVEN · NO LEFTOVER DRIP";
+          alt = "Drip is even. The board looks even. No leftover drip. A sketch, not a mill sign-off.";
+        }
+        const sites = dripVisibleSites(dripMm);
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#c8b070" : "#8ec8b4",
+          sites: sites,
+          count: sites.length
+        };
+      }
+
+      function dripPaintRun(group, site, index) {
+        const n = index + 1;
+        const geo = dripGeometry(site, dripMm);
+        const beadR = 3.2 + site.width * 1.6 + Math.min(2.4, dripMm * 0.02);
+        const puddleRx = 5.2 + site.width * 2.4 + Math.min(4.5, dripMm * 0.04);
+        const puddleRy = 2.4 + site.width * 0.9;
+        const tailW = 1.7 + site.width * 1.15;
+        const band = dripEl("g", {
+          id: "leftover-drip-run-" + n,
+          class: "leftover-drip leftover-showing leftover-run leftover-trail leftover-liquid leftover-face leftover-one-board leftover-vertical leftover-dried",
+          "data-run": String(n),
+          "data-min": String(site.min),
+          "data-tone": site.tone,
+          "data-run-mm": dripMm.toFixed(0)
+        });
+        band.appendChild(dripEl("path", {
+          id: "leftover-drip-tail-" + n,
+          class: "leftover-drip leftover-showing leftover-run leftover-trail leftover-tail leftover-liquid leftover-face leftover-one-board leftover-vertical leftover-dried",
+          d: geo.d,
+          fill: "none",
+          stroke: dripTailStroke(site.tone),
+          "stroke-width": tailW.toFixed(2),
+          "stroke-linecap": "round",
+          "stroke-linejoin": "round",
+          opacity: "0.88"
+        }));
+        band.appendChild(dripEl("path", {
+          id: "leftover-drip-highlight-" + n,
+          class: "leftover-drip leftover-showing leftover-run leftover-trail leftover-highlight leftover-liquid leftover-face leftover-one-board leftover-vertical leftover-dried",
+          d: geo.d,
+          fill: "none",
+          stroke: dripHighlightStroke(site.tone),
+          "stroke-width": Math.max(0.7, tailW * 0.38).toFixed(2),
+          "stroke-linecap": "round",
+          opacity: "0.72"
+        }));
+        band.appendChild(dripEl("ellipse", {
+          id: "leftover-drip-bead-" + n,
+          class: "leftover-drip leftover-showing leftover-run leftover-bead leftover-liquid leftover-face leftover-one-board leftover-dried",
+          cx: geo.x0.toFixed(1),
+          cy: geo.y0.toFixed(1),
+          rx: beadR.toFixed(1),
+          ry: (beadR * 0.86).toFixed(1),
+          fill: dripBeadFill(site.tone),
+          stroke: "rgba(240, 216, 160, 0.35)",
+          "stroke-width": "0.7"
+        }));
+        band.appendChild(dripEl("ellipse", {
+          id: "leftover-drip-puddle-" + n,
+          class: "leftover-drip leftover-showing leftover-run leftover-puddle leftover-stop leftover-liquid leftover-face leftover-one-board leftover-dried",
+          cx: geo.x1.toFixed(1),
+          cy: geo.y1.toFixed(1),
+          rx: puddleRx.toFixed(1),
+          ry: puddleRy.toFixed(1),
+          fill: dripBeadFill(site.tone),
+          opacity: "0.78"
+        }));
+        group.appendChild(band);
+      }
+
+      function dripPaint(pic) {
+        const isEven = pic.leftover === "even";
+
+        dripBenchLayer.replaceChildren();
+        dripBenchLayer.appendChild(dripEl("rect", {
+          class: "site leftover-elevation leftover-drip leftover-board leftover-run leftover-face leftover-one-board",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#drip-bench-wash)",
+          stroke: "rgba(200,176,112,0.16)",
+          "stroke-width": "1.2"
+        }));
+        dripBenchLayer.appendChild(dripEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · FACE / LEFTOVER LIQUID RUN";
+
+        dripBoardLayer.replaceChildren();
+        const board = dripEl("g", {
+          id: "drip-sawn-board",
+          class: isEven
+            ? "board leftover-even leftover-no-drip leftover-drip leftover-board leftover-no-run leftover-face leftover-one-board leftover-true"
+            : "board leftover-showing leftover-drip leftover-run leftover-trail leftover-board leftover-face leftover-one-board leftover-liquid"
+        });
+        board.appendChild(dripEl("rect", {
+          id: "drip-board-face",
+          class: isEven
+            ? "board-face leftover-board leftover-even leftover-drip leftover-no-run leftover-one-board leftover-true"
+            : "board-face leftover-board leftover-showing leftover-drip leftover-run leftover-trail leftover-one-board leftover-liquid",
+          x: String(DRIP_LEFT),
+          y: String(DRIP_TOP),
+          width: String(DRIP_WIDTH),
+          height: String(DRIP_HEIGHT),
+          fill: "url(#drip-even-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        const fibreGroup = dripEl("g", {
+          id: "drip-board-fibres",
+          class: "board-fibres leftover-board leftover-face leftover-one-board leftover-drip",
+          "clip-path": "url(#drip-board-clip)"
+        });
+        for (let i = 0; i < 9; i++) {
+          const y = DRIP_TOP + 16 + i * 24;
+          fibreGroup.appendChild(dripEl("line", {
+            class: "board-fibre leftover-board leftover-face leftover-one-board leftover-drip leftover-even",
+            x1: String(DRIP_LEFT + 10),
+            y1: String(y),
+            x2: String(DRIP_RIGHT - 10),
+            y2: String(y),
+            stroke: "rgba(74, 42, 16, 0.14)",
+            "stroke-width": "1.05"
+          }));
+        }
+        board.appendChild(fibreGroup);
+        board.appendChild(dripEl("text", {
+          x: String(DRIP_LEFT + 18),
+          y: String(DRIP_TOP + 22),
+          fill: "#5a3c1c",
+          "font-size": "11",
+          "letter-spacing": "2"
+        })).textContent = "EVEN · FACE";
+        dripBoardLayer.appendChild(board);
+
+        dripLayer.replaceChildren();
+        const leftover = dripEl("g", {
+          id: "leftover-drip",
+          class: isEven
+            ? "drip leftover-drip leftover-even leftover-empty leftover-no-run leftover-face leftover-one-board leftover-true"
+            : "drip leftover-drip leftover-showing leftover-run leftover-trail leftover-liquid leftover-bead leftover-puddle leftover-face leftover-one-board leftover-vertical leftover-dried",
+          "clip-path": "url(#drip-board-clip)",
+          "data-run-mm": String(dripMm),
+          "data-run-count": String(pic.count)
+        });
+
+        if (!isEven) {
+          pic.sites.forEach(function (site, index) {
+            dripPaintRun(leftover, site, index);
+          });
+        } else {
+          leftover.appendChild(dripEl("path", {
+            id: "drip-even",
+            class: "leftover-drip leftover-even leftover-empty leftover-no-run leftover-face leftover-one-board leftover-true",
+            d: "M " + (DRIP_LEFT + 10).toFixed(1) + " " + DRIP_MID_Y.toFixed(1) + " L " + (DRIP_RIGHT - 10).toFixed(1) + " " + DRIP_MID_Y.toFixed(1),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "3 5",
+            opacity: "0.45"
+          }));
+        }
+        dripLayer.appendChild(leftover);
+
+        dripMarkLayer.replaceChildren();
+        dripMarkLayer.appendChild(dripEl("text", {
+          x: String(DRIP_LEFT),
+          y: String(DRIP_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "EVEN TIMBER";
+        dripMarkLayer.appendChild(dripEl("text", {
+          x: String(DRIP_RIGHT),
+          y: String(DRIP_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isEven ? "RUN · EVEN / NO LEFTOVER DRIP" : "RUN · LEFTOVER TRAIL STILL SITS";
+
+        if (!isEven) {
+          const dimLen = Math.max(18, Math.min(190, 16 + dripMm * 2.15));
+          const dimX = DRIP_LEFT - 18;
+          const dimTop = DRIP_TOP + 8;
+          dripMarkLayer.appendChild(dripEl("line", {
+            x1: String(dimX),
+            y1: String(dimTop),
+            x2: String(dimX),
+            y2: String(dimTop + dimLen),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          dripMarkLayer.appendChild(dripEl("line", {
+            x1: String(dimX - 4),
+            y1: String(dimTop),
+            x2: String(dimX + 4),
+            y2: String(dimTop),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          dripMarkLayer.appendChild(dripEl("line", {
+            x1: String(dimX - 4),
+            y1: String(dimTop + dimLen),
+            x2: String(dimX + 4),
+            y2: String(dimTop + dimLen),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          dripMarkLayer.appendChild(dripEl("text", {
+            id: "drip-mm-label",
+            class: "drip-label leftover-label leftover-drip leftover-showing leftover-run leftover-trail leftover-face leftover-liquid",
+            x: String(dimX - 8),
+            y: String(dimTop + dimLen / 2),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "end"
+          })).textContent = dripMm + " mm";
+          dripMarkLayer.appendChild(dripEl("text", {
+            id: "drip-run-label",
+            class: "run-label leftover-run leftover-drip leftover-trail leftover-liquid leftover-face leftover-one-board leftover-bead leftover-puddle leftover-vertical leftover-dried",
+            x: String(DRIP_MID_X),
+            y: String(DRIP_BOTTOM + 40),
+            fill: "#c8b070",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER RUN · DRIP TRAIL · " + pic.count + " RUNS";
+        } else {
+          dripMarkLayer.appendChild(dripEl("text", {
+            id: "drip-label",
+            class: "drip-label leftover-label leftover-even leftover-no-run leftover-face leftover-one-board leftover-true",
+            x: String(DRIP_MID_X),
+            y: String(DRIP_MID_Y - 8),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "EVEN / NO LEFTOVER DRIP";
+        }
+
+        dripSceneStatus.setAttribute("fill", pic.accent);
+        dripSceneStatus.textContent = pic.status;
+        dripScene.setAttribute("data-drip", String(dripMm));
+        dripScene.setAttribute("data-leftover", pic.leftover);
+        dripScene.setAttribute("data-verdict", pic.verdict);
+        dripScene.setAttribute("data-view", "face-one-board");
+        dripScene.setAttribute("data-hero", "leftover-drip");
+        dripScene.setAttribute("data-run-count", String(pic.count));
+      }
+
+      function dripToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-even";
+      }
+
+      function dripRender() {
+        const pic = dripPicture();
+        dripPaint(pic);
+        dripTitle.textContent = pic.alt;
+        dripAlt.textContent = pic.alt;
+        dripSvg.setAttribute("aria-label", pic.alt);
+        dripDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + dripMm + " mm showing"
+          : "leftover even";
+        dripStatMm.textContent = dripMm + " mm";
+        dripStatLeftover.textContent = pic.leftover;
+        dripStatRun.textContent = pic.leftover === "showing"
+          ? dripMm + " mm leftover"
+          : "even";
+        dripStatLeftoverWrap.classList.remove("is-showing", "is-even");
+        dripStatLeftoverWrap.classList.add(dripToneClass(pic.leftover));
+        if (Number(dripInput.value) !== dripMm) dripInput.value = String(dripMm);
+        dripInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function dripResetSeed() {
+        dripMm = DRIP_SEED.dripMm;
+        dripRender();
+      }
+
+      dripInput.addEventListener("input", function (event) {
+        dripMm = dripClamp(Math.round(Number(event.target.value)), DRIP_MIN, DRIP_MAX);
+        dripRender();
+      });
+      dripBtnReset.addEventListener("click", dripResetSeed);
+      dripBtnResetStage.addEventListener("click", dripResetSeed);
+
+      dripRender();
+    </script>
+  </body>
+</html>
