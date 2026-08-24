@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Dovetail — a corner looks closed until you see the dovetail. Move the tail. See the leftover tails." />
+    <title>Dovetail</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(200, 140, 88, 0.22);
+        --accent: #d49258;
+        --timber: #7a4e28;
+        --tail: #f0c888;
+        --showing: #e8b878;
+        --square: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(212, 146, 88, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(48, 24, 10, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 146, 88, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 16, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 146, 88, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 146, 88, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 146, 88, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #dovetail-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(232, 184, 120, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-square b { color: var(--square); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #dovetail-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> dovetail · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover interlocking tails that still sit in the corner</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 25 Aug 2026 08:50</span>
+        <h1>Dovetail</h1>
+        <p class="lede">
+          A corner looks closed until you see the dovetail. Move the tail. See the leftover tails.
+          Not a tenon. Not a mortise. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="dovetail-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover interlocking tail still sits in the corner</h2>
+          </div>
+          <span class="kicker" id="dovetail-desk-meta">leftover 26 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="dovetail-svg" viewBox="0 0 800 460" role="img" aria-labelledby="dovetail-title dovetail-desc">
+            <title id="dovetail-title">Dovetail is showing. Twenty-six millimetres of leftover flared interlocking tails still sit in the corner.</title>
+            <desc id="dovetail-desc">One corner joint whose leftover is the dovetail — leftover flared interlocking tails still sitting in the corner (leftover pins-and-tails still sitting in the corner, not Tenon leftover rectangular tongue, not Mortise leftover rectangular pocket, not Spline leftover thin key, not Dowel leftover round pin, not Mitre leftover 45° angle, not Inlay leftover set piece, not Dado leftover through-groove). Two members meet at a corner. Default fill is a square butt with no leftover dovetail. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="dovetail-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="dovetail-tail-board-wash" x1="0%" y1="0%" x2="100%" y2="40%">
+                <stop offset="0%" stop-color="#5a3a1c" />
+                <stop offset="46%" stop-color="#8a5a28" />
+                <stop offset="100%" stop-color="#c88840" />
+              </linearGradient>
+              <linearGradient id="dovetail-pin-board-wash" x1="20%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4a3014" />
+                <stop offset="50%" stop-color="#6e441c" />
+                <stop offset="100%" stop-color="#a86a30" />
+              </linearGradient>
+              <linearGradient id="dovetail-tail-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#e8b060" />
+                <stop offset="48%" stop-color="#f0c888" />
+                <stop offset="100%" stop-color="#d49258" />
+              </linearGradient>
+              <linearGradient id="dovetail-pin-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#3a2410" />
+                <stop offset="100%" stop-color="#6a4420" />
+              </linearGradient>
+              <pattern id="dovetail-board-grain" width="18" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 5 L18 5" fill="none" stroke="rgba(40,24,10,0.16)" stroke-width="1" />
+                <path d="M0 2 L18 2" fill="none" stroke="rgba(40,24,10,0.07)" stroke-width="1" />
+              </pattern>
+              <pattern id="dovetail-pin-grain" width="10" height="16" patternUnits="userSpaceOnUse">
+                <path d="M5 0 L5 16" fill="none" stroke="rgba(40,24,10,0.16)" stroke-width="1" />
+                <path d="M2 0 L2 16" fill="none" stroke="rgba(40,24,10,0.07)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(212,146,88,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">CORNER · TWO MEMBERS · LEFTOVER IS THE DOVETAIL</text>
+            <g id="dovetail-scene" data-view="corner-two-members" data-hero="leftover-dovetail" data-dovetail="26" data-leftover="showing" data-verdict="showing" data-joint="flared-tails">
+              <g id="dovetail-bench-layer"></g>
+              <g id="dovetail-board-layer"></g>
+              <g id="dovetail-layer"></g>
+              <g id="dovetail-mark-layer"></g>
+              <text id="dovetail-scene-status" x="400" y="64" fill="#e8b878" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 26 MM LEFTOVER TAIL</text>
+              <text id="dovetail-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER FLARED INTERLOCKING TAILS STILL SIT IN THE CORNER · NOT A TENON · NOT A MORTISE · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="dovetail-alt" class="sr-only" aria-live="polite">Dovetail is showing. Twenty-six millimetres of leftover flared interlocking tails still sit in the corner.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="dovetail-input">Dovetail (mm · leftover flared tail still sitting in the corner)</label>
+            <input id="dovetail-input" type="range" min="0" max="80" step="1" value="26" />
+            <div class="ticks" aria-hidden="true">
+              <span>square / no leftover dovetail</span>
+              <span>seed showing</span>
+              <span>wider leftover tails</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="dovetail-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Dovetail <b id="dovetail-stat-mm">26 mm</b></span>
+          <span id="dovetail-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="dovetail-stat-leftover">showing</b></span>
+          <span>Leftover tails (sketch) <b id="dovetail-stat-tails">26 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A corner looks closed until you see the dovetail. Dovetail is leftover interlocking tails — leftover flared pins-and-tails still sitting in the corner. A sketch, not a mill sign-off.
+        Seed is already showing — 26 mm of leftover tail, not a square-only corner. Arrow keys move the focused control.
+        Refresh restores the seed. Not a tenon. Not a mortise. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const DOVETAIL_SEED = { tailMm: 26 };
+      const DOVETAIL_MIN = 0;
+      const DOVETAIL_MAX = 80;
+      const DOVETAIL_SQUARE_AT = 4;
+      const DOVETAIL_SCALE = 1.85;
+      const DOVETAIL_TAIL_COUNT = 3;
+      const JOINT_X = 452;
+      const TAIL_LEFT = 72;
+      const TAIL_TOP = 118;
+      const TAIL_BOTTOM = 298;
+      const PIN_RIGHT = 728;
+      const PIN_BOTTOM = 388;
+      const PIN_LEFT_BODY = 548;
+
+      let tailMm = DOVETAIL_SEED.tailMm;
+
+      const dovetailSvg = document.getElementById("dovetail-svg");
+      const dovetailScene = document.getElementById("dovetail-scene");
+      const dovetailTitle = document.getElementById("dovetail-title");
+      const dovetailAlt = document.getElementById("dovetail-alt");
+      const dovetailDeskMeta = document.getElementById("dovetail-desk-meta");
+      const dovetailInput = document.getElementById("dovetail-input");
+      const dovetailBenchLayer = document.getElementById("dovetail-bench-layer");
+      const dovetailBoardLayer = document.getElementById("dovetail-board-layer");
+      const dovetailLayer = document.getElementById("dovetail-layer");
+      const dovetailMarkLayer = document.getElementById("dovetail-mark-layer");
+      const dovetailSceneStatus = document.getElementById("dovetail-scene-status");
+      const dovetailStatMm = document.getElementById("dovetail-stat-mm");
+      const dovetailStatLeftover = document.getElementById("dovetail-stat-leftover");
+      const dovetailStatLeftoverWrap = document.getElementById("dovetail-stat-leftover-wrap");
+      const dovetailStatTails = document.getElementById("dovetail-stat-tails");
+      const dovetailBtnReset = document.getElementById("dovetail-btn-reset");
+      const dovetailBtnResetStage = document.getElementById("dovetail-btn-reset-stage");
+
+      function dovetailClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function dovetailEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function dovetailSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function dovetailPicture() {
+        const leftover = tailMm <= DOVETAIL_SQUARE_AT ? "square" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + tailMm + " MM LEFTOVER TAIL";
+          alt = "Dovetail is showing. " + dovetailSpokenMm(tailMm).charAt(0).toUpperCase() + dovetailSpokenMm(tailMm).slice(1) + " millimetres of leftover flared interlocking tails still sit in the corner.";
+        } else {
+          status = "SQUARE · NO LEFTOVER DOVETAIL";
+          alt = "Dovetail is square. The corner looks like a square butt. No leftover dovetail. A sketch, not a mill sign-off.";
+        }
+        const wide = leftover === "showing" ? tailMm * DOVETAIL_SCALE : 0;
+        const narrow = wide * 0.52;
+        const depth = leftover === "showing" ? Math.max(28, wide * 0.85) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e8b878" : "#8ec8b4",
+          wide: wide,
+          narrow: narrow,
+          depth: depth,
+          joint: leftover === "showing" ? "flared-tails" : "square-butt"
+        };
+      }
+
+      function dovetailTailSlots(pic) {
+        const jointH = TAIL_BOTTOM - TAIL_TOP;
+        const halfPin = Math.max(10, (jointH - pic.wide * DOVETAIL_TAIL_COUNT) / (DOVETAIL_TAIL_COUNT + 1));
+        const slots = [];
+        let y = TAIL_TOP + halfPin;
+        for (let i = 0; i < DOVETAIL_TAIL_COUNT; i++) {
+          const mid = y + pic.wide / 2;
+          slots.push({
+            index: i,
+            y0: y,
+            y1: y + pic.wide,
+            mid: mid,
+            rootTop: mid - pic.narrow / 2,
+            rootBot: mid + pic.narrow / 2,
+            tipTop: y,
+            tipBot: y + pic.wide
+          });
+          y += pic.wide + halfPin;
+        }
+        return slots;
+      }
+
+      function dovetailTailBoardPath(pic) {
+        if (pic.leftover === "square") {
+          return [
+            "M" + TAIL_LEFT + " " + TAIL_TOP,
+            "L" + JOINT_X + " " + TAIL_TOP,
+            "L" + JOINT_X + " " + TAIL_BOTTOM,
+            "L" + TAIL_LEFT + " " + TAIL_BOTTOM,
+            "Z"
+          ].join(" ");
+        }
+        const slots = dovetailTailSlots(pic);
+        const tipX = JOINT_X + pic.depth;
+        const parts = ["M" + TAIL_LEFT + " " + TAIL_TOP, "L" + JOINT_X + " " + TAIL_TOP];
+        slots.forEach(function (slot) {
+          parts.push("L" + JOINT_X + " " + slot.rootTop.toFixed(1));
+          parts.push("L" + tipX.toFixed(1) + " " + slot.tipTop.toFixed(1));
+          parts.push("L" + tipX.toFixed(1) + " " + slot.tipBot.toFixed(1));
+          parts.push("L" + JOINT_X + " " + slot.rootBot.toFixed(1));
+        });
+        parts.push("L" + JOINT_X + " " + TAIL_BOTTOM);
+        parts.push("L" + TAIL_LEFT + " " + TAIL_BOTTOM);
+        parts.push("Z");
+        return parts.join(" ");
+      }
+
+      function dovetailPinBoardPath(pic) {
+        if (pic.leftover === "square") {
+          return [
+            "M" + JOINT_X + " " + TAIL_TOP,
+            "L" + PIN_RIGHT + " " + TAIL_TOP,
+            "L" + PIN_RIGHT + " " + PIN_BOTTOM,
+            "L" + PIN_LEFT_BODY + " " + PIN_BOTTOM,
+            "L" + PIN_LEFT_BODY + " " + TAIL_BOTTOM,
+            "L" + JOINT_X + " " + TAIL_BOTTOM,
+            "Z"
+          ].join(" ");
+        }
+        const slots = dovetailTailSlots(pic);
+        const tipX = JOINT_X + pic.depth;
+        const parts = ["M" + JOINT_X + " " + TAIL_TOP, "L" + PIN_RIGHT + " " + TAIL_TOP, "L" + PIN_RIGHT + " " + PIN_BOTTOM, "L" + PIN_LEFT_BODY + " " + PIN_BOTTOM, "L" + PIN_LEFT_BODY + " " + TAIL_BOTTOM, "L" + JOINT_X + " " + TAIL_BOTTOM];
+        for (let i = slots.length - 1; i >= 0; i--) {
+          const slot = slots[i];
+          parts.push("L" + JOINT_X + " " + slot.rootBot.toFixed(1));
+          parts.push("L" + tipX.toFixed(1) + " " + slot.tipBot.toFixed(1));
+          parts.push("L" + tipX.toFixed(1) + " " + slot.tipTop.toFixed(1));
+          parts.push("L" + JOINT_X + " " + slot.rootTop.toFixed(1));
+        }
+        parts.push("Z");
+        return parts.join(" ");
+      }
+
+      function dovetailOneTailPath(slot, pic) {
+        const tipX = JOINT_X + pic.depth;
+        return [
+          "M" + JOINT_X + " " + slot.rootTop.toFixed(1),
+          "L" + tipX.toFixed(1) + " " + slot.tipTop.toFixed(1),
+          "L" + tipX.toFixed(1) + " " + slot.tipBot.toFixed(1),
+          "L" + JOINT_X + " " + slot.rootBot.toFixed(1),
+          "Z"
+        ].join(" ");
+      }
+
+      function dovetailPaint(pic) {
+        const isSquare = pic.leftover === "square";
+
+        dovetailBenchLayer.replaceChildren();
+        dovetailBenchLayer.appendChild(dovetailEl("rect", {
+          class: "site leftover-corner leftover-dovetail leftover-joint leftover-two-members leftover-tails leftover-lock leftover-one-corner",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#dovetail-bench-wash)",
+          stroke: "rgba(212,146,88,0.16)",
+          "stroke-width": "1.2"
+        }));
+        dovetailBenchLayer.appendChild(dovetailEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "TWO MEMBERS · CORNER · LEFTOVER FLARED TAILS STILL SIT";
+
+        dovetailBoardLayer.replaceChildren();
+        const boards = dovetailEl("g", {
+          id: "dovetail-members",
+          class: isSquare
+            ? "members leftover-square leftover-no-dovetail leftover-dovetail leftover-corner leftover-butt leftover-two-members leftover-joint leftover-true"
+            : "members leftover-showing leftover-dovetail leftover-tails leftover-flared leftover-lock leftover-corner leftover-two-members leftover-joint leftover-pins-and-tails"
+        });
+        boards.appendChild(dovetailEl("path", {
+          id: "dovetail-pin-board",
+          class: isSquare
+            ? "pin-board leftover-board leftover-square leftover-dovetail leftover-corner leftover-butt leftover-two-members leftover-joint leftover-timber"
+            : "pin-board leftover-board leftover-showing leftover-dovetail leftover-pins leftover-corner leftover-two-members leftover-joint leftover-timber leftover-lock",
+          d: dovetailPinBoardPath(pic),
+          fill: "url(#dovetail-pin-board-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        boards.appendChild(dovetailEl("path", {
+          class: "pin-grain leftover-board leftover-corner leftover-two-members leftover-dovetail leftover-joint leftover-timber",
+          d: dovetailPinBoardPath(pic),
+          fill: "url(#dovetail-pin-grain)",
+          "pointer-events": "none"
+        }));
+        boards.appendChild(dovetailEl("path", {
+          id: "dovetail-tail-board",
+          class: isSquare
+            ? "tail-board leftover-board leftover-square leftover-dovetail leftover-corner leftover-butt leftover-two-members leftover-joint leftover-timber"
+            : "tail-board leftover-board leftover-showing leftover-dovetail leftover-tails leftover-flared leftover-corner leftover-two-members leftover-joint leftover-timber leftover-lock",
+          d: dovetailTailBoardPath(pic),
+          fill: "url(#dovetail-tail-board-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        boards.appendChild(dovetailEl("path", {
+          class: "tail-grain leftover-board leftover-corner leftover-two-members leftover-dovetail leftover-joint leftover-timber",
+          d: dovetailTailBoardPath(pic),
+          fill: "url(#dovetail-board-grain)",
+          "pointer-events": "none"
+        }));
+        boards.appendChild(dovetailEl("text", {
+          x: String(TAIL_LEFT + 24),
+          y: String(TAIL_TOP + 22),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2"
+        })).textContent = "TAIL MEMBER";
+        boards.appendChild(dovetailEl("text", {
+          x: String(PIN_LEFT_BODY + 18),
+          y: String(TAIL_BOTTOM + 28),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2"
+        })).textContent = "PIN MEMBER";
+        dovetailBoardLayer.appendChild(boards);
+
+        dovetailLayer.replaceChildren();
+        const leftover = dovetailEl("g", {
+          id: "leftover-dovetail",
+          class: isSquare
+            ? "dovetail leftover-dovetail leftover-square leftover-empty leftover-no-tails leftover-corner leftover-butt leftover-two-members leftover-joint leftover-true"
+            : "dovetail leftover-dovetail leftover-showing leftover-tails leftover-flared leftover-lock leftover-pins-and-tails leftover-corner leftover-two-members leftover-joint",
+          "data-tail-mm": String(tailMm),
+          "data-tail-px": String(pic.wide.toFixed(1)),
+          "data-flare": isSquare ? "none" : "flared",
+          "data-joint": pic.joint
+        });
+
+        if (!isSquare) {
+          const slots = dovetailTailSlots(pic);
+          const tails = dovetailEl("g", {
+            id: "leftover-dovetail-tails",
+            class: "leftover-dovetail leftover-showing leftover-tails leftover-flared leftover-lock leftover-corner leftover-two-members leftover-joint leftover-pins-and-tails"
+          });
+          slots.forEach(function (slot) {
+            tails.appendChild(dovetailEl("path", {
+              id: "leftover-dovetail-tail-" + slot.index,
+              class: "leftover-dovetail leftover-showing leftover-tail leftover-flared leftover-lock leftover-corner leftover-two-members leftover-joint leftover-pins-and-tails",
+              d: dovetailOneTailPath(slot, pic),
+              fill: "url(#dovetail-tail-wash)",
+              stroke: pic.accent,
+              "stroke-width": "1.2",
+              "data-shape": "flared-trapezoid",
+              "data-wide": String(pic.wide.toFixed(1)),
+              "data-narrow": String(pic.narrow.toFixed(1)),
+              "data-depth": String(pic.depth.toFixed(1))
+            }));
+          });
+          leftover.appendChild(tails);
+          leftover.appendChild(dovetailEl("text", {
+            id: "leftover-dovetail-label",
+            class: "dovetail-label leftover-label leftover-dovetail leftover-showing leftover-tails leftover-flared leftover-corner leftover-two-members leftover-joint leftover-lock",
+            x: String(JOINT_X + pic.depth / 2),
+            y: String((TAIL_TOP + TAIL_BOTTOM) / 2 + 4),
+            fill: "#4a3010",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "TAILS";
+        } else {
+          leftover.appendChild(dovetailEl("line", {
+            id: "dovetail-square",
+            class: "leftover-dovetail leftover-square leftover-empty leftover-no-tails leftover-corner leftover-butt leftover-two-members leftover-joint leftover-true",
+            x1: String(JOINT_X),
+            y1: String(TAIL_TOP),
+            x2: String(JOINT_X),
+            y2: String(TAIL_BOTTOM),
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            "stroke-dasharray": "4 5",
+            opacity: "0.7"
+          }));
+        }
+        dovetailLayer.appendChild(leftover);
+
+        dovetailMarkLayer.replaceChildren();
+        dovetailMarkLayer.appendChild(dovetailEl("text", {
+          x: String(TAIL_LEFT),
+          y: String(TAIL_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "CORNER";
+        dovetailMarkLayer.appendChild(dovetailEl("text", {
+          x: String(PIN_RIGHT),
+          y: String(PIN_BOTTOM + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSquare ? "JOINT · SQUARE / NO LEFTOVER DOVETAIL" : "JOINT · LEFTOVER FLARED TAILS STILL SIT";
+
+        if (!isSquare) {
+          const slots = dovetailTailSlots(pic);
+          const mid = slots[1] || slots[0];
+          const dimX = JOINT_X + pic.depth + 16;
+          dovetailMarkLayer.appendChild(dovetailEl("line", {
+            id: "dovetail-dim",
+            class: "dovetail-dim leftover-dovetail leftover-showing leftover-tails leftover-flared leftover-corner leftover-two-members leftover-joint leftover-lock",
+            x1: String(dimX),
+            y1: String(mid.tipTop),
+            x2: String(dimX),
+            y2: String(mid.tipBot),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          dovetailMarkLayer.appendChild(dovetailEl("line", {
+            x1: String(dimX - 4),
+            y1: String(mid.tipTop),
+            x2: String(dimX + 4),
+            y2: String(mid.tipTop),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          dovetailMarkLayer.appendChild(dovetailEl("line", {
+            x1: String(dimX - 4),
+            y1: String(mid.tipBot),
+            x2: String(dimX + 4),
+            y2: String(mid.tipBot),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          dovetailMarkLayer.appendChild(dovetailEl("text", {
+            id: "dovetail-mm-label",
+            class: "dovetail-label leftover-label leftover-dovetail leftover-showing leftover-tails leftover-flared leftover-corner leftover-two-members leftover-joint leftover-lock",
+            x: String(dimX + 8),
+            y: String(mid.mid + 4),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2"
+          })).textContent = tailMm + " mm";
+          dovetailMarkLayer.appendChild(dovetailEl("text", {
+            id: "dovetail-tails-label",
+            class: "tails-label leftover-tails leftover-dovetail leftover-flared leftover-corner leftover-two-members leftover-joint leftover-lock leftover-pins-and-tails",
+            x: "400",
+            y: String(PIN_BOTTOM + 18),
+            fill: "#d4b080",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER TAILS · FLARED INTERLOCK STILL SITS · NOT A TENON · NOT A PIN";
+        } else {
+          dovetailMarkLayer.appendChild(dovetailEl("text", {
+            id: "dovetail-label",
+            class: "dovetail-label leftover-label leftover-square leftover-no-tails leftover-corner leftover-butt leftover-two-members leftover-joint leftover-true leftover-empty",
+            x: String(JOINT_X - 12),
+            y: String((TAIL_TOP + TAIL_BOTTOM) / 2),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "end"
+          })).textContent = "SQUARE / NO LEFTOVER DOVETAIL";
+        }
+
+        dovetailSceneStatus.setAttribute("fill", pic.accent);
+        dovetailSceneStatus.textContent = pic.status;
+        dovetailScene.setAttribute("data-dovetail", String(tailMm));
+        dovetailScene.setAttribute("data-leftover", pic.leftover);
+        dovetailScene.setAttribute("data-verdict", pic.verdict);
+        dovetailScene.setAttribute("data-view", "corner-two-members");
+        dovetailScene.setAttribute("data-hero", "leftover-dovetail");
+        dovetailScene.setAttribute("data-tail-mm", String(tailMm));
+        dovetailScene.setAttribute("data-tail-px", String(pic.wide.toFixed(1)));
+        dovetailScene.setAttribute("data-joint", pic.joint);
+        dovetailScene.setAttribute("data-flare", isSquare ? "none" : "flared");
+      }
+
+      function dovetailToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-square";
+      }
+
+      function dovetailRender() {
+        const pic = dovetailPicture();
+        dovetailPaint(pic);
+        dovetailTitle.textContent = pic.alt;
+        dovetailAlt.textContent = pic.alt;
+        dovetailSvg.setAttribute("aria-label", pic.alt);
+        dovetailDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + tailMm + " mm showing"
+          : "leftover square";
+        dovetailStatMm.textContent = tailMm + " mm";
+        dovetailStatLeftover.textContent = pic.leftover;
+        dovetailStatTails.textContent = pic.leftover === "showing"
+          ? tailMm + " mm leftover"
+          : "square";
+        dovetailStatLeftoverWrap.classList.remove("is-showing", "is-square");
+        dovetailStatLeftoverWrap.classList.add(dovetailToneClass(pic.leftover));
+        if (Number(dovetailInput.value) !== tailMm) dovetailInput.value = String(tailMm);
+        dovetailInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function dovetailResetSeed() {
+        tailMm = DOVETAIL_SEED.tailMm;
+        dovetailRender();
+      }
+
+      dovetailInput.addEventListener("input", function (event) {
+        tailMm = dovetailClamp(Math.round(Number(event.target.value)), DOVETAIL_MIN, DOVETAIL_MAX);
+        dovetailRender();
+      });
+      dovetailBtnReset.addEventListener("click", dovetailResetSeed);
+      dovetailBtnResetStage.addEventListener("click", dovetailResetSeed);
+
+      dovetailRender();
+    </script>
+  </body>
+</html>
