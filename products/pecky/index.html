@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Pecky — a board looks sound until you see the pecky. Move the pocket. See the leftover cavity." />
+    <title>Pecky</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(168, 140, 72, 0.22);
+        --accent: #b89858;
+        --timber: #8a6840;
+        --cavity: #1a120c;
+        --decay: #3a2a16;
+        --showing: #d4bc80;
+        --sound: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(184, 152, 88, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(32, 22, 10, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(184, 152, 88, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(184, 152, 88, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(184, 152, 88, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(184, 152, 88, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #pecky-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 188, 128, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-sound b { color: var(--sound); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #pecky-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> pecky · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover cavity that still sits in the face</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 25 Aug 2026 03:50</span>
+        <h1>Pecky</h1>
+        <p class="lede">
+          A board looks sound until you see the pecky. Move the pocket. See the leftover cavity.
+          Not pitch. Not a check. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="pecky-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover cavity still sits in the face</h2>
+          </div>
+          <span class="kicker" id="pecky-desk-meta">leftover 28 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="pecky-svg" viewBox="0 0 800 460" role="img" aria-labelledby="pecky-title pecky-desc">
+            <title id="pecky-title">Pecky is showing. Twenty-eight millimetres of leftover decay cavities still sit in the face.</title>
+            <desc id="pecky-desc">One board in face whose leftover is the pecky — leftover irregular fungal decay cavities still sitting in the face (leftover holes of rot, as in pecky cypress), not Pitch (leftover resin / gum pocket occupying a hole), not Check (leftover linear drying split still opening along the face), not Inlay (leftover contrasting piece set into a cut recess), not Stain (leftover color wash), not Spalt (leftover dark fungal zone-lines / map-boundaries), not Knot (circular dark of branch wood), not a paper fold-sheet. Default fill is sound timber. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="pecky-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1610" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="pecky-board-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#6a4e28" />
+                <stop offset="46%" stop-color="#8a6840" />
+                <stop offset="100%" stop-color="#c4a060" />
+              </linearGradient>
+              <radialGradient id="pecky-cavity-wash" cx="38%" cy="32%" r="72%">
+                <stop offset="0%" stop-color="#2a1c10" stop-opacity="0.98" />
+                <stop offset="42%" stop-color="#120c08" stop-opacity="0.96" />
+                <stop offset="78%" stop-color="#3a2a16" stop-opacity="0.94" />
+                <stop offset="100%" stop-color="#5a4020" stop-opacity="0.88" />
+              </radialGradient>
+              <radialGradient id="pecky-cavity-void" cx="46%" cy="40%" r="58%">
+                <stop offset="0%" stop-color="#080604" stop-opacity="0.98" />
+                <stop offset="70%" stop-color="#1a120c" stop-opacity="0.94" />
+                <stop offset="100%" stop-color="#2a1c10" stop-opacity="0.7" />
+              </radialGradient>
+              <pattern id="pecky-board-grain" width="22" height="12" patternUnits="userSpaceOnUse">
+                <path d="M0 6 L22 6" fill="none" stroke="rgba(40,28,12,0.16)" stroke-width="1" />
+                <path d="M0 2 L22 2" fill="none" stroke="rgba(40,28,12,0.07)" stroke-width="1" />
+              </pattern>
+              <clipPath id="pecky-board-clip">
+                <rect x="72" y="118" width="656" height="224" />
+              </clipPath>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(168,140,72,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">FACE · ONE BOARD · LEFTOVER IS THE PECKY</text>
+            <g id="pecky-scene" data-view="face-one-board" data-hero="leftover-pecky" data-pecky="28" data-leftover="showing" data-verdict="showing">
+              <g id="pecky-bench-layer"></g>
+              <g id="pecky-board-layer"></g>
+              <g id="pecky-layer"></g>
+              <g id="pecky-mark-layer"></g>
+              <text id="pecky-scene-status" x="400" y="64" fill="#d4bc80" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 28 MM LEFTOVER CAVITY</text>
+              <text id="pecky-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER CAVITY THAT STILL SITS IN THE FACE · NOT PITCH · NOT A CHECK · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="pecky-alt" class="sr-only" aria-live="polite">Pecky is showing. Twenty-eight millimetres of leftover decay cavities still sit in the face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="pecky-input">Pecky (mm · leftover decay cavity still sitting in the face)</label>
+            <input id="pecky-input" type="range" min="0" max="80" step="1" value="28" />
+            <div class="ticks" aria-hidden="true">
+              <span>sound / no leftover pecky</span>
+              <span>seed showing</span>
+              <span>more leftover cavities</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="pecky-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Pecky <b id="pecky-stat-mm">28 mm</b></span>
+          <span id="pecky-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="pecky-stat-leftover">showing</b></span>
+          <span>Leftover cavity (sketch) <b id="pecky-stat-cavity">28 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks sound until you see the pecky. Pecky is leftover cavity — leftover irregular fungal decay pockets still sitting in the face. A sketch, not a mill sign-off.
+        Seed is already showing — 28 mm of leftover decay cavities, not a sound face. Arrow keys move the focused control.
+        Refresh restores the seed. Not pitch. Not a check. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const PECKY_SEED = { peckyMm: 28 };
+      const PECKY_MIN = 0;
+      const PECKY_MAX = 80;
+      const PECKY_SOUND_AT = 4;
+      const PECKY_SCALE = 1.05;
+      const PECKY_FACE_LEFT = 72;
+      const PECKY_FACE_RIGHT = 728;
+      const PECKY_FACE_TOP = 118;
+      const PECKY_FACE_BOTTOM = 342;
+      const PECKY_CAVITIES = [
+        { id: "a", cx: 228, cy: 196, rx: 1.00, ry: 0.48, rot: -22, appear: 5 },
+        { id: "b", cx: 334, cy: 252, rx: 0.78, ry: 0.36, rot: 28, appear: 6 },
+        { id: "c", cx: 428, cy: 184, rx: 0.86, ry: 0.40, rot: -10, appear: 5 },
+        { id: "d", cx: 518, cy: 268, rx: 0.62, ry: 0.32, rot: 18, appear: 10 },
+        { id: "e", cx: 586, cy: 208, rx: 0.54, ry: 0.28, rot: -32, appear: 14 },
+        { id: "f", cx: 372, cy: 298, rx: 0.46, ry: 0.24, rot: 12, appear: 18 },
+        { id: "g", cx: 648, cy: 248, rx: 0.68, ry: 0.30, rot: 8, appear: 22 }
+      ];
+
+      let peckyMm = PECKY_SEED.peckyMm;
+
+      const peckySvg = document.getElementById("pecky-svg");
+      const peckyScene = document.getElementById("pecky-scene");
+      const peckyTitle = document.getElementById("pecky-title");
+      const peckyAlt = document.getElementById("pecky-alt");
+      const peckyDeskMeta = document.getElementById("pecky-desk-meta");
+      const peckyInput = document.getElementById("pecky-input");
+      const peckyBenchLayer = document.getElementById("pecky-bench-layer");
+      const peckyBoardLayer = document.getElementById("pecky-board-layer");
+      const peckyLayer = document.getElementById("pecky-layer");
+      const peckyMarkLayer = document.getElementById("pecky-mark-layer");
+      const peckySceneStatus = document.getElementById("pecky-scene-status");
+      const peckyStatMm = document.getElementById("pecky-stat-mm");
+      const peckyStatLeftover = document.getElementById("pecky-stat-leftover");
+      const peckyStatLeftoverWrap = document.getElementById("pecky-stat-leftover-wrap");
+      const peckyStatCavity = document.getElementById("pecky-stat-cavity");
+      const peckyBtnReset = document.getElementById("pecky-btn-reset");
+      const peckyBtnResetStage = document.getElementById("pecky-btn-reset-stage");
+
+      function peckyClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function peckyEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function peckySpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function peckyVisibleCavities(mm) {
+        return PECKY_CAVITIES.filter(function (cavity) {
+          return mm > PECKY_SOUND_AT && mm >= cavity.appear;
+        });
+      }
+
+      function peckyPicture() {
+        const leftover = peckyMm <= PECKY_SOUND_AT ? "sound" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + peckyMm + " MM LEFTOVER CAVITY";
+          alt = "Pecky is showing. " + peckySpokenMm(peckyMm).charAt(0).toUpperCase() + peckySpokenMm(peckyMm).slice(1) + " millimetres of leftover decay cavities still sit in the face.";
+        } else {
+          status = "SOUND · NO LEFTOVER PECKY";
+          alt = "Pecky is sound. The board looks sound throughout. No leftover pecky. A sketch, not a mill sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4bc80" : "#8ec8b4",
+          cavityPx: leftover === "showing" ? peckyMm * PECKY_SCALE : 0,
+          cavities: leftover === "showing" ? peckyVisibleCavities(peckyMm) : []
+        };
+      }
+
+      function peckyCavityPath(cx, cy, rx, ry) {
+        return [
+          "M " + (cx - rx * 0.92).toFixed(1) + " " + (cy + ry * 0.12).toFixed(1),
+          "C " + (cx - rx * 1.08).toFixed(1) + " " + (cy - ry * 0.48).toFixed(1) + ", " +
+            (cx - rx * 0.42).toFixed(1) + " " + (cy - ry * 1.12).toFixed(1) + ", " +
+            (cx + rx * 0.08).toFixed(1) + " " + (cy - ry * 0.86).toFixed(1),
+          "C " + (cx + rx * 0.62).toFixed(1) + " " + (cy - ry * 0.58).toFixed(1) + ", " +
+            (cx + rx * 1.14).toFixed(1) + " " + (cy - ry * 0.22).toFixed(1) + ", " +
+            (cx + rx * 0.88).toFixed(1) + " " + (cy + ry * 0.28).toFixed(1),
+          "C " + (cx + rx * 0.56).toFixed(1) + " " + (cy + ry * 0.86).toFixed(1) + ", " +
+            (cx + rx * 0.08).toFixed(1) + " " + (cy + ry * 1.16).toFixed(1) + ", " +
+            (cx - rx * 0.34).toFixed(1) + " " + (cy + ry * 0.72).toFixed(1),
+          "C " + (cx - rx * 0.68).toFixed(1) + " " + (cy + ry * 0.42).toFixed(1) + ", " +
+            (cx - rx * 0.78).toFixed(1) + " " + (cy + ry * 0.22).toFixed(1) + ", " +
+            (cx - rx * 0.92).toFixed(1) + " " + (cy + ry * 0.12).toFixed(1),
+          "Z"
+        ].join(" ");
+      }
+
+      function peckyPaint(pic) {
+        const isSound = pic.leftover === "sound";
+        const faceW = PECKY_FACE_RIGHT - PECKY_FACE_LEFT;
+        const faceH = PECKY_FACE_BOTTOM - PECKY_FACE_TOP;
+        const faceCx = (PECKY_FACE_LEFT + PECKY_FACE_RIGHT) / 2;
+
+        peckyBenchLayer.replaceChildren();
+        peckyBenchLayer.appendChild(peckyEl("rect", {
+          class: "site leftover-face leftover-pecky leftover-board leftover-cavity leftover-one-board leftover-decay leftover-pocket",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#pecky-bench-wash)",
+          stroke: "rgba(168,140,72,0.16)",
+          "stroke-width": "1.2"
+        }));
+        peckyBenchLayer.appendChild(peckyEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · FACE / LEFTOVER DECAY CAVITIES STILL SIT";
+
+        peckyBoardLayer.replaceChildren();
+        const board = peckyEl("g", {
+          id: "pecky-sawn-board",
+          class: isSound
+            ? "board leftover-sound leftover-no-pecky leftover-pecky leftover-board leftover-no-cavity leftover-one-board leftover-face leftover-true"
+            : "board leftover-showing leftover-pecky leftover-cavity leftover-decay leftover-board leftover-face leftover-one-board leftover-pocket"
+        });
+        board.appendChild(peckyEl("rect", {
+          id: "pecky-board-face",
+          class: isSound
+            ? "board-face leftover-board leftover-sound leftover-pecky leftover-no-cavity leftover-one-board leftover-face leftover-true"
+            : "board-face leftover-board leftover-showing leftover-pecky leftover-cavity leftover-decay leftover-one-board leftover-face leftover-pocket",
+          x: String(PECKY_FACE_LEFT),
+          y: String(PECKY_FACE_TOP),
+          width: String(faceW),
+          height: String(faceH),
+          fill: "url(#pecky-board-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        board.appendChild(peckyEl("rect", {
+          class: "board-grain leftover-board leftover-face leftover-one-board leftover-pecky leftover-cavity",
+          x: String(PECKY_FACE_LEFT),
+          y: String(PECKY_FACE_TOP),
+          width: String(faceW),
+          height: String(faceH),
+          fill: "url(#pecky-board-grain)",
+          "pointer-events": "none"
+        }));
+        board.appendChild(peckyEl("text", {
+          x: String(PECKY_FACE_LEFT + 28),
+          y: String((PECKY_FACE_TOP + PECKY_FACE_BOTTOM) / 2 + 4),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2"
+        })).textContent = "BOARD · FACE";
+        peckyBoardLayer.appendChild(board);
+
+        peckyLayer.replaceChildren();
+        const leftover = peckyEl("g", {
+          id: "leftover-pecky",
+          class: isSound
+            ? "pecky leftover-pecky leftover-sound leftover-empty leftover-no-cavity leftover-one-board leftover-face leftover-true"
+            : "pecky leftover-pecky leftover-showing leftover-cavity leftover-decay leftover-pocket leftover-face leftover-one-board leftover-irregular",
+          "data-cavity-mm": String(peckyMm),
+          "data-cavity-count": String(pic.cavities.length),
+          "clip-path": "url(#pecky-board-clip)"
+        });
+
+        if (!isSound) {
+          pic.cavities.forEach(function (cavity) {
+            const grow = Math.max(0.42, (peckyMm - cavity.appear + 8) / 36);
+            const rx = Math.max(10, pic.cavityPx * cavity.rx * grow * 0.42);
+            const ry = Math.max(6, pic.cavityPx * cavity.ry * grow * 0.42);
+            const group = peckyEl("g", {
+              id: "leftover-pecky-cavity-" + cavity.id,
+              class: "leftover-pecky leftover-showing leftover-cavity leftover-decay leftover-pocket leftover-face leftover-one-board leftover-irregular leftover-void",
+              transform: "rotate(" + cavity.rot + " " + cavity.cx + " " + cavity.cy + ")",
+              "data-cavity-id": cavity.id
+            });
+            group.appendChild(peckyEl("path", {
+              class: "leftover-pecky leftover-showing leftover-cavity leftover-rim leftover-decay leftover-face leftover-one-board",
+              d: peckyCavityPath(cavity.cx, cavity.cy, rx * 1.16, ry * 1.18),
+              fill: "url(#pecky-cavity-wash)",
+              stroke: pic.accent,
+              "stroke-width": "1.2",
+              opacity: "0.92"
+            }));
+            group.appendChild(peckyEl("path", {
+              class: "leftover-pecky leftover-showing leftover-cavity leftover-void leftover-decay leftover-face leftover-one-board leftover-irregular",
+              d: peckyCavityPath(cavity.cx + rx * 0.04, cavity.cy - ry * 0.04, rx * 0.78, ry * 0.72),
+              fill: "url(#pecky-cavity-void)",
+              stroke: "none"
+            }));
+            leftover.appendChild(group);
+          });
+          leftover.appendChild(peckyEl("text", {
+            id: "leftover-pecky-label",
+            class: "pecky-label leftover-label leftover-pecky leftover-showing leftover-cavity leftover-decay leftover-face leftover-one-board leftover-pocket",
+            x: String(faceCx),
+            y: String(PECKY_FACE_TOP + 22),
+            fill: "#f0e8c4",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "PECKY";
+        } else {
+          leftover.appendChild(peckyEl("path", {
+            id: "pecky-sound",
+            class: "leftover-pecky leftover-sound leftover-empty leftover-no-cavity leftover-face leftover-one-board leftover-true",
+            d: peckyCavityPath(418, 226, 26, 13),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.3",
+            "stroke-dasharray": "3 5",
+            opacity: "0.4"
+          }));
+        }
+        peckyLayer.appendChild(leftover);
+
+        peckyMarkLayer.replaceChildren();
+        peckyMarkLayer.appendChild(peckyEl("text", {
+          x: String(PECKY_FACE_LEFT),
+          y: String(PECKY_FACE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "END";
+        peckyMarkLayer.appendChild(peckyEl("text", {
+          x: String(PECKY_FACE_RIGHT),
+          y: String(PECKY_FACE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSound ? "FACE · SOUND / NO LEFTOVER PECKY" : "FACE · LEFTOVER CAVITIES STILL SIT";
+
+        if (!isSound) {
+          const hero = pic.cavities[0];
+          const grow = Math.max(0.42, (peckyMm - hero.appear + 8) / 36);
+          const rx = Math.max(10, pic.cavityPx * hero.rx * grow * 0.42);
+          const dimY = hero.cy - rx * 0.72 - 18;
+          peckyMarkLayer.appendChild(peckyEl("line", {
+            id: "pecky-dim",
+            class: "pecky-dim leftover-pecky leftover-showing leftover-cavity leftover-decay leftover-face leftover-one-board leftover-pocket",
+            x1: String(hero.cx - rx * 0.96),
+            y1: String(dimY),
+            x2: String(hero.cx + rx * 0.88),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          peckyMarkLayer.appendChild(peckyEl("line", {
+            x1: String(hero.cx - rx * 0.96),
+            y1: String(dimY - 4),
+            x2: String(hero.cx - rx * 0.96),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          peckyMarkLayer.appendChild(peckyEl("line", {
+            x1: String(hero.cx + rx * 0.88),
+            y1: String(dimY - 4),
+            x2: String(hero.cx + rx * 0.88),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          peckyMarkLayer.appendChild(peckyEl("text", {
+            id: "pecky-mm-label",
+            class: "pecky-label leftover-label leftover-pecky leftover-showing leftover-cavity leftover-decay leftover-face leftover-one-board leftover-pocket",
+            x: String(hero.cx),
+            y: String(dimY - 6),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = peckyMm + " mm";
+          peckyMarkLayer.appendChild(peckyEl("text", {
+            id: "pecky-cavity-label",
+            class: "cavity-label leftover-cavity leftover-pecky leftover-decay leftover-face leftover-one-board leftover-pocket leftover-irregular",
+            x: String(faceCx),
+            y: String(PECKY_FACE_BOTTOM + 40),
+            fill: "#d4c090",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER CAVITY · DECAY POCKETS STILL SIT · NOT PITCH · NOT A CHECK";
+        } else {
+          peckyMarkLayer.appendChild(peckyEl("text", {
+            id: "pecky-label",
+            class: "pecky-label leftover-label leftover-sound leftover-no-cavity leftover-one-board leftover-face leftover-true leftover-empty",
+            x: String(faceCx),
+            y: String((PECKY_FACE_TOP + PECKY_FACE_BOTTOM) / 2),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SOUND / NO LEFTOVER PECKY";
+        }
+
+        peckySceneStatus.setAttribute("fill", pic.accent);
+        peckySceneStatus.textContent = pic.status;
+        peckyScene.setAttribute("data-pecky", String(peckyMm));
+        peckyScene.setAttribute("data-leftover", pic.leftover);
+        peckyScene.setAttribute("data-verdict", pic.verdict);
+        peckyScene.setAttribute("data-view", "face-one-board");
+        peckyScene.setAttribute("data-hero", "leftover-pecky");
+        peckyScene.setAttribute("data-cavity-mm", String(peckyMm));
+        peckyScene.setAttribute("data-cavity-count", String(pic.cavities.length));
+      }
+
+      function peckyToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-sound";
+      }
+
+      function peckyRender() {
+        const pic = peckyPicture();
+        peckyPaint(pic);
+        peckyTitle.textContent = pic.alt;
+        peckyAlt.textContent = pic.alt;
+        peckySvg.setAttribute("aria-label", pic.alt);
+        peckyDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + peckyMm + " mm showing"
+          : "leftover sound";
+        peckyStatMm.textContent = peckyMm + " mm";
+        peckyStatLeftover.textContent = pic.leftover;
+        peckyStatCavity.textContent = pic.leftover === "showing"
+          ? peckyMm + " mm leftover"
+          : "sound";
+        peckyStatLeftoverWrap.classList.remove("is-showing", "is-sound");
+        peckyStatLeftoverWrap.classList.add(peckyToneClass(pic.leftover));
+        if (Number(peckyInput.value) !== peckyMm) peckyInput.value = String(peckyMm);
+        peckyInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function peckyResetSeed() {
+        peckyMm = PECKY_SEED.peckyMm;
+        peckyRender();
+      }
+
+      peckyInput.addEventListener("input", function (event) {
+        peckyMm = peckyClamp(Math.round(Number(event.target.value)), PECKY_MIN, PECKY_MAX);
+        peckyRender();
+      });
+      peckyBtnReset.addEventListener("click", peckyResetSeed);
+      peckyBtnResetStage.addEventListener("click", peckyResetSeed);
+
+      peckyRender();
+    </script>
+  </body>
+</html>
