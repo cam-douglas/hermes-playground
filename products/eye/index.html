@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Eye — a board looks even until you see the eye. Move the figure. See the leftover dimple." />
+    <title>Eye</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(212, 168, 96, 0.22);
+        --accent: #d4a85c;
+        --timber: #b88248;
+        --dimple: #4a2810;
+        --halo: #f0d8a0;
+        --showing: #d4a85c;
+        --even: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(212, 168, 96, 0.14), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(48, 28, 10, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 168, 96, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 168, 96, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 168, 96, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 168, 96, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #eye-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 168, 96, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-even b { color: var(--even); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #eye-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> eye · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover dimple that still sits in the face</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 24 Aug 2026 10:50</span>
+        <h1>Eye</h1>
+        <p class="lede">
+          A board looks even until you see the eye. Move the figure. See the leftover dimple.
+          Not a knot. Not a burl. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="eye-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover dimple still sits in the face</h2>
+          </div>
+          <span class="kicker" id="eye-desk-meta">leftover 22 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="eye-svg" viewBox="0 0 800 460" role="img" aria-labelledby="eye-title eye-desc">
+            <title id="eye-title">Eye is showing. Twenty-two millimetres of leftover dimple still sit in the face.</title>
+            <desc id="eye-desc">A board whose leftover is the eye — leftover small circular dimples of figure that still sit scattered in the face as leftover tiny conical disruptions where dormant buds sat (bird's-eye). Not a knot, not a burl swirl, not wavy curl bands, not annual rings, not a radial medullary spoke, not a heartwood core occupying the middle, not a pale sap stripe along the edge, not a cut-to-fibre mismatch. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="eye-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="eye-even-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#9a6a34" />
+                <stop offset="46%" stop-color="#b88248" />
+                <stop offset="100%" stop-color="#c89454" />
+              </linearGradient>
+              <radialGradient id="eye-halo-wash" cx="42%" cy="38%" r="68%">
+                <stop offset="0%" stop-color="#f4e0b0" stop-opacity="0.22" />
+                <stop offset="55%" stop-color="#d4a85c" stop-opacity="0.18" />
+                <stop offset="100%" stop-color="#a87438" stop-opacity="0" />
+              </radialGradient>
+              <radialGradient id="eye-dimple-wash" cx="38%" cy="34%" r="72%">
+                <stop offset="0%" stop-color="#c89448" stop-opacity="0.55" />
+                <stop offset="42%" stop-color="#8a5020" stop-opacity="0.82" />
+                <stop offset="100%" stop-color="#3a1c0a" stop-opacity="0.94" />
+              </radialGradient>
+              <radialGradient id="eye-centre-wash" cx="40%" cy="36%" r="70%">
+                <stop offset="0%" stop-color="#5a3014" />
+                <stop offset="100%" stop-color="#1a0c06" />
+              </radialGradient>
+              <clipPath id="eye-board-clip">
+                <rect id="eye-board-clip-rect" x="72" y="118" width="656" height="224" />
+              </clipPath>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(212,168,96,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">FACE · ONE BOARD · LEFTOVER IS THE EYE</text>
+            <g id="eye-scene" data-view="face-one-board" data-hero="leftover-eye" data-eye="22" data-leftover="showing" data-verdict="showing">
+              <g id="eye-bench-layer"></g>
+              <g id="eye-board-layer"></g>
+              <g id="eye-layer"></g>
+              <g id="eye-mark-layer"></g>
+              <text id="eye-scene-status" x="400" y="64" fill="#d4a85c" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 22 MM LEFTOVER DIMPLE</text>
+              <text id="eye-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER DIMPLE THAT STILL SITS IN THE FACE · NOT A KNOT · NOT A BURL · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="eye-alt" class="sr-only" aria-live="polite">Eye is showing. Twenty-two millimetres of leftover dimple still sit in the face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="eye-input">Eye (mm · leftover dimple-figure that still sits in the face)</label>
+            <input id="eye-input" type="range" min="0" max="80" step="1" value="22" />
+            <div class="ticks" aria-hidden="true">
+              <span>even / no leftover eye</span>
+              <span>seed showing</span>
+              <span>wide dimple</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="eye-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Eye <b id="eye-stat-mm">22 mm</b></span>
+          <span id="eye-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="eye-stat-leftover">showing</b></span>
+          <span>Leftover dimple (sketch) <b id="eye-stat-dimple">22 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks even until you see the eye. Eye is leftover dimple — leftover small circular dimples of figure that still sit scattered in the face as leftover tiny conical disruptions where dormant buds sat. A sketch, not a mill sign-off.
+        Seed is already showing — 22 mm of leftover dimple-figure, not an even face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a knot. Not a burl. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const EYE_SEED = { eyeMm: 22 };
+      const EYE_MIN = 0;
+      const EYE_MAX = 80;
+      const EYE_EVEN_AT = 4;
+      const EYE_LEFT = 72;
+      const EYE_RIGHT = 728;
+      const EYE_TOP = 118;
+      const EYE_BOTTOM = 342;
+      const EYE_MID_X = (EYE_LEFT + EYE_RIGHT) / 2;
+      const EYE_MID_Y = (EYE_TOP + EYE_BOTTOM) / 2;
+      const EYE_WIDTH = EYE_RIGHT - EYE_LEFT;
+      const EYE_HEIGHT = EYE_BOTTOM - EYE_TOP;
+
+      // Scattered leftover dimple sites — bird's-eye, not a grid, not one knot, not a swirl patch.
+      const EYE_SITES = [
+        { u: 0.16, v: 0.28, min: 5,  size: 0.92 },
+        { u: 0.29, v: 0.46, min: 6,  size: 1.10 },
+        { u: 0.43, v: 0.24, min: 7,  size: 0.86 },
+        { u: 0.56, v: 0.38, min: 8,  size: 1.14 },
+        { u: 0.69, v: 0.22, min: 9,  size: 0.94 },
+        { u: 0.81, v: 0.41, min: 10, size: 1.06 },
+        { u: 0.20, v: 0.62, min: 11, size: 0.88 },
+        { u: 0.34, v: 0.74, min: 12, size: 1.16 },
+        { u: 0.49, v: 0.56, min: 13, size: 0.98 },
+        { u: 0.63, v: 0.68, min: 14, size: 1.08 },
+        { u: 0.76, v: 0.58, min: 15, size: 0.90 },
+        { u: 0.24, v: 0.86, min: 16, size: 1.12 },
+        { u: 0.38, v: 0.34, min: 17, size: 0.84 },
+        { u: 0.53, v: 0.80, min: 18, size: 1.14 },
+        { u: 0.72, v: 0.82, min: 19, size: 0.96 },
+        { u: 0.86, v: 0.70, min: 20, size: 1.02 },
+        { u: 0.10, v: 0.48, min: 28, size: 0.78 },
+        { u: 0.46, v: 0.42, min: 36, size: 0.82 },
+        { u: 0.60, v: 0.90, min: 44, size: 0.88 },
+        { u: 0.78, v: 0.16, min: 52, size: 0.80 },
+        { u: 0.90, v: 0.32, min: 60, size: 0.74 },
+        { u: 0.27, v: 0.16, min: 66, size: 0.76 },
+        { u: 0.65, v: 0.50, min: 72, size: 0.70 },
+        { u: 0.13, v: 0.76, min: 78, size: 0.72 }
+      ];
+
+      let eyeMm = EYE_SEED.eyeMm;
+
+      const eyeSvg = document.getElementById("eye-svg");
+      const eyeScene = document.getElementById("eye-scene");
+      const eyeTitle = document.getElementById("eye-title");
+      const eyeAlt = document.getElementById("eye-alt");
+      const eyeDeskMeta = document.getElementById("eye-desk-meta");
+      const eyeInput = document.getElementById("eye-input");
+      const eyeBenchLayer = document.getElementById("eye-bench-layer");
+      const eyeBoardLayer = document.getElementById("eye-board-layer");
+      const eyeLayer = document.getElementById("eye-layer");
+      const eyeMarkLayer = document.getElementById("eye-mark-layer");
+      const eyeSceneStatus = document.getElementById("eye-scene-status");
+      const eyeStatMm = document.getElementById("eye-stat-mm");
+      const eyeStatLeftover = document.getElementById("eye-stat-leftover");
+      const eyeStatLeftoverWrap = document.getElementById("eye-stat-leftover-wrap");
+      const eyeStatDimple = document.getElementById("eye-stat-dimple");
+      const eyeBtnReset = document.getElementById("eye-btn-reset");
+      const eyeBtnResetStage = document.getElementById("eye-btn-reset-stage");
+
+      function eyeClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function eyeEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function eyeSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          15: "fifteen",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          36: "thirty-six",
+          40: "forty",
+          45: "forty-five",
+          50: "fifty",
+          60: "sixty",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function eyeVisibleSites(mm) {
+        if (mm <= EYE_EVEN_AT) return [];
+        return EYE_SITES.filter(function (site) {
+          return site.min <= mm;
+        });
+      }
+
+      function eyeDimpleRadius(mm, site) {
+        return (3.1 + mm * 0.082) * site.size;
+      }
+
+      function eyePicture() {
+        const leftover = eyeMm <= EYE_EVEN_AT ? "even" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + eyeMm + " MM LEFTOVER DIMPLE";
+          alt = "Eye is showing. " + eyeSpokenMm(eyeMm).charAt(0).toUpperCase() + eyeSpokenMm(eyeMm).slice(1) + " millimetres of leftover dimple still sit in the face.";
+        } else {
+          status = "EVEN · NO LEFTOVER EYE";
+          alt = "Eye is even. The board looks even. No leftover eye. A sketch, not a mill sign-off.";
+        }
+        const sites = eyeVisibleSites(eyeMm);
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4a85c" : "#8ec8b4",
+          sites: sites,
+          count: sites.length
+        };
+      }
+
+      function eyePaintDimple(group, site, index, pic) {
+        const x = EYE_LEFT + 18 + site.u * (EYE_WIDTH - 36);
+        const y = EYE_TOP + 28 + site.v * (EYE_HEIGHT - 48);
+        const r = eyeDimpleRadius(eyeMm, site);
+        const n = index + 1;
+        const dimple = eyeEl("g", {
+          id: "leftover-eye-dimple-" + n,
+          class: "leftover-eye leftover-showing leftover-dimple leftover-figure leftover-inclusion leftover-face leftover-one-board leftover-zone leftover-birds-eye",
+          "data-dimple": String(n),
+          "data-radius": r.toFixed(1),
+          "data-min": String(site.min)
+        });
+        dimple.appendChild(eyeEl("ellipse", {
+          id: "leftover-eye-halo-" + n,
+          class: "leftover-eye leftover-showing leftover-dimple leftover-halo leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone",
+          cx: x.toFixed(1),
+          cy: y.toFixed(1),
+          rx: (r * 1.95).toFixed(1),
+          ry: (r * 1.62).toFixed(1),
+          fill: "url(#eye-halo-wash)",
+          opacity: "0.72"
+        }));
+        dimple.appendChild(eyeEl("ellipse", {
+          id: "leftover-eye-body-" + n,
+          class: "leftover-eye leftover-showing leftover-dimple leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone",
+          cx: x.toFixed(1),
+          cy: y.toFixed(1),
+          rx: r.toFixed(1),
+          ry: (r * 0.82).toFixed(1),
+          fill: "url(#eye-dimple-wash)",
+          stroke: pic.accent,
+          "stroke-width": "0.85"
+        }));
+        dimple.appendChild(eyeEl("ellipse", {
+          id: "leftover-eye-centre-" + n,
+          class: "leftover-eye leftover-showing leftover-dimple leftover-centre leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone",
+          cx: (x - r * 0.06).toFixed(1),
+          cy: (y - r * 0.04).toFixed(1),
+          rx: (r * 0.34).toFixed(1),
+          ry: (r * 0.28).toFixed(1),
+          fill: "url(#eye-centre-wash)"
+        }));
+        dimple.appendChild(eyeEl("ellipse", {
+          id: "leftover-eye-cone-" + n,
+          class: "leftover-eye leftover-showing leftover-dimple leftover-cone leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone",
+          cx: (x - r * 0.22).toFixed(1),
+          cy: (y - r * 0.26).toFixed(1),
+          rx: (r * 0.24).toFixed(1),
+          ry: (r * 0.14).toFixed(1),
+          fill: "#f4e0b0",
+          opacity: "0.32"
+        }));
+        group.appendChild(dimple);
+      }
+
+      function eyePaint(pic) {
+        const isEven = pic.leftover === "even";
+
+        eyeBenchLayer.replaceChildren();
+        eyeBenchLayer.appendChild(eyeEl("rect", {
+          class: "site leftover-elevation leftover-eye leftover-board leftover-dimple leftover-figure leftover-face leftover-one-board",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#eye-bench-wash)",
+          stroke: "rgba(212,168,96,0.16)",
+          "stroke-width": "1.2"
+        }));
+        eyeBenchLayer.appendChild(eyeEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · FACE / LEFTOVER DIMPLE-FIGURE";
+
+        eyeBoardLayer.replaceChildren();
+        const board = eyeEl("g", {
+          id: "eye-sawn-board",
+          class: isEven
+            ? "board leftover-even leftover-no-eye leftover-eye leftover-board leftover-no-dimple leftover-no-figure leftover-face leftover-one-board leftover-true"
+            : "board leftover-showing leftover-eye leftover-dimple leftover-figure leftover-board leftover-face leftover-one-board leftover-inclusion"
+        });
+        board.appendChild(eyeEl("rect", {
+          id: "eye-board-face",
+          class: isEven
+            ? "board-face leftover-board leftover-even leftover-eye leftover-no-dimple leftover-one-board leftover-true"
+            : "board-face leftover-board leftover-showing leftover-eye leftover-dimple leftover-figure leftover-one-board leftover-inclusion",
+          x: String(EYE_LEFT),
+          y: String(EYE_TOP),
+          width: String(EYE_WIDTH),
+          height: String(EYE_HEIGHT),
+          fill: "url(#eye-even-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        const fibreGroup = eyeEl("g", {
+          id: "eye-board-fibres",
+          class: "board-fibres leftover-board leftover-face leftover-one-board leftover-eye",
+          "clip-path": "url(#eye-board-clip)"
+        });
+        for (let i = 0; i < 9; i++) {
+          const y = EYE_TOP + 16 + i * 24;
+          fibreGroup.appendChild(eyeEl("line", {
+            class: "board-fibre leftover-board leftover-face leftover-one-board leftover-eye leftover-even",
+            x1: String(EYE_LEFT + 10),
+            y1: String(y),
+            x2: String(EYE_RIGHT - 10),
+            y2: String(y),
+            stroke: "rgba(74, 42, 16, 0.14)",
+            "stroke-width": "1.05"
+          }));
+        }
+        board.appendChild(fibreGroup);
+        board.appendChild(eyeEl("text", {
+          x: String(EYE_LEFT + 18),
+          y: String(EYE_TOP + 22),
+          fill: "#5a3c1c",
+          "font-size": "11",
+          "letter-spacing": "2"
+        })).textContent = "EVEN · FACE";
+        eyeBoardLayer.appendChild(board);
+
+        eyeLayer.replaceChildren();
+        const leftover = eyeEl("g", {
+          id: "leftover-eye",
+          class: isEven
+            ? "eye leftover-eye leftover-even leftover-empty leftover-no-dimple leftover-no-figure leftover-face leftover-one-board leftover-true"
+            : "eye leftover-eye leftover-showing leftover-dimple leftover-figure leftover-inclusion leftover-face leftover-one-board leftover-zone leftover-birds-eye",
+          "clip-path": "url(#eye-board-clip)",
+          "data-dimple-mm": String(eyeMm),
+          "data-dimple-count": String(pic.count)
+        });
+
+        if (!isEven) {
+          pic.sites.forEach(function (site, index) {
+            eyePaintDimple(leftover, site, index, pic);
+          });
+        } else {
+          leftover.appendChild(eyeEl("path", {
+            id: "eye-even",
+            class: "leftover-eye leftover-even leftover-empty leftover-no-dimple leftover-no-figure leftover-face leftover-one-board leftover-true",
+            d: "M " + (EYE_LEFT + 10).toFixed(1) + " " + EYE_MID_Y.toFixed(1) + " L " + (EYE_RIGHT - 10).toFixed(1) + " " + EYE_MID_Y.toFixed(1),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "3 5",
+            opacity: "0.45"
+          }));
+        }
+        eyeLayer.appendChild(leftover);
+
+        eyeMarkLayer.replaceChildren();
+        eyeMarkLayer.appendChild(eyeEl("text", {
+          x: String(EYE_LEFT),
+          y: String(EYE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "EVEN TIMBER";
+        eyeMarkLayer.appendChild(eyeEl("text", {
+          x: String(EYE_RIGHT),
+          y: String(EYE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isEven ? "DIMPLE · EVEN / NO LEFTOVER EYE" : "DIMPLE · LEFTOVER FIGURE STILL SITS";
+
+        if (!isEven) {
+          const dimY = EYE_TOP - 14;
+          const sample = pic.sites[0] || { size: 1 };
+          const dimHalf = Math.max(6, eyeDimpleRadius(eyeMm, sample));
+          eyeMarkLayer.appendChild(eyeEl("line", {
+            x1: String(EYE_MID_X - dimHalf),
+            y1: String(dimY),
+            x2: String(EYE_MID_X + dimHalf),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          eyeMarkLayer.appendChild(eyeEl("line", {
+            x1: String(EYE_MID_X - dimHalf),
+            y1: String(dimY - 4),
+            x2: String(EYE_MID_X - dimHalf),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          eyeMarkLayer.appendChild(eyeEl("line", {
+            x1: String(EYE_MID_X + dimHalf),
+            y1: String(dimY - 4),
+            x2: String(EYE_MID_X + dimHalf),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          eyeMarkLayer.appendChild(eyeEl("text", {
+            id: "eye-mm-label",
+            class: "eye-label leftover-label leftover-eye leftover-showing leftover-dimple leftover-figure leftover-face leftover-inclusion leftover-zone",
+            x: String(EYE_MID_X),
+            y: String(dimY - 6),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = eyeMm + " mm";
+          eyeMarkLayer.appendChild(eyeEl("text", {
+            id: "eye-dimple-label",
+            class: "dimple-label leftover-dimple leftover-eye leftover-figure leftover-face leftover-one-board leftover-inclusion leftover-zone leftover-birds-eye",
+            x: String(EYE_MID_X),
+            y: String(EYE_BOTTOM + 40),
+            fill: "#d4a85c",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER DIMPLE · BIRD'S-EYE FIGURE · " + pic.count + " SITES";
+        } else {
+          eyeMarkLayer.appendChild(eyeEl("text", {
+            id: "eye-label",
+            class: "eye-label leftover-label leftover-even leftover-no-dimple leftover-no-figure leftover-face leftover-one-board leftover-true",
+            x: String(EYE_MID_X),
+            y: String(EYE_MID_Y - 8),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "EVEN / NO LEFTOVER EYE";
+        }
+
+        eyeSceneStatus.setAttribute("fill", pic.accent);
+        eyeSceneStatus.textContent = pic.status;
+        eyeScene.setAttribute("data-eye", String(eyeMm));
+        eyeScene.setAttribute("data-leftover", pic.leftover);
+        eyeScene.setAttribute("data-verdict", pic.verdict);
+        eyeScene.setAttribute("data-view", "face-one-board");
+        eyeScene.setAttribute("data-hero", "leftover-eye");
+        eyeScene.setAttribute("data-dimple-count", String(pic.count));
+      }
+
+      function eyeToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-even";
+      }
+
+      function eyeRender() {
+        const pic = eyePicture();
+        eyePaint(pic);
+        eyeTitle.textContent = pic.alt;
+        eyeAlt.textContent = pic.alt;
+        eyeSvg.setAttribute("aria-label", pic.alt);
+        eyeDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + eyeMm + " mm showing"
+          : "leftover even";
+        eyeStatMm.textContent = eyeMm + " mm";
+        eyeStatLeftover.textContent = pic.leftover;
+        eyeStatDimple.textContent = pic.leftover === "showing"
+          ? eyeMm + " mm leftover"
+          : "even";
+        eyeStatLeftoverWrap.classList.remove("is-showing", "is-even");
+        eyeStatLeftoverWrap.classList.add(eyeToneClass(pic.leftover));
+        if (Number(eyeInput.value) !== eyeMm) eyeInput.value = String(eyeMm);
+        eyeInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function eyeResetSeed() {
+        eyeMm = EYE_SEED.eyeMm;
+        eyeRender();
+      }
+
+      eyeInput.addEventListener("input", function (event) {
+        eyeMm = eyeClamp(Math.round(Number(event.target.value)), EYE_MIN, EYE_MAX);
+        eyeRender();
+      });
+      eyeBtnReset.addEventListener("click", eyeResetSeed);
+      eyeBtnResetStage.addEventListener("click", eyeResetSeed);
+
+      eyeRender();
+    </script>
+  </body>
+</html>
