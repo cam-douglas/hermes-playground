@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Bead — a board looks square until you see the bead. Move the edge. See the leftover round." />
+    <title>Bead</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(216, 168, 96, 0.22);
+        --accent: #d8a860;
+        --timber: #a86a38;
+        --bead-light: #f0d4a0;
+        --bead-dark: #6a3c14;
+        --showing: #d8a860;
+        --square: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(216, 168, 96, 0.14), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(48, 24, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(216, 168, 96, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(216, 168, 96, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(216, 168, 96, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(216, 168, 96, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #bead-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(216, 168, 96, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-square b { color: var(--square); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #bead-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> bead · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover round that still sits on the edge</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 24 Aug 2026 20:50</span>
+        <h1>Bead</h1>
+        <p class="lede">
+          A board looks square until you see the bead. Move the edge. See the leftover round.
+          Not a fillet. Not a chamfer. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="bead-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far the leftover round still sits on the edge</h2>
+          </div>
+          <span class="kicker" id="bead-desk-meta">leftover 30 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="bead-svg" viewBox="0 0 800 460" role="img" aria-labelledby="bead-title bead-desc">
+            <title id="bead-title">Bead is showing. Thirty millimetres of leftover round still sit on the edge.</title>
+            <desc id="bead-desc">One board in section whose leftover is the bead — leftover half-round still sitting on one long edge (beaded board / stuck bead), not Fillet (leftover radius that fills a concave interior corner), not Chamfer (leftover bevel that takes the sharp off an edge), not Arris (leftover sharp where two planes meet), not Wane (leftover irregular live-edge / bark), not Ribbon (vertical quartered stripe-bands of figure), not Flame (leaping peaks of figure), not Curl (fiddleback waves), not a knot, not a drip, not a paper fold-sheet, not ovolo or ogee as a clone of this bead. Default fill is a square-edged board. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="bead-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="bead-board-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#8a5428" />
+                <stop offset="46%" stop-color="#a86a38" />
+                <stop offset="100%" stop-color="#c88848" />
+              </linearGradient>
+              <linearGradient id="bead-round-wash" x1="0%" y1="100%" x2="40%" y2="0%">
+                <stop offset="0%" stop-color="#b07838" />
+                <stop offset="48%" stop-color="#e8c078" />
+                <stop offset="100%" stop-color="#f8e4b0" />
+              </linearGradient>
+              <pattern id="bead-end-grain" width="12" height="10" patternUnits="userSpaceOnUse">
+                <ellipse cx="6" cy="5" rx="4.2" ry="3.4" fill="none" stroke="rgba(74,42,16,0.16)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(216,168,96,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">SECTION · ONE BOARD · LEFTOVER IS THE BEAD</text>
+            <g id="bead-scene" data-view="section-one-board" data-hero="leftover-bead" data-bead="30" data-leftover="showing" data-verdict="showing">
+              <g id="bead-bench-layer"></g>
+              <g id="bead-board-layer"></g>
+              <g id="bead-layer"></g>
+              <g id="bead-mark-layer"></g>
+              <text id="bead-scene-status" x="400" y="64" fill="#d8a860" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 30 MM LEFTOVER ROUND</text>
+              <text id="bead-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER ROUND THAT STILL SITS ON THE EDGE · NOT A FILLET · NOT A CHAMFER · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="bead-alt" class="sr-only" aria-live="polite">Bead is showing. Thirty millimetres of leftover round still sit on the edge.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="bead-input">Bead (mm · leftover round that still sits on the edge)</label>
+            <input id="bead-input" type="range" min="0" max="80" step="1" value="30" />
+            <div class="ticks" aria-hidden="true">
+              <span>square / no leftover bead</span>
+              <span>seed showing</span>
+              <span>large round</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="bead-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Bead <b id="bead-stat-mm">30 mm</b></span>
+          <span id="bead-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="bead-stat-leftover">showing</b></span>
+          <span>Leftover round (sketch) <b id="bead-stat-round">30 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks square until you see the bead. Bead is leftover round — leftover half-round still sitting on one long edge of a board. A sketch, not a mill sign-off.
+        Seed is already showing — 30 mm of leftover half-round, not a square edge. Arrow keys move the focused control.
+        Refresh restores the seed. Not a fillet. Not a chamfer. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const BEAD_SEED = { beadMm: 30 };
+      const BEAD_MIN = 0;
+      const BEAD_MAX = 80;
+      const BEAD_SQUARE_AT = 4;
+      const BEAD_SCALE = 2.15;
+      const BEAD_LEFT = 156;
+      const BEAD_RIGHT = 644;
+      const BEAD_TOP = 196;
+      const BEAD_BOTTOM = 348;
+      const BEAD_MID_X = (BEAD_LEFT + BEAD_RIGHT) / 2;
+      const BEAD_MID_Y = (BEAD_TOP + BEAD_BOTTOM) / 2;
+      const BEAD_WIDTH = BEAD_RIGHT - BEAD_LEFT;
+      const BEAD_HEIGHT = BEAD_BOTTOM - BEAD_TOP;
+
+      let beadMm = BEAD_SEED.beadMm;
+
+      const beadSvg = document.getElementById("bead-svg");
+      const beadScene = document.getElementById("bead-scene");
+      const beadTitle = document.getElementById("bead-title");
+      const beadAlt = document.getElementById("bead-alt");
+      const beadDeskMeta = document.getElementById("bead-desk-meta");
+      const beadInput = document.getElementById("bead-input");
+      const beadBenchLayer = document.getElementById("bead-bench-layer");
+      const beadBoardLayer = document.getElementById("bead-board-layer");
+      const beadLayer = document.getElementById("bead-layer");
+      const beadMarkLayer = document.getElementById("bead-mark-layer");
+      const beadSceneStatus = document.getElementById("bead-scene-status");
+      const beadStatMm = document.getElementById("bead-stat-mm");
+      const beadStatLeftover = document.getElementById("bead-stat-leftover");
+      const beadStatLeftoverWrap = document.getElementById("bead-stat-leftover-wrap");
+      const beadStatRound = document.getElementById("bead-stat-round");
+      const beadBtnReset = document.getElementById("bead-btn-reset");
+      const beadBtnResetStage = document.getElementById("bead-btn-reset-stage");
+
+      function beadClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function beadEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function beadSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function beadRoundPx(mm) {
+        return mm * BEAD_SCALE;
+      }
+
+      function beadPicture() {
+        const leftover = beadMm <= BEAD_SQUARE_AT ? "square" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + beadMm + " MM LEFTOVER ROUND";
+          alt = "Bead is showing. " + beadSpokenMm(beadMm).charAt(0).toUpperCase() + beadSpokenMm(beadMm).slice(1) + " millimetres of leftover round still sit on the edge.";
+        } else {
+          status = "SQUARE · NO LEFTOVER BEAD";
+          alt = "Bead is square. The board looks square-edged. No leftover bead. A sketch, not a mill sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d8a860" : "#8ec8b4",
+          radiusPx: beadRoundPx(beadMm)
+        };
+      }
+
+      function beadProfilePath(r) {
+        const midY = BEAD_MID_Y;
+        if (r <= 0) {
+          return [
+            "M " + BEAD_LEFT + " " + BEAD_TOP,
+            "L " + BEAD_RIGHT + " " + BEAD_TOP,
+            "L " + BEAD_RIGHT + " " + BEAD_BOTTOM,
+            "L " + BEAD_LEFT + " " + BEAD_BOTTOM,
+            "Z"
+          ].join(" ");
+        }
+        const topJoin = midY - r;
+        const botJoin = midY + r;
+        return [
+          "M " + BEAD_LEFT + " " + BEAD_TOP,
+          "L " + BEAD_RIGHT + " " + BEAD_TOP,
+          "L " + BEAD_RIGHT + " " + topJoin.toFixed(1),
+          "A " + r.toFixed(1) + " " + r.toFixed(1) + " 0 0 1 " + BEAD_RIGHT + " " + botJoin.toFixed(1),
+          "L " + BEAD_RIGHT + " " + BEAD_BOTTOM,
+          "L " + BEAD_LEFT + " " + BEAD_BOTTOM,
+          "Z"
+        ].join(" ");
+      }
+
+      function beadHalfRoundPath(r) {
+        const midY = BEAD_MID_Y;
+        const topJoin = midY - r;
+        const botJoin = midY + r;
+        return [
+          "M " + BEAD_RIGHT + " " + topJoin.toFixed(1),
+          "A " + r.toFixed(1) + " " + r.toFixed(1) + " 0 0 1 " + BEAD_RIGHT + " " + botJoin.toFixed(1),
+          "Z"
+        ].join(" ");
+      }
+
+      function beadPaint(pic) {
+        const isSquare = pic.leftover === "square";
+        const r = isSquare ? 0 : Math.max(pic.radiusPx, 14);
+
+        beadBenchLayer.replaceChildren();
+        beadBenchLayer.appendChild(beadEl("rect", {
+          class: "site leftover-section leftover-bead leftover-board leftover-round leftover-edge leftover-one-board",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#bead-bench-wash)",
+          stroke: "rgba(216,168,96,0.16)",
+          "stroke-width": "1.2"
+        }));
+        beadBenchLayer.appendChild(beadEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · END GRAIN / LEFTOVER BEAD ON ONE LONG EDGE";
+
+        beadBoardLayer.replaceChildren();
+        const board = beadEl("g", {
+          id: "bead-sawn-board",
+          class: isSquare
+            ? "board leftover-square leftover-no-bead leftover-bead leftover-board leftover-no-round leftover-one-board leftover-true"
+            : "board leftover-showing leftover-bead leftover-round leftover-edge leftover-board leftover-one-board leftover-profile"
+        });
+        board.appendChild(beadEl("path", {
+          id: "bead-board-face",
+          class: isSquare
+            ? "board-face leftover-board leftover-square leftover-bead leftover-no-round leftover-one-board leftover-true"
+            : "board-face leftover-board leftover-showing leftover-bead leftover-round leftover-edge leftover-one-board leftover-profile",
+          d: beadProfilePath(r),
+          fill: "url(#bead-board-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        board.appendChild(beadEl("path", {
+          id: "bead-board-grain",
+          class: "board-grain leftover-board leftover-section leftover-one-board leftover-bead leftover-end-grain",
+          d: beadProfilePath(0),
+          fill: "url(#bead-end-grain)",
+          "pointer-events": "none"
+        }));
+        board.appendChild(beadEl("text", {
+          x: String(BEAD_LEFT + 18),
+          y: String(BEAD_TOP + 22),
+          fill: "#5a3c1c",
+          "font-size": "11",
+          "letter-spacing": "2"
+        })).textContent = isSquare ? "SQUARE · EDGE" : "SQUARE · BODY";
+        beadBoardLayer.appendChild(board);
+
+        beadLayer.replaceChildren();
+        const leftover = beadEl("g", {
+          id: "leftover-bead",
+          class: isSquare
+            ? "bead leftover-bead leftover-square leftover-empty leftover-no-round leftover-one-board leftover-true"
+            : "bead leftover-bead leftover-showing leftover-round leftover-edge leftover-half-round leftover-profile leftover-one-board leftover-stuck",
+          "data-round-mm": String(beadMm),
+          "data-radius-px": String(r)
+        });
+
+        if (!isSquare) {
+          leftover.appendChild(beadEl("path", {
+            id: "leftover-bead-round",
+            class: "leftover-bead leftover-showing leftover-round leftover-edge leftover-half-round leftover-profile leftover-stuck leftover-one-board",
+            d: beadHalfRoundPath(r),
+            fill: "url(#bead-round-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.8"
+          }));
+          leftover.appendChild(beadEl("path", {
+            id: "leftover-bead-arc",
+            class: "leftover-bead leftover-showing leftover-round leftover-edge leftover-half-round leftover-arc leftover-one-board",
+            d: "M " + BEAD_RIGHT + " " + (BEAD_MID_Y - r).toFixed(1) +
+              " A " + r.toFixed(1) + " " + r.toFixed(1) + " 0 0 1 " + BEAD_RIGHT + " " + (BEAD_MID_Y + r).toFixed(1),
+            fill: "none",
+            stroke: "#f8e4b0",
+            "stroke-width": "2.1"
+          }));
+          leftover.appendChild(beadEl("line", {
+            id: "leftover-bead-seat",
+            class: "leftover-bead leftover-showing leftover-round leftover-edge leftover-seat leftover-one-board",
+            x1: String(BEAD_RIGHT),
+            y1: String(BEAD_MID_Y - r),
+            x2: String(BEAD_RIGHT),
+            y2: String(BEAD_MID_Y + r),
+            stroke: "rgba(42, 20, 8, 0.35)",
+            "stroke-width": "1.2",
+            "stroke-dasharray": "3 4"
+          }));
+          leftover.appendChild(beadEl("text", {
+            id: "leftover-bead-label",
+            class: "bead-label leftover-label leftover-bead leftover-showing leftover-round leftover-edge leftover-half-round leftover-one-board",
+            x: String(BEAD_RIGHT + r * 0.58),
+            y: String(BEAD_MID_Y + 4),
+            fill: "#16120e",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "BEAD";
+        } else {
+          leftover.appendChild(beadEl("polyline", {
+            id: "bead-square",
+            class: "leftover-bead leftover-square leftover-empty leftover-no-round leftover-one-board leftover-true",
+            points: [
+              (BEAD_RIGHT - 36) + "," + BEAD_TOP,
+              BEAD_RIGHT + "," + BEAD_TOP,
+              BEAD_RIGHT + "," + (BEAD_TOP + 36)
+            ].join(" "),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "2.4"
+          }));
+        }
+        beadLayer.appendChild(leftover);
+
+        beadMarkLayer.replaceChildren();
+        beadMarkLayer.appendChild(beadEl("text", {
+          x: String(BEAD_LEFT),
+          y: String(BEAD_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "SQUARE TIMBER";
+        beadMarkLayer.appendChild(beadEl("text", {
+          x: String(BEAD_RIGHT),
+          y: String(BEAD_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSquare ? "EDGE · SQUARE / NO LEFTOVER BEAD" : "EDGE · LEFTOVER HALF-ROUND STILL SITS";
+
+        if (!isSquare) {
+          const tipX = BEAD_RIGHT + r;
+          beadMarkLayer.appendChild(beadEl("line", {
+            id: "bead-dim",
+            class: "bead-dim leftover-bead leftover-showing leftover-round leftover-edge leftover-one-board",
+            x1: String(BEAD_RIGHT),
+            y1: String(BEAD_TOP - 18),
+            x2: String(tipX),
+            y2: String(BEAD_TOP - 18),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          beadMarkLayer.appendChild(beadEl("line", {
+            x1: String(BEAD_RIGHT),
+            y1: String(BEAD_TOP - 24),
+            x2: String(BEAD_RIGHT),
+            y2: String(BEAD_TOP - 12),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          beadMarkLayer.appendChild(beadEl("line", {
+            x1: String(tipX),
+            y1: String(BEAD_TOP - 24),
+            x2: String(tipX),
+            y2: String(BEAD_TOP - 12),
+            stroke: pic.accent,
+            "stroke-width": "1"
+          }));
+          beadMarkLayer.appendChild(beadEl("text", {
+            id: "bead-mm-label",
+            class: "bead-label leftover-label leftover-bead leftover-showing leftover-round leftover-edge leftover-one-board",
+            x: String(BEAD_RIGHT + r / 2),
+            y: String(BEAD_TOP - 26),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = beadMm + " mm";
+          beadMarkLayer.appendChild(beadEl("text", {
+            id: "bead-round-label",
+            class: "round-label leftover-round leftover-bead leftover-edge leftover-half-round leftover-one-board leftover-stuck",
+            x: String(BEAD_MID_X),
+            y: String(BEAD_BOTTOM + 40),
+            fill: "#d8a860",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER ROUND · STUCK BEAD · ONE LONG EDGE";
+        } else {
+          beadMarkLayer.appendChild(beadEl("text", {
+            id: "bead-label",
+            class: "bead-label leftover-label leftover-square leftover-no-round leftover-one-board leftover-true",
+            x: String(BEAD_MID_X),
+            y: String(BEAD_MID_Y - 8),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SQUARE / NO LEFTOVER BEAD";
+        }
+
+        beadSceneStatus.setAttribute("fill", pic.accent);
+        beadSceneStatus.textContent = pic.status;
+        beadScene.setAttribute("data-bead", String(beadMm));
+        beadScene.setAttribute("data-leftover", pic.leftover);
+        beadScene.setAttribute("data-verdict", pic.verdict);
+        beadScene.setAttribute("data-view", "section-one-board");
+        beadScene.setAttribute("data-hero", "leftover-bead");
+        beadScene.setAttribute("data-round-mm", String(beadMm));
+      }
+
+      function beadToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-square";
+      }
+
+      function beadRender() {
+        const pic = beadPicture();
+        beadPaint(pic);
+        beadTitle.textContent = pic.alt;
+        beadAlt.textContent = pic.alt;
+        beadSvg.setAttribute("aria-label", pic.alt);
+        beadDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + beadMm + " mm showing"
+          : "leftover square";
+        beadStatMm.textContent = beadMm + " mm";
+        beadStatLeftover.textContent = pic.leftover;
+        beadStatRound.textContent = pic.leftover === "showing"
+          ? beadMm + " mm leftover"
+          : "square";
+        beadStatLeftoverWrap.classList.remove("is-showing", "is-square");
+        beadStatLeftoverWrap.classList.add(beadToneClass(pic.leftover));
+        if (Number(beadInput.value) !== beadMm) beadInput.value = String(beadMm);
+        beadInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function beadResetSeed() {
+        beadMm = BEAD_SEED.beadMm;
+        beadRender();
+      }
+
+      beadInput.addEventListener("input", function (event) {
+        beadMm = beadClamp(Math.round(Number(event.target.value)), BEAD_MIN, BEAD_MAX);
+        beadRender();
+      });
+      beadBtnReset.addEventListener("click", beadResetSeed);
+      beadBtnResetStage.addEventListener("click", beadResetSeed);
+
+      beadRender();
+    </script>
+  </body>
+</html>
