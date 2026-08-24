@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Inlay — a board looks even until you see the inlay. Move the set. See the leftover piece." />
+    <title>Inlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(208, 184, 128, 0.22);
+        --accent: #d4c090;
+        --timber: #6a4e32;
+        --recess: #1a1410;
+        --piece: #e8d8b0;
+        --showing: #e0d090;
+        --plain: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(212, 192, 144, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(28, 20, 10, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 192, 144, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 18, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 192, 144, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120e; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 192, 144, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 192, 144, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #inlay-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(224, 208, 144, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-plain b { color: var(--plain); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #inlay-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> inlay · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover piece that still sits in the recess</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 25 Aug 2026 02:50</span>
+        <h1>Inlay</h1>
+        <p class="lede">
+          A board looks even until you see the inlay. Move the set. See the leftover piece.
+          Not a dado. Not a mortise. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="inlay-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover piece still sits in the recess</h2>
+          </div>
+          <span class="kicker" id="inlay-desk-meta">leftover 30 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="inlay-svg" viewBox="0 0 800 460" role="img" aria-labelledby="inlay-title inlay-desc">
+            <title id="inlay-title">Inlay is showing. Thirty millimetres of leftover contrasting piece still sit in the recess.</title>
+            <desc id="inlay-desc">One board in face, with a slight section, whose leftover is the inlay — leftover contrasting piece still sitting in a cut recess in the face, not Dado (leftover housing groove across the grain), not Mortise (leftover closed pocket that still opens in the face), not Stain (leftover color wash flooding the face), not Flute (leftover parallel concave hollows along the length), not Pitch (leftover resin pocket), not Banding (a strip around an edge), not a paper fold-sheet. Default fill is a plain face with an empty recess. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="inlay-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1610" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="inlay-board-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#4a3420" />
+                <stop offset="46%" stop-color="#6a4e32" />
+                <stop offset="100%" stop-color="#8a6840" />
+              </linearGradient>
+              <linearGradient id="inlay-recess-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#2a2014" />
+                <stop offset="42%" stop-color="#120e0a" />
+                <stop offset="100%" stop-color="#3a2c1c" />
+              </linearGradient>
+              <linearGradient id="inlay-piece-wash" x1="0%" y1="0%" x2="100%" y2="80%">
+                <stop offset="0%" stop-color="#f4ead0" />
+                <stop offset="48%" stop-color="#e8d8b0" />
+                <stop offset="100%" stop-color="#c8b078" />
+              </linearGradient>
+              <linearGradient id="inlay-section-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#3e3020" />
+                <stop offset="50%" stop-color="#6a4e32" />
+                <stop offset="100%" stop-color="#8a6840" />
+              </linearGradient>
+              <pattern id="inlay-board-grain" width="18" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 5 L18 5" fill="none" stroke="rgba(40,28,12,0.18)" stroke-width="1" />
+                <path d="M0 2 L18 2" fill="none" stroke="rgba(40,28,12,0.08)" stroke-width="1" />
+              </pattern>
+              <pattern id="inlay-piece-grain" width="10" height="8" patternUnits="userSpaceOnUse">
+                <path d="M0 4 L10 4" fill="none" stroke="rgba(80,56,16,0.18)" stroke-width="0.8" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(208,184,128,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">FACE / SECTION · ONE BOARD · LEFTOVER IS THE INLAY</text>
+            <g id="inlay-scene" data-view="face-section-one-board" data-hero="leftover-inlay" data-inlay="30" data-leftover="showing" data-verdict="showing">
+              <g id="inlay-bench-layer"></g>
+              <g id="inlay-board-layer"></g>
+              <g id="inlay-layer"></g>
+              <g id="inlay-mark-layer"></g>
+              <text id="inlay-scene-status" x="400" y="64" fill="#e0d090" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 30 MM LEFTOVER PIECE</text>
+              <text id="inlay-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER PIECE THAT STILL SITS IN THE RECESS · NOT A DADO · NOT A MORTISE · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="inlay-alt" class="sr-only" aria-live="polite">Inlay is showing. Thirty millimetres of leftover contrasting piece still sit in the recess.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="inlay-input">Inlay (mm · leftover contrasting piece still sitting in the recess)</label>
+            <input id="inlay-input" type="range" min="0" max="80" step="1" value="30" />
+            <div class="ticks" aria-hidden="true">
+              <span>plain / no leftover inlay</span>
+              <span>seed showing</span>
+              <span>more leftover piece</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="inlay-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Inlay <b id="inlay-stat-mm">30 mm</b></span>
+          <span id="inlay-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="inlay-stat-leftover">showing</b></span>
+          <span>Leftover piece (sketch) <b id="inlay-stat-piece">30 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks even until you see the inlay. Inlay is leftover piece — leftover contrasting piece still sitting in a cut recess in the face. A sketch, not a mill sign-off.
+        Seed is already showing — 30 mm of leftover piece, not a plain empty recess. Arrow keys move the focused control.
+        Refresh restores the seed. Not a dado. Not a mortise. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const INLAY_SEED = { inlayMm: 30 };
+      const INLAY_MIN = 0;
+      const INLAY_MAX = 80;
+      const INLAY_PLAIN_AT = 4;
+      const INLAY_SCALE = 1.35;
+      const INLAY_FACE_LEFT = 72;
+      const INLAY_FACE_RIGHT = 468;
+      const INLAY_FACE_TOP = 118;
+      const INLAY_FACE_BOTTOM = 348;
+      const INLAY_SECTION_LEFT = 536;
+      const INLAY_SECTION_RIGHT = 728;
+      const INLAY_SECTION_TOP = 118;
+      const INLAY_SECTION_BOTTOM = 348;
+      const INLAY_RECESS_RX = 78;
+      const INLAY_RECESS_RY = 46;
+      const INLAY_RECESS_DEPTH_MAX = 36;
+
+      let inlayMm = INLAY_SEED.inlayMm;
+
+      const inlaySvg = document.getElementById("inlay-svg");
+      const inlayScene = document.getElementById("inlay-scene");
+      const inlayTitle = document.getElementById("inlay-title");
+      const inlayAlt = document.getElementById("inlay-alt");
+      const inlayDeskMeta = document.getElementById("inlay-desk-meta");
+      const inlayInput = document.getElementById("inlay-input");
+      const inlayBenchLayer = document.getElementById("inlay-bench-layer");
+      const inlayBoardLayer = document.getElementById("inlay-board-layer");
+      const inlayLayer = document.getElementById("inlay-layer");
+      const inlayMarkLayer = document.getElementById("inlay-mark-layer");
+      const inlaySceneStatus = document.getElementById("inlay-scene-status");
+      const inlayStatMm = document.getElementById("inlay-stat-mm");
+      const inlayStatLeftover = document.getElementById("inlay-stat-leftover");
+      const inlayStatLeftoverWrap = document.getElementById("inlay-stat-leftover-wrap");
+      const inlayStatPiece = document.getElementById("inlay-stat-piece");
+      const inlayBtnReset = document.getElementById("inlay-btn-reset");
+      const inlayBtnResetStage = document.getElementById("inlay-btn-reset-stage");
+
+      function inlayClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function inlayEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function inlaySpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function inlaySetPx(mm) {
+        return mm * INLAY_SCALE;
+      }
+
+      function inlayPicture() {
+        const leftover = inlayMm <= INLAY_PLAIN_AT ? "plain" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + inlayMm + " MM LEFTOVER PIECE";
+          alt = "Inlay is showing. " + inlaySpokenMm(inlayMm).charAt(0).toUpperCase() + inlaySpokenMm(inlayMm).slice(1) + " millimetres of leftover contrasting piece still sit in the recess.";
+        } else {
+          status = "PLAIN · NO LEFTOVER INLAY";
+          alt = "Inlay is plain. The recess is empty. The face looks plain. No leftover inlay. A sketch, not a mill sign-off.";
+        }
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e0d090" : "#8ec8b4",
+          setPx: leftover === "showing" ? inlaySetPx(inlayMm) : 0
+        };
+      }
+
+      function inlayLozengePoints(cx, cy, rx, ry) {
+        return [
+          cx + "," + (cy - ry),
+          (cx + rx) + "," + cy,
+          cx + "," + (cy + ry),
+          (cx - rx) + "," + cy
+        ].join(" ");
+      }
+
+      function inlaySectionRecessPath(depth) {
+        const left = INLAY_SECTION_LEFT;
+        const right = INLAY_SECTION_RIGHT;
+        const top = INLAY_SECTION_TOP;
+        const bottom = INLAY_SECTION_BOTTOM;
+        const mid = (left + right) / 2;
+        const cutW = 54;
+        const cutLeft = mid - cutW / 2;
+        const cutRight = mid + cutW / 2;
+        const floor = top + depth;
+        return [
+          "M " + left + " " + top,
+          "L " + cutLeft + " " + top,
+          "L " + cutLeft + " " + floor,
+          "L " + cutRight + " " + floor,
+          "L " + cutRight + " " + top,
+          "L " + right + " " + top,
+          "L " + right + " " + bottom,
+          "L " + left + " " + bottom,
+          "Z"
+        ].join(" ");
+      }
+
+      function inlayPaint(pic) {
+        const isPlain = pic.leftover === "plain";
+        const setPx = isPlain ? 0 : Math.max(pic.setPx, 12);
+        const faceW = INLAY_FACE_RIGHT - INLAY_FACE_LEFT;
+        const faceH = INLAY_FACE_BOTTOM - INLAY_FACE_TOP;
+        const faceCx = (INLAY_FACE_LEFT + INLAY_FACE_RIGHT) / 2;
+        const faceCy = (INLAY_FACE_TOP + INLAY_FACE_BOTTOM) / 2;
+        const pieceT = isPlain ? 0 : Math.max(0.22, inlayMm / INLAY_MAX);
+        const pieceRx = INLAY_RECESS_RX * pieceT;
+        const pieceRy = INLAY_RECESS_RY * pieceT;
+        const sectionDepth = isPlain ? 10 : Math.min(INLAY_RECESS_DEPTH_MAX, 10 + setPx * 0.28);
+        const sectionMid = (INLAY_SECTION_LEFT + INLAY_SECTION_RIGHT) / 2;
+        const pieceW = isPlain ? 0 : 18 + pieceT * 36;
+
+        inlayBenchLayer.replaceChildren();
+        inlayBenchLayer.appendChild(inlayEl("rect", {
+          class: "site leftover-face leftover-section leftover-inlay leftover-board leftover-recess leftover-piece leftover-one-board leftover-set",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "328",
+          rx: "8",
+          fill: "url(#inlay-bench-wash)",
+          stroke: "rgba(208,184,128,0.16)",
+          "stroke-width": "1.2"
+        }));
+        inlayBenchLayer.appendChild(inlayEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · FACE / SLIGHT SECTION · CONTRASTING PIECE SITS IN A CUT RECESS";
+
+        inlayBoardLayer.replaceChildren();
+        const board = inlayEl("g", {
+          id: "inlay-sawn-board",
+          class: isPlain
+            ? "board leftover-plain leftover-no-inlay leftover-inlay leftover-board leftover-no-piece leftover-one-board leftover-face leftover-section leftover-empty leftover-recess"
+            : "board leftover-showing leftover-inlay leftover-piece leftover-set leftover-board leftover-one-board leftover-face leftover-section leftover-recess leftover-contrasting"
+        });
+
+        board.appendChild(inlayEl("rect", {
+          id: "inlay-board-face",
+          class: isPlain
+            ? "board-face leftover-board leftover-plain leftover-inlay leftover-no-piece leftover-one-board leftover-face leftover-empty leftover-recess"
+            : "board-face leftover-board leftover-showing leftover-inlay leftover-piece leftover-set leftover-one-board leftover-face leftover-recess leftover-contrasting",
+          x: String(INLAY_FACE_LEFT),
+          y: String(INLAY_FACE_TOP),
+          width: String(faceW),
+          height: String(faceH),
+          fill: "url(#inlay-board-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        board.appendChild(inlayEl("rect", {
+          class: "board-grain leftover-board leftover-face leftover-one-board leftover-inlay leftover-set",
+          x: String(INLAY_FACE_LEFT),
+          y: String(INLAY_FACE_TOP),
+          width: String(faceW),
+          height: String(faceH),
+          fill: "url(#inlay-board-grain)",
+          "pointer-events": "none"
+        }));
+        board.appendChild(inlayEl("text", {
+          x: String(faceCx),
+          y: String(INLAY_FACE_BOTTOM - 14),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "BOARD · FACE";
+
+        board.appendChild(inlayEl("path", {
+          id: "inlay-board-section",
+          class: isPlain
+            ? "board-section leftover-board leftover-plain leftover-inlay leftover-no-piece leftover-one-board leftover-section leftover-empty leftover-recess"
+            : "board-section leftover-board leftover-showing leftover-inlay leftover-piece leftover-set leftover-one-board leftover-section leftover-recess leftover-contrasting",
+          d: inlaySectionRecessPath(sectionDepth),
+          fill: "url(#inlay-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6"
+        }));
+        board.appendChild(inlayEl("text", {
+          x: String(sectionMid),
+          y: String(INLAY_SECTION_BOTTOM - 14),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "BOARD · SECTION";
+        inlayBoardLayer.appendChild(board);
+
+        inlayLayer.replaceChildren();
+        const leftover = inlayEl("g", {
+          id: "leftover-inlay",
+          class: isPlain
+            ? "inlay leftover-inlay leftover-plain leftover-empty leftover-no-piece leftover-one-board leftover-face leftover-section leftover-recess leftover-closed"
+            : "inlay leftover-inlay leftover-showing leftover-piece leftover-set leftover-contrasting leftover-one-board leftover-face leftover-section leftover-recess",
+          "data-set-mm": String(inlayMm),
+          "data-set-px": String(setPx)
+        });
+
+        leftover.appendChild(inlayEl("polygon", {
+          id: "leftover-inlay-recess",
+          class: isPlain
+            ? "leftover-inlay leftover-plain leftover-empty leftover-recess leftover-no-piece leftover-face leftover-one-board leftover-cut"
+            : "leftover-inlay leftover-showing leftover-recess leftover-cut leftover-face leftover-one-board leftover-set",
+          points: inlayLozengePoints(faceCx, faceCy, INLAY_RECESS_RX, INLAY_RECESS_RY),
+          fill: "url(#inlay-recess-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.4",
+          opacity: "0.96"
+        }));
+
+        leftover.appendChild(inlayEl("rect", {
+          id: "leftover-inlay-recess-section",
+          class: isPlain
+            ? "leftover-inlay leftover-plain leftover-empty leftover-recess leftover-no-piece leftover-section leftover-one-board leftover-cut"
+            : "leftover-inlay leftover-showing leftover-recess leftover-cut leftover-section leftover-one-board leftover-set",
+          x: String(sectionMid - 27),
+          y: String(INLAY_SECTION_TOP),
+          width: "54",
+          height: String(sectionDepth),
+          fill: "url(#inlay-recess-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          opacity: "0.9"
+        }));
+
+        if (!isPlain) {
+          leftover.appendChild(inlayEl("polygon", {
+            id: "leftover-inlay-piece",
+            class: "leftover-inlay leftover-showing leftover-piece leftover-set leftover-contrasting leftover-face leftover-one-board leftover-recess",
+            points: inlayLozengePoints(faceCx, faceCy, pieceRx, pieceRy),
+            fill: "url(#inlay-piece-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            opacity: "0.98"
+          }));
+          leftover.appendChild(inlayEl("polygon", {
+            class: "leftover-inlay leftover-showing leftover-piece leftover-grain leftover-contrasting leftover-face leftover-one-board",
+            points: inlayLozengePoints(faceCx, faceCy, pieceRx, pieceRy),
+            fill: "url(#inlay-piece-grain)",
+            "pointer-events": "none"
+          }));
+          leftover.appendChild(inlayEl("rect", {
+            id: "leftover-inlay-piece-section",
+            class: "leftover-inlay leftover-showing leftover-piece leftover-set leftover-contrasting leftover-section leftover-one-board leftover-recess",
+            x: String(sectionMid - pieceW / 2),
+            y: String(INLAY_SECTION_TOP + 2),
+            width: String(pieceW),
+            height: String(Math.max(sectionDepth - 4, 8)),
+            fill: "url(#inlay-piece-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          leftover.appendChild(inlayEl("text", {
+            id: "leftover-inlay-label",
+            class: "inlay-label leftover-label leftover-inlay leftover-showing leftover-piece leftover-set leftover-face leftover-one-board",
+            x: String(faceCx),
+            y: String(faceCy - INLAY_RECESS_RY - 14),
+            fill: "#f0e8c4",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "INLAY";
+        }
+        inlayLayer.appendChild(leftover);
+
+        inlayMarkLayer.replaceChildren();
+        inlayMarkLayer.appendChild(inlayEl("text", {
+          x: String(INLAY_FACE_LEFT),
+          y: String(INLAY_FACE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "END";
+        inlayMarkLayer.appendChild(inlayEl("text", {
+          x: String(INLAY_FACE_RIGHT),
+          y: String(INLAY_FACE_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isPlain ? "FACE · PLAIN / EMPTY RECESS" : "FACE · LEFTOVER PIECE STILL SITS";
+        inlayMarkLayer.appendChild(inlayEl("text", {
+          x: String(INLAY_SECTION_RIGHT),
+          y: String(INLAY_SECTION_BOTTOM + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isPlain ? "SECTION · EMPTY RECESS" : "SECTION · PIECE SET IN THE CUT";
+
+        if (!isPlain) {
+          const dimX = INLAY_SECTION_RIGHT + 16;
+          const topY = INLAY_SECTION_TOP;
+          const botY = INLAY_SECTION_TOP + sectionDepth;
+          inlayMarkLayer.appendChild(inlayEl("line", {
+            id: "inlay-dim",
+            class: "inlay-dim leftover-inlay leftover-showing leftover-piece leftover-set leftover-section leftover-one-board",
+            x1: String(dimX),
+            y1: String(topY),
+            x2: String(dimX),
+            y2: String(botY),
+            stroke: pic.accent,
+            "stroke-width": "1.6"
+          }));
+          inlayMarkLayer.appendChild(inlayEl("line", {
+            x1: String(dimX - 8),
+            y1: String(topY),
+            x2: String(dimX + 8),
+            y2: String(topY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          inlayMarkLayer.appendChild(inlayEl("line", {
+            x1: String(dimX - 8),
+            y1: String(botY),
+            x2: String(dimX + 8),
+            y2: String(botY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          inlayMarkLayer.appendChild(inlayEl("text", {
+            id: "inlay-mm-label",
+            class: "inlay-label leftover-label leftover-inlay leftover-showing leftover-piece leftover-set leftover-section leftover-one-board",
+            x: String(dimX - 10),
+            y: String((topY + botY) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "end"
+          })).textContent = inlayMm + " mm";
+          inlayMarkLayer.appendChild(inlayEl("text", {
+            id: "inlay-piece-label",
+            class: "piece-label leftover-piece leftover-inlay leftover-set leftover-face leftover-contrasting leftover-one-board",
+            x: String(faceCx),
+            y: String(faceCy + 4),
+            fill: "#3a2c14",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER PIECE";
+          inlayMarkLayer.appendChild(inlayEl("text", {
+            id: "inlay-recess-label",
+            class: "recess-label leftover-recess leftover-inlay leftover-piece leftover-set leftover-face leftover-cut leftover-one-board",
+            x: String(faceCx),
+            y: String(INLAY_FACE_BOTTOM + 40),
+            fill: "#d4c090",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER PIECE · STILL SITS IN THE RECESS · NOT A DADO · NOT A POCKET";
+        } else {
+          inlayMarkLayer.appendChild(inlayEl("text", {
+            id: "inlay-label",
+            class: "inlay-label leftover-label leftover-plain leftover-no-piece leftover-one-board leftover-face leftover-section leftover-empty leftover-recess",
+            x: String(faceCx),
+            y: String(faceCy),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PLAIN / NO LEFTOVER INLAY";
+        }
+
+        inlaySceneStatus.setAttribute("fill", pic.accent);
+        inlaySceneStatus.textContent = pic.status;
+        inlayScene.setAttribute("data-inlay", String(inlayMm));
+        inlayScene.setAttribute("data-leftover", pic.leftover);
+        inlayScene.setAttribute("data-verdict", pic.verdict);
+        inlayScene.setAttribute("data-view", "face-section-one-board");
+        inlayScene.setAttribute("data-hero", "leftover-inlay");
+        inlayScene.setAttribute("data-set-mm", String(inlayMm));
+      }
+
+      function inlayToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-plain";
+      }
+
+      function inlayRender() {
+        const pic = inlayPicture();
+        inlayPaint(pic);
+        inlayTitle.textContent = pic.alt;
+        inlayAlt.textContent = pic.alt;
+        inlaySvg.setAttribute("aria-label", pic.alt);
+        inlayDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + inlayMm + " mm showing"
+          : "leftover plain";
+        inlayStatMm.textContent = inlayMm + " mm";
+        inlayStatLeftover.textContent = pic.leftover;
+        inlayStatPiece.textContent = pic.leftover === "showing"
+          ? inlayMm + " mm leftover"
+          : "plain";
+        inlayStatLeftoverWrap.classList.remove("is-showing", "is-plain");
+        inlayStatLeftoverWrap.classList.add(inlayToneClass(pic.leftover));
+        if (Number(inlayInput.value) !== inlayMm) inlayInput.value = String(inlayMm);
+        inlayInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function inlayResetSeed() {
+        inlayMm = INLAY_SEED.inlayMm;
+        inlayRender();
+      }
+
+      inlayInput.addEventListener("input", function (event) {
+        inlayMm = inlayClamp(Math.round(Number(event.target.value)), INLAY_MIN, INLAY_MAX);
+        inlayRender();
+      });
+      inlayBtnReset.addEventListener("click", inlayResetSeed);
+      inlayBtnResetStage.addEventListener("click", inlayResetSeed);
+
+      inlayRender();
+    </script>
+  </body>
+</html>
