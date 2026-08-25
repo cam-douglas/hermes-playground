@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Cheek — a tenon looks bare until you see the cheek. Move the side. See the leftover cheek still sitting on the tenon." />
+    <title>Cheek</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(176, 120, 48, 0.22);
+        --accent: #c47830;
+        --timber: #6a4018;
+        --side: #d4a050;
+        --showing: #d4a050;
+        --bare: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(196, 120, 48, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(40, 20, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 120, 48, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 16, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 120, 48, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 120, 48, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(196, 120, 48, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #cheek-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 160, 80, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-bare b { color: var(--bare); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #cheek-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> cheek · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover side face that still sits on the tenon</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 03:50</span>
+        <h1>Cheek</h1>
+        <p class="lede">
+          A tenon looks bare until you see the cheek. Move the side. See the leftover cheek still sitting on the tenon.
+          Not a shoulder. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="cheek-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover cheek still sits on the tenon</h2>
+          </div>
+          <span class="kicker" id="cheek-desk-meta">leftover 11 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="cheek-svg" viewBox="0 0 800 460" role="img" aria-labelledby="cheek-title cheek-desc">
+            <title id="cheek-title">Cheek is showing. Eleven millimetres of leftover side still sit on the tenon.</title>
+            <desc id="cheek-desc">One tenon whose leftover is the cheek — leftover side face still sitting on the tenon (leftover cheek still sitting on the tenon, leftover side still sitting on the tenon, not Shoulder leftover bearing at a joint, not Tenon leftover tongue on a mate, not Housing leftover recess across a face, not Lap leftover overlap along a face, not Rabbet leftover shoulder along an edge, not Fox leftover wedge in the tenon). One tenon; the leftover that still sits on the tenon is the cheek — leftover side face still sitting on the tenon. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="cheek-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#16120e" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="cheek-stock-wash" x1="0%" y1="0%" x2="100%" y2="14%">
+                <stop offset="0%" stop-color="#3e2410" />
+                <stop offset="46%" stop-color="#7a4a18" />
+                <stop offset="100%" stop-color="#c47830" />
+              </linearGradient>
+              <linearGradient id="cheek-tenon-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#5a3410" />
+                <stop offset="100%" stop-color="#8a5420" />
+              </linearGradient>
+              <linearGradient id="cheek-side-wash" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#8a5420" />
+                <stop offset="48%" stop-color="#d4a050" />
+                <stop offset="100%" stop-color="#f0d090" />
+              </linearGradient>
+              <pattern id="cheek-stock-grain" width="16" height="8" patternUnits="userSpaceOnUse">
+                <path d="M0 4 L16 4" fill="none" stroke="rgba(40,20,8,0.16)" stroke-width="1" />
+                <path d="M0 1 L16 1" fill="none" stroke="rgba(40,20,8,0.07)" stroke-width="1" />
+              </pattern>
+              <pattern id="cheek-tenon-grain" width="8" height="16" patternUnits="userSpaceOnUse">
+                <path d="M4 0 L4 16" fill="none" stroke="rgba(40,20,8,0.14)" stroke-width="1" />
+              </pattern>
+              <pattern id="cheek-side-grain" width="10" height="6" patternUnits="userSpaceOnUse">
+                <path d="M0 3 L10 3" fill="none" stroke="rgba(40,20,8,0.22)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(196,120,48,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">ONE TENON · LEFTOVER IS THE CHEEK</text>
+            <g id="cheek-scene" data-view="one-tenon-cheek" data-hero="leftover-cheek" data-cheek="11" data-leftover="showing" data-verdict="showing" data-side="on-tenon">
+              <g id="cheek-bench-layer"></g>
+              <g id="cheek-stock-layer"></g>
+              <g id="cheek-layer"></g>
+              <g id="cheek-mark-layer"></g>
+              <text id="cheek-scene-status" x="400" y="64" fill="#d4a050" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 11 MM LEFTOVER CHEEK</text>
+              <text id="cheek-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER SIDE FACE STILL SITS ON THE TENON · NOT A SHOULDER · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="cheek-alt" class="sr-only" aria-live="polite">Cheek is showing. Eleven millimetres of leftover side still sit on the tenon.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="cheek-input">Cheek (mm · leftover side still sitting on the tenon)</label>
+            <input id="cheek-input" type="range" min="0" max="40" step="1" value="11" />
+            <div class="ticks" aria-hidden="true">
+              <span>bare / no leftover cheek</span>
+              <span>seed showing</span>
+              <span>taller leftover cheek</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="cheek-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Cheek <b id="cheek-stat-mm">11 mm</b></span>
+          <span id="cheek-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="cheek-stat-leftover">showing</b></span>
+          <span>Leftover side (sketch) <b id="cheek-stat-side">11 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A tenon looks bare until you see the cheek. Cheek is leftover side — leftover side face still sitting on the tenon. A sketch, not a mill sign-off.
+        Seed is already showing — 11 mm of leftover cheek on the tenon, not a bare-only tenon. Arrow keys move the focused control.
+        Refresh restores the seed. Not a shoulder. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const CHEEK_SEED = { sideMm: 11 };
+      const CHEEK_MIN = 0;
+      const CHEEK_MAX = 40;
+      const CHEEK_BARE_AT = 2;
+      const CHEEK_SCALE = 3.4;
+      const STOCK_LEFT = 72;
+      const STOCK_RIGHT = 268;
+      const STOCK_TOP = 148;
+      const STOCK_BOT = 338;
+      const TENON_LEFT = 268;
+      const TENON_LEN = 248;
+      const TENON_RIGHT = TENON_LEFT + TENON_LEN;
+      const TENON_MID_Y = 243;
+      const TENON_THICK = 36;
+      const CHEEK_SKEW = 22;
+
+      let sideMm = CHEEK_SEED.sideMm;
+
+      const cheekSvg = document.getElementById("cheek-svg");
+      const cheekScene = document.getElementById("cheek-scene");
+      const cheekTitle = document.getElementById("cheek-title");
+      const cheekAlt = document.getElementById("cheek-alt");
+      const cheekDeskMeta = document.getElementById("cheek-desk-meta");
+      const cheekInput = document.getElementById("cheek-input");
+      const cheekBenchLayer = document.getElementById("cheek-bench-layer");
+      const cheekStockLayer = document.getElementById("cheek-stock-layer");
+      const cheekLayer = document.getElementById("cheek-layer");
+      const cheekMarkLayer = document.getElementById("cheek-mark-layer");
+      const cheekSceneStatus = document.getElementById("cheek-scene-status");
+      const cheekStatMm = document.getElementById("cheek-stat-mm");
+      const cheekStatLeftover = document.getElementById("cheek-stat-leftover");
+      const cheekStatLeftoverWrap = document.getElementById("cheek-stat-leftover-wrap");
+      const cheekStatSide = document.getElementById("cheek-stat-side");
+      const cheekBtnReset = document.getElementById("cheek-btn-reset");
+      const cheekBtnResetStage = document.getElementById("cheek-btn-reset-stage");
+
+      function cheekClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function cheekEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function cheekSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve",
+          14: "fourteen",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function cheekPicture() {
+        const leftover = sideMm <= CHEEK_BARE_AT ? "bare" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + sideMm + " MM LEFTOVER CHEEK";
+          alt = "Cheek is showing. " + cheekSpokenMm(sideMm).charAt(0).toUpperCase() + cheekSpokenMm(sideMm).slice(1) + " millimetres of leftover side still sit on the tenon.";
+        } else {
+          status = "BARE · NO LEFTOVER CHEEK";
+          alt = "Cheek is bare. The tenon looks bare. No leftover cheek. A sketch, not a mill sign-off.";
+        }
+        const sidePx = leftover === "showing" ? sideMm * CHEEK_SCALE : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4a050" : "#8ec8b4",
+          sidePx: sidePx,
+          sideH: leftover === "showing" ? Math.max(20, sidePx) : 0,
+          side: leftover === "showing" ? "on-tenon" : "none",
+          shape: leftover === "showing" ? "leftover-cheek" : "bare-tenon"
+        };
+      }
+
+      function cheekPaint(pic) {
+        const isBare = pic.leftover === "bare";
+        const tenonTop = TENON_MID_Y - TENON_THICK / 2;
+        const tenonBot = TENON_MID_Y + TENON_THICK / 2;
+        const cheekTop = isBare ? tenonTop : TENON_MID_Y - pic.sideH / 2;
+        const cheekBot = isBare ? tenonBot : TENON_MID_Y + pic.sideH / 2;
+
+        cheekBenchLayer.replaceChildren();
+        cheekBenchLayer.appendChild(cheekEl("rect", {
+          class: "site leftover-tenon leftover-side leftover-cheek leftover-one-tenon leftover-on-tenon",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#cheek-bench-wash)",
+          stroke: "rgba(196,120,48,0.16)",
+          "stroke-width": "1.2"
+        }));
+        cheekBenchLayer.appendChild(cheekEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE TENON · LEFTOVER SIDE FACE STILL SITS ON THE TENON";
+
+        cheekStockLayer.replaceChildren();
+        const stock = cheekEl("g", {
+          id: "cheek-tenon-stock",
+          class: isBare
+            ? "stock leftover-bare leftover-no-cheek leftover-cheek leftover-no-side leftover-one-tenon leftover-tenon leftover-true"
+            : "stock leftover-showing leftover-cheek leftover-side leftover-one-tenon leftover-tenon leftover-on-tenon"
+        });
+
+        stock.appendChild(cheekEl("rect", {
+          id: "cheek-stock",
+          class: "stock-member leftover-stock leftover-member leftover-one-tenon leftover-cheek leftover-not-the-leftover leftover-not-a-shoulder leftover-not-a-housing leftover-not-a-lap leftover-not-a-rabbet leftover-not-a-fox leftover-not-a-tongue",
+          x: String(STOCK_LEFT),
+          y: String(STOCK_TOP),
+          width: String(STOCK_RIGHT - STOCK_LEFT),
+          height: String(STOCK_BOT - STOCK_TOP),
+          fill: "url(#cheek-stock-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "stock-member",
+          "data-role": "stock-context"
+        }));
+        stock.appendChild(cheekEl("rect", {
+          class: "stock-grain leftover-stock leftover-member leftover-one-tenon leftover-cheek",
+          x: String(STOCK_LEFT),
+          y: String(STOCK_TOP),
+          width: String(STOCK_RIGHT - STOCK_LEFT),
+          height: String(STOCK_BOT - STOCK_TOP),
+          fill: "url(#cheek-stock-grain)",
+          "pointer-events": "none"
+        }));
+        stock.appendChild(cheekEl("text", {
+          x: String((STOCK_LEFT + STOCK_RIGHT) / 2),
+          y: String(STOCK_TOP + 22),
+          fill: "#f0d8c4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "STOCK";
+
+        stock.appendChild(cheekEl("rect", {
+          id: "cheek-tenon",
+          class: "stock-tenon leftover-stock leftover-tenon leftover-one-tenon leftover-cheek leftover-not-the-leftover leftover-not-a-growing-tongue leftover-context leftover-fixed-length leftover-not-a-shoulder leftover-not-a-fox",
+          x: String(TENON_LEFT),
+          y: String(tenonTop),
+          width: String(TENON_LEN),
+          height: String(TENON_THICK),
+          fill: "url(#cheek-tenon-wash)",
+          stroke: "#6a4820",
+          "stroke-width": "1.1",
+          opacity: "0.9",
+          "data-shape": "tenon-context",
+          "data-role": "tenon-fixed-context"
+        }));
+        stock.appendChild(cheekEl("rect", {
+          class: "tenon-grain leftover-stock leftover-tenon leftover-one-tenon leftover-cheek leftover-context",
+          x: String(TENON_LEFT),
+          y: String(tenonTop),
+          width: String(TENON_LEN),
+          height: String(TENON_THICK),
+          fill: "url(#cheek-tenon-grain)",
+          "pointer-events": "none"
+        }));
+        stock.appendChild(cheekEl("text", {
+          x: String(TENON_LEFT + TENON_LEN / 2),
+          y: String(tenonBot + 18),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "TENON · FIXED LENGTH";
+        cheekStockLayer.appendChild(stock);
+
+        cheekLayer.replaceChildren();
+        const leftover = cheekEl("g", {
+          id: "leftover-cheek",
+          class: isBare
+            ? "cheek leftover-cheek leftover-bare leftover-empty leftover-no-side leftover-one-tenon leftover-tenon leftover-true"
+            : "cheek leftover-cheek leftover-showing leftover-side leftover-on-tenon leftover-one-tenon leftover-tenon leftover-face",
+          "data-side-mm": String(sideMm),
+          "data-side-px": String(pic.sidePx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isBare) {
+          const cheekFace = [
+            TENON_LEFT, cheekTop,
+            TENON_RIGHT, cheekTop,
+            TENON_RIGHT + CHEEK_SKEW, cheekBot,
+            TENON_LEFT + CHEEK_SKEW, cheekBot
+          ].join(" ");
+          leftover.appendChild(cheekEl("polygon", {
+            id: "leftover-cheek-side",
+            class: "leftover-cheek leftover-showing leftover-side leftover-on-tenon leftover-one-tenon leftover-face leftover-not-a-shoulder leftover-not-a-tenon leftover-not-a-housing leftover-not-a-lap leftover-not-a-rabbet leftover-not-a-fox leftover-not-a-tongue leftover-not-a-bearing leftover-not-a-recess leftover-not-a-wedge",
+            points: cheekFace,
+            fill: "url(#cheek-side-wash)",
+            opacity: "0.96",
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            "data-shape": "leftover-cheek",
+            "data-side-mm": String(sideMm),
+            "data-role": "cheek-side"
+          }));
+          leftover.appendChild(cheekEl("polygon", {
+            id: "leftover-cheek-side-grain",
+            class: "leftover-cheek leftover-showing leftover-side leftover-on-tenon leftover-one-tenon leftover-grain",
+            points: cheekFace,
+            fill: "url(#cheek-side-grain)",
+            "pointer-events": "none",
+            "data-shape": "side-grain"
+          }));
+          leftover.appendChild(cheekEl("text", {
+            id: "leftover-cheek-label",
+            class: "cheek-label leftover-label leftover-cheek leftover-showing leftover-side leftover-one-tenon leftover-on-tenon",
+            x: String((TENON_LEFT + TENON_RIGHT) / 2 + CHEEK_SKEW / 2),
+            y: String(TENON_MID_Y + 4),
+            fill: "#f4ecd0",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "CHEEK";
+        } else {
+          leftover.appendChild(cheekEl("rect", {
+            id: "cheek-bare-tenon",
+            class: "leftover-cheek leftover-bare leftover-empty leftover-no-side leftover-one-tenon leftover-tenon leftover-true leftover-bare-tenon leftover-not-a-cheek",
+            x: String(TENON_LEFT),
+            y: String(tenonTop),
+            width: String(TENON_LEN),
+            height: String(TENON_THICK),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "bare-tenon"
+          }));
+        }
+        cheekLayer.appendChild(leftover);
+
+        cheekMarkLayer.replaceChildren();
+        cheekMarkLayer.appendChild(cheekEl("text", {
+          x: String(STOCK_LEFT),
+          y: String(STOCK_BOT + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "STOCK · CUTS THE TENON";
+        cheekMarkLayer.appendChild(cheekEl("text", {
+          x: String(TENON_RIGHT),
+          y: String(STOCK_BOT + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isBare ? "TENON · BARE / NO LEFTOVER CHEEK" : "TENON · LEFTOVER SIDE FACE STILL SITS ON THE TENON";
+
+        if (!isBare) {
+          const dimX = TENON_RIGHT + CHEEK_SKEW + 28;
+          const topY = cheekTop;
+          const botY = cheekBot;
+          cheekMarkLayer.appendChild(cheekEl("line", {
+            id: "cheek-dim",
+            class: "cheek-dim leftover-cheek leftover-showing leftover-side leftover-one-tenon leftover-on-tenon leftover-not-a-shoulder leftover-not-a-tenon",
+            x1: String(dimX),
+            y1: String(topY),
+            x2: String(dimX),
+            y2: String(botY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          cheekMarkLayer.appendChild(cheekEl("line", {
+            x1: String(dimX - 4),
+            y1: String(topY),
+            x2: String(dimX + 4),
+            y2: String(topY),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          cheekMarkLayer.appendChild(cheekEl("line", {
+            x1: String(dimX - 4),
+            y1: String(botY),
+            x2: String(dimX + 4),
+            y2: String(botY),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          cheekMarkLayer.appendChild(cheekEl("text", {
+            id: "cheek-mm-label",
+            class: "cheek-label leftover-label leftover-cheek leftover-showing leftover-side leftover-one-tenon leftover-on-tenon",
+            x: String(dimX + 8),
+            y: String((topY + botY) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = sideMm + " mm";
+          cheekMarkLayer.appendChild(cheekEl("text", {
+            id: "cheek-side-label",
+            class: "side-label leftover-side leftover-cheek leftover-one-tenon leftover-on-tenon leftover-not-a-shoulder leftover-not-a-tenon leftover-not-a-housing leftover-not-a-lap leftover-not-a-fox",
+            x: "400",
+            y: "412",
+            fill: "#dcd49a",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER CHEEK · SIDE STILL SITS ON THE TENON · NOT A SHOULDER · NOT A TONGUE";
+        } else {
+          cheekMarkLayer.appendChild(cheekEl("text", {
+            id: "cheek-label",
+            class: "cheek-label leftover-label leftover-bare leftover-no-side leftover-one-tenon leftover-tenon leftover-empty leftover-true",
+            x: String((TENON_LEFT + TENON_RIGHT) / 2),
+            y: String(tenonTop - 14),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "BARE / NO LEFTOVER CHEEK";
+        }
+
+        cheekSceneStatus.setAttribute("fill", pic.accent);
+        cheekSceneStatus.textContent = pic.status;
+        cheekScene.setAttribute("data-cheek", String(sideMm));
+        cheekScene.setAttribute("data-leftover", pic.leftover);
+        cheekScene.setAttribute("data-verdict", pic.verdict);
+        cheekScene.setAttribute("data-view", "one-tenon-cheek");
+        cheekScene.setAttribute("data-hero", "leftover-cheek");
+        cheekScene.setAttribute("data-side-mm", String(sideMm));
+        cheekScene.setAttribute("data-side-px", String(pic.sidePx.toFixed(1)));
+        cheekScene.setAttribute("data-side", pic.side);
+        cheekScene.setAttribute("data-shape", pic.shape);
+        cheekScene.setAttribute("data-side-h", String(pic.sideH.toFixed(1)));
+      }
+
+      function cheekToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-bare";
+      }
+
+      function cheekRender() {
+        const pic = cheekPicture();
+        cheekPaint(pic);
+        cheekTitle.textContent = pic.alt;
+        cheekAlt.textContent = pic.alt;
+        cheekSvg.setAttribute("aria-label", pic.alt);
+        cheekDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + sideMm + " mm showing"
+          : "leftover bare";
+        cheekStatMm.textContent = sideMm + " mm";
+        cheekStatLeftover.textContent = pic.leftover;
+        cheekStatSide.textContent = pic.leftover === "showing"
+          ? sideMm + " mm leftover"
+          : "bare";
+        cheekStatLeftoverWrap.classList.remove("is-showing", "is-bare");
+        cheekStatLeftoverWrap.classList.add(cheekToneClass(pic.leftover));
+        if (Number(cheekInput.value) !== sideMm) cheekInput.value = String(sideMm);
+        cheekInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function cheekResetSeed() {
+        sideMm = CHEEK_SEED.sideMm;
+        cheekRender();
+      }
+
+      cheekInput.addEventListener("input", function (event) {
+        sideMm = cheekClamp(Math.round(Number(event.target.value)), CHEEK_MIN, CHEEK_MAX);
+        cheekRender();
+      });
+      cheekBtnReset.addEventListener("click", cheekResetSeed);
+      cheekBtnResetStage.addEventListener("click", cheekResetSeed);
+
+      cheekRender();
+    </script>
+  </body>
+</html>
