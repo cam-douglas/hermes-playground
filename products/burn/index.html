@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Burn — a cut looks cool until you see the burn. Move the scorch. See the leftover heat mark still sitting along the kerf." />
+    <title>Burn</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(168, 72, 32, 0.22);
+        --accent: #c05820;
+        --timber: #5a3414;
+        --scorch: #3a180c;
+        --showing: #d46828;
+        --cool: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(192, 88, 32, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(40, 16, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(192, 88, 32, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 16, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(192, 88, 32, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(192, 88, 32, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(192, 88, 32, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #burn-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 104, 40, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-cool b { color: var(--cool); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #burn-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> burn · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover heat mark that still sits from the cut</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 06:50</span>
+        <h1>Burn</h1>
+        <p class="lede">
+          A cut looks cool until you see the burn. Move the scorch. See the leftover heat mark still sitting along the kerf.
+          Not a flame. Not a chatter. Not a tearout. Not a stain. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="burn-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover burn still sits from the cut</h2>
+          </div>
+          <span class="kicker" id="burn-desk-meta">leftover 7 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="burn-svg" viewBox="0 0 800 460" role="img" aria-labelledby="burn-title burn-desc">
+            <title id="burn-title">Burn is showing. Seven millimetres of leftover scorch still sit from the cut.</title>
+            <desc id="burn-desc">One cut/kerf whose leftover is the burn — leftover heat mark still sitting along the kerf (leftover burn still sitting from the cut, leftover scorch still sitting from the cut, not Flame leftover leap in the figure, not Chatter leftover ripple from the cut, not Tearout leftover splinter at the cut, not Stain leftover wash in the figure, not Kerf leftover gap the blade removed, not Pitch leftover resin). One cut; the leftover that still sits from the cut is the burn — leftover heat mark still sitting along the kerf. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="burn-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#16120e" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="burn-board-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#3a2010" />
+                <stop offset="46%" stop-color="#6a4018" />
+                <stop offset="100%" stop-color="#c07028" />
+              </linearGradient>
+              <linearGradient id="burn-kerf-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#1a1008" />
+                <stop offset="50%" stop-color="#080604" />
+                <stop offset="100%" stop-color="#1a1008" />
+              </linearGradient>
+              <linearGradient id="burn-scorch-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2a140c" />
+                <stop offset="38%" stop-color="#5a2410" />
+                <stop offset="62%" stop-color="#c05820" />
+                <stop offset="100%" stop-color="#2a140c" />
+              </linearGradient>
+              <pattern id="burn-board-grain" width="16" height="8" patternUnits="userSpaceOnUse">
+                <path d="M0 4 L16 4" fill="none" stroke="rgba(40,20,8,0.16)" stroke-width="1" />
+                <path d="M0 1 L16 1" fill="none" stroke="rgba(40,20,8,0.07)" stroke-width="1" />
+              </pattern>
+              <pattern id="burn-scorch-char" width="5" height="7" patternUnits="userSpaceOnUse">
+                <path d="M0 3 L5 3" fill="none" stroke="rgba(8,4,2,0.35)" stroke-width="1" />
+                <path d="M2 0 L2 7" fill="none" stroke="rgba(8,4,2,0.18)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(192,88,32,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">ONE CUT / KERF · LEFTOVER IS THE BURN</text>
+            <g id="burn-scene" data-view="one-cut-kerf-burn" data-hero="leftover-burn" data-burn="7" data-leftover="showing" data-verdict="showing" data-scorch="from-cut">
+              <g id="burn-bench-layer"></g>
+              <g id="burn-board-layer"></g>
+              <g id="burn-layer"></g>
+              <g id="burn-mark-layer"></g>
+              <text id="burn-scene-status" x="400" y="64" fill="#d46828" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 7 MM LEFTOVER SCORCH</text>
+              <text id="burn-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER HEAT MARK STILL SITS FROM THE CUT · NOT A FLAME · NOT A CHATTER · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="burn-alt" class="sr-only" aria-live="polite">Burn is showing. Seven millimetres of leftover scorch still sit from the cut.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="burn-input">Burn (mm · leftover scorch still sitting from the cut)</label>
+            <input id="burn-input" type="range" min="0" max="40" step="1" value="7" />
+            <div class="ticks" aria-hidden="true">
+              <span>cool / no leftover burn</span>
+              <span>seed showing</span>
+              <span>wider leftover scorch</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="burn-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Burn <b id="burn-stat-mm">7 mm</b></span>
+          <span id="burn-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="burn-stat-leftover">showing</b></span>
+          <span>Leftover scorch (sketch) <b id="burn-stat-scorch">7 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A cut looks cool until you see the burn. Burn is leftover scorch — leftover heat mark still sitting along the kerf. A sketch, not a mill sign-off.
+        Seed is already showing — 7 mm of leftover scorch from the cut, not a cool-only cut. Arrow keys move the focused control.
+        Refresh restores the seed. Not a flame. Not a chatter. Not a tearout. Not a stain. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const BURN_SEED = { scorchMm: 7 };
+      const BURN_MIN = 0;
+      const BURN_MAX = 40;
+      const BURN_COOL_AT = 2;
+      const BURN_SCALE = 3.4;
+      const BOARD_LEFT = 88;
+      const BOARD_RIGHT = 712;
+      const BOARD_TOP = 132;
+      const BOARD_BOT = 348;
+      const KERF_CX = 400;
+      const KERF_HALF = 5;
+
+      let scorchMm = BURN_SEED.scorchMm;
+
+      const burnSvg = document.getElementById("burn-svg");
+      const burnScene = document.getElementById("burn-scene");
+      const burnTitle = document.getElementById("burn-title");
+      const burnAlt = document.getElementById("burn-alt");
+      const burnDeskMeta = document.getElementById("burn-desk-meta");
+      const burnInput = document.getElementById("burn-input");
+      const burnBenchLayer = document.getElementById("burn-bench-layer");
+      const burnBoardLayer = document.getElementById("burn-board-layer");
+      const burnLayer = document.getElementById("burn-layer");
+      const burnMarkLayer = document.getElementById("burn-mark-layer");
+      const burnSceneStatus = document.getElementById("burn-scene-status");
+      const burnStatMm = document.getElementById("burn-stat-mm");
+      const burnStatLeftover = document.getElementById("burn-stat-leftover");
+      const burnStatLeftoverWrap = document.getElementById("burn-stat-leftover-wrap");
+      const burnStatScorch = document.getElementById("burn-stat-scorch");
+      const burnBtnReset = document.getElementById("burn-btn-reset");
+      const burnBtnResetStage = document.getElementById("burn-btn-reset-stage");
+
+      function burnClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function burnEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function burnSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          12: "twelve",
+          14: "fourteen",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function burnPicture() {
+        const leftover = scorchMm <= BURN_COOL_AT ? "cool" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + scorchMm + " MM LEFTOVER SCORCH";
+          alt = "Burn is showing. " + burnSpokenMm(scorchMm).charAt(0).toUpperCase() + burnSpokenMm(scorchMm).slice(1) + " millimetres of leftover scorch still sit from the cut.";
+        } else {
+          status = "COOL · NO LEFTOVER BURN";
+          alt = "Burn is cool. The cut looks cool. No leftover burn. A sketch, not a mill sign-off.";
+        }
+        const scorchPx = leftover === "showing" ? scorchMm * BURN_SCALE : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d46828" : "#8ec8b4",
+          scorchPx: scorchPx,
+          scorchW: leftover === "showing" ? Math.max(8, scorchPx) : 0,
+          scorch: leftover === "showing" ? "from-cut" : "none",
+          shape: leftover === "showing" ? "leftover-burn" : "cool-cut"
+        };
+      }
+
+      function burnPaint(pic) {
+        const isCool = pic.leftover === "cool";
+        const kerfLeft = KERF_CX - KERF_HALF;
+        const kerfRight = KERF_CX + KERF_HALF;
+        const halfScorch = pic.scorchW / 2;
+
+        burnBenchLayer.replaceChildren();
+        burnBenchLayer.appendChild(burnEl("rect", {
+          class: "site leftover-cut leftover-kerf leftover-burn leftover-scorch leftover-one-cut leftover-from-cut",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#burn-bench-wash)",
+          stroke: "rgba(192,88,32,0.16)",
+          "stroke-width": "1.2"
+        }));
+        burnBenchLayer.appendChild(burnEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE CUT / KERF · LEFTOVER HEAT MARK STILL SITS FROM THE CUT";
+
+        burnBoardLayer.replaceChildren();
+        const stock = burnEl("g", {
+          id: "burn-board-stock",
+          class: isCool
+            ? "stock leftover-cool leftover-no-burn leftover-burn leftover-no-scorch leftover-one-cut leftover-kerf leftover-true"
+            : "stock leftover-showing leftover-burn leftover-scorch leftover-one-cut leftover-kerf leftover-from-cut"
+        });
+
+        stock.appendChild(burnEl("rect", {
+          id: "burn-board",
+          class: "stock-board leftover-stock leftover-board leftover-one-cut leftover-burn leftover-not-the-leftover leftover-not-a-flame leftover-not-a-chatter leftover-not-a-tearout leftover-not-a-stain leftover-not-a-kerf leftover-not-a-pitch",
+          x: String(BOARD_LEFT),
+          y: String(BOARD_TOP),
+          width: String(BOARD_RIGHT - BOARD_LEFT),
+          height: String(BOARD_BOT - BOARD_TOP),
+          fill: "url(#burn-board-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "board-stock",
+          "data-role": "board-context"
+        }));
+        stock.appendChild(burnEl("rect", {
+          class: "board-grain leftover-stock leftover-board leftover-one-cut leftover-burn leftover-not-a-flame leftover-not-a-leap leftover-not-a-figure",
+          x: String(BOARD_LEFT),
+          y: String(BOARD_TOP),
+          width: String(BOARD_RIGHT - BOARD_LEFT),
+          height: String(BOARD_BOT - BOARD_TOP),
+          fill: "url(#burn-board-grain)",
+          "pointer-events": "none"
+        }));
+        stock.appendChild(burnEl("text", {
+          x: String((BOARD_LEFT + kerfLeft) / 2),
+          y: String(BOARD_TOP + 22),
+          fill: "#f0d8c4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "BOARD";
+
+        stock.appendChild(burnEl("rect", {
+          id: "burn-kerf",
+          class: "stock-kerf leftover-stock leftover-kerf leftover-one-cut leftover-burn leftover-not-the-leftover leftover-not-a-growing-flame leftover-context leftover-cut leftover-not-a-chatter leftover-not-a-tearout leftover-not-a-stain leftover-not-a-ripple leftover-not-a-splinter leftover-not-a-wash",
+          x: String(kerfLeft),
+          y: String(BOARD_TOP),
+          width: String(KERF_HALF * 2),
+          height: String(BOARD_BOT - BOARD_TOP),
+          fill: "url(#burn-kerf-wash)",
+          stroke: "#3a2410",
+          "stroke-width": "1.1",
+          opacity: "0.96",
+          "data-shape": "kerf-context",
+          "data-role": "cut-kerf-fixed"
+        }));
+        stock.appendChild(burnEl("text", {
+          x: String(KERF_CX),
+          y: String(BOARD_BOT + 18),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "CUT · KERF · FIXED";
+        burnBoardLayer.appendChild(stock);
+
+        burnLayer.replaceChildren();
+        const leftover = burnEl("g", {
+          id: "leftover-burn",
+          class: isCool
+            ? "burn leftover-burn leftover-cool leftover-empty leftover-no-scorch leftover-one-cut leftover-kerf leftover-true"
+            : "burn leftover-burn leftover-showing leftover-scorch leftover-from-cut leftover-one-cut leftover-kerf leftover-width",
+          "data-scorch-mm": String(scorchMm),
+          "data-scorch-px": String(pic.scorchPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isCool) {
+          leftover.appendChild(burnEl("rect", {
+            id: "leftover-burn-scorch",
+            class: "leftover-burn leftover-showing leftover-scorch leftover-from-cut leftover-one-cut leftover-width leftover-not-a-flame leftover-not-a-chatter leftover-not-a-tearout leftover-not-a-stain leftover-not-a-kerf leftover-not-a-pitch leftover-not-a-leap leftover-not-a-ripple leftover-not-a-splinter leftover-not-a-wash leftover-heat-mark",
+            x: String(KERF_CX - halfScorch),
+            y: String(BOARD_TOP + 4),
+            width: String(pic.scorchW),
+            height: String(BOARD_BOT - BOARD_TOP - 8),
+            fill: "url(#burn-scorch-wash)",
+            opacity: "0.94",
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            "data-shape": "leftover-burn",
+            "data-scorch-mm": String(scorchMm),
+            "data-role": "burn-scorch"
+          }));
+          leftover.appendChild(burnEl("rect", {
+            id: "leftover-burn-scorch-char",
+            class: "leftover-burn leftover-showing leftover-scorch leftover-from-cut leftover-one-cut leftover-char leftover-not-a-flame leftover-not-a-ripple",
+            x: String(KERF_CX - halfScorch),
+            y: String(BOARD_TOP + 4),
+            width: String(pic.scorchW),
+            height: String(BOARD_BOT - BOARD_TOP - 8),
+            fill: "url(#burn-scorch-char)",
+            "pointer-events": "none",
+            "data-shape": "scorch-char"
+          }));
+          leftover.appendChild(burnEl("line", {
+            id: "leftover-burn-kerf-edge",
+            class: "leftover-burn leftover-showing leftover-scorch leftover-from-cut leftover-one-cut leftover-kerf leftover-not-a-flame leftover-not-a-leap",
+            x1: String(KERF_CX),
+            y1: String(BOARD_TOP + 4),
+            x2: String(KERF_CX),
+            y2: String(BOARD_BOT - 4),
+            stroke: "#1a0c06",
+            "stroke-width": "2.2",
+            "data-shape": "kerf-along-scorch"
+          }));
+          leftover.appendChild(burnEl("text", {
+            id: "leftover-burn-label",
+            class: "burn-label leftover-label leftover-burn leftover-showing leftover-scorch leftover-one-cut leftover-from-cut",
+            x: String(KERF_CX),
+            y: String((BOARD_TOP + BOARD_BOT) / 2 + 4),
+            fill: "#f4ecd0",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "BURN";
+        } else {
+          leftover.appendChild(burnEl("rect", {
+            id: "burn-cool-cut",
+            class: "leftover-burn leftover-cool leftover-empty leftover-no-scorch leftover-one-cut leftover-kerf leftover-true leftover-cool-cut leftover-not-a-burn",
+            x: String(kerfLeft - 2),
+            y: String(BOARD_TOP + 2),
+            width: String(KERF_HALF * 2 + 4),
+            height: String(BOARD_BOT - BOARD_TOP - 4),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "cool-cut"
+          }));
+        }
+        burnLayer.appendChild(leftover);
+
+        burnMarkLayer.replaceChildren();
+        burnMarkLayer.appendChild(burnEl("text", {
+          x: String(BOARD_LEFT),
+          y: String(BOARD_BOT + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "BOARD · HOLDS THE CUT";
+        burnMarkLayer.appendChild(burnEl("text", {
+          x: String(BOARD_RIGHT),
+          y: String(BOARD_BOT + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isCool ? "CUT · COOL / NO LEFTOVER BURN" : "CUT · LEFTOVER HEAT MARK STILL SITS FROM THE CUT";
+
+        if (!isCool) {
+          const dimY = BOARD_TOP - 18;
+          const leftX = KERF_CX - halfScorch;
+          const rightX = KERF_CX + halfScorch;
+          burnMarkLayer.appendChild(burnEl("line", {
+            id: "burn-dim",
+            class: "burn-dim leftover-burn leftover-showing leftover-scorch leftover-one-cut leftover-from-cut leftover-not-a-flame leftover-not-a-chatter",
+            x1: String(leftX),
+            y1: String(dimY),
+            x2: String(rightX),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          burnMarkLayer.appendChild(burnEl("line", {
+            x1: String(leftX),
+            y1: String(dimY - 4),
+            x2: String(leftX),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          burnMarkLayer.appendChild(burnEl("line", {
+            x1: String(rightX),
+            y1: String(dimY - 4),
+            x2: String(rightX),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          burnMarkLayer.appendChild(burnEl("text", {
+            id: "burn-mm-label",
+            class: "burn-label leftover-label leftover-burn leftover-showing leftover-scorch leftover-one-cut leftover-from-cut",
+            x: String(KERF_CX),
+            y: String(dimY - 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = scorchMm + " mm";
+          burnMarkLayer.appendChild(burnEl("text", {
+            id: "burn-scorch-label",
+            class: "scorch-label leftover-scorch leftover-burn leftover-one-cut leftover-from-cut leftover-not-a-flame leftover-not-a-chatter leftover-not-a-tearout leftover-not-a-stain",
+            x: "400",
+            y: "412",
+            fill: "#dcd49a",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER BURN · HEAT MARK STILL SITS FROM THE CUT · NOT A FLAME · NOT A RIPPLE";
+        } else {
+          burnMarkLayer.appendChild(burnEl("text", {
+            id: "burn-label",
+            class: "burn-label leftover-label leftover-cool leftover-no-scorch leftover-one-cut leftover-kerf leftover-empty leftover-true",
+            x: String(KERF_CX),
+            y: String((BOARD_TOP + BOARD_BOT) / 2),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "COOL / NO LEFTOVER BURN";
+        }
+
+        burnSceneStatus.setAttribute("fill", pic.accent);
+        burnSceneStatus.textContent = pic.status;
+        burnScene.setAttribute("data-burn", String(scorchMm));
+        burnScene.setAttribute("data-leftover", pic.leftover);
+        burnScene.setAttribute("data-verdict", pic.verdict);
+        burnScene.setAttribute("data-view", "one-cut-kerf-burn");
+        burnScene.setAttribute("data-hero", "leftover-burn");
+        burnScene.setAttribute("data-scorch-mm", String(scorchMm));
+        burnScene.setAttribute("data-scorch-px", String(pic.scorchPx.toFixed(1)));
+        burnScene.setAttribute("data-scorch", pic.scorch);
+        burnScene.setAttribute("data-shape", pic.shape);
+        burnScene.setAttribute("data-scorch-w", String(pic.scorchW.toFixed(1)));
+      }
+
+      function burnToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-cool";
+      }
+
+      function burnRender() {
+        const pic = burnPicture();
+        burnPaint(pic);
+        burnTitle.textContent = pic.alt;
+        burnAlt.textContent = pic.alt;
+        burnSvg.setAttribute("aria-label", pic.alt);
+        burnDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + scorchMm + " mm showing"
+          : "leftover cool";
+        burnStatMm.textContent = scorchMm + " mm";
+        burnStatLeftover.textContent = pic.leftover;
+        burnStatScorch.textContent = pic.leftover === "showing"
+          ? scorchMm + " mm leftover"
+          : "cool";
+        burnStatLeftoverWrap.classList.remove("is-showing", "is-cool");
+        burnStatLeftoverWrap.classList.add(burnToneClass(pic.leftover));
+        if (Number(burnInput.value) !== scorchMm) burnInput.value = String(scorchMm);
+        burnInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function burnResetSeed() {
+        scorchMm = BURN_SEED.scorchMm;
+        burnRender();
+      }
+
+      burnInput.addEventListener("input", function (event) {
+        scorchMm = burnClamp(Math.round(Number(event.target.value)), BURN_MIN, BURN_MAX);
+        burnRender();
+      });
+      burnBtnReset.addEventListener("click", burnResetSeed);
+      burnBtnResetStage.addEventListener("click", burnResetSeed);
+
+      burnRender();
+    </script>
+  </body>
+</html>
