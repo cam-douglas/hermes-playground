@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Dogbone — a corner looks tight until you see the dogbone. Move the relief. See the leftover round." />
+    <title>Dogbone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(176, 118, 52, 0.22);
+        --accent: #b07634;
+        --timber: #6a4418;
+        --relief: #e0b060;
+        --showing: #e0b060;
+        --tight: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(176, 118, 52, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(36, 24, 12, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(176, 118, 52, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 18, 12, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(176, 118, 52, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16140c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(176, 118, 52, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(176, 118, 52, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #dogbone-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(224, 176, 96, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-tight b { color: var(--tight); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #dogbone-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> dogbone · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover round relief that still sits in the corner</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 25 Aug 2026 17:50</span>
+        <h1>Dogbone</h1>
+        <p class="lede">
+          A corner looks tight until you see the dogbone. Move the relief. See the leftover round.
+          Not a fillet. Not a finger. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="dogbone-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover round still sits in the corner</h2>
+          </div>
+          <span class="kicker" id="dogbone-desk-meta">leftover 16 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="dogbone-svg" viewBox="0 0 800 460" role="img" aria-labelledby="dogbone-title dogbone-desc">
+            <title id="dogbone-title">Dogbone is showing. Sixteen millimetres of leftover round relief still sit in the corner.</title>
+            <desc id="dogbone-desc">One inside corner whose leftover is the dogbone — leftover round CNC corner still sitting as a relief in an inside square (leftover dogbone still sitting in the corner, not Finger leftover tabs along an edge, not Fillet leftover convex radius at a joint, not Mortise leftover pocket in a face, not Chamfer leftover bevel, not Cove leftover scoop in a face). One corner; the leftover that still sits in the corner is the dogbone — a leftover round hole still sitting at the inside square so a tab can nest. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="dogbone-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="dogbone-stock-wash" x1="0%" y1="0%" x2="100%" y2="40%">
+                <stop offset="0%" stop-color="#4a2e12" />
+                <stop offset="46%" stop-color="#7a4a1c" />
+                <stop offset="100%" stop-color="#b87830" />
+              </linearGradient>
+              <linearGradient id="dogbone-wall-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#5a3816" />
+                <stop offset="50%" stop-color="#8a5420" />
+                <stop offset="100%" stop-color="#c88838" />
+              </linearGradient>
+              <linearGradient id="dogbone-hole-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="48%" stop-color="#0a0806" />
+                <stop offset="100%" stop-color="#201810" />
+              </linearGradient>
+              <pattern id="dogbone-stock-grain" width="18" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 5 L18 5" fill="none" stroke="rgba(40,20,8,0.16)" stroke-width="1" />
+                <path d="M0 2 L18 2" fill="none" stroke="rgba(40,20,8,0.07)" stroke-width="1" />
+              </pattern>
+              <pattern id="dogbone-wall-grain" width="10" height="16" patternUnits="userSpaceOnUse">
+                <path d="M5 0 L5 16" fill="none" stroke="rgba(40,20,8,0.16)" stroke-width="1" />
+                <path d="M2 0 L2 16" fill="none" stroke="rgba(40,20,8,0.07)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(176,118,52,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">INSIDE CORNER · ONE SQUARE · LEFTOVER IS THE DOGBONE</text>
+            <g id="dogbone-scene" data-view="inside-corner-one-square" data-hero="leftover-dogbone" data-dogbone="16" data-leftover="showing" data-verdict="showing" data-relief="in-corner">
+              <g id="dogbone-bench-layer"></g>
+              <g id="dogbone-stock-layer"></g>
+              <g id="dogbone-layer"></g>
+              <g id="dogbone-mark-layer"></g>
+              <text id="dogbone-scene-status" x="400" y="64" fill="#e0b060" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 16 MM LEFTOVER ROUND</text>
+              <text id="dogbone-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER ROUND RELIEF STILL SITS IN THE CORNER · NOT A FILLET · NOT A FINGER · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="dogbone-alt" class="sr-only" aria-live="polite">Dogbone is showing. Sixteen millimetres of leftover round relief still sit in the corner.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="dogbone-input">Dogbone (mm · leftover relief still sitting in the corner)</label>
+            <input id="dogbone-input" type="range" min="0" max="80" step="1" value="16" />
+            <div class="ticks" aria-hidden="true">
+              <span>tight / no leftover dogbone</span>
+              <span>seed showing</span>
+              <span>larger leftover round</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="dogbone-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Dogbone <b id="dogbone-stat-mm">16 mm</b></span>
+          <span id="dogbone-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="dogbone-stat-leftover">showing</b></span>
+          <span>Leftover relief (sketch) <b id="dogbone-stat-relief">16 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A corner looks tight until you see the dogbone. Dogbone is leftover round relief — leftover CNC corner still sitting as a hole in an inside square so a tab can nest. A sketch, not a mill sign-off.
+        Seed is already showing — 16 mm of leftover round, not a tight-only corner. Arrow keys move the focused control.
+        Refresh restores the seed. Not a fillet. Not a finger. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const DOGBONE_SEED = { reliefMm: 16 };
+      const DOGBONE_MIN = 0;
+      const DOGBONE_MAX = 80;
+      const DOGBONE_TIGHT_AT = 4;
+      const DOGBONE_SCALE = 2.05;
+      const STOCK_LEFT = 88;
+      const STOCK_RIGHT = 712;
+      const STOCK_TOP = 96;
+      const STOCK_BOT = 372;
+      const INNER_LEFT = 300;
+      const INNER_RIGHT = 580;
+      const INNER_TOP = 160;
+      const INNER_BOT = 300;
+      const CORNER_X = INNER_LEFT;
+      const CORNER_Y = INNER_BOT;
+      const WALL = INNER_TOP - STOCK_TOP;
+
+      let reliefMm = DOGBONE_SEED.reliefMm;
+
+      const dogboneSvg = document.getElementById("dogbone-svg");
+      const dogboneScene = document.getElementById("dogbone-scene");
+      const dogboneTitle = document.getElementById("dogbone-title");
+      const dogboneAlt = document.getElementById("dogbone-alt");
+      const dogboneDeskMeta = document.getElementById("dogbone-desk-meta");
+      const dogboneInput = document.getElementById("dogbone-input");
+      const dogboneBenchLayer = document.getElementById("dogbone-bench-layer");
+      const dogboneStockLayer = document.getElementById("dogbone-stock-layer");
+      const dogboneLayer = document.getElementById("dogbone-layer");
+      const dogboneMarkLayer = document.getElementById("dogbone-mark-layer");
+      const dogboneSceneStatus = document.getElementById("dogbone-scene-status");
+      const dogboneStatMm = document.getElementById("dogbone-stat-mm");
+      const dogboneStatLeftover = document.getElementById("dogbone-stat-leftover");
+      const dogboneStatLeftoverWrap = document.getElementById("dogbone-stat-leftover-wrap");
+      const dogboneStatRelief = document.getElementById("dogbone-stat-relief");
+      const dogboneBtnReset = document.getElementById("dogbone-btn-reset");
+      const dogboneBtnResetStage = document.getElementById("dogbone-btn-reset-stage");
+
+      function dogboneClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function dogboneEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function dogboneSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      // Remaining stock is a frame around one inside square. The leftover is a leftover
+      // round hole still sitting at that inside corner — not a fillet fill, not tabs.
+      function dogboneStockPath(rPx) {
+        const parts = [
+          "M " + STOCK_LEFT + " " + STOCK_TOP,
+          "H " + STOCK_RIGHT,
+          "V " + STOCK_BOT,
+          "H " + STOCK_LEFT,
+          "Z",
+          "M " + INNER_LEFT + " " + INNER_TOP,
+          "H " + INNER_RIGHT,
+          "V " + INNER_BOT,
+          "H " + INNER_LEFT,
+          "Z"
+        ];
+        if (rPx > 0) {
+          // Punch the leftover round out of the remaining stock at the inside corner
+          // so a square tab can nest. Leftover hole, not a convex fillet fill.
+          parts.push(
+            "M " + (CORNER_X + rPx).toFixed(1) + " " + CORNER_Y.toFixed(1),
+            "A " + rPx.toFixed(1) + " " + rPx.toFixed(1) + " 0 1 1 " + (CORNER_X - rPx).toFixed(1) + " " + CORNER_Y.toFixed(1),
+            "A " + rPx.toFixed(1) + " " + rPx.toFixed(1) + " 0 1 1 " + (CORNER_X + rPx).toFixed(1) + " " + CORNER_Y.toFixed(1),
+            "Z"
+          );
+        }
+        return parts.join(" ");
+      }
+
+      function dogbonePicture() {
+        const leftover = reliefMm <= DOGBONE_TIGHT_AT ? "tight" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + reliefMm + " MM LEFTOVER ROUND";
+          alt = "Dogbone is showing. " + dogboneSpokenMm(reliefMm).charAt(0).toUpperCase() + dogboneSpokenMm(reliefMm).slice(1) + " millimetres of leftover round relief still sit in the corner.";
+        } else {
+          status = "TIGHT · NO LEFTOVER DOGBONE";
+          alt = "Dogbone is tight. The inside corner looks tight. No leftover dogbone. A sketch, not a mill sign-off.";
+        }
+        const reliefPx = leftover === "showing" ? reliefMm * DOGBONE_SCALE : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e0b060" : "#8ec8b4",
+          reliefPx: reliefPx,
+          relief: leftover === "showing" ? "in-corner" : "none",
+          shape: leftover === "showing" ? "leftover-round" : "tight-corner"
+        };
+      }
+
+      function dogbonePaint(pic) {
+        const isTight = pic.leftover === "tight";
+
+        dogboneBenchLayer.replaceChildren();
+        dogboneBenchLayer.appendChild(dogboneEl("rect", {
+          class: "site leftover-corner leftover-inside leftover-dogbone leftover-square leftover-relief leftover-one-corner",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#dogbone-bench-wash)",
+          stroke: "rgba(176,118,52,0.16)",
+          "stroke-width": "1.2"
+        }));
+        dogboneBenchLayer.appendChild(dogboneEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE INSIDE CORNER · LEFTOVER ROUND STILL SITS IN THE CORNER";
+
+        dogboneStockLayer.replaceChildren();
+        const stock = dogboneEl("g", {
+          id: "dogbone-sawn-stock",
+          class: isTight
+            ? "stock leftover-tight leftover-no-dogbone leftover-dogbone leftover-square leftover-no-relief leftover-one-corner leftover-inside leftover-true"
+            : "stock leftover-showing leftover-dogbone leftover-relief leftover-square leftover-one-corner leftover-inside leftover-round"
+        });
+        stock.appendChild(dogboneEl("path", {
+          id: "dogbone-stock-path",
+          class: isTight
+            ? "stock-path leftover-stock leftover-tight leftover-dogbone leftover-no-relief leftover-one-corner leftover-inside leftover-true"
+            : "stock-path leftover-stock leftover-showing leftover-dogbone leftover-relief leftover-one-corner leftover-inside leftover-round",
+          d: dogboneStockPath(pic.reliefPx),
+          fill: "url(#dogbone-stock-wash)",
+          "fill-rule": "evenodd",
+          stroke: pic.accent,
+          "stroke-width": "1.6",
+          "data-shape": isTight ? "tight-corner" : "inside-square-with-leftover-round"
+        }));
+        stock.appendChild(dogboneEl("rect", {
+          class: "stock-grain leftover-stock leftover-inside leftover-one-corner leftover-dogbone leftover-in-corner",
+          x: String(STOCK_LEFT),
+          y: String(STOCK_TOP),
+          width: String(STOCK_RIGHT - STOCK_LEFT),
+          height: String(WALL),
+          fill: "url(#dogbone-stock-grain)",
+          "pointer-events": "none"
+        }));
+        stock.appendChild(dogboneEl("rect", {
+          class: "wall-grain leftover-stock leftover-inside leftover-one-corner leftover-dogbone leftover-in-corner",
+          x: String(STOCK_LEFT),
+          y: String(INNER_TOP),
+          width: String(INNER_LEFT - STOCK_LEFT),
+          height: String(STOCK_BOT - INNER_TOP),
+          fill: "url(#dogbone-wall-grain)",
+          "pointer-events": "none"
+        }));
+        stock.appendChild(dogboneEl("text", {
+          x: String((STOCK_LEFT + STOCK_RIGHT) / 2),
+          y: String(STOCK_TOP + 28),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "REMAINING STOCK";
+        stock.appendChild(dogboneEl("text", {
+          x: String((INNER_LEFT + INNER_RIGHT) / 2),
+          y: String((INNER_TOP + INNER_BOT) / 2 + 4),
+          fill: "#d8c0a8",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "INSIDE SQUARE";
+        dogboneStockLayer.appendChild(stock);
+
+        dogboneLayer.replaceChildren();
+        const leftover = dogboneEl("g", {
+          id: "leftover-dogbone",
+          class: isTight
+            ? "dogbone leftover-dogbone leftover-tight leftover-empty leftover-no-relief leftover-one-corner leftover-inside leftover-true"
+            : "dogbone leftover-dogbone leftover-showing leftover-relief leftover-round leftover-one-corner leftover-inside leftover-in-corner",
+          "data-relief-mm": String(reliefMm),
+          "data-relief-px": String(pic.reliefPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isTight) {
+          leftover.appendChild(dogboneEl("circle", {
+            id: "leftover-dogbone-round",
+            class: "leftover-dogbone leftover-showing leftover-relief leftover-round leftover-corner leftover-in-corner leftover-one-corner leftover-cnc",
+            cx: String(CORNER_X),
+            cy: String(CORNER_Y),
+            r: String(pic.reliefPx),
+            fill: "url(#dogbone-hole-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.8",
+            "data-shape": "leftover-round",
+            "data-relief-mm": String(reliefMm),
+            "data-relief-px": String(pic.reliefPx.toFixed(1))
+          }));
+          leftover.appendChild(dogboneEl("circle", {
+            id: "leftover-dogbone-core",
+            class: "leftover-dogbone leftover-showing leftover-relief leftover-round leftover-hole leftover-in-corner leftover-one-corner",
+            cx: String(CORNER_X),
+            cy: String(CORNER_Y),
+            r: String(Math.max(4, pic.reliefPx * 0.42)),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.1",
+            opacity: "0.55",
+            "data-shape": "leftover-round-core"
+          }));
+          leftover.appendChild(dogboneEl("text", {
+            id: "leftover-dogbone-label",
+            class: "dogbone-label leftover-label leftover-dogbone leftover-showing leftover-relief leftover-one-corner leftover-in-corner",
+            x: String(CORNER_X),
+            y: String(CORNER_Y + 4),
+            fill: "#f4ecd0",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "ROUND";
+        } else {
+          leftover.appendChild(dogboneEl("polyline", {
+            id: "dogbone-tight",
+            class: "leftover-dogbone leftover-tight leftover-empty leftover-no-relief leftover-one-corner leftover-inside leftover-true leftover-tight-corner",
+            points: (CORNER_X) + "," + (CORNER_Y + 54) + " " + CORNER_X + "," + CORNER_Y + " " + (CORNER_X + 54) + "," + CORNER_Y,
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            "stroke-dasharray": "4 5",
+            opacity: "0.7",
+            "data-shape": "tight-corner"
+          }));
+        }
+        dogboneLayer.appendChild(leftover);
+
+        dogboneMarkLayer.replaceChildren();
+        dogboneMarkLayer.appendChild(dogboneEl("text", {
+          x: String(STOCK_LEFT),
+          y: String(STOCK_TOP - 8),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "CORNER · LEFTOVER ROUND RELIEF";
+        dogboneMarkLayer.appendChild(dogboneEl("text", {
+          x: String(STOCK_RIGHT),
+          y: String(STOCK_BOT + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isTight ? "INSIDE · TIGHT / NO LEFTOVER DOGBONE" : "INSIDE · LEFTOVER ROUND STILL SITS IN THE CORNER";
+
+        if (!isTight) {
+          const dimY = CORNER_Y + pic.reliefPx + 22;
+          const dimX0 = CORNER_X - pic.reliefPx;
+          const dimX1 = CORNER_X + pic.reliefPx;
+          dogboneMarkLayer.appendChild(dogboneEl("line", {
+            id: "dogbone-dim",
+            class: "dogbone-dim leftover-dogbone leftover-showing leftover-relief leftover-one-corner leftover-in-corner",
+            x1: String(dimX0),
+            y1: String(dimY),
+            x2: String(dimX1),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          dogboneMarkLayer.appendChild(dogboneEl("line", {
+            x1: String(dimX0),
+            y1: String(dimY - 4),
+            x2: String(dimX0),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          dogboneMarkLayer.appendChild(dogboneEl("line", {
+            x1: String(dimX1),
+            y1: String(dimY - 4),
+            x2: String(dimX1),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          dogboneMarkLayer.appendChild(dogboneEl("text", {
+            id: "dogbone-mm-label",
+            class: "dogbone-label leftover-label leftover-dogbone leftover-showing leftover-relief leftover-one-corner leftover-in-corner",
+            x: String(CORNER_X),
+            y: String(dimY + 16),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = reliefMm + " mm";
+          dogboneMarkLayer.appendChild(dogboneEl("text", {
+            id: "dogbone-relief-label",
+            class: "relief-label leftover-relief leftover-dogbone leftover-one-corner leftover-inside leftover-in-corner",
+            x: "400",
+            y: String(STOCK_BOT + 36),
+            fill: "#dcd49a",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER ROUND · CNC CORNER STILL SITS IN THE INSIDE SQUARE · NOT A FILLET · NOT A FINGER";
+        } else {
+          dogboneMarkLayer.appendChild(dogboneEl("text", {
+            id: "dogbone-label",
+            class: "dogbone-label leftover-label leftover-tight leftover-no-relief leftover-one-corner leftover-inside leftover-empty leftover-true",
+            x: String(CORNER_X + 36),
+            y: String(CORNER_Y - 12),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "TIGHT / NO LEFTOVER DOGBONE";
+        }
+
+        dogboneSceneStatus.setAttribute("fill", pic.accent);
+        dogboneSceneStatus.textContent = pic.status;
+        dogboneScene.setAttribute("data-dogbone", String(reliefMm));
+        dogboneScene.setAttribute("data-leftover", pic.leftover);
+        dogboneScene.setAttribute("data-verdict", pic.verdict);
+        dogboneScene.setAttribute("data-view", "inside-corner-one-square");
+        dogboneScene.setAttribute("data-hero", "leftover-dogbone");
+        dogboneScene.setAttribute("data-relief-mm", String(reliefMm));
+        dogboneScene.setAttribute("data-relief-px", String(pic.reliefPx.toFixed(1)));
+        dogboneScene.setAttribute("data-relief", pic.relief);
+        dogboneScene.setAttribute("data-shape", pic.shape);
+      }
+
+      function dogboneToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-tight";
+      }
+
+      function dogboneRender() {
+        const pic = dogbonePicture();
+        dogbonePaint(pic);
+        dogboneTitle.textContent = pic.alt;
+        dogboneAlt.textContent = pic.alt;
+        dogboneSvg.setAttribute("aria-label", pic.alt);
+        dogboneDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + reliefMm + " mm showing"
+          : "leftover tight";
+        dogboneStatMm.textContent = reliefMm + " mm";
+        dogboneStatLeftover.textContent = pic.leftover;
+        dogboneStatRelief.textContent = pic.leftover === "showing"
+          ? reliefMm + " mm leftover"
+          : "tight";
+        dogboneStatLeftoverWrap.classList.remove("is-showing", "is-tight");
+        dogboneStatLeftoverWrap.classList.add(dogboneToneClass(pic.leftover));
+        if (Number(dogboneInput.value) !== reliefMm) dogboneInput.value = String(reliefMm);
+        dogboneInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function dogboneResetSeed() {
+        reliefMm = DOGBONE_SEED.reliefMm;
+        dogboneRender();
+      }
+
+      dogboneInput.addEventListener("input", function (event) {
+        reliefMm = dogboneClamp(Math.round(Number(event.target.value)), DOGBONE_MIN, DOGBONE_MAX);
+        dogboneRender();
+      });
+      dogboneBtnReset.addEventListener("click", dogboneResetSeed);
+      dogboneBtnResetStage.addEventListener("click", dogboneResetSeed);
+
+      dogboneRender();
+    </script>
+  </body>
+</html>
