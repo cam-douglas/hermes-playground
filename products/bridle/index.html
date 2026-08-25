@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Bridle — a board looks closed until you see the bridle. Move the fork. See the leftover opening." />
+    <title>Bridle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(154, 138, 58, 0.22);
+        --accent: #9a8a3a;
+        --timber: #6a4418;
+        --fork: #d4c86a;
+        --showing: #d4c86a;
+        --closed: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(154, 138, 58, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(32, 28, 12, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(154, 138, 58, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 20, 12, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(154, 138, 58, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16140c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(154, 138, 58, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(154, 138, 58, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #bridle-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 200, 106, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-closed b { color: var(--closed); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #bridle-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> bridle · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover open fork that still sits at the end</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 25 Aug 2026 15:50</span>
+        <h1>Bridle</h1>
+        <p class="lede">
+          A board looks closed until you see the bridle. Move the fork. See the leftover opening.
+          Not a mortise. Not a tenon. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="bridle-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover fork still sits at the end</h2>
+          </div>
+          <span class="kicker" id="bridle-desk-meta">leftover 32 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="bridle-svg" viewBox="0 0 800 460" role="img" aria-labelledby="bridle-title bridle-desc">
+            <title id="bridle-title">Bridle is showing. Thirty-two millimetres of leftover open fork still sit at the end.</title>
+            <desc id="bridle-desc">One board in end/side whose leftover is the bridle — leftover open fork still sitting as a U-shaped opening in the end of the member (leftover bridle still sitting at the end, not Mortise leftover pocket in a face, not Tenon leftover tongue on a mate, not Dovetail leftover flared tails, not Dado leftover groove across a face, not Rabbet leftover shoulder along an edge). One board; the leftover that still sits at the end is the bridle. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="bridle-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161410" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="bridle-end-wash" x1="0%" y1="0%" x2="100%" y2="40%">
+                <stop offset="0%" stop-color="#4a2e12" />
+                <stop offset="46%" stop-color="#7a4a1c" />
+                <stop offset="100%" stop-color="#b87830" />
+              </linearGradient>
+              <linearGradient id="bridle-side-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#5a3816" />
+                <stop offset="50%" stop-color="#8a5420" />
+                <stop offset="100%" stop-color="#c88838" />
+              </linearGradient>
+              <linearGradient id="bridle-fork-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1810" />
+                <stop offset="48%" stop-color="#0c0a08" />
+                <stop offset="100%" stop-color="#1a1810" />
+              </linearGradient>
+              <pattern id="bridle-end-grain" width="10" height="10" patternUnits="userSpaceOnUse">
+                <circle cx="5" cy="5" r="1.4" fill="rgba(40,20,8,0.18)" />
+                <circle cx="1" cy="2" r="0.7" fill="rgba(40,20,8,0.1)" />
+              </pattern>
+              <pattern id="bridle-side-grain" width="18" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 5 L18 5" fill="none" stroke="rgba(40,20,8,0.16)" stroke-width="1" />
+                <path d="M0 2 L18 2" fill="none" stroke="rgba(40,20,8,0.07)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(154,138,58,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">END / SIDE · ONE BOARD · LEFTOVER IS THE BRIDLE</text>
+            <g id="bridle-scene" data-view="end-side-one-board" data-hero="leftover-bridle" data-bridle="32" data-leftover="showing" data-verdict="showing" data-fork="at-end">
+              <g id="bridle-bench-layer"></g>
+              <g id="bridle-board-layer"></g>
+              <g id="bridle-layer"></g>
+              <g id="bridle-mark-layer"></g>
+              <text id="bridle-scene-status" x="400" y="64" fill="#d4c86a" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 32 MM LEFTOVER FORK</text>
+              <text id="bridle-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER OPEN FORK STILL SITS AT THE END · NOT A MORTISE · NOT A TENON · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="bridle-alt" class="sr-only" aria-live="polite">Bridle is showing. Thirty-two millimetres of leftover open fork still sit at the end.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="bridle-input">Bridle (mm · leftover fork still sitting at the end)</label>
+            <input id="bridle-input" type="range" min="0" max="80" step="1" value="32" />
+            <div class="ticks" aria-hidden="true">
+              <span>closed / no leftover bridle</span>
+              <span>seed showing</span>
+              <span>deeper leftover fork</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="bridle-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Bridle <b id="bridle-stat-mm">32 mm</b></span>
+          <span id="bridle-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="bridle-stat-leftover">showing</b></span>
+          <span>Leftover fork (sketch) <b id="bridle-stat-fork">32 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A board looks closed until you see the bridle. Bridle is leftover open fork — leftover U-shaped opening still sitting in the end of the member. A sketch, not a mill sign-off.
+        Seed is already showing — 32 mm of leftover fork, not a closed-only end. Arrow keys move the focused control.
+        Refresh restores the seed. Not a mortise. Not a tenon. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const BRIDLE_SEED = { forkMm: 32 };
+      const BRIDLE_MIN = 0;
+      const BRIDLE_MAX = 80;
+      const BRIDLE_CLOSED_AT = 4;
+      const BRIDLE_SCALE = 2.05;
+      const END_LEFT = 88;
+      const END_RIGHT = 280;
+      const END_TOP = 118;
+      const END_BOT = 348;
+      const SIDE_LEFT = 360;
+      const SIDE_RIGHT = 708;
+      const SIDE_TOP = 150;
+      const SIDE_BOT = 348;
+      const FORK_HALF = 28;
+
+      let forkMm = BRIDLE_SEED.forkMm;
+
+      const bridleSvg = document.getElementById("bridle-svg");
+      const bridleScene = document.getElementById("bridle-scene");
+      const bridleTitle = document.getElementById("bridle-title");
+      const bridleAlt = document.getElementById("bridle-alt");
+      const bridleDeskMeta = document.getElementById("bridle-desk-meta");
+      const bridleInput = document.getElementById("bridle-input");
+      const bridleBenchLayer = document.getElementById("bridle-bench-layer");
+      const bridleBoardLayer = document.getElementById("bridle-board-layer");
+      const bridleLayer = document.getElementById("bridle-layer");
+      const bridleMarkLayer = document.getElementById("bridle-mark-layer");
+      const bridleSceneStatus = document.getElementById("bridle-scene-status");
+      const bridleStatMm = document.getElementById("bridle-stat-mm");
+      const bridleStatLeftover = document.getElementById("bridle-stat-leftover");
+      const bridleStatLeftoverWrap = document.getElementById("bridle-stat-leftover-wrap");
+      const bridleStatFork = document.getElementById("bridle-stat-fork");
+      const bridleBtnReset = document.getElementById("bridle-btn-reset");
+      const bridleBtnResetStage = document.getElementById("bridle-btn-reset-stage");
+
+      function bridleClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function bridleEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function bridleSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          22: "twenty-two",
+          24: "twenty-four",
+          26: "twenty-six",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          56: "fifty-six",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      // One leftover U-shaped fork at the end — not a closed mortise pocket, not a tenon tongue.
+      function bridleEndForkPath(cx, halfW, y0, y1) {
+        return [
+          "M " + (cx - halfW).toFixed(1) + " " + y0.toFixed(1),
+          "L " + (cx + halfW).toFixed(1) + " " + y0.toFixed(1),
+          "L " + (cx + halfW).toFixed(1) + " " + (y1 - 10).toFixed(1),
+          "Q " + cx.toFixed(1) + " " + y1.toFixed(1) + " " + (cx - halfW).toFixed(1) + " " + (y1 - 10).toFixed(1),
+          "Z"
+        ].join(" ");
+      }
+
+      function bridleSideForkPath(xEnd, xInner, y0, y1) {
+        return [
+          "M " + xEnd.toFixed(1) + " " + y0.toFixed(1),
+          "L " + xInner.toFixed(1) + " " + y0.toFixed(1),
+          "Q " + (xInner - 10).toFixed(1) + " " + ((y0 + y1) / 2).toFixed(1) + " " + xInner.toFixed(1) + " " + y1.toFixed(1),
+          "L " + xEnd.toFixed(1) + " " + y1.toFixed(1),
+          "Z"
+        ].join(" ");
+      }
+
+      function bridleSideBoardPath(left, right, top, bot, depthPx) {
+        if (depthPx <= 0) {
+          return [
+            "M " + left + " " + top,
+            "L " + right + " " + top,
+            "L " + right + " " + bot,
+            "L " + left + " " + bot,
+            "Z"
+          ].join(" ");
+        }
+        const midY = (top + bot) / 2;
+        const forkTop = midY - FORK_HALF;
+        const forkBot = midY + FORK_HALF;
+        const inner = right - depthPx;
+        return [
+          "M " + left + " " + top,
+          "L " + right + " " + top,
+          "L " + right + " " + forkTop.toFixed(1),
+          "L " + inner.toFixed(1) + " " + forkTop.toFixed(1),
+          "Q " + (inner - 10).toFixed(1) + " " + midY.toFixed(1) + " " + inner.toFixed(1) + " " + forkBot.toFixed(1),
+          "L " + right + " " + forkBot.toFixed(1),
+          "L " + right + " " + bot,
+          "L " + left + " " + bot,
+          "Z"
+        ].join(" ");
+      }
+
+      function bridlePicture() {
+        const leftover = forkMm <= BRIDLE_CLOSED_AT ? "closed" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + forkMm + " MM LEFTOVER FORK";
+          alt = "Bridle is showing. " + bridleSpokenMm(forkMm).charAt(0).toUpperCase() + bridleSpokenMm(forkMm).slice(1) + " millimetres of leftover open fork still sit at the end.";
+        } else {
+          status = "CLOSED · NO LEFTOVER BRIDLE";
+          alt = "Bridle is closed. The end looks closed. No leftover bridle. A sketch, not a mill sign-off.";
+        }
+        const depthPx = leftover === "showing" ? forkMm * BRIDLE_SCALE : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4c86a" : "#8ec8b4",
+          depthPx: depthPx,
+          fork: leftover === "showing" ? "at-end" : "none",
+          shape: leftover === "showing" ? "open-fork" : "closed-end"
+        };
+      }
+
+      function bridlePaint(pic) {
+        const isClosed = pic.leftover === "closed";
+        const endCx = (END_LEFT + END_RIGHT) / 2;
+        const endMidY = (END_TOP + END_BOT) / 2;
+        const sideMidY = (SIDE_TOP + SIDE_BOT) / 2;
+
+        bridleBenchLayer.replaceChildren();
+        bridleBenchLayer.appendChild(bridleEl("rect", {
+          class: "site leftover-end leftover-side leftover-bridle leftover-board leftover-fork leftover-opening leftover-one-board",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#bridle-bench-wash)",
+          stroke: "rgba(154,138,58,0.16)",
+          "stroke-width": "1.2"
+        }));
+        bridleBenchLayer.appendChild(bridleEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE BOARD · END / SIDE · LEFTOVER OPEN FORK STILL SITS AT THE END";
+
+        bridleBoardLayer.replaceChildren();
+        const board = bridleEl("g", {
+          id: "bridle-sawn-board",
+          class: isClosed
+            ? "board leftover-closed leftover-no-bridle leftover-bridle leftover-board leftover-no-fork leftover-one-board leftover-end leftover-side leftover-true"
+            : "board leftover-showing leftover-bridle leftover-fork leftover-opening leftover-board leftover-one-board leftover-end leftover-side leftover-u"
+        });
+
+        board.appendChild(bridleEl("rect", {
+          id: "bridle-board-end",
+          class: isClosed
+            ? "board-end leftover-board leftover-closed leftover-bridle leftover-no-fork leftover-one-board leftover-end leftover-true"
+            : "board-end leftover-board leftover-showing leftover-bridle leftover-fork leftover-opening leftover-one-board leftover-end leftover-u",
+          x: String(END_LEFT),
+          y: String(END_TOP),
+          width: String(END_RIGHT - END_LEFT),
+          height: String(END_BOT - END_TOP),
+          fill: "url(#bridle-end-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6",
+          "data-shape": isClosed ? "closed-end" : "end-with-fork"
+        }));
+        board.appendChild(bridleEl("rect", {
+          class: "end-grain leftover-board leftover-end leftover-one-board leftover-bridle leftover-at-end",
+          x: String(END_LEFT),
+          y: String(END_TOP),
+          width: String(END_RIGHT - END_LEFT),
+          height: String(END_BOT - END_TOP),
+          fill: "url(#bridle-end-grain)",
+          "pointer-events": "none"
+        }));
+        board.appendChild(bridleEl("text", {
+          x: String(endCx),
+          y: String(END_BOT - 14),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "BOARD · END";
+        board.appendChild(bridleEl("text", {
+          x: String(END_LEFT + 10),
+          y: String(END_TOP + 16),
+          fill: "#d8c0a8",
+          "font-size": "9",
+          "letter-spacing": "1.4"
+        })).textContent = "END GRAIN";
+
+        board.appendChild(bridleEl("path", {
+          id: "bridle-board-side",
+          class: isClosed
+            ? "board-side leftover-board leftover-closed leftover-bridle leftover-no-fork leftover-one-board leftover-side leftover-true"
+            : "board-side leftover-board leftover-showing leftover-bridle leftover-fork leftover-opening leftover-one-board leftover-side leftover-u",
+          d: bridleSideBoardPath(SIDE_LEFT, SIDE_RIGHT, SIDE_TOP, SIDE_BOT, pic.depthPx),
+          fill: "url(#bridle-side-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.6",
+          "data-shape": isClosed ? "closed-end" : "open-fork"
+        }));
+        board.appendChild(bridleEl("rect", {
+          class: "side-grain leftover-board leftover-side leftover-one-board leftover-bridle",
+          x: String(SIDE_LEFT),
+          y: String(SIDE_TOP),
+          width: String(Math.max(8, SIDE_RIGHT - SIDE_LEFT - (isClosed ? 0 : pic.depthPx) - 4)),
+          height: String(SIDE_BOT - SIDE_TOP),
+          fill: "url(#bridle-side-grain)",
+          "pointer-events": "none"
+        }));
+        board.appendChild(bridleEl("text", {
+          x: String((SIDE_LEFT + SIDE_RIGHT) / 2),
+          y: String(SIDE_BOT - 14),
+          fill: "#f0d8c4",
+          "font-size": "12",
+          "letter-spacing": "2",
+          "text-anchor": "middle"
+        })).textContent = "BOARD · SIDE";
+        bridleBoardLayer.appendChild(board);
+
+        bridleLayer.replaceChildren();
+        const leftover = bridleEl("g", {
+          id: "leftover-bridle",
+          class: isClosed
+            ? "bridle leftover-bridle leftover-closed leftover-empty leftover-no-fork leftover-one-board leftover-end leftover-side leftover-true"
+            : "bridle leftover-bridle leftover-showing leftover-fork leftover-opening leftover-u leftover-one-board leftover-end leftover-side leftover-at-end",
+          "data-fork-mm": String(forkMm),
+          "data-fork-px": String(pic.depthPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isClosed) {
+          leftover.appendChild(bridleEl("path", {
+            id: "leftover-bridle-fork",
+            class: "leftover-bridle leftover-showing leftover-fork leftover-opening leftover-u leftover-end leftover-at-end leftover-one-board leftover-open-slot",
+            d: bridleEndForkPath(endCx, FORK_HALF, END_TOP, END_TOP + pic.depthPx),
+            fill: "url(#bridle-fork-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            "data-shape": "open-fork",
+            "data-fork-mm": String(forkMm),
+            "data-fork-px": String(pic.depthPx.toFixed(1))
+          }));
+          leftover.appendChild(bridleEl("path", {
+            id: "leftover-bridle-side-fork",
+            class: "fork leftover-bridle leftover-showing leftover-fork leftover-opening leftover-u leftover-side leftover-one-board leftover-open-slot",
+            d: bridleSideForkPath(SIDE_RIGHT, SIDE_RIGHT - pic.depthPx, sideMidY - FORK_HALF, sideMidY + FORK_HALF),
+            fill: "url(#bridle-fork-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            "data-shape": "open-fork"
+          }));
+          leftover.appendChild(bridleEl("text", {
+            id: "leftover-bridle-label",
+            class: "bridle-label leftover-label leftover-bridle leftover-showing leftover-fork leftover-opening leftover-one-board leftover-end leftover-at-end",
+            x: String(endCx),
+            y: String(END_TOP + Math.max(22, pic.depthPx * 0.55)),
+            fill: "#f4ecd0",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "FORK";
+        } else {
+          leftover.appendChild(bridleEl("line", {
+            id: "bridle-closed",
+            class: "leftover-bridle leftover-closed leftover-empty leftover-no-fork leftover-one-board leftover-end leftover-true leftover-closed-end",
+            x1: String(END_LEFT + 18),
+            y1: String(endMidY),
+            x2: String(END_RIGHT - 18),
+            y2: String(endMidY),
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            "stroke-dasharray": "4 5",
+            opacity: "0.7",
+            "data-shape": "closed-end"
+          }));
+        }
+        bridleLayer.appendChild(leftover);
+
+        bridleMarkLayer.replaceChildren();
+        bridleMarkLayer.appendChild(bridleEl("text", {
+          x: String(END_LEFT),
+          y: String(END_TOP - 8),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "END · ONE OPEN FORK";
+        bridleMarkLayer.appendChild(bridleEl("text", {
+          x: String(SIDE_RIGHT),
+          y: String(SIDE_BOT + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isClosed ? "SIDE · CLOSED / NO LEFTOVER BRIDLE" : "SIDE · LEFTOVER OPEN FORK STILL SITS";
+
+        if (!isClosed) {
+          const dimY = SIDE_TOP - 18;
+          const forkInner = SIDE_RIGHT - pic.depthPx;
+          bridleMarkLayer.appendChild(bridleEl("line", {
+            id: "bridle-dim",
+            class: "bridle-dim leftover-bridle leftover-showing leftover-fork leftover-opening leftover-one-board leftover-side leftover-at-end",
+            x1: String(forkInner),
+            y1: String(dimY),
+            x2: String(SIDE_RIGHT),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          bridleMarkLayer.appendChild(bridleEl("line", {
+            x1: String(forkInner),
+            y1: String(dimY - 4),
+            x2: String(forkInner),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          bridleMarkLayer.appendChild(bridleEl("line", {
+            x1: String(SIDE_RIGHT),
+            y1: String(dimY - 4),
+            x2: String(SIDE_RIGHT),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          bridleMarkLayer.appendChild(bridleEl("text", {
+            id: "bridle-mm-label",
+            class: "bridle-label leftover-label leftover-bridle leftover-showing leftover-fork leftover-opening leftover-one-board leftover-side leftover-at-end",
+            x: String((forkInner + SIDE_RIGHT) / 2),
+            y: String(dimY - 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = forkMm + " mm";
+          bridleMarkLayer.appendChild(bridleEl("text", {
+            id: "bridle-fork-label",
+            class: "fork-label leftover-fork leftover-bridle leftover-opening leftover-one-board leftover-end leftover-side leftover-at-end",
+            x: "400",
+            y: String(END_BOT + 36),
+            fill: "#dcd49a",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER FORK · U-SHAPED OPENING STILL SITS AT THE END · NOT A MORTISE · NOT A TENON";
+        } else {
+          bridleMarkLayer.appendChild(bridleEl("text", {
+            id: "bridle-label",
+            class: "bridle-label leftover-label leftover-closed leftover-no-fork leftover-one-board leftover-end leftover-side leftover-empty leftover-true",
+            x: String(endCx),
+            y: String(endMidY - 10),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "CLOSED / NO LEFTOVER BRIDLE";
+        }
+
+        bridleSceneStatus.setAttribute("fill", pic.accent);
+        bridleSceneStatus.textContent = pic.status;
+        bridleScene.setAttribute("data-bridle", String(forkMm));
+        bridleScene.setAttribute("data-leftover", pic.leftover);
+        bridleScene.setAttribute("data-verdict", pic.verdict);
+        bridleScene.setAttribute("data-view", "end-side-one-board");
+        bridleScene.setAttribute("data-hero", "leftover-bridle");
+        bridleScene.setAttribute("data-fork-mm", String(forkMm));
+        bridleScene.setAttribute("data-fork-px", String(pic.depthPx.toFixed(1)));
+        bridleScene.setAttribute("data-fork", pic.fork);
+        bridleScene.setAttribute("data-shape", pic.shape);
+      }
+
+      function bridleToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-closed";
+      }
+
+      function bridleRender() {
+        const pic = bridlePicture();
+        bridlePaint(pic);
+        bridleTitle.textContent = pic.alt;
+        bridleAlt.textContent = pic.alt;
+        bridleSvg.setAttribute("aria-label", pic.alt);
+        bridleDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + forkMm + " mm showing"
+          : "leftover closed";
+        bridleStatMm.textContent = forkMm + " mm";
+        bridleStatLeftover.textContent = pic.leftover;
+        bridleStatFork.textContent = pic.leftover === "showing"
+          ? forkMm + " mm leftover"
+          : "closed";
+        bridleStatLeftoverWrap.classList.remove("is-showing", "is-closed");
+        bridleStatLeftoverWrap.classList.add(bridleToneClass(pic.leftover));
+        if (Number(bridleInput.value) !== forkMm) bridleInput.value = String(forkMm);
+        bridleInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function bridleResetSeed() {
+        forkMm = BRIDLE_SEED.forkMm;
+        bridleRender();
+      }
+
+      bridleInput.addEventListener("input", function (event) {
+        forkMm = bridleClamp(Math.round(Number(event.target.value)), BRIDLE_MIN, BRIDLE_MAX);
+        bridleRender();
+      });
+      bridleBtnReset.addEventListener("click", bridleResetSeed);
+      bridleBtnResetStage.addEventListener("click", bridleResetSeed);
+
+      bridleRender();
+    </script>
+  </body>
+</html>
