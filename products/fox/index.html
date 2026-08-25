@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Fox — a tenon looks loose until you see the fox. Move the wedge. See the leftover flare." />
+    <title>Fox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(196, 84, 40, 0.22);
+        --accent: #c45428;
+        --timber: #6a3414;
+        --wedge: #e87838;
+        --showing: #e87838;
+        --loose: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(196, 84, 40, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(48, 16, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 84, 40, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 14, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 84, 40, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 84, 40, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(196, 84, 40, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #fox-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(232, 120, 56, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-loose b { color: var(--loose); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #fox-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> fox · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover hidden wedge that still sits in the tenon</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 25 Aug 2026 19:50</span>
+        <h1>Fox</h1>
+        <p class="lede">
+          A tenon looks loose until you see the fox. Move the wedge. See the leftover flare.
+          Not a drawbore. Not a tenon. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="fox-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover hidden wedge still sits in the tenon</h2>
+          </div>
+          <span class="kicker" id="fox-desk-meta">leftover 12 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="fox-svg" viewBox="0 0 800 460" role="img" aria-labelledby="fox-title fox-desc">
+            <title id="fox-title">Fox is showing. Twelve millimetres of leftover wedge still sit in the tenon.</title>
+            <desc id="fox-desc">One stub tenon in side/end whose leftover is the fox — leftover hidden wedge still sitting in a kerf in the tenon so it flares as it seats (leftover fox still sitting in the tenon, not Drawbore leftover offset through a joint, not Tenon leftover tongue on a mate, not Spline leftover key in a slot, not Kerf leftover blade path, not Dowel leftover pin). One tenon; the leftover that still sits in it is the fox — a leftover wedge still sitting in the tenon kerf, flaring the tenon as it seats. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="fox-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#16120e" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="fox-stock-wash" x1="0%" y1="0%" x2="100%" y2="20%">
+                <stop offset="0%" stop-color="#4a2410" />
+                <stop offset="46%" stop-color="#7a3c16" />
+                <stop offset="100%" stop-color="#b85c24" />
+              </linearGradient>
+              <linearGradient id="fox-tenon-wash" x1="0%" y1="0%" x2="100%" y2="40%">
+                <stop offset="0%" stop-color="#5a2c12" />
+                <stop offset="50%" stop-color="#8a4418" />
+                <stop offset="100%" stop-color="#c86828" />
+              </linearGradient>
+              <linearGradient id="fox-wedge-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f4b060" />
+                <stop offset="48%" stop-color="#e87838" />
+                <stop offset="100%" stop-color="#a84818" />
+              </linearGradient>
+              <pattern id="fox-stock-grain" width="10" height="16" patternUnits="userSpaceOnUse">
+                <path d="M5 0 L5 16" fill="none" stroke="rgba(40,16,8,0.16)" stroke-width="1" />
+                <path d="M2 0 L2 16" fill="none" stroke="rgba(40,16,8,0.07)" stroke-width="1" />
+              </pattern>
+              <pattern id="fox-tenon-grain" width="18" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 5 L18 5" fill="none" stroke="rgba(40,16,8,0.16)" stroke-width="1" />
+                <path d="M0 2 L18 2" fill="none" stroke="rgba(40,16,8,0.07)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(196,84,40,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">STUB TENON · SIDE / END · LEFTOVER IS THE FOX</text>
+            <g id="fox-scene" data-view="stub-tenon-side-end" data-hero="leftover-fox" data-fox="12" data-leftover="showing" data-verdict="showing" data-wedge="in-tenon">
+              <g id="fox-bench-layer"></g>
+              <g id="fox-stock-layer"></g>
+              <g id="fox-layer"></g>
+              <g id="fox-mark-layer"></g>
+              <text id="fox-scene-status" x="400" y="64" fill="#e87838" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 12 MM LEFTOVER WEDGE</text>
+              <text id="fox-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER HIDDEN WEDGE STILL SITS IN THE TENON · NOT A DRAWBORE · NOT A TENON · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="fox-alt" class="sr-only" aria-live="polite">Fox is showing. Twelve millimetres of leftover wedge still sit in the tenon.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="fox-input">Fox (mm · leftover hidden wedge still sitting in the tenon)</label>
+            <input id="fox-input" type="range" min="0" max="40" step="1" value="12" />
+            <div class="ticks" aria-hidden="true">
+              <span>loose / no leftover fox</span>
+              <span>seed showing</span>
+              <span>larger leftover wedge</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="fox-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Fox <b id="fox-stat-mm">12 mm</b></span>
+          <span id="fox-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="fox-stat-leftover">showing</b></span>
+          <span>Leftover wedge (sketch) <b id="fox-stat-wedge">12 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A tenon looks loose until you see the fox. Fox is leftover hidden wedge — leftover wedge still sitting in a kerf in the tenon so it flares as it seats. A sketch, not a mill sign-off.
+        Seed is already showing — 12 mm of leftover wedge, not a loose-only tenon. Arrow keys move the focused control.
+        Refresh restores the seed. Not a drawbore. Not a tenon. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const FOX_SEED = { wedgeMm: 12 };
+      const FOX_MIN = 0;
+      const FOX_MAX = 40;
+      const FOX_LOOSE_AT = 2;
+      const FOX_SCALE = 2.8;
+      const STOCK_LEFT = 72;
+      const STOCK_RIGHT = 248;
+      const STOCK_TOP = 88;
+      const STOCK_BOT = 372;
+      const TENON_LEFT = 248;
+      const TENON_RIGHT = 548;
+      const TENON_MID_Y = 230;
+      const TENON_HALF = 52;
+      const SEAT_LEFT = 548;
+      const SEAT_RIGHT = 712;
+      const SEAT_TOP = 148;
+      const SEAT_BOT = 312;
+
+      let wedgeMm = FOX_SEED.wedgeMm;
+
+      const foxSvg = document.getElementById("fox-svg");
+      const foxScene = document.getElementById("fox-scene");
+      const foxTitle = document.getElementById("fox-title");
+      const foxAlt = document.getElementById("fox-alt");
+      const foxDeskMeta = document.getElementById("fox-desk-meta");
+      const foxInput = document.getElementById("fox-input");
+      const foxBenchLayer = document.getElementById("fox-bench-layer");
+      const foxStockLayer = document.getElementById("fox-stock-layer");
+      const foxLayer = document.getElementById("fox-layer");
+      const foxMarkLayer = document.getElementById("fox-mark-layer");
+      const foxSceneStatus = document.getElementById("fox-scene-status");
+      const foxStatMm = document.getElementById("fox-stat-mm");
+      const foxStatLeftover = document.getElementById("fox-stat-leftover");
+      const foxStatLeftoverWrap = document.getElementById("fox-stat-leftover-wrap");
+      const foxStatWedge = document.getElementById("fox-stat-wedge");
+      const foxBtnReset = document.getElementById("fox-btn-reset");
+      const foxBtnResetStage = document.getElementById("fox-btn-reset-stage");
+
+      function foxClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function foxEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function foxSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function foxPicture() {
+        const leftover = wedgeMm <= FOX_LOOSE_AT ? "loose" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + wedgeMm + " MM LEFTOVER WEDGE";
+          alt = "Fox is showing. " + foxSpokenMm(wedgeMm).charAt(0).toUpperCase() + foxSpokenMm(wedgeMm).slice(1) + " millimetres of leftover wedge still sit in the tenon.";
+        } else {
+          status = "LOOSE · NO LEFTOVER FOX";
+          alt = "Fox is loose. The tenon looks loose. No leftover fox. A sketch, not a mill sign-off.";
+        }
+        const flarePx = leftover === "showing" ? wedgeMm * FOX_SCALE * 0.42 : 0;
+        const wedgeLen = leftover === "showing" ? Math.max(28, wedgeMm * FOX_SCALE) : 0;
+        const wedgeHalf = leftover === "showing" ? Math.max(10, wedgeMm * FOX_SCALE * 0.36) : 0;
+        const kerfDepth = leftover === "showing" ? Math.max(wedgeLen + 18, 96) : 72;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e87838" : "#8ec8b4",
+          flarePx: flarePx,
+          wedgeLen: wedgeLen,
+          wedgeHalf: wedgeHalf,
+          kerfDepth: kerfDepth,
+          wedge: leftover === "showing" ? "in-tenon" : "none",
+          shape: leftover === "showing" ? "leftover-wedge" : "loose-tenon",
+          midY: TENON_MID_Y,
+          tenonLeft: TENON_LEFT,
+          tenonRight: TENON_RIGHT,
+          cheekTop: TENON_MID_Y - TENON_HALF - flarePx,
+          cheekBot: TENON_MID_Y + TENON_HALF + flarePx,
+          shoulderTop: TENON_MID_Y - TENON_HALF,
+          shoulderBot: TENON_MID_Y + TENON_HALF,
+          tipX: leftover === "showing" ? TENON_RIGHT - wedgeLen : TENON_RIGHT - 8,
+          endTopY: leftover === "showing" ? TENON_MID_Y - TENON_HALF - flarePx : TENON_MID_Y - TENON_HALF,
+          endBotY: leftover === "showing" ? TENON_MID_Y + TENON_HALF + flarePx : TENON_MID_Y + TENON_HALF
+        };
+      }
+
+      function foxPaint(pic) {
+        const isLoose = pic.leftover === "loose";
+
+        foxBenchLayer.replaceChildren();
+        foxBenchLayer.appendChild(foxEl("rect", {
+          class: "site leftover-tenon leftover-in leftover-fox leftover-wedge leftover-one-tenon leftover-side-end",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#fox-bench-wash)",
+          stroke: "rgba(196,84,40,0.16)",
+          "stroke-width": "1.2"
+        }));
+        foxBenchLayer.appendChild(foxEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE STUB TENON · LEFTOVER HIDDEN WEDGE STILL SITS IN THE TENON";
+
+        foxStockLayer.replaceChildren();
+        const stock = foxEl("g", {
+          id: "fox-sawn-stock",
+          class: isLoose
+            ? "stock leftover-loose leftover-no-fox leftover-fox leftover-no-wedge leftover-one-tenon leftover-in leftover-true"
+            : "stock leftover-showing leftover-fox leftover-wedge leftover-one-tenon leftover-in leftover-side-end"
+        });
+
+        stock.appendChild(foxEl("rect", {
+          id: "fox-rail",
+          class: "stock-rail leftover-stock leftover-rail leftover-one-tenon leftover-fox leftover-in leftover-not-the-leftover",
+          x: String(STOCK_LEFT),
+          y: String(STOCK_TOP),
+          width: String(STOCK_RIGHT - STOCK_LEFT),
+          height: String(STOCK_BOT - STOCK_TOP),
+          fill: "url(#fox-stock-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "rail-stock-not-the-leftover"
+        }));
+        stock.appendChild(foxEl("rect", {
+          class: "rail-grain leftover-stock leftover-rail leftover-one-tenon leftover-fox leftover-in",
+          x: String(STOCK_LEFT),
+          y: String(STOCK_TOP),
+          width: String(STOCK_RIGHT - STOCK_LEFT),
+          height: String(STOCK_BOT - STOCK_TOP),
+          fill: "url(#fox-stock-grain)",
+          "pointer-events": "none"
+        }));
+
+        const tenonPath = [
+          "M", TENON_LEFT, pic.shoulderTop,
+          "L", TENON_RIGHT, pic.endTopY,
+          "L", TENON_RIGHT, pic.endBotY,
+          "L", TENON_LEFT, pic.shoulderBot,
+          "Z"
+        ].join(" ");
+        stock.appendChild(foxEl("path", {
+          id: "fox-stub-tenon",
+          class: "stock-tenon leftover-stock leftover-stub leftover-one-tenon leftover-fox leftover-in leftover-not-the-leftover leftover-not-a-tongue",
+          d: tenonPath,
+          fill: "url(#fox-tenon-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "stub-tenon-not-the-leftover",
+          "data-flare-px": pic.flarePx.toFixed(1)
+        }));
+        stock.appendChild(foxEl("path", {
+          class: "tenon-grain leftover-stock leftover-one-tenon leftover-fox leftover-in",
+          d: tenonPath,
+          fill: "url(#fox-tenon-grain)",
+          "pointer-events": "none"
+        }));
+
+        stock.appendChild(foxEl("rect", {
+          id: "fox-seat-ghost",
+          class: "seat leftover-seat leftover-one-tenon leftover-fox leftover-in leftover-not-the-leftover leftover-not-a-mortise leftover-not-a-pocket",
+          x: String(SEAT_LEFT),
+          y: String(SEAT_TOP),
+          width: String(SEAT_RIGHT - SEAT_LEFT),
+          height: String(SEAT_BOT - SEAT_TOP),
+          fill: "none",
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          "stroke-dasharray": "5 4",
+          opacity: "0.42",
+          "data-shape": "seat-ghost-not-the-leftover"
+        }));
+
+        stock.appendChild(foxEl("text", {
+          x: String((STOCK_LEFT + STOCK_RIGHT) / 2),
+          y: String(STOCK_TOP + 22),
+          fill: "#f0d8c4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "RAIL";
+        stock.appendChild(foxEl("text", {
+          x: String((TENON_LEFT + TENON_RIGHT) / 2),
+          y: String(pic.shoulderTop - 10),
+          fill: "#d8c0a8",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "STUB TENON";
+        stock.appendChild(foxEl("text", {
+          x: String((SEAT_LEFT + SEAT_RIGHT) / 2),
+          y: String(SEAT_TOP - 8),
+          fill: "#8a8276",
+          "font-size": "10",
+          "letter-spacing": "1.2",
+          "text-anchor": "middle"
+        })).textContent = "SEAT";
+        foxStockLayer.appendChild(stock);
+
+        foxLayer.replaceChildren();
+        const leftover = foxEl("g", {
+          id: "leftover-fox",
+          class: isLoose
+            ? "fox leftover-fox leftover-loose leftover-empty leftover-no-wedge leftover-one-tenon leftover-in leftover-true"
+            : "fox leftover-fox leftover-showing leftover-wedge leftover-in leftover-one-tenon leftover-side-end leftover-flare",
+          "data-wedge-mm": String(wedgeMm),
+          "data-flare-px": String(pic.flarePx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        const kerfMouth = 6;
+        leftover.appendChild(foxEl("line", {
+          id: "leftover-fox-kerf-slit",
+          class: isLoose
+            ? "leftover-fox leftover-loose leftover-kerf leftover-slit leftover-one-tenon leftover-in leftover-true leftover-not-the-leftover leftover-not-a-blade-path"
+            : "leftover-fox leftover-showing leftover-kerf leftover-slit leftover-wedge leftover-one-tenon leftover-in leftover-not-the-leftover leftover-not-a-blade-path",
+          x1: String(TENON_RIGHT - pic.kerfDepth),
+          y1: String(TENON_MID_Y),
+          x2: String(TENON_RIGHT),
+          y2: String(TENON_MID_Y),
+          stroke: pic.accent,
+          "stroke-width": isLoose ? "1.4" : "1.8",
+          "stroke-dasharray": isLoose ? "3 4" : "0",
+          opacity: isLoose ? "0.7" : "0.55",
+          "data-shape": "tenon-kerf-not-the-leftover",
+          "data-role": "kerf-in-tenon"
+        }));
+
+        if (!isLoose) {
+          leftover.appendChild(foxEl("path", {
+            id: "leftover-fox-wedge",
+            class: "leftover-fox leftover-showing leftover-wedge leftover-in leftover-one-tenon leftover-flare leftover-hidden leftover-not-a-drawbore leftover-not-a-spline leftover-not-a-dowel leftover-not-a-tongue leftover-not-a-blade-path",
+            d: [
+              "M", pic.tipX.toFixed(1), TENON_MID_Y,
+              "L", (TENON_RIGHT - 3).toFixed(1), (TENON_MID_Y - pic.wedgeHalf).toFixed(1),
+              "L", (TENON_RIGHT - 3).toFixed(1), (TENON_MID_Y + pic.wedgeHalf).toFixed(1),
+              "Z"
+            ].join(" "),
+            fill: "url(#fox-wedge-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.8",
+            "data-shape": "leftover-wedge",
+            "data-wedge-mm": String(wedgeMm),
+            "data-role": "fox-wedge"
+          }));
+          leftover.appendChild(foxEl("line", {
+            id: "leftover-fox-flare-top",
+            class: "leftover-fox leftover-showing leftover-flare leftover-wedge leftover-one-tenon leftover-in leftover-not-a-drawbore",
+            x1: String(TENON_LEFT + 18),
+            y1: String(pic.shoulderTop),
+            x2: String(TENON_RIGHT - 8),
+            y2: String(pic.endTopY),
+            stroke: pic.accent,
+            "stroke-width": "1.2",
+            "stroke-dasharray": "4 5",
+            opacity: "0.7",
+            "data-shape": "flare-cheek-top"
+          }));
+          leftover.appendChild(foxEl("line", {
+            id: "leftover-fox-flare-bot",
+            class: "leftover-fox leftover-showing leftover-flare leftover-wedge leftover-one-tenon leftover-in leftover-not-a-drawbore",
+            x1: String(TENON_LEFT + 18),
+            y1: String(pic.shoulderBot),
+            x2: String(TENON_RIGHT - 8),
+            y2: String(pic.endBotY),
+            stroke: pic.accent,
+            "stroke-width": "1.2",
+            "stroke-dasharray": "4 5",
+            opacity: "0.7",
+            "data-shape": "flare-cheek-bot"
+          }));
+          leftover.appendChild(foxEl("text", {
+            id: "leftover-fox-label",
+            class: "fox-label leftover-label leftover-fox leftover-showing leftover-wedge leftover-one-tenon leftover-in",
+            x: String((pic.tipX + TENON_RIGHT) / 2),
+            y: String(TENON_MID_Y + 5),
+            fill: "#f4ecd0",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "FOX";
+        } else {
+          leftover.appendChild(foxEl("rect", {
+            id: "fox-loose",
+            class: "leftover-fox leftover-loose leftover-empty leftover-no-wedge leftover-one-tenon leftover-in leftover-true leftover-loose-tenon leftover-not-a-wedge",
+            x: String(TENON_LEFT + 16),
+            y: String(pic.shoulderTop - 8),
+            width: String(TENON_RIGHT - TENON_LEFT - 24),
+            height: String((pic.shoulderBot - pic.shoulderTop) + 16),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.7",
+            "data-shape": "loose-tenon"
+          }));
+          leftover.appendChild(foxEl("line", {
+            id: "leftover-fox-empty-kerf",
+            class: "leftover-fox leftover-loose leftover-empty leftover-no-wedge leftover-one-tenon leftover-in leftover-not-the-leftover leftover-not-a-blade-path",
+            x1: String(TENON_RIGHT - 64),
+            y1: String(TENON_MID_Y - kerfMouth),
+            x2: String(TENON_RIGHT),
+            y2: String(TENON_MID_Y - kerfMouth),
+            stroke: pic.accent,
+            "stroke-width": "1.1",
+            "stroke-dasharray": "3 3",
+            opacity: "0.55",
+            "data-shape": "empty-kerf-top"
+          }));
+          leftover.appendChild(foxEl("line", {
+            class: "leftover-fox leftover-loose leftover-empty leftover-no-wedge leftover-one-tenon leftover-in leftover-not-the-leftover leftover-not-a-blade-path",
+            x1: String(TENON_RIGHT - 64),
+            y1: String(TENON_MID_Y + kerfMouth),
+            x2: String(TENON_RIGHT),
+            y2: String(TENON_MID_Y + kerfMouth),
+            stroke: pic.accent,
+            "stroke-width": "1.1",
+            "stroke-dasharray": "3 3",
+            opacity: "0.55",
+            "data-shape": "empty-kerf-bot"
+          }));
+        }
+        foxLayer.appendChild(leftover);
+
+        foxMarkLayer.replaceChildren();
+        foxMarkLayer.appendChild(foxEl("text", {
+          x: String(STOCK_LEFT),
+          y: String(STOCK_TOP - 8),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "TENON · LEFTOVER HIDDEN WEDGE IN THE KERF";
+        foxMarkLayer.appendChild(foxEl("text", {
+          x: String(SEAT_RIGHT),
+          y: String(STOCK_BOT + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isLoose ? "SIDE / END · LOOSE / NO LEFTOVER FOX" : "SIDE / END · LEFTOVER WEDGE STILL SITS IN THE TENON";
+
+        if (!isLoose) {
+          const dimY = pic.endBotY + 28;
+          foxMarkLayer.appendChild(foxEl("line", {
+            id: "fox-dim",
+            class: "fox-dim leftover-fox leftover-showing leftover-wedge leftover-one-tenon leftover-in leftover-not-a-drawbore",
+            x1: String(pic.tipX),
+            y1: String(dimY),
+            x2: String(TENON_RIGHT),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          foxMarkLayer.appendChild(foxEl("line", {
+            x1: String(pic.tipX),
+            y1: String(dimY - 4),
+            x2: String(pic.tipX),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          foxMarkLayer.appendChild(foxEl("line", {
+            x1: String(TENON_RIGHT),
+            y1: String(dimY - 4),
+            x2: String(TENON_RIGHT),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          foxMarkLayer.appendChild(foxEl("text", {
+            id: "fox-mm-label",
+            class: "fox-label leftover-label leftover-fox leftover-showing leftover-wedge leftover-one-tenon leftover-in",
+            x: String((pic.tipX + TENON_RIGHT) / 2),
+            y: String(dimY + 16),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = wedgeMm + " mm";
+          foxMarkLayer.appendChild(foxEl("text", {
+            id: "fox-wedge-label",
+            class: "wedge-label leftover-wedge leftover-fox leftover-one-tenon leftover-in leftover-not-a-drawbore leftover-not-a-tenon leftover-not-a-spline leftover-not-a-kerf leftover-not-a-dowel",
+            x: "400",
+            y: String(STOCK_BOT + 36),
+            fill: "#dcd49a",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER WEDGE · STILL SITS IN THE TENON KERF · NOT A DRAWBORE · NOT A TENON";
+        } else {
+          foxMarkLayer.appendChild(foxEl("text", {
+            id: "fox-label",
+            class: "fox-label leftover-label leftover-loose leftover-no-wedge leftover-one-tenon leftover-in leftover-empty leftover-true",
+            x: String((TENON_LEFT + TENON_RIGHT) / 2),
+            y: String(pic.shoulderTop - 22),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LOOSE / NO LEFTOVER FOX";
+        }
+
+        foxSceneStatus.setAttribute("fill", pic.accent);
+        foxSceneStatus.textContent = pic.status;
+        foxScene.setAttribute("data-fox", String(wedgeMm));
+        foxScene.setAttribute("data-leftover", pic.leftover);
+        foxScene.setAttribute("data-verdict", pic.verdict);
+        foxScene.setAttribute("data-view", "stub-tenon-side-end");
+        foxScene.setAttribute("data-hero", "leftover-fox");
+        foxScene.setAttribute("data-wedge-mm", String(wedgeMm));
+        foxScene.setAttribute("data-flare-px", String(pic.flarePx.toFixed(1)));
+        foxScene.setAttribute("data-wedge", pic.wedge);
+        foxScene.setAttribute("data-shape", pic.shape);
+        foxScene.setAttribute("data-tip-x", String(pic.tipX.toFixed(1)));
+        foxScene.setAttribute("data-end-top", String(pic.endTopY.toFixed(1)));
+        foxScene.setAttribute("data-end-bot", String(pic.endBotY.toFixed(1)));
+      }
+
+      function foxToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-loose";
+      }
+
+      function foxRender() {
+        const pic = foxPicture();
+        foxPaint(pic);
+        foxTitle.textContent = pic.alt;
+        foxAlt.textContent = pic.alt;
+        foxSvg.setAttribute("aria-label", pic.alt);
+        foxDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + wedgeMm + " mm showing"
+          : "leftover loose";
+        foxStatMm.textContent = wedgeMm + " mm";
+        foxStatLeftover.textContent = pic.leftover;
+        foxStatWedge.textContent = pic.leftover === "showing"
+          ? wedgeMm + " mm leftover"
+          : "loose";
+        foxStatLeftoverWrap.classList.remove("is-showing", "is-loose");
+        foxStatLeftoverWrap.classList.add(foxToneClass(pic.leftover));
+        if (Number(foxInput.value) !== wedgeMm) foxInput.value = String(wedgeMm);
+        foxInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function foxResetSeed() {
+        wedgeMm = FOX_SEED.wedgeMm;
+        foxRender();
+      }
+
+      foxInput.addEventListener("input", function (event) {
+        wedgeMm = foxClamp(Math.round(Number(event.target.value)), FOX_MIN, FOX_MAX);
+        foxRender();
+      });
+      foxBtnReset.addEventListener("click", foxResetSeed);
+      foxBtnResetStage.addEventListener("click", foxResetSeed);
+
+      foxRender();
+    </script>
+  </body>
+</html>
