@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Chatter — a face looks smooth until you see the chatter. Move the ripple. See the leftover washboard from the cut." />
+    <title>Chatter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(168, 88, 56, 0.22);
+        --accent: #c46c38;
+        --timber: #6a3814;
+        --ripple: #e8b070;
+        --showing: #e8b070;
+        --smooth: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(196, 108, 56, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(40, 18, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(196, 108, 56, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 16, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(196, 108, 56, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(196, 108, 56, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(196, 108, 56, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #chatter-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(232, 176, 112, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-smooth b { color: var(--smooth); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #chatter-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> chatter · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover washboard that still sits from the cut</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 00:50</span>
+        <h1>Chatter</h1>
+        <p class="lede">
+          A face looks smooth until you see the chatter. Move the ripple. See the leftover washboard from the cut.
+          Not a tearout. Not a mottle. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="chatter-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover ripple still sits from the cut</h2>
+          </div>
+          <span class="kicker" id="chatter-desk-meta">leftover 10 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="chatter-svg" viewBox="0 0 800 460" role="img" aria-labelledby="chatter-title chatter-desc">
+            <title id="chatter-title">Chatter is showing. Ten millimetres of leftover ripple still sit from the cut.</title>
+            <desc id="chatter-desc">One face/cut whose leftover is the chatter — leftover washboard ripple still sitting from the cutter (leftover chatter still sitting from the cut, leftover ripple still sitting from the cut, not Tearout leftover splinter at a cut, not Mottle leftover blotch in the figure, not Quilt leftover blister in the figure, not Check leftover split in a face, not Drip leftover run on the face, not Housing leftover recess across the face). One face; the leftover that still sits from the cut is the chatter — leftover washboard still sitting from the cutter. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="chatter-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#16120e" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="chatter-face-wash" x1="0%" y1="0%" x2="100%" y2="14%">
+                <stop offset="0%" stop-color="#3e2210" />
+                <stop offset="46%" stop-color="#7a4416" />
+                <stop offset="100%" stop-color="#c46c38" />
+              </linearGradient>
+              <linearGradient id="chatter-ripple-wash" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#6a3810" />
+                <stop offset="48%" stop-color="#e8b070" />
+                <stop offset="100%" stop-color="#f4d090" />
+              </linearGradient>
+              <pattern id="chatter-face-grain" width="14" height="8" patternUnits="userSpaceOnUse">
+                <path d="M0 4 L14 4" fill="none" stroke="rgba(40,20,8,0.16)" stroke-width="1" />
+                <path d="M0 1 L14 1" fill="none" stroke="rgba(40,20,8,0.07)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(196,108,56,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">ONE FACE · CUT · LEFTOVER IS THE CHATTER</text>
+            <g id="chatter-scene" data-view="one-face-cut" data-hero="leftover-chatter" data-chatter="10" data-leftover="showing" data-verdict="showing" data-ripple="from-cut">
+              <g id="chatter-bench-layer"></g>
+              <g id="chatter-stock-layer"></g>
+              <g id="chatter-layer"></g>
+              <g id="chatter-mark-layer"></g>
+              <text id="chatter-scene-status" x="400" y="64" fill="#e8b070" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 10 MM LEFTOVER RIPPLE</text>
+              <text id="chatter-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER WASHBOARD STILL SITS FROM THE CUT · NOT A TEAROUT · NOT A MOTTLE · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="chatter-alt" class="sr-only" aria-live="polite">Chatter is showing. Ten millimetres of leftover ripple still sit from the cut.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="chatter-input">Chatter (mm · leftover ripple still sitting from the cut)</label>
+            <input id="chatter-input" type="range" min="0" max="40" step="1" value="10" />
+            <div class="ticks" aria-hidden="true">
+              <span>smooth / no leftover chatter</span>
+              <span>seed showing</span>
+              <span>taller leftover ripple</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="chatter-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Chatter <b id="chatter-stat-mm">10 mm</b></span>
+          <span id="chatter-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="chatter-stat-leftover">showing</b></span>
+          <span>Leftover ripple (sketch) <b id="chatter-stat-ripple">10 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A face looks smooth until you see the chatter. Chatter is leftover ripple — leftover washboard still sitting from the cutter. A sketch, not a mill sign-off.
+        Seed is already showing — 10 mm of leftover ripple, not a smooth-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a tearout. Not a mottle. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const CHATTER_SEED = { rippleMm: 10 };
+      const CHATTER_MIN = 0;
+      const CHATTER_MAX = 40;
+      const CHATTER_SMOOTH_AT = 2;
+      const CHATTER_SCALE = 3.4;
+      const FACE_LEFT = 148;
+      const FACE_RIGHT = 548;
+      const FACE_TOP = 196;
+      const FACE_BOT = 308;
+      const CUT_X = FACE_RIGHT;
+      const RIPPLE_SPAN = FACE_BOT - FACE_TOP;
+      const RIPPLE_WAVES = 7;
+
+      let rippleMm = CHATTER_SEED.rippleMm;
+
+      const chatterSvg = document.getElementById("chatter-svg");
+      const chatterScene = document.getElementById("chatter-scene");
+      const chatterTitle = document.getElementById("chatter-title");
+      const chatterAlt = document.getElementById("chatter-alt");
+      const chatterDeskMeta = document.getElementById("chatter-desk-meta");
+      const chatterInput = document.getElementById("chatter-input");
+      const chatterBenchLayer = document.getElementById("chatter-bench-layer");
+      const chatterStockLayer = document.getElementById("chatter-stock-layer");
+      const chatterLayer = document.getElementById("chatter-layer");
+      const chatterMarkLayer = document.getElementById("chatter-mark-layer");
+      const chatterSceneStatus = document.getElementById("chatter-scene-status");
+      const chatterStatMm = document.getElementById("chatter-stat-mm");
+      const chatterStatLeftover = document.getElementById("chatter-stat-leftover");
+      const chatterStatLeftoverWrap = document.getElementById("chatter-stat-leftover-wrap");
+      const chatterStatRipple = document.getElementById("chatter-stat-ripple");
+      const chatterBtnReset = document.getElementById("chatter-btn-reset");
+      const chatterBtnResetStage = document.getElementById("chatter-btn-reset-stage");
+
+      function chatterClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function chatterEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function chatterSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          12: "twelve",
+          14: "fourteen",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function chatterPicture() {
+        const leftover = rippleMm <= CHATTER_SMOOTH_AT ? "smooth" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + rippleMm + " MM LEFTOVER RIPPLE";
+          alt = "Chatter is showing. " + chatterSpokenMm(rippleMm).charAt(0).toUpperCase() + chatterSpokenMm(rippleMm).slice(1) + " millimetres of leftover ripple still sit from the cut.";
+        } else {
+          status = "SMOOTH · NO LEFTOVER CHATTER";
+          alt = "Chatter is smooth. The face looks smooth. No leftover chatter. A sketch, not a mill sign-off.";
+        }
+        const ripplePx = leftover === "showing" ? rippleMm * CHATTER_SCALE : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e8b070" : "#8ec8b4",
+          ripplePx: ripplePx,
+          ripplePeak: CUT_X + ripplePx,
+          ripple: leftover === "showing" ? "from-cut" : "none",
+          shape: leftover === "showing" ? "leftover-ripple" : "smooth-cut"
+        };
+      }
+
+      function chatterWashboardPath(cutX, top, bot, amp) {
+        const steps = RIPPLE_WAVES * 8;
+        const parts = ["M", cutX, top];
+        for (let i = 1; i <= steps; i += 1) {
+          const t = i / steps;
+          const y = top + (bot - top) * t;
+          const x = cutX + amp * Math.sin(t * RIPPLE_WAVES * Math.PI * 2);
+          parts.push("L", x.toFixed(2), y.toFixed(2));
+        }
+        parts.push("L", cutX, bot, "Z");
+        return parts.join(" ");
+      }
+
+      function chatterCrestPath(cutX, top, bot, amp) {
+        const steps = RIPPLE_WAVES * 8;
+        const parts = ["M", cutX, top];
+        for (let i = 1; i <= steps; i += 1) {
+          const t = i / steps;
+          const y = top + (bot - top) * t;
+          const x = cutX + amp * Math.sin(t * RIPPLE_WAVES * Math.PI * 2);
+          parts.push("L", x.toFixed(2), y.toFixed(2));
+        }
+        return parts.join(" ");
+      }
+
+      function chatterPaint(pic) {
+        const isSmooth = pic.leftover === "smooth";
+
+        chatterBenchLayer.replaceChildren();
+        chatterBenchLayer.appendChild(chatterEl("rect", {
+          class: "site leftover-face leftover-cut leftover-chatter leftover-ripple leftover-one-face leftover-from-cut",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#chatter-bench-wash)",
+          stroke: "rgba(196,108,56,0.16)",
+          "stroke-width": "1.2"
+        }));
+        chatterBenchLayer.appendChild(chatterEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE FACE · LEFTOVER WASHBOARD STILL SITS FROM THE CUT";
+
+        chatterStockLayer.replaceChildren();
+        const stock = chatterEl("g", {
+          id: "chatter-sawn-stock",
+          class: isSmooth
+            ? "stock leftover-smooth leftover-no-chatter leftover-chatter leftover-no-ripple leftover-one-face leftover-cut leftover-true"
+            : "stock leftover-showing leftover-chatter leftover-ripple leftover-one-face leftover-cut leftover-from-cut"
+        });
+
+        stock.appendChild(chatterEl("rect", {
+          id: "chatter-face",
+          class: "stock-face leftover-stock leftover-face leftover-one-face leftover-chatter leftover-cut leftover-not-the-leftover leftover-not-a-tearout leftover-not-a-mottle leftover-not-a-quilt leftover-not-a-check leftover-not-a-drip leftover-not-a-housing",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#chatter-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": isSmooth ? "face-smooth-cut" : "face-with-leftover-ripple"
+        }));
+        stock.appendChild(chatterEl("rect", {
+          class: "face-grain leftover-stock leftover-face leftover-one-face leftover-chatter leftover-cut",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#chatter-face-grain)",
+          "pointer-events": "none"
+        }));
+        stock.appendChild(chatterEl("line", {
+          id: "chatter-cut-line",
+          class: "cut-line leftover-cut leftover-chatter leftover-one-face leftover-not-a-tearout leftover-not-a-splinter leftover-not-a-blotch leftover-not-a-split",
+          x1: String(CUT_X),
+          y1: String(FACE_TOP),
+          x2: String(CUT_X),
+          y2: String(FACE_BOT),
+          stroke: pic.accent,
+          "stroke-width": "2.2",
+          "data-shape": "the-cut"
+        }));
+        stock.appendChild(chatterEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 22),
+          fill: "#f0d8c4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "FACE";
+        chatterStockLayer.appendChild(stock);
+
+        chatterLayer.replaceChildren();
+        const leftover = chatterEl("g", {
+          id: "leftover-chatter",
+          class: isSmooth
+            ? "chatter leftover-chatter leftover-smooth leftover-empty leftover-no-ripple leftover-one-face leftover-cut leftover-true"
+            : "chatter leftover-chatter leftover-showing leftover-ripple leftover-from-cut leftover-one-face leftover-washboard leftover-cutter",
+          "data-ripple-mm": String(rippleMm),
+          "data-ripple-px": String(pic.ripplePx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isSmooth) {
+          leftover.appendChild(chatterEl("path", {
+            id: "leftover-chatter-ripple",
+            class: "leftover-chatter leftover-showing leftover-ripple leftover-from-cut leftover-one-face leftover-washboard leftover-not-a-tearout leftover-not-a-splinter leftover-not-a-mottle leftover-not-a-blotch leftover-not-a-quilt leftover-not-a-blister leftover-not-a-check leftover-not-a-split leftover-not-a-drip leftover-not-a-housing leftover-not-a-recess",
+            d: chatterWashboardPath(CUT_X, FACE_TOP, FACE_BOT, pic.ripplePx),
+            fill: "url(#chatter-ripple-wash)",
+            opacity: "0.88",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "data-shape": "leftover-ripple",
+            "data-ripple-mm": String(rippleMm),
+            "data-role": "chatter-ripple"
+          }));
+          leftover.appendChild(chatterEl("path", {
+            id: "leftover-chatter-crest",
+            class: "leftover-chatter leftover-showing leftover-ripple leftover-from-cut leftover-one-face leftover-washboard leftover-crest leftover-not-a-splinter leftover-not-a-blotch leftover-not-a-split",
+            d: chatterCrestPath(CUT_X, FACE_TOP, FACE_BOT, pic.ripplePx),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "2.4",
+            "data-shape": "washboard-crest"
+          }));
+          leftover.appendChild(chatterEl("line", {
+            id: "leftover-chatter-from-cut-line",
+            class: "leftover-chatter leftover-showing leftover-from-cut leftover-ripple leftover-one-face leftover-not-a-splinter leftover-not-a-blotch leftover-not-a-split",
+            x1: String(CUT_X),
+            y1: String(FACE_TOP - 8),
+            x2: String(pic.ripplePeak),
+            y2: String(FACE_TOP - 8),
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "5 4",
+            "data-shape": "from-cut-ripple-height"
+          }));
+          leftover.appendChild(chatterEl("text", {
+            id: "leftover-chatter-label",
+            class: "chatter-label leftover-label leftover-chatter leftover-showing leftover-ripple leftover-one-face leftover-from-cut",
+            x: String(CUT_X + pic.ripplePx + 16),
+            y: String((FACE_TOP + FACE_BOT) / 2),
+            fill: "#f4ecd0",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "start"
+          })).textContent = "CHATTER";
+        } else {
+          leftover.appendChild(chatterEl("line", {
+            id: "chatter-smooth-cut",
+            class: "leftover-chatter leftover-smooth leftover-empty leftover-no-ripple leftover-one-face leftover-cut leftover-true leftover-smooth-cut leftover-not-a-chatter",
+            x1: String(CUT_X),
+            y1: String(FACE_TOP),
+            x2: String(CUT_X),
+            y2: String(FACE_BOT),
+            stroke: pic.accent,
+            "stroke-width": "1.8",
+            "stroke-dasharray": "4 5",
+            opacity: "0.8",
+            "data-shape": "smooth-cut"
+          }));
+        }
+        chatterLayer.appendChild(leftover);
+
+        chatterMarkLayer.replaceChildren();
+        chatterMarkLayer.appendChild(chatterEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP - 8),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "FACE · LEFTOVER RIPPLE FROM THE CUT";
+        chatterMarkLayer.appendChild(chatterEl("text", {
+          x: String(CUT_X),
+          y: String(FACE_BOT + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSmooth ? "CUT · SMOOTH / NO LEFTOVER CHATTER" : "CUT · LEFTOVER WASHBOARD STILL SITS FROM THE CUTTER";
+
+        if (!isSmooth) {
+          const dimX = CUT_X + pic.ripplePx + 48;
+          chatterMarkLayer.appendChild(chatterEl("line", {
+            id: "chatter-dim",
+            class: "chatter-dim leftover-chatter leftover-showing leftover-ripple leftover-one-face leftover-from-cut leftover-not-a-tearout leftover-not-a-mottle leftover-not-a-check",
+            x1: String(CUT_X),
+            y1: String(FACE_TOP - 22),
+            x2: String(pic.ripplePeak),
+            y2: String(FACE_TOP - 22),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          chatterMarkLayer.appendChild(chatterEl("line", {
+            x1: String(CUT_X),
+            y1: String(FACE_TOP - 26),
+            x2: String(CUT_X),
+            y2: String(FACE_TOP - 18),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          chatterMarkLayer.appendChild(chatterEl("line", {
+            x1: String(pic.ripplePeak),
+            y1: String(FACE_TOP - 26),
+            x2: String(pic.ripplePeak),
+            y2: String(FACE_TOP - 18),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          chatterMarkLayer.appendChild(chatterEl("text", {
+            id: "chatter-mm-label",
+            class: "chatter-label leftover-label leftover-chatter leftover-showing leftover-ripple leftover-one-face leftover-from-cut",
+            x: String((CUT_X + pic.ripplePeak) / 2),
+            y: String(FACE_TOP - 28),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = rippleMm + " mm";
+          chatterMarkLayer.appendChild(chatterEl("text", {
+            id: "chatter-ripple-label",
+            class: "ripple-label leftover-ripple leftover-chatter leftover-one-face leftover-from-cut leftover-not-a-tearout leftover-not-a-mottle leftover-not-a-quilt leftover-not-a-check leftover-not-a-housing",
+            x: "400",
+            y: "412",
+            fill: "#dcd49a",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER RIPPLE · WASHBOARD STILL SITS FROM THE CUT · NOT A TEAROUT · NOT A MOTTLE";
+        } else {
+          chatterMarkLayer.appendChild(chatterEl("text", {
+            id: "chatter-label",
+            class: "chatter-label leftover-label leftover-smooth leftover-no-ripple leftover-one-face leftover-cut leftover-empty leftover-true",
+            x: String(CUT_X),
+            y: String(FACE_TOP - 22),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SMOOTH / NO LEFTOVER CHATTER";
+        }
+
+        chatterSceneStatus.setAttribute("fill", pic.accent);
+        chatterSceneStatus.textContent = pic.status;
+        chatterScene.setAttribute("data-chatter", String(rippleMm));
+        chatterScene.setAttribute("data-leftover", pic.leftover);
+        chatterScene.setAttribute("data-verdict", pic.verdict);
+        chatterScene.setAttribute("data-view", "one-face-cut");
+        chatterScene.setAttribute("data-hero", "leftover-chatter");
+        chatterScene.setAttribute("data-ripple-mm", String(rippleMm));
+        chatterScene.setAttribute("data-ripple-px", String(pic.ripplePx.toFixed(1)));
+        chatterScene.setAttribute("data-ripple", pic.ripple);
+        chatterScene.setAttribute("data-shape", pic.shape);
+        chatterScene.setAttribute("data-ripple-peak", String(pic.ripplePeak.toFixed(1)));
+      }
+
+      function chatterToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-smooth";
+      }
+
+      function chatterRender() {
+        const pic = chatterPicture();
+        chatterPaint(pic);
+        chatterTitle.textContent = pic.alt;
+        chatterAlt.textContent = pic.alt;
+        chatterSvg.setAttribute("aria-label", pic.alt);
+        chatterDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + rippleMm + " mm showing"
+          : "leftover smooth";
+        chatterStatMm.textContent = rippleMm + " mm";
+        chatterStatLeftover.textContent = pic.leftover;
+        chatterStatRipple.textContent = pic.leftover === "showing"
+          ? rippleMm + " mm leftover"
+          : "smooth";
+        chatterStatLeftoverWrap.classList.remove("is-showing", "is-smooth");
+        chatterStatLeftoverWrap.classList.add(chatterToneClass(pic.leftover));
+        if (Number(chatterInput.value) !== rippleMm) chatterInput.value = String(rippleMm);
+        chatterInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function chatterResetSeed() {
+        rippleMm = CHATTER_SEED.rippleMm;
+        chatterRender();
+      }
+
+      chatterInput.addEventListener("input", function (event) {
+        rippleMm = chatterClamp(Math.round(Number(event.target.value)), CHATTER_MIN, CHATTER_MAX);
+        chatterRender();
+      });
+      chatterBtnReset.addEventListener("click", chatterResetSeed);
+      chatterBtnResetStage.addEventListener("click", chatterResetSeed);
+
+      chatterRender();
+    </script>
+  </body>
+</html>
