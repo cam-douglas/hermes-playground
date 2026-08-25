@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Lap — a face looks flush until you see the lap. Move the overlap. See the leftover half." />
+    <title>Lap</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(168, 112, 40, 0.22);
+        --accent: #a87028;
+        --timber: #6a4414;
+        --overlap: #d4a048;
+        --showing: #d4a048;
+        --flush: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(168, 112, 40, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(40, 24, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(168, 112, 40, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 16, 10, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(168, 112, 40, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(168, 112, 40, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(168, 112, 40, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #lap-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 160, 72, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-flush b { color: var(--flush); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #lap-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> lap · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover half-thickness overlap that still sits along the face</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 25 Aug 2026 20:50</span>
+        <h1>Lap</h1>
+        <p class="lede">
+          A face looks flush until you see the lap. Move the overlap. See the leftover half.
+          Not a dado. Not a rabbet. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="lap-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover overlap still sits along the face</h2>
+          </div>
+          <span class="kicker" id="lap-desk-meta">leftover 20 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="lap-svg" viewBox="0 0 800 460" role="img" aria-labelledby="lap-title lap-desc">
+            <title id="lap-title">Lap is showing. Twenty millimetres of leftover overlap still sit along the face.</title>
+            <desc id="lap-desc">Two boards in side/face whose leftover is the lap — leftover half-thickness overlap still sitting where two boards share a face (leftover lap still sitting along the face, not Dado leftover groove across a face, not Rabbet leftover shoulder along an edge, not Tenon leftover tongue on a mate, not Finger leftover tabs at an edge, not Bridle leftover fork at an end). Two boards; the leftover that still sits along the face is the lap — a leftover overlap still sitting where the two faces share half their thickness. A sketch, not a mill sign-off.</desc>
+            <defs>
+              <linearGradient id="lap-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#16120e" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="lap-board-a-wash" x1="0%" y1="0%" x2="100%" y2="20%">
+                <stop offset="0%" stop-color="#4a2c10" />
+                <stop offset="46%" stop-color="#7a4a16" />
+                <stop offset="100%" stop-color="#b87828" />
+              </linearGradient>
+              <linearGradient id="lap-board-b-wash" x1="0%" y1="0%" x2="100%" y2="40%">
+                <stop offset="0%" stop-color="#3a2410" />
+                <stop offset="50%" stop-color="#6a3e14" />
+                <stop offset="100%" stop-color="#a86820" />
+              </linearGradient>
+              <linearGradient id="lap-overlap-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#f0c060" />
+                <stop offset="48%" stop-color="#d4a048" />
+                <stop offset="100%" stop-color="#a87028" />
+              </linearGradient>
+              <pattern id="lap-board-a-grain" width="18" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 5 L18 5" fill="none" stroke="rgba(40,20,8,0.16)" stroke-width="1" />
+                <path d="M0 2 L18 2" fill="none" stroke="rgba(40,20,8,0.07)" stroke-width="1" />
+              </pattern>
+              <pattern id="lap-board-b-grain" width="18" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 6 L18 6" fill="none" stroke="rgba(40,16,8,0.18)" stroke-width="1" />
+                <path d="M0 3 L18 3" fill="none" stroke="rgba(40,16,8,0.08)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(168,112,40,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">TWO BOARDS · SIDE / FACE · LEFTOVER IS THE LAP</text>
+            <g id="lap-scene" data-view="two-boards-side-face" data-hero="leftover-lap" data-lap="20" data-leftover="showing" data-verdict="showing" data-overlap="along-face">
+              <g id="lap-bench-layer"></g>
+              <g id="lap-stock-layer"></g>
+              <g id="lap-layer"></g>
+              <g id="lap-mark-layer"></g>
+              <text id="lap-scene-status" x="400" y="64" fill="#d4a048" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 20 MM LEFTOVER OVERLAP</text>
+              <text id="lap-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER HALF-THICKNESS OVERLAP STILL SITS ALONG THE FACE · NOT A DADO · NOT A RABBET · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="lap-alt" class="sr-only" aria-live="polite">Lap is showing. Twenty millimetres of leftover overlap still sit along the face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="lap-input">Lap (mm · leftover overlap still sitting along the face)</label>
+            <input id="lap-input" type="range" min="0" max="80" step="1" value="20" />
+            <div class="ticks" aria-hidden="true">
+              <span>flush / no leftover lap</span>
+              <span>seed showing</span>
+              <span>larger leftover overlap</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="lap-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Lap <b id="lap-stat-mm">20 mm</b></span>
+          <span id="lap-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="lap-stat-leftover">showing</b></span>
+          <span>Leftover overlap (sketch) <b id="lap-stat-overlap">20 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        A face looks flush until you see the lap. Lap is leftover overlap — leftover half-thickness overlap still sitting where two boards share a face. A sketch, not a mill sign-off.
+        Seed is already showing — 20 mm of leftover overlap, not a flush-only pair of faces. Arrow keys move the focused control.
+        Refresh restores the seed. Not a dado. Not a rabbet. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const LAP_SEED = { overlapMm: 20 };
+      const LAP_MIN = 0;
+      const LAP_MAX = 80;
+      const LAP_FLUSH_AT = 4;
+      const LAP_SCALE = 2.8;
+      const FACE_LEFT = 72;
+      const FACE_RIGHT = 728;
+      const FACE_TOP = 148;
+      const FACE_BOT = 312;
+      const FACE_MID = 230;
+      const HALF = (FACE_BOT - FACE_TOP) / 2;
+      const MEET_X = 400;
+
+      let overlapMm = LAP_SEED.overlapMm;
+
+      const lapSvg = document.getElementById("lap-svg");
+      const lapScene = document.getElementById("lap-scene");
+      const lapTitle = document.getElementById("lap-title");
+      const lapAlt = document.getElementById("lap-alt");
+      const lapDeskMeta = document.getElementById("lap-desk-meta");
+      const lapInput = document.getElementById("lap-input");
+      const lapBenchLayer = document.getElementById("lap-bench-layer");
+      const lapStockLayer = document.getElementById("lap-stock-layer");
+      const lapLayer = document.getElementById("lap-layer");
+      const lapMarkLayer = document.getElementById("lap-mark-layer");
+      const lapSceneStatus = document.getElementById("lap-scene-status");
+      const lapStatMm = document.getElementById("lap-stat-mm");
+      const lapStatLeftover = document.getElementById("lap-stat-leftover");
+      const lapStatLeftoverWrap = document.getElementById("lap-stat-leftover-wrap");
+      const lapStatOverlap = document.getElementById("lap-stat-overlap");
+      const lapBtnReset = document.getElementById("lap-btn-reset");
+      const lapBtnResetStage = document.getElementById("lap-btn-reset-stage");
+
+      function lapClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function lapEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function lapSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          12: "twelve",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six",
+          40: "forty",
+          48: "forty-eight",
+          50: "fifty",
+          60: "sixty",
+          64: "sixty-four",
+          72: "seventy-two",
+          80: "eighty"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function lapPicture() {
+        const leftover = overlapMm <= LAP_FLUSH_AT ? "flush" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + overlapMm + " MM LEFTOVER OVERLAP";
+          alt = "Lap is showing. " + lapSpokenMm(overlapMm).charAt(0).toUpperCase() + lapSpokenMm(overlapMm).slice(1) + " millimetres of leftover overlap still sit along the face.";
+        } else {
+          status = "FLUSH · NO LEFTOVER LAP";
+          alt = "Lap is flush. The faces look flush. No leftover lap. A sketch, not a mill sign-off.";
+        }
+        const overlapPx = leftover === "showing" ? overlapMm * LAP_SCALE : 0;
+        const lapLeft = MEET_X - overlapPx / 2;
+        const lapRight = MEET_X + overlapPx / 2;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4a048" : "#8ec8b4",
+          overlapPx: overlapPx,
+          lapLeft: lapLeft,
+          lapRight: lapRight,
+          overlap: leftover === "showing" ? "along-face" : "none",
+          shape: leftover === "showing" ? "leftover-overlap" : "flush-faces",
+          halfTop: FACE_TOP,
+          halfMid: FACE_MID,
+          halfBot: FACE_BOT
+        };
+      }
+
+      function lapPaint(pic) {
+        const isFlush = pic.leftover === "flush";
+
+        lapBenchLayer.replaceChildren();
+        lapBenchLayer.appendChild(lapEl("rect", {
+          class: "site leftover-face leftover-along leftover-lap leftover-overlap leftover-two-boards leftover-side-face",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#lap-bench-wash)",
+          stroke: "rgba(168,112,40,0.16)",
+          "stroke-width": "1.2"
+        }));
+        lapBenchLayer.appendChild(lapEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "TWO BOARDS · LEFTOVER HALF-THICKNESS OVERLAP STILL SITS ALONG THE FACE";
+
+        lapStockLayer.replaceChildren();
+        const stock = lapEl("g", {
+          id: "lap-sawn-stock",
+          class: isFlush
+            ? "stock leftover-flush leftover-no-lap leftover-lap leftover-no-overlap leftover-two-boards leftover-along leftover-true"
+            : "stock leftover-showing leftover-lap leftover-overlap leftover-two-boards leftover-along leftover-side-face"
+        });
+
+        if (isFlush) {
+          stock.appendChild(lapEl("rect", {
+            id: "lap-board-a",
+            class: "stock-board leftover-stock leftover-board-a leftover-two-boards leftover-lap leftover-along leftover-not-the-leftover leftover-not-a-dado leftover-not-a-rabbet",
+            x: String(FACE_LEFT),
+            y: String(FACE_TOP),
+            width: String(MEET_X - FACE_LEFT),
+            height: String(FACE_BOT - FACE_TOP),
+            fill: "url(#lap-board-a-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.5",
+            "data-shape": "board-a-flush-face"
+          }));
+          stock.appendChild(lapEl("rect", {
+            class: "board-a-grain leftover-stock leftover-board-a leftover-two-boards leftover-lap leftover-along",
+            x: String(FACE_LEFT),
+            y: String(FACE_TOP),
+            width: String(MEET_X - FACE_LEFT),
+            height: String(FACE_BOT - FACE_TOP),
+            fill: "url(#lap-board-a-grain)",
+            "pointer-events": "none"
+          }));
+          stock.appendChild(lapEl("rect", {
+            id: "lap-board-b",
+            class: "stock-board leftover-stock leftover-board-b leftover-two-boards leftover-lap leftover-along leftover-not-the-leftover leftover-not-a-tenon leftover-not-a-finger",
+            x: String(MEET_X),
+            y: String(FACE_TOP),
+            width: String(FACE_RIGHT - MEET_X),
+            height: String(FACE_BOT - FACE_TOP),
+            fill: "url(#lap-board-b-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.5",
+            "data-shape": "board-b-flush-face"
+          }));
+          stock.appendChild(lapEl("rect", {
+            class: "board-b-grain leftover-stock leftover-board-b leftover-two-boards leftover-lap leftover-along",
+            x: String(MEET_X),
+            y: String(FACE_TOP),
+            width: String(FACE_RIGHT - MEET_X),
+            height: String(FACE_BOT - FACE_TOP),
+            fill: "url(#lap-board-b-grain)",
+            "pointer-events": "none"
+          }));
+        } else {
+          const aFullW = pic.lapLeft - FACE_LEFT;
+          const bFullW = FACE_RIGHT - pic.lapRight;
+          const overlapW = pic.lapRight - pic.lapLeft;
+
+          stock.appendChild(lapEl("rect", {
+            id: "lap-board-a",
+            class: "stock-board leftover-stock leftover-board-a leftover-two-boards leftover-lap leftover-along leftover-not-the-leftover leftover-not-a-dado leftover-not-a-rabbet",
+            x: String(FACE_LEFT),
+            y: String(FACE_TOP),
+            width: String(aFullW),
+            height: String(FACE_BOT - FACE_TOP),
+            fill: "url(#lap-board-a-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.5",
+            "data-shape": "board-a-full-not-the-leftover"
+          }));
+          stock.appendChild(lapEl("rect", {
+            class: "board-a-grain leftover-stock leftover-board-a leftover-two-boards leftover-lap leftover-along",
+            x: String(FACE_LEFT),
+            y: String(FACE_TOP),
+            width: String(aFullW),
+            height: String(FACE_BOT - FACE_TOP),
+            fill: "url(#lap-board-a-grain)",
+            "pointer-events": "none"
+          }));
+          stock.appendChild(lapEl("rect", {
+            id: "lap-board-a-half",
+            class: "stock-board leftover-stock leftover-board-a leftover-half leftover-two-boards leftover-lap leftover-along leftover-not-a-groove leftover-not-a-shoulder leftover-not-a-tongue",
+            x: String(pic.lapLeft),
+            y: String(FACE_TOP),
+            width: String(overlapW),
+            height: String(HALF),
+            fill: "url(#lap-board-a-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "data-shape": "board-a-half-face"
+          }));
+          stock.appendChild(lapEl("rect", {
+            class: "board-a-half-grain leftover-stock leftover-board-a leftover-half leftover-two-boards leftover-lap leftover-along",
+            x: String(pic.lapLeft),
+            y: String(FACE_TOP),
+            width: String(overlapW),
+            height: String(HALF),
+            fill: "url(#lap-board-a-grain)",
+            "pointer-events": "none"
+          }));
+
+          stock.appendChild(lapEl("rect", {
+            id: "lap-board-b",
+            class: "stock-board leftover-stock leftover-board-b leftover-two-boards leftover-lap leftover-along leftover-not-the-leftover leftover-not-a-tenon leftover-not-a-finger leftover-not-a-bridle",
+            x: String(pic.lapRight),
+            y: String(FACE_TOP),
+            width: String(bFullW),
+            height: String(FACE_BOT - FACE_TOP),
+            fill: "url(#lap-board-b-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.5",
+            "data-shape": "board-b-full-not-the-leftover"
+          }));
+          stock.appendChild(lapEl("rect", {
+            class: "board-b-grain leftover-stock leftover-board-b leftover-two-boards leftover-lap leftover-along",
+            x: String(pic.lapRight),
+            y: String(FACE_TOP),
+            width: String(bFullW),
+            height: String(FACE_BOT - FACE_TOP),
+            fill: "url(#lap-board-b-grain)",
+            "pointer-events": "none"
+          }));
+          stock.appendChild(lapEl("rect", {
+            id: "lap-board-b-half",
+            class: "stock-board leftover-stock leftover-board-b leftover-half leftover-two-boards leftover-lap leftover-along leftover-not-a-groove leftover-not-a-shoulder leftover-not-a-tabs leftover-not-a-fork",
+            x: String(pic.lapLeft),
+            y: String(FACE_MID),
+            width: String(overlapW),
+            height: String(HALF),
+            fill: "url(#lap-board-b-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "data-shape": "board-b-half-face"
+          }));
+          stock.appendChild(lapEl("rect", {
+            class: "board-b-half-grain leftover-stock leftover-board-b leftover-half leftover-two-boards leftover-lap leftover-along",
+            x: String(pic.lapLeft),
+            y: String(FACE_MID),
+            width: String(overlapW),
+            height: String(HALF),
+            fill: "url(#lap-board-b-grain)",
+            "pointer-events": "none"
+          }));
+        }
+
+        stock.appendChild(lapEl("text", {
+          x: String((FACE_LEFT + (isFlush ? MEET_X : pic.lapLeft)) / 2),
+          y: String(FACE_TOP + 22),
+          fill: "#f0d8c4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "BOARD A";
+        stock.appendChild(lapEl("text", {
+          x: String(((isFlush ? MEET_X : pic.lapRight) + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 22),
+          fill: "#f0d8c4",
+          "font-size": "11",
+          "letter-spacing": "1.8",
+          "text-anchor": "middle"
+        })).textContent = "BOARD B";
+        lapStockLayer.appendChild(stock);
+
+        lapLayer.replaceChildren();
+        const leftover = lapEl("g", {
+          id: "leftover-lap",
+          class: isFlush
+            ? "lap leftover-lap leftover-flush leftover-empty leftover-no-overlap leftover-two-boards leftover-along leftover-true"
+            : "lap leftover-lap leftover-showing leftover-overlap leftover-along leftover-two-boards leftover-side-face leftover-half",
+          "data-overlap-mm": String(overlapMm),
+          "data-overlap-px": String(pic.overlapPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isFlush) {
+          leftover.appendChild(lapEl("rect", {
+            id: "leftover-lap-overlap",
+            class: "leftover-lap leftover-showing leftover-overlap leftover-along leftover-two-boards leftover-half leftover-face leftover-not-a-dado leftover-not-a-groove leftover-not-a-rabbet leftover-not-a-shoulder leftover-not-a-tenon leftover-not-a-finger leftover-not-a-bridle",
+            x: String(pic.lapLeft),
+            y: String(FACE_TOP),
+            width: String(pic.overlapPx),
+            height: String(FACE_BOT - FACE_TOP),
+            fill: "url(#lap-overlap-wash)",
+            opacity: "0.28",
+            stroke: pic.accent,
+            "stroke-width": "1.8",
+            "data-shape": "leftover-overlap",
+            "data-overlap-mm": String(overlapMm),
+            "data-role": "lap-overlap"
+          }));
+          leftover.appendChild(lapEl("line", {
+            id: "leftover-lap-half-line",
+            class: "leftover-lap leftover-showing leftover-half leftover-overlap leftover-along leftover-two-boards leftover-not-a-groove leftover-not-a-shoulder",
+            x1: String(pic.lapLeft),
+            y1: String(FACE_MID),
+            x2: String(pic.lapRight),
+            y2: String(FACE_MID),
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            "stroke-dasharray": "5 4",
+            "data-shape": "half-thickness-meet"
+          }));
+          leftover.appendChild(lapEl("text", {
+            id: "leftover-lap-label",
+            class: "lap-label leftover-label leftover-lap leftover-showing leftover-overlap leftover-two-boards leftover-along",
+            x: String(MEET_X),
+            y: String(FACE_MID - 8),
+            fill: "#f4ecd0",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "LAP";
+        } else {
+          leftover.appendChild(lapEl("line", {
+            id: "lap-flush-meet",
+            class: "leftover-lap leftover-flush leftover-empty leftover-no-overlap leftover-two-boards leftover-along leftover-true leftover-flush-faces leftover-not-a-lap",
+            x1: String(MEET_X),
+            y1: String(FACE_TOP),
+            x2: String(MEET_X),
+            y2: String(FACE_BOT),
+            stroke: pic.accent,
+            "stroke-width": "1.8",
+            "stroke-dasharray": "4 5",
+            opacity: "0.8",
+            "data-shape": "flush-faces"
+          }));
+        }
+        lapLayer.appendChild(leftover);
+
+        lapMarkLayer.replaceChildren();
+        lapMarkLayer.appendChild(lapEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP - 8),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4"
+        })).textContent = "FACE · LEFTOVER OVERLAP ALONG THE SHARED HALF";
+        lapMarkLayer.appendChild(lapEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 18),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isFlush ? "SIDE / FACE · FLUSH / NO LEFTOVER LAP" : "SIDE / FACE · LEFTOVER OVERLAP STILL SITS ALONG THE FACE";
+
+        if (!isFlush) {
+          const dimY = FACE_BOT + 36;
+          lapMarkLayer.appendChild(lapEl("line", {
+            id: "lap-dim",
+            class: "lap-dim leftover-lap leftover-showing leftover-overlap leftover-two-boards leftover-along leftover-not-a-dado leftover-not-a-rabbet",
+            x1: String(pic.lapLeft),
+            y1: String(dimY),
+            x2: String(pic.lapRight),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          lapMarkLayer.appendChild(lapEl("line", {
+            x1: String(pic.lapLeft),
+            y1: String(dimY - 4),
+            x2: String(pic.lapLeft),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          lapMarkLayer.appendChild(lapEl("line", {
+            x1: String(pic.lapRight),
+            y1: String(dimY - 4),
+            x2: String(pic.lapRight),
+            y2: String(dimY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          lapMarkLayer.appendChild(lapEl("text", {
+            id: "lap-mm-label",
+            class: "lap-label leftover-label leftover-lap leftover-showing leftover-overlap leftover-two-boards leftover-along",
+            x: String(MEET_X),
+            y: String(dimY + 16),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = overlapMm + " mm";
+          lapMarkLayer.appendChild(lapEl("text", {
+            id: "lap-overlap-label",
+            class: "overlap-label leftover-overlap leftover-lap leftover-two-boards leftover-along leftover-not-a-dado leftover-not-a-rabbet leftover-not-a-tenon leftover-not-a-finger leftover-not-a-bridle",
+            x: "400",
+            y: "412",
+            fill: "#dcd49a",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER OVERLAP · HALF THICKNESS STILL SITS ALONG THE FACE · NOT A DADO · NOT A RABBET";
+        } else {
+          lapMarkLayer.appendChild(lapEl("text", {
+            id: "lap-label",
+            class: "lap-label leftover-label leftover-flush leftover-no-overlap leftover-two-boards leftover-along leftover-empty leftover-true",
+            x: String(MEET_X),
+            y: String(FACE_TOP - 22),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "FLUSH / NO LEFTOVER LAP";
+        }
+
+        lapSceneStatus.setAttribute("fill", pic.accent);
+        lapSceneStatus.textContent = pic.status;
+        lapScene.setAttribute("data-lap", String(overlapMm));
+        lapScene.setAttribute("data-leftover", pic.leftover);
+        lapScene.setAttribute("data-verdict", pic.verdict);
+        lapScene.setAttribute("data-view", "two-boards-side-face");
+        lapScene.setAttribute("data-hero", "leftover-lap");
+        lapScene.setAttribute("data-overlap-mm", String(overlapMm));
+        lapScene.setAttribute("data-overlap-px", String(pic.overlapPx.toFixed(1)));
+        lapScene.setAttribute("data-overlap", pic.overlap);
+        lapScene.setAttribute("data-shape", pic.shape);
+        lapScene.setAttribute("data-lap-left", String(pic.lapLeft.toFixed(1)));
+        lapScene.setAttribute("data-lap-right", String(pic.lapRight.toFixed(1)));
+      }
+
+      function lapToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-flush";
+      }
+
+      function lapRender() {
+        const pic = lapPicture();
+        lapPaint(pic);
+        lapTitle.textContent = pic.alt;
+        lapAlt.textContent = pic.alt;
+        lapSvg.setAttribute("aria-label", pic.alt);
+        lapDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + overlapMm + " mm showing"
+          : "leftover flush";
+        lapStatMm.textContent = overlapMm + " mm";
+        lapStatLeftover.textContent = pic.leftover;
+        lapStatOverlap.textContent = pic.leftover === "showing"
+          ? overlapMm + " mm leftover"
+          : "flush";
+        lapStatLeftoverWrap.classList.remove("is-showing", "is-flush");
+        lapStatLeftoverWrap.classList.add(lapToneClass(pic.leftover));
+        if (Number(lapInput.value) !== overlapMm) lapInput.value = String(overlapMm);
+        lapInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function lapResetSeed() {
+        overlapMm = LAP_SEED.overlapMm;
+        lapRender();
+      }
+
+      lapInput.addEventListener("input", function (event) {
+        overlapMm = lapClamp(Math.round(Number(event.target.value)), LAP_MIN, LAP_MAX);
+        lapRender();
+      });
+      lapBtnReset.addEventListener("click", lapResetSeed);
+      lapBtnResetStage.addEventListener("click", lapResetSeed);
+
+      lapRender();
+    </script>
+  </body>
+</html>
