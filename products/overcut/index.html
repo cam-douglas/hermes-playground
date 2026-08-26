@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Overcut — the stop is there, but the saw still ran past it. Move the leftover overcut. See the residual extra run still sitting past a fixed intended stop." />
+    <title>Overcut</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08070a;
+        --panel: #121018;
+        --ink: #e6e0dc;
+        --muted: #8a827c;
+        --line: rgba(200, 140, 112, 0.24);
+        --accent: #e0a070;
+        --timber: #4a3420;
+        --overcut: #f0b888;
+        --showing: #f0b888;
+        --stopped: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(224, 160, 112, 0.12), transparent 30%),
+          radial-gradient(circle at 88% 16%, rgba(48, 24, 16, 0.22), transparent 26%),
+          linear-gradient(180deg, #070608 0%, #121018 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(224, 160, 112, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 18, 20, 0.96), rgba(10, 8, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(224, 160, 112, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd6; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181418;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(224, 160, 112, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(224, 160, 112, 0.1), transparent 46%),
+          #0a080a;
+        overflow: hidden;
+      }
+      #overcut-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(240, 184, 136, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-stopped b { color: var(--stopped); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #08070a;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #overcut-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> overcut · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover extra run still sitting past a fixed stop</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 16:50</span>
+        <h1>Overcut</h1>
+        <p class="lede">
+          The stop is there, but the saw still ran past it. Move the leftover overcut. See the residual extra run still sitting past a fixed intended stop.
+          Not a snipe. Not a kerf. Not a witness. Not a tearout. Not a chatter. Not sawing advice. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="overcut-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How far leftover extra run still sits past the stop</h2>
+          </div>
+          <span class="kicker" id="overcut-desk-meta">leftover 8 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="overcut-svg" viewBox="0 0 800 460" role="img" aria-labelledby="overcut-title overcut-desc">
+            <title id="overcut-title">Overcut is showing. Eight millimetres of leftover extra run still sit past a fixed intended stop.</title>
+            <desc id="overcut-desc">One workpiece with a fixed intended stop and a leftover saw path that continues past it (leftover extra run that still sits past the intended stop, not Snipe leftover planing dip at the end of a board, not Kerf leftover gap the blade removed, not Witness leftover layout line past a finished cut, not Tearout leftover splinter, not Chatter leftover ripple). One fixed stop; the leftover is the extra saw path past that stop, not a changing kerf width, not a pencil line, not a dip. The leftover that still sits past the stop is the overcut — leftover extra run still sitting past a fixed stop. A sketch, not a mill sign-off. Not sawing advice.</desc>
+            <defs>
+              <linearGradient id="overcut-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161218" />
+                <stop offset="100%" stop-color="#0c0a0c" />
+              </linearGradient>
+              <linearGradient id="overcut-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#2a1c10" />
+                <stop offset="46%" stop-color="#5a3e20" />
+                <stop offset="100%" stop-color="#8a6030" />
+              </linearGradient>
+              <linearGradient id="overcut-edge-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#4a3218" />
+                <stop offset="100%" stop-color="#22180c" />
+              </linearGradient>
+              <linearGradient id="overcut-stop-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#6a7480" />
+                <stop offset="50%" stop-color="#c8d0d8" />
+                <stop offset="100%" stop-color="#4a5460" />
+              </linearGradient>
+              <linearGradient id="overcut-legal-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#1a140e" />
+                <stop offset="100%" stop-color="#2a2218" />
+              </linearGradient>
+              <linearGradient id="overcut-extra-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#c07040" />
+                <stop offset="48%" stop-color="#f0b070" />
+                <stop offset="100%" stop-color="#d88848" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#08070a" stroke="rgba(224,160,112,0.16)" />
+            <text x="36" y="42" fill="#8a827c" font-size="11" letter-spacing="2">ONE WORKPIECE · FIXED STOP · LEFTOVER IS THE EXTRA RUN PAST IT</text>
+            <g id="overcut-scene" data-view="plan-overcut" data-hero="leftover-overcut" data-overcut="8" data-leftover="showing" data-verdict="showing" data-run="past-stop">
+              <g id="overcut-bench-layer"></g>
+              <g id="overcut-board-layer"></g>
+              <g id="leftover-overcut-layer"></g>
+              <g id="overcut-stop-layer"></g>
+              <g id="overcut-mark-layer"></g>
+              <text id="overcut-scene-status" x="400" y="64" fill="#f0b888" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 8 MM LEFTOVER OVERCUT</text>
+              <text id="overcut-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER EXTRA RUN STILL SITS PAST A FIXED STOP · NOT A SNIPE · NOT A KERF · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="overcut-alt" class="sr-only" aria-live="polite">Overcut is showing. Eight millimetres of leftover extra run still sit past a fixed intended stop.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="overcut-input">Overcut (mm · leftover extra run past a fixed stop)</label>
+            <input id="overcut-input" type="range" min="0" max="32" step="1" value="8" />
+            <div class="ticks" aria-hidden="true">
+              <span>stopped / no leftover overcut</span>
+              <span>seed showing</span>
+              <span>longer leftover saw path</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="overcut-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Overcut <b id="overcut-stat-mm">8 mm</b></span>
+          <span id="overcut-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="overcut-stat-leftover">showing</b></span>
+          <span>Leftover overcut (sketch) <b id="overcut-stat-run">8 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The stop is there, but the saw still ran past it. Overcut is leftover extra run that still sits past the intended stop. A sketch, not a mill sign-off, and not sawing advice.
+        Seed is already showing — 8 mm of leftover saw path sitting past a fixed stop, not a stopped-only cut. Arrow keys move the focused control.
+        Refresh restores the seed. Not a snipe. Not a kerf. Not a witness. Not a tearout. Not a chatter. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const OVERCUT_SEED = { overcutMm: 8 };
+      const OVERCUT_MIN = 0;
+      const OVERCUT_MAX = 32;
+      const OVERCUT_STOPPED_AT = 1;
+      const OVERCUT_SCALE = 6.0;
+      const BOARD_LEFT = 72;
+      const BOARD_RIGHT = 728;
+      const BOARD_TOP = 168;
+      const BOARD_BOT = 348;
+      const STOP_X = 480;
+      const STOP_W = 14;
+      const KERF_W = 18;
+      const KERF_Y = (BOARD_TOP + BOARD_BOT) / 2 - KERF_W / 2;
+      const LEGAL_LEFT = BOARD_LEFT + 18;
+
+      let overcutMm = OVERCUT_SEED.overcutMm;
+
+      const overcutSvg = document.getElementById("overcut-svg");
+      const overcutScene = document.getElementById("overcut-scene");
+      const overcutTitle = document.getElementById("overcut-title");
+      const overcutAlt = document.getElementById("overcut-alt");
+      const overcutDeskMeta = document.getElementById("overcut-desk-meta");
+      const overcutInput = document.getElementById("overcut-input");
+      const overcutBenchLayer = document.getElementById("overcut-bench-layer");
+      const overcutBoardLayer = document.getElementById("overcut-board-layer");
+      const leftoverOvercutLayer = document.getElementById("leftover-overcut-layer");
+      const overcutStopLayer = document.getElementById("overcut-stop-layer");
+      const overcutMarkLayer = document.getElementById("overcut-mark-layer");
+      const overcutSceneStatus = document.getElementById("overcut-scene-status");
+      const overcutStatMm = document.getElementById("overcut-stat-mm");
+      const overcutStatLeftover = document.getElementById("overcut-stat-leftover");
+      const overcutStatLeftoverWrap = document.getElementById("overcut-stat-leftover-wrap");
+      const overcutStatRun = document.getElementById("overcut-stat-run");
+      const overcutBtnReset = document.getElementById("overcut-btn-reset");
+      const overcutBtnResetStage = document.getElementById("overcut-btn-reset-stage");
+
+      function overcutClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function overcutEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function overcutSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve",
+          13: "thirteen",
+          14: "fourteen",
+          15: "fifteen",
+          16: "sixteen",
+          17: "seventeen",
+          18: "eighteen",
+          19: "nineteen",
+          20: "twenty",
+          21: "twenty-one",
+          22: "twenty-two",
+          23: "twenty-three",
+          24: "twenty-four",
+          25: "twenty-five",
+          26: "twenty-six",
+          27: "twenty-seven",
+          28: "twenty-eight",
+          29: "twenty-nine",
+          30: "thirty",
+          31: "thirty-one",
+          32: "thirty-two"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function overcutPicture() {
+        const leftover = overcutMm <= OVERCUT_STOPPED_AT ? "stopped" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + overcutMm + " MM LEFTOVER OVERCUT";
+          alt = "Overcut is showing. " + overcutSpokenMm(overcutMm).charAt(0).toUpperCase() + overcutSpokenMm(overcutMm).slice(1) + " millimetres of leftover extra run still sit past a fixed intended stop.";
+        } else {
+          status = "STOPPED · NO LEFTOVER OVERCUT";
+          alt = "Overcut is stopped. The stop is there. No leftover overcut. A sketch, not a mill sign-off.";
+        }
+        const runPx = leftover === "showing" ? Math.max(8, overcutMm * OVERCUT_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#f0b888" : "#8ec8b4",
+          runPx: runPx,
+          run: leftover === "showing" ? "past-stop" : "none",
+          shape: leftover === "showing" ? "leftover-overcut" : "stopped-stop"
+        };
+      }
+
+      function overcutPaint(pic) {
+        const isStopped = pic.leftover === "stopped";
+        const extraEnd = STOP_X + pic.runPx;
+
+        overcutBenchLayer.replaceChildren();
+        overcutBenchLayer.appendChild(overcutEl("rect", {
+          class: "site leftover-work leftover-overcut leftover-stop leftover-one-workpiece leftover-cut",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#overcut-bench-wash)",
+          stroke: "rgba(224,160,112,0.16)",
+          "stroke-width": "1.2"
+        }));
+        overcutBenchLayer.appendChild(overcutEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · FIXED STOP · LEFTOVER SAW PATH STILL SITS PAST IT";
+
+        overcutBoardLayer.replaceChildren();
+        const stock = overcutEl("g", {
+          id: "overcut-board-stock",
+          class: isStopped
+            ? "stock leftover-stopped leftover-no-overcut leftover-overcut leftover-no-run leftover-stop leftover-true"
+            : "stock leftover-showing leftover-overcut leftover-run leftover-past-stop leftover-stop"
+        });
+
+        stock.appendChild(overcutEl("rect", {
+          id: "overcut-workpiece",
+          class: "stock-board leftover-stock leftover-board leftover-workpiece leftover-overcut leftover-not-the-leftover leftover-not-a-snipe leftover-not-a-kerf leftover-not-a-witness leftover-not-a-tearout leftover-not-a-chatter leftover-stop-context",
+          x: String(BOARD_LEFT),
+          y: String(BOARD_TOP),
+          width: String(BOARD_RIGHT - BOARD_LEFT),
+          height: String(BOARD_BOT - BOARD_TOP),
+          fill: "url(#overcut-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "stop-context"
+        }));
+        stock.appendChild(overcutEl("rect", {
+          id: "overcut-legal-run",
+          class: "stock-cut leftover-stock leftover-legal leftover-intended leftover-not-the-leftover leftover-not-a-snipe leftover-not-a-kerf leftover-not-a-witness leftover-not-a-tearout leftover-fixed-width leftover-not-changing-width",
+          x: String(LEGAL_LEFT),
+          y: String(KERF_Y),
+          width: String(STOP_X - LEGAL_LEFT),
+          height: String(KERF_W),
+          fill: "url(#overcut-legal-wash)",
+          stroke: "#3a3028",
+          "stroke-width": "1.0",
+          "data-shape": "intended-run",
+          "data-role": "legal-cut-to-stop",
+          "data-width": String(KERF_W)
+        }));
+        stock.appendChild(overcutEl("text", {
+          x: String((LEGAL_LEFT + STOP_X) / 2),
+          y: String(BOARD_TOP + 22),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "INTENDED RUN · TO THE STOP";
+        overcutBoardLayer.appendChild(stock);
+
+        leftoverOvercutLayer.replaceChildren();
+        const leftover = overcutEl("g", {
+          id: "leftover-overcut",
+          class: isStopped
+            ? "overcut leftover-overcut leftover-stopped leftover-empty leftover-no-run leftover-stop leftover-true"
+            : "overcut leftover-overcut leftover-showing leftover-run leftover-extra leftover-past-stop leftover-saw-path leftover-stop",
+          "data-overcut-mm": String(overcutMm),
+          "data-run-px": String(pic.runPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isStopped) {
+          leftover.appendChild(overcutEl("rect", {
+            id: "leftover-overcut-path",
+            class: "leftover-overcut leftover-showing leftover-run leftover-extra leftover-saw-path leftover-past-stop leftover-not-a-snipe leftover-not-a-kerf leftover-not-a-witness leftover-not-a-tearout leftover-not-a-chatter leftover-not-a-dip leftover-not-changing-width leftover-not-a-pencil leftover-not-a-splinter leftover-local leftover-wood",
+            x: String(STOP_X),
+            y: String(KERF_Y),
+            width: String(pic.runPx.toFixed(1)),
+            height: String(KERF_W),
+            fill: "url(#overcut-extra-wash)",
+            stroke: "#f8d8b0",
+            "stroke-width": "1.2",
+            opacity: String(Math.min(0.98, 0.72 + overcutMm / 80)),
+            "data-shape": "leftover-saw-path",
+            "data-overcut-mm": String(overcutMm),
+            "data-role": "extra-run",
+            "data-run-px": String(pic.runPx.toFixed(1)),
+            "data-width": String(KERF_W)
+          }));
+          leftover.appendChild(overcutEl("line", {
+            id: "leftover-overcut-track",
+            class: "leftover-overcut leftover-showing leftover-run leftover-track leftover-past-stop leftover-not-a-snipe leftover-not-a-kerf leftover-not-a-witness leftover-not-a-tearout leftover-not-a-chatter leftover-fixed-width",
+            x1: String(STOP_X),
+            y1: String(KERF_Y + KERF_W / 2),
+            x2: String(extraEnd.toFixed(1)),
+            y2: String(KERF_Y + KERF_W / 2),
+            stroke: "#2a1810",
+            "stroke-width": "2.4",
+            "stroke-linecap": "butt",
+            "data-shape": "saw-track",
+            "data-role": "extra-track"
+          }));
+          leftover.appendChild(overcutEl("text", {
+            id: "leftover-overcut-label",
+            class: "overcut-label leftover-label leftover-overcut leftover-showing leftover-run leftover-past-stop",
+            x: String((STOP_X + extraEnd) / 2),
+            y: String(KERF_Y - 10),
+            fill: "#f4f0e8",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "OVERCUT";
+        } else {
+          leftover.appendChild(overcutEl("path", {
+            id: "leftover-overcut-stopped-path",
+            class: "leftover-overcut leftover-stopped leftover-empty leftover-no-run leftover-stop leftover-true leftover-stopped-stop leftover-not-an-overcut leftover-cut",
+            d: "M " + STOP_X + " " + KERF_Y + " L " + STOP_X + " " + (KERF_Y + KERF_W),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "stopped-stop"
+          }));
+        }
+        leftoverOvercutLayer.appendChild(leftover);
+
+        overcutStopLayer.replaceChildren();
+        const stop = overcutEl("g", {
+          id: "overcut-stop",
+          class: "stop leftover-stop leftover-fixed leftover-intended leftover-not-the-leftover leftover-not-a-snipe leftover-not-a-kerf leftover-not-a-witness leftover-not-a-tearout leftover-not-a-chatter leftover-not-a-pencil leftover-block",
+          "data-stop-x": String(STOP_X),
+          "data-role": "intended-stop",
+          "data-fixed": "true"
+        });
+        stop.appendChild(overcutEl("rect", {
+          id: "overcut-stop-block",
+          class: "stop-block leftover-stop leftover-fixed leftover-intended leftover-not-the-leftover leftover-not-a-snipe leftover-not-a-kerf leftover-not-a-witness leftover-not-a-tearout leftover-not-changing leftover-block",
+          x: String(STOP_X - STOP_W / 2),
+          y: String(BOARD_TOP - 28),
+          width: String(STOP_W),
+          height: String(BOARD_BOT - BOARD_TOP + 56),
+          rx: "2",
+          fill: "url(#overcut-stop-wash)",
+          stroke: "#e8eef4",
+          "stroke-width": "1.4",
+          "data-shape": "intended-stop",
+          "data-role": "stop-block",
+          "data-fixed": "true",
+          "data-stop-x": String(STOP_X)
+        }));
+        stop.appendChild(overcutEl("line", {
+          id: "overcut-stop-line",
+          class: "stop-line leftover-stop leftover-fixed leftover-intended leftover-not-the-leftover leftover-not-a-witness leftover-not-a-pencil leftover-mark",
+          x1: String(STOP_X),
+          y1: String(BOARD_TOP - 36),
+          x2: String(STOP_X),
+          y2: String(BOARD_BOT + 36),
+          stroke: "#f4f8fc",
+          "stroke-width": "1.6",
+          "stroke-dasharray": "3 4",
+          opacity: "0.88",
+          "data-shape": "stop-line",
+          "data-role": "stop-mark",
+          "data-fixed": "true"
+        }));
+        stop.appendChild(overcutEl("text", {
+          id: "overcut-stop-label",
+          class: "stop-label leftover-stop leftover-fixed leftover-intended leftover-not-the-leftover",
+          x: String(STOP_X),
+          y: String(BOARD_TOP - 40),
+          fill: "#e8eef4",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "STOP · FIXED";
+        overcutStopLayer.appendChild(stop);
+
+        overcutMarkLayer.replaceChildren();
+        overcutMarkLayer.appendChild(overcutEl("text", {
+          x: String(BOARD_LEFT + 8),
+          y: String(BOARD_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · FIXED STOP";
+        overcutMarkLayer.appendChild(overcutEl("text", {
+          x: String(BOARD_RIGHT),
+          y: String(BOARD_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isStopped ? "CUT · STOPPED / NO LEFTOVER OVERCUT" : "CUT · LEFTOVER SAW PATH STILL SITS PAST";
+
+        if (!isStopped) {
+          const dimY = KERF_Y + KERF_W + 28;
+          overcutMarkLayer.appendChild(overcutEl("line", {
+            id: "overcut-dim",
+            class: "overcut-dim leftover-overcut leftover-showing leftover-run leftover-past-stop leftover-not-a-snipe leftover-not-a-kerf leftover-not-a-witness leftover-not-a-tearout leftover-not-a-chatter",
+            x1: String(STOP_X),
+            y1: String(dimY.toFixed(1)),
+            x2: String(extraEnd.toFixed(1)),
+            y2: String(dimY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          overcutMarkLayer.appendChild(overcutEl("line", {
+            x1: String(STOP_X),
+            y1: String((dimY - 4).toFixed(1)),
+            x2: String(STOP_X),
+            y2: String((dimY + 4).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          overcutMarkLayer.appendChild(overcutEl("line", {
+            x1: String(extraEnd.toFixed(1)),
+            y1: String((dimY - 4).toFixed(1)),
+            x2: String(extraEnd.toFixed(1)),
+            y2: String((dimY + 4).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          overcutMarkLayer.appendChild(overcutEl("text", {
+            id: "overcut-mm-label",
+            class: "overcut-label leftover-label leftover-overcut leftover-showing leftover-run leftover-past-stop",
+            x: String(((STOP_X + extraEnd) / 2).toFixed(1)),
+            y: String((dimY + 16).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = overcutMm + " mm";
+          overcutMarkLayer.appendChild(overcutEl("text", {
+            id: "overcut-run-label",
+            class: "run-label leftover-run leftover-overcut leftover-extra leftover-past-stop leftover-not-a-snipe leftover-not-a-kerf leftover-not-a-witness leftover-not-a-tearout leftover-not-a-chatter leftover-not-a-dip leftover-not-changing-width leftover-not-a-pencil leftover-not-a-splinter",
+            x: "400",
+            y: "412",
+            fill: "#e8d0b0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER OVERCUT · EXTRA RUN PAST A FIXED STOP · NOT A SNIPE · NOT A KERF";
+        } else {
+          overcutMarkLayer.appendChild(overcutEl("text", {
+            id: "overcut-label",
+            class: "overcut-label leftover-label leftover-stopped leftover-no-run leftover-stop leftover-empty leftover-true",
+            x: String(STOP_X),
+            y: String(KERF_Y - 14),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "STOPPED / NO LEFTOVER OVERCUT";
+        }
+
+        overcutSceneStatus.setAttribute("fill", pic.accent);
+        overcutSceneStatus.textContent = pic.status;
+        overcutScene.setAttribute("data-overcut", String(overcutMm));
+        overcutScene.setAttribute("data-leftover", pic.leftover);
+        overcutScene.setAttribute("data-verdict", pic.verdict);
+        overcutScene.setAttribute("data-view", "plan-overcut");
+        overcutScene.setAttribute("data-hero", "leftover-overcut");
+        overcutScene.setAttribute("data-overcut-mm", String(overcutMm));
+        overcutScene.setAttribute("data-run-px", String(pic.runPx.toFixed(1)));
+        overcutScene.setAttribute("data-run", pic.run);
+        overcutScene.setAttribute("data-shape", pic.shape);
+        overcutScene.setAttribute("data-stop-x", String(STOP_X));
+        overcutScene.setAttribute("data-stop-fixed", "true");
+        overcutScene.setAttribute("data-kerf-w", String(KERF_W));
+      }
+
+      function overcutToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-stopped";
+      }
+
+      function overcutRender() {
+        const pic = overcutPicture();
+        overcutPaint(pic);
+        overcutTitle.textContent = pic.alt;
+        overcutAlt.textContent = pic.alt;
+        overcutSvg.setAttribute("aria-label", pic.alt);
+        overcutDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + overcutMm + " mm showing"
+          : "leftover stopped";
+        overcutStatMm.textContent = overcutMm + " mm";
+        overcutStatLeftover.textContent = pic.leftover;
+        overcutStatRun.textContent = pic.leftover === "showing"
+          ? overcutMm + " mm leftover"
+          : "stopped";
+        overcutStatLeftoverWrap.classList.remove("is-showing", "is-stopped");
+        overcutStatLeftoverWrap.classList.add(overcutToneClass(pic.leftover));
+        if (Number(overcutInput.value) !== overcutMm) overcutInput.value = String(overcutMm);
+        overcutInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function overcutResetSeed() {
+        overcutMm = OVERCUT_SEED.overcutMm;
+        overcutRender();
+      }
+
+      overcutInput.addEventListener("input", function (event) {
+        overcutMm = overcutClamp(Math.round(Number(event.target.value)), OVERCUT_MIN, OVERCUT_MAX);
+        overcutRender();
+      });
+      overcutBtnReset.addEventListener("click", overcutResetSeed);
+      overcutBtnResetStage.addEventListener("click", overcutResetSeed);
+
+      overcutRender();
+    </script>
+  </body>
+</html>
