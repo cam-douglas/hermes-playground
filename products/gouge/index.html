@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Gouge — the tool has passed, but a gouge still sits. Move the leftover gouge. See the residual curved hollow still sitting in a fixed face after the carve." />
+    <title>Gouge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #07080a;
+        --panel: #121418;
+        --ink: #e4e4dc;
+        --muted: #82887c;
+        --line: rgba(184, 136, 72, 0.24);
+        --accent: #d4a060;
+        --timber: #3a2810;
+        --gouge: #e0b070;
+        --showing: #e0b070;
+        --filled: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(212, 160, 96, 0.12), transparent 30%),
+          radial-gradient(circle at 88% 16%, rgba(28, 18, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #060708 0%, #121418 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 20, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 160, 96, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(20, 16, 10, 0.96), rgba(8, 10, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 160, 96, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e0e4d6; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #161410;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a1208; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 160, 96, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 160, 96, 0.1), transparent 46%),
+          #080a0a;
+        overflow: hidden;
+      }
+      #gouge-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(224, 176, 112, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-filled b { color: var(--filled); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #07080a;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #gouge-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> gouge · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover gouge still sitting in the face after the carve</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 27 Aug 2026 00:50</span>
+        <h1>Gouge</h1>
+        <p class="lede">
+          The tool has passed, but a gouge still sits. Move the leftover gouge. See the residual curved hollow still sitting in a fixed face after the carve.
+          Not a chip. Not a nick. Not tearout. Not a flute. Not a clock. Not carving advice.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="gouge-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How deep leftover gouge still sits in the face</h2>
+          </div>
+          <span class="kicker" id="gouge-desk-meta">leftover 5 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="gouge-svg" viewBox="0 0 800 460" role="img" aria-labelledby="gouge-title gouge-desc">
+            <title id="gouge-title">Gouge is showing. Five millimetres of leftover gouge still sit in a fixed face after the carve.</title>
+            <desc id="gouge-desc">One workpiece with a fixed face whose leftover is the gouge — leftover curved hollow that still sits in that face after the carve (leftover gouge still sitting in a fixed face, not Chip leftover discrete flake from the chisel, not Nick leftover V-shaped bite in a cut edge, not Tearout leftover splinter torn at the cut, not Burr leftover ragged lip along a cut, not Bruise leftover compression after pressure, not Dent leftover face dent from a blow, not Flute leftover intentional flute moulding). One fixed face; the leftover is one leftover scooped hollow sitting in that face, not a chip flake, not an edge nick V, not a tearout splinter, not a flute channel. The leftover that still sits is the gouge — leftover curved hollow still sitting in a fixed face after the carve. A sketch, not a mill sign-off. Not carving advice.</desc>
+            <defs>
+              <linearGradient id="gouge-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161412" />
+                <stop offset="100%" stop-color="#0a0c0c" />
+              </linearGradient>
+              <linearGradient id="gouge-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#322010" />
+                <stop offset="46%" stop-color="#6a4820" />
+                <stop offset="100%" stop-color="#b08838" />
+              </linearGradient>
+              <radialGradient id="leftover-gouge-wash" cx="42%" cy="32%" r="68%">
+                <stop offset="0%" stop-color="#1a1208" />
+                <stop offset="42%" stop-color="#0a0806" />
+                <stop offset="78%" stop-color="#2a1c0c" />
+                <stop offset="100%" stop-color="#4a3414" />
+              </radialGradient>
+              <linearGradient id="leftover-gouge-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a140c" />
+                <stop offset="100%" stop-color="#080604" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#07080a" stroke="rgba(212,160,96,0.16)" />
+            <text x="36" y="42" fill="#82887c" font-size="11" letter-spacing="2">ONE WORKPIECE · FIXED FACE · LEFTOVER IS ONE GOUGE STILL SITTING IN THE FACE</text>
+            <g id="gouge-scene" data-view="face-gouge" data-hero="leftover-gouge" data-gouge="5" data-leftover="showing" data-verdict="showing" data-gouge-state="sitting">
+              <g id="gouge-bench-layer"></g>
+              <g id="gouge-stock-layer"></g>
+              <g id="leftover-gouge-layer"></g>
+              <g id="gouge-mark-layer"></g>
+              <text id="gouge-scene-status" x="400" y="64" fill="#e0b070" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 5 MM LEFTOVER GOUGE</text>
+              <text id="gouge-scene-sketch" x="400" y="434" fill="#54584c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER GOUGE STILL SITS IN THE FACE AFTER THE CARVE · NOT A CHIP · NOT A NICK · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="gouge-alt" class="sr-only" aria-live="polite">Gouge is showing. Five millimetres of leftover gouge still sit in a fixed face after the carve.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="gouge-input">Leftover gouge (mm of sitting scooped hollow depth)</label>
+            <input id="gouge-input" type="range" min="0" max="12" step="1" value="5" />
+            <div class="ticks" aria-hidden="true">
+              <span>filled / no leftover gouge</span>
+              <span>seed showing</span>
+              <span>deeper leftover gouge</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="gouge-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Gouge <b id="gouge-stat-mm">5 mm</b></span>
+          <span id="gouge-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="gouge-stat-leftover">showing</b></span>
+          <span>Leftover gouge (sketch) <b id="gouge-stat-depth">5 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The tool has passed, but a gouge still sits. Gouge is leftover curved hollow that still sits in a fixed face after the carve. A sketch, not a mill sign-off, and not carving advice.
+        Seed is already showing — 5 mm of leftover sitting gouge in a fixed face, not a filled-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a chip. Not a nick. Not tearout. Not a flute. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const GOUGE_SEED = { gougeMm: 5 };
+      const GOUGE_MIN = 0;
+      const GOUGE_MAX = 12;
+      const GOUGE_FILLED_AT = 1;
+      const GOUGE_SCALE = 8;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const GOUGE_CX = 400;
+      const GOUGE_CY = (FACE_TOP + FACE_BOT) / 2;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 318;
+
+      let gougeMm = GOUGE_SEED.gougeMm;
+
+      const gougeSvg = document.getElementById("gouge-svg");
+      const gougeScene = document.getElementById("gouge-scene");
+      const gougeTitle = document.getElementById("gouge-title");
+      const gougeAlt = document.getElementById("gouge-alt");
+      const gougeDeskMeta = document.getElementById("gouge-desk-meta");
+      const gougeInput = document.getElementById("gouge-input");
+      const gougeBenchLayer = document.getElementById("gouge-bench-layer");
+      const gougeStockLayer = document.getElementById("gouge-stock-layer");
+      const leftoverGougeLayer = document.getElementById("leftover-gouge-layer");
+      const gougeMarkLayer = document.getElementById("gouge-mark-layer");
+      const gougeSceneStatus = document.getElementById("gouge-scene-status");
+      const gougeStatMm = document.getElementById("gouge-stat-mm");
+      const gougeStatLeftover = document.getElementById("gouge-stat-leftover");
+      const gougeStatLeftoverWrap = document.getElementById("gouge-stat-leftover-wrap");
+      const gougeStatDepth = document.getElementById("gouge-stat-depth");
+      const gougeBtnReset = document.getElementById("gouge-btn-reset");
+      const gougeBtnResetStage = document.getElementById("gouge-btn-reset-stage");
+
+      function gougeClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function gougeEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function gougeSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverGougeGeom(depthPx) {
+        const rx = 58 + depthPx * 0.42;
+        const ry = 22 + depthPx * 0.22;
+        return {
+          cx: GOUGE_CX,
+          cy: GOUGE_CY,
+          rx: rx,
+          ry: ry,
+          depthPx: depthPx
+        };
+      }
+
+      function leftoverGougeScoopPath(scoop) {
+        const left = scoop.cx - scoop.rx;
+        const right = scoop.cx + scoop.rx;
+        const top = scoop.cy - scoop.ry * 0.18;
+        const bot = scoop.cy + scoop.ry;
+        return "M " + left.toFixed(1) + " " + top.toFixed(1) +
+          " C " + (left + scoop.rx * 0.18).toFixed(1) + " " + (top - scoop.ry * 0.35).toFixed(1) +
+          " " + (scoop.cx - scoop.rx * 0.35).toFixed(1) + " " + (bot).toFixed(1) +
+          " " + scoop.cx.toFixed(1) + " " + bot.toFixed(1) +
+          " C " + (scoop.cx + scoop.rx * 0.35).toFixed(1) + " " + bot.toFixed(1) +
+          " " + (right - scoop.rx * 0.18).toFixed(1) + " " + (top - scoop.ry * 0.35).toFixed(1) +
+          " " + right.toFixed(1) + " " + top.toFixed(1) +
+          " C " + (scoop.cx + scoop.rx * 0.55).toFixed(1) + " " + (scoop.cy - scoop.ry * 0.85).toFixed(1) +
+          " " + (scoop.cx - scoop.rx * 0.55).toFixed(1) + " " + (scoop.cy - scoop.ry * 0.85).toFixed(1) +
+          " " + left.toFixed(1) + " " + top.toFixed(1) + " Z";
+      }
+
+      function leftoverGougeSectionPath(depthPx) {
+        const left = 168;
+        const right = 632;
+        const faceY = PROFILE_FACE_Y;
+        const mid = 400;
+        const half = 86 + depthPx * 0.22;
+        const bot = faceY + depthPx;
+        return "M " + left + " " + faceY +
+          " L " + (mid - half).toFixed(1) + " " + faceY +
+          " C " + (mid - half * 0.45).toFixed(1) + " " + faceY +
+          " " + (mid - half * 0.38).toFixed(1) + " " + bot.toFixed(1) +
+          " " + mid + " " + bot.toFixed(1) +
+          " C " + (mid + half * 0.38).toFixed(1) + " " + bot.toFixed(1) +
+          " " + (mid + half * 0.45).toFixed(1) + " " + faceY +
+          " " + (mid + half).toFixed(1) + " " + faceY +
+          " L " + right + " " + faceY +
+          " L " + right + " " + (PROFILE_BOT - 16) +
+          " L " + left + " " + (PROFILE_BOT - 16) + " Z";
+      }
+
+      function gougePicture() {
+        const leftover = gougeMm <= GOUGE_FILLED_AT ? "filled" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + gougeMm + " MM LEFTOVER GOUGE";
+          alt = "Gouge is showing. " + gougeSpokenMm(gougeMm).charAt(0).toUpperCase() + gougeSpokenMm(gougeMm).slice(1) + " millimetres of leftover gouge still sit in a fixed face after the carve.";
+        } else {
+          status = "FILLED · NO LEFTOVER GOUGE";
+          alt = "Gouge is filled. The face is there. No leftover gouge. A sketch, not a mill sign-off.";
+        }
+        const gougePx = leftover === "showing" ? Math.max(18, gougeMm * GOUGE_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e0b070" : "#8ec8b4",
+          gougePx: gougePx,
+          gougeState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-gouge" : "filled-face"
+        };
+      }
+
+      function gougePaint(pic) {
+        const isFilled = pic.leftover === "filled";
+        const scoop = leftoverGougeGeom(pic.gougePx);
+
+        gougeBenchLayer.replaceChildren();
+        gougeBenchLayer.appendChild(gougeEl("rect", {
+          class: "site leftover-work leftover-gouge leftover-face leftover-carve leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#gouge-bench-wash)",
+          stroke: "rgba(212,160,96,0.16)",
+          "stroke-width": "1.2"
+        }));
+        gougeBenchLayer.appendChild(gougeEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#64685c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · FIXED FACE · ONE LEFTOVER GOUGE STILL SITS IN THE FACE";
+
+        gougeStockLayer.replaceChildren();
+        const stock = gougeEl("g", {
+          id: "gouge-stock",
+          class: isFilled
+            ? "stock leftover-filled leftover-no-gouge leftover-gouge leftover-face leftover-true"
+            : "stock leftover-showing leftover-gouge leftover-sitting leftover-face"
+        });
+        stock.appendChild(gougeEl("rect", {
+          id: "gouge-workpiece",
+          class: "stock-board leftover-stock leftover-workpiece leftover-gouge leftover-not-the-leftover leftover-not-a-chip leftover-not-a-nick leftover-not-tearout leftover-not-a-flute leftover-face-context",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          rx: "3",
+          fill: "url(#gouge-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "face-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(gougeEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 20),
+          fill: "#c8b080",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "FACE · STAYS FIXED";
+        gougeStockLayer.appendChild(stock);
+
+        leftoverGougeLayer.replaceChildren();
+        const leftover = gougeEl("g", {
+          id: "leftover-gouge",
+          class: isFilled
+            ? "gouge leftover-gouge leftover-filled leftover-empty leftover-no-gouge leftover-face leftover-true"
+            : "gouge leftover-gouge leftover-showing leftover-one leftover-sitting leftover-depth leftover-face leftover-scooped leftover-hollow",
+          "data-gouge-mm": String(gougeMm),
+          "data-gouge-px": String(pic.gougePx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isFilled) {
+          leftover.appendChild(gougeEl("path", {
+            id: "leftover-gouge-hollow",
+            class: "leftover-gouge leftover-showing leftover-one leftover-sitting leftover-depth leftover-in-face leftover-not-a-chip leftover-not-a-nick leftover-not-tearout leftover-not-a-flute leftover-local leftover-scooped leftover-hollow leftover-curved",
+            d: leftoverGougeScoopPath(scoop),
+            fill: "url(#leftover-gouge-wash)",
+            stroke: "#1a1208",
+            "stroke-width": "1.2",
+            opacity: String(Math.min(0.98, 0.72 + gougeMm / 24)),
+            "data-shape": "leftover-gouge",
+            "data-gouge-mm": String(gougeMm),
+            "data-role": "sitting-gouge",
+            "data-gouge-px": String(pic.gougePx.toFixed(1)),
+            "data-origin-x": String(GOUGE_CX),
+            "data-origin-y": String(GOUGE_CY)
+          }));
+          leftover.appendChild(gougeEl("ellipse", {
+            id: "leftover-gouge-rim",
+            class: "leftover-gouge leftover-showing leftover-rim leftover-scooped leftover-hollow leftover-not-a-nick leftover-not-a-flute",
+            cx: String(scoop.cx),
+            cy: String((scoop.cy - scoop.ry * 0.22).toFixed(1)),
+            rx: String((scoop.rx * 0.92).toFixed(1)),
+            ry: String((scoop.ry * 0.42).toFixed(1)),
+            fill: "none",
+            stroke: "#f0d8a0",
+            "stroke-width": String(Math.max(1.1, 0.9 + gougeMm * 0.08)),
+            opacity: "0.72",
+            "data-role": "gouge-rim"
+          }));
+          leftover.appendChild(gougeEl("path", {
+            id: "leftover-gouge-shade",
+            class: "leftover-gouge leftover-showing leftover-shade leftover-scooped leftover-hollow leftover-not-a-chip leftover-not-a-nick",
+            d: "M " + (scoop.cx - scoop.rx * 0.62).toFixed(1) + " " + (scoop.cy + scoop.ry * 0.12).toFixed(1) +
+              " Q " + scoop.cx.toFixed(1) + " " + (scoop.cy + scoop.ry * 0.92).toFixed(1) +
+              " " + (scoop.cx + scoop.rx * 0.62).toFixed(1) + " " + (scoop.cy + scoop.ry * 0.12).toFixed(1),
+            fill: "none",
+            stroke: "#080604",
+            "stroke-width": String(Math.max(2.2, 1.6 + gougeMm * 0.18)),
+            "stroke-linecap": "round",
+            opacity: "0.86",
+            "data-role": "gouge-shade"
+          }));
+          leftover.appendChild(gougeEl("text", {
+            id: "leftover-gouge-label",
+            class: "gouge-label leftover-label leftover-gouge leftover-showing leftover-sitting leftover-depth leftover-scooped",
+            x: String(scoop.cx),
+            y: String((scoop.cy + 5).toFixed(1)),
+            fill: "#f4e0b4",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "GOUGE";
+        } else {
+          leftover.appendChild(gougeEl("ellipse", {
+            id: "leftover-gouge-filled-path",
+            class: "leftover-gouge leftover-filled leftover-empty leftover-no-gouge leftover-face leftover-true leftover-filled-face leftover-not-a-gouge leftover-carve",
+            cx: String(GOUGE_CX),
+            cy: String(GOUGE_CY),
+            rx: "52",
+            ry: "18",
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "filled-face"
+          }));
+        }
+        leftoverGougeLayer.appendChild(leftover);
+
+        gougeMarkLayer.replaceChildren();
+        gougeMarkLayer.appendChild(gougeEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · FIXED FACE";
+        gougeMarkLayer.appendChild(gougeEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isFilled ? "FACE · FILLED / NO LEFTOVER GOUGE" : "FACE · ONE LEFTOVER GOUGE STILL SITS";
+
+        gougeMarkLayer.appendChild(gougeEl("path", {
+          id: "gouge-profile-stock",
+          class: isFilled
+            ? "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-filled leftover-no-gouge"
+            : "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-with-gouge",
+          d: leftoverGougeSectionPath(isFilled ? 0 : pic.gougePx),
+          fill: isFilled ? "url(#gouge-face-wash)" : "url(#leftover-gouge-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isFilled ? "filled-face" : "leftover-gouge-depth"
+        }));
+        if (isFilled) {
+          gougeMarkLayer.appendChild(gougeEl("line", {
+            id: "gouge-profile-face",
+            class: "profile-face leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-filled leftover-no-gouge",
+            x1: "168",
+            y1: String(PROFILE_FACE_Y),
+            x2: "632",
+            y2: String(PROFILE_FACE_Y),
+            stroke: "#f0e4c0",
+            "stroke-width": "2",
+            "data-fixed": "true"
+          }));
+        }
+
+        if (!isFilled) {
+          const dimY = PROFILE_FACE_Y + pic.gougePx / 2;
+          gougeMarkLayer.appendChild(gougeEl("line", {
+            id: "gouge-dim",
+            class: "gouge-dim leftover-gouge leftover-showing leftover-sitting leftover-depth leftover-not-a-chip leftover-not-a-nick leftover-not-tearout leftover-not-a-flute",
+            x1: "400",
+            y1: String(PROFILE_FACE_Y),
+            x2: "400",
+            y2: String((PROFILE_FACE_Y + pic.gougePx).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          gougeMarkLayer.appendChild(gougeEl("line", {
+            x1: "396",
+            y1: String(PROFILE_FACE_Y),
+            x2: "404",
+            y2: String(PROFILE_FACE_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          gougeMarkLayer.appendChild(gougeEl("line", {
+            x1: "396",
+            y1: String((PROFILE_FACE_Y + pic.gougePx).toFixed(1)),
+            x2: "404",
+            y2: String((PROFILE_FACE_Y + pic.gougePx).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          gougeMarkLayer.appendChild(gougeEl("text", {
+            id: "gouge-mm-label",
+            class: "gouge-label leftover-label leftover-gouge leftover-showing leftover-sitting leftover-depth leftover-scooped",
+            x: "416",
+            y: String(dimY.toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = gougeMm + " mm";
+          gougeMarkLayer.appendChild(gougeEl("text", {
+            id: "gouge-depth-label",
+            class: "depth-label leftover-gouge leftover-one leftover-sitting leftover-depth leftover-in-face leftover-not-a-chip leftover-not-a-nick leftover-not-tearout leftover-not-a-flute leftover-scooped",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#e0d0a8",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER GOUGE · ONE LEFTOVER SCOOPED HOLLOW IN A FIXED FACE · NOT A CHIP · NOT A NICK";
+        } else {
+          gougeMarkLayer.appendChild(gougeEl("text", {
+            id: "gouge-label",
+            class: "gouge-label leftover-label leftover-filled leftover-no-gouge leftover-face leftover-empty leftover-true",
+            x: String((FACE_LEFT + FACE_RIGHT) / 2),
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "FILLED / NO LEFTOVER GOUGE";
+          gougeMarkLayer.appendChild(gougeEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · FILLED / NO LEFTOVER GOUGE";
+        }
+
+        gougeSceneStatus.setAttribute("fill", pic.accent);
+        gougeSceneStatus.textContent = pic.status;
+        gougeScene.setAttribute("data-gouge", String(gougeMm));
+        gougeScene.setAttribute("data-leftover", pic.leftover);
+        gougeScene.setAttribute("data-verdict", pic.verdict);
+        gougeScene.setAttribute("data-view", "face-gouge");
+        gougeScene.setAttribute("data-hero", "leftover-gouge");
+        gougeScene.setAttribute("data-gouge-mm", String(gougeMm));
+        gougeScene.setAttribute("data-gouge-px", String(pic.gougePx.toFixed(1)));
+        gougeScene.setAttribute("data-gouge-state", pic.gougeState);
+        gougeScene.setAttribute("data-shape", pic.shape);
+        gougeScene.setAttribute("data-face-fixed", "true");
+      }
+
+      function gougeToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-filled";
+      }
+
+      function gougeRender() {
+        const pic = gougePicture();
+        gougePaint(pic);
+        gougeTitle.textContent = pic.alt;
+        gougeAlt.textContent = pic.alt;
+        gougeSvg.setAttribute("aria-label", pic.alt);
+        gougeDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + gougeMm + " mm showing"
+          : "leftover filled";
+        gougeStatMm.textContent = gougeMm + " mm";
+        gougeStatLeftover.textContent = pic.leftover;
+        gougeStatDepth.textContent = pic.leftover === "showing"
+          ? gougeMm + " mm leftover"
+          : "filled";
+        gougeStatLeftoverWrap.classList.remove("is-showing", "is-filled");
+        gougeStatLeftoverWrap.classList.add(gougeToneClass(pic.leftover));
+        if (Number(gougeInput.value) !== gougeMm) gougeInput.value = String(gougeMm);
+        gougeInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function gougeResetSeed() {
+        gougeMm = GOUGE_SEED.gougeMm;
+        gougeRender();
+      }
+
+      gougeInput.addEventListener("input", function (event) {
+        gougeMm = gougeClamp(Math.round(Number(event.target.value)), GOUGE_MIN, GOUGE_MAX);
+        gougeRender();
+      });
+      gougeBtnReset.addEventListener("click", gougeResetSeed);
+      gougeBtnResetStage.addEventListener("click", gougeResetSeed);
+
+      gougeRender();
+    </script>
+  </body>
+</html>
