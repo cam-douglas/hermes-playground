@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Chip — the chisel has passed, but a chip still sits. Move the leftover chip. See the residual discrete chip of wood still sitting after a chisel cut." />
+    <title>Chip</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08070a;
+        --panel: #121018;
+        --ink: #e6e0dc;
+        --muted: #8a827c;
+        --line: rgba(200, 168, 112, 0.24);
+        --accent: #d4b878;
+        --timber: #4a3420;
+        --chip: #e8c070;
+        --showing: #e8c070;
+        --cleared: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(212, 184, 120, 0.12), transparent 30%),
+          radial-gradient(circle at 88% 16%, rgba(40, 28, 12, 0.22), transparent 26%),
+          linear-gradient(180deg, #070608 0%, #121018 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 184, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 18, 16, 0.96), rgba(10, 8, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 184, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd6; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181418;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a140c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 184, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 184, 120, 0.1), transparent 46%),
+          #0a080a;
+        overflow: hidden;
+      }
+      #chip-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(232, 192, 112, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-cleared b { color: var(--cleared); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #08070a;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #chip-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> chip · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover chip of wood still sitting after a fixed chisel cut</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 19:50</span>
+        <h1>Chip</h1>
+        <p class="lede">
+          The chisel has passed, but a chip still sits. Move the leftover chip. See the residual discrete chip of wood still sitting after a chisel cut.
+          Not a tearout. Not dust. Not an offcut. Not a burr. Not a whisker. Not a fuzz. Not a nib. Not chisel advice. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="chip-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How large leftover chip still sits after the chisel</h2>
+          </div>
+          <span class="kicker" id="chip-desk-meta">leftover 6 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="chip-svg" viewBox="0 0 800 460" role="img" aria-labelledby="chip-title chip-desc">
+            <title id="chip-title">Chip is showing. Six millimetres of leftover chip still sit after a fixed chisel cut.</title>
+            <desc id="chip-desc">One workpiece with a fixed chisel cut and one leftover discrete chip of wood sitting after that cut (leftover chip that still sits from the chisel, not Tearout leftover splinter torn at the cut, not Dust leftover sawdust still in the cut, not Offcut leftover piece of the board after the cut, not Burr leftover ragged lip along a cut, not Whisker leftover hair still at the edge after the plane, not Fuzz leftover fibre field after sanding, not Nib leftover corner after intersecting cuts). One fixed chisel cut; the leftover is one discrete sitting chip after that cut, not a torn splinter, not a dust field, not a leftover board piece, not a burr lip, not a standing hair. The leftover that still sits is the chip — leftover discrete chip of wood still sitting after a fixed chisel cut. A sketch, not a mill sign-off. Not chisel advice.</desc>
+            <defs>
+              <linearGradient id="chip-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161218" />
+                <stop offset="100%" stop-color="#0c0a0c" />
+              </linearGradient>
+              <linearGradient id="chip-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#2a1c10" />
+                <stop offset="46%" stop-color="#5a3e20" />
+                <stop offset="100%" stop-color="#8a6030" />
+              </linearGradient>
+              <linearGradient id="chip-cut-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1008" />
+                <stop offset="100%" stop-color="#3a2410" />
+              </linearGradient>
+              <linearGradient id="leftover-chip-wash" x1="0%" y1="100%" x2="80%" y2="0%">
+                <stop offset="0%" stop-color="#a87830" />
+                <stop offset="48%" stop-color="#e8c070" />
+                <stop offset="100%" stop-color="#fff0c0" />
+              </linearGradient>
+              <linearGradient id="leftover-chip-side-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6a4018" />
+                <stop offset="100%" stop-color="#c89840" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#08070a" stroke="rgba(212,184,120,0.16)" />
+            <text x="36" y="42" fill="#8a827c" font-size="11" letter-spacing="2">ONE WORKPIECE · FIXED CHISEL CUT · LEFTOVER IS ONE CHIP SITTING AFTER THAT CUT</text>
+            <g id="chip-scene" data-view="chisel-cut-chip" data-hero="leftover-chip" data-chip="6" data-leftover="showing" data-verdict="showing" data-flake="sitting">
+              <g id="chip-bench-layer"></g>
+              <g id="chip-board-layer"></g>
+              <g id="chip-cut-layer"></g>
+              <g id="leftover-chip-layer"></g>
+              <g id="chip-mark-layer"></g>
+              <text id="chip-scene-status" x="400" y="64" fill="#e8c070" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 6 MM LEFTOVER CHIP</text>
+              <text id="chip-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER CHIP STILL SITS AFTER A FIXED CHISEL CUT · NOT A TEAROUT · NOT DUST · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="chip-alt" class="sr-only" aria-live="polite">Chip is showing. Six millimetres of leftover chip still sit after a fixed chisel cut.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="chip-input">Leftover chip (mm of sitting chip size)</label>
+            <input id="chip-input" type="range" min="0" max="14" step="1" value="6" />
+            <div class="ticks" aria-hidden="true">
+              <span>cleared / no leftover chip</span>
+              <span>seed showing</span>
+              <span>larger leftover chip</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="chip-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Chip <b id="chip-stat-mm">6 mm</b></span>
+          <span id="chip-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="chip-stat-leftover">showing</b></span>
+          <span>Leftover chip (sketch) <b id="chip-stat-flake">6 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The chisel has passed, but a chip still sits. Chip is leftover discrete chip of wood that still sits after a chisel cut. A sketch, not a mill sign-off, and not chisel advice.
+        Seed is already showing — 6 mm of leftover sitting chip after a fixed chisel cut, not a cleared-only cut. Arrow keys move the focused control.
+        Refresh restores the seed. Not a tearout. Not dust. Not an offcut. Not a burr. Not a whisker. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const CHIP_SEED = { chipMm: 6 };
+      const CHIP_MIN = 0;
+      const CHIP_MAX = 14;
+      const CHIP_CLEARED_AT = 1;
+      const CHIP_SCALE = 9;
+      const BOARD_LEFT = 88;
+      const BOARD_RIGHT = 712;
+      const BOARD_TOP = 168;
+      const BOARD_BOT = 352;
+      const CUT_LEFT = 292;
+      const CUT_RIGHT = 508;
+      const CUT_TOP = 214;
+      const CUT_BOT = 308;
+      const CHIP_SIT_X = 356;
+      const CHIP_SIT_Y = 268;
+
+      let chipMm = CHIP_SEED.chipMm;
+
+      const chipSvg = document.getElementById("chip-svg");
+      const chipScene = document.getElementById("chip-scene");
+      const chipTitle = document.getElementById("chip-title");
+      const chipAlt = document.getElementById("chip-alt");
+      const chipDeskMeta = document.getElementById("chip-desk-meta");
+      const chipInput = document.getElementById("chip-input");
+      const chipBenchLayer = document.getElementById("chip-bench-layer");
+      const chipBoardLayer = document.getElementById("chip-board-layer");
+      const chipCutLayer = document.getElementById("chip-cut-layer");
+      const leftoverChipLayer = document.getElementById("leftover-chip-layer");
+      const chipMarkLayer = document.getElementById("chip-mark-layer");
+      const chipSceneStatus = document.getElementById("chip-scene-status");
+      const chipStatMm = document.getElementById("chip-stat-mm");
+      const chipStatLeftover = document.getElementById("chip-stat-leftover");
+      const chipStatLeftoverWrap = document.getElementById("chip-stat-leftover-wrap");
+      const chipStatFlake = document.getElementById("chip-stat-flake");
+      const chipBtnReset = document.getElementById("chip-btn-reset");
+      const chipBtnResetStage = document.getElementById("chip-btn-reset-stage");
+
+      function chipClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function chipEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function chipSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve",
+          13: "thirteen",
+          14: "fourteen"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverChipGeom(sizePx) {
+        const w = sizePx;
+        const h = Math.max(10, sizePx * 0.62);
+        const lift = Math.max(4, sizePx * 0.22);
+        const skew = sizePx * 0.18;
+        const x = CHIP_SIT_X;
+        const y = CHIP_SIT_Y;
+        const face = [
+          [x, y - h],
+          [x + w, y - h + skew * 0.35],
+          [x + w - skew * 0.2, y],
+          [x - skew * 0.15, y - skew * 0.15]
+        ];
+        const side = [
+          [x + w, y - h + skew * 0.35],
+          [x + w + lift * 0.55, y - h + skew * 0.35 - lift * 0.35],
+          [x + w + lift * 0.4, y - lift * 0.2],
+          [x + w - skew * 0.2, y]
+        ];
+        function poly(pts) {
+          return pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ");
+        }
+        return {
+          w: w,
+          h: h,
+          x: x,
+          y: y,
+          tipX: x + w,
+          tipY: y - h,
+          face: poly(face),
+          side: poly(side)
+        };
+      }
+
+      function chipPicture() {
+        const leftover = chipMm <= CHIP_CLEARED_AT ? "cleared" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + chipMm + " MM LEFTOVER CHIP";
+          alt = "Chip is showing. " + chipSpokenMm(chipMm).charAt(0).toUpperCase() + chipSpokenMm(chipMm).slice(1) + " millimetres of leftover chip still sit after a fixed chisel cut.";
+        } else {
+          status = "CLEARED · NO LEFTOVER CHIP";
+          alt = "Chip is cleared. The chisel cut is there. No leftover chip. A sketch, not a mill sign-off.";
+        }
+        const chipPx = leftover === "showing" ? Math.max(16, chipMm * CHIP_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e8c070" : "#8ec8b4",
+          chipPx: chipPx,
+          flake: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-chip" : "cleared-cut"
+        };
+      }
+
+      function chipPaint(pic) {
+        const isCleared = pic.leftover === "cleared";
+        const flake = leftoverChipGeom(pic.chipPx);
+
+        chipBenchLayer.replaceChildren();
+        chipBenchLayer.appendChild(chipEl("rect", {
+          class: "site leftover-work leftover-chip leftover-cut leftover-chisel leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#chip-bench-wash)",
+          stroke: "rgba(212,184,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        chipBenchLayer.appendChild(chipEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · FIXED CHISEL CUT · ONE LEFTOVER CHIP STILL SITS AFTER IT";
+
+        chipBoardLayer.replaceChildren();
+        const stock = chipEl("g", {
+          id: "chip-board-stock",
+          class: isCleared
+            ? "stock leftover-cleared leftover-no-chip leftover-chip leftover-no-flake leftover-cut leftover-true"
+            : "stock leftover-showing leftover-chip leftover-flake leftover-sitting leftover-cut"
+        });
+
+        stock.appendChild(chipEl("rect", {
+          id: "chip-workpiece",
+          class: "stock-board leftover-stock leftover-board leftover-workpiece leftover-chip leftover-not-the-leftover leftover-not-a-tearout leftover-not-dust leftover-not-an-offcut leftover-not-a-burr leftover-not-a-whisker leftover-cut-context",
+          x: String(BOARD_LEFT),
+          y: String(BOARD_TOP),
+          width: String(BOARD_RIGHT - BOARD_LEFT),
+          height: String(BOARD_BOT - BOARD_TOP),
+          fill: "url(#chip-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "cut-context"
+        }));
+        stock.appendChild(chipEl("text", {
+          x: String((BOARD_LEFT + BOARD_RIGHT) / 2),
+          y: String(BOARD_TOP + 26),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "FACE · CHISEL CUT STAYS FIXED";
+        chipBoardLayer.appendChild(stock);
+
+        chipCutLayer.replaceChildren();
+        const cut = chipEl("g", {
+          id: "chip-cut",
+          class: "cut leftover-cut leftover-fixed leftover-chisel leftover-not-the-leftover leftover-not-a-tearout leftover-not-dust leftover-not-an-offcut leftover-not-a-burr leftover-not-a-whisker leftover-not-a-fuzz leftover-recess",
+          "data-cut-left": String(CUT_LEFT),
+          "data-cut-right": String(CUT_RIGHT),
+          "data-cut-top": String(CUT_TOP),
+          "data-cut-bot": String(CUT_BOT),
+          "data-role": "chisel-cut",
+          "data-fixed": "true"
+        });
+        cut.appendChild(chipEl("rect", {
+          id: "chip-cut-recess",
+          class: "cut-recess leftover-cut leftover-fixed leftover-chisel leftover-not-the-leftover leftover-not-changing leftover-recess",
+          x: String(CUT_LEFT),
+          y: String(CUT_TOP),
+          width: String(CUT_RIGHT - CUT_LEFT),
+          height: String(CUT_BOT - CUT_TOP),
+          fill: "url(#chip-cut-wash)",
+          stroke: "#c8b090",
+          "stroke-width": "2.2",
+          "data-shape": "chisel-cut",
+          "data-role": "cut-recess",
+          "data-fixed": "true"
+        }));
+        cut.appendChild(chipEl("line", {
+          id: "chip-cut-floor",
+          class: "cut-floor leftover-cut leftover-fixed leftover-chisel leftover-not-the-leftover leftover-mark",
+          x1: String(CUT_LEFT + 6),
+          y1: String(CUT_BOT - 8),
+          x2: String(CUT_RIGHT - 6),
+          y2: String(CUT_BOT - 8),
+          stroke: "#f8f0d8",
+          "stroke-width": "1.1",
+          opacity: "0.42",
+          "data-shape": "cut-floor",
+          "data-fixed": "true"
+        }));
+        cut.appendChild(chipEl("text", {
+          id: "chip-cut-label",
+          class: "cut-label leftover-cut leftover-fixed leftover-chisel leftover-not-the-leftover",
+          x: String(CUT_LEFT + 10),
+          y: String(CUT_TOP + 16),
+          fill: "#e8e0c8",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "CHISEL CUT · FIXED";
+        chipCutLayer.appendChild(cut);
+
+        leftoverChipLayer.replaceChildren();
+        const leftover = chipEl("g", {
+          id: "leftover-chip",
+          class: isCleared
+            ? "chip leftover-chip leftover-cleared leftover-empty leftover-no-flake leftover-cut leftover-true"
+            : "chip leftover-chip leftover-showing leftover-flake leftover-one leftover-sitting leftover-discrete leftover-cut",
+          "data-chip-mm": String(chipMm),
+          "data-chip-px": String(pic.chipPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isCleared) {
+          leftover.appendChild(chipEl("polygon", {
+            id: "leftover-chip-side",
+            class: "leftover-chip leftover-showing leftover-flake leftover-side leftover-sitting leftover-not-a-tearout leftover-not-dust leftover-not-an-offcut leftover-not-a-burr leftover-not-a-whisker leftover-wood",
+            points: flake.side,
+            fill: "url(#leftover-chip-side-wash)",
+            stroke: "#2a1810",
+            "stroke-width": "0.9",
+            "data-shape": "leftover-chip-side",
+            "data-role": "sitting-chip-side"
+          }));
+          leftover.appendChild(chipEl("polygon", {
+            id: "leftover-chip-flake",
+            class: "leftover-chip leftover-showing leftover-flake leftover-one leftover-sitting leftover-discrete leftover-not-a-tearout leftover-not-dust leftover-not-an-offcut leftover-not-a-burr leftover-not-a-whisker leftover-not-a-fuzz leftover-not-a-nib leftover-not-a-splinter leftover-not-a-field leftover-not-a-lip leftover-not-a-hair leftover-local leftover-wood",
+            points: flake.face,
+            fill: "url(#leftover-chip-wash)",
+            stroke: "#2a1810",
+            "stroke-width": "1.1",
+            opacity: String(Math.min(0.98, 0.8 + chipMm / 40)),
+            "data-shape": "leftover-chip",
+            "data-chip-mm": String(chipMm),
+            "data-role": "sitting-chip",
+            "data-chip-px": String(pic.chipPx.toFixed(1)),
+            "data-origin-x": String(CHIP_SIT_X),
+            "data-origin-y": String(CHIP_SIT_Y)
+          }));
+          leftover.appendChild(chipEl("line", {
+            class: "leftover-chip leftover-showing leftover-grain leftover-sitting leftover-not-a-tearout leftover-not-dust",
+            x1: String((CHIP_SIT_X + 6).toFixed(1)),
+            y1: String((CHIP_SIT_Y - flake.h * 0.28).toFixed(1)),
+            x2: String((CHIP_SIT_X + flake.w - 8).toFixed(1)),
+            y2: String((CHIP_SIT_Y - flake.h * 0.18).toFixed(1)),
+            stroke: "#6a4018",
+            "stroke-width": "0.8",
+            opacity: "0.55"
+          }));
+          leftover.appendChild(chipEl("line", {
+            class: "leftover-chip leftover-showing leftover-grain leftover-sitting leftover-not-a-tearout leftover-not-dust",
+            x1: String((CHIP_SIT_X + 8).toFixed(1)),
+            y1: String((CHIP_SIT_Y - flake.h * 0.55).toFixed(1)),
+            x2: String((CHIP_SIT_X + flake.w - 10).toFixed(1)),
+            y2: String((CHIP_SIT_Y - flake.h * 0.42).toFixed(1)),
+            stroke: "#6a4018",
+            "stroke-width": "0.7",
+            opacity: "0.42"
+          }));
+          leftover.appendChild(chipEl("text", {
+            id: "leftover-chip-label",
+            class: "chip-label leftover-label leftover-chip leftover-showing leftover-flake leftover-sitting",
+            x: String((CHIP_SIT_X + flake.w / 2).toFixed(1)),
+            y: String((CHIP_SIT_Y - flake.h - 10).toFixed(1)),
+            fill: "#f4f0e8",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "CHIP";
+        } else {
+          leftover.appendChild(chipEl("rect", {
+            id: "leftover-chip-cleared-path",
+            class: "leftover-chip leftover-cleared leftover-empty leftover-no-flake leftover-cut leftover-true leftover-cleared-cut leftover-not-a-chip leftover-chisel",
+            x: String(CUT_LEFT + 18),
+            y: String(CUT_TOP + 28),
+            width: String(CUT_RIGHT - CUT_LEFT - 36),
+            height: String(CUT_BOT - CUT_TOP - 48),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "cleared-cut"
+          }));
+        }
+        leftoverChipLayer.appendChild(leftover);
+
+        chipMarkLayer.replaceChildren();
+        chipMarkLayer.appendChild(chipEl("text", {
+          x: String(BOARD_LEFT + 8),
+          y: String(BOARD_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · FIXED CHISEL CUT";
+        chipMarkLayer.appendChild(chipEl("text", {
+          x: String(BOARD_RIGHT),
+          y: String(BOARD_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isCleared ? "CUT · CLEARED / NO LEFTOVER CHIP" : "CUT · ONE LEFTOVER CHIP STILL SITS";
+
+        if (!isCleared) {
+          const dimX = Math.min(CUT_RIGHT - 12, flake.tipX + 22);
+          chipMarkLayer.appendChild(chipEl("line", {
+            id: "chip-dim",
+            class: "chip-dim leftover-chip leftover-showing leftover-flake leftover-sitting leftover-not-a-tearout leftover-not-dust leftover-not-an-offcut leftover-not-a-burr leftover-not-a-whisker",
+            x1: String(dimX.toFixed(1)),
+            y1: String(CHIP_SIT_Y.toFixed(1)),
+            x2: String(dimX.toFixed(1)),
+            y2: String(flake.tipY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          chipMarkLayer.appendChild(chipEl("line", {
+            x1: String((dimX - 4).toFixed(1)),
+            y1: String(CHIP_SIT_Y.toFixed(1)),
+            x2: String((dimX + 4).toFixed(1)),
+            y2: String(CHIP_SIT_Y.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          chipMarkLayer.appendChild(chipEl("line", {
+            x1: String((dimX - 4).toFixed(1)),
+            y1: String(flake.tipY.toFixed(1)),
+            x2: String((dimX + 4).toFixed(1)),
+            y2: String(flake.tipY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          chipMarkLayer.appendChild(chipEl("text", {
+            id: "chip-mm-label",
+            class: "chip-label leftover-label leftover-chip leftover-showing leftover-flake leftover-sitting",
+            x: String((dimX + 10).toFixed(1)),
+            y: String(((CHIP_SIT_Y + flake.tipY) / 2 + 4).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = chipMm + " mm";
+          chipMarkLayer.appendChild(chipEl("text", {
+            id: "chip-flake-label",
+            class: "flake-label leftover-flake leftover-chip leftover-one leftover-sitting leftover-not-a-tearout leftover-not-dust leftover-not-an-offcut leftover-not-a-burr leftover-not-a-whisker leftover-not-a-field leftover-not-a-splinter leftover-not-a-lip leftover-not-a-hair",
+            x: "400",
+            y: "412",
+            fill: "#e8d0b0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER CHIP · ONE DISCRETE CHIP SITTING AFTER A FIXED CHISEL CUT · NOT A TEAROUT · NOT DUST";
+        } else {
+          chipMarkLayer.appendChild(chipEl("text", {
+            id: "chip-label",
+            class: "chip-label leftover-label leftover-cleared leftover-no-flake leftover-cut leftover-empty leftover-true",
+            x: String((CUT_LEFT + CUT_RIGHT) / 2),
+            y: String((CUT_TOP + CUT_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "CLEARED / NO LEFTOVER CHIP";
+        }
+
+        chipSceneStatus.setAttribute("fill", pic.accent);
+        chipSceneStatus.textContent = pic.status;
+        chipScene.setAttribute("data-chip", String(chipMm));
+        chipScene.setAttribute("data-leftover", pic.leftover);
+        chipScene.setAttribute("data-verdict", pic.verdict);
+        chipScene.setAttribute("data-view", "chisel-cut-chip");
+        chipScene.setAttribute("data-hero", "leftover-chip");
+        chipScene.setAttribute("data-chip-mm", String(chipMm));
+        chipScene.setAttribute("data-chip-px", String(pic.chipPx.toFixed(1)));
+        chipScene.setAttribute("data-flake", pic.flake);
+        chipScene.setAttribute("data-shape", pic.shape);
+        chipScene.setAttribute("data-cut-left", String(CUT_LEFT));
+        chipScene.setAttribute("data-cut-right", String(CUT_RIGHT));
+        chipScene.setAttribute("data-cut-fixed", "true");
+      }
+
+      function chipToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-cleared";
+      }
+
+      function chipRender() {
+        const pic = chipPicture();
+        chipPaint(pic);
+        chipTitle.textContent = pic.alt;
+        chipAlt.textContent = pic.alt;
+        chipSvg.setAttribute("aria-label", pic.alt);
+        chipDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + chipMm + " mm showing"
+          : "leftover cleared";
+        chipStatMm.textContent = chipMm + " mm";
+        chipStatLeftover.textContent = pic.leftover;
+        chipStatFlake.textContent = pic.leftover === "showing"
+          ? chipMm + " mm leftover"
+          : "cleared";
+        chipStatLeftoverWrap.classList.remove("is-showing", "is-cleared");
+        chipStatLeftoverWrap.classList.add(chipToneClass(pic.leftover));
+        if (Number(chipInput.value) !== chipMm) chipInput.value = String(chipMm);
+        chipInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function chipResetSeed() {
+        chipMm = CHIP_SEED.chipMm;
+        chipRender();
+      }
+
+      chipInput.addEventListener("input", function (event) {
+        chipMm = chipClamp(Math.round(Number(event.target.value)), CHIP_MIN, CHIP_MAX);
+        chipRender();
+      });
+      chipBtnReset.addEventListener("click", chipResetSeed);
+      chipBtnResetStage.addEventListener("click", chipResetSeed);
+
+      chipRender();
+    </script>
+  </body>
+</html>
