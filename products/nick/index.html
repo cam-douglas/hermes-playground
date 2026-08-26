@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Nick — the edge is cut, but a nick still sits. Move the leftover nick. See the residual V-shaped bite still sitting in a fixed cut edge after the cut." />
+    <title>Nick</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #07080a;
+        --panel: #121418;
+        --ink: #e4e4dc;
+        --muted: #82887c;
+        --line: rgba(148, 168, 88, 0.24);
+        --accent: #b8c070;
+        --timber: #3a3014;
+        --nick: #d4d878;
+        --showing: #d4d878;
+        --clean: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(184, 192, 112, 0.12), transparent 30%),
+          radial-gradient(circle at 88% 16%, rgba(24, 28, 12, 0.22), transparent 26%),
+          linear-gradient(180deg, #060708 0%, #121418 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 20, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(184, 192, 112, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(18, 20, 14, 0.96), rgba(8, 10, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(184, 192, 112, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e0e4d6; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #161814;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16180c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(184, 192, 112, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(184, 192, 112, 0.1), transparent 46%),
+          #080a0a;
+        overflow: hidden;
+      }
+      #nick-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 216, 120, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-clean b { color: var(--clean); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #07080a;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #nick-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> nick · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover nick still sitting in the edge after the cut</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 23:50</span>
+        <h1>Nick</h1>
+        <p class="lede">
+          The edge is cut, but a nick still sits. Move the leftover nick. See the residual V-shaped bite still sitting in a fixed cut edge after the cut.
+          Not a nib. Not a burr. Not a chip. Not a score. Not a clock. Not cutting advice.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="nick-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How deep leftover nick still sits in the edge</h2>
+          </div>
+          <span class="kicker" id="nick-desk-meta">leftover 3 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="nick-svg" viewBox="0 0 800 460" role="img" aria-labelledby="nick-title nick-desc">
+            <title id="nick-title">Nick is showing. Three millimetres of leftover nick still sit in a fixed cut edge after the cut.</title>
+            <desc id="nick-desc">One workpiece with a fixed cut edge whose leftover is the nick — leftover V-shaped bite that still sits in that edge after the cut (leftover nick still sitting in a fixed cut edge, not Nib leftover compact corner after intersecting cuts, not Burr leftover ragged displaced lip along a cut, not Chip leftover discrete flake from the chisel, not Score leftover marking-knife groove in the face, not Tearout leftover splinter torn at the cut). One fixed cut edge; the leftover is one leftover V bite sitting in that edge, not a corner nib, not a burr lip, not a chip flake, not a face groove. The leftover that still sits is the nick — leftover V-shaped bite still sitting in a fixed cut edge after the cut. A sketch, not a mill sign-off. Not cutting advice.</desc>
+            <defs>
+              <linearGradient id="nick-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#141618" />
+                <stop offset="100%" stop-color="#0a0c0c" />
+              </linearGradient>
+              <linearGradient id="nick-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#322810" />
+                <stop offset="46%" stop-color="#5e4a1c" />
+                <stop offset="100%" stop-color="#a08830" />
+              </linearGradient>
+              <linearGradient id="nick-cut-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#221c0c" />
+                <stop offset="50%" stop-color="#0c0c08" />
+                <stop offset="100%" stop-color="#18140c" />
+              </linearGradient>
+              <linearGradient id="leftover-nick-wash" x1="100%" y1="0%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#1a180c" />
+                <stop offset="48%" stop-color="#080806" />
+                <stop offset="100%" stop-color="#2a2410" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#07080a" stroke="rgba(184,192,112,0.16)" />
+            <text x="36" y="42" fill="#82887c" font-size="11" letter-spacing="2">ONE WORKPIECE · FIXED CUT EDGE · LEFTOVER IS ONE NICK STILL SITTING IN THE EDGE</text>
+            <g id="nick-scene" data-view="edge-nick" data-hero="leftover-nick" data-nick="3" data-leftover="showing" data-verdict="showing" data-nick-state="sitting">
+              <g id="nick-bench-layer"></g>
+              <g id="nick-stock-layer"></g>
+              <g id="nick-cut-layer"></g>
+              <g id="leftover-nick-layer"></g>
+              <g id="nick-mark-layer"></g>
+              <text id="nick-scene-status" x="400" y="64" fill="#d4d878" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 3 MM LEFTOVER NICK</text>
+              <text id="nick-scene-sketch" x="400" y="434" fill="#54584c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER NICK STILL SITS IN THE EDGE AFTER THE CUT · NOT A NIB · NOT A BURR · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="nick-alt" class="sr-only" aria-live="polite">Nick is showing. Three millimetres of leftover nick still sit in a fixed cut edge after the cut.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="nick-input">Leftover nick (mm of sitting V-bite depth)</label>
+            <input id="nick-input" type="range" min="0" max="10" step="1" value="3" />
+            <div class="ticks" aria-hidden="true">
+              <span>clean / no leftover nick</span>
+              <span>seed showing</span>
+              <span>deeper leftover nick</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="nick-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Nick <b id="nick-stat-mm">3 mm</b></span>
+          <span id="nick-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="nick-stat-leftover">showing</b></span>
+          <span>Leftover nick (sketch) <b id="nick-stat-depth">3 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The edge is cut, but a nick still sits. Nick is leftover V-shaped bite that still sits in a fixed cut edge after the cut. A sketch, not a mill sign-off, and not cutting advice.
+        Seed is already showing — 3 mm of leftover sitting nick in a fixed edge, not a clean-only edge. Arrow keys move the focused control.
+        Refresh restores the seed. Not a nib. Not a burr. Not a chip. Not a score. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const NICK_SEED = { nickMm: 3 };
+      const NICK_MIN = 0;
+      const NICK_MAX = 10;
+      const NICK_CLEAN_AT = 1;
+      const NICK_SCALE = 10;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 548;
+      const FACE_TOP = 118;
+      const FACE_BOT = 268;
+      const CUT_X = 548;
+      const NICK_Y = (FACE_TOP + FACE_BOT) / 2;
+      const PROFILE_TOP = 300;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 318;
+
+      let nickMm = NICK_SEED.nickMm;
+
+      const nickSvg = document.getElementById("nick-svg");
+      const nickScene = document.getElementById("nick-scene");
+      const nickTitle = document.getElementById("nick-title");
+      const nickAlt = document.getElementById("nick-alt");
+      const nickDeskMeta = document.getElementById("nick-desk-meta");
+      const nickInput = document.getElementById("nick-input");
+      const nickBenchLayer = document.getElementById("nick-bench-layer");
+      const nickStockLayer = document.getElementById("nick-stock-layer");
+      const nickCutLayer = document.getElementById("nick-cut-layer");
+      const leftoverNickLayer = document.getElementById("leftover-nick-layer");
+      const nickMarkLayer = document.getElementById("nick-mark-layer");
+      const nickSceneStatus = document.getElementById("nick-scene-status");
+      const nickStatMm = document.getElementById("nick-stat-mm");
+      const nickStatLeftover = document.getElementById("nick-stat-leftover");
+      const nickStatLeftoverWrap = document.getElementById("nick-stat-leftover-wrap");
+      const nickStatDepth = document.getElementById("nick-stat-depth");
+      const nickBtnReset = document.getElementById("nick-btn-reset");
+      const nickBtnResetStage = document.getElementById("nick-btn-reset-stage");
+
+      function nickClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function nickEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function nickSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverNickGeom(depthPx) {
+        const half = Math.max(12, 8 + depthPx * 0.28);
+        return {
+          x: CUT_X,
+          y: NICK_Y,
+          tipX: CUT_X - depthPx,
+          half: half,
+          depthPx: depthPx,
+          topY: NICK_Y - half,
+          botY: NICK_Y + half
+        };
+      }
+
+      function nickPicture() {
+        const leftover = nickMm <= NICK_CLEAN_AT ? "clean" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + nickMm + " MM LEFTOVER NICK";
+          alt = "Nick is showing. " + nickSpokenMm(nickMm).charAt(0).toUpperCase() + nickSpokenMm(nickMm).slice(1) + " millimetres of leftover nick still sit in a fixed cut edge after the cut.";
+        } else {
+          status = "CLEAN · NO LEFTOVER NICK";
+          alt = "Nick is clean. The edge and cut are there. No leftover nick. A sketch, not a mill sign-off.";
+        }
+        const nickPx = leftover === "showing" ? Math.max(14, nickMm * NICK_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4d878" : "#8ec8b4",
+          nickPx: nickPx,
+          nickState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-nick" : "clean-edge"
+        };
+      }
+
+      function nickBoardPoints(bite) {
+        if (!bite) {
+          return FACE_LEFT + "," + FACE_TOP + " " + FACE_RIGHT + "," + FACE_TOP + " " + FACE_RIGHT + "," + FACE_BOT + " " + FACE_LEFT + "," + FACE_BOT;
+        }
+        return FACE_LEFT + "," + FACE_TOP + " " +
+          FACE_RIGHT + "," + FACE_TOP + " " +
+          FACE_RIGHT + "," + bite.topY.toFixed(1) + " " +
+          bite.tipX.toFixed(1) + "," + bite.y.toFixed(1) + " " +
+          FACE_RIGHT + "," + bite.botY.toFixed(1) + " " +
+          FACE_RIGHT + "," + FACE_BOT + " " +
+          FACE_LEFT + "," + FACE_BOT;
+      }
+
+      function nickPaint(pic) {
+        const isClean = pic.leftover === "clean";
+        const bite = leftoverNickGeom(pic.nickPx);
+
+        nickBenchLayer.replaceChildren();
+        nickBenchLayer.appendChild(nickEl("rect", {
+          class: "site leftover-work leftover-nick leftover-edge leftover-cut leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#nick-bench-wash)",
+          stroke: "rgba(184,192,112,0.16)",
+          "stroke-width": "1.2"
+        }));
+        nickBenchLayer.appendChild(nickEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#64685c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · FIXED CUT EDGE · ONE LEFTOVER NICK STILL SITS IN THE EDGE";
+
+        nickStockLayer.replaceChildren();
+        const stock = nickEl("g", {
+          id: "nick-stock",
+          class: isClean
+            ? "stock leftover-clean leftover-no-nick leftover-nick leftover-edge leftover-true"
+            : "stock leftover-showing leftover-nick leftover-sitting leftover-edge"
+        });
+        stock.appendChild(nickEl("polygon", {
+          id: "nick-workpiece",
+          class: "stock-board leftover-stock leftover-workpiece leftover-nick leftover-not-the-leftover leftover-not-a-nib leftover-not-a-burr leftover-not-a-chip leftover-not-a-score leftover-edge-context",
+          points: nickBoardPoints(isClean ? null : bite),
+          fill: "url(#nick-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "edge-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(nickEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2 - (isClean ? 0 : 18)),
+          y: String(FACE_TOP + 20),
+          fill: "#c8c090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "EDGE · STAYS FIXED";
+        nickStockLayer.appendChild(stock);
+
+        nickCutLayer.replaceChildren();
+        const cut = nickEl("g", {
+          id: "nick-cut",
+          class: "cut leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-a-nib leftover-finished",
+          "data-cut-x": String(CUT_X),
+          "data-role": "finished-cut",
+          "data-fixed": "true"
+        });
+        cut.appendChild(nickEl("rect", {
+          id: "nick-cut-edge",
+          class: "cut-edge leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-finished",
+          x: String(CUT_X),
+          y: String(FACE_TOP),
+          width: "18",
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#nick-cut-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.3",
+          "data-shape": "finished-cut",
+          "data-role": "cut-context",
+          "data-fixed": "true"
+        }));
+        if (isClean) {
+          cut.appendChild(nickEl("line", {
+            id: "nick-cut-line",
+            class: "cut-line leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-finished leftover-clean leftover-no-nick",
+            x1: String(CUT_X),
+            y1: String(FACE_TOP - 8),
+            x2: String(CUT_X),
+            y2: String(FACE_BOT + 8),
+            stroke: "#f0f4d8",
+            "stroke-width": "2.2",
+            opacity: "0.92",
+            "data-shape": "finished-cut",
+            "data-role": "cut-line",
+            "data-fixed": "true"
+          }));
+        } else {
+          cut.appendChild(nickEl("polyline", {
+            id: "nick-cut-line",
+            class: "cut-line leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-finished leftover-edge leftover-with-nick",
+            points: CUT_X + "," + (FACE_TOP - 8) + " " +
+              CUT_X + "," + bite.topY.toFixed(1) + " " +
+              bite.tipX.toFixed(1) + "," + bite.y.toFixed(1) + " " +
+              CUT_X + "," + bite.botY.toFixed(1) + " " +
+              CUT_X + "," + (FACE_BOT + 8),
+            fill: "none",
+            stroke: "#f0f4d8",
+            "stroke-width": "2.2",
+            opacity: "0.92",
+            "data-shape": "finished-cut",
+            "data-role": "cut-line",
+            "data-fixed": "true"
+          }));
+        }
+        cut.appendChild(nickEl("text", {
+          id: "nick-cut-label",
+          class: "cut-label leftover-cut leftover-fixed leftover-not-the-leftover",
+          x: String(CUT_X + 28),
+          y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+          fill: "#e4e8c8",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "CUT · FIXED";
+        nickCutLayer.appendChild(cut);
+
+        leftoverNickLayer.replaceChildren();
+        const leftover = nickEl("g", {
+          id: "leftover-nick",
+          class: isClean
+            ? "nick leftover-nick leftover-clean leftover-empty leftover-no-nick leftover-edge leftover-true"
+            : "nick leftover-nick leftover-showing leftover-one leftover-sitting leftover-depth leftover-edge leftover-v-bite",
+          "data-nick-mm": String(nickMm),
+          "data-nick-px": String(pic.nickPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isClean) {
+          leftover.appendChild(nickEl("polygon", {
+            id: "leftover-nick-bite",
+            class: "leftover-nick leftover-showing leftover-one leftover-sitting leftover-depth leftover-in-edge leftover-not-a-nib leftover-not-a-burr leftover-not-a-chip leftover-not-a-score leftover-local leftover-v leftover-bite",
+            points: CUT_X + "," + bite.topY.toFixed(1) + " " +
+              bite.tipX.toFixed(1) + "," + bite.y.toFixed(1) + " " +
+              CUT_X + "," + bite.botY.toFixed(1),
+            fill: "url(#leftover-nick-wash)",
+            stroke: "#1a1808",
+            "stroke-width": "1.1",
+            opacity: String(Math.min(0.98, 0.7 + nickMm / 20)),
+            "data-shape": "leftover-nick",
+            "data-nick-mm": String(nickMm),
+            "data-role": "sitting-nick",
+            "data-nick-px": String(pic.nickPx.toFixed(1)),
+            "data-origin-x": String(CUT_X),
+            "data-origin-y": String(NICK_Y)
+          }));
+          leftover.appendChild(nickEl("line", {
+            id: "leftover-nick-apex",
+            class: "leftover-nick leftover-showing leftover-apex leftover-v leftover-bite leftover-not-a-nib leftover-not-a-score",
+            x1: String(CUT_X),
+            y1: String(NICK_Y),
+            x2: String(bite.tipX.toFixed(1)),
+            y2: String(bite.y.toFixed(1)),
+            stroke: "#080806",
+            "stroke-width": String(Math.max(1.2, 1 + nickMm * 0.18)),
+            "stroke-linecap": "round",
+            opacity: "0.9",
+            "data-role": "nick-apex"
+          }));
+          leftover.appendChild(nickEl("text", {
+            id: "leftover-nick-label",
+            class: "nick-label leftover-label leftover-nick leftover-showing leftover-sitting leftover-depth leftover-v",
+            x: String(bite.tipX - 10),
+            y: String(bite.y + 4),
+            fill: "#1a180c",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "end"
+          })).textContent = "NICK";
+        } else {
+          leftover.appendChild(nickEl("line", {
+            id: "leftover-nick-clean-path",
+            class: "leftover-nick leftover-clean leftover-empty leftover-no-nick leftover-edge leftover-true leftover-clean-edge leftover-not-a-nick leftover-cut",
+            x1: String(CUT_X),
+            y1: String(FACE_TOP + 12),
+            x2: String(CUT_X),
+            y2: String(FACE_BOT - 12),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "clean-edge"
+          }));
+        }
+        leftoverNickLayer.appendChild(leftover);
+
+        nickMarkLayer.replaceChildren();
+        nickMarkLayer.appendChild(nickEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · FIXED CUT EDGE";
+        nickMarkLayer.appendChild(nickEl("text", {
+          x: String(CUT_X + 18),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = isClean ? "EDGE · CLEAN / NO LEFTOVER NICK" : "EDGE · ONE LEFTOVER NICK STILL SITS";
+
+        const profLeft = 120;
+        const profCut = 560;
+        const profNickY = (PROFILE_FACE_Y + PROFILE_BOT - 16) / 2;
+        nickMarkLayer.appendChild(nickEl("rect", {
+          id: "nick-profile-stock",
+          class: "profile leftover-edge leftover-fixed leftover-not-the-leftover leftover-not-changing",
+          x: String(profLeft),
+          y: String(PROFILE_FACE_Y),
+          width: String(profCut - profLeft),
+          height: String(PROFILE_BOT - 16 - PROFILE_FACE_Y),
+          fill: "url(#nick-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          opacity: "0.92",
+          "data-fixed": "true"
+        }));
+        nickMarkLayer.appendChild(nickEl("line", {
+          id: "nick-profile-cut",
+          class: "profile-cut leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-changing",
+          x1: String(profCut),
+          y1: String(PROFILE_FACE_Y - 6),
+          x2: String(profCut),
+          y2: String(PROFILE_BOT - 10),
+          stroke: "#f0f4d8",
+          "stroke-width": "2",
+          "data-fixed": "true"
+        }));
+
+        if (!isClean) {
+          const vHalf = Math.max(10, 7 + pic.nickPx * 0.22);
+          const vDepth = pic.nickPx;
+          nickMarkLayer.appendChild(nickEl("polygon", {
+            id: "leftover-nick-profile",
+            class: "leftover-nick leftover-showing leftover-one leftover-sitting leftover-depth leftover-profile leftover-v leftover-not-a-nib leftover-not-a-burr leftover-not-a-chip leftover-not-a-score",
+            points: profCut + "," + (profNickY - vHalf).toFixed(1) + " " +
+              (profCut - vDepth).toFixed(1) + "," + profNickY.toFixed(1) + " " +
+              profCut + "," + (profNickY + vHalf).toFixed(1),
+            fill: "#0c0c08",
+            stroke: pic.accent,
+            "stroke-width": "1.2",
+            "data-shape": "leftover-nick-depth",
+            "data-nick-mm": String(nickMm)
+          }));
+          nickMarkLayer.appendChild(nickEl("line", {
+            id: "nick-dim",
+            class: "nick-dim leftover-nick leftover-showing leftover-sitting leftover-depth leftover-not-a-nib leftover-not-a-burr leftover-not-a-chip leftover-not-a-score",
+            x1: String(profCut),
+            y1: String(profNickY.toFixed(1)),
+            x2: String((profCut - vDepth).toFixed(1)),
+            y2: String(profNickY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          nickMarkLayer.appendChild(nickEl("line", {
+            x1: String(profCut),
+            y1: String(profNickY - 4),
+            x2: String(profCut),
+            y2: String(profNickY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          nickMarkLayer.appendChild(nickEl("line", {
+            x1: String((profCut - vDepth).toFixed(1)),
+            y1: String(profNickY - 4),
+            x2: String((profCut - vDepth).toFixed(1)),
+            y2: String(profNickY + 4),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          nickMarkLayer.appendChild(nickEl("text", {
+            id: "nick-mm-label",
+            class: "nick-label leftover-label leftover-nick leftover-showing leftover-sitting leftover-depth leftover-v",
+            x: String((profCut - vDepth / 2).toFixed(1)),
+            y: String((profNickY - 8).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = nickMm + " mm";
+          nickMarkLayer.appendChild(nickEl("text", {
+            id: "nick-depth-label",
+            class: "depth-label leftover-nick leftover-one leftover-sitting leftover-depth leftover-in-edge leftover-not-a-nib leftover-not-a-burr leftover-not-a-chip leftover-not-a-score leftover-v",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#d8e0b0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER NICK · ONE LEFTOVER V BITE IN A FIXED EDGE · NOT A NIB · NOT A BURR";
+        } else {
+          nickMarkLayer.appendChild(nickEl("text", {
+            id: "nick-label",
+            class: "nick-label leftover-label leftover-clean leftover-no-nick leftover-edge leftover-empty leftover-true",
+            x: String((FACE_LEFT + FACE_RIGHT) / 2),
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "CLEAN / NO LEFTOVER NICK";
+          nickMarkLayer.appendChild(nickEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · CLEAN / NO LEFTOVER NICK";
+        }
+
+        nickSceneStatus.setAttribute("fill", pic.accent);
+        nickSceneStatus.textContent = pic.status;
+        nickScene.setAttribute("data-nick", String(nickMm));
+        nickScene.setAttribute("data-leftover", pic.leftover);
+        nickScene.setAttribute("data-verdict", pic.verdict);
+        nickScene.setAttribute("data-view", "edge-nick");
+        nickScene.setAttribute("data-hero", "leftover-nick");
+        nickScene.setAttribute("data-nick-mm", String(nickMm));
+        nickScene.setAttribute("data-nick-px", String(pic.nickPx.toFixed(1)));
+        nickScene.setAttribute("data-nick-state", pic.nickState);
+        nickScene.setAttribute("data-shape", pic.shape);
+        nickScene.setAttribute("data-cut-x", String(CUT_X));
+        nickScene.setAttribute("data-cut-fixed", "true");
+        nickScene.setAttribute("data-edge-fixed", "true");
+      }
+
+      function nickToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-clean";
+      }
+
+      function nickRender() {
+        const pic = nickPicture();
+        nickPaint(pic);
+        nickTitle.textContent = pic.alt;
+        nickAlt.textContent = pic.alt;
+        nickSvg.setAttribute("aria-label", pic.alt);
+        nickDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + nickMm + " mm showing"
+          : "leftover clean";
+        nickStatMm.textContent = nickMm + " mm";
+        nickStatLeftover.textContent = pic.leftover;
+        nickStatDepth.textContent = pic.leftover === "showing"
+          ? nickMm + " mm leftover"
+          : "clean";
+        nickStatLeftoverWrap.classList.remove("is-showing", "is-clean");
+        nickStatLeftoverWrap.classList.add(nickToneClass(pic.leftover));
+        if (Number(nickInput.value) !== nickMm) nickInput.value = String(nickMm);
+        nickInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function nickResetSeed() {
+        nickMm = NICK_SEED.nickMm;
+        nickRender();
+      }
+
+      nickInput.addEventListener("input", function (event) {
+        nickMm = nickClamp(Math.round(Number(event.target.value)), NICK_MIN, NICK_MAX);
+        nickRender();
+      });
+      nickBtnReset.addEventListener("click", nickResetSeed);
+      nickBtnResetStage.addEventListener("click", nickResetSeed);
+
+      nickRender();
+    </script>
+  </body>
+</html>
