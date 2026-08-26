@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Lift — the glue is set, but a sheet still sits lifted off the face. Move the leftover lift. See the residual veneer leaf still sitting off the substrate." />
+    <title>Lift</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(176, 168, 112, 0.24);
+        --accent: #e0c878;
+        --timber: #4a381c;
+        --lift: #f4e4b8;
+        --showing: #f4e4b8;
+        --seated: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(224, 200, 120, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(40, 28, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(224, 200, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(20, 18, 12, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(224, 200, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(224, 200, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(224, 200, 120, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #lift-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(244, 228, 184, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-seated b { color: var(--seated); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #lift-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> lift · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover veneer leaf still sitting off a substrate face</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 15:50</span>
+        <h1>Lift</h1>
+        <p class="lede">
+          The glue is set, but a sheet still sits lifted off the face. Move the leftover lift. See the residual veneer leaf still sitting off the substrate after glue-up.
+          Not a proud. Not a squeeze. Not an inlay. Not a fuzz. Not a bruise. Not repair advice. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="lift-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover lift still sits off the face</h2>
+          </div>
+          <span class="kicker" id="lift-desk-meta">leftover 4 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="lift-svg" viewBox="0 0 800 460" role="img" aria-labelledby="lift-title lift-desc">
+            <title id="lift-title">Lift is showing. Four millimetres of leftover veneer still sit lifted off the substrate face.</title>
+            <desc id="lift-desc">One substrate face with a thin leftover veneer leaf whose free edge still sits lifted off it (leftover veneer that still stands off the substrate after glue-up, not Proud leftover high of the joint itself, not Squeeze leftover glue bead hugging a seam, not Inlay leftover the inlay set in, not Fuzz leftover standing fibres after sanding, not Bruise leftover compressed depression). One fixed substrate face; the leftover is the lifted veneer leaf, not a proud joint high. The leftover that still sits off the face is the lift — leftover veneer still sitting off the substrate. A sketch, not a mill sign-off. Not repair advice.</desc>
+            <defs>
+              <linearGradient id="lift-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#16140e" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="lift-face-wash" x1="0%" y1="0%" x2="100%" y2="14%">
+                <stop offset="0%" stop-color="#2a1e10" />
+                <stop offset="46%" stop-color="#5a4420" />
+                <stop offset="100%" stop-color="#8a6a30" />
+              </linearGradient>
+              <linearGradient id="lift-body-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#4a3618" />
+                <stop offset="100%" stop-color="#22180c" />
+              </linearGradient>
+              <linearGradient id="lift-leaf-wash" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#c4a060" />
+                <stop offset="42%" stop-color="#f0d898" />
+                <stop offset="100%" stop-color="#f8ecd0" />
+              </linearGradient>
+              <linearGradient id="lift-leaf-top" x1="0%" y1="100%" x2="20%" y2="0%">
+                <stop offset="0%" stop-color="#e8c878" />
+                <stop offset="100%" stop-color="#f8f0d8" />
+              </linearGradient>
+              <linearGradient id="lift-leaf-under" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#b89448" />
+                <stop offset="100%" stop-color="#8a6a28" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(224,200,120,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">ONE SUBSTRATE FACE · FIXED · LEFTOVER IS THE LIFTED VENEER LEAF</text>
+            <g id="lift-scene" data-view="face-lift" data-hero="leftover-lift" data-lift="4" data-leftover="showing" data-verdict="showing" data-leaf="off-face">
+              <g id="lift-bench-layer"></g>
+              <g id="lift-board-layer"></g>
+              <g id="leftover-lift-layer"></g>
+              <g id="lift-mark-layer"></g>
+              <text id="lift-scene-status" x="400" y="64" fill="#f4e4b8" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 4 MM LEFTOVER LIFT</text>
+              <text id="lift-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER VENEER LEAF STILL SITS OFF A SUBSTRATE FACE · NOT A PROUD · NOT A SQUEEZE · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="lift-alt" class="sr-only" aria-live="polite">Lift is showing. Four millimetres of leftover veneer still sit lifted off the substrate face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="lift-input">Lift (mm · leftover lift in mm of raised sheet height)</label>
+            <input id="lift-input" type="range" min="0" max="18" step="1" value="4" />
+            <div class="ticks" aria-hidden="true">
+              <span>seated / no leftover lift</span>
+              <span>seed showing</span>
+              <span>taller leftover leaf</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="lift-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Lift <b id="lift-stat-mm">4 mm</b></span>
+          <span id="lift-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="lift-stat-leftover">showing</b></span>
+          <span>Leftover lift (sketch) <b id="lift-stat-leaf">4 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The glue is set, but a sheet still sits lifted off the face. Lift is leftover veneer that still stands off the substrate after glue-up. A sketch, not a mill sign-off, and not repair advice.
+        Seed is already showing — 4 mm of leftover veneer leaf sitting off a fixed substrate face, not a seated-only sheet. Arrow keys move the focused control.
+        Refresh restores the seed. Not a proud. Not a squeeze. Not an inlay. Not a fuzz. Not a bruise. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const LIFT_SEED = { liftMm: 4 };
+      const LIFT_MIN = 0;
+      const LIFT_MAX = 18;
+      const LIFT_SEATED_AT = 1;
+      const LIFT_SCALE = 5.2;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 268;
+      const FACE_BOT = 388;
+      const LEAF_LEFT = 148;
+      const LEAF_RIGHT = 640;
+      const LEAF_THICK = 10;
+      const ISO = 16;
+      const HINGE_X = LEAF_LEFT + 36;
+
+      let liftMm = LIFT_SEED.liftMm;
+
+      const liftSvg = document.getElementById("lift-svg");
+      const liftScene = document.getElementById("lift-scene");
+      const liftTitle = document.getElementById("lift-title");
+      const liftAlt = document.getElementById("lift-alt");
+      const liftDeskMeta = document.getElementById("lift-desk-meta");
+      const liftInput = document.getElementById("lift-input");
+      const liftBenchLayer = document.getElementById("lift-bench-layer");
+      const liftBoardLayer = document.getElementById("lift-board-layer");
+      const leftoverLiftLayer = document.getElementById("leftover-lift-layer");
+      const liftMarkLayer = document.getElementById("lift-mark-layer");
+      const liftSceneStatus = document.getElementById("lift-scene-status");
+      const liftStatMm = document.getElementById("lift-stat-mm");
+      const liftStatLeftover = document.getElementById("lift-stat-leftover");
+      const liftStatLeftoverWrap = document.getElementById("lift-stat-leftover-wrap");
+      const liftStatLeaf = document.getElementById("lift-stat-leaf");
+      const liftBtnReset = document.getElementById("lift-btn-reset");
+      const liftBtnResetStage = document.getElementById("lift-btn-reset-stage");
+
+      function liftClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function liftEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function liftSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve",
+          13: "thirteen",
+          14: "fourteen",
+          15: "fifteen",
+          16: "sixteen",
+          17: "seventeen",
+          18: "eighteen"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function liftPicture() {
+        const leftover = liftMm <= LIFT_SEATED_AT ? "seated" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + liftMm + " MM LEFTOVER LIFT";
+          alt = "Lift is showing. " + liftSpokenMm(liftMm).charAt(0).toUpperCase() + liftSpokenMm(liftMm).slice(1) + " millimetres of leftover veneer still sit lifted off the substrate face.";
+        } else {
+          status = "SEATED · NO LEFTOVER LIFT";
+          alt = "Lift is seated. The glue is set. No leftover lift. A sketch, not a mill sign-off.";
+        }
+        const heightPx = leftover === "showing" ? Math.max(10, liftMm * LIFT_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#f4e4b8" : "#8ec8b4",
+          heightPx: heightPx,
+          leaf: leftover === "showing" ? "off-face" : "none",
+          shape: leftover === "showing" ? "leftover-lift" : "seated-face"
+        };
+      }
+
+      function liftPaint(pic) {
+        const isSeated = pic.leftover === "seated";
+
+        liftBenchLayer.replaceChildren();
+        liftBenchLayer.appendChild(liftEl("rect", {
+          class: "site leftover-face leftover-lift leftover-veneer leftover-one-substrate leftover-sheet",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#lift-bench-wash)",
+          stroke: "rgba(224,200,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        liftBenchLayer.appendChild(liftEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "SUBSTRATE FACE · FIXED · LEFTOVER VENEER LEAF STILL SITS LIFTED OFF IT";
+
+        liftBoardLayer.replaceChildren();
+        const stock = liftEl("g", {
+          id: "lift-board-stock",
+          class: isSeated
+            ? "stock leftover-seated leftover-no-lift leftover-lift leftover-no-leaf leftover-face leftover-true"
+            : "stock leftover-showing leftover-lift leftover-veneer leftover-leaf leftover-off-face leftover-face"
+        });
+
+        stock.appendChild(liftEl("polygon", {
+          id: "lift-face-top",
+          class: "stock-face leftover-stock leftover-face leftover-substrate leftover-fixed leftover-not-the-leftover leftover-not-a-proud leftover-not-a-squeeze leftover-not-an-inlay leftover-not-a-fuzz leftover-not-a-bruise leftover-not-glue leftover-not-a-joint-high",
+          points: (FACE_LEFT + ISO) + "," + (FACE_TOP - ISO) + " " + (FACE_RIGHT + ISO) + "," + (FACE_TOP - ISO) + " " + FACE_RIGHT + "," + FACE_TOP + " " + FACE_LEFT + "," + FACE_TOP,
+          fill: "url(#lift-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.4",
+          "data-shape": "substrate-face",
+          "data-role": "face-reference",
+          "data-face": "fixed"
+        }));
+        stock.appendChild(liftEl("rect", {
+          id: "lift-workpiece",
+          class: "stock-board leftover-stock leftover-board leftover-substrate leftover-lift leftover-not-the-leftover leftover-not-a-proud leftover-not-a-squeeze leftover-not-an-inlay leftover-not-a-fuzz leftover-not-a-bruise leftover-face-context",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#lift-body-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "substrate",
+          "data-role": "face-context"
+        }));
+        stock.appendChild(liftEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 22),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "FACE · SUBSTRATE · FIXED";
+        liftBoardLayer.appendChild(stock);
+
+        leftoverLiftLayer.replaceChildren();
+        const leftover = liftEl("g", {
+          id: "leftover-lift",
+          class: isSeated
+            ? "lift leftover-lift leftover-seated leftover-empty leftover-no-leaf leftover-face leftover-true"
+            : "lift leftover-lift leftover-showing leftover-veneer leftover-leaf leftover-sheet leftover-off-face leftover-standing leftover-face",
+          "data-lift-mm": String(liftMm),
+          "data-height-px": String(pic.heightPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isSeated) {
+          const freeY = FACE_TOP - pic.heightPx;
+          const hingeY = FACE_TOP - 2;
+          const midX = (HINGE_X + LEAF_RIGHT) / 2;
+          const midY = hingeY - pic.heightPx * 0.42;
+          const leafTop = "M " + HINGE_X + " " + (hingeY - LEAF_THICK) +
+            " Q " + midX + " " + (midY - LEAF_THICK) + " " + LEAF_RIGHT + " " + (freeY - LEAF_THICK) +
+            " L " + (LEAF_RIGHT + ISO) + " " + (freeY - LEAF_THICK - ISO) +
+            " Q " + (midX + ISO) + " " + (midY - LEAF_THICK - ISO) + " " + (HINGE_X + ISO) + " " + (hingeY - LEAF_THICK - ISO) +
+            " Z";
+          const leafFace = "M " + HINGE_X + " " + hingeY +
+            " Q " + midX + " " + midY + " " + LEAF_RIGHT + " " + freeY +
+            " L " + LEAF_RIGHT + " " + (freeY - LEAF_THICK) +
+            " Q " + midX + " " + (midY - LEAF_THICK) + " " + HINGE_X + " " + (hingeY - LEAF_THICK) +
+            " Z";
+          const leafUnder = "M " + HINGE_X + " " + hingeY +
+            " Q " + midX + " " + midY + " " + LEAF_RIGHT + " " + freeY +
+            " L " + (LEAF_RIGHT + ISO * 0.4) + " " + (freeY - ISO * 0.35) +
+            " Q " + (midX + 8) + " " + (midY + 6) + " " + HINGE_X + " " + (hingeY + 3) +
+            " Z";
+          const shadow = "M " + HINGE_X + " " + FACE_TOP +
+            " L " + LEAF_RIGHT + " " + FACE_TOP +
+            " L " + LEAF_RIGHT + " " + (FACE_TOP + 10) +
+            " L " + HINGE_X + " " + (FACE_TOP + 4) +
+            " Z";
+
+          leftover.appendChild(liftEl("path", {
+            id: "leftover-lift-shadow",
+            class: "leftover-lift leftover-showing leftover-veneer leftover-leaf leftover-shadow leftover-off-face leftover-not-a-proud leftover-not-a-squeeze leftover-not-an-inlay leftover-not-a-fuzz leftover-not-a-bruise",
+            d: shadow,
+            fill: "#1a140c",
+            opacity: String(Math.min(0.55, 0.18 + liftMm / 40)),
+            "data-shape": "lift-shadow",
+            "data-role": "gap-under-leaf"
+          }));
+          leftover.appendChild(liftEl("path", {
+            id: "leftover-lift-under",
+            class: "leftover-lift leftover-showing leftover-veneer leftover-leaf leftover-sheet leftover-off-face leftover-underside leftover-not-a-proud leftover-not-a-squeeze leftover-not-an-inlay leftover-not-a-fuzz leftover-not-a-bruise leftover-not-glue leftover-not-a-joint-high leftover-local leftover-wood",
+            d: leafUnder,
+            fill: "url(#lift-leaf-under)",
+            stroke: "#d4b060",
+            "stroke-width": "1.0",
+            opacity: "0.88",
+            "data-shape": "leftover-veneer-under",
+            "data-role": "leaf-underside"
+          }));
+          leftover.appendChild(liftEl("path", {
+            id: "leftover-lift-top",
+            class: "leftover-lift leftover-showing leftover-veneer leftover-leaf leftover-sheet leftover-off-face leftover-standing leftover-not-a-proud leftover-not-a-squeeze leftover-not-an-inlay leftover-not-a-fuzz leftover-not-a-bruise leftover-not-glue leftover-not-a-joint-high leftover-local leftover-wood",
+            d: leafTop,
+            fill: "url(#lift-leaf-top)",
+            stroke: "#f8f0d8",
+            "stroke-width": "1.1",
+            "data-shape": "leftover-veneer-top",
+            "data-role": "leaf-top"
+          }));
+          leftover.appendChild(liftEl("path", {
+            id: "leftover-lift-leaf",
+            class: "leftover-lift leftover-showing leftover-veneer leftover-leaf leftover-sheet leftover-off-face leftover-standing leftover-not-a-proud leftover-not-a-squeeze leftover-not-an-inlay leftover-not-a-fuzz leftover-not-a-bruise leftover-not-glue leftover-not-a-joint-high leftover-not-round leftover-not-ragged leftover-not-a-depression leftover-local leftover-wood",
+            d: leafFace,
+            fill: "url(#lift-leaf-wash)",
+            stroke: "#f8f0d8",
+            "stroke-width": "1.2",
+            opacity: String(Math.min(0.98, 0.7 + liftMm / 40)),
+            "data-shape": "leftover-veneer-leaf",
+            "data-lift-mm": String(liftMm),
+            "data-role": "lift-leaf",
+            "data-height-px": String(pic.heightPx.toFixed(1)),
+            "data-free-edge": "lifted"
+          }));
+          leftover.appendChild(liftEl("path", {
+            id: "leftover-lift-hinge",
+            class: "leftover-lift leftover-showing leftover-veneer leftover-hinge leftover-seated-edge leftover-not-the-leftover leftover-not-a-proud leftover-not-a-squeeze",
+            d: "M " + LEAF_LEFT + " " + FACE_TOP + " L " + HINGE_X + " " + FACE_TOP + " L " + HINGE_X + " " + (FACE_TOP - 2) + " L " + LEAF_LEFT + " " + (FACE_TOP - 2) + " Z",
+            fill: "url(#lift-leaf-wash)",
+            stroke: "#f8f0d8",
+            "stroke-width": "0.8",
+            "data-shape": "hinged-edge",
+            "data-role": "seated-hinge"
+          }));
+          leftover.appendChild(liftEl("text", {
+            id: "leftover-lift-label",
+            class: "lift-label leftover-label leftover-lift leftover-showing leftover-veneer leftover-leaf leftover-off-face",
+            x: String(LEAF_RIGHT - 18),
+            y: String((freeY - LEAF_THICK - ISO - 10).toFixed(1)),
+            fill: "#f4f0e8",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "end"
+          })).textContent = "LIFT";
+        } else {
+          leftover.appendChild(liftEl("rect", {
+            id: "leftover-lift-seated-leaf",
+            class: "leftover-lift leftover-seated leftover-empty leftover-no-leaf leftover-face leftover-true leftover-seated-face leftover-not-a-lift leftover-veneer leftover-sheet",
+            x: String(LEAF_LEFT),
+            y: String(FACE_TOP - 3),
+            width: String(LEAF_RIGHT - LEAF_LEFT),
+            height: "5",
+            fill: "url(#lift-leaf-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.0",
+            opacity: "0.72",
+            "data-shape": "seated-face"
+          }));
+          leftover.appendChild(liftEl("path", {
+            id: "lift-seated-face",
+            class: "leftover-lift leftover-seated leftover-empty leftover-no-leaf leftover-face leftover-true leftover-seated-face leftover-not-a-lift",
+            d: "M " + LEAF_LEFT + " " + FACE_TOP + " L " + LEAF_RIGHT + " " + FACE_TOP,
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "seated-face"
+          }));
+        }
+        leftoverLiftLayer.appendChild(leftover);
+
+        liftMarkLayer.replaceChildren();
+        liftMarkLayer.appendChild(liftEl("text", {
+          x: String(FACE_LEFT + 8),
+          y: String(FACE_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "SUBSTRATE · FIXED";
+        liftMarkLayer.appendChild(liftEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSeated ? "FACE · SEATED / NO LEFTOVER LIFT" : "FACE · LEFTOVER VENEER LEAF STILL SITS OFF";
+
+        if (!isSeated) {
+          const freeY = FACE_TOP - pic.heightPx;
+          const dimX = LEAF_RIGHT + ISO + 22;
+          liftMarkLayer.appendChild(liftEl("line", {
+            id: "lift-dim",
+            class: "lift-dim leftover-lift leftover-showing leftover-veneer leftover-leaf leftover-off-face leftover-not-a-proud leftover-not-a-squeeze leftover-not-an-inlay leftover-not-a-fuzz leftover-not-a-bruise",
+            x1: String(dimX),
+            y1: String(FACE_TOP.toFixed(1)),
+            x2: String(dimX),
+            y2: String(freeY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          liftMarkLayer.appendChild(liftEl("line", {
+            x1: String((dimX - 4).toFixed(1)),
+            y1: String(FACE_TOP.toFixed(1)),
+            x2: String((dimX + 4).toFixed(1)),
+            y2: String(FACE_TOP.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          liftMarkLayer.appendChild(liftEl("line", {
+            x1: String((dimX - 4).toFixed(1)),
+            y1: String(freeY.toFixed(1)),
+            x2: String((dimX + 4).toFixed(1)),
+            y2: String(freeY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          liftMarkLayer.appendChild(liftEl("text", {
+            id: "lift-mm-label",
+            class: "lift-label leftover-label leftover-lift leftover-showing leftover-veneer leftover-leaf leftover-off-face",
+            x: String((dimX + 8).toFixed(1)),
+            y: String((FACE_TOP - pic.heightPx / 2 + 4).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = liftMm + " mm";
+          liftMarkLayer.appendChild(liftEl("text", {
+            id: "lift-leaf-label",
+            class: "leaf-label leftover-leaf leftover-lift leftover-veneer leftover-sheet leftover-off-face leftover-not-a-proud leftover-not-a-squeeze leftover-not-an-inlay leftover-not-a-fuzz leftover-not-a-bruise leftover-not-glue leftover-not-a-joint-high leftover-not-round leftover-not-ragged leftover-not-a-depression",
+            x: "400",
+            y: "412",
+            fill: "#e8dcb0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER LIFT · VENEER LEAF OFF A FIXED FACE · NOT A PROUD · NOT A SQUEEZE";
+        } else {
+          liftMarkLayer.appendChild(liftEl("text", {
+            id: "lift-label",
+            class: "lift-label leftover-label leftover-seated leftover-no-leaf leftover-face leftover-empty leftover-true",
+            x: String((LEAF_LEFT + LEAF_RIGHT) / 2),
+            y: String(FACE_TOP - 14),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SEATED / NO LEFTOVER LIFT";
+        }
+
+        liftSceneStatus.setAttribute("fill", pic.accent);
+        liftSceneStatus.textContent = pic.status;
+        liftScene.setAttribute("data-lift", String(liftMm));
+        liftScene.setAttribute("data-leftover", pic.leftover);
+        liftScene.setAttribute("data-verdict", pic.verdict);
+        liftScene.setAttribute("data-view", "face-lift");
+        liftScene.setAttribute("data-hero", "leftover-lift");
+        liftScene.setAttribute("data-lift-mm", String(liftMm));
+        liftScene.setAttribute("data-height-px", String(pic.heightPx.toFixed(1)));
+        liftScene.setAttribute("data-leaf", pic.leaf);
+        liftScene.setAttribute("data-shape", pic.shape);
+        liftScene.setAttribute("data-face-top", String(FACE_TOP));
+        liftScene.setAttribute("data-face-left", String(FACE_LEFT));
+        liftScene.setAttribute("data-face-right", String(FACE_RIGHT));
+        liftScene.setAttribute("data-face-fixed", "true");
+      }
+
+      function liftToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-seated";
+      }
+
+      function liftRender() {
+        const pic = liftPicture();
+        liftPaint(pic);
+        liftTitle.textContent = pic.alt;
+        liftAlt.textContent = pic.alt;
+        liftSvg.setAttribute("aria-label", pic.alt);
+        liftDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + liftMm + " mm showing"
+          : "leftover seated";
+        liftStatMm.textContent = liftMm + " mm";
+        liftStatLeftover.textContent = pic.leftover;
+        liftStatLeaf.textContent = pic.leftover === "showing"
+          ? liftMm + " mm leftover"
+          : "seated";
+        liftStatLeftoverWrap.classList.remove("is-showing", "is-seated");
+        liftStatLeftoverWrap.classList.add(liftToneClass(pic.leftover));
+        if (Number(liftInput.value) !== liftMm) liftInput.value = String(liftMm);
+        liftInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function liftResetSeed() {
+        liftMm = LIFT_SEED.liftMm;
+        liftRender();
+      }
+
+      liftInput.addEventListener("input", function (event) {
+        liftMm = liftClamp(Math.round(Number(event.target.value)), LIFT_MIN, LIFT_MAX);
+        liftRender();
+      });
+      liftBtnReset.addEventListener("click", liftResetSeed);
+      liftBtnResetStage.addEventListener("click", liftResetSeed);
+
+      liftRender();
+    </script>
+  </body>
+</html>
