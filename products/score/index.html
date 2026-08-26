@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Score — the cut is done, but a score still sits. Move the leftover score. See the residual knife groove still sitting in a fixed face after the cut." />
+    <title>Score</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08070a;
+        --panel: #141218;
+        --ink: #e6e0dc;
+        --muted: #8a827c;
+        --line: rgba(168, 140, 88, 0.24);
+        --accent: #c8b070;
+        --timber: #4a3014;
+        --score: #d8c078;
+        --showing: #d8c078;
+        --erased: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(200, 176, 112, 0.12), transparent 30%),
+          radial-gradient(circle at 88% 16%, rgba(32, 20, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #070608 0%, #141218 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(20, 18, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 176, 112, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 18, 12, 0.96), rgba(10, 8, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 176, 112, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd6; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181418;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a140c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 176, 112, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(200, 176, 112, 0.1), transparent 46%),
+          #0a080a;
+        overflow: hidden;
+      }
+      #score-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(216, 192, 120, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-erased b { color: var(--erased); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #08070a;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #score-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> score · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover score still sitting from the marking knife</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 22:50</span>
+        <h1>Score</h1>
+        <p class="lede">
+          The cut is done, but a score still sits. Move the leftover score. See the residual knife groove still sitting in a fixed face after the cut.
+          Not a witness. Not a kerf. Not a nib. Not a burn. Not a chip. Not a horn. Not marking advice. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="score-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How deep leftover score still sits in the face</h2>
+          </div>
+          <span class="kicker" id="score-desk-meta">leftover 2 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="score-svg" viewBox="0 0 800 460" role="img" aria-labelledby="score-title score-desc">
+            <title id="score-title">Score is showing. Two millimetres of leftover score still sit in a fixed face after the cut.</title>
+            <desc id="score-desc">One workpiece with a fixed face and finished cut whose leftover is the score — leftover marking-knife groove that still sits in that face after the cut (leftover knife groove still sitting in a fixed face, not Witness leftover pencil or ink layout line past the cut, not Kerf leftover saw gap, not Nib leftover corner after intersecting cuts, not Burn leftover scorch from the cut, not Chip leftover discrete flake from the chisel, not Horn leftover tenon length past the shoulder). One fixed face and cut; the leftover is one leftover knife groove sitting in that face, not a pencil line, not a kerf gap, not a corner nib. The leftover that still sits is the score — leftover marking-knife groove still sitting in a fixed face after the cut. A sketch, not a mill sign-off. Not marking advice.</desc>
+            <defs>
+              <linearGradient id="score-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161418" />
+                <stop offset="100%" stop-color="#0c0a0c" />
+              </linearGradient>
+              <linearGradient id="score-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#3a2810" />
+                <stop offset="46%" stop-color="#6a4820" />
+                <stop offset="100%" stop-color="#a87838" />
+              </linearGradient>
+              <linearGradient id="score-cut-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2a1c0c" />
+                <stop offset="50%" stop-color="#0e0a08" />
+                <stop offset="100%" stop-color="#1a1208" />
+              </linearGradient>
+              <linearGradient id="leftover-score-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2a2010" />
+                <stop offset="48%" stop-color="#0c0806" />
+                <stop offset="100%" stop-color="#3a2c14" />
+              </linearGradient>
+              <linearGradient id="leftover-score-bevel" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#c8b888" />
+                <stop offset="100%" stop-color="#2a1c0c" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#08070a" stroke="rgba(200,176,112,0.16)" />
+            <text x="36" y="42" fill="#8a827c" font-size="11" letter-spacing="2">ONE WORKPIECE · FIXED FACE AND CUT · LEFTOVER IS ONE KNIFE SCORE STILL SITTING IN THE FACE</text>
+            <g id="score-scene" data-view="face-score" data-hero="leftover-score" data-score="2" data-leftover="showing" data-verdict="showing" data-score-state="sitting">
+              <g id="score-bench-layer"></g>
+              <g id="score-stock-layer"></g>
+              <g id="score-cut-layer"></g>
+              <g id="leftover-score-layer"></g>
+              <g id="score-mark-layer"></g>
+              <text id="score-scene-status" x="400" y="64" fill="#d8c078" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 2 MM LEFTOVER SCORE</text>
+              <text id="score-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER SCORE STILL SITS FROM THE MARKING KNIFE · NOT A WITNESS · NOT A KERF · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="score-alt" class="sr-only" aria-live="polite">Score is showing. Two millimetres of leftover score still sit in a fixed face after the cut.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="score-input">Leftover score (mm of sitting groove depth)</label>
+            <input id="score-input" type="range" min="0" max="8" step="1" value="2" />
+            <div class="ticks" aria-hidden="true">
+              <span>erased / no leftover score</span>
+              <span>seed showing</span>
+              <span>deeper leftover score</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="score-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Score <b id="score-stat-mm">2 mm</b></span>
+          <span id="score-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="score-stat-leftover">showing</b></span>
+          <span>Leftover score (sketch) <b id="score-stat-depth">2 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The cut is done, but a score still sits. Score is leftover marking-knife groove that still sits in a fixed face after the cut. A sketch, not a mill sign-off, and not marking advice.
+        Seed is already showing — 2 mm of leftover sitting score in a fixed face, not an erased-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a witness. Not a kerf. Not a nib. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SCORE_SEED = { scoreMm: 2 };
+      const SCORE_MIN = 0;
+      const SCORE_MAX = 8;
+      const SCORE_ERASED_AT = 1;
+      const SCORE_SCALE = 8;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 548;
+      const FACE_TOP = 118;
+      const FACE_BOT = 268;
+      const CUT_X = 548;
+      const SCORE_X = 500;
+      const PROFILE_TOP = 300;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 318;
+
+      let scoreMm = SCORE_SEED.scoreMm;
+
+      const scoreSvg = document.getElementById("score-svg");
+      const scoreScene = document.getElementById("score-scene");
+      const scoreTitle = document.getElementById("score-title");
+      const scoreAlt = document.getElementById("score-alt");
+      const scoreDeskMeta = document.getElementById("score-desk-meta");
+      const scoreInput = document.getElementById("score-input");
+      const scoreBenchLayer = document.getElementById("score-bench-layer");
+      const scoreStockLayer = document.getElementById("score-stock-layer");
+      const scoreCutLayer = document.getElementById("score-cut-layer");
+      const leftoverScoreLayer = document.getElementById("leftover-score-layer");
+      const scoreMarkLayer = document.getElementById("score-mark-layer");
+      const scoreSceneStatus = document.getElementById("score-scene-status");
+      const scoreStatMm = document.getElementById("score-stat-mm");
+      const scoreStatLeftover = document.getElementById("score-stat-leftover");
+      const scoreStatLeftoverWrap = document.getElementById("score-stat-leftover-wrap");
+      const scoreStatDepth = document.getElementById("score-stat-depth");
+      const scoreBtnReset = document.getElementById("score-btn-reset");
+      const scoreBtnResetStage = document.getElementById("score-btn-reset-stage");
+
+      function scoreClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function scoreEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function scoreSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverScoreGeom(depthPx) {
+        const half = Math.max(3.2, 2.4 + depthPx * 0.28);
+        return {
+          x: SCORE_X,
+          y: FACE_TOP + 10,
+          h: FACE_BOT - FACE_TOP - 20,
+          half: half,
+          depthPx: depthPx,
+          midY: (FACE_TOP + FACE_BOT) / 2
+        };
+      }
+
+      function scorePicture() {
+        const leftover = scoreMm <= SCORE_ERASED_AT ? "erased" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + scoreMm + " MM LEFTOVER SCORE";
+          alt = "Score is showing. " + scoreSpokenMm(scoreMm).charAt(0).toUpperCase() + scoreSpokenMm(scoreMm).slice(1) + " millimetres of leftover score still sit in a fixed face after the cut.";
+        } else {
+          status = "ERASED · NO LEFTOVER SCORE";
+          alt = "Score is erased. The face and cut are there. No leftover score. A sketch, not a mill sign-off.";
+        }
+        const scorePx = leftover === "showing" ? Math.max(10, scoreMm * SCORE_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d8c078" : "#8ec8b4",
+          scorePx: scorePx,
+          scoreState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-score" : "erased-face"
+        };
+      }
+
+      function scorePaint(pic) {
+        const isErased = pic.leftover === "erased";
+        const groove = leftoverScoreGeom(pic.scorePx);
+
+        scoreBenchLayer.replaceChildren();
+        scoreBenchLayer.appendChild(scoreEl("rect", {
+          class: "site leftover-work leftover-score leftover-face leftover-cut leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#score-bench-wash)",
+          stroke: "rgba(200,176,112,0.16)",
+          "stroke-width": "1.2"
+        }));
+        scoreBenchLayer.appendChild(scoreEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · FIXED FACE AND CUT · ONE LEFTOVER KNIFE SCORE STILL SITS IN THE FACE";
+
+        scoreStockLayer.replaceChildren();
+        const stock = scoreEl("g", {
+          id: "score-stock",
+          class: isErased
+            ? "stock leftover-erased leftover-no-score leftover-score leftover-face leftover-true"
+            : "stock leftover-showing leftover-score leftover-sitting leftover-face"
+        });
+        stock.appendChild(scoreEl("rect", {
+          id: "score-workpiece",
+          class: "stock-board leftover-stock leftover-workpiece leftover-score leftover-not-the-leftover leftover-not-a-witness leftover-not-a-kerf leftover-not-a-nib leftover-not-a-burn leftover-not-a-chip leftover-not-a-horn leftover-face-context",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#score-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "face-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(scoreEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 20),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "FACE · STAYS FIXED";
+        scoreStockLayer.appendChild(stock);
+
+        scoreCutLayer.replaceChildren();
+        const cut = scoreEl("g", {
+          id: "score-cut",
+          class: "cut leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-a-witness leftover-not-a-kerf leftover-finished",
+          "data-cut-x": String(CUT_X),
+          "data-role": "finished-cut",
+          "data-fixed": "true"
+        });
+        cut.appendChild(scoreEl("rect", {
+          id: "score-cut-edge",
+          class: "cut-edge leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-finished",
+          x: String(CUT_X),
+          y: String(FACE_TOP),
+          width: "18",
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#score-cut-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.3",
+          "data-shape": "finished-cut",
+          "data-role": "cut-context",
+          "data-fixed": "true"
+        }));
+        cut.appendChild(scoreEl("line", {
+          id: "score-cut-line",
+          class: "cut-line leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-finished",
+          x1: String(CUT_X),
+          y1: String(FACE_TOP - 8),
+          x2: String(CUT_X),
+          y2: String(FACE_BOT + 8),
+          stroke: "#f8f0d8",
+          "stroke-width": "2.2",
+          opacity: "0.92",
+          "data-shape": "finished-cut",
+          "data-role": "cut-line",
+          "data-fixed": "true"
+        }));
+        cut.appendChild(scoreEl("text", {
+          id: "score-cut-label",
+          class: "cut-label leftover-cut leftover-fixed leftover-not-the-leftover",
+          x: String(CUT_X + 28),
+          y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+          fill: "#e8e0c8",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "CUT · FIXED";
+        scoreCutLayer.appendChild(cut);
+
+        leftoverScoreLayer.replaceChildren();
+        const leftover = scoreEl("g", {
+          id: "leftover-score",
+          class: isErased
+            ? "score leftover-score leftover-erased leftover-empty leftover-no-score leftover-face leftover-true"
+            : "score leftover-score leftover-showing leftover-one leftover-sitting leftover-depth leftover-face leftover-knife",
+          "data-score-mm": String(scoreMm),
+          "data-score-px": String(pic.scorePx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isErased) {
+          const left = SCORE_X - groove.half;
+          const right = SCORE_X + groove.half;
+          leftover.appendChild(scoreEl("polygon", {
+            id: "leftover-score-groove",
+            class: "leftover-score leftover-showing leftover-one leftover-sitting leftover-depth leftover-in-face leftover-not-a-witness leftover-not-a-kerf leftover-not-a-nib leftover-not-a-burn leftover-not-a-chip leftover-not-a-horn leftover-local leftover-knife leftover-groove",
+            points: left.toFixed(1) + "," + groove.y.toFixed(1) + " " + SCORE_X + "," + (groove.y + 6).toFixed(1) + " " + right.toFixed(1) + "," + groove.y.toFixed(1) + " " + right.toFixed(1) + "," + (groove.y + groove.h).toFixed(1) + " " + SCORE_X + "," + (groove.y + groove.h - 6).toFixed(1) + " " + left.toFixed(1) + "," + (groove.y + groove.h).toFixed(1),
+            fill: "url(#leftover-score-wash)",
+            stroke: "#1a1208",
+            "stroke-width": "1.1",
+            opacity: String(Math.min(0.98, 0.72 + scoreMm / 16)),
+            "data-shape": "leftover-score",
+            "data-score-mm": String(scoreMm),
+            "data-role": "sitting-score",
+            "data-score-px": String(pic.scorePx.toFixed(1)),
+            "data-origin-x": String(SCORE_X),
+            "data-origin-y": String(FACE_TOP)
+          }));
+          leftover.appendChild(scoreEl("line", {
+            id: "leftover-score-trough",
+            class: "leftover-score leftover-showing leftover-trough leftover-knife leftover-groove leftover-not-a-witness leftover-not-a-kerf",
+            x1: String(SCORE_X),
+            y1: String(groove.y + 4),
+            x2: String(SCORE_X),
+            y2: String(groove.y + groove.h - 4),
+            stroke: "#080604",
+            "stroke-width": String(Math.max(1.2, 1 + scoreMm * 0.35)),
+            "stroke-linecap": "round",
+            opacity: "0.95",
+            "data-role": "knife-trough"
+          }));
+          leftover.appendChild(scoreEl("line", {
+            id: "leftover-score-bevel",
+            class: "leftover-score leftover-showing leftover-bevel leftover-knife leftover-not-a-witness",
+            x1: String((SCORE_X - groove.half * 0.55).toFixed(1)),
+            y1: String(groove.y + 10),
+            x2: String((SCORE_X - groove.half * 0.55).toFixed(1)),
+            y2: String(groove.y + groove.h - 10),
+            stroke: "#e8d8a0",
+            "stroke-width": "1.1",
+            opacity: "0.55",
+            "data-role": "knife-bevel"
+          }));
+          leftover.appendChild(scoreEl("text", {
+            id: "leftover-score-label",
+            class: "score-label leftover-label leftover-score leftover-showing leftover-sitting leftover-depth leftover-knife",
+            x: String(SCORE_X - groove.half - 10),
+            y: String(groove.midY),
+            fill: "#1a140c",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "end"
+          })).textContent = "SCORE";
+        } else {
+          leftover.appendChild(scoreEl("line", {
+            id: "leftover-score-erased-path",
+            class: "leftover-score leftover-erased leftover-empty leftover-no-score leftover-face leftover-true leftover-erased-face leftover-not-a-score leftover-cut",
+            x1: String(SCORE_X),
+            y1: String(FACE_TOP + 12),
+            x2: String(SCORE_X),
+            y2: String(FACE_BOT - 12),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "erased-face"
+          }));
+        }
+        leftoverScoreLayer.appendChild(leftover);
+
+        scoreMarkLayer.replaceChildren();
+        scoreMarkLayer.appendChild(scoreEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · FIXED FACE AND CUT";
+        scoreMarkLayer.appendChild(scoreEl("text", {
+          x: String(CUT_X + 18),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = isErased ? "FACE · ERASED / NO LEFTOVER SCORE" : "FACE · ONE LEFTOVER SCORE STILL SITS";
+
+        const profLeft = 120;
+        const profRight = 680;
+        const profCut = 560;
+        const profScoreX = 512;
+        scoreMarkLayer.appendChild(scoreEl("rect", {
+          id: "score-profile-stock",
+          class: "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing",
+          x: String(profLeft),
+          y: String(PROFILE_FACE_Y),
+          width: String(profCut - profLeft),
+          height: String(PROFILE_BOT - 16 - PROFILE_FACE_Y),
+          fill: "url(#score-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          opacity: "0.92",
+          "data-fixed": "true"
+        }));
+        scoreMarkLayer.appendChild(scoreEl("line", {
+          id: "score-profile-cut",
+          class: "profile-cut leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-changing",
+          x1: String(profCut),
+          y1: String(PROFILE_FACE_Y - 6),
+          x2: String(profCut),
+          y2: String(PROFILE_BOT - 10),
+          stroke: "#f8f0d8",
+          "stroke-width": "2",
+          "data-fixed": "true"
+        }));
+
+        if (!isErased) {
+          const vHalf = Math.max(6, 4 + pic.scorePx * 0.22);
+          const vDepth = pic.scorePx;
+          scoreMarkLayer.appendChild(scoreEl("polygon", {
+            id: "leftover-score-profile",
+            class: "leftover-score leftover-showing leftover-one leftover-sitting leftover-depth leftover-profile leftover-knife leftover-not-a-witness leftover-not-a-kerf leftover-not-a-nib leftover-not-a-burn leftover-not-a-chip leftover-not-a-horn",
+            points: (profScoreX - vHalf).toFixed(1) + "," + PROFILE_FACE_Y + " " + profScoreX + "," + (PROFILE_FACE_Y + vDepth).toFixed(1) + " " + (profScoreX + vHalf).toFixed(1) + "," + PROFILE_FACE_Y,
+            fill: "#0c0806",
+            stroke: pic.accent,
+            "stroke-width": "1.2",
+            "data-shape": "leftover-score-depth",
+            "data-score-mm": String(scoreMm)
+          }));
+          const dimY = PROFILE_FACE_Y - 12;
+          scoreMarkLayer.appendChild(scoreEl("line", {
+            id: "score-dim",
+            class: "score-dim leftover-score leftover-showing leftover-sitting leftover-depth leftover-not-a-witness leftover-not-a-kerf leftover-not-a-nib leftover-not-a-burn leftover-not-a-chip",
+            x1: String(profScoreX),
+            y1: String(PROFILE_FACE_Y),
+            x2: String(profScoreX),
+            y2: String((PROFILE_FACE_Y + vDepth).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          scoreMarkLayer.appendChild(scoreEl("line", {
+            x1: String(profScoreX - 4),
+            y1: String(PROFILE_FACE_Y),
+            x2: String(profScoreX + 4),
+            y2: String(PROFILE_FACE_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          scoreMarkLayer.appendChild(scoreEl("line", {
+            x1: String(profScoreX - 4),
+            y1: String((PROFILE_FACE_Y + vDepth).toFixed(1)),
+            x2: String(profScoreX + 4),
+            y2: String((PROFILE_FACE_Y + vDepth).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          scoreMarkLayer.appendChild(scoreEl("text", {
+            id: "score-mm-label",
+            class: "score-label leftover-label leftover-score leftover-showing leftover-sitting leftover-depth leftover-knife",
+            x: String(profScoreX + 14),
+            y: String((PROFILE_FACE_Y + vDepth / 2 + 4).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = scoreMm + " mm";
+          scoreMarkLayer.appendChild(scoreEl("text", {
+            id: "score-depth-label",
+            class: "depth-label leftover-score leftover-one leftover-sitting leftover-depth leftover-in-face leftover-not-a-witness leftover-not-a-kerf leftover-not-a-nib leftover-not-a-burn leftover-not-a-chip leftover-not-a-horn leftover-knife",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#e8d0b0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER SCORE · ONE LEFTOVER KNIFE GROOVE IN A FIXED FACE · NOT A WITNESS · NOT A KERF";
+        } else {
+          scoreMarkLayer.appendChild(scoreEl("text", {
+            id: "score-label",
+            class: "score-label leftover-label leftover-erased leftover-no-score leftover-face leftover-empty leftover-true",
+            x: String((FACE_LEFT + FACE_RIGHT) / 2),
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "ERASED / NO LEFTOVER SCORE";
+          scoreMarkLayer.appendChild(scoreEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · ERASED / NO LEFTOVER SCORE";
+        }
+
+        scoreSceneStatus.setAttribute("fill", pic.accent);
+        scoreSceneStatus.textContent = pic.status;
+        scoreScene.setAttribute("data-score", String(scoreMm));
+        scoreScene.setAttribute("data-leftover", pic.leftover);
+        scoreScene.setAttribute("data-verdict", pic.verdict);
+        scoreScene.setAttribute("data-view", "face-score");
+        scoreScene.setAttribute("data-hero", "leftover-score");
+        scoreScene.setAttribute("data-score-mm", String(scoreMm));
+        scoreScene.setAttribute("data-score-px", String(pic.scorePx.toFixed(1)));
+        scoreScene.setAttribute("data-score-state", pic.scoreState);
+        scoreScene.setAttribute("data-shape", pic.shape);
+        scoreScene.setAttribute("data-cut-x", String(CUT_X));
+        scoreScene.setAttribute("data-cut-fixed", "true");
+        scoreScene.setAttribute("data-face-fixed", "true");
+      }
+
+      function scoreToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-erased";
+      }
+
+      function scoreRender() {
+        const pic = scorePicture();
+        scorePaint(pic);
+        scoreTitle.textContent = pic.alt;
+        scoreAlt.textContent = pic.alt;
+        scoreSvg.setAttribute("aria-label", pic.alt);
+        scoreDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + scoreMm + " mm showing"
+          : "leftover erased";
+        scoreStatMm.textContent = scoreMm + " mm";
+        scoreStatLeftover.textContent = pic.leftover;
+        scoreStatDepth.textContent = pic.leftover === "showing"
+          ? scoreMm + " mm leftover"
+          : "erased";
+        scoreStatLeftoverWrap.classList.remove("is-showing", "is-erased");
+        scoreStatLeftoverWrap.classList.add(scoreToneClass(pic.leftover));
+        if (Number(scoreInput.value) !== scoreMm) scoreInput.value = String(scoreMm);
+        scoreInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function scoreResetSeed() {
+        scoreMm = SCORE_SEED.scoreMm;
+        scoreRender();
+      }
+
+      scoreInput.addEventListener("input", function (event) {
+        scoreMm = scoreClamp(Math.round(Number(event.target.value)), SCORE_MIN, SCORE_MAX);
+        scoreRender();
+      });
+      scoreBtnReset.addEventListener("click", scoreResetSeed);
+      scoreBtnResetStage.addEventListener("click", scoreResetSeed);
+
+      scoreRender();
+    </script>
+  </body>
+</html>
