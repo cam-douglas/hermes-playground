@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Whisker — the plane has passed, but a whisker still sits at the edge. Move the leftover whisker. See the residual hair of wood still standing at a planed or cut edge." />
+    <title>Whisker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08070a;
+        --panel: #121018;
+        --ink: #e6e0dc;
+        --muted: #8a827c;
+        --line: rgba(200, 168, 112, 0.24);
+        --accent: #d4b878;
+        --timber: #4a3420;
+        --whisker: #f0d8a8;
+        --showing: #f0d8a8;
+        --shaved: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 16% -8%, rgba(212, 184, 120, 0.12), transparent 30%),
+          radial-gradient(circle at 88% 16%, rgba(40, 28, 12, 0.22), transparent 26%),
+          linear-gradient(180deg, #070608 0%, #121018 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 184, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 18, 16, 0.96), rgba(10, 8, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 184, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd6; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181418;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a140c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 184, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 184, 120, 0.1), transparent 46%),
+          #0a080a;
+        overflow: hidden;
+      }
+      #whisker-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(240, 216, 168, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-shaved b { color: var(--shaved); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #08070a;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #whisker-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> whisker · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover hair of wood still standing at a fixed edge</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 17:50</span>
+        <h1>Whisker</h1>
+        <p class="lede">
+          The plane has passed, but a whisker still sits at the edge. Move the leftover whisker. See the residual hair of wood still standing at a planed or cut edge.
+          Not a fuzz. Not a tearout. Not a burr. Not a nib. Not a feather. Not planing advice. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="whisker-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How long leftover whisker still sits at the edge</h2>
+          </div>
+          <span class="kicker" id="whisker-desk-meta">leftover 3 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="whisker-svg" viewBox="0 0 800 460" role="img" aria-labelledby="whisker-title whisker-desc">
+            <title id="whisker-title">Whisker is showing. Three millimetres of leftover hair of wood still sit at a fixed planed edge.</title>
+            <desc id="whisker-desc">One workpiece with a fixed planed or cut edge and one leftover hair of wood standing at that edge (leftover whisker that still sits at the edge after planing or cutting, not Fuzz leftover field of standing fibres after sanding, not Tearout leftover splinter torn at the cut, not Burr leftover ragged displaced lip along a cut, not Nib leftover compact projection at intersecting cuts, not Feather leftover figure). One fixed edge; the leftover is one residual hair at that edge, not a fuzz field, not a torn splinter, not a burr lip, not a corner nib. The leftover that still sits at the edge is the whisker — leftover hair of wood still standing at a fixed edge. A sketch, not a mill sign-off. Not planing advice.</desc>
+            <defs>
+              <linearGradient id="whisker-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161218" />
+                <stop offset="100%" stop-color="#0c0a0c" />
+              </linearGradient>
+              <linearGradient id="whisker-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#2a1c10" />
+                <stop offset="46%" stop-color="#5a3e20" />
+                <stop offset="100%" stop-color="#8a6030" />
+              </linearGradient>
+              <linearGradient id="whisker-edge-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#c8b090" />
+                <stop offset="50%" stop-color="#f4e8c8" />
+                <stop offset="100%" stop-color="#a88858" />
+              </linearGradient>
+              <linearGradient id="whisker-hair-wash" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#c8a060" />
+                <stop offset="48%" stop-color="#f0d8a8" />
+                <stop offset="100%" stop-color="#fff4d8" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#08070a" stroke="rgba(212,184,120,0.16)" />
+            <text x="36" y="42" fill="#8a827c" font-size="11" letter-spacing="2">ONE WORKPIECE · FIXED EDGE · LEFTOVER IS ONE HAIR AT THAT EDGE</text>
+            <g id="whisker-scene" data-view="planed-edge-whisker" data-hero="leftover-whisker" data-whisker="3" data-leftover="showing" data-verdict="showing" data-hair="at-edge">
+              <g id="whisker-bench-layer"></g>
+              <g id="whisker-board-layer"></g>
+              <g id="whisker-edge-layer"></g>
+              <g id="leftover-whisker-layer"></g>
+              <g id="whisker-mark-layer"></g>
+              <text id="whisker-scene-status" x="400" y="64" fill="#f0d8a8" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 3 MM LEFTOVER WHISKER</text>
+              <text id="whisker-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER HAIR STILL SITS AT A FIXED EDGE · NOT A FUZZ · NOT A TEAROUT · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="whisker-alt" class="sr-only" aria-live="polite">Whisker is showing. Three millimetres of leftover hair of wood still sit at a fixed planed edge.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="whisker-input">Leftover whisker (mm of standing hair length)</label>
+            <input id="whisker-input" type="range" min="0" max="14" step="1" value="3" />
+            <div class="ticks" aria-hidden="true">
+              <span>shaved / no leftover whisker</span>
+              <span>seed showing</span>
+              <span>longer leftover whisker</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="whisker-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Whisker <b id="whisker-stat-mm">3 mm</b></span>
+          <span id="whisker-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="whisker-stat-leftover">showing</b></span>
+          <span>Leftover whisker (sketch) <b id="whisker-stat-hair">3 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The plane has passed, but a whisker still sits at the edge. Whisker is leftover hair of wood that still stands at an edge after planing or cutting. A sketch, not a mill sign-off, and not planing advice.
+        Seed is already showing — 3 mm of leftover standing hair sitting at a fixed edge, not a shaved-only edge. Arrow keys move the focused control.
+        Refresh restores the seed. Not a fuzz. Not a tearout. Not a burr. Not a nib. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const WHISKER_SEED = { whiskerMm: 3 };
+      const WHISKER_MIN = 0;
+      const WHISKER_MAX = 14;
+      const WHISKER_SHAVED_AT = 1;
+      const WHISKER_SCALE = 11;
+      const BOARD_LEFT = 88;
+      const BOARD_RIGHT = 712;
+      const BOARD_TOP = 220;
+      const BOARD_BOT = 352;
+      const EDGE_Y = BOARD_TOP;
+      const EDGE_X = 486;
+
+      let whiskerMm = WHISKER_SEED.whiskerMm;
+
+      const whiskerSvg = document.getElementById("whisker-svg");
+      const whiskerScene = document.getElementById("whisker-scene");
+      const whiskerTitle = document.getElementById("whisker-title");
+      const whiskerAlt = document.getElementById("whisker-alt");
+      const whiskerDeskMeta = document.getElementById("whisker-desk-meta");
+      const whiskerInput = document.getElementById("whisker-input");
+      const whiskerBenchLayer = document.getElementById("whisker-bench-layer");
+      const whiskerBoardLayer = document.getElementById("whisker-board-layer");
+      const whiskerEdgeLayer = document.getElementById("whisker-edge-layer");
+      const leftoverWhiskerLayer = document.getElementById("leftover-whisker-layer");
+      const whiskerMarkLayer = document.getElementById("whisker-mark-layer");
+      const whiskerSceneStatus = document.getElementById("whisker-scene-status");
+      const whiskerStatMm = document.getElementById("whisker-stat-mm");
+      const whiskerStatLeftover = document.getElementById("whisker-stat-leftover");
+      const whiskerStatLeftoverWrap = document.getElementById("whisker-stat-leftover-wrap");
+      const whiskerStatHair = document.getElementById("whisker-stat-hair");
+      const whiskerBtnReset = document.getElementById("whisker-btn-reset");
+      const whiskerBtnResetStage = document.getElementById("whisker-btn-reset-stage");
+
+      function whiskerClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function whiskerEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function whiskerSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve",
+          13: "thirteen",
+          14: "fourteen"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function whiskerHairGeom(lengthPx) {
+        const endX = EDGE_X + lengthPx * 0.28;
+        const endY = EDGE_Y - lengthPx;
+        const ctrlX = EDGE_X + lengthPx * 0.08;
+        const ctrlY = EDGE_Y - lengthPx * 0.55;
+        return {
+          endX: endX,
+          endY: endY,
+          ctrlX: ctrlX,
+          ctrlY: ctrlY,
+          d: "M " + EDGE_X + " " + EDGE_Y + " Q " + ctrlX.toFixed(1) + " " + ctrlY.toFixed(1) + " " + endX.toFixed(1) + " " + endY.toFixed(1)
+        };
+      }
+
+      function whiskerPicture() {
+        const leftover = whiskerMm <= WHISKER_SHAVED_AT ? "shaved" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + whiskerMm + " MM LEFTOVER WHISKER";
+          alt = "Whisker is showing. " + whiskerSpokenMm(whiskerMm).charAt(0).toUpperCase() + whiskerSpokenMm(whiskerMm).slice(1) + " millimetres of leftover hair of wood still sit at a fixed planed edge.";
+        } else {
+          status = "SHAVED · NO LEFTOVER WHISKER";
+          alt = "Whisker is shaved. The edge is there. No leftover whisker. A sketch, not a mill sign-off.";
+        }
+        const hairPx = leftover === "showing" ? Math.max(10, whiskerMm * WHISKER_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#f0d8a8" : "#8ec8b4",
+          hairPx: hairPx,
+          hair: leftover === "showing" ? "at-edge" : "none",
+          shape: leftover === "showing" ? "leftover-whisker" : "shaved-edge"
+        };
+      }
+
+      function whiskerPaint(pic) {
+        const isShaved = pic.leftover === "shaved";
+        const hair = whiskerHairGeom(pic.hairPx);
+
+        whiskerBenchLayer.replaceChildren();
+        whiskerBenchLayer.appendChild(whiskerEl("rect", {
+          class: "site leftover-work leftover-whisker leftover-edge leftover-one-workpiece leftover-cut leftover-plane",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#whisker-bench-wash)",
+          stroke: "rgba(212,184,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        whiskerBenchLayer.appendChild(whiskerEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · FIXED PLANED EDGE · ONE LEFTOVER HAIR STILL SITS AT IT";
+
+        whiskerBoardLayer.replaceChildren();
+        const stock = whiskerEl("g", {
+          id: "whisker-board-stock",
+          class: isShaved
+            ? "stock leftover-shaved leftover-no-whisker leftover-whisker leftover-no-hair leftover-edge leftover-true"
+            : "stock leftover-showing leftover-whisker leftover-hair leftover-at-edge leftover-edge"
+        });
+
+        stock.appendChild(whiskerEl("rect", {
+          id: "whisker-workpiece",
+          class: "stock-board leftover-stock leftover-board leftover-workpiece leftover-whisker leftover-not-the-leftover leftover-not-a-fuzz leftover-not-a-tearout leftover-not-a-burr leftover-not-a-nib leftover-edge-context",
+          x: String(BOARD_LEFT),
+          y: String(BOARD_TOP),
+          width: String(BOARD_RIGHT - BOARD_LEFT),
+          height: String(BOARD_BOT - BOARD_TOP),
+          fill: "url(#whisker-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "edge-context"
+        }));
+        stock.appendChild(whiskerEl("text", {
+          x: String((BOARD_LEFT + BOARD_RIGHT) / 2),
+          y: String(BOARD_TOP + 28),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "PLANED FACE · EDGE STAYS FIXED";
+        whiskerBoardLayer.appendChild(stock);
+
+        whiskerEdgeLayer.replaceChildren();
+        const edge = whiskerEl("g", {
+          id: "whisker-edge",
+          class: "edge leftover-edge leftover-fixed leftover-planed leftover-cut leftover-not-the-leftover leftover-not-a-fuzz leftover-not-a-tearout leftover-not-a-burr leftover-not-a-nib leftover-not-a-feather leftover-line",
+          "data-edge-x": String(EDGE_X),
+          "data-edge-y": String(EDGE_Y),
+          "data-role": "planed-edge",
+          "data-fixed": "true"
+        });
+        edge.appendChild(whiskerEl("line", {
+          id: "whisker-edge-line",
+          class: "edge-line leftover-edge leftover-fixed leftover-planed leftover-cut leftover-not-the-leftover leftover-not-a-fuzz leftover-not-changing leftover-mark",
+          x1: String(BOARD_LEFT),
+          y1: String(EDGE_Y),
+          x2: String(BOARD_RIGHT),
+          y2: String(EDGE_Y),
+          stroke: "url(#whisker-edge-wash)",
+          "stroke-width": "4.2",
+          "stroke-linecap": "butt",
+          "data-shape": "planed-edge",
+          "data-role": "edge-line",
+          "data-fixed": "true",
+          "data-edge-y": String(EDGE_Y)
+        }));
+        edge.appendChild(whiskerEl("line", {
+          id: "whisker-edge-highlight",
+          class: "edge-highlight leftover-edge leftover-fixed leftover-planed leftover-not-the-leftover leftover-mark",
+          x1: String(BOARD_LEFT),
+          y1: String(EDGE_Y),
+          x2: String(BOARD_RIGHT),
+          y2: String(EDGE_Y),
+          stroke: "#f8f0d8",
+          "stroke-width": "1.2",
+          opacity: "0.88",
+          "data-shape": "edge-highlight",
+          "data-role": "edge-mark",
+          "data-fixed": "true"
+        }));
+        edge.appendChild(whiskerEl("text", {
+          id: "whisker-edge-label",
+          class: "edge-label leftover-edge leftover-fixed leftover-planed leftover-not-the-leftover",
+          x: String(BOARD_LEFT + 12),
+          y: String(EDGE_Y - 12),
+          fill: "#e8e0c8",
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "EDGE · FIXED";
+        whiskerEdgeLayer.appendChild(edge);
+
+        leftoverWhiskerLayer.replaceChildren();
+        const leftover = whiskerEl("g", {
+          id: "leftover-whisker",
+          class: isShaved
+            ? "whisker leftover-whisker leftover-shaved leftover-empty leftover-no-hair leftover-edge leftover-true"
+            : "whisker leftover-whisker leftover-showing leftover-hair leftover-one leftover-at-edge leftover-standing leftover-edge",
+          "data-whisker-mm": String(whiskerMm),
+          "data-hair-px": String(pic.hairPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isShaved) {
+          leftover.appendChild(whiskerEl("path", {
+            id: "leftover-whisker-hair",
+            class: "leftover-whisker leftover-showing leftover-hair leftover-one leftover-standing leftover-at-edge leftover-not-a-fuzz leftover-not-a-tearout leftover-not-a-burr leftover-not-a-nib leftover-not-a-feather leftover-not-a-field leftover-not-a-splinter leftover-not-a-lip leftover-not-a-corner leftover-local leftover-wood",
+            d: hair.d,
+            fill: "none",
+            stroke: "url(#whisker-hair-wash)",
+            "stroke-width": "2.1",
+            "stroke-linecap": "round",
+            opacity: String(Math.min(0.98, 0.78 + whiskerMm / 40)),
+            "data-shape": "leftover-hair",
+            "data-whisker-mm": String(whiskerMm),
+            "data-role": "standing-hair",
+            "data-hair-px": String(pic.hairPx.toFixed(1)),
+            "data-origin-x": String(EDGE_X),
+            "data-origin-y": String(EDGE_Y)
+          }));
+          leftover.appendChild(whiskerEl("circle", {
+            id: "leftover-whisker-root",
+            class: "leftover-whisker leftover-showing leftover-hair leftover-root leftover-at-edge leftover-not-a-fuzz leftover-not-a-tearout leftover-not-a-burr leftover-not-a-nib",
+            cx: String(EDGE_X),
+            cy: String(EDGE_Y),
+            r: "2.6",
+            fill: "#f8ecd0",
+            stroke: "#2a1810",
+            "stroke-width": "0.8",
+            "data-shape": "hair-root",
+            "data-role": "edge-root"
+          }));
+          leftover.appendChild(whiskerEl("text", {
+            id: "leftover-whisker-label",
+            class: "whisker-label leftover-label leftover-whisker leftover-showing leftover-hair leftover-at-edge",
+            x: String(((EDGE_X + hair.endX) / 2 + 16).toFixed(1)),
+            y: String(((EDGE_Y + hair.endY) / 2).toFixed(1)),
+            fill: "#f4f0e8",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "start"
+          })).textContent = "WHISKER";
+        } else {
+          leftover.appendChild(whiskerEl("path", {
+            id: "leftover-whisker-shaved-path",
+            class: "leftover-whisker leftover-shaved leftover-empty leftover-no-hair leftover-edge leftover-true leftover-shaved-edge leftover-not-a-whisker leftover-cut leftover-plane",
+            d: "M " + (EDGE_X - 10) + " " + EDGE_Y + " L " + (EDGE_X + 10) + " " + EDGE_Y,
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "shaved-edge"
+          }));
+        }
+        leftoverWhiskerLayer.appendChild(leftover);
+
+        whiskerMarkLayer.replaceChildren();
+        whiskerMarkLayer.appendChild(whiskerEl("text", {
+          x: String(BOARD_LEFT + 8),
+          y: String(BOARD_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · FIXED EDGE";
+        whiskerMarkLayer.appendChild(whiskerEl("text", {
+          x: String(BOARD_RIGHT),
+          y: String(BOARD_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isShaved ? "EDGE · SHAVED / NO LEFTOVER WHISKER" : "EDGE · ONE LEFTOVER HAIR STILL SITS";
+
+        if (!isShaved) {
+          const dimX = Math.max(hair.endX + 18, EDGE_X + 28);
+          whiskerMarkLayer.appendChild(whiskerEl("line", {
+            id: "whisker-dim",
+            class: "whisker-dim leftover-whisker leftover-showing leftover-hair leftover-at-edge leftover-not-a-fuzz leftover-not-a-tearout leftover-not-a-burr leftover-not-a-nib leftover-not-a-feather",
+            x1: String(dimX.toFixed(1)),
+            y1: String(EDGE_Y),
+            x2: String(dimX.toFixed(1)),
+            y2: String(hair.endY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          whiskerMarkLayer.appendChild(whiskerEl("line", {
+            x1: String((dimX - 4).toFixed(1)),
+            y1: String(EDGE_Y),
+            x2: String((dimX + 4).toFixed(1)),
+            y2: String(EDGE_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          whiskerMarkLayer.appendChild(whiskerEl("line", {
+            x1: String((dimX - 4).toFixed(1)),
+            y1: String(hair.endY.toFixed(1)),
+            x2: String((dimX + 4).toFixed(1)),
+            y2: String(hair.endY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          whiskerMarkLayer.appendChild(whiskerEl("text", {
+            id: "whisker-mm-label",
+            class: "whisker-label leftover-label leftover-whisker leftover-showing leftover-hair leftover-at-edge",
+            x: String((dimX + 10).toFixed(1)),
+            y: String(((EDGE_Y + hair.endY) / 2 + 4).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = whiskerMm + " mm";
+          whiskerMarkLayer.appendChild(whiskerEl("text", {
+            id: "whisker-hair-label",
+            class: "hair-label leftover-hair leftover-whisker leftover-one leftover-at-edge leftover-not-a-fuzz leftover-not-a-tearout leftover-not-a-burr leftover-not-a-nib leftover-not-a-field leftover-not-a-splinter leftover-not-a-lip leftover-not-a-corner",
+            x: "400",
+            y: "412",
+            fill: "#e8d0b0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER WHISKER · ONE HAIR AT A FIXED EDGE · NOT A FUZZ · NOT A TEAROUT";
+        } else {
+          whiskerMarkLayer.appendChild(whiskerEl("text", {
+            id: "whisker-label",
+            class: "whisker-label leftover-label leftover-shaved leftover-no-hair leftover-edge leftover-empty leftover-true",
+            x: String(EDGE_X),
+            y: String(EDGE_Y - 16),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SHAVED / NO LEFTOVER WHISKER";
+        }
+
+        whiskerSceneStatus.setAttribute("fill", pic.accent);
+        whiskerSceneStatus.textContent = pic.status;
+        whiskerScene.setAttribute("data-whisker", String(whiskerMm));
+        whiskerScene.setAttribute("data-leftover", pic.leftover);
+        whiskerScene.setAttribute("data-verdict", pic.verdict);
+        whiskerScene.setAttribute("data-view", "planed-edge-whisker");
+        whiskerScene.setAttribute("data-hero", "leftover-whisker");
+        whiskerScene.setAttribute("data-whisker-mm", String(whiskerMm));
+        whiskerScene.setAttribute("data-hair-px", String(pic.hairPx.toFixed(1)));
+        whiskerScene.setAttribute("data-hair", pic.hair);
+        whiskerScene.setAttribute("data-shape", pic.shape);
+        whiskerScene.setAttribute("data-edge-x", String(EDGE_X));
+        whiskerScene.setAttribute("data-edge-y", String(EDGE_Y));
+        whiskerScene.setAttribute("data-edge-fixed", "true");
+      }
+
+      function whiskerToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-shaved";
+      }
+
+      function whiskerRender() {
+        const pic = whiskerPicture();
+        whiskerPaint(pic);
+        whiskerTitle.textContent = pic.alt;
+        whiskerAlt.textContent = pic.alt;
+        whiskerSvg.setAttribute("aria-label", pic.alt);
+        whiskerDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + whiskerMm + " mm showing"
+          : "leftover shaved";
+        whiskerStatMm.textContent = whiskerMm + " mm";
+        whiskerStatLeftover.textContent = pic.leftover;
+        whiskerStatHair.textContent = pic.leftover === "showing"
+          ? whiskerMm + " mm leftover"
+          : "shaved";
+        whiskerStatLeftoverWrap.classList.remove("is-showing", "is-shaved");
+        whiskerStatLeftoverWrap.classList.add(whiskerToneClass(pic.leftover));
+        if (Number(whiskerInput.value) !== whiskerMm) whiskerInput.value = String(whiskerMm);
+        whiskerInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function whiskerResetSeed() {
+        whiskerMm = WHISKER_SEED.whiskerMm;
+        whiskerRender();
+      }
+
+      whiskerInput.addEventListener("input", function (event) {
+        whiskerMm = whiskerClamp(Math.round(Number(event.target.value)), WHISKER_MIN, WHISKER_MAX);
+        whiskerRender();
+      });
+      whiskerBtnReset.addEventListener("click", whiskerResetSeed);
+      whiskerBtnResetStage.addEventListener("click", whiskerResetSeed);
+
+      whiskerRender();
+    </script>
+  </body>
+</html>
