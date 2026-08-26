@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Scuff — the face was scraped, but a scuff still sits. Move the leftover scuff. See the residual shallow abraded mark still sitting on a fixed face after abrasion." />
+    <title>Scuff</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08090b;
+        --panel: #121418;
+        --ink: #e4e4dc;
+        --muted: #82887c;
+        --line: rgba(136, 148, 152, 0.24);
+        --accent: #a8b4b8;
+        --timber: #3a2810;
+        --scuff: #c8d0d4;
+        --showing: #c8d0d4;
+        --buffed: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(168, 180, 184, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(16, 18, 20, 0.22), transparent 26%),
+          linear-gradient(180deg, #07080a 0%, #121418 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 20, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(168, 180, 184, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(16, 18, 20, 0.96), rgba(8, 10, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(168, 180, 184, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e0e4d6; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #161410;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #121418; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(168, 180, 184, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(168, 180, 184, 0.1), transparent 46%),
+          #080a0a;
+        overflow: hidden;
+      }
+      #scuff-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(200, 208, 212, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-buffed b { color: var(--buffed); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #07080a;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #scuff-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> scuff · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover scuff still sitting on the face after abrasion</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 27 Aug 2026 02:50</span>
+        <h1>Scuff</h1>
+        <p class="lede">
+          The face was scraped, but a scuff still sits. Move the leftover scuff. See the residual shallow abraded mark still sitting on a fixed face after abrasion.
+          Not a burn. Not a bruise. Not a dent. Not fuzz. Not a clock. Not sanding advice.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="scuff-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How long leftover scuff still sits on the face</h2>
+          </div>
+          <span class="kicker" id="scuff-desk-meta">leftover 4 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="scuff-svg" viewBox="0 0 800 460" role="img" aria-labelledby="scuff-title scuff-desc">
+            <title id="scuff-title">Scuff is showing. Four millimetres of leftover scuff still sit on a fixed face after abrasion.</title>
+            <desc id="scuff-desc">One workpiece with a fixed face whose leftover is the scuff — leftover shallow abraded streak that still sits on that face after scraping (leftover scuff still sitting on a fixed face, not Burn leftover scorch from the cut, not Bruise leftover compression after pressure, not Dent leftover round impact crush after a blow, not Fuzz leftover fibre field after sanding). One fixed face; the leftover is one leftover abraded streak sitting on that face, not a burn scorch, not a bruise compression field, not a round dent crush, not a fuzz fibre field. The leftover that still sits is the scuff — leftover shallow abraded mark still sitting on a fixed face after abrasion. A sketch, not a mill sign-off. Not sanding advice.</desc>
+            <defs>
+              <linearGradient id="scuff-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161412" />
+                <stop offset="100%" stop-color="#0a0c0c" />
+              </linearGradient>
+              <linearGradient id="scuff-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#322010" />
+                <stop offset="46%" stop-color="#6a4820" />
+                <stop offset="100%" stop-color="#b08838" />
+              </linearGradient>
+              <linearGradient id="leftover-scuff-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#8a9498" stop-opacity="0.18" />
+                <stop offset="38%" stop-color="#1c2024" />
+                <stop offset="62%" stop-color="#4a5054" />
+                <stop offset="100%" stop-color="#c8d0d4" stop-opacity="0.22" />
+              </linearGradient>
+              <linearGradient id="leftover-scuff-hair" x1="0%" y1="0%" x2="100%" y2="8%">
+                <stop offset="0%" stop-color="#f0f4f4" stop-opacity="0" />
+                <stop offset="18%" stop-color="#e8ecec" stop-opacity="0.72" />
+                <stop offset="82%" stop-color="#d8e0e0" stop-opacity="0.55" />
+                <stop offset="100%" stop-color="#f0f4f4" stop-opacity="0" />
+              </linearGradient>
+              <linearGradient id="leftover-scuff-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#080604" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#07080a" stroke="rgba(168,180,184,0.16)" />
+            <text x="36" y="42" fill="#82887c" font-size="11" letter-spacing="2">ONE WORKPIECE · FIXED FACE · LEFTOVER IS ONE SCUFF STILL SITTING ON THE FACE</text>
+            <g id="scuff-scene" data-view="face-scuff" data-hero="leftover-scuff" data-scuff="4" data-leftover="showing" data-verdict="showing" data-scuff-state="sitting">
+              <g id="scuff-bench-layer"></g>
+              <g id="scuff-stock-layer"></g>
+              <g id="leftover-scuff-layer"></g>
+              <g id="scuff-mark-layer"></g>
+              <text id="scuff-scene-status" x="400" y="64" fill="#c8d0d4" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 4 MM LEFTOVER SCUFF</text>
+              <text id="scuff-scene-sketch" x="400" y="434" fill="#54584c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER SCUFF STILL SITS ON THE FACE AFTER ABRASION · NOT A BURN · NOT A BRUISE · NOT A DENT · NOT FUZZ · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="scuff-alt" class="sr-only" aria-live="polite">Scuff is showing. Four millimetres of leftover scuff still sit on a fixed face after abrasion.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="scuff-input">Leftover scuff (mm of sitting abraded streak length)</label>
+            <input id="scuff-input" type="range" min="0" max="12" step="1" value="4" />
+            <div class="ticks" aria-hidden="true">
+              <span>buffed / no leftover scuff</span>
+              <span>seed showing</span>
+              <span>longer leftover scuff</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="scuff-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Scuff <b id="scuff-stat-mm">4 mm</b></span>
+          <span id="scuff-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="scuff-stat-leftover">showing</b></span>
+          <span>Leftover scuff (sketch) <b id="scuff-stat-depth">4 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The face was scraped, but a scuff still sits. Scuff is leftover shallow abraded mark that still sits on a fixed face after abrasion. A sketch, not a mill sign-off, and not sanding advice.
+        Seed is already showing — 4 mm of leftover sitting scuff on a fixed face, not a buffed-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a burn. Not a bruise. Not a dent. Not fuzz. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SCUFF_SEED = { scuffMm: 4 };
+      const SCUFF_MIN = 0;
+      const SCUFF_MAX = 12;
+      const SCUFF_BUFFED_AT = 1;
+      const SCUFF_SCALE = 7;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const SCUFF_CX = 400;
+      const SCUFF_CY = (FACE_TOP + FACE_BOT) / 2;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 318;
+
+      let scuffMm = SCUFF_SEED.scuffMm;
+
+      const scuffSvg = document.getElementById("scuff-svg");
+      const scuffScene = document.getElementById("scuff-scene");
+      const scuffTitle = document.getElementById("scuff-title");
+      const scuffAlt = document.getElementById("scuff-alt");
+      const scuffDeskMeta = document.getElementById("scuff-desk-meta");
+      const scuffInput = document.getElementById("scuff-input");
+      const scuffBenchLayer = document.getElementById("scuff-bench-layer");
+      const scuffStockLayer = document.getElementById("scuff-stock-layer");
+      const leftoverScuffLayer = document.getElementById("leftover-scuff-layer");
+      const scuffMarkLayer = document.getElementById("scuff-mark-layer");
+      const scuffSceneStatus = document.getElementById("scuff-scene-status");
+      const scuffStatMm = document.getElementById("scuff-stat-mm");
+      const scuffStatLeftover = document.getElementById("scuff-stat-leftover");
+      const scuffStatLeftoverWrap = document.getElementById("scuff-stat-leftover-wrap");
+      const scuffStatDepth = document.getElementById("scuff-stat-depth");
+      const scuffBtnReset = document.getElementById("scuff-btn-reset");
+      const scuffBtnResetStage = document.getElementById("scuff-btn-reset-stage");
+
+      function scuffClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function scuffEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function scuffSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverScuffGeom(lenPx, depthPx) {
+        const halfLen = 72 + lenPx * 0.62;
+        const halfW = 4.2 + depthPx * 0.14;
+        const angle = -18 * Math.PI / 180;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        return {
+          cx: SCUFF_CX,
+          cy: SCUFF_CY,
+          halfLen: halfLen,
+          halfW: halfW,
+          cos: cos,
+          sin: sin,
+          lenPx: lenPx,
+          depthPx: depthPx
+        };
+      }
+
+      function leftoverScuffStreakPath(geom) {
+        const hx = geom.halfLen * geom.cos;
+        const hy = geom.halfLen * geom.sin;
+        const wx = -geom.halfW * geom.sin;
+        const wy = geom.halfW * geom.cos;
+        const p1x = (geom.cx - hx + wx).toFixed(1);
+        const p1y = (geom.cy - hy + wy).toFixed(1);
+        const p2x = (geom.cx + hx + wx).toFixed(1);
+        const p2y = (geom.cy + hy + wy).toFixed(1);
+        const p3x = (geom.cx + hx - wx).toFixed(1);
+        const p3y = (geom.cy + hy - wy).toFixed(1);
+        const p4x = (geom.cx - hx - wx).toFixed(1);
+        const p4y = (geom.cy - hy - wy).toFixed(1);
+        return "M " + p1x + " " + p1y +
+          " L " + p2x + " " + p2y +
+          " L " + p3x + " " + p3y +
+          " L " + p4x + " " + p4y + " Z";
+      }
+
+      function leftoverScuffHair(geom, offset) {
+        const ox = -offset * geom.sin;
+        const oy = offset * geom.cos;
+        const hx = geom.halfLen * 0.92 * geom.cos;
+        const hy = geom.halfLen * 0.92 * geom.sin;
+        return {
+          x1: (geom.cx - hx + ox).toFixed(1),
+          y1: (geom.cy - hy + oy).toFixed(1),
+          x2: (geom.cx + hx + ox).toFixed(1),
+          y2: (geom.cy + hy + oy).toFixed(1)
+        };
+      }
+
+      function leftoverScuffSectionPath(lenPx, depthPx) {
+        const left = 168;
+        const right = 632;
+        const faceY = PROFILE_FACE_Y;
+        const mid = 400;
+        const half = 48 + lenPx * 0.22;
+        const bot = faceY + Math.max(0, depthPx * 0.22);
+        return "M " + left + " " + faceY +
+          " L " + (mid - half).toFixed(1) + " " + faceY +
+          " C " + (mid - half * 0.45).toFixed(1) + " " + faceY +
+          " " + (mid - half * 0.35).toFixed(1) + " " + bot.toFixed(1) +
+          " " + mid + " " + bot.toFixed(1) +
+          " C " + (mid + half * 0.35).toFixed(1) + " " + bot.toFixed(1) +
+          " " + (mid + half * 0.45).toFixed(1) + " " + faceY +
+          " " + (mid + half).toFixed(1) + " " + faceY +
+          " L " + right + " " + faceY +
+          " L " + right + " " + (PROFILE_BOT - 16) +
+          " L " + left + " " + (PROFILE_BOT - 16) + " Z";
+      }
+
+      function scuffPicture() {
+        const leftover = scuffMm <= SCUFF_BUFFED_AT ? "buffed" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + scuffMm + " MM LEFTOVER SCUFF";
+          alt = "Scuff is showing. " + scuffSpokenMm(scuffMm).charAt(0).toUpperCase() + scuffSpokenMm(scuffMm).slice(1) + " millimetres of leftover scuff still sit on a fixed face after abrasion.";
+        } else {
+          status = "BUFFED · NO LEFTOVER SCUFF";
+          alt = "Scuff is buffed. The face is there. No leftover scuff. A sketch, not a mill sign-off.";
+        }
+        const scuffPx = leftover === "showing" ? Math.max(18, scuffMm * SCUFF_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#c8d0d4" : "#8ec8b4",
+          scuffPx: scuffPx,
+          scuffState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-scuff" : "buffed-face"
+        };
+      }
+
+      function scuffPaint(pic) {
+        const isBuffed = pic.leftover === "buffed";
+        const streak = leftoverScuffGeom(pic.scuffPx, pic.scuffPx);
+
+        scuffBenchLayer.replaceChildren();
+        scuffBenchLayer.appendChild(scuffEl("rect", {
+          class: "site leftover-work leftover-scuff leftover-face leftover-abrasion leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#scuff-bench-wash)",
+          stroke: "rgba(168,180,184,0.16)",
+          "stroke-width": "1.2"
+        }));
+        scuffBenchLayer.appendChild(scuffEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#64685c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · FIXED FACE · ONE LEFTOVER SCUFF STILL SITS ON THE FACE";
+
+        scuffStockLayer.replaceChildren();
+        const stock = scuffEl("g", {
+          id: "scuff-stock",
+          class: isBuffed
+            ? "stock leftover-buffed leftover-no-scuff leftover-scuff leftover-face leftover-true"
+            : "stock leftover-showing leftover-scuff leftover-sitting leftover-face"
+        });
+        stock.appendChild(scuffEl("rect", {
+          id: "scuff-workpiece",
+          class: "stock-board leftover-stock leftover-workpiece leftover-scuff leftover-not-the-leftover leftover-not-a-burn leftover-not-a-bruise leftover-not-a-dent leftover-not-fuzz leftover-face-context",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          rx: "3",
+          fill: "url(#scuff-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "face-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(scuffEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 20),
+          fill: "#c8b080",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "FACE · STAYS FIXED";
+        scuffStockLayer.appendChild(stock);
+
+        leftoverScuffLayer.replaceChildren();
+        const leftover = scuffEl("g", {
+          id: "leftover-scuff",
+          class: isBuffed
+            ? "scuff leftover-scuff leftover-buffed leftover-empty leftover-no-scuff leftover-face leftover-true"
+            : "scuff leftover-scuff leftover-showing leftover-one leftover-sitting leftover-length leftover-depth leftover-face leftover-streak leftover-abrade leftover-abrasion",
+          "data-scuff-mm": String(scuffMm),
+          "data-scuff-px": String(pic.scuffPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isBuffed) {
+          leftover.appendChild(scuffEl("path", {
+            id: "leftover-scuff-streak",
+            class: "leftover-scuff leftover-showing leftover-one leftover-sitting leftover-length leftover-depth leftover-on-face leftover-not-a-burn leftover-not-a-bruise leftover-not-a-dent leftover-not-fuzz leftover-local leftover-streak leftover-abrade leftover-abrasion",
+            d: leftoverScuffStreakPath(streak),
+            fill: "url(#leftover-scuff-wash)",
+            stroke: "#1a1c1e",
+            "stroke-width": "1.1",
+            opacity: String(Math.min(0.96, 0.7 + scuffMm / 24)),
+            "data-shape": "leftover-scuff",
+            "data-scuff-mm": String(scuffMm),
+            "data-role": "sitting-scuff",
+            "data-scuff-px": String(pic.scuffPx.toFixed(1)),
+            "data-origin-x": String(SCUFF_CX),
+            "data-origin-y": String(SCUFF_CY)
+          }));
+          leftover.appendChild(scuffEl("path", {
+            id: "leftover-scuff-trough",
+            class: "leftover-scuff leftover-showing leftover-trough leftover-streak leftover-abrade leftover-not-a-dent leftover-not-a-burn",
+            d: leftoverScuffStreakPath({
+              cx: streak.cx,
+              cy: streak.cy,
+              halfLen: streak.halfLen * 0.94,
+              halfW: streak.halfW * 0.38,
+              cos: streak.cos,
+              sin: streak.sin
+            }),
+            fill: "#121416",
+            opacity: String(Math.min(0.72, 0.34 + scuffMm / 22)),
+            "data-role": "scuff-trough"
+          }));
+          const hairOffsets = [-streak.halfW * 0.62, -streak.halfW * 0.22, streak.halfW * 0.18, streak.halfW * 0.58];
+          hairOffsets.forEach(function (off, index) {
+            const hair = leftoverScuffHair(streak, off);
+            leftover.appendChild(scuffEl("line", {
+              id: "leftover-scuff-hair-" + index,
+              class: "leftover-scuff leftover-showing leftover-hair leftover-streak leftover-abrade leftover-not-fuzz leftover-not-a-score leftover-not-a-burn",
+              x1: hair.x1,
+              y1: hair.y1,
+              x2: hair.x2,
+              y2: hair.y2,
+              stroke: "url(#leftover-scuff-hair)",
+              "stroke-width": String(Math.max(0.7, 0.55 + scuffMm * 0.06)),
+              opacity: String(Math.min(0.88, 0.48 + scuffMm / 20)),
+              "data-role": "scuff-hair"
+            }));
+          });
+          leftover.appendChild(scuffEl("text", {
+            id: "leftover-scuff-label",
+            class: "scuff-label leftover-label leftover-scuff leftover-showing leftover-sitting leftover-length leftover-streak leftover-abrade",
+            x: String(streak.cx),
+            y: String((streak.cy - streak.halfW - 10).toFixed(1)),
+            fill: "#f0f4f4",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "SCUFF";
+        } else {
+          leftover.appendChild(scuffEl("path", {
+            id: "leftover-scuff-buffed-path",
+            class: "leftover-scuff leftover-buffed leftover-empty leftover-no-scuff leftover-face leftover-true leftover-buffed-face leftover-not-a-scuff leftover-abrasion",
+            d: leftoverScuffStreakPath(leftoverScuffGeom(72, 8)),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "buffed-face"
+          }));
+        }
+        leftoverScuffLayer.appendChild(leftover);
+
+        scuffMarkLayer.replaceChildren();
+        scuffMarkLayer.appendChild(scuffEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · FIXED FACE";
+        scuffMarkLayer.appendChild(scuffEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isBuffed ? "FACE · BUFFED / NO LEFTOVER SCUFF" : "FACE · ONE LEFTOVER SCUFF STILL SITS";
+
+        scuffMarkLayer.appendChild(scuffEl("path", {
+          id: "scuff-profile-stock",
+          class: isBuffed
+            ? "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-buffed leftover-no-scuff"
+            : "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-with-scuff",
+          d: leftoverScuffSectionPath(isBuffed ? 0 : pic.scuffPx, isBuffed ? 0 : pic.scuffPx),
+          fill: isBuffed ? "url(#scuff-face-wash)" : "url(#leftover-scuff-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isBuffed ? "buffed-face" : "leftover-scuff-depth"
+        }));
+        if (isBuffed) {
+          scuffMarkLayer.appendChild(scuffEl("line", {
+            id: "scuff-profile-face",
+            class: "profile-face leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-buffed leftover-no-scuff",
+            x1: "168",
+            y1: String(PROFILE_FACE_Y),
+            x2: "632",
+            y2: String(PROFILE_FACE_Y),
+            stroke: "#f0e4c0",
+            "stroke-width": "2",
+            "data-fixed": "true"
+          }));
+        }
+
+        if (!isBuffed) {
+          const dimY = PROFILE_FACE_Y + Math.max(8, pic.scuffPx * 0.11);
+          scuffMarkLayer.appendChild(scuffEl("line", {
+            id: "scuff-dim",
+            class: "scuff-dim leftover-scuff leftover-showing leftover-sitting leftover-length leftover-not-a-burn leftover-not-a-bruise leftover-not-a-dent leftover-not-fuzz",
+            x1: String((400 - (48 + pic.scuffPx * 0.22)).toFixed(1)),
+            y1: String(PROFILE_FACE_Y + 14),
+            x2: String((400 + (48 + pic.scuffPx * 0.22)).toFixed(1)),
+            y2: String(PROFILE_FACE_Y + 14),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          scuffMarkLayer.appendChild(scuffEl("text", {
+            id: "scuff-mm-label",
+            class: "scuff-label leftover-label leftover-scuff leftover-showing leftover-sitting leftover-length leftover-streak leftover-abrade",
+            x: "400",
+            y: String(dimY.toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = scuffMm + " mm";
+          scuffMarkLayer.appendChild(scuffEl("text", {
+            id: "scuff-depth-label",
+            class: "depth-label leftover-scuff leftover-one leftover-sitting leftover-length leftover-on-face leftover-not-a-burn leftover-not-a-bruise leftover-not-a-dent leftover-not-fuzz leftover-streak leftover-abrade",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#d8e0e0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER SCUFF · ONE LEFTOVER ABRADED STREAK ON A FIXED FACE · NOT A BURN · NOT A DENT";
+        } else {
+          scuffMarkLayer.appendChild(scuffEl("text", {
+            id: "scuff-label",
+            class: "scuff-label leftover-label leftover-buffed leftover-no-scuff leftover-face leftover-empty leftover-true",
+            x: String((FACE_LEFT + FACE_RIGHT) / 2),
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "BUFFED / NO LEFTOVER SCUFF";
+          scuffMarkLayer.appendChild(scuffEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · BUFFED / NO LEFTOVER SCUFF";
+        }
+
+        scuffSceneStatus.setAttribute("fill", pic.accent);
+        scuffSceneStatus.textContent = pic.status;
+        scuffScene.setAttribute("data-scuff", String(scuffMm));
+        scuffScene.setAttribute("data-leftover", pic.leftover);
+        scuffScene.setAttribute("data-verdict", pic.verdict);
+        scuffScene.setAttribute("data-view", "face-scuff");
+        scuffScene.setAttribute("data-hero", "leftover-scuff");
+        scuffScene.setAttribute("data-scuff-mm", String(scuffMm));
+        scuffScene.setAttribute("data-scuff-px", String(pic.scuffPx.toFixed(1)));
+        scuffScene.setAttribute("data-scuff-state", pic.scuffState);
+        scuffScene.setAttribute("data-shape", pic.shape);
+        scuffScene.setAttribute("data-face-fixed", "true");
+      }
+
+      function scuffToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-buffed";
+      }
+
+      function scuffRender() {
+        const pic = scuffPicture();
+        scuffPaint(pic);
+        scuffTitle.textContent = pic.alt;
+        scuffAlt.textContent = pic.alt;
+        scuffSvg.setAttribute("aria-label", pic.alt);
+        scuffDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + scuffMm + " mm showing"
+          : "leftover buffed";
+        scuffStatMm.textContent = scuffMm + " mm";
+        scuffStatLeftover.textContent = pic.leftover;
+        scuffStatDepth.textContent = pic.leftover === "showing"
+          ? scuffMm + " mm leftover"
+          : "buffed";
+        scuffStatLeftoverWrap.classList.remove("is-showing", "is-buffed");
+        scuffStatLeftoverWrap.classList.add(scuffToneClass(pic.leftover));
+        if (Number(scuffInput.value) !== scuffMm) scuffInput.value = String(scuffMm);
+        scuffInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function scuffResetSeed() {
+        scuffMm = SCUFF_SEED.scuffMm;
+        scuffRender();
+      }
+
+      scuffInput.addEventListener("input", function (event) {
+        scuffMm = scuffClamp(Math.round(Number(event.target.value)), SCUFF_MIN, SCUFF_MAX);
+        scuffRender();
+      });
+      scuffBtnReset.addEventListener("click", scuffResetSeed);
+      scuffBtnResetStage.addEventListener("click", scuffResetSeed);
+
+      scuffRender();
+    </script>
+  </body>
+</html>
