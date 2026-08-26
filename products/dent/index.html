@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Dent — the face was struck, but a dent still sits. Move the leftover dent. See the residual shallow round crush still sitting in a fixed face after a blow." />
+    <title>Dent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08090b;
+        --panel: #121418;
+        --ink: #e4e4dc;
+        --muted: #82887c;
+        --line: rgba(168, 140, 88, 0.24);
+        --accent: #c8a868;
+        --timber: #3a2810;
+        --dent: #d4b070;
+        --showing: #d4b070;
+        --sprung: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(200, 168, 104, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(24, 18, 10, 0.22), transparent 26%),
+          linear-gradient(180deg, #07080a 0%, #121418 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 20, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 168, 104, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(20, 16, 10, 0.96), rgba(8, 10, 10, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 168, 104, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e0e4d6; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #161410;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #1a1208; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 168, 104, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(200, 168, 104, 0.1), transparent 46%),
+          #080a0a;
+        overflow: hidden;
+      }
+      #dent-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 176, 112, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-sprung b { color: var(--sprung); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #07080a;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #dent-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> dent · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover dent still sitting in the face after a blow</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 27 Aug 2026 01:50</span>
+        <h1>Dent</h1>
+        <p class="lede">
+          The face was struck, but a dent still sits. Move the leftover dent. See the residual shallow round crush still sitting in a fixed face after a blow.
+          Not a bruise. Not a gouge. Not a nick. Not a chip. Not a clock. Not impact advice.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="dent-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How deep leftover dent still sits in the face</h2>
+          </div>
+          <span class="kicker" id="dent-desk-meta">leftover 3 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="dent-svg" viewBox="0 0 800 460" role="img" aria-labelledby="dent-title dent-desc">
+            <title id="dent-title">Dent is showing. Three millimetres of leftover dent still sit in a fixed face after a blow.</title>
+            <desc id="dent-desc">One workpiece with a fixed face whose leftover is the dent — leftover shallow round crush that still sits in that face after a blow (leftover dent still sitting in a fixed face, not Bruise leftover compression after pressure, not Gouge leftover curved hollow scooped by a carve, not Nick leftover V bite in a cut edge, not Chip leftover discrete flake from the chisel, not Cup leftover board cupping along length). One fixed face; the leftover is one leftover round impact crush sitting in that face, not a bruise compression field, not a carved gouge hollow, not an edge nick V, not a chip flake. The leftover that still sits is the dent — leftover shallow round crush still sitting in a fixed face after a blow. A sketch, not a mill sign-off. Not impact advice.</desc>
+            <defs>
+              <linearGradient id="dent-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161412" />
+                <stop offset="100%" stop-color="#0a0c0c" />
+              </linearGradient>
+              <linearGradient id="dent-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#322010" />
+                <stop offset="46%" stop-color="#6a4820" />
+                <stop offset="100%" stop-color="#b08838" />
+              </linearGradient>
+              <radialGradient id="leftover-dent-wash" cx="38%" cy="34%" r="62%">
+                <stop offset="0%" stop-color="#1c140a" />
+                <stop offset="36%" stop-color="#0c0a08" />
+                <stop offset="72%" stop-color="#3a2810" />
+                <stop offset="100%" stop-color="#7a5824" />
+              </radialGradient>
+              <radialGradient id="leftover-dent-shine" cx="32%" cy="28%" r="48%">
+                <stop offset="0%" stop-color="#f0d8a0" stop-opacity="0.55" />
+                <stop offset="100%" stop-color="#f0d8a0" stop-opacity="0" />
+              </radialGradient>
+              <linearGradient id="leftover-dent-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a140c" />
+                <stop offset="100%" stop-color="#080604" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#07080a" stroke="rgba(200,168,104,0.16)" />
+            <text x="36" y="42" fill="#82887c" font-size="11" letter-spacing="2">ONE WORKPIECE · FIXED FACE · LEFTOVER IS ONE DENT STILL SITTING IN THE FACE</text>
+            <g id="dent-scene" data-view="face-dent" data-hero="leftover-dent" data-dent="3" data-leftover="showing" data-verdict="showing" data-dent-state="sitting">
+              <g id="dent-bench-layer"></g>
+              <g id="dent-stock-layer"></g>
+              <g id="leftover-dent-layer"></g>
+              <g id="dent-mark-layer"></g>
+              <text id="dent-scene-status" x="400" y="64" fill="#d4b070" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 3 MM LEFTOVER DENT</text>
+              <text id="dent-scene-sketch" x="400" y="434" fill="#54584c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER DENT STILL SITS IN THE FACE AFTER A BLOW · NOT A BRUISE · NOT A GOUGE · NOT A NICK · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="dent-alt" class="sr-only" aria-live="polite">Dent is showing. Three millimetres of leftover dent still sit in a fixed face after a blow.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="dent-input">Leftover dent (mm of sitting round crush depth)</label>
+            <input id="dent-input" type="range" min="0" max="8" step="1" value="3" />
+            <div class="ticks" aria-hidden="true">
+              <span>sprung / no leftover dent</span>
+              <span>seed showing</span>
+              <span>deeper leftover dent</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="dent-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Dent <b id="dent-stat-mm">3 mm</b></span>
+          <span id="dent-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="dent-stat-leftover">showing</b></span>
+          <span>Leftover dent (sketch) <b id="dent-stat-depth">3 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The face was struck, but a dent still sits. Dent is leftover shallow round crush that still sits in a fixed face after a blow. A sketch, not a mill sign-off, and not impact advice.
+        Seed is already showing — 3 mm of leftover sitting dent in a fixed face, not a sprung-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a bruise. Not a gouge. Not a nick. Not a chip. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const DENT_SEED = { dentMm: 3 };
+      const DENT_MIN = 0;
+      const DENT_MAX = 8;
+      const DENT_SPRUNG_AT = 1;
+      const DENT_SCALE = 8;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const DENT_CX = 400;
+      const DENT_CY = (FACE_TOP + FACE_BOT) / 2;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 318;
+
+      let dentMm = DENT_SEED.dentMm;
+
+      const dentSvg = document.getElementById("dent-svg");
+      const dentScene = document.getElementById("dent-scene");
+      const dentTitle = document.getElementById("dent-title");
+      const dentAlt = document.getElementById("dent-alt");
+      const dentDeskMeta = document.getElementById("dent-desk-meta");
+      const dentInput = document.getElementById("dent-input");
+      const dentBenchLayer = document.getElementById("dent-bench-layer");
+      const dentStockLayer = document.getElementById("dent-stock-layer");
+      const leftoverDentLayer = document.getElementById("leftover-dent-layer");
+      const dentMarkLayer = document.getElementById("dent-mark-layer");
+      const dentSceneStatus = document.getElementById("dent-scene-status");
+      const dentStatMm = document.getElementById("dent-stat-mm");
+      const dentStatLeftover = document.getElementById("dent-stat-leftover");
+      const dentStatLeftoverWrap = document.getElementById("dent-stat-leftover-wrap");
+      const dentStatDepth = document.getElementById("dent-stat-depth");
+      const dentBtnReset = document.getElementById("dent-btn-reset");
+      const dentBtnResetStage = document.getElementById("dent-btn-reset-stage");
+
+      function dentClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function dentEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function dentSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverDentGeom(depthPx) {
+        const r = 34 + depthPx * 0.18;
+        return {
+          cx: DENT_CX,
+          cy: DENT_CY,
+          r: r,
+          depthPx: depthPx
+        };
+      }
+
+      function leftoverDentSectionPath(depthPx) {
+        const left = 168;
+        const right = 632;
+        const faceY = PROFILE_FACE_Y;
+        const mid = 400;
+        const half = 32 + depthPx * 0.16;
+        const bot = faceY + depthPx;
+        return "M " + left + " " + faceY +
+          " L " + (mid - half).toFixed(1) + " " + faceY +
+          " C " + (mid - half * 0.55).toFixed(1) + " " + faceY +
+          " " + (mid - half * 0.55).toFixed(1) + " " + bot.toFixed(1) +
+          " " + mid + " " + bot.toFixed(1) +
+          " C " + (mid + half * 0.55).toFixed(1) + " " + bot.toFixed(1) +
+          " " + (mid + half * 0.55).toFixed(1) + " " + faceY +
+          " " + (mid + half).toFixed(1) + " " + faceY +
+          " L " + right + " " + faceY +
+          " L " + right + " " + (PROFILE_BOT - 16) +
+          " L " + left + " " + (PROFILE_BOT - 16) + " Z";
+      }
+
+      function dentPicture() {
+        const leftover = dentMm <= DENT_SPRUNG_AT ? "sprung" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + dentMm + " MM LEFTOVER DENT";
+          alt = "Dent is showing. " + dentSpokenMm(dentMm).charAt(0).toUpperCase() + dentSpokenMm(dentMm).slice(1) + " millimetres of leftover dent still sit in a fixed face after a blow.";
+        } else {
+          status = "SPRUNG · NO LEFTOVER DENT";
+          alt = "Dent is sprung. The face is there. No leftover dent. A sketch, not a mill sign-off.";
+        }
+        const dentPx = leftover === "showing" ? Math.max(16, dentMm * DENT_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4b070" : "#8ec8b4",
+          dentPx: dentPx,
+          dentState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-dent" : "sprung-face"
+        };
+      }
+
+      function dentPaint(pic) {
+        const isSprung = pic.leftover === "sprung";
+        const crush = leftoverDentGeom(pic.dentPx);
+
+        dentBenchLayer.replaceChildren();
+        dentBenchLayer.appendChild(dentEl("rect", {
+          class: "site leftover-work leftover-dent leftover-face leftover-blow leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#dent-bench-wash)",
+          stroke: "rgba(200,168,104,0.16)",
+          "stroke-width": "1.2"
+        }));
+        dentBenchLayer.appendChild(dentEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#64685c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · FIXED FACE · ONE LEFTOVER DENT STILL SITS IN THE FACE";
+
+        dentStockLayer.replaceChildren();
+        const stock = dentEl("g", {
+          id: "dent-stock",
+          class: isSprung
+            ? "stock leftover-sprung leftover-no-dent leftover-dent leftover-face leftover-true"
+            : "stock leftover-showing leftover-dent leftover-sitting leftover-face"
+        });
+        stock.appendChild(dentEl("rect", {
+          id: "dent-workpiece",
+          class: "stock-board leftover-stock leftover-workpiece leftover-dent leftover-not-the-leftover leftover-not-a-bruise leftover-not-a-gouge leftover-not-a-nick leftover-not-a-chip leftover-face-context",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          rx: "3",
+          fill: "url(#dent-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "face-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(dentEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 20),
+          fill: "#c8b080",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "FACE · STAYS FIXED";
+        dentStockLayer.appendChild(stock);
+
+        leftoverDentLayer.replaceChildren();
+        const leftover = dentEl("g", {
+          id: "leftover-dent",
+          class: isSprung
+            ? "dent leftover-dent leftover-sprung leftover-empty leftover-no-dent leftover-face leftover-true"
+            : "dent leftover-dent leftover-showing leftover-one leftover-sitting leftover-depth leftover-face leftover-round leftover-crush leftover-blow",
+          "data-dent-mm": String(dentMm),
+          "data-dent-px": String(pic.dentPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isSprung) {
+          leftover.appendChild(dentEl("circle", {
+            id: "leftover-dent-crush",
+            class: "leftover-dent leftover-showing leftover-one leftover-sitting leftover-depth leftover-in-face leftover-not-a-bruise leftover-not-a-gouge leftover-not-a-nick leftover-not-a-chip leftover-local leftover-round leftover-crush leftover-blow",
+            cx: String(crush.cx),
+            cy: String(crush.cy),
+            r: String(crush.r.toFixed(1)),
+            fill: "url(#leftover-dent-wash)",
+            stroke: "#1a1208",
+            "stroke-width": "1.2",
+            opacity: String(Math.min(0.98, 0.74 + dentMm / 20)),
+            "data-shape": "leftover-dent",
+            "data-dent-mm": String(dentMm),
+            "data-role": "sitting-dent",
+            "data-dent-px": String(pic.dentPx.toFixed(1)),
+            "data-origin-x": String(DENT_CX),
+            "data-origin-y": String(DENT_CY)
+          }));
+          leftover.appendChild(dentEl("circle", {
+            id: "leftover-dent-rim",
+            class: "leftover-dent leftover-showing leftover-rim leftover-round leftover-crush leftover-not-a-gouge leftover-not-a-bruise",
+            cx: String(crush.cx),
+            cy: String(crush.cy),
+            r: String((crush.r * 0.96).toFixed(1)),
+            fill: "none",
+            stroke: "#f0d8a0",
+            "stroke-width": String(Math.max(1.2, 1 + dentMm * 0.1)),
+            opacity: "0.78",
+            "data-role": "dent-rim"
+          }));
+          leftover.appendChild(dentEl("circle", {
+            id: "leftover-dent-inner",
+            class: "leftover-dent leftover-showing leftover-inner leftover-round leftover-crush leftover-not-a-gouge leftover-not-a-bruise",
+            cx: String((crush.cx - crush.r * 0.08).toFixed(1)),
+            cy: String((crush.cy - crush.r * 0.1).toFixed(1)),
+            r: String((crush.r * 0.46).toFixed(1)),
+            fill: "url(#leftover-dent-shine)",
+            opacity: String(Math.min(0.72, 0.36 + dentMm / 18)),
+            "data-role": "dent-shine"
+          }));
+          leftover.appendChild(dentEl("ellipse", {
+            id: "leftover-dent-shade",
+            class: "leftover-dent leftover-showing leftover-shade leftover-round leftover-crush leftover-not-a-bruise leftover-not-a-gouge leftover-not-a-nick",
+            cx: String(crush.cx),
+            cy: String((crush.cy + crush.r * 0.22).toFixed(1)),
+            rx: String((crush.r * 0.58).toFixed(1)),
+            ry: String((crush.r * 0.28).toFixed(1)),
+            fill: "#080604",
+            opacity: String(Math.min(0.62, 0.28 + dentMm / 22)),
+            "data-role": "dent-shade"
+          }));
+          leftover.appendChild(dentEl("text", {
+            id: "leftover-dent-label",
+            class: "dent-label leftover-label leftover-dent leftover-showing leftover-sitting leftover-depth leftover-round leftover-crush",
+            x: String(crush.cx),
+            y: String((crush.cy + 5).toFixed(1)),
+            fill: "#f4e0b4",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "DENT";
+        } else {
+          leftover.appendChild(dentEl("circle", {
+            id: "leftover-dent-sprung-path",
+            class: "leftover-dent leftover-sprung leftover-empty leftover-no-dent leftover-face leftover-true leftover-sprung-face leftover-not-a-dent leftover-blow",
+            cx: String(DENT_CX),
+            cy: String(DENT_CY),
+            r: "34",
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "sprung-face"
+          }));
+        }
+        leftoverDentLayer.appendChild(leftover);
+
+        dentMarkLayer.replaceChildren();
+        dentMarkLayer.appendChild(dentEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · FIXED FACE";
+        dentMarkLayer.appendChild(dentEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSprung ? "FACE · SPRUNG / NO LEFTOVER DENT" : "FACE · ONE LEFTOVER DENT STILL SITS";
+
+        dentMarkLayer.appendChild(dentEl("path", {
+          id: "dent-profile-stock",
+          class: isSprung
+            ? "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-sprung leftover-no-dent"
+            : "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-with-dent",
+          d: leftoverDentSectionPath(isSprung ? 0 : pic.dentPx),
+          fill: isSprung ? "url(#dent-face-wash)" : "url(#leftover-dent-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isSprung ? "sprung-face" : "leftover-dent-depth"
+        }));
+        if (isSprung) {
+          dentMarkLayer.appendChild(dentEl("line", {
+            id: "dent-profile-face",
+            class: "profile-face leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-sprung leftover-no-dent",
+            x1: "168",
+            y1: String(PROFILE_FACE_Y),
+            x2: "632",
+            y2: String(PROFILE_FACE_Y),
+            stroke: "#f0e4c0",
+            "stroke-width": "2",
+            "data-fixed": "true"
+          }));
+        }
+
+        if (!isSprung) {
+          const dimY = PROFILE_FACE_Y + pic.dentPx / 2;
+          dentMarkLayer.appendChild(dentEl("line", {
+            id: "dent-dim",
+            class: "dent-dim leftover-dent leftover-showing leftover-sitting leftover-depth leftover-not-a-bruise leftover-not-a-gouge leftover-not-a-nick leftover-not-a-chip",
+            x1: "400",
+            y1: String(PROFILE_FACE_Y),
+            x2: "400",
+            y2: String((PROFILE_FACE_Y + pic.dentPx).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          dentMarkLayer.appendChild(dentEl("line", {
+            x1: "396",
+            y1: String(PROFILE_FACE_Y),
+            x2: "404",
+            y2: String(PROFILE_FACE_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          dentMarkLayer.appendChild(dentEl("line", {
+            x1: "396",
+            y1: String((PROFILE_FACE_Y + pic.dentPx).toFixed(1)),
+            x2: "404",
+            y2: String((PROFILE_FACE_Y + pic.dentPx).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          dentMarkLayer.appendChild(dentEl("text", {
+            id: "dent-mm-label",
+            class: "dent-label leftover-label leftover-dent leftover-showing leftover-sitting leftover-depth leftover-round leftover-crush",
+            x: "416",
+            y: String(dimY.toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = dentMm + " mm";
+          dentMarkLayer.appendChild(dentEl("text", {
+            id: "dent-depth-label",
+            class: "depth-label leftover-dent leftover-one leftover-sitting leftover-depth leftover-in-face leftover-not-a-bruise leftover-not-a-gouge leftover-not-a-nick leftover-not-a-chip leftover-round leftover-crush",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#e0d0a8",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER DENT · ONE LEFTOVER ROUND CRUSH IN A FIXED FACE · NOT A BRUISE · NOT A GOUGE";
+        } else {
+          dentMarkLayer.appendChild(dentEl("text", {
+            id: "dent-label",
+            class: "dent-label leftover-label leftover-sprung leftover-no-dent leftover-face leftover-empty leftover-true",
+            x: String((FACE_LEFT + FACE_RIGHT) / 2),
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SPRUNG / NO LEFTOVER DENT";
+          dentMarkLayer.appendChild(dentEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · SPRUNG / NO LEFTOVER DENT";
+        }
+
+        dentSceneStatus.setAttribute("fill", pic.accent);
+        dentSceneStatus.textContent = pic.status;
+        dentScene.setAttribute("data-dent", String(dentMm));
+        dentScene.setAttribute("data-leftover", pic.leftover);
+        dentScene.setAttribute("data-verdict", pic.verdict);
+        dentScene.setAttribute("data-view", "face-dent");
+        dentScene.setAttribute("data-hero", "leftover-dent");
+        dentScene.setAttribute("data-dent-mm", String(dentMm));
+        dentScene.setAttribute("data-dent-px", String(pic.dentPx.toFixed(1)));
+        dentScene.setAttribute("data-dent-state", pic.dentState);
+        dentScene.setAttribute("data-shape", pic.shape);
+        dentScene.setAttribute("data-face-fixed", "true");
+      }
+
+      function dentToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-sprung";
+      }
+
+      function dentRender() {
+        const pic = dentPicture();
+        dentPaint(pic);
+        dentTitle.textContent = pic.alt;
+        dentAlt.textContent = pic.alt;
+        dentSvg.setAttribute("aria-label", pic.alt);
+        dentDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + dentMm + " mm showing"
+          : "leftover sprung";
+        dentStatMm.textContent = dentMm + " mm";
+        dentStatLeftover.textContent = pic.leftover;
+        dentStatDepth.textContent = pic.leftover === "showing"
+          ? dentMm + " mm leftover"
+          : "sprung";
+        dentStatLeftoverWrap.classList.remove("is-showing", "is-sprung");
+        dentStatLeftoverWrap.classList.add(dentToneClass(pic.leftover));
+        if (Number(dentInput.value) !== dentMm) dentInput.value = String(dentMm);
+        dentInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function dentResetSeed() {
+        dentMm = DENT_SEED.dentMm;
+        dentRender();
+      }
+
+      dentInput.addEventListener("input", function (event) {
+        dentMm = dentClamp(Math.round(Number(event.target.value)), DENT_MIN, DENT_MAX);
+        dentRender();
+      });
+      dentBtnReset.addEventListener("click", dentResetSeed);
+      dentBtnResetStage.addEventListener("click", dentResetSeed);
+
+      dentRender();
+    </script>
+  </body>
+</html>
