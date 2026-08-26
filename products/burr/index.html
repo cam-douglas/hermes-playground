@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Burr — the cut is through, but the burr still stands. Move the leftover standing lip. See the residual burr still standing along a finished cut." />
+    <title>Burr</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(176, 152, 88, 0.24);
+        --accent: #d8bc78;
+        --timber: #5a4828;
+        --burr: #f0d8a0;
+        --showing: #f0d8a0;
+        --filed: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(216, 188, 120, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(40, 28, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(216, 188, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(20, 18, 12, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(216, 188, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181610;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(216, 188, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(216, 188, 120, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #burr-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(240, 216, 160, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-filed b { color: var(--filed); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #burr-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> burr · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover raised lip still standing along a finished cut</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 13:50</span>
+        <h1>Burr</h1>
+        <p class="lede">
+          The cut is through, but the burr still stands. Move the leftover standing lip. See the residual burr still standing as a raised ragged lip along a finished cut.
+          Not a nib. Not a fuzz. Not a tearout. Not an arris. Not a chatter. Not a burn. Not filing advice. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="burr-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover burr still stands along the cut</h2>
+          </div>
+          <span class="kicker" id="burr-desk-meta">leftover 4 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="burr-svg" viewBox="0 0 800 460" role="img" aria-labelledby="burr-title burr-desc">
+            <title id="burr-title">Burr is showing. Four millimetres of leftover raised ragged lip still stand along the finished cut.</title>
+            <desc id="burr-desc">One workpiece with one fixed through-cut whose leftover is the burr — leftover displaced material that still stands as a raised ragged lip along a finished cut (leftover raised ragged lip sitting immediately along the fixed cut edge, not Nib leftover compact corner projection, not Fuzz leftover standing fibres after sanding, not Tearout leftover one splinter at the cut, not Arris leftover intended sharp edge, not Chatter leftover ripple, not Burn leftover scorch). One fixed through-cut; the leftover that still stands along its edge is the burr — leftover raised ragged lip still standing along the finished cut. A sketch, not a mill sign-off. Not filing advice.</desc>
+            <defs>
+              <linearGradient id="burr-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#16140e" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="burr-stock-wash" x1="0%" y1="0%" x2="100%" y2="14%">
+                <stop offset="0%" stop-color="#3a2c14" />
+                <stop offset="46%" stop-color="#7a5c28" />
+                <stop offset="100%" stop-color="#c4a050" />
+              </linearGradient>
+              <linearGradient id="burr-cut-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#1a140c" />
+                <stop offset="50%" stop-color="#080604" />
+                <stop offset="100%" stop-color="#16120c" />
+              </linearGradient>
+              <linearGradient id="burr-lip-wash" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#8a6a28" />
+                <stop offset="42%" stop-color="#e8c878" />
+                <stop offset="100%" stop-color="#f8ecd0" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(216,188,120,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">ONE WORKPIECE · ONE FIXED THROUGH-CUT · LEFTOVER IS THE BURR</text>
+            <g id="burr-scene" data-view="through-cut-burr" data-hero="leftover-burr" data-burr="4" data-leftover="showing" data-verdict="showing" data-lip="along-cut">
+              <g id="burr-bench-layer"></g>
+              <g id="burr-board-layer"></g>
+              <g id="leftover-burr-layer"></g>
+              <g id="burr-mark-layer"></g>
+              <text id="burr-scene-status" x="400" y="64" fill="#f0d8a0" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 4 MM LEFTOVER BURR</text>
+              <text id="burr-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER RAISED RAGGED LIP STILL STANDS ALONG A FINISHED CUT · NOT A NIB · NOT A TEAROUT · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="burr-alt" class="sr-only" aria-live="polite">Burr is showing. Four millimetres of leftover raised ragged lip still stand along the finished cut.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="burr-input">Burr (mm · leftover burr in mm of standing lip height)</label>
+            <input id="burr-input" type="range" min="0" max="16" step="1" value="4" />
+            <div class="ticks" aria-hidden="true">
+              <span>filed / no leftover burr</span>
+              <span>seed showing</span>
+              <span>taller leftover lip</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="burr-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Burr <b id="burr-stat-mm">4 mm</b></span>
+          <span id="burr-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="burr-stat-leftover">showing</b></span>
+          <span>Leftover burr (sketch) <b id="burr-stat-lip">4 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The cut is through, but the burr still stands. Burr is leftover displaced material that still stands as a raised ragged lip along a finished cut. A sketch, not a mill sign-off, and not filing advice.
+        Seed is already showing — 4 mm of leftover raised ragged lip sitting immediately along a fixed cut edge, not a filed-only cut. Arrow keys move the focused control.
+        Refresh restores the seed. Not a nib. Not a fuzz. Not a tearout. Not an arris. Not a chatter. Not a burn. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const BURR_SEED = { burrMm: 4 };
+      const BURR_MIN = 0;
+      const BURR_MAX = 16;
+      const BURR_FILED_AT = 1;
+      const BURR_SCALE = 3.4;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 352;
+      const CUT_X = 400;
+      const CUT_Y1 = 108;
+      const CUT_Y2 = 352;
+      const CUT_W = 10;
+      const LIP_EDGE = CUT_X + CUT_W / 2;
+      const LOBES = [
+        { t: 0.00, w: 0.22 },
+        { t: 0.06, w: 0.78 },
+        { t: 0.12, w: 0.34 },
+        { t: 0.18, w: 1.00 },
+        { t: 0.26, w: 0.28 },
+        { t: 0.34, w: 0.86 },
+        { t: 0.42, w: 0.40 },
+        { t: 0.50, w: 0.94 },
+        { t: 0.58, w: 0.30 },
+        { t: 0.66, w: 0.72 },
+        { t: 0.74, w: 0.46 },
+        { t: 0.82, w: 0.88 },
+        { t: 0.90, w: 0.36 },
+        { t: 1.00, w: 0.24 }
+      ];
+
+      let burrMm = BURR_SEED.burrMm;
+
+      const burrSvg = document.getElementById("burr-svg");
+      const burrScene = document.getElementById("burr-scene");
+      const burrTitle = document.getElementById("burr-title");
+      const burrAlt = document.getElementById("burr-alt");
+      const burrDeskMeta = document.getElementById("burr-desk-meta");
+      const burrInput = document.getElementById("burr-input");
+      const burrBenchLayer = document.getElementById("burr-bench-layer");
+      const burrBoardLayer = document.getElementById("burr-board-layer");
+      const leftoverBurrLayer = document.getElementById("leftover-burr-layer");
+      const burrMarkLayer = document.getElementById("burr-mark-layer");
+      const burrSceneStatus = document.getElementById("burr-scene-status");
+      const burrStatMm = document.getElementById("burr-stat-mm");
+      const burrStatLeftover = document.getElementById("burr-stat-leftover");
+      const burrStatLeftoverWrap = document.getElementById("burr-stat-leftover-wrap");
+      const burrStatLip = document.getElementById("burr-stat-lip");
+      const burrBtnReset = document.getElementById("burr-btn-reset");
+      const burrBtnResetStage = document.getElementById("burr-btn-reset-stage");
+
+      function burrClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function burrEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function burrSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve",
+          13: "thirteen",
+          14: "fourteen",
+          15: "fifteen",
+          16: "sixteen"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function burrPicture() {
+        const leftover = burrMm <= BURR_FILED_AT ? "filed" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + burrMm + " MM LEFTOVER BURR";
+          alt = "Burr is showing. " + burrSpokenMm(burrMm).charAt(0).toUpperCase() + burrSpokenMm(burrMm).slice(1) + " millimetres of leftover raised ragged lip still stand along the finished cut.";
+        } else {
+          status = "FILED · NO LEFTOVER BURR";
+          alt = "Burr is filed. The cut is through. No leftover burr. A sketch, not a mill sign-off.";
+        }
+        const heightPx = leftover === "showing" ? Math.max(7, burrMm * BURR_SCALE) : 0;
+        const ragged = leftover === "showing" ? Math.min(1, 0.42 + burrMm / 20) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#f0d8a0" : "#8ec8b4",
+          heightPx: heightPx,
+          ragged: ragged,
+          lip: leftover === "showing" ? "along-cut" : "none",
+          shape: leftover === "showing" ? "leftover-burr" : "filed-cut"
+        };
+      }
+
+      function burrLipPath(heightPx, ragged) {
+        const cutLen = CUT_Y2 - CUT_Y1;
+        const peaks = [];
+        LOBES.forEach(function (lobe) {
+          const y = CUT_Y1 + lobe.t * cutLen;
+          const w = Math.max(3.2, heightPx * (0.28 + lobe.w * ragged));
+          peaks.push({ x: LIP_EDGE + w, y: y });
+        });
+        let d = "M " + LIP_EDGE.toFixed(1) + " " + CUT_Y1.toFixed(1);
+        d += " L " + peaks[0].x.toFixed(1) + " " + peaks[0].y.toFixed(1);
+        for (let i = 1; i < peaks.length; i++) {
+          const prev = peaks[i - 1];
+          const cur = peaks[i];
+          const cpx = ((prev.x + cur.x) / 2).toFixed(1);
+          const cpy = ((prev.y + cur.y) / 2).toFixed(1);
+          d += " Q " + prev.x.toFixed(1) + " " + prev.y.toFixed(1) + " " + cpx + " " + cpy;
+        }
+        d += " L " + peaks[peaks.length - 1].x.toFixed(1) + " " + peaks[peaks.length - 1].y.toFixed(1);
+        d += " L " + LIP_EDGE.toFixed(1) + " " + CUT_Y2.toFixed(1);
+        d += " Z";
+        return d;
+      }
+
+      function burrPaint(pic) {
+        const isFiled = pic.leftover === "filed";
+
+        burrBenchLayer.replaceChildren();
+        burrBenchLayer.appendChild(burrEl("rect", {
+          class: "site leftover-cut leftover-burr leftover-lip leftover-through leftover-one-workpiece",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#burr-bench-wash)",
+          stroke: "rgba(216,188,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        burrBenchLayer.appendChild(burrEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "THROUGH-CUT · LEFTOVER RAISED LIP STILL STANDS ALONG THE EDGE";
+
+        burrBoardLayer.replaceChildren();
+        const stock = burrEl("g", {
+          id: "burr-board-stock",
+          class: isFiled
+            ? "stock leftover-filed leftover-no-burr leftover-burr leftover-no-lip leftover-through leftover-cut leftover-true"
+            : "stock leftover-showing leftover-burr leftover-lip leftover-raised leftover-ragged leftover-through leftover-cut"
+        });
+
+        stock.appendChild(burrEl("rect", {
+          id: "burr-workpiece",
+          class: "stock-board leftover-stock leftover-board leftover-workpiece leftover-burr leftover-not-the-leftover leftover-not-a-nib leftover-not-a-fuzz leftover-not-a-tearout leftover-not-an-arris leftover-not-a-chatter leftover-not-a-burn leftover-not-a-squeeze",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#burr-stock-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "face-context"
+        }));
+        stock.appendChild(burrEl("rect", {
+          id: "burr-through-cut",
+          class: "cut-path leftover-stock leftover-cut leftover-through leftover-fixed leftover-not-the-leftover leftover-not-a-burr leftover-not-a-nib leftover-not-a-fuzz leftover-not-a-tearout leftover-not-an-arris leftover-not-a-chatter leftover-not-a-burn",
+          x: String(CUT_X - CUT_W / 2),
+          y: String(CUT_Y1),
+          width: String(CUT_W),
+          height: String(CUT_Y2 - CUT_Y1),
+          fill: "url(#burr-cut-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          "data-shape": "fixed-through-cut",
+          "data-role": "cut-reference",
+          "data-cut": "through",
+          "data-x1": String(CUT_X),
+          "data-y1": String(CUT_Y1),
+          "data-x2": String(CUT_X),
+          "data-y2": String(CUT_Y2)
+        }));
+        stock.appendChild(burrEl("text", {
+          x: String((FACE_LEFT + CUT_X) / 2),
+          y: String(FACE_TOP + 22),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "WORKPIECE · FIXED";
+        stock.appendChild(burrEl("text", {
+          x: String(CUT_X),
+          y: String(FACE_TOP - 8),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "CUT · THROUGH · FIXED";
+        burrBoardLayer.appendChild(stock);
+
+        leftoverBurrLayer.replaceChildren();
+        const leftover = burrEl("g", {
+          id: "leftover-burr",
+          class: isFiled
+            ? "burr leftover-burr leftover-filed leftover-empty leftover-no-lip leftover-through leftover-cut leftover-true"
+            : "burr leftover-burr leftover-showing leftover-lip leftover-raised leftover-ragged leftover-along-cut leftover-through leftover-cut leftover-standing",
+          "data-burr-mm": String(burrMm),
+          "data-height-px": String(pic.heightPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isFiled) {
+          leftover.appendChild(burrEl("path", {
+            id: "leftover-burr-lip",
+            class: "leftover-burr leftover-showing leftover-lip leftover-raised leftover-ragged leftover-along-cut leftover-standing leftover-not-a-nib leftover-not-a-fuzz leftover-not-a-tearout leftover-not-an-arris leftover-not-a-chatter leftover-not-a-burn leftover-not-a-splinter leftover-not-a-fibre leftover-not-a-corner leftover-not-a-chamfer leftover-local",
+            d: burrLipPath(pic.heightPx, pic.ragged),
+            fill: "url(#burr-lip-wash)",
+            stroke: "#f8ecd0",
+            "stroke-width": "1.1",
+            opacity: String(Math.min(0.94, 0.52 + burrMm / 32)),
+            "data-shape": "raised-ragged-lip",
+            "data-burr-mm": String(burrMm),
+            "data-role": "burr-lip",
+            "data-height-px": String(pic.heightPx.toFixed(1))
+          }));
+          leftover.appendChild(burrEl("text", {
+            id: "leftover-burr-label",
+            class: "burr-label leftover-label leftover-burr leftover-showing leftover-lip leftover-raised leftover-along-cut",
+            x: String(LIP_EDGE + pic.heightPx + 16),
+            y: String((CUT_Y1 + CUT_Y2) / 2),
+            fill: "#f4f0e8",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "start"
+          })).textContent = "BURR";
+        } else {
+          leftover.appendChild(burrEl("path", {
+            id: "burr-filed-cut",
+            class: "leftover-burr leftover-filed leftover-empty leftover-no-lip leftover-through leftover-cut leftover-true leftover-filed-cut leftover-not-a-burr",
+            d: "M " + (LIP_EDGE + 10) + " " + CUT_Y1 + " L " + LIP_EDGE + " " + CUT_Y1 + " L " + LIP_EDGE + " " + CUT_Y2,
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "filed-cut"
+          }));
+        }
+        leftoverBurrLayer.appendChild(leftover);
+
+        burrMarkLayer.replaceChildren();
+        burrMarkLayer.appendChild(burrEl("text", {
+          x: String(CUT_X),
+          y: String(FACE_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "CUT · THROUGH · FIXED";
+        burrMarkLayer.appendChild(burrEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isFiled ? "EDGE · FILED / NO LEFTOVER BURR" : "EDGE · LEFTOVER RAISED LIP STILL STANDS";
+
+        if (!isFiled) {
+          const dimX = LIP_EDGE + pic.heightPx + 8;
+          const dimY = CUT_Y1 + 36;
+          burrMarkLayer.appendChild(burrEl("line", {
+            id: "burr-dim",
+            class: "burr-dim leftover-burr leftover-showing leftover-lip leftover-raised leftover-along-cut leftover-not-a-nib leftover-not-a-fuzz leftover-not-a-tearout",
+            x1: String(LIP_EDGE),
+            y1: String(dimY.toFixed(1)),
+            x2: String((LIP_EDGE + pic.heightPx).toFixed(1)),
+            y2: String(dimY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          burrMarkLayer.appendChild(burrEl("line", {
+            x1: String(LIP_EDGE),
+            y1: String((dimY - 4).toFixed(1)),
+            x2: String(LIP_EDGE),
+            y2: String((dimY + 4).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          burrMarkLayer.appendChild(burrEl("line", {
+            x1: String((LIP_EDGE + pic.heightPx).toFixed(1)),
+            y1: String((dimY - 4).toFixed(1)),
+            x2: String((LIP_EDGE + pic.heightPx).toFixed(1)),
+            y2: String((dimY + 4).toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          burrMarkLayer.appendChild(burrEl("text", {
+            id: "burr-mm-label",
+            class: "burr-label leftover-label leftover-burr leftover-showing leftover-lip leftover-raised leftover-along-cut",
+            x: String((LIP_EDGE + pic.heightPx / 2).toFixed(1)),
+            y: String((dimY - 8).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = burrMm + " mm";
+          burrMarkLayer.appendChild(burrEl("text", {
+            id: "burr-lip-label",
+            class: "lip-label leftover-lip leftover-burr leftover-raised leftover-ragged leftover-along-cut leftover-not-a-nib leftover-not-a-fuzz leftover-not-a-tearout leftover-not-an-arris leftover-not-a-chatter leftover-not-a-burn leftover-not-a-splinter leftover-not-a-fibre leftover-not-a-corner leftover-not-a-chamfer",
+            x: "400",
+            y: "412",
+            fill: "#e8dcb0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER BURR · RAISED RAGGED LIP ALONG THE FIXED CUT · NOT A NIB · NOT A SPLINTER";
+        } else {
+          burrMarkLayer.appendChild(burrEl("text", {
+            id: "burr-label",
+            class: "burr-label leftover-label leftover-filed leftover-no-lip leftover-through leftover-cut leftover-empty leftover-true",
+            x: String(LIP_EDGE + 16),
+            y: String((CUT_Y1 + CUT_Y2) / 2),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "start"
+          })).textContent = "FILED / NO LEFTOVER BURR";
+        }
+
+        burrSceneStatus.setAttribute("fill", pic.accent);
+        burrSceneStatus.textContent = pic.status;
+        burrScene.setAttribute("data-burr", String(burrMm));
+        burrScene.setAttribute("data-leftover", pic.leftover);
+        burrScene.setAttribute("data-verdict", pic.verdict);
+        burrScene.setAttribute("data-view", "through-cut-burr");
+        burrScene.setAttribute("data-hero", "leftover-burr");
+        burrScene.setAttribute("data-burr-mm", String(burrMm));
+        burrScene.setAttribute("data-height-px", String(pic.heightPx.toFixed(1)));
+        burrScene.setAttribute("data-lip", pic.lip);
+        burrScene.setAttribute("data-shape", pic.shape);
+        burrScene.setAttribute("data-cut-x", String(CUT_X));
+        burrScene.setAttribute("data-cut-y1", String(CUT_Y1));
+        burrScene.setAttribute("data-cut-y2", String(CUT_Y2));
+        burrScene.setAttribute("data-cut-through", "true");
+      }
+
+      function burrToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-filed";
+      }
+
+      function burrRender() {
+        const pic = burrPicture();
+        burrPaint(pic);
+        burrTitle.textContent = pic.alt;
+        burrAlt.textContent = pic.alt;
+        burrSvg.setAttribute("aria-label", pic.alt);
+        burrDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + burrMm + " mm showing"
+          : "leftover filed";
+        burrStatMm.textContent = burrMm + " mm";
+        burrStatLeftover.textContent = pic.leftover;
+        burrStatLip.textContent = pic.leftover === "showing"
+          ? burrMm + " mm leftover"
+          : "filed";
+        burrStatLeftoverWrap.classList.remove("is-showing", "is-filed");
+        burrStatLeftoverWrap.classList.add(burrToneClass(pic.leftover));
+        if (Number(burrInput.value) !== burrMm) burrInput.value = String(burrMm);
+        burrInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function burrResetSeed() {
+        burrMm = BURR_SEED.burrMm;
+        burrRender();
+      }
+
+      burrInput.addEventListener("input", function (event) {
+        burrMm = burrClamp(Math.round(Number(event.target.value)), BURR_MIN, BURR_MAX);
+        burrRender();
+      });
+      burrBtnReset.addEventListener("click", burrResetSeed);
+      burrBtnResetStage.addEventListener("click", burrResetSeed);
+
+      burrRender();
+    </script>
+  </body>
+</html>
