@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Smear — the wipe has passed, but a smear still sits. Move the leftover smear. See the residual smear still sitting on a fixed face after a wipe." />
+    <title>Smear</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #09080a;
+        --panel: #141214;
+        --ink: #e6e2dc;
+        --muted: #86807a;
+        --line: rgba(184, 156, 120, 0.24);
+        --accent: #c8b090;
+        --timber: #3a2810;
+        --smear: #c4a878;
+        --showing: #d4c4a0;
+        --clear: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(200, 176, 144, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(16, 12, 10, 0.22), transparent 26%),
+          linear-gradient(180deg, #080706 0%, #141214 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(20, 18, 20, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 176, 144, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 18, 16, 0.96), rgba(10, 8, 8, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 176, 144, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181410;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #141210; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 176, 144, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(200, 176, 144, 0.1), transparent 46%),
+          #0a0808;
+        overflow: hidden;
+      }
+      #smear-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 196, 160, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-clear b { color: var(--clear); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #smear-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> smear · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover smear on the face that still sits after the wipe</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 27 Aug 2026 09:50</span>
+        <h1>Smear</h1>
+        <p class="lede">
+          The wipe has passed, but a smear still sits. Move the leftover smear. See the residual smear still sitting on a fixed face after a wipe.
+          Not creep. Not a scuff. Not a stain wash. Not a holiday. Not a clock. Not wipe advice.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="smear-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover smear still sits on the face after the wipe</h2>
+          </div>
+          <span class="kicker" id="smear-desk-meta">leftover 3 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="smear-svg" viewBox="0 0 800 460" role="img" aria-labelledby="smear-title smear-desc">
+            <title id="smear-title">Smear is showing. Three millimetres of leftover smear still sit on a fixed face after a wipe.</title>
+            <desc id="smear-desc">One workpiece whose leftover is the smear — leftover residual smear that still sits on a fixed face after a wipe (leftover smear still sitting after the wipe has passed, not Creep leftover glue line along a seam, not Scuff leftover abrasion, not Stain leftover wash, not Holiday leftover missed bare patch after a brush coat, not a clock). One workpiece; the face is wiped; the leftover is one leftover residual smear streak sitting on that face after the wipe, not a glue creep line, not an abraded scuff, not a stain wash, not a holiday. The leftover that still sits is the smear — leftover residual smear still sitting on a fixed face after a wipe. A sketch, not a mill sign-off. Not wipe advice.</desc>
+            <defs>
+              <linearGradient id="smear-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161210" />
+                <stop offset="100%" stop-color="#0a0808" />
+              </linearGradient>
+              <linearGradient id="smear-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#2a1c0c" />
+                <stop offset="46%" stop-color="#5a3a18" />
+                <stop offset="100%" stop-color="#7a5420" />
+              </linearGradient>
+              <linearGradient id="leftover-smear-film-wash" x1="0%" y1="0%" x2="100%" y2="40%">
+                <stop offset="0%" stop-color="#e8d8b0" />
+                <stop offset="42%" stop-color="#c4a878" />
+                <stop offset="100%" stop-color="#8a7048" />
+              </linearGradient>
+              <linearGradient id="leftover-smear-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1410" />
+                <stop offset="100%" stop-color="#080604" />
+              </linearGradient>
+              <linearGradient id="leftover-smear-film-profile" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#c4a878" />
+                <stop offset="100%" stop-color="#eadcc0" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(200,176,144,0.16)" />
+            <text x="36" y="42" fill="#86807a" font-size="11" letter-spacing="2">ONE WORKPIECE · WIPE HAS PASSED · LEFTOVER IS ONE SMEAR STREAK STILL SITTING AFTER THE WIPE</text>
+            <g id="smear-scene" data-view="wipe-smear" data-hero="leftover-smear" data-smear="3" data-leftover="showing" data-verdict="showing" data-smear-state="sitting">
+              <g id="smear-bench-layer"></g>
+              <g id="smear-stock-layer"></g>
+              <g id="leftover-smear-layer"></g>
+              <g id="smear-mark-layer"></g>
+              <text id="smear-scene-status" x="400" y="64" fill="#d4c4a0" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 3 MM LEFTOVER SMEAR</text>
+              <text id="smear-scene-sketch" x="400" y="434" fill="#545048" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER SMEAR STILL SITS ON A FIXED FACE · NOT CREEP · NOT A SCUFF · NOT A STAIN WASH · NOT A HOLIDAY · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="smear-alt" class="sr-only" aria-live="polite">Smear is showing. Three millimetres of leftover smear still sit on a fixed face after a wipe.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="smear-input">Leftover smear (mm of sitting smear extent on the face after the wipe)</label>
+            <input id="smear-input" type="range" min="0" max="8" step="1" value="3" />
+            <div class="ticks" aria-hidden="true">
+              <span>clear / no leftover smear</span>
+              <span>seed showing</span>
+              <span>larger leftover smear</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="smear-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Smear <b id="smear-stat-mm">3 mm</b></span>
+          <span id="smear-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="smear-stat-leftover">showing</b></span>
+          <span>Leftover smear (sketch) <b id="smear-stat-span">3 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The wipe has passed, but a smear still sits. Smear is leftover residual smear that still sits on a fixed face after a wipe. A sketch, not a mill sign-off, and not wipe advice.
+        Seed is already showing — 3 mm of leftover sitting smear after the wipe, not a clear-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not creep. Not a scuff. Not a stain wash. Not a holiday. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SMEAR_SEED = { smearMm: 3 };
+      const SMEAR_MIN = 0;
+      const SMEAR_MAX = 8;
+      const SMEAR_CLEAR_AT = 1;
+      const SMEAR_SCALE = 14;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const SMEAR_CX = 400;
+      const SMEAR_CY = 178;
+      const WIPE_Y = 178;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 328;
+      const PROFILE_LEFT = 168;
+      const PROFILE_RIGHT = 632;
+
+      let smearMm = SMEAR_SEED.smearMm;
+
+      const smearSvg = document.getElementById("smear-svg");
+      const smearScene = document.getElementById("smear-scene");
+      const smearTitle = document.getElementById("smear-title");
+      const smearAlt = document.getElementById("smear-alt");
+      const smearDeskMeta = document.getElementById("smear-desk-meta");
+      const smearInput = document.getElementById("smear-input");
+      const smearBenchLayer = document.getElementById("smear-bench-layer");
+      const smearStockLayer = document.getElementById("smear-stock-layer");
+      const leftoverSmearLayer = document.getElementById("leftover-smear-layer");
+      const smearMarkLayer = document.getElementById("smear-mark-layer");
+      const smearSceneStatus = document.getElementById("smear-scene-status");
+      const smearStatMm = document.getElementById("smear-stat-mm");
+      const smearStatLeftover = document.getElementById("smear-stat-leftover");
+      const smearStatLeftoverWrap = document.getElementById("smear-stat-leftover-wrap");
+      const smearStatSpan = document.getElementById("smear-stat-span");
+      const smearBtnReset = document.getElementById("smear-btn-reset");
+      const smearBtnResetStage = document.getElementById("smear-btn-reset-stage");
+
+      function smearClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function smearEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function smearSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverSmearGeom(spanPx) {
+        const half = Math.max(0, spanPx / 2);
+        const thick = Math.max(0, spanPx * 0.28);
+        return {
+          cx: SMEAR_CX,
+          cy: SMEAR_CY,
+          left: SMEAR_CX - half,
+          right: SMEAR_CX + half,
+          width: spanPx,
+          thick: thick
+        };
+      }
+
+      function leftoverSmearStreakPath(spanPx) {
+        const g = leftoverSmearGeom(spanPx);
+        const half = g.width / 2;
+        const t = g.thick;
+        const cx = g.cx;
+        const cy = g.cy;
+        return "M " + (cx - half).toFixed(1) + " " + (cy - t * 0.15).toFixed(1) +
+          " C " + (cx - half * 0.62).toFixed(1) + " " + (cy - t * 1.15).toFixed(1) +
+          " " + (cx - half * 0.18).toFixed(1) + " " + (cy - t * 0.72).toFixed(1) +
+          " " + cx.toFixed(1) + " " + (cy - t * 0.55).toFixed(1) +
+          " C " + (cx + half * 0.28).toFixed(1) + " " + (cy - t * 0.38).toFixed(1) +
+          " " + (cx + half * 0.68).toFixed(1) + " " + (cy - t * 0.92).toFixed(1) +
+          " " + (cx + half).toFixed(1) + " " + (cy + t * 0.08).toFixed(1) +
+          " C " + (cx + half * 0.72).toFixed(1) + " " + (cy + t * 1.05).toFixed(1) +
+          " " + (cx + half * 0.22).toFixed(1) + " " + (cy + t * 0.78).toFixed(1) +
+          " " + cx.toFixed(1) + " " + (cy + t * 0.62).toFixed(1) +
+          " C " + (cx - half * 0.32).toFixed(1) + " " + (cy + t * 0.48).toFixed(1) +
+          " " + (cx - half * 0.7).toFixed(1) + " " + (cy + t * 0.88).toFixed(1) +
+          " " + (cx - half).toFixed(1) + " " + (cy - t * 0.15).toFixed(1) + " Z";
+      }
+
+      function smearPicture() {
+        const leftover = smearMm <= SMEAR_CLEAR_AT ? "clear" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + smearMm + " MM LEFTOVER SMEAR";
+          alt = "Smear is showing. " + smearSpokenMm(smearMm).charAt(0).toUpperCase() + smearSpokenMm(smearMm).slice(1) + " millimetres of leftover smear still sit on a fixed face after a wipe.";
+        } else {
+          status = "CLEAR · NO LEFTOVER SMEAR";
+          alt = "Smear is clear. The wipe has passed. No leftover smear. A sketch, not a mill sign-off.";
+        }
+        const smearPx = leftover === "showing" ? Math.max(18, smearMm * SMEAR_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4c4a0" : "#8ec8b4",
+          smearPx: smearPx,
+          smearState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-smear" : "clear-face"
+        };
+      }
+
+      function smearPaint(pic) {
+        const isClear = pic.leftover === "clear";
+        const smear = leftoverSmearGeom(pic.smearPx);
+
+        smearBenchLayer.replaceChildren();
+        smearBenchLayer.appendChild(smearEl("rect", {
+          class: "site leftover-work leftover-smear leftover-wipe leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#smear-bench-wash)",
+          stroke: "rgba(200,176,144,0.16)",
+          "stroke-width": "1.2"
+        }));
+        smearBenchLayer.appendChild(smearEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6c645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · WIPE HAS PASSED · ONE LEFTOVER SMEAR STILL SITS AFTER THE WIPE";
+
+        smearStockLayer.replaceChildren();
+        const stock = smearEl("g", {
+          id: "smear-stock",
+          class: isClear
+            ? "stock leftover-clear leftover-no-smear leftover-smear leftover-wipe leftover-true"
+            : "stock leftover-showing leftover-smear leftover-sitting leftover-wipe"
+        });
+        stock.appendChild(smearEl("rect", {
+          id: "smear-workpiece-face",
+          class: "stock-board leftover-stock leftover-workpiece leftover-smear leftover-not-the-leftover leftover-not-creep leftover-not-a-scuff leftover-not-a-stain leftover-not-a-holiday leftover-wipe-context leftover-kept leftover-face leftover-fixed",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#smear-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "wipe-context",
+          "data-fixed": "true"
+        }));
+        const wipe = smearEl("g", {
+          id: "smear-wipe",
+          class: "wipe leftover-stock leftover-wipe leftover-done leftover-fixed leftover-not-the-leftover leftover-not-a-smear"
+        });
+        wipe.appendChild(smearEl("line", {
+          id: "smear-wipe-path",
+          class: "wipe-stroke leftover-wipe leftover-fixed leftover-not-the-leftover leftover-not-a-smear leftover-not-creep leftover-not-a-scuff leftover-not-a-stain leftover-not-a-holiday",
+          x1: String(FACE_LEFT + 18),
+          y1: String(WIPE_Y),
+          x2: String(FACE_RIGHT - 18),
+          y2: String(WIPE_Y),
+          stroke: isClear ? pic.accent : "rgba(212, 196, 160, 0.28)",
+          "stroke-width": isClear ? "1.6" : "0.9",
+          "stroke-dasharray": isClear ? "4 5" : "2 7",
+          opacity: isClear ? "0.86" : "0.5",
+          "data-fixed": "true",
+          "data-shape": "fixed-wipe"
+        }));
+        wipe.appendChild(smearEl("polyline", {
+          id: "smear-wipe-rag",
+          class: "wipe-rag leftover-wipe leftover-fixed leftover-not-the-leftover leftover-not-a-smear leftover-passed",
+          points: (FACE_RIGHT - 8) + "," + (WIPE_Y - 16) + " " + (FACE_RIGHT + 18) + "," + (WIPE_Y - 22) + " " + (FACE_RIGHT + 22) + "," + (WIPE_Y + 18) + " " + (FACE_RIGHT - 6) + "," + (WIPE_Y + 12),
+          fill: "rgba(200,176,144,0.12)",
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          opacity: "0.72",
+          "data-fixed": "true",
+          "data-shape": "passed-wipe"
+        }));
+        stock.appendChild(wipe);
+        stock.appendChild(smearEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 20),
+          fill: "#c8b080",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "FACE · WIPE HAS PASSED";
+        smearStockLayer.appendChild(stock);
+
+        leftoverSmearLayer.replaceChildren();
+        const leftover = smearEl("g", {
+          id: "leftover-smear",
+          class: isClear
+            ? "smear leftover-smear leftover-clear leftover-empty leftover-no-smear leftover-wipe leftover-true"
+            : "smear leftover-smear leftover-showing leftover-one leftover-sitting leftover-span leftover-streak leftover-after-wipe leftover-residual leftover-film leftover-patch",
+          "data-smear-mm": String(smearMm),
+          "data-smear-px": String(pic.smearPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isClear) {
+          leftover.appendChild(smearEl("path", {
+            id: "leftover-smear-streak",
+            class: "leftover-smear leftover-showing leftover-one leftover-sitting leftover-span leftover-after-wipe leftover-not-creep leftover-not-a-scuff leftover-not-a-stain leftover-not-a-holiday leftover-local leftover-streak leftover-residual leftover-film leftover-after-wipe leftover-patch",
+            d: leftoverSmearStreakPath(pic.smearPx),
+            fill: "url(#leftover-smear-film-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.15",
+            opacity: String(Math.min(0.96, 0.62 + smearMm / 18)),
+            "data-shape": "leftover-smear",
+            "data-smear-mm": String(smearMm),
+            "data-role": "sitting-smear",
+            "data-smear-px": String(pic.smearPx.toFixed(1)),
+            "data-origin-x": String(SMEAR_CX),
+            "data-origin-y": String(SMEAR_CY)
+          }));
+          leftover.appendChild(smearEl("ellipse", {
+            id: "leftover-smear-sheen",
+            class: "leftover-smear leftover-showing leftover-sitting leftover-sheen leftover-not-creep leftover-not-a-scuff leftover-not-a-stain",
+            cx: String((smear.cx - smear.width * 0.12).toFixed(1)),
+            cy: String((smear.cy - smear.thick * 0.18).toFixed(1)),
+            rx: String(Math.max(6, smear.width * 0.22).toFixed(1)),
+            ry: String(Math.max(2, smear.thick * 0.22).toFixed(1)),
+            fill: "#f4ead4",
+            opacity: "0.34"
+          }));
+          leftover.appendChild(smearEl("text", {
+            id: "leftover-smear-label",
+            class: "smear-label leftover-label leftover-smear leftover-showing leftover-sitting leftover-span leftover-streak leftover-film",
+            x: String((smear.right + 10).toFixed(1)),
+            y: String((smear.cy + 4).toFixed(1)),
+            fill: "#f4ead8",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "start"
+          })).textContent = "SMEAR";
+        } else {
+          leftover.appendChild(smearEl("rect", {
+            id: "leftover-smear-clear-path",
+            class: "leftover-smear leftover-clear leftover-empty leftover-no-smear leftover-wipe leftover-true leftover-clear-face leftover-not-a-smear",
+            x: String(SMEAR_CX - 28),
+            y: String(SMEAR_CY - 12),
+            width: "56",
+            height: "24",
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "clear-face"
+          }));
+        }
+        leftoverSmearLayer.appendChild(leftover);
+
+        smearMarkLayer.replaceChildren();
+        smearMarkLayer.appendChild(smearEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · FACE IS FIXED";
+        smearMarkLayer.appendChild(smearEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isClear ? "WIPE · CLEAR / NO LEFTOVER SMEAR" : "WIPE · ONE LEFTOVER SMEAR STILL SITS";
+
+        smearMarkLayer.appendChild(smearEl("rect", {
+          id: "smear-profile-face",
+          class: "profile leftover-wipe leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-face",
+          x: String(PROFILE_LEFT),
+          y: String(PROFILE_FACE_Y),
+          width: String(PROFILE_RIGHT - PROFILE_LEFT),
+          height: String(PROFILE_BOT - 16 - PROFILE_FACE_Y),
+          fill: "url(#leftover-smear-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          opacity: "0.94",
+          "data-fixed": "true"
+        }));
+        smearMarkLayer.appendChild(smearEl("line", {
+          id: "smear-profile-wipe",
+          class: isClear
+            ? "profile leftover-wipe leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-clear leftover-no-smear"
+            : "profile leftover-wipe leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-with-smear",
+          x1: String(PROFILE_LEFT),
+          y1: String(PROFILE_FACE_Y),
+          x2: String(PROFILE_RIGHT),
+          y2: String(PROFILE_FACE_Y),
+          stroke: pic.accent,
+          "stroke-width": "1.6",
+          "stroke-dasharray": isClear ? "3 4" : "2 5",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isClear ? "clear-face" : "leftover-smear-span"
+        }));
+
+        if (!isClear) {
+          const filmH = Math.max(4, pic.smearPx * 0.18);
+          smearMarkLayer.appendChild(smearEl("path", {
+            id: "leftover-smear-profile-film",
+            class: "leftover-smear leftover-showing leftover-sitting leftover-streak leftover-profile leftover-not-creep leftover-not-a-scuff leftover-not-a-stain leftover-not-a-holiday leftover-film leftover-patch",
+            d: "M " + (SMEAR_CX - pic.smearPx / 2).toFixed(1) + " " + PROFILE_FACE_Y +
+              " C " + (SMEAR_CX - pic.smearPx * 0.22).toFixed(1) + " " + (PROFILE_FACE_Y - filmH).toFixed(1) +
+              " " + (SMEAR_CX + pic.smearPx * 0.18).toFixed(1) + " " + (PROFILE_FACE_Y - filmH * 0.72).toFixed(1) +
+              " " + (SMEAR_CX + pic.smearPx / 2).toFixed(1) + " " + PROFILE_FACE_Y + " Z",
+            fill: "url(#leftover-smear-film-profile)",
+            stroke: pic.accent,
+            "stroke-width": "0.9",
+            opacity: "0.96",
+            "data-shape": "leftover-smear",
+            "data-role": "sitting-smear-profile"
+          }));
+          const dimY = PROFILE_FACE_Y + 36;
+          smearMarkLayer.appendChild(smearEl("line", {
+            id: "smear-dim",
+            class: "smear-dim leftover-smear leftover-showing leftover-sitting leftover-span leftover-not-creep leftover-not-a-scuff leftover-not-a-stain leftover-not-a-holiday",
+            x1: String((SMEAR_CX - pic.smearPx / 2).toFixed(1)),
+            y1: String(dimY),
+            x2: String((SMEAR_CX + pic.smearPx / 2).toFixed(1)),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          smearMarkLayer.appendChild(smearEl("text", {
+            id: "smear-mm-label",
+            class: "smear-label leftover-label leftover-smear leftover-showing leftover-sitting leftover-span leftover-streak leftover-film",
+            x: String(SMEAR_CX.toFixed(1)),
+            y: String((dimY + 14).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = smearMm + " mm";
+          smearMarkLayer.appendChild(smearEl("text", {
+            id: "smear-span-label",
+            class: "span-label leftover-smear leftover-one leftover-sitting leftover-span leftover-after-wipe leftover-not-creep leftover-not-a-scuff leftover-not-a-stain leftover-not-a-holiday leftover-streak leftover-residual leftover-film leftover-patch",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#eadcc0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER SMEAR · ONE STREAK AFTER THE WIPE · NOT CREEP · NOT A SCUFF";
+        } else {
+          smearMarkLayer.appendChild(smearEl("text", {
+            id: "smear-label",
+            class: "smear-label leftover-label leftover-clear leftover-no-smear leftover-wipe leftover-empty leftover-true",
+            x: String((FACE_LEFT + FACE_RIGHT) / 2),
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "CLEAR / NO LEFTOVER SMEAR";
+          smearMarkLayer.appendChild(smearEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · CLEAR / NO LEFTOVER SMEAR";
+        }
+
+        smearSceneStatus.setAttribute("fill", pic.accent);
+        smearSceneStatus.textContent = pic.status;
+        smearScene.setAttribute("data-smear", String(smearMm));
+        smearScene.setAttribute("data-leftover", pic.leftover);
+        smearScene.setAttribute("data-verdict", pic.verdict);
+        smearScene.setAttribute("data-view", "wipe-smear");
+        smearScene.setAttribute("data-hero", "leftover-smear");
+        smearScene.setAttribute("data-smear-mm", String(smearMm));
+        smearScene.setAttribute("data-smear-px", String(pic.smearPx.toFixed(1)));
+        smearScene.setAttribute("data-smear-state", pic.smearState);
+        smearScene.setAttribute("data-shape", pic.shape);
+        smearScene.setAttribute("data-face-fixed", "true");
+      }
+
+      function smearToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-clear";
+      }
+
+      function smearRender() {
+        const pic = smearPicture();
+        smearPaint(pic);
+        smearTitle.textContent = pic.alt;
+        smearAlt.textContent = pic.alt;
+        smearSvg.setAttribute("aria-label", pic.alt);
+        smearDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + smearMm + " mm showing"
+          : "leftover clear";
+        smearStatMm.textContent = smearMm + " mm";
+        smearStatLeftover.textContent = pic.leftover;
+        smearStatSpan.textContent = pic.leftover === "showing"
+          ? smearMm + " mm leftover"
+          : "clear";
+        smearStatLeftoverWrap.classList.remove("is-showing", "is-clear");
+        smearStatLeftoverWrap.classList.add(smearToneClass(pic.leftover));
+        if (Number(smearInput.value) !== smearMm) smearInput.value = String(smearMm);
+        smearInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function smearResetSeed() {
+        smearMm = SMEAR_SEED.smearMm;
+        smearRender();
+      }
+
+      smearInput.addEventListener("input", function (event) {
+        smearMm = smearClamp(Math.round(Number(event.target.value)), SMEAR_MIN, SMEAR_MAX);
+        smearRender();
+      });
+      smearBtnReset.addEventListener("click", smearResetSeed);
+      smearBtnResetStage.addEventListener("click", smearResetSeed);
+
+      smearRender();
+    </script>
+  </body>
+</html>
