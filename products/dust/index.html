@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Dust — the cut is open, but the dust is still in it. Move the leftover sawdust. See how much loose particulate remains in a kerf after cutting." />
+    <title>Dust</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --panel: #12100c;
+        --ink: #e8e2d6;
+        --muted: #8a8276;
+        --line: rgba(168, 148, 88, 0.22);
+        --accent: #d4c08a;
+        --timber: #5a4828;
+        --sawdust: #e8d4a0;
+        --showing: #e8d4a0;
+        --swept: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(212, 192, 138, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 18%, rgba(40, 32, 12, 0.22), transparent 26%),
+          linear-gradient(180deg, #070605 0%, #12100c 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 16, 12, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 192, 138, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(20, 18, 12, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 192, 138, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #e4ddd0; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #181a14;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 192, 138, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 192, 138, 0.1), transparent 46%),
+          #0a0806;
+        overflow: hidden;
+      }
+      #dust-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(232, 212, 160, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-swept b { color: var(--swept); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080706;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #dust-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> dust · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover sawdust still sitting in the cut</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 26 Aug 2026 09:50</span>
+        <h1>Dust</h1>
+        <p class="lede">
+          The cut is open, but the dust is still in it. Move the leftover sawdust. See how much loose particulate remains in a kerf after cutting.
+          Not a fuzz. Not a burn. Not a tearout. Not a chatter. Not a kerf. Not a stain. Not a mottle. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="dust-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover sawdust still sits in the cut</h2>
+          </div>
+          <span class="kicker" id="dust-desk-meta">leftover 8 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="dust-svg" viewBox="0 0 800 460" role="img" aria-labelledby="dust-title dust-desc">
+            <title id="dust-title">Dust is showing. Eight millimetres of leftover sawdust still sit in the cut.</title>
+            <desc id="dust-desc">One workpiece with a finished kerf whose leftover is the dust — leftover loose sawdust that still sits in the cut (leftover particulate still sitting in the kerf after cutting, not Fuzz leftover standing fibres, not Burn leftover scorch, not Tearout leftover splinter, not Chatter leftover ripple, not Kerf leftover changing gap, not Stain leftover wash, not Mottle leftover blotch). One fixed kerf; the leftover that still sits in that cut is the dust — leftover loose sawdust still sitting in the kerf. A sketch, not a mill sign-off. Not extraction advice.</desc>
+            <defs>
+              <linearGradient id="dust-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#16140e" />
+                <stop offset="100%" stop-color="#0c0a08" />
+              </linearGradient>
+              <linearGradient id="dust-face-wash" x1="0%" y1="0%" x2="100%" y2="12%">
+                <stop offset="0%" stop-color="#3a3018" />
+                <stop offset="46%" stop-color="#7a6430" />
+                <stop offset="100%" stop-color="#c8a858" />
+              </linearGradient>
+              <linearGradient id="dust-kerf-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a140c" />
+                <stop offset="50%" stop-color="#080604" />
+                <stop offset="100%" stop-color="#16120c" />
+              </linearGradient>
+              <linearGradient id="dust-bed-wash" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#8a7040" />
+                <stop offset="55%" stop-color="#d4b86a" />
+                <stop offset="100%" stop-color="#f0e0b0" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080706" stroke="rgba(212,192,138,0.16)" />
+            <text x="36" y="42" fill="#8a8276" font-size="11" letter-spacing="2">ONE WORKPIECE · LEFTOVER IS THE DUST</text>
+            <g id="dust-scene" data-view="one-workpiece-dust" data-hero="leftover-dust" data-dust="8" data-leftover="showing" data-verdict="showing" data-bed="in-kerf">
+              <g id="dust-bench-layer"></g>
+              <g id="dust-board-layer"></g>
+              <g id="dust-layer"></g>
+              <g id="dust-mark-layer"></g>
+              <text id="dust-scene-status" x="400" y="64" fill="#e8d4a0" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 8 MM LEFTOVER DUST</text>
+              <text id="dust-scene-sketch" x="400" y="434" fill="#5a544c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · LEFTOVER LOOSE SAWDUST STILL SITS IN THE CUT · NOT A FUZZ · NOT A BURN · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="dust-alt" class="sr-only" aria-live="polite">Dust is showing. Eight millimetres of leftover sawdust still sit in the cut.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="dust-input">Dust (mm · leftover dust in mm of settled sawdust)</label>
+            <input id="dust-input" type="range" min="0" max="36" step="1" value="8" />
+            <div class="ticks" aria-hidden="true">
+              <span>swept / no leftover dust</span>
+              <span>seed showing</span>
+              <span>deeper leftover bed</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="dust-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Dust <b id="dust-stat-mm">8 mm</b></span>
+          <span id="dust-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="dust-stat-leftover">showing</b></span>
+          <span>Leftover dust (sketch) <b id="dust-stat-bed">8 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The cut is open, but the dust is still in it. Dust is leftover sawdust that still sits in the cut. A sketch, not a mill sign-off, and not extraction advice.
+        Seed is already showing — 8 mm of leftover loose sawdust still sitting in a fixed kerf, not a swept-only cut. Arrow keys move the focused control.
+        Refresh restores the seed. Not a fuzz. Not a burn. Not a tearout. Not a chatter. Not a kerf. Not a stain. Not a mottle. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const DUST_SEED = { dustMm: 8 };
+      const DUST_MIN = 0;
+      const DUST_MAX = 36;
+      const DUST_SWEPT_AT = 1;
+      const DUST_SCALE = 4.6;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 118;
+      const FACE_BOT = 348;
+      const KERF_LEFT = 348;
+      const KERF_W = 104;
+      const KERF_RIGHT = KERF_LEFT + KERF_W;
+      const KERF_FLOOR = FACE_BOT - 10;
+
+      // Deterministic field of loose chips / dots in the kerf — not fibres, not one splinter, not a ripple.
+      const DUST_CHIPS = [
+        [356, 0.12, 1.6, 0], [364, 0.08, 1.2, 18], [372, 0.22, 1.8, 40], [380, 0.06, 1.1, 6],
+        [388, 0.18, 1.5, 28], [396, 0.10, 1.3, 52], [404, 0.26, 1.9, 12], [412, 0.14, 1.4, 34],
+        [420, 0.20, 1.7, 48], [428, 0.09, 1.2, 8], [436, 0.16, 1.5, 22], [444, 0.24, 1.8, 44],
+        [360, 0.34, 1.4, 70], [368, 0.28, 1.1, 86], [376, 0.40, 1.6, 62], [384, 0.32, 1.3, 94],
+        [392, 0.38, 1.7, 78], [400, 0.30, 1.2, 58], [408, 0.42, 1.5, 90], [416, 0.36, 1.4, 66],
+        [424, 0.44, 1.8, 82], [432, 0.29, 1.1, 74], [440, 0.46, 1.6, 98], [352, 0.50, 1.3, 54],
+        [358, 0.56, 1.5, 110], [366, 0.62, 1.2, 126], [374, 0.52, 1.7, 102], [382, 0.68, 1.4, 138],
+        [390, 0.58, 1.6, 118], [398, 0.64, 1.3, 146], [406, 0.54, 1.8, 106], [414, 0.70, 1.5, 130],
+        [422, 0.60, 1.2, 114], [430, 0.66, 1.4, 142], [438, 0.72, 1.7, 122], [448, 0.48, 1.1, 88],
+        [354, 0.78, 1.3, 154], [362, 0.84, 1.6, 170], [370, 0.76, 1.2, 162], [378, 0.90, 1.5, 178],
+        [386, 0.80, 1.4, 150], [394, 0.86, 1.8, 186], [402, 0.74, 1.1, 166], [410, 0.92, 1.6, 174],
+        [418, 0.82, 1.3, 158], [426, 0.88, 1.5, 182], [434, 0.96, 1.7, 190], [442, 0.94, 1.2, 194],
+        [361, 0.16, 0.9, 200], [377, 0.46, 1.0, 208], [393, 0.36, 0.8, 216], [409, 0.66, 1.0, 224],
+        [425, 0.26, 0.9, 232], [441, 0.56, 1.1, 240], [369, 0.88, 0.8, 248], [401, 0.08, 0.9, 256]
+      ];
+
+      let dustMm = DUST_SEED.dustMm;
+
+      const dustSvg = document.getElementById("dust-svg");
+      const dustScene = document.getElementById("dust-scene");
+      const dustTitle = document.getElementById("dust-title");
+      const dustAlt = document.getElementById("dust-alt");
+      const dustDeskMeta = document.getElementById("dust-desk-meta");
+      const dustInput = document.getElementById("dust-input");
+      const dustBenchLayer = document.getElementById("dust-bench-layer");
+      const dustBoardLayer = document.getElementById("dust-board-layer");
+      const dustLayer = document.getElementById("dust-layer");
+      const dustMarkLayer = document.getElementById("dust-mark-layer");
+      const dustSceneStatus = document.getElementById("dust-scene-status");
+      const dustStatMm = document.getElementById("dust-stat-mm");
+      const dustStatLeftover = document.getElementById("dust-stat-leftover");
+      const dustStatLeftoverWrap = document.getElementById("dust-stat-leftover-wrap");
+      const dustStatBed = document.getElementById("dust-stat-bed");
+      const dustBtnReset = document.getElementById("dust-btn-reset");
+      const dustBtnResetStage = document.getElementById("dust-btn-reset-stage");
+
+      function dustClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function dustEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function dustSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          8: "eight",
+          10: "ten",
+          12: "twelve",
+          14: "fourteen",
+          16: "sixteen",
+          18: "eighteen",
+          20: "twenty",
+          24: "twenty-four",
+          28: "twenty-eight",
+          30: "thirty",
+          32: "thirty-two",
+          36: "thirty-six"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function dustPicture() {
+        const leftover = dustMm <= DUST_SWEPT_AT ? "swept" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + dustMm + " MM LEFTOVER DUST";
+          alt = "Dust is showing. " + dustSpokenMm(dustMm).charAt(0).toUpperCase() + dustSpokenMm(dustMm).slice(1) + " millimetres of leftover sawdust still sit in the cut.";
+        } else {
+          status = "SWEPT · NO LEFTOVER DUST";
+          alt = "Dust is swept. The cut is open. No leftover dust. A sketch, not a mill sign-off.";
+        }
+        const bedPx = leftover === "showing" ? dustMm * DUST_SCALE : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#e8d4a0" : "#8ec8b4",
+          bedPx: bedPx,
+          bedH: leftover === "showing" ? Math.max(10, bedPx) : 0,
+          bed: leftover === "showing" ? "in-kerf" : "none",
+          shape: leftover === "showing" ? "leftover-dust" : "swept-kerf"
+        };
+      }
+
+      function dustPaint(pic) {
+        const isSwept = pic.leftover === "swept";
+
+        dustBenchLayer.replaceChildren();
+        dustBenchLayer.appendChild(dustEl("rect", {
+          class: "site leftover-cut leftover-face leftover-dust leftover-sawdust leftover-one-face leftover-in-kerf",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#dust-bench-wash)",
+          stroke: "rgba(212,192,138,0.16)",
+          "stroke-width": "1.2"
+        }));
+        dustBenchLayer.appendChild(dustEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a645c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "ONE WORKPIECE · LEFTOVER LOOSE SAWDUST STILL SITS IN THE CUT";
+
+        dustBoardLayer.replaceChildren();
+        const stock = dustEl("g", {
+          id: "dust-board-stock",
+          class: isSwept
+            ? "stock leftover-swept leftover-no-dust leftover-dust leftover-no-sawdust leftover-one-face leftover-cut leftover-true"
+            : "stock leftover-showing leftover-dust leftover-sawdust leftover-one-face leftover-cut leftover-in-kerf"
+        });
+
+        stock.appendChild(dustEl("rect", {
+          id: "dust-board",
+          class: "stock-board leftover-stock leftover-face leftover-one-face leftover-dust leftover-not-the-leftover leftover-not-a-fuzz leftover-not-a-burn leftover-not-a-tearout leftover-not-a-chatter leftover-not-a-stain leftover-not-a-mottle",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#dust-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "kept-workpiece",
+          "data-role": "face-context"
+        }));
+        stock.appendChild(dustEl("rect", {
+          id: "dust-kerf",
+          class: "stock-kerf leftover-stock leftover-kerf leftover-cut leftover-not-the-leftover leftover-not-a-dust leftover-gap leftover-fixed leftover-not-a-changing-kerf",
+          x: String(KERF_LEFT),
+          y: String(FACE_TOP - 4),
+          width: String(KERF_W),
+          height: String(KERF_FLOOR - FACE_TOP + 8),
+          fill: "url(#dust-kerf-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          "data-shape": "cut-kerf",
+          "data-role": "cut-edge",
+          "data-kerf-w": String(KERF_W)
+        }));
+        stock.appendChild(dustEl("line", {
+          id: "dust-cut-left",
+          class: "cut-edge leftover-stock leftover-cut leftover-kerf leftover-not-the-leftover leftover-not-a-fuzz leftover-not-a-chatter leftover-not-a-tearout",
+          x1: String(KERF_LEFT),
+          y1: String(FACE_TOP - 8),
+          x2: String(KERF_LEFT),
+          y2: String(KERF_FLOOR + 6),
+          stroke: pic.accent,
+          "stroke-width": "2.2",
+          "stroke-linecap": "square",
+          "data-shape": "finished-cut",
+          "data-role": "cut-reference"
+        }));
+        stock.appendChild(dustEl("line", {
+          id: "dust-cut-right",
+          class: "cut-edge leftover-stock leftover-cut leftover-kerf leftover-not-the-leftover leftover-not-a-burn leftover-not-a-stain leftover-not-a-ripple",
+          x1: String(KERF_RIGHT),
+          y1: String(FACE_TOP - 8),
+          x2: String(KERF_RIGHT),
+          y2: String(KERF_FLOOR + 6),
+          stroke: pic.accent,
+          "stroke-width": "2.2",
+          "stroke-linecap": "square",
+          "data-shape": "finished-cut",
+          "data-role": "cut-reference"
+        }));
+        stock.appendChild(dustEl("text", {
+          x: String((FACE_LEFT + KERF_LEFT) / 2),
+          y: String(FACE_TOP - 8),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "WORKPIECE · KERF WIDTH FIXED";
+        stock.appendChild(dustEl("text", {
+          x: String((KERF_RIGHT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP - 8),
+          fill: "#c8b090",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "WORKPIECE · CUT OPEN";
+        dustBoardLayer.appendChild(stock);
+
+        dustLayer.replaceChildren();
+        const leftover = dustEl("g", {
+          id: "leftover-dust",
+          class: isSwept
+            ? "dust leftover-dust leftover-swept leftover-empty leftover-no-sawdust leftover-one-face leftover-cut leftover-true"
+            : "dust leftover-dust leftover-showing leftover-sawdust leftover-in-kerf leftover-one-face leftover-cut leftover-depth leftover-particulate",
+          "data-dust-mm": String(dustMm),
+          "data-bed-px": String(pic.bedPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isSwept) {
+          const bedTop = KERF_FLOOR - pic.bedH;
+          leftover.appendChild(dustEl("rect", {
+            id: "leftover-dust-bed",
+            class: "leftover-dust leftover-showing leftover-sawdust leftover-bed leftover-in-kerf leftover-particulate leftover-not-a-fuzz leftover-not-a-burn leftover-not-a-tearout leftover-not-a-chatter leftover-not-a-stain leftover-not-a-kerf leftover-not-a-mottle leftover-settled",
+            x: String(KERF_LEFT + 3),
+            y: String(bedTop.toFixed(1)),
+            width: String(KERF_W - 6),
+            height: String(pic.bedH.toFixed(1)),
+            fill: "url(#dust-bed-wash)",
+            opacity: String(Math.min(0.92, 0.42 + dustMm / 60)),
+            "data-shape": "settled-sawdust-bed",
+            "data-dust-mm": String(dustMm),
+            "data-role": "dust-bed"
+          }));
+
+          const chipCount = Math.max(10, Math.round(12 + dustMm * 1.15));
+          DUST_CHIPS.slice(0, chipCount).forEach(function (chip, index) {
+            const frac = chip[1];
+            const cy = KERF_FLOOR - 3 - frac * pic.bedH;
+            if (cy < bedTop - 1) return;
+            const kind = index % 3 === 0 ? "rect" : "circle";
+            if (kind === "circle") {
+              leftover.appendChild(dustEl("circle", {
+                id: "leftover-dust-chip-" + index,
+                class: "leftover-dust leftover-showing leftover-sawdust leftover-chip leftover-dot leftover-particulate leftover-in-kerf leftover-not-a-fibre leftover-not-a-splinter leftover-not-a-ripple leftover-not-a-scorch",
+                cx: String(chip[0]),
+                cy: String(cy.toFixed(1)),
+                r: String(chip[2]),
+                fill: index % 2 === 0 ? "#f4e6b8" : "#c8a858",
+                opacity: "0.95",
+                "data-shape": "sawdust-dot",
+                "data-role": "dust-particle"
+              }));
+            } else {
+              leftover.appendChild(dustEl("rect", {
+                id: "leftover-dust-chip-" + index,
+                class: "leftover-dust leftover-showing leftover-sawdust leftover-chip leftover-flake leftover-particulate leftover-in-kerf leftover-not-a-fibre leftover-not-a-splinter leftover-not-a-ripple leftover-not-a-scorch",
+                x: String((chip[0] - chip[2]).toFixed(1)),
+                y: String((cy - chip[2] * 0.6).toFixed(1)),
+                width: String((chip[2] * 2.1).toFixed(1)),
+                height: String((chip[2] * 1.2).toFixed(1)),
+                fill: "#d8bc70",
+                transform: "rotate(" + chip[3] + " " + chip[0] + " " + cy.toFixed(1) + ")",
+                "data-shape": "sawdust-chip",
+                "data-role": "dust-particle"
+              }));
+            }
+          });
+
+          leftover.appendChild(dustEl("text", {
+            id: "leftover-dust-label",
+            class: "dust-label leftover-label leftover-dust leftover-showing leftover-sawdust leftover-one-face leftover-in-kerf",
+            x: String((KERF_LEFT + KERF_RIGHT) / 2),
+            y: String((bedTop + 4 > FACE_TOP + 16 ? bedTop - 8 : FACE_TOP + 16)),
+            fill: "#f4f0e8",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "DUST";
+        } else {
+          leftover.appendChild(dustEl("rect", {
+            id: "dust-swept-kerf",
+            class: "leftover-dust leftover-swept leftover-empty leftover-no-sawdust leftover-one-face leftover-cut leftover-true leftover-swept-kerf leftover-not-a-dust",
+            x: String(KERF_LEFT + 3),
+            y: String(FACE_TOP + 2),
+            width: String(KERF_W - 6),
+            height: String(KERF_FLOOR - FACE_TOP - 4),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "swept-kerf"
+          }));
+        }
+        dustLayer.appendChild(leftover);
+
+        dustMarkLayer.replaceChildren();
+        dustMarkLayer.appendChild(dustEl("text", {
+          x: String((KERF_LEFT + KERF_RIGHT) / 2),
+          y: String(KERF_FLOOR + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "CUT · KERF WIDTH FIXED";
+        dustMarkLayer.appendChild(dustEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 22),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSwept ? "FACE · SWEPT / NO LEFTOVER DUST" : "FACE · LEFTOVER LOOSE SAWDUST STILL SITS IN THE CUT";
+
+        if (!isSwept) {
+          const bedTop = KERF_FLOOR - pic.bedH;
+          const dimX = KERF_RIGHT + 18;
+          dustMarkLayer.appendChild(dustEl("line", {
+            id: "dust-dim",
+            class: "dust-dim leftover-dust leftover-showing leftover-sawdust leftover-one-face leftover-in-kerf leftover-not-a-fuzz leftover-not-a-chatter leftover-not-a-tearout",
+            x1: String(dimX),
+            y1: String(bedTop.toFixed(1)),
+            x2: String(dimX),
+            y2: String(KERF_FLOOR),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          dustMarkLayer.appendChild(dustEl("line", {
+            x1: String(dimX - 4),
+            y1: String(bedTop.toFixed(1)),
+            x2: String(dimX + 4),
+            y2: String(bedTop.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          dustMarkLayer.appendChild(dustEl("line", {
+            x1: String(dimX - 4),
+            y1: String(KERF_FLOOR),
+            x2: String(dimX + 4),
+            y2: String(KERF_FLOOR),
+            stroke: pic.accent,
+            "stroke-width": "1.2"
+          }));
+          dustMarkLayer.appendChild(dustEl("text", {
+            id: "dust-mm-label",
+            class: "dust-label leftover-label leftover-dust leftover-showing leftover-sawdust leftover-one-face leftover-in-kerf",
+            x: String(dimX + 8),
+            y: String((bedTop + KERF_FLOOR) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = dustMm + " mm";
+          dustMarkLayer.appendChild(dustEl("text", {
+            id: "dust-bed-label",
+            class: "bed-label leftover-sawdust leftover-dust leftover-one-face leftover-in-kerf leftover-not-a-fuzz leftover-not-a-burn leftover-not-a-tearout leftover-not-a-chatter leftover-not-a-stain",
+            x: "400",
+            y: "412",
+            fill: "#e8d8b0",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER DUST · LOOSE SAWDUST STILL SITS IN THE CUT · NOT FIBRES · NOT SCORCH";
+        } else {
+          dustMarkLayer.appendChild(dustEl("text", {
+            id: "dust-label",
+            class: "dust-label leftover-label leftover-swept leftover-no-sawdust leftover-one-face leftover-cut leftover-empty leftover-true",
+            x: String((KERF_LEFT + KERF_RIGHT) / 2),
+            y: String((FACE_TOP + KERF_FLOOR) / 2),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SWEPT / NO LEFTOVER DUST";
+        }
+
+        dustSceneStatus.setAttribute("fill", pic.accent);
+        dustSceneStatus.textContent = pic.status;
+        dustScene.setAttribute("data-dust", String(dustMm));
+        dustScene.setAttribute("data-leftover", pic.leftover);
+        dustScene.setAttribute("data-verdict", pic.verdict);
+        dustScene.setAttribute("data-view", "one-workpiece-dust");
+        dustScene.setAttribute("data-hero", "leftover-dust");
+        dustScene.setAttribute("data-dust-mm", String(dustMm));
+        dustScene.setAttribute("data-bed-px", String(pic.bedPx.toFixed(1)));
+        dustScene.setAttribute("data-bed", pic.bed);
+        dustScene.setAttribute("data-shape", pic.shape);
+        dustScene.setAttribute("data-bed-h", String(pic.bedH.toFixed(1)));
+        dustScene.setAttribute("data-kerf-w", String(KERF_W));
+      }
+
+      function dustToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-swept";
+      }
+
+      function dustRender() {
+        const pic = dustPicture();
+        dustPaint(pic);
+        dustTitle.textContent = pic.alt;
+        dustAlt.textContent = pic.alt;
+        dustSvg.setAttribute("aria-label", pic.alt);
+        dustDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + dustMm + " mm showing"
+          : "leftover swept";
+        dustStatMm.textContent = dustMm + " mm";
+        dustStatLeftover.textContent = pic.leftover;
+        dustStatBed.textContent = pic.leftover === "showing"
+          ? dustMm + " mm leftover"
+          : "swept";
+        dustStatLeftoverWrap.classList.remove("is-showing", "is-swept");
+        dustStatLeftoverWrap.classList.add(dustToneClass(pic.leftover));
+        if (Number(dustInput.value) !== dustMm) dustInput.value = String(dustMm);
+        dustInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function dustResetSeed() {
+        dustMm = DUST_SEED.dustMm;
+        dustRender();
+      }
+
+      dustInput.addEventListener("input", function (event) {
+        dustMm = dustClamp(Math.round(Number(event.target.value)), DUST_MIN, DUST_MAX);
+        dustRender();
+      });
+      dustBtnReset.addEventListener("click", dustResetSeed);
+      dustBtnResetStage.addEventListener("click", dustResetSeed);
+
+      dustRender();
+    </script>
+  </body>
+</html>
