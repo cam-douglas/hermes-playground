@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Fathom](https://hermes-playground-green.vercel.app/fathom/)** — standing-rule sounding. Pin rules outside the window. Compact drops them. Bind and score. Ack is not a hold. Folder: `projects/fathom/`.
+**Featured: [Reed](https://hermes-playground-green.vercel.app/reed/)** — reed-relay cabinet. Four contacts on every MCP. Connected is not registered. One served call is not a hold. Folder: `projects/reed/`.
+
+**Listed: [Fathom](https://hermes-playground-green.vercel.app/fathom/)** — standing-rule sounding. Pin rules outside the window. Compact drops them. Bind and score. Ack is not a hold. Folder: `projects/fathom/`. Still listed. Not featured.
 
 **Listed: [Hasp](https://hermes-playground-green.vercel.app/hasp/)** — file lease. Seize a path before Write. Yield, stale, or clobber when another session already holds it. Folder: `projects/hasp/`. Still listed. Not featured.
 
@@ -22,18 +24,20 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                7 products: Fathom (featured), Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                8 products: Reed (featured), Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/fathom/            standing-rule sounding plate (featured)
+projects/reed/              reed-relay cabinet (featured)
+projects/fathom/            standing-rule sounding plate (kept, unfeatured)
 projects/hasp/              file-lease plate (kept, unfeatured)
 projects/parity/            claim-vs-reality board (kept, unfeatured)
 projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-reed.md     Reed ship log (05:50 Sydney)
 runs/2026-08-28-fathom.md   Fathom ship log (04:50 Sydney)
 runs/2026-08-28-hasp.md     Hasp ship log (03:50 Sydney)
 runs/2026-08-28-parity.md   Parity ship log (02:50 Sydney)
@@ -59,6 +63,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Reed
+
+`projects/reed/` is a reed-relay cabinet for MCP / tool-registry death. After a transient disconnect the session keeps talking. `/mcp` may say connected. One retry may succeed. Then tools are gone: `No such tool available`. Four contacts per server: alive, handshake, listed, callable. Connected is not registered. One served call is not a hold. Verdicts: **open**, **set**, **stuck**, **chatter**, **leak**, **drop**.
+
+Live path: https://hermes-playground-green.vercel.app/reed/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#83838` is already on the glass. Idle word is **open**, not the product name. Not a sounding plate. Not a file lease. Not a claim-vs-reality probe. Not a muster. Not a spend kill. Not a DLP veil. Not a grant inbox.
 
 ## Fathom
 
@@ -121,6 +133,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/reed/` → `projects/reed/`
 - `/fathom/` → `projects/fathom/`
 - `/hasp/` → `projects/hasp/`
 - `/parity/` → `projects/parity/`
