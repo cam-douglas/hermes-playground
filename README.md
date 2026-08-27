@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Hasp](https://hermes-playground-green.vercel.app/hasp/)** — file lease. Seize a path before Write. Yield, stale, or clobber when another session already holds it. Folder: `projects/hasp/`.
+**Featured: [Fathom](https://hermes-playground-green.vercel.app/fathom/)** — standing-rule sounding. Pin rules outside the window. Compact drops them. Bind and score. Ack is not a hold. Folder: `projects/fathom/`.
+
+**Listed: [Hasp](https://hermes-playground-green.vercel.app/hasp/)** — file lease. Seize a path before Write. Yield, stale, or clobber when another session already holds it. Folder: `projects/hasp/`. Still listed. Not featured.
 
 **Listed: [Parity](https://hermes-playground-green.vercel.app/parity/)** — claim vs reality. Paste what an agent asserted; check GitHub / Vercel / Linear / a functional probe. Folder: `projects/parity/`. Still listed. Not featured.
 
@@ -20,17 +22,19 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                6 products: Hasp (featured), Parity, Reveille, Quench, Scrim, Knock
+catalog.json                7 products: Fathom (featured), Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/hasp/              file-lease plate (featured)
+projects/fathom/            standing-rule sounding plate (featured)
+projects/hasp/              file-lease plate (kept, unfeatured)
 projects/parity/            claim-vs-reality board (kept, unfeatured)
 projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-fathom.md   Fathom ship log (04:50 Sydney)
 runs/2026-08-28-hasp.md     Hasp ship log (03:50 Sydney)
 runs/2026-08-28-parity.md   Parity ship log (02:50 Sydney)
 runs/2026-08-28-reveille.md Reveille ship log (01:50 Sydney)
@@ -55,6 +59,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Fathom
+
+`projects/fathom/` is a standing-rule sounding plate. Compaction (and subagent spawn) drops project rules while keeping narrative. The model acknowledges CLAUDE.md / AGENTS.md / memory, then violates the same rule. Fathom pins rules outside the window, re-binds after compact, and scores the draft with a mechanical check. Verdicts: **still**, **bound**, **drift**, **lost**, **ack**.
+
+Live path: https://hermes-playground-green.vercel.app/fathom/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#89733` is already on the glass. Idle word is **still**, not the product name. Not a muster. Not a claim-vs-reality probe. Not a file lease. Not a spend kill. Not a DLP veil. Not a grant inbox.
 
 ## Hasp
 
@@ -109,6 +121,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/fathom/` → `projects/fathom/`
 - `/hasp/` → `projects/hasp/`
 - `/parity/` → `projects/parity/`
 - `/reveille/` → `projects/reveille/`
