@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Quench — runtime fuse. Trip a hard kill, fire Slack, write the GitHub spend ledger."
+    />
+    <title>Quench — throw the breaker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #080706;
+        --steel: #161310;
+        --well: #0e0c0a;
+        --copper: #c87533;
+        --copper-hot: #f0a35a;
+        --copper-dim: #7a4a22;
+        --trip: #e22b1c;
+        --armed: #3c8f5c;
+        --cool: #6b8f86;
+        --ink: #f3ebe1;
+        --mute: #8a8176;
+        --line: rgba(200, 117, 51, 0.22);
+        --display: "Big Shoulders Display", "Impact", "Arial Narrow", sans-serif;
+        --sans: "Barlow", "Avenir Next", "Segoe UI", sans-serif;
+        --mono: "Share Tech Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: var(--sans);
+        color: var(--ink);
+        background:
+          radial-gradient(900px 480px at 12% -8%, rgba(200, 117, 51, 0.16), transparent 52%),
+          radial-gradient(640px 360px at 108% 0%, rgba(226, 43, 28, 0.08), transparent 46%),
+          repeating-linear-gradient(90deg, #0a0908 0 2px, #0c0b09 2px 5px),
+          var(--void);
+      }
+      a { color: var(--copper-hot); }
+      button { font: inherit; cursor: pointer; }
+      .rivets {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          radial-gradient(circle at 18px 18px, #3a322a 0 3px, transparent 4px),
+          radial-gradient(circle at calc(100% - 18px) 18px, #3a322a 0 3px, transparent 4px),
+          radial-gradient(circle at 18px calc(100% - 18px), #3a322a 0 3px, transparent 4px),
+          radial-gradient(circle at calc(100% - 18px) calc(100% - 18px), #3a322a 0 3px, transparent 4px);
+        opacity: 0.55;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: flex-end;
+        padding: 26px 32px 20px;
+        border-bottom: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(22, 19, 16, 0.92), rgba(8, 7, 6, 0.4));
+      }
+      .brand { display: flex; gap: 16px; align-items: center; }
+      .cartridge {
+        width: 48px;
+        height: 48px;
+        border: 2px solid var(--copper);
+        background:
+          linear-gradient(180deg, #e0a46a, #8a4a1c 40%, #c87533 70%, #5a3012);
+        position: relative;
+        box-shadow: inset 0 0 0 3px #2a1a0e, 0 0 18px rgba(200, 117, 51, 0.25);
+      }
+      .cartridge::before, .cartridge::after {
+        content: "";
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        height: 4px;
+        background: #2a1a0e;
+      }
+      .cartridge::before { top: 7px; }
+      .cartridge::after { bottom: 7px; }
+      .word { display: grid; gap: 2px; }
+      .word em {
+        font-family: var(--mono);
+        font-style: normal;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--copper);
+      }
+      h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: 44px;
+        line-height: 0.85;
+        letter-spacing: 0.02em;
+        font-weight: 800;
+      }
+      .lede { max-width: 34em; color: var(--mute); font-size: 15px; line-height: 1.45; }
+      .lede strong { color: var(--ink); font-weight: 600; }
+      .lamps { display: flex; gap: 10px; flex-wrap: wrap; }
+      .lamp {
+        min-width: 92px;
+        padding: 8px 10px 7px;
+        border: 1px solid #2a241c;
+        background: var(--well);
+        text-align: center;
+      }
+      .lamp b {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        color: #4a433c;
+      }
+      .lamp i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-bottom: 4px;
+        background: #2a241c;
+        box-shadow: inset 0 -1px 2px #000;
+      }
+      .lamp.on.cool i { background: var(--cool); box-shadow: 0 0 10px var(--cool); }
+      .lamp.on.armed i { background: var(--armed); box-shadow: 0 0 10px var(--armed); }
+      .lamp.on.warning i { background: var(--copper-hot); box-shadow: 0 0 12px var(--copper); }
+      .lamp.on.tripped i { background: var(--trip); box-shadow: 0 0 14px var(--trip); }
+      .lamp.on b { color: var(--ink); }
+      .shell {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 0;
+        min-height: calc(100vh - 148px);
+      }
+      .side {
+        padding: 22px 22px 28px;
+        border-right: 1px solid var(--line);
+        background: rgba(14, 12, 10, 0.72);
+      }
+      .main { padding: 22px 26px 36px; }
+      .gauge-wrap { display: grid; justify-items: center; gap: 8px; margin-bottom: 22px; }
+      .gauge { width: 220px; height: 220px; }
+      .needle { transform-origin: 110px 118px; transition: transform 180ms linear; }
+      .readout {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--copper-hot);
+        letter-spacing: 0.04em;
+      }
+      .actions { display: grid; gap: 10px; }
+      .throw, .raise, .cool {
+        border: 1px solid var(--copper-dim);
+        padding: 12px 12px 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .throw {
+        background: linear-gradient(180deg, #5a1610, #2a0c0a);
+        color: #ffd0c8;
+        border-color: #8a2a1c;
+      }
+      .throw:hover { background: #6a1a12; }
+      .throw[disabled] { opacity: 0.45; cursor: not-allowed; }
+      .raise {
+        background: #1c1610;
+        color: var(--copper-hot);
+      }
+      .raise:hover { background: #2a2016; }
+      .cool {
+        background: transparent;
+        color: var(--cool);
+        border-color: #2c3a36;
+      }
+      .cool:hover { background: #121816; }
+      .hint { margin: 12px 0 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .plate {
+        border: 1px solid var(--line);
+        background: var(--steel);
+        padding: 16px 16px 14px;
+        min-height: 0;
+      }
+      .plate h2 {
+        margin: 0 0 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--copper);
+        font-weight: 400;
+      }
+      .nums {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: baseline;
+      }
+      .nums strong {
+        font-family: var(--display);
+        font-size: 42px;
+        letter-spacing: -0.02em;
+        line-height: 0.9;
+      }
+      .nums span { color: var(--mute); font-family: var(--mono); font-size: 13px; }
+      .track {
+        margin-top: 14px;
+        height: 10px;
+        background: #0a0908;
+        border: 1px solid #2a2218;
+        position: relative;
+        overflow: hidden;
+      }
+      .fill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, var(--copper-dim), var(--copper-hot));
+        box-shadow: 0 0 12px rgba(200, 117, 51, 0.45);
+        transition: width 160ms linear;
+      }
+      .fill.warn { background: linear-gradient(90deg, #a85a18, var(--copper-hot)); }
+      .fill.trip { background: linear-gradient(90deg, #8a1810, var(--trip)); }
+      .bars { display: grid; gap: 11px; }
+      .bar { display: grid; gap: 4px; }
+      .bar label {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .bar b { color: var(--ink); font-weight: 400; }
+      .bus {
+        height: 8px;
+        background: #0a0908;
+        border: 1px solid #2a2218;
+      }
+      .bus > i {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, #6b3a16, var(--copper));
+        box-shadow: 0 0 8px rgba(200, 117, 51, 0.35);
+      }
+      .ticks {
+        margin: 16px 0 0;
+        display: grid;
+        gap: 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--mute);
+        max-height: 132px;
+        overflow: auto;
+      }
+      .ticks div { border-left: 2px solid var(--copper-dim); padding-left: 8px; }
+      .ledger {
+        margin-top: 16px;
+        display: grid;
+        gap: 8px;
+      }
+      .event {
+        padding: 10px 12px;
+        background: #0c0a08;
+        border: 1px dashed #3a2c1c;
+        font-size: 14px;
+      }
+      .event b {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--copper);
+        margin-bottom: 4px;
+      }
+      .evidence {
+        margin-top: 16px;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .evidence a { color: var(--copper-hot); text-decoration: none; border-bottom: 1px solid var(--copper-dim); }
+      .hook {
+        margin-top: 16px;
+        padding: 12px;
+        background: #0a0908;
+        border: 1px solid #2a2218;
+        color: #c8b8a4;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        overflow: auto;
+        max-height: 180px;
+      }
+      .cool-state {
+        padding: 18px 8px 8px;
+        color: var(--cool);
+      }
+      .cool-state h3 {
+        margin: 0 0 6px;
+        font-family: var(--display);
+        font-size: 36px;
+        letter-spacing: 0.04em;
+        color: var(--cool);
+      }
+      .cool-state p { margin: 0; color: var(--mute); max-width: 36em; }
+      footer {
+        padding: 14px 32px 28px;
+        color: var(--mute);
+        font-size: 13px;
+      }
+      @media (max-width: 880px) {
+        header, .shell { display: block; }
+        .side { border-right: 0; border-bottom: 1px solid var(--line); }
+        .row { grid-template-columns: 1fr; }
+        h1 { font-size: 36px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="rivets" aria-hidden="true"></div>
+    <header>
+      <div class="brand">
+        <div class="cartridge" aria-hidden="true"></div>
+        <div class="word">
+          <em>catalog fuse</em>
+          <h1>QUENCH</h1>
+        </div>
+      </div>
+      <p class="lede">
+        The banner is not a breaker. <strong>Quench trips the circuit.</strong>
+        Slack hears the bang. GitHub keeps the invoice.
+      </p>
+      <div class="lamps" id="lamps" aria-label="Fuse state"></div>
+    </header>
+    <div class="shell">
+      <aside class="side">
+        <div class="gauge-wrap">
+          <svg class="gauge" viewBox="0 0 220 220" role="img" aria-label="Live burn meter">
+            <circle cx="110" cy="118" r="88" fill="#0a0908" stroke="#3a2c1c" stroke-width="2" />
+            <path d="M38 150 A84 84 0 1 1 182 150" fill="none" stroke="#2a2218" stroke-width="14" />
+            <path id="arc" d="M38 150 A84 84 0 1 1 182 150" fill="none" stroke="#c87533" stroke-width="14" stroke-linecap="butt" stroke-dasharray="0 400" />
+            <line id="needle" class="needle" x1="110" y1="118" x2="110" y2="46" stroke="#f0a35a" stroke-width="3" />
+            <circle cx="110" cy="118" r="7" fill="#c87533" />
+            <text x="110" y="168" text-anchor="middle" fill="#c87533" font-family="Share Tech Mono, monospace" font-size="11">BURN</text>
+            <text id="pct" x="110" y="188" text-anchor="middle" fill="#f3ebe1" font-family="Share Tech Mono, monospace" font-size="18">0%</text>
+          </svg>
+          <div class="readout" id="session">SESSION fanout-83025</div>
+        </div>
+        <div class="actions">
+          <button class="throw" id="kill" type="button">Throw the breaker</button>
+          <button class="raise" id="raise" type="button">Raise the fuse</button>
+          <button class="cool" id="reset" type="button">Arm cool</button>
+        </div>
+        <p class="hint">
+          Kill cuts the simulated runaway and writes a spend row.
+          Raise lifts the limit 1.4×. Cool is the idle word — not the product name.
+        </p>
+      </aside>
+      <main class="main">
+        <div class="row">
+          <section class="plate">
+            <h2>Live burn</h2>
+            <div id="burn"></div>
+          </section>
+          <section class="plate">
+            <h2>Fuse limit</h2>
+            <div id="limit"></div>
+          </section>
+        </div>
+        <section class="plate" style="margin-top: 16px">
+          <h2>Attribution · parent / subagents / hooks / workflows</h2>
+          <div class="bars" id="bars"></div>
+          <div class="ticks" id="ticks" aria-live="polite"></div>
+        </section>
+        <section class="plate" style="margin-top: 16px">
+          <h2>Adapters</h2>
+          <div class="ledger" id="ledger"></div>
+          <pre class="hook" id="hook"></pre>
+        </section>
+        <p class="evidence">
+          Documented, not invented:
+          <a href="https://github.com/anthropics/claude-code/issues/85422">#85422</a> runtime breaker FR ·
+          <a href="https://github.com/anthropics/claude-code/issues/68619">#68619</a> ~$1700 recursive spawn ·
+          <a href="https://github.com/anthropics/claude-code/issues/72566">#72566</a> 5 → 361 agents ·
+          <a href="https://github.com/anthropics/claude-code/issues/77582">#77582</a> 99% banner is UI-only ·
+          <a href="https://github.com/anthropics/claude-code/issues/83025">#83025</a> 5.2M tok / 82-agent fan-out.
+        </p>
+      </main>
+    </div>
+    <footer>Quench · hermes-playground · <a href="/">catalog</a></footer>
+    <script>
+      const USD_PER_MTOK = 15;
+      const WARNING = 0.8;
+      const PULSE = { parent: 420, subagents: 2800, hooks: 90, workflows: 690 };
+      const STATES = ["cool", "armed", "warning", "tripped"];
+
+      function seed() {
+        return {
+          session: "fanout-83025",
+          agents: 82,
+          sources: { parent: 842000, subagents: 2614000, hooks: 184000, workflows: 544000 },
+          killed: false,
+          raised: 0,
+        };
+      }
+
+      function coolSession() {
+        return {
+          session: "cool-1",
+          agents: 0,
+          sources: { parent: 0, subagents: 0, hooks: 0, workflows: 0 },
+          killed: false,
+          raised: 0,
+        };
+      }
+
+      let snap = seed();
+      let threshold = { tokens: 5000000, usd: 75 };
+      let ticks = [];
+      let timer = null;
+      let lastTrip = false;
+
+      function totals() {
+        const sources = snap.sources;
+        const tokens = sources.parent + sources.subagents + sources.hooks + sources.workflows;
+        const usd = (tokens / 1e6) * USD_PER_MTOK;
+        return { tokens, usd, sources };
+      }
+
+      function ratio() {
+        const t = totals();
+        if (t.tokens <= 0) return 0;
+        return Math.max(t.tokens / threshold.tokens, t.usd / threshold.usd);
+      }
+
+      function state() {
+        const t = totals();
+        if (snap.killed) return "tripped";
+        if (t.tokens <= 0) return "cool";
+        const r = ratio();
+        if (r >= 1) return "tripped";
+        if (r >= WARNING) return "warning";
+        return "armed";
+      }
+
+      function fmtTok(n) {
+        if (n >= 1000000) return (n / 1000000).toFixed(2) + "M";
+        if (n >= 1000) return (n / 1000).toFixed(1) + "k";
+        return String(Math.round(n));
+      }
+
+      function money(n) {
+        return "$" + n.toFixed(2);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function adapters(kind) {
+        const t = totals();
+        const st = state();
+        if (st === "cool") {
+          return [
+            { adapter: "slack", summary: "Would skip Slack — fuse is cool." },
+            { adapter: "github", summary: "Would skip GitHub spend ledger — fuse is cool." },
+            { adapter: "linear", summary: "No trip — no quota-blown ticket." },
+          ];
+        }
+        if (kind === "raise") {
+          return [
+            { adapter: "slack", summary: "Would post to Slack: fuse raised — work continues under a taller limit." },
+            { adapter: "github", summary: "Would write a GitHub session spend ledger row for the raised fuse. Demo: no token." },
+            { adapter: "linear", summary: "No trip — no quota-blown ticket." },
+          ];
+        }
+        if (st === "tripped" || kind === "kill") {
+          return [
+            { adapter: "slack", summary: "Would post to Slack: kill ack — breaker thrown, in-flight work cut." },
+            { adapter: "github", summary: "Would write a GitHub session spend ledger (gist / issue comment). Demo: no token." },
+            { adapter: "linear", summary: "Would open a Linear quota-blown ticket: Quota blown · Quench " + snap.session },
+          ];
+        }
+        return [
+          {
+            adapter: "slack",
+            summary:
+              "Would post to Slack: burn alarm — " +
+              fmtTok(t.tokens) +
+              " tok / " +
+              money(t.usd) +
+              " at " +
+              Math.round(ratio() * 100) +
+              "% of fuse. Work still live.",
+          },
+          { adapter: "github", summary: "Would write a GitHub session spend ledger (gist / issue comment). Demo: no token." },
+          { adapter: "linear", summary: "No trip — no quota-blown ticket." },
+        ];
+      }
+
+      function note(line) {
+        ticks.unshift(line);
+        ticks = ticks.slice(0, 8);
+      }
+
+      function render(kind) {
+        const t = totals();
+        const st = state();
+        const r = ratio();
+        const pct = Math.round(r * 100);
+        const decision = st === "tripped" ? "kill" : "continue";
+
+        document.getElementById("lamps").innerHTML = STATES.map((name) => {
+          const on = name === st ? " on" : "";
+          return `<div class="lamp${on} ${name}"><i></i><b>${name.toUpperCase()}</b></div>`;
+        }).join("");
+
+        const arc = document.getElementById("arc");
+        const needle = document.getElementById("needle");
+        const shown = Math.max(0, Math.min(r, 1.15));
+        const len = 264;
+        arc.setAttribute("stroke-dasharray", `${(Math.min(shown, 1) * len).toFixed(1)} ${len}`);
+        arc.setAttribute("stroke", st === "tripped" ? "#e22b1c" : st === "warning" ? "#f0a35a" : "#c87533");
+        const deg = -120 + Math.min(shown, 1) * 240;
+        needle.style.transform = `rotate(${deg}deg)`;
+        document.getElementById("pct").textContent = pct + "%";
+        document.getElementById("session").textContent =
+          st === "cool" ? "SESSION cool · fuse idle" : `SESSION ${snap.session} · ${snap.agents} agents`;
+
+        const fillClass = st === "tripped" ? "trip" : st === "warning" ? "warn" : "";
+        if (st === "cool") {
+          document.getElementById("burn").innerHTML = `
+            <div class="cool-state">
+              <h3>COOL</h3>
+              <p>Idle fuse. No tokens on the bus. Arm a runaway or wait — the empty word is cool, not the product name.</p>
+            </div>`;
+        } else {
+          document.getElementById("burn").innerHTML = `
+            <div class="nums">
+              <strong>${escapeHtml(fmtTok(t.tokens))}</strong>
+              <span>${escapeHtml(money(t.usd))} est.</span>
+            </div>
+            <div class="track"><div class="fill ${fillClass}" style="width:${Math.min(pct, 100)}%"></div></div>`;
+        }
+
+        document.getElementById("limit").innerHTML = `
+          <div class="nums">
+            <strong>${escapeHtml(fmtTok(threshold.tokens))}</strong>
+            <span>${escapeHtml(money(threshold.usd))} fuse · ${snap.raised} raise${snap.raised === 1 ? "" : "s"}</span>
+          </div>
+          <div class="track"><div class="fill" style="width:${Math.min(pct, 100)}%"></div></div>`;
+
+        const maxBar = Math.max(t.tokens, 1);
+        document.getElementById("bars").innerHTML = ["parent", "subagents", "hooks", "workflows"]
+          .map((key) => {
+            const n = t.sources[key];
+            const w = Math.max(2, Math.round((n / maxBar) * 100));
+            return `<div class="bar"><label>${key}<b>${fmtTok(n)}</b></label><div class="bus"><i style="width:${w}%"></i></div></div>`;
+          })
+          .join("");
+
+        document.getElementById("ticks").innerHTML = ticks.map((line) => `<div>${escapeHtml(line)}</div>`).join("");
+
+        document.getElementById("ledger").innerHTML = adapters(kind)
+          .map((row) => `<div class="event"><b>${escapeHtml(row.adapter)}</b><div>${escapeHtml(row.summary)}</div></div>`)
+          .join("");
+
+        const payload = {
+          hook_event_name: "UsageSnapshot",
+          decision,
+          state: st,
+          idleWord: st === "cool" ? "cool" : st,
+          snapshot: {
+            session: snap.session,
+            agents: snap.agents,
+            sources: t.sources,
+            tokens: t.tokens,
+            usd: Number(t.usd.toFixed(2)),
+          },
+          threshold,
+        };
+        document.getElementById("hook").textContent = JSON.stringify(payload, null, 2);
+        document.getElementById("kill").disabled = st === "tripped" || st === "cool";
+      }
+
+      function trip(reason) {
+        if (snap.killed) return;
+        snap.killed = true;
+        stop();
+        note(`TRIP ${reason} · ${fmtTok(totals().tokens)} · ${money(totals().usd)}`);
+        lastTrip = true;
+        render("kill");
+      }
+
+      function pulse() {
+        if (snap.killed || state() === "cool") return;
+        snap.sources.parent += PULSE.parent;
+        snap.sources.subagents += PULSE.subagents;
+        snap.sources.hooks += PULSE.hooks;
+        snap.sources.workflows += PULSE.workflows;
+        const t = totals();
+        note(`TICK +${fmtTok(PULSE.parent + PULSE.subagents + PULSE.hooks + PULSE.workflows)} · ${fmtTok(t.tokens)} · ${money(t.usd)}`);
+        if (state() === "tripped") {
+          trip("auto · fuse blown");
+          return;
+        }
+        render("tick");
+      }
+
+      function start() {
+        stop();
+        timer = setInterval(pulse, 420);
+      }
+
+      function stop() {
+        if (timer) clearInterval(timer);
+        timer = null;
+      }
+
+      document.getElementById("kill").addEventListener("click", () => {
+        trip("manual · breaker thrown");
+      });
+      document.getElementById("raise").addEventListener("click", () => {
+        if (state() === "cool") {
+          snap = seed();
+          threshold = { tokens: 5000000, usd: 75 };
+          note("RESEED fanout-83025 · 82 agents already on the copper");
+          start();
+          render("tick");
+          return;
+        }
+        threshold = {
+          tokens: Math.round(threshold.tokens * 1.4),
+          usd: Math.round(threshold.usd * 1.4 * 100) / 100,
+        };
+        snap.raised += 1;
+        if (snap.killed) {
+          snap.killed = false;
+          start();
+        }
+        note(`RAISE fuse → ${fmtTok(threshold.tokens)} / ${money(threshold.usd)}`);
+        render("raise");
+      });
+      document.getElementById("reset").addEventListener("click", () => {
+        stop();
+        snap = coolSession();
+        threshold = { tokens: 5000000, usd: 75 };
+        ticks = [];
+        note("COOL · bus empty · fuse idle");
+        render("cool");
+      });
+
+      note("SEED fanout-83025 · 4.18M tok already live · 82-agent fan-out");
+      note("WARN 84% of fuse · banner would not stop this");
+      render("tick");
+      start();
+    </script>
+  </body>
+</html>
