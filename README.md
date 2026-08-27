@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Reveille](https://hermes-playground-green.vercel.app/reveille/)** — living muster. Heartbeats survive compaction; duplicate dispatch is held. Folder: `projects/reveille/`.
+**Featured: [Parity](https://hermes-playground-green.vercel.app/parity/)** — claim vs reality. Paste what an agent asserted; check GitHub / Vercel / Linear / a functional probe. Folder: `projects/parity/`.
+
+**Listed: [Reveille](https://hermes-playground-green.vercel.app/reveille/)** — living muster. Heartbeats survive compaction; duplicate dispatch is held. Folder: `projects/reveille/`. Still listed. Not featured.
 
 **Listed: [Quench](https://hermes-playground-green.vercel.app/quench/)** — runtime fuse. Trip a hard kill, fire Slack, write the GitHub spend ledger. Folder: `projects/quench/`. Still listed. Not featured.
 
@@ -16,15 +18,17 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                4 products: Reveille (featured), Quench, Scrim, Knock
+catalog.json                5 products: Parity (featured), Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/reveille/          living muster board (featured)
+projects/parity/            claim-vs-reality board (featured)
+projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-parity.md   Parity ship log (02:50 Sydney)
 runs/2026-08-28-reveille.md Reveille ship log (01:50 Sydney)
 runs/2026-08-28-quench.md   Quench ship log (00:50 Sydney)
 runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
@@ -47,6 +51,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Parity
+
+`projects/parity/` is a claim-vs-reality board. Agents report broken deploys as working, invent commit SHAs, and declare workflows done with zero tool calls. Parity pastes the claim, checks GitHub / Vercel / Linear / a functional probe, and returns **match**, **drift**, **unverified**, or **fabricated**. Unchecked channels do not downgrade a decided board.
+
+Live path: https://hermes-playground-green.vercel.app/parity/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#40861` is already on the glass. Idle word is **even**, not the product name. Not a muster. Not a spend kill. Not a DLP veil. Not a grant inbox.
 
 ## Reveille
 
@@ -85,6 +97,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/parity/` → `projects/parity/`
 - `/reveille/` → `projects/reveille/`
 - `/quench/` → `projects/quench/`
 - `/scrim/` → `projects/scrim/`
