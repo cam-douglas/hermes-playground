@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Glaze — the wipe is done, but a glaze still sits. Move the leftover glaze. See the residual thick glaze still sitting on a fixed wiped face." />
+    <title>Glaze</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #090a08;
+        --panel: #141610;
+        --ink: #e4e6d4;
+        --muted: #828674;
+        --line: rgba(184, 196, 96, 0.24);
+        --accent: #c8d060;
+        --timber: #241c10;
+        --glaze: #c8d060;
+        --showing: #d4dc70;
+        --clear: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(200, 208, 96, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(10, 12, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #080a06 0%, #141610 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(20, 22, 16, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 208, 96, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(24, 26, 16, 0.96), rgba(8, 10, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 208, 96, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #ece8d4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1a1c10;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #161410; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 208, 96, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(200, 208, 96, 0.1), transparent 46%),
+          #090a08;
+        overflow: hidden;
+      }
+      #glaze-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(212, 220, 112, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-clear b { color: var(--clear); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #080a06;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #glaze-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> glaze · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover glaze on the wiped face that still sits after the wipe</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">finish instrument · 27 Aug 2026 18:50</span>
+        <h1>Glaze</h1>
+        <p class="lede">
+          The wipe is done, but a glaze still sits. Move the leftover glaze. See the residual thick glaze still sitting on a fixed wiped face.
+          Not a smear. Not a bloom. Not a holiday. Not a craze. Not flame. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="glaze-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover glaze still sits on the wiped face after the wipe</h2>
+          </div>
+          <span class="kicker" id="glaze-desk-meta">leftover 2 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="glaze-svg" viewBox="0 0 800 460" role="img" aria-labelledby="glaze-title glaze-desc">
+            <title id="glaze-title">Glaze is showing. Two millimetres of leftover glaze still sit on a fixed wiped face.</title>
+            <desc id="glaze-desc">One workpiece whose leftover is the glaze — leftover residual thick glaze that still sits on a fixed wiped face after the wipe (leftover thick translucent glaze pool still sitting on the wiped face after the wipe, not a smear streak, not a cloudy bloom haze, not a bare holiday miss, not a craze crack network, not flame, not a clock). One workpiece; the wipe is done; the leftover is one leftover residual thick glaze sitting on that fixed wiped face, not a smear, not a bloom, not a holiday, not a craze. The leftover that still sits is the glaze — leftover residual thick glaze still sitting on a fixed wiped face. A sketch, not a mill sign-off. Not mill advice.</desc>
+            <defs>
+              <linearGradient id="glaze-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#161810" />
+                <stop offset="100%" stop-color="#080a06" />
+              </linearGradient>
+              <linearGradient id="glaze-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#1c160c" />
+                <stop offset="36%" stop-color="#3a2c14" />
+                <stop offset="68%" stop-color="#6a5024" />
+                <stop offset="100%" stop-color="#261c10" />
+              </linearGradient>
+              <radialGradient id="leftover-glaze-pool-wash" cx="38%" cy="30%" r="72%">
+                <stop offset="0%" stop-color="#e8f090" stop-opacity="0.82" />
+                <stop offset="26%" stop-color="#c8d060" stop-opacity="0.74" />
+                <stop offset="58%" stop-color="#8a9a38" stop-opacity="0.68" />
+                <stop offset="100%" stop-color="#4a5418" stop-opacity="0.62" />
+              </radialGradient>
+              <radialGradient id="leftover-glaze-shine" cx="32%" cy="26%" r="44%">
+                <stop offset="0%" stop-color="#f8ffc4" stop-opacity="0.78" />
+                <stop offset="100%" stop-color="#f8ffc4" stop-opacity="0" />
+              </radialGradient>
+              <linearGradient id="leftover-glaze-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1c10" />
+                <stop offset="100%" stop-color="#080a06" />
+              </linearGradient>
+              <linearGradient id="leftover-glaze-meniscus-wash" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#6a7828" />
+                <stop offset="55%" stop-color="#c8d060" />
+                <stop offset="100%" stop-color="#e8f090" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#080a06" stroke="rgba(200,208,96,0.16)" />
+            <text x="36" y="42" fill="#828674" font-size="11" letter-spacing="2">ONE WORKPIECE · WIPE IS DONE · LEFTOVER IS ONE THICK GLAZE STILL SITTING ON A FIXED WIPED FACE</text>
+            <g id="glaze-scene" data-view="finish-glaze" data-hero="leftover-glaze" data-glaze="2" data-leftover="showing" data-verdict="showing" data-glaze-state="sitting">
+              <g id="glaze-bench-layer"></g>
+              <g id="glaze-stock-layer"></g>
+              <g id="leftover-glaze-layer"></g>
+              <g id="glaze-mark-layer"></g>
+              <text id="glaze-scene-status" x="400" y="64" fill="#d4dc70" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 2 MM LEFTOVER GLAZE</text>
+              <text id="glaze-scene-sketch" x="400" y="434" fill="#545044" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER THICK GLAZE STILL SITS ON A FIXED WIPED FACE · NOT A SMEAR · NOT A BLOOM · NOT A HOLIDAY · NOT A CRAZE · NOT FLAME · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="glaze-alt" class="sr-only" aria-live="polite">Glaze is showing. Two millimetres of leftover glaze still sit on a fixed wiped face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="glaze-input">Leftover glaze (mm of sitting thickness on the wiped face)</label>
+            <input id="glaze-input" type="range" min="0" max="8" step="1" value="2" />
+            <div class="ticks" aria-hidden="true">
+              <span>wiped / no leftover glaze</span>
+              <span>seed showing</span>
+              <span>thicker leftover glaze</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="glaze-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Glaze <b id="glaze-stat-mm">2 mm</b></span>
+          <span id="glaze-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="glaze-stat-leftover">showing</b></span>
+          <span>Leftover glaze (sketch) <b id="glaze-stat-span">2 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The wipe is done, but a glaze still sits. Glaze is leftover residual thick glaze that still sits on a fixed wiped face. A sketch, not a mill sign-off, and not mill advice.
+        Seed is already showing — 2 mm of leftover sitting glaze on the wiped face, not a wiped-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a smear. Not a bloom. Not a holiday. Not a craze. Not flame. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const GLAZE_SEED = { glazeMm: 2 };
+      const GLAZE_MIN = 0;
+      const GLAZE_MAX = 8;
+      const GLAZE_WIPED_AT = 0;
+      const GLAZE_SCALE = 8;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const GLAZE_CX = 400;
+      const GLAZE_CY = (FACE_TOP + FACE_BOT) / 2;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 328;
+      const PROFILE_LEFT = 168;
+      const PROFILE_RIGHT = 632;
+
+      let glazeMm = GLAZE_SEED.glazeMm;
+
+      const glazeSvg = document.getElementById("glaze-svg");
+      const glazeScene = document.getElementById("glaze-scene");
+      const glazeTitle = document.getElementById("glaze-title");
+      const glazeAlt = document.getElementById("glaze-alt");
+      const glazeDeskMeta = document.getElementById("glaze-desk-meta");
+      const glazeInput = document.getElementById("glaze-input");
+      const glazeBenchLayer = document.getElementById("glaze-bench-layer");
+      const glazeStockLayer = document.getElementById("glaze-stock-layer");
+      const leftoverGlazeLayer = document.getElementById("leftover-glaze-layer");
+      const glazeMarkLayer = document.getElementById("glaze-mark-layer");
+      const glazeSceneStatus = document.getElementById("glaze-scene-status");
+      const glazeStatMm = document.getElementById("glaze-stat-mm");
+      const glazeStatLeftover = document.getElementById("glaze-stat-leftover");
+      const glazeStatLeftoverWrap = document.getElementById("glaze-stat-leftover-wrap");
+      const glazeStatSpan = document.getElementById("glaze-stat-span");
+      const glazeBtnReset = document.getElementById("glaze-btn-reset");
+      const glazeBtnResetStage = document.getElementById("glaze-btn-reset-stage");
+
+      function glazeClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function glazeEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function glazeSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverGlazeGeom(heightPx) {
+        const height = Math.max(0, heightPx);
+        const rx = 58 + height * 0.55;
+        const ry = 34 + height * 0.38;
+        return {
+          cx: GLAZE_CX,
+          cy: GLAZE_CY,
+          rx: rx,
+          ry: ry,
+          height: height
+        };
+      }
+
+      function leftoverGlazePoolPath(geom) {
+        const cx = geom.cx;
+        const cy = geom.cy;
+        const rx = geom.rx;
+        const ry = geom.ry;
+        return "M " + (cx - rx * 0.92).toFixed(1) + " " + (cy - ry * 0.08).toFixed(1) +
+          " C " + (cx - rx * 0.98).toFixed(1) + " " + (cy - ry * 0.62).toFixed(1) +
+          " " + (cx - rx * 0.42).toFixed(1) + " " + (cy - ry * 1.08).toFixed(1) +
+          " " + (cx + rx * 0.06).toFixed(1) + " " + (cy - ry * 0.96).toFixed(1) +
+          " C " + (cx + rx * 0.58).toFixed(1) + " " + (cy - ry * 0.82).toFixed(1) +
+          " " + (cx + rx * 1.08).toFixed(1) + " " + (cy - ry * 0.28).toFixed(1) +
+          " " + (cx + rx * 0.94).toFixed(1) + " " + (cy + ry * 0.18).toFixed(1) +
+          " C " + (cx + rx * 0.78).toFixed(1) + " " + (cy + ry * 0.72).toFixed(1) +
+          " " + (cx + rx * 0.18).toFixed(1) + " " + (cy + ry * 1.06).toFixed(1) +
+          " " + (cx - rx * 0.22).toFixed(1) + " " + (cy + ry * 0.88).toFixed(1) +
+          " C " + (cx - rx * 0.68).toFixed(1) + " " + (cy + ry * 0.68).toFixed(1) +
+          " " + (cx - rx * 0.88).toFixed(1) + " " + (cy + ry * 0.28).toFixed(1) +
+          " " + (cx - rx * 0.92).toFixed(1) + " " + (cy - ry * 0.08).toFixed(1) + " Z";
+      }
+
+      function leftoverGlazeSectionPath(heightPx) {
+        const left = PROFILE_LEFT;
+        const right = PROFILE_RIGHT;
+        const faceY = PROFILE_FACE_Y;
+        const mid = 400;
+        const half = 42 + heightPx * 0.55;
+        const peak = faceY - heightPx;
+        const lip = Math.max(3, heightPx * 0.22);
+        return "M " + left + " " + faceY +
+          " L " + (mid - half).toFixed(1) + " " + faceY +
+          " C " + (mid - half * 0.62).toFixed(1) + " " + faceY +
+          " " + (mid - half * 0.72).toFixed(1) + " " + (peak + lip).toFixed(1) +
+          " " + (mid - half * 0.38).toFixed(1) + " " + peak.toFixed(1) +
+          " C " + (mid - half * 0.12).toFixed(1) + " " + (peak - lip * 0.35).toFixed(1) +
+          " " + (mid + half * 0.12).toFixed(1) + " " + (peak - lip * 0.35).toFixed(1) +
+          " " + (mid + half * 0.38).toFixed(1) + " " + peak.toFixed(1) +
+          " C " + (mid + half * 0.72).toFixed(1) + " " + (peak + lip).toFixed(1) +
+          " " + (mid + half * 0.62).toFixed(1) + " " + faceY +
+          " " + (mid + half).toFixed(1) + " " + faceY +
+          " L " + right + " " + faceY +
+          " L " + right + " " + (PROFILE_BOT - 16) +
+          " L " + left + " " + (PROFILE_BOT - 16) + " Z";
+      }
+
+      function glazePicture() {
+        const leftover = glazeMm <= GLAZE_WIPED_AT ? "wiped" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + glazeMm + " MM LEFTOVER GLAZE";
+          alt = "Glaze is showing. " + glazeSpokenMm(glazeMm).charAt(0).toUpperCase() + glazeSpokenMm(glazeMm).slice(1) + " millimetre" + (glazeMm === 1 ? "" : "s") + " of leftover glaze still sit" + (glazeMm === 1 ? "s" : "") + " on a fixed wiped face.";
+        } else {
+          status = "WIPED · NO LEFTOVER GLAZE";
+          alt = "Glaze is wiped. The wipe is done. No leftover glaze. A sketch, not a mill sign-off.";
+        }
+        const glazePx = leftover === "showing" ? Math.max(16, glazeMm * GLAZE_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d4dc70" : "#8ec8b4",
+          glazePx: glazePx,
+          glazeState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-glaze" : "wiped-face"
+        };
+      }
+
+      function glazePaint(pic) {
+        const isWiped = pic.leftover === "wiped";
+        const pool = leftoverGlazeGeom(pic.glazePx);
+
+        glazeBenchLayer.replaceChildren();
+        glazeBenchLayer.appendChild(glazeEl("rect", {
+          class: "site leftover-work leftover-glaze leftover-finish leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#glaze-bench-wash)",
+          stroke: "rgba(200,208,96,0.16)",
+          "stroke-width": "1.2"
+        }));
+        glazeBenchLayer.appendChild(glazeEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a6c54",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · WIPE IS DONE · ONE LEFTOVER THICK GLAZE STILL SITS ON A FIXED WIPED FACE";
+
+        glazeStockLayer.replaceChildren();
+        const stock = glazeEl("g", {
+          id: "glaze-stock",
+          class: isWiped
+            ? "stock leftover-wiped leftover-no-glaze leftover-glaze leftover-finish leftover-true"
+            : "stock leftover-showing leftover-glaze leftover-sitting leftover-finish"
+        });
+        stock.appendChild(glazeEl("rect", {
+          id: "glaze-workpiece-face",
+          class: "stock-board leftover-stock leftover-workpiece leftover-glaze leftover-not-the-leftover leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-finish-context leftover-kept leftover-face leftover-fixed leftover-wiped-face",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          rx: "3",
+          fill: "url(#glaze-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "finish-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(glazeEl("line", {
+          id: "glaze-face-edge-top",
+          class: "board-edge leftover-finish leftover-fixed leftover-not-the-leftover leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-kept leftover-face leftover-fixed leftover-wiped-face",
+          x1: String(FACE_LEFT),
+          y1: String(FACE_TOP),
+          x2: String(FACE_RIGHT),
+          y2: String(FACE_TOP),
+          stroke: pic.accent,
+          "stroke-width": "1.4",
+          "stroke-linecap": "square",
+          "data-fixed": "true",
+          "data-role": "board-edge"
+        }));
+        stock.appendChild(glazeEl("line", {
+          id: "glaze-face-edge-bot",
+          class: "board-edge leftover-finish leftover-fixed leftover-not-the-leftover leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-kept leftover-face leftover-fixed leftover-wiped-face",
+          x1: String(FACE_LEFT),
+          y1: String(FACE_BOT),
+          x2: String(FACE_RIGHT),
+          y2: String(FACE_BOT),
+          stroke: pic.accent,
+          "stroke-width": "1.4",
+          "stroke-linecap": "square",
+          "data-fixed": "true",
+          "data-role": "board-edge"
+        }));
+        for (let i = 0; i < 5; i += 1) {
+          const y = FACE_TOP + 28 + i * 26;
+          stock.appendChild(glazeEl("line", {
+            class: "wipe-trace leftover-wipe leftover-done leftover-not-the-leftover leftover-not-a-smear leftover-kept leftover-wiped-face leftover-context",
+            x1: String(FACE_LEFT + 18),
+            y1: String(y),
+            x2: String(FACE_RIGHT - 18),
+            y2: String(y),
+            stroke: "rgba(232, 220, 176, 0.1)",
+            "stroke-width": "1.1",
+            "stroke-linecap": "round",
+            "data-role": "wipe-done",
+            "data-fixed": "true"
+          }));
+        }
+        stock.appendChild(glazeEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 20),
+          fill: "#e8e8c0",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "WIPED FACE · FIXED · WIPE IS DONE";
+        glazeStockLayer.appendChild(stock);
+
+        leftoverGlazeLayer.replaceChildren();
+        const leftover = glazeEl("g", {
+          id: "leftover-glaze",
+          class: isWiped
+            ? "glaze leftover-glaze leftover-wiped leftover-empty leftover-no-glaze leftover-finish leftover-true"
+            : "glaze leftover-glaze leftover-showing leftover-one leftover-sitting leftover-span leftover-thick leftover-pool leftover-patch leftover-translucent leftover-face leftover-residual leftover-on-face leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-not-flame leftover-not-a-clock leftover-not-a-streak leftover-not-a-haze leftover-not-a-bare leftover-not-a-crack-network",
+          "data-glaze-mm": String(glazeMm),
+          "data-glaze-px": String(pic.glazePx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isWiped) {
+          leftover.appendChild(glazeEl("ellipse", {
+            id: "leftover-glaze-shade",
+            class: "leftover-glaze leftover-showing leftover-sitting leftover-pool leftover-shade leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-residual leftover-on-face leftover-thick leftover-translucent",
+            cx: String(pool.cx),
+            cy: String((pool.cy + pool.ry * 0.48).toFixed(1)),
+            rx: String((pool.rx * 1.06).toFixed(1)),
+            ry: String((pool.ry * 0.38).toFixed(1)),
+            fill: "#080604",
+            opacity: String(Math.min(0.44, 0.2 + glazeMm / 26)),
+            "data-shape": "leftover-glaze-shade",
+            "data-role": "sitting-glaze-shade"
+          }));
+          leftover.appendChild(glazeEl("path", {
+            id: "leftover-glaze-pool",
+            class: "leftover-glaze leftover-showing leftover-one leftover-sitting leftover-span leftover-thick leftover-pool leftover-patch leftover-translucent leftover-void leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-residual leftover-on-face leftover-not-a-streak leftover-not-a-haze leftover-not-a-bare leftover-not-a-crack-network",
+            d: leftoverGlazePoolPath(pool),
+            fill: "url(#leftover-glaze-pool-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.35",
+            opacity: "0.92",
+            "data-shape": "leftover-glaze",
+            "data-glaze-mm": String(glazeMm),
+            "data-role": "sitting-glaze",
+            "data-glaze-px": String(pic.glazePx.toFixed(1)),
+            "data-origin-x": String(GLAZE_CX),
+            "data-origin-y": String(GLAZE_CY)
+          }));
+          leftover.appendChild(glazeEl("path", {
+            id: "leftover-glaze-meniscus",
+            class: "leftover-glaze leftover-showing leftover-sitting leftover-pool leftover-meniscus leftover-thick leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-residual leftover-on-face leftover-translucent",
+            d: leftoverGlazePoolPath({
+              cx: pool.cx,
+              cy: pool.cy,
+              rx: pool.rx * 0.78,
+              ry: pool.ry * 0.72
+            }),
+            fill: "none",
+            stroke: "#e8f090",
+            "stroke-width": "1.05",
+            opacity: String(Math.min(0.62, 0.28 + glazeMm / 22)),
+            "data-shape": "leftover-glaze-meniscus",
+            "data-role": "sitting-glaze-meniscus"
+          }));
+          leftover.appendChild(glazeEl("ellipse", {
+            id: "leftover-glaze-glint",
+            class: "leftover-glaze leftover-showing leftover-sitting leftover-pool leftover-glint leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-residual leftover-on-face leftover-thick leftover-translucent",
+            cx: String((pool.cx - pool.rx * 0.22).toFixed(1)),
+            cy: String((pool.cy - pool.ry * 0.34).toFixed(1)),
+            rx: String((pool.rx * 0.28).toFixed(1)),
+            ry: String((pool.ry * 0.22).toFixed(1)),
+            fill: "url(#leftover-glaze-shine)",
+            opacity: String(Math.min(0.82, 0.42 + glazeMm / 18)),
+            "data-shape": "leftover-glaze-glint",
+            "data-role": "sitting-glaze-glint"
+          }));
+          leftover.appendChild(glazeEl("text", {
+            id: "leftover-glaze-label",
+            class: "glaze-label leftover-label leftover-glaze leftover-showing leftover-sitting leftover-span leftover-pool leftover-on-face leftover-thick leftover-translucent",
+            x: String(pool.cx),
+            y: String((pool.cy + 4).toFixed(1)),
+            fill: "#161410",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "GLAZE";
+        } else {
+          leftover.appendChild(glazeEl("path", {
+            id: "leftover-glaze-wiped-path",
+            class: "leftover-glaze leftover-wiped leftover-empty leftover-no-glaze leftover-finish leftover-true leftover-wiped-face leftover-not-a-glaze leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze",
+            d: leftoverGlazePoolPath(leftoverGlazeGeom(16)),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "wiped-face"
+          }));
+        }
+        leftoverGlazeLayer.appendChild(leftover);
+
+        glazeMarkLayer.replaceChildren();
+        glazeMarkLayer.appendChild(glazeEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · WIPE IS DONE · FIXED";
+        glazeMarkLayer.appendChild(glazeEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isWiped ? "FACE · WIPED / NO LEFTOVER GLAZE" : "FACE · ONE LEFTOVER THICK GLAZE STILL SITS";
+
+        glazeMarkLayer.appendChild(glazeEl("path", {
+          id: "glaze-profile-face",
+          class: isWiped
+            ? "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-wiped-face leftover-finish leftover-wiped leftover-no-glaze leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze"
+            : "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-wiped-face leftover-finish leftover-with-glaze leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze",
+          d: leftoverGlazeSectionPath(isWiped ? 0 : pic.glazePx),
+          fill: "url(#leftover-glaze-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isWiped ? "wiped-face" : "leftover-glaze-span"
+        }));
+
+        if (!isWiped) {
+          const height = Math.max(16, pic.glazePx);
+          const dimX = 400;
+          const peakY = PROFILE_FACE_Y - height;
+          glazeMarkLayer.appendChild(glazeEl("path", {
+            id: "leftover-glaze-profile-pool",
+            class: "leftover-glaze leftover-showing leftover-sitting leftover-pool leftover-thick leftover-translucent leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-residual leftover-on-face leftover-not-a-streak leftover-not-a-haze leftover-not-a-bare leftover-not-a-crack-network",
+            d: "M " + (400 - 42 - height * 0.55).toFixed(1) + " " + PROFILE_FACE_Y +
+              " C " + (400 - 26 - height * 0.28).toFixed(1) + " " + PROFILE_FACE_Y +
+              " " + (400 - 18).toFixed(1) + " " + peakY.toFixed(1) +
+              " 400 " + peakY.toFixed(1) +
+              " C " + (400 + 18).toFixed(1) + " " + peakY.toFixed(1) +
+              " " + (400 + 26 + height * 0.28).toFixed(1) + " " + PROFILE_FACE_Y +
+              " " + (400 + 42 + height * 0.55).toFixed(1) + " " + PROFILE_FACE_Y + " Z",
+            fill: "url(#leftover-glaze-meniscus-wash)",
+            opacity: "0.82",
+            "data-shape": "leftover-glaze-pool",
+            "data-role": "sitting-glaze-section"
+          }));
+          glazeMarkLayer.appendChild(glazeEl("line", {
+            id: "glaze-dim",
+            class: "glaze-dim leftover-glaze leftover-showing leftover-sitting leftover-span leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-thick leftover-pool leftover-translucent",
+            x1: String(dimX),
+            y1: String(PROFILE_FACE_Y),
+            x2: String(dimX),
+            y2: String(peakY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          glazeMarkLayer.appendChild(glazeEl("text", {
+            id: "glaze-mm-label",
+            class: "glaze-label leftover-label leftover-glaze leftover-showing leftover-sitting leftover-span leftover-pool leftover-on-face leftover-thick leftover-translucent",
+            x: String(dimX + 18),
+            y: String((PROFILE_FACE_Y + peakY) / 2 + 3),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = glazeMm + " mm";
+          glazeMarkLayer.appendChild(glazeEl("text", {
+            id: "glaze-span-label",
+            class: "span-label leftover-glaze leftover-one leftover-sitting leftover-span leftover-pool leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze leftover-residual leftover-on-face leftover-thick leftover-translucent leftover-not-a-streak leftover-not-a-haze leftover-not-a-bare leftover-not-a-crack-network",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#ece8d4",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER GLAZE · ONE THICK TRANSLUCENT POOL ON A FIXED WIPED FACE · NOT A SMEAR · NOT A BLOOM · NOT A HOLIDAY · NOT A CRAZE";
+        } else {
+          glazeMarkLayer.appendChild(glazeEl("text", {
+            id: "glaze-label",
+            class: "glaze-label leftover-label leftover-wiped leftover-no-glaze leftover-finish leftover-empty leftover-true leftover-not-a-smear leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-craze",
+            x: "400",
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "WIPED / NO LEFTOVER GLAZE";
+          glazeMarkLayer.appendChild(glazeEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · WIPED / NO LEFTOVER GLAZE";
+        }
+
+        glazeSceneStatus.setAttribute("fill", pic.accent);
+        glazeSceneStatus.textContent = pic.status;
+        glazeScene.setAttribute("data-glaze", String(glazeMm));
+        glazeScene.setAttribute("data-leftover", pic.leftover);
+        glazeScene.setAttribute("data-verdict", pic.verdict);
+        glazeScene.setAttribute("data-view", "finish-glaze");
+        glazeScene.setAttribute("data-hero", "leftover-glaze");
+        glazeScene.setAttribute("data-glaze-mm", String(glazeMm));
+        glazeScene.setAttribute("data-glaze-px", String(pic.glazePx.toFixed(1)));
+        glazeScene.setAttribute("data-glaze-state", pic.glazeState);
+        glazeScene.setAttribute("data-shape", pic.shape);
+        glazeScene.setAttribute("data-face-fixed", "true");
+        glazeScene.setAttribute("data-wiped-face-fixed", "true");
+      }
+
+      function glazeToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-clear";
+      }
+
+      function glazeRender() {
+        const pic = glazePicture();
+        glazePaint(pic);
+        glazeTitle.textContent = pic.alt;
+        glazeAlt.textContent = pic.alt;
+        glazeSvg.setAttribute("aria-label", pic.alt);
+        glazeDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + glazeMm + " mm showing"
+          : "leftover wiped";
+        glazeStatMm.textContent = glazeMm + " mm";
+        glazeStatLeftover.textContent = pic.leftover;
+        glazeStatSpan.textContent = pic.leftover === "showing"
+          ? glazeMm + " mm leftover"
+          : "wiped";
+        glazeStatLeftoverWrap.classList.remove("is-showing", "is-clear");
+        glazeStatLeftoverWrap.classList.add(glazeToneClass(pic.leftover));
+        if (Number(glazeInput.value) !== glazeMm) glazeInput.value = String(glazeMm);
+        glazeInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function glazeResetSeed() {
+        glazeMm = GLAZE_SEED.glazeMm;
+        glazeRender();
+      }
+
+      glazeInput.addEventListener("input", function (event) {
+        glazeMm = glazeClamp(Math.round(Number(event.target.value)), GLAZE_MIN, GLAZE_MAX);
+        glazeRender();
+      });
+      glazeBtnReset.addEventListener("click", glazeResetSeed);
+      glazeBtnResetStage.addEventListener("click", glazeResetSeed);
+
+      glazeRender();
+    </script>
+  </body>
+</html>
