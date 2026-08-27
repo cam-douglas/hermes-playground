@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Hasp — file lease. Seize a path before Write. Yield, stale, or clobber when another session already holds it."
+    />
+    <title>Hasp — file lease</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #efe4cc;
+        --paper-deep: #e4d4b4;
+        --ink: #1c1610;
+        --iron: #2a2218;
+        --mute: #6a5b45;
+        --brass: #b08d3e;
+        --brass-lite: #d4b56a;
+        --brass-deep: #7a5e22;
+        --wood: #2b1a10;
+        --wood-grain: #3d2416;
+        --oxide: #9b2d1f;
+        --verdigris: #2f7a62;
+        --amber: #c4842a;
+        --line: rgba(28, 22, 16, 0.14);
+        --display: "Libre Baskerville", "Iowan Old Style", Georgia, serif;
+        --stamp: "Oswald", "DIN Condensed", "Arial Narrow", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: var(--display);
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 20% 0%, rgba(212, 181, 106, 0.18), transparent 42%),
+          repeating-linear-gradient(90deg, rgba(28, 22, 16, 0.03) 0 1px, transparent 1px 7px),
+          var(--paper);
+      }
+      a { color: var(--brass-deep); }
+      button { font: inherit; cursor: pointer; }
+      .shop {
+        display: grid;
+        grid-template-columns: 88px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+      .stile {
+        position: relative;
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, 0.45), transparent 22%, transparent 78%, rgba(0, 0, 0, 0.38)),
+          repeating-linear-gradient(
+            180deg,
+            #24140c 0 4px,
+            #3a2214 4px 9px,
+            #2c1910 9px 13px,
+            #452818 13px 16px
+          );
+        border-right: 3px solid #1a100a;
+        box-shadow: inset -10px 0 18px rgba(0, 0, 0, 0.35);
+      }
+      .hinge, .staple {
+        position: absolute;
+        left: 18px;
+        width: 52px;
+        background: linear-gradient(180deg, var(--brass-lite), var(--brass) 46%, var(--brass-deep));
+        border: 1px solid #5c4618;
+        box-shadow: 0 2px 0 #3d2f10, inset 0 1px 0 rgba(255, 235, 180, 0.45);
+      }
+      .hinge { height: 64px; border-radius: 3px; }
+      .hinge::before, .hinge::after {
+        content: "";
+        position: absolute;
+        left: 8px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #efe4cc, #7a5e22 70%);
+        box-shadow: inset 0 0 0 1px #5c4618;
+      }
+      .hinge::before { top: 8px; }
+      .hinge::after { bottom: 8px; }
+      .hinge.one { top: 56px; }
+      .hinge.two { top: 46%; }
+      .hinge.three { bottom: 72px; }
+      .staple {
+        height: 22px;
+        top: 28%;
+        border-radius: 2px 10px 10px 2px;
+      }
+      .staple.low { top: 68%; }
+      .staple::after {
+        content: "";
+        position: absolute;
+        right: 6px;
+        top: 4px;
+        width: 12px;
+        height: 12px;
+        border: 2px solid #5c4618;
+        border-radius: 50%;
+        background: var(--wood);
+      }
+      .plate { padding: 28px 32px 40px; }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: flex-end;
+        border-bottom: 2px solid var(--iron);
+        padding-bottom: 18px;
+      }
+      .word em {
+        display: block;
+        font-family: var(--stamp);
+        font-style: normal;
+        font-size: 12px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--brass-deep);
+      }
+      h1 {
+        margin: 4px 0 0;
+        font-family: var(--stamp);
+        font-size: clamp(56px, 8vw, 84px);
+        line-height: 0.82;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .lede {
+        max-width: 34em;
+        color: var(--mute);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      .lede strong { color: var(--ink); }
+      .stamp-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
+      .mark {
+        min-width: 72px;
+        padding: 7px 10px 6px;
+        border: 1px solid var(--iron);
+        text-align: center;
+        background: rgba(255, 255, 255, 0.22);
+      }
+      .mark b {
+        display: block;
+        font-family: var(--stamp);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        color: var(--mute);
+      }
+      .mark i {
+        display: block;
+        width: 10px;
+        height: 10px;
+        margin: 0 auto 5px;
+        border-radius: 50%;
+        background: #c9b48a;
+        border: 1px solid rgba(28, 22, 16, 0.25);
+      }
+      .mark.on.loose i { background: var(--mute); }
+      .mark.on.seized i { background: var(--verdigris); box-shadow: 0 0 0 3px rgba(47, 122, 98, 0.18); }
+      .mark.on.yield i, .mark.on.stale i { background: var(--amber); box-shadow: 0 0 0 3px rgba(196, 132, 42, 0.18); }
+      .mark.on.clobber i { background: var(--oxide); box-shadow: 0 0 0 3px rgba(155, 45, 31, 0.18); }
+      .mark.on b { color: var(--ink); }
+      .stage {
+        display: grid;
+        grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+        gap: 28px;
+        align-items: center;
+        padding: 28px 0 12px;
+      }
+      .lock-wrap {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 40%),
+          var(--paper-deep);
+        border: 1px solid rgba(28, 22, 16, 0.18);
+        box-shadow: inset 0 0 0 6px rgba(176, 141, 62, 0.18), 0 10px 0 rgba(28, 22, 16, 0.06);
+        padding: 18px 12px 8px;
+        text-align: center;
+      }
+      .lock-wrap svg { width: min(280px, 100%); height: auto; }
+      .lock-caption {
+        font-family: var(--stamp);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        font-size: 13px;
+        margin: 4px 0 10px;
+      }
+      .facts {
+        display: grid;
+        gap: 10px;
+      }
+      .facts .row {
+        display: grid;
+        grid-template-columns: 88px 1fr;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--line);
+        font-size: 15px;
+      }
+      .facts b {
+        font-family: var(--stamp);
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--mute);
+        padding-top: 3px;
+      }
+      .facts code {
+        font-family: var(--mono);
+        font-size: 13px;
+        word-break: break-all;
+      }
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 16px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .seeds, .acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .seeds span, .acts span {
+        font-family: var(--stamp);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .seed, .act {
+        font-family: var(--stamp);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid var(--iron);
+        background: transparent;
+        color: var(--ink);
+        padding: 8px 12px 7px;
+      }
+      .seed.on, .act:hover, .seed:hover {
+        background: var(--iron);
+        color: var(--paper);
+      }
+      .act.danger:hover { background: var(--oxide); border-color: var(--oxide); }
+      .verdict {
+        margin: 22px 0 18px;
+        padding: 16px 18px;
+        border: 2px solid var(--iron);
+        background: rgba(255, 255, 255, 0.28);
+      }
+      .verdict strong {
+        font-family: var(--stamp);
+        font-size: 28px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .verdict p { margin: 6px 0 0; color: var(--mute); }
+      .verdict.loose { border-color: var(--mute); }
+      .verdict.seized { border-color: var(--verdigris); color: var(--verdigris); }
+      .verdict.yield, .verdict.stale { border-color: var(--amber); color: var(--amber); }
+      .verdict.clobber { border-color: var(--oxide); color: var(--oxide); }
+      .ledger {
+        display: grid;
+        gap: 8px;
+      }
+      .event {
+        display: grid;
+        grid-template-columns: 88px 1fr;
+        gap: 12px;
+        padding: 10px 12px;
+        background: rgba(28, 22, 16, 0.04);
+        border-left: 4px solid var(--brass);
+        font-size: 14px;
+      }
+      .event b {
+        font-family: var(--stamp);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 12px;
+      }
+      .event.clobber { border-left-color: var(--oxide); }
+      .event.seized { border-left-color: var(--verdigris); }
+      .event.yield, .event.stale { border-left-color: var(--amber); }
+      footer {
+        margin-top: 28px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+        color: var(--mute);
+        font-size: 14px;
+      }
+      @media (max-width: 820px) {
+        .shop { grid-template-columns: 28px 1fr; }
+        .hinge, .staple { display: none; }
+        .stage { grid-template-columns: 1fr; }
+        .plate { padding: 20px 16px 32px; }
+        header { flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shop">
+      <aside class="stile" aria-hidden="true">
+        <div class="hinge one"></div>
+        <div class="staple"></div>
+        <div class="hinge two"></div>
+        <div class="staple low"></div>
+        <div class="hinge three"></div>
+      </aside>
+      <main class="plate">
+        <header>
+          <div class="word">
+            <em>File lease · compare and swap</em>
+            <h1>Hasp</h1>
+            <p class="lede">
+              Two sessions, one path. Last writer wins unless someone
+              <strong>seizes</strong> first. A clean git status is not proof
+              the first session's bytes survived.
+            </p>
+          </div>
+          <div class="stamp-row" id="marks" aria-label="Verdict stamps"></div>
+        </header>
+
+        <section class="stage">
+          <div class="lock-wrap">
+            <svg id="lock" viewBox="0 0 260 300" role="img" aria-label="Hasp and padlock">
+              <defs>
+                <linearGradient id="brass" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#d4b56a" />
+                  <stop offset="1" stop-color="#7a5e22" />
+                </linearGradient>
+                <linearGradient id="iron" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#3a3228" />
+                  <stop offset="1" stop-color="#1c1610" />
+                </linearGradient>
+              </defs>
+              <rect x="28" y="18" width="84" height="250" rx="4" fill="#3d2416" stroke="#1a100a" />
+              <rect x="118" y="36" width="18" height="54" rx="3" fill="url(#brass)" />
+              <rect x="118" y="128" width="18" height="54" rx="3" fill="url(#brass)" />
+              <g id="hasp-arm">
+                <rect x="128" y="148" width="86" height="22" rx="3" fill="url(#brass)" />
+                <rect x="200" y="144" width="22" height="30" rx="3" fill="url(#brass)" />
+              </g>
+              <ellipse id="staple-eye" cx="211" cy="159" rx="7" ry="8" fill="#1c1610" />
+              <g id="padlock" transform="translate(176 168)">
+                <path id="shackle" d="M16 28 v-14 a18 18 0 0 1 36 0 v14" fill="none" stroke="url(#iron)" stroke-width="8" />
+                <rect x="8" y="26" width="52" height="46" rx="6" fill="url(#iron)" />
+                <circle cx="34" cy="46" r="6" fill="#efe4cc" />
+                <rect x="32" y="46" width="4" height="12" fill="#efe4cc" />
+              </g>
+              <path id="crack" d="M198 200 l8 18 -6 14 10 16" fill="none" stroke="#9b2d1f" stroke-width="3" opacity="0" />
+            </svg>
+            <div class="lock-caption" id="lock-caption">clobber</div>
+          </div>
+          <div>
+            <div class="facts" id="facts"></div>
+            <div class="verdict clobber" id="verdict">
+              <strong>clobber</strong>
+              <p>Another session already holds this path. Write denied.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="toolbar">
+          <div class="seeds">
+            <span>Seeds</span>
+            <button class="seed on" id="seed-90146" type="button">#90146</button>
+            <button class="seed" id="seed-85597" type="button">#85597</button>
+            <button class="seed" id="seed-38541" type="button">#38541</button>
+            <button class="seed" id="seed-33741" type="button">#33741</button>
+          </div>
+          <div class="acts">
+            <span>Actions</span>
+            <button class="act" id="seize" type="button">Seize</button>
+            <button class="act" id="write" type="button">Write</button>
+            <button class="act" id="release" type="button">Release</button>
+            <button class="act danger" id="clear" type="button">Clear · loose</button>
+          </div>
+        </div>
+
+        <div class="ledger" id="ledger" aria-label="Honest demo ledger"></div>
+        <footer>
+          Not Reveille. Not Parity. Not Quench. Not Scrim. Not Knock. Idle word is loose.
+        </footer>
+      </main>
+    </div>
+    <script>
+      const VERDICTS = ["loose", "seized", "yield", "stale", "clobber"];
+      const IDLE_WORD = "loose";
+      const DEFAULT_TTL_MS = 15 * 60 * 1000;
+
+      function emptyBoard() {
+        return { leases: {} };
+      }
+
+      function cloneBoard(board) {
+        const leases = {};
+        const raw = board && board.leases ? board.leases : {};
+        for (const [path, lease] of Object.entries(raw)) leases[path] = { ...lease };
+        if (board && board.path && board.holder && !leases[board.path]) {
+          leases[board.path] = { ...board };
+        }
+        return { leases };
+      }
+
+      function getLease(board, path, now) {
+        if (!path || !board) return null;
+        const raw = (board.leases && board.leases[path]) || (board.path === path ? board : board[path]);
+        if (!raw || !raw.holder) return null;
+        return {
+          path,
+          holder: raw.holder,
+          hash: raw.hash || raw.currentHash || "",
+          seizedAt: typeof raw.seizedAt === "number" ? raw.seizedAt : now,
+          ttlMs: raw.ttlMs || DEFAULT_TTL_MS,
+        };
+      }
+
+      function isFree(lease, now) {
+        return !lease || now > lease.seizedAt + lease.ttlMs;
+      }
+
+      function putLease(board, path, lease) {
+        const next = cloneBoard(board);
+        next.leases[path] = { path, ...lease };
+        return next;
+      }
+
+      function dropLease(board, path) {
+        const next = cloneBoard(board);
+        delete next.leases[path];
+        return next;
+      }
+
+      function pack(verdict, board, action, extras) {
+        extras = extras || {};
+        const now = typeof action.now === "number" ? action.now : Date.now();
+        const path = action.path || "";
+        const lease = extras.lease === undefined ? getLease(board, path, now) : extras.lease;
+        return {
+          verdict,
+          state: verdict,
+          decision: verdict,
+          idleWord: IDLE_WORD,
+          alarm: verdict === "clobber",
+          action: action.action,
+          session: action.session || "",
+          path,
+          holder: extras.holder !== undefined ? extras.holder : (lease && lease.holder) || null,
+          currentHash: extras.currentHash !== undefined ? extras.currentHash : (lease && lease.hash) || null,
+          expectedHash: action.expectedHash || null,
+          nextHash: action.nextHash || null,
+          board,
+          issue: action.issue || null,
+          source: action.source || "",
+        };
+      }
+
+      function decide(input) {
+        const action = input.action && typeof input.action === "object"
+          ? { ...input.action, board: input.board || input.action.board }
+          : { ...input };
+        action.action = action.action || "inspect";
+        const board = action.board || emptyBoard();
+        const now = typeof action.now === "number" ? action.now : Date.now();
+        if (action.action === "clear" || !String(action.path || "").trim()) {
+          return pack("loose", action.action === "clear" ? emptyBoard() : cloneBoard(board), { ...action, path: "" }, { holder: null, currentHash: null, lease: null });
+        }
+        const lease = getLease(board, action.path, now);
+        if (action.action === "seize") {
+          if (!isFree(lease, now) && lease.holder !== action.session) return pack("yield", cloneBoard(board), action, { lease });
+          return pack("seized", putLease(board, action.path, {
+            holder: action.session,
+            hash: action.nextHash || action.expectedHash || (lease && lease.hash) || "",
+            seizedAt: now,
+            ttlMs: action.ttlMs || DEFAULT_TTL_MS,
+          }), action);
+        }
+        if (action.action === "write") {
+          if (isFree(lease, now)) {
+            return pack("seized", putLease(board, action.path, {
+              holder: action.session,
+              hash: action.nextHash || action.expectedHash || "",
+              seizedAt: now,
+              ttlMs: action.ttlMs || DEFAULT_TTL_MS,
+            }), action);
+          }
+          if (lease.holder !== action.session) return pack("clobber", cloneBoard(board), action, { lease });
+          if (action.expectedHash != null && String(action.expectedHash) !== String(lease.hash)) {
+            return pack("stale", cloneBoard(board), action, { lease });
+          }
+          return pack("seized", putLease(board, action.path, { ...lease, hash: action.nextHash || lease.hash }), action);
+        }
+        if (action.action === "release") {
+          if (isFree(lease, now)) return pack("loose", dropLease(board, action.path), action, { holder: null, currentHash: null, lease: null });
+          if (lease.holder !== action.session) return pack("yield", cloneBoard(board), action, { lease });
+          return pack("loose", dropLease(board, action.path), action, { holder: null, currentHash: null, lease: null });
+        }
+        if (isFree(lease, now)) return pack("loose", cloneBoard(board), action, { holder: null, currentHash: null, lease: null });
+        return pack("seized", cloneBoard(board), action, { lease });
+      }
+
+      function seedWrite(spec) {
+        return {
+          action: "write",
+          session: spec.session,
+          path: spec.path,
+          expectedHash: spec.expectedHash,
+          nextHash: spec.nextHash,
+          issue: spec.issue,
+          source: spec.source,
+          board: {
+            path: spec.path,
+            holder: spec.holder,
+            hash: spec.hash,
+            currentHash: spec.hash,
+            seizedAt: Date.now(),
+            ttlMs: DEFAULT_TTL_MS,
+          },
+        };
+      }
+
+      function seed90146() {
+        return seedWrite({
+          issue: 90146,
+          source: "anthropics/claude-code#90146",
+          path: ".claude/worktrees/clever-jepsen-93ab22/src/wip.ts",
+          holder: "session-a",
+          hash: "a1c4e9",
+          session: "session-b",
+          nextHash: "b9f201",
+        });
+      }
+      function seed85597() {
+        return seedWrite({
+          issue: 85597,
+          source: "anthropics/claude-code#85597",
+          path: "~/.claude/rules/catchup.md",
+          holder: "session-a",
+          hash: "r1a770",
+          session: "session-b",
+          expectedHash: "r0dead",
+          nextHash: "r2bbbb",
+        });
+      }
+      function seed38541() {
+        return seedWrite({
+          issue: 38541,
+          source: "openai/codex#38541",
+          path: "apps/web/src/checkout.ts",
+          holder: "session-a",
+          hash: "c0d3x1",
+          session: "session-b",
+        });
+      }
+      function seed33741() {
+        return seedWrite({
+          issue: 33741,
+          source: "openai/codex#33741",
+          path: "C:/Users/codex/.codex/cap_sid",
+          holder: "cli-a",
+          hash: "sid-aa",
+          session: "cli-b",
+          nextHash: "sid-bb",
+        });
+      }
+
+      function adapters(result) {
+        const deny = result.verdict === "clobber" || result.verdict === "yield" || result.verdict === "stale";
+        const slack = result.verdict === "loose"
+          ? "Would skip Slack — path is loose."
+          : "Would post to Slack: clobber alarm — another session already holds this path.";
+        const github = "Would append a GitHub lease ledger row. Demo: no token.";
+        const linear = result.verdict === "clobber"
+          ? "Would open a Linear lost-work ticket: Lost work · Hasp clobber · " + (result.path || "path")
+          : result.verdict === "loose" || result.verdict === "seized"
+            ? "Would skip Linear — no lost work."
+            : "Would skip Linear — " + result.verdict + " is not lost work.";
+        const hook = deny
+          ? "PreToolUse deny · interrupt true · " + result.verdict
+          : "PreToolUse allow · " + result.verdict;
+        return [
+          { adapter: "Slack", summary: slack },
+          { adapter: "GitHub", summary: github },
+          { adapter: "Linear", summary: linear },
+          { adapter: "Hook", summary: hook },
+        ];
+      }
+
+      function copyFor(verdict) {
+        if (verdict === "loose") return "Path is free. Idle word is loose — never the product name.";
+        if (verdict === "seized") return "This session holds the path. Write may proceed; hash updates on a matching CAS.";
+        if (verdict === "yield") return "Another session already holds a live lease. Stand down.";
+        if (verdict === "stale") return "Holder write, but expectedHash drifted. Bytes on disk are not what this session last saw.";
+        return "Stranger Write against a live lease. Last writer would have won. Denied.";
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function paintLock(verdict) {
+        const arm = document.getElementById("hasp-arm");
+        const shackle = document.getElementById("shackle");
+        const crack = document.getElementById("crack");
+        const caption = document.getElementById("lock-caption");
+        caption.textContent = verdict;
+        caption.style.color = verdict === "clobber" ? "#9b2d1f" : verdict === "seized" ? "#2f7a62" : verdict === "loose" ? "#6a5b45" : "#c4842a";
+        if (verdict === "loose") {
+          arm.setAttribute("transform", "rotate(-52 132 159)");
+          shackle.setAttribute("transform", "translate(18 0) rotate(-28 16 14)");
+          crack.setAttribute("opacity", "0");
+        } else if (verdict === "clobber") {
+          arm.setAttribute("transform", "rotate(18 132 159)");
+          shackle.setAttribute("transform", "translate(22 -4) rotate(34 16 14)");
+          crack.setAttribute("opacity", "1");
+        } else {
+          arm.setAttribute("transform", "");
+          shackle.setAttribute("transform", "");
+          crack.setAttribute("opacity", "0");
+        }
+      }
+
+      let current = seed90146();
+      let activeSeed = "90146";
+
+      function render() {
+        const result = decide(current);
+        document.getElementById("marks").innerHTML = VERDICTS.map((name) => {
+          const on = name === result.verdict ? " on" : "";
+          return `<div class="mark${on} ${name}"><i></i><b>${name.toUpperCase()}</b></div>`;
+        }).join("");
+        document.getElementById("facts").innerHTML = [
+          ["path", result.path || "—"],
+          ["holder", result.holder || "—"],
+          ["session", result.session || "—"],
+          ["hash", result.currentHash || "—"],
+          ["next", result.nextHash || "—"],
+          ["source", result.source || "—"],
+        ].map(([key, value]) => `<div class="row"><b>${key}</b><code>${escapeHtml(value)}</code></div>`).join("");
+        const strip = document.getElementById("verdict");
+        strip.className = "verdict " + result.verdict;
+        strip.innerHTML = `<strong>${result.verdict}</strong><p>${escapeHtml(copyFor(result.verdict))}</p>`;
+        paintLock(result.verdict);
+        document.getElementById("ledger").innerHTML = adapters(result)
+          .map((row) => `<div class="event ${result.verdict}"><b>${escapeHtml(row.adapter)}</b><div>${escapeHtml(row.summary)}</div></div>`)
+          .join("");
+        document.querySelectorAll(".seed").forEach((button) => {
+          button.classList.toggle("on", button.id === "seed-" + activeSeed);
+        });
+      }
+
+      function loadSeed(id, factory) {
+        current = factory();
+        activeSeed = id;
+        render();
+      }
+
+      document.getElementById("seed-90146").addEventListener("click", () => loadSeed("90146", seed90146));
+      document.getElementById("seed-85597").addEventListener("click", () => loadSeed("85597", seed85597));
+      document.getElementById("seed-38541").addEventListener("click", () => loadSeed("38541", seed38541));
+      document.getElementById("seed-33741").addEventListener("click", () => loadSeed("33741", seed33741));
+      document.getElementById("seize").addEventListener("click", () => {
+        current = { ...current, action: "seize", board: decide(current).board };
+        activeSeed = "";
+        render();
+      });
+      document.getElementById("write").addEventListener("click", () => {
+        current = { ...current, action: "write", board: decide(current).board };
+        activeSeed = "";
+        render();
+      });
+      document.getElementById("release").addEventListener("click", () => {
+        current = { ...current, action: "release", board: decide(current).board };
+        activeSeed = "";
+        render();
+      });
+      document.getElementById("clear").addEventListener("click", () => {
+        current = { action: "clear", session: current.session || "session-a", path: current.path || "" };
+        activeSeed = "";
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>
