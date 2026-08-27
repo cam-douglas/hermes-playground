@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Feather — the blend is done, but a feather still sits. Move the leftover feather. See the residual feather edge still sitting on a fixed blended face." />
+    <title>Feather</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #0a0908;
+        --panel: #161410;
+        --ink: #e6e0d4;
+        --muted: #867e70;
+        --line: rgba(200, 176, 128, 0.24);
+        --accent: #c8b080;
+        --timber: #2a1e10;
+        --feather: #c8b080;
+        --showing: #f0dcb0;
+        --clear: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(200, 176, 128, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(12, 10, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #0a0806 0%, #161410 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(22, 20, 16, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(200, 176, 128, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(26, 22, 16, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(200, 176, 128, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #ece6d4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1810;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #16120c; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(200, 176, 128, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(200, 176, 128, 0.1), transparent 46%),
+          #0a0908;
+        overflow: hidden;
+      }
+      #feather-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(240, 220, 176, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-clear b { color: var(--clear); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #0a0806;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #feather-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> feather · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover feather on the blended face that still sits after the blend</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">finish instrument · 27 Aug 2026 21:50</span>
+        <h1>Feather</h1>
+        <p class="lede">
+          The blend is done, but a feather still sits. Move the leftover feather. See the residual feather edge still sitting on a fixed blended face.
+          Not a holiday. Not a smear. Not a glaze. Not a bloom. Not a horn. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="feather-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover feather still sits on the blended face after the blend</h2>
+          </div>
+          <span class="kicker" id="feather-desk-meta">leftover 2 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="feather-svg" viewBox="0 0 800 460" role="img" aria-labelledby="feather-title feather-desc">
+            <title id="feather-title">Feather is showing. Two millimetres of leftover feather still sit on a fixed blended face.</title>
+            <desc id="feather-desc">One workpiece whose leftover is the feather — leftover residual feather edge that still sits on a fixed blended face after the blend (leftover residual thin tapering feather of finish still sitting at the blend boundary, not a bare holiday miss, not a smear wipe streak, not a thick glaze pool, not a cloudy bloom haze, not a horn, not a clock). One workpiece; the blend is done; the leftover is one leftover residual feather edge sitting on that fixed blended face, not a holiday, not a smear, not a glaze, not a bloom. The leftover that still sits is the feather — leftover residual feather edge still sitting on a fixed blended face. A sketch, not a mill sign-off. Not mill advice.</desc>
+            <defs>
+              <linearGradient id="feather-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#181410" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+              <linearGradient id="feather-face-left-wash" x1="0%" y1="0%" x2="100%" y2="12%">
+                <stop offset="0%" stop-color="#22180c" />
+                <stop offset="48%" stop-color="#4a3618" />
+                <stop offset="100%" stop-color="#6a4e24" />
+              </linearGradient>
+              <linearGradient id="feather-face-right-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#5a4220" />
+                <stop offset="42%" stop-color="#7a5828" />
+                <stop offset="100%" stop-color="#2a1c10" />
+              </linearGradient>
+              <linearGradient id="leftover-feather-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f4e0b0" stop-opacity="0.88" />
+                <stop offset="55%" stop-color="#c8b080" stop-opacity="0.72" />
+                <stop offset="100%" stop-color="#f4e0b0" stop-opacity="0.18" />
+              </linearGradient>
+              <linearGradient id="leftover-feather-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1c1810" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+              <linearGradient id="leftover-feather-taper-wash" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8a7040" />
+                <stop offset="55%" stop-color="#c8b080" />
+                <stop offset="100%" stop-color="#f4e0b0" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#0a0806" stroke="rgba(200,176,128,0.16)" />
+            <text x="36" y="42" fill="#867e70" font-size="11" letter-spacing="2">ONE WORKPIECE · BLEND IS DONE · LEFTOVER IS ONE FEATHER STILL SITTING ON A FIXED BLENDED FACE</text>
+            <g id="feather-scene" data-view="feather-finish" data-hero="leftover-feather" data-feather="2" data-leftover="showing" data-verdict="showing" data-feather-state="sitting">
+              <g id="feather-bench-layer"></g>
+              <g id="feather-stock-layer"></g>
+              <g id="leftover-feather-layer"></g>
+              <g id="feather-mark-layer"></g>
+              <text id="feather-scene-status" x="400" y="64" fill="#f0dcb0" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 2 MM LEFTOVER FEATHER</text>
+              <text id="feather-scene-sketch" x="400" y="434" fill="#545044" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER FEATHER STILL SITS ON A FIXED BLENDED FACE · NOT A HOLIDAY · NOT A SMEAR · NOT A GLAZE · NOT A BLOOM · NOT A HORN · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="feather-alt" class="sr-only" aria-live="polite">Feather is showing. Two millimetres of leftover feather still sit on a fixed blended face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="feather-input">Leftover feather (mm of sitting feather length on the blended face)</label>
+            <input id="feather-input" type="range" min="0" max="8" step="1" value="2" />
+            <div class="ticks" aria-hidden="true">
+              <span>blended / no leftover feather</span>
+              <span>seed showing</span>
+              <span>more leftover feather</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="feather-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Feather <b id="feather-stat-mm">2 mm</b></span>
+          <span id="feather-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="feather-stat-leftover">showing</b></span>
+          <span>Leftover feather (sketch) <b id="feather-stat-span">2 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The blend is done, but a feather still sits. Feather is leftover residual feather edge that still sits on a fixed blended face. A sketch, not a mill sign-off, and not mill advice.
+        Seed is already showing — 2 mm of leftover sitting feather on the blended face, not a blended-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a holiday. Not a smear. Not a glaze. Not a bloom. Not a horn. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const FEATHER_SEED = { featherMm: 2 };
+      const FEATHER_MIN = 0;
+      const FEATHER_MAX = 8;
+      const FEATHER_BLENDED_AT = 0;
+      const FEATHER_SCALE = 18;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const BLEND_X = 400;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 328;
+      const PROFILE_LEFT = 168;
+      const PROFILE_RIGHT = 632;
+      const PROFILE_BLEND = 400;
+
+      let featherMm = FEATHER_SEED.featherMm;
+
+      const featherSvg = document.getElementById("feather-svg");
+      const featherScene = document.getElementById("feather-scene");
+      const featherTitle = document.getElementById("feather-title");
+      const featherAlt = document.getElementById("feather-alt");
+      const featherDeskMeta = document.getElementById("feather-desk-meta");
+      const featherInput = document.getElementById("feather-input");
+      const featherBenchLayer = document.getElementById("feather-bench-layer");
+      const featherStockLayer = document.getElementById("feather-stock-layer");
+      const leftoverFeatherLayer = document.getElementById("leftover-feather-layer");
+      const featherMarkLayer = document.getElementById("feather-mark-layer");
+      const featherSceneStatus = document.getElementById("feather-scene-status");
+      const featherStatMm = document.getElementById("feather-stat-mm");
+      const featherStatLeftover = document.getElementById("feather-stat-leftover");
+      const featherStatLeftoverWrap = document.getElementById("feather-stat-leftover-wrap");
+      const featherStatSpan = document.getElementById("feather-stat-span");
+      const featherBtnReset = document.getElementById("feather-btn-reset");
+      const featherBtnResetStage = document.getElementById("feather-btn-reset-stage");
+
+      function featherClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function featherEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function featherSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverFeatherGeom(lengthPx) {
+        const length = Math.max(0, lengthPx);
+        const rootY = (FACE_TOP + FACE_BOT) / 2;
+        const rootHalf = Math.max(2.2, 3.4);
+        return {
+          rootX: BLEND_X,
+          rootY: rootY,
+          tipX: BLEND_X + length,
+          tipY: rootY + 4,
+          rootHalf: rootHalf,
+          length: length
+        };
+      }
+
+      function leftoverFeatherPlanPath(geom) {
+        return "M " + geom.rootX.toFixed(1) + " " + (geom.rootY - geom.rootHalf).toFixed(1) +
+          " L " + geom.tipX.toFixed(1) + " " + geom.tipY.toFixed(1) +
+          " L " + geom.rootX.toFixed(1) + " " + (geom.rootY + geom.rootHalf).toFixed(1) + " Z";
+      }
+
+      function leftoverFeatherSectionPath() {
+        return "M " + PROFILE_LEFT + " " + PROFILE_FACE_Y +
+          " L " + PROFILE_RIGHT + " " + PROFILE_FACE_Y +
+          " L " + PROFILE_RIGHT + " " + (PROFILE_BOT - 16) +
+          " L " + PROFILE_LEFT + " " + (PROFILE_BOT - 16) + " Z";
+      }
+
+      function leftoverFeatherTaperPath(lengthPx) {
+        const length = Math.max(0, lengthPx);
+        const left = PROFILE_BLEND;
+        const right = PROFILE_BLEND + length;
+        const face = PROFILE_FACE_Y;
+        const rootH = 5.2;
+        return "M " + left.toFixed(1) + " " + face +
+          " L " + left.toFixed(1) + " " + (face - rootH).toFixed(1) +
+          " L " + right.toFixed(1) + " " + face + " Z";
+      }
+
+      function featherPicture() {
+        const leftover = featherMm <= FEATHER_BLENDED_AT ? "blended" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + featherMm + " MM LEFTOVER FEATHER";
+          alt = "Feather is showing. " + featherSpokenMm(featherMm).charAt(0).toUpperCase() + featherSpokenMm(featherMm).slice(1) + " millimetre" + (featherMm === 1 ? "" : "s") + " of leftover feather still sit" + (featherMm === 1 ? "s" : "") + " on a fixed blended face.";
+        } else {
+          status = "BLENDED · NO LEFTOVER FEATHER";
+          alt = "Feather is blended. The blend is done. No leftover feather. A sketch, not a mill sign-off.";
+        }
+        const featherPx = leftover === "showing" ? Math.max(22, featherMm * FEATHER_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#f0dcb0" : "#8ec8b4",
+          featherPx: featherPx,
+          featherState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-feather" : "blended-face"
+        };
+      }
+
+      function featherPaint(pic) {
+        const isBlended = pic.leftover === "blended";
+        const geom = leftoverFeatherGeom(pic.featherPx);
+
+        featherBenchLayer.replaceChildren();
+        featherBenchLayer.appendChild(featherEl("rect", {
+          class: "site leftover-work leftover-feather leftover-finish leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#feather-bench-wash)",
+          stroke: "rgba(200,176,128,0.16)",
+          "stroke-width": "1.2"
+        }));
+        featherBenchLayer.appendChild(featherEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a6454",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · BLEND IS DONE · ONE LEFTOVER FEATHER STILL SITS ON A FIXED BLENDED FACE";
+
+        featherStockLayer.replaceChildren();
+        const stock = featherEl("g", {
+          id: "feather-stock",
+          class: isBlended
+            ? "stock leftover-blended leftover-no-feather leftover-feather leftover-finish leftover-true"
+            : "stock leftover-showing leftover-feather leftover-sitting leftover-finish"
+        });
+        stock.appendChild(featherEl("rect", {
+          id: "feather-workpiece-left",
+          class: "stock-board leftover-stock leftover-workpiece leftover-feather leftover-not-the-leftover leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom leftover-finish-context leftover-kept leftover-face leftover-fixed leftover-blended-face",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(BLEND_X - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          rx: "2",
+          fill: "url(#feather-face-left-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "finish-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(featherEl("rect", {
+          id: "feather-workpiece-right",
+          class: "stock-board leftover-stock leftover-workpiece leftover-feather leftover-not-the-leftover leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom leftover-finish-context leftover-kept leftover-face leftover-fixed leftover-blended-face",
+          x: String(BLEND_X),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - BLEND_X),
+          height: String(FACE_BOT - FACE_TOP),
+          rx: "2",
+          fill: "url(#feather-face-right-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "finish-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(featherEl("line", {
+          id: "feather-blend-line",
+          class: "board-edge leftover-finish leftover-fixed leftover-not-the-leftover leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom leftover-kept leftover-face leftover-fixed leftover-blended-face leftover-blend",
+          x1: String(BLEND_X),
+          y1: String(FACE_TOP),
+          x2: String(BLEND_X),
+          y2: String(FACE_BOT),
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          "stroke-linecap": "square",
+          opacity: "0.62",
+          "data-fixed": "true",
+          "data-role": "blend-edge"
+        }));
+        for (let i = 0; i < 6; i += 1) {
+          const y = FACE_TOP + 22 + i * 20;
+          stock.appendChild(featherEl("line", {
+            class: "blend-trace leftover-finish leftover-done leftover-not-the-leftover leftover-kept leftover-blended-face leftover-context",
+            x1: String(FACE_LEFT + 16),
+            y1: String(y),
+            x2: String(FACE_RIGHT - 16),
+            y2: String(y + (i % 2 === 0 ? 1 : -1)),
+            stroke: "rgba(232, 216, 176, 0.1)",
+            "stroke-width": "0.85",
+            "stroke-linecap": "round",
+            "data-role": "blend-done",
+            "data-fixed": "true"
+          }));
+        }
+        stock.appendChild(featherEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 20),
+          fill: "#e8e0c8",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "BLENDED FACE · FIXED · BLEND IS DONE";
+        featherStockLayer.appendChild(stock);
+
+        leftoverFeatherLayer.replaceChildren();
+        const leftover = featherEl("g", {
+          id: "leftover-feather",
+          class: isBlended
+            ? "feather leftover-feather leftover-blended leftover-empty leftover-no-feather leftover-finish leftover-true"
+            : "feather leftover-feather leftover-showing leftover-one leftover-sitting leftover-span leftover-edge leftover-taper leftover-thin leftover-residual leftover-on-face leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom leftover-not-a-horn leftover-not-a-clock leftover-not-a-bare leftover-not-a-streak leftover-not-a-pool leftover-not-a-haze",
+          "data-feather-mm": String(featherMm),
+          "data-feather-px": String(pic.featherPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isBlended) {
+          leftover.appendChild(featherEl("path", {
+            id: "leftover-feather-edge",
+            class: "leftover-feather leftover-showing leftover-one leftover-sitting leftover-span leftover-edge leftover-taper leftover-thin leftover-void leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom leftover-residual leftover-on-face leftover-not-a-bare leftover-not-a-streak leftover-not-a-pool leftover-not-a-haze",
+            d: leftoverFeatherPlanPath(geom),
+            fill: "url(#leftover-feather-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.15",
+            opacity: "0.94",
+            "data-shape": "leftover-feather",
+            "data-feather-mm": String(featherMm),
+            "data-role": "sitting-feather",
+            "data-feather-px": String(pic.featherPx.toFixed(1)),
+            "data-origin-x": String(BLEND_X),
+            "data-origin-y": String(geom.rootY)
+          }));
+          leftover.appendChild(featherEl("line", {
+            id: "leftover-feather-spine",
+            class: "leftover-feather leftover-showing leftover-sitting leftover-edge leftover-taper leftover-thin leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom leftover-residual leftover-on-face leftover-spine",
+            x1: String(geom.rootX.toFixed(1)),
+            y1: String(geom.rootY.toFixed(1)),
+            x2: String(geom.tipX.toFixed(1)),
+            y2: String(geom.tipY.toFixed(1)),
+            stroke: "#f8ecd0",
+            "stroke-width": "1.15",
+            "stroke-linecap": "round",
+            opacity: String(Math.min(0.86, 0.42 + featherMm / 16)),
+            "data-shape": "leftover-feather-edge",
+            "data-role": "sitting-feather-edge"
+          }));
+          leftover.appendChild(featherEl("text", {
+            id: "leftover-feather-label",
+            class: "feather-label leftover-label leftover-feather leftover-showing leftover-sitting leftover-span leftover-edge leftover-on-face leftover-taper leftover-thin",
+            x: String((geom.rootX + geom.tipX) / 2 + 8),
+            y: String(geom.rootY - 10),
+            fill: "#16120c",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "FEATHER";
+        } else {
+          leftover.appendChild(featherEl("line", {
+            id: "leftover-feather-blended-path",
+            class: "leftover-feather leftover-blended leftover-empty leftover-no-feather leftover-finish leftover-true leftover-blended-face leftover-not-a-feather leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom",
+            x1: String(BLEND_X),
+            y1: String(FACE_TOP),
+            x2: String(BLEND_X),
+            y2: String(FACE_BOT),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "blended-face"
+          }));
+        }
+        leftoverFeatherLayer.appendChild(leftover);
+
+        featherMarkLayer.replaceChildren();
+        featherMarkLayer.appendChild(featherEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · BLEND IS DONE · FIXED";
+        featherMarkLayer.appendChild(featherEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isBlended ? "FACE · BLENDED / NO LEFTOVER FEATHER" : "FACE · ONE LEFTOVER FEATHER STILL SITS";
+
+        featherMarkLayer.appendChild(featherEl("path", {
+          id: "feather-profile-face",
+          class: isBlended
+            ? "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-blended-face leftover-finish leftover-blended leftover-no-feather leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom"
+            : "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-blended-face leftover-finish leftover-with-feather leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom",
+          d: leftoverFeatherSectionPath(),
+          fill: "url(#leftover-feather-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isBlended ? "blended-face" : "leftover-feather-span"
+        }));
+
+        if (!isBlended) {
+          const length = Math.max(22, pic.featherPx);
+          featherMarkLayer.appendChild(featherEl("path", {
+            id: "leftover-feather-profile-taper",
+            class: "leftover-feather leftover-showing leftover-sitting leftover-edge leftover-taper leftover-thin leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom leftover-residual leftover-on-face leftover-not-a-bare leftover-not-a-streak leftover-not-a-pool leftover-not-a-haze",
+            d: leftoverFeatherTaperPath(length),
+            fill: "url(#leftover-feather-taper-wash)",
+            opacity: "0.88",
+            "data-shape": "leftover-feather-taper",
+            "data-role": "sitting-feather-section"
+          }));
+          featherMarkLayer.appendChild(featherEl("line", {
+            id: "feather-dim",
+            class: "feather-dim leftover-feather leftover-showing leftover-sitting leftover-span leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom leftover-edge leftover-taper leftover-thin",
+            x1: String(PROFILE_BLEND),
+            y1: String(PROFILE_FACE_Y - 14),
+            x2: String(PROFILE_BLEND + length),
+            y2: String(PROFILE_FACE_Y - 14),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          featherMarkLayer.appendChild(featherEl("text", {
+            id: "feather-mm-label",
+            class: "feather-label leftover-label leftover-feather leftover-showing leftover-sitting leftover-span leftover-edge leftover-on-face leftover-taper leftover-thin",
+            x: String(PROFILE_BLEND + length / 2),
+            y: String(PROFILE_FACE_Y - 20),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = featherMm + " mm";
+          featherMarkLayer.appendChild(featherEl("text", {
+            id: "feather-span-label",
+            class: "span-label leftover-feather leftover-one leftover-sitting leftover-span leftover-edge leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom leftover-residual leftover-on-face leftover-taper leftover-thin leftover-not-a-bare leftover-not-a-streak leftover-not-a-pool leftover-not-a-haze",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#ece6d4",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER FEATHER · ONE THIN TAPERING FEATHER ON A FIXED BLENDED FACE · NOT A HOLIDAY · NOT A SMEAR · NOT A GLAZE · NOT A BLOOM";
+        } else {
+          featherMarkLayer.appendChild(featherEl("text", {
+            id: "feather-label",
+            class: "feather-label leftover-label leftover-blended leftover-no-feather leftover-finish leftover-empty leftover-true leftover-not-a-holiday leftover-not-a-smear leftover-not-a-glaze leftover-not-a-bloom",
+            x: "400",
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "BLENDED / NO LEFTOVER FEATHER";
+          featherMarkLayer.appendChild(featherEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · BLENDED / NO LEFTOVER FEATHER";
+        }
+
+        featherSceneStatus.setAttribute("fill", pic.accent);
+        featherSceneStatus.textContent = pic.status;
+        featherScene.setAttribute("data-feather", String(featherMm));
+        featherScene.setAttribute("data-leftover", pic.leftover);
+        featherScene.setAttribute("data-verdict", pic.verdict);
+        featherScene.setAttribute("data-view", "feather-finish");
+        featherScene.setAttribute("data-hero", "leftover-feather");
+        featherScene.setAttribute("data-feather-mm", String(featherMm));
+        featherScene.setAttribute("data-feather-px", String(pic.featherPx.toFixed(1)));
+        featherScene.setAttribute("data-feather-state", pic.featherState);
+        featherScene.setAttribute("data-shape", pic.shape);
+        featherScene.setAttribute("data-face-fixed", "true");
+        featherScene.setAttribute("data-blended-face-fixed", "true");
+      }
+
+      function featherToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-clear";
+      }
+
+      function featherRender() {
+        const pic = featherPicture();
+        featherPaint(pic);
+        featherTitle.textContent = pic.alt;
+        featherAlt.textContent = pic.alt;
+        featherSvg.setAttribute("aria-label", pic.alt);
+        featherDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + featherMm + " mm showing"
+          : "leftover blended";
+        featherStatMm.textContent = featherMm + " mm";
+        featherStatLeftover.textContent = pic.leftover;
+        featherStatSpan.textContent = pic.leftover === "showing"
+          ? featherMm + " mm leftover"
+          : "blended";
+        featherStatLeftoverWrap.classList.remove("is-showing", "is-clear");
+        featherStatLeftoverWrap.classList.add(featherToneClass(pic.leftover));
+        if (Number(featherInput.value) !== featherMm) featherInput.value = String(featherMm);
+        featherInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function featherResetSeed() {
+        featherMm = FEATHER_SEED.featherMm;
+        featherRender();
+      }
+
+      featherInput.addEventListener("input", function (event) {
+        featherMm = featherClamp(Math.round(Number(event.target.value)), FEATHER_MIN, FEATHER_MAX);
+        featherRender();
+      });
+      featherBtnReset.addEventListener("click", featherResetSeed);
+      featherBtnResetStage.addEventListener("click", featherResetSeed);
+
+      featherRender();
+    </script>
+  </body>
+</html>
