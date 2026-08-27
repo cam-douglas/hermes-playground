@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Fathom — standing-rule sounding. Pin rules outside the window. Compact drops them. Bind and score. Ack is not a hold."
+    />
+    <title>Fathom — standing-rule sounding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,500;0,7..72,680;1,7..72,500&family=Sora:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --water: #061525;
+        --water-deep: #031018;
+        --isobath: rgba(154, 196, 186, 0.18);
+        --cream: #f3ead2;
+        --cream-ink: #1b2430;
+        --cream-mute: #5c6570;
+        --lead: #9aa3ad;
+        --foam: #d7eee6;
+        --ack: #c45b4a;
+        --lost: #d98a3a;
+        --drift: #e0c36a;
+        --bound: #3f9d8a;
+        --still: #8aa0b0;
+        --line: rgba(243, 234, 210, 0.16);
+        --display: "Literata", "Iowan Old Style", Georgia, serif;
+        --sans: "Sora", "Avenir Next", "Helvetica Neue", sans-serif;
+        --mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: var(--sans);
+        color: var(--foam);
+        background:
+          radial-gradient(1200px 640px at 80% -10%, rgba(47, 92, 110, 0.35), transparent 55%),
+          radial-gradient(900px 520px at 8% 110%, rgba(20, 70, 72, 0.28), transparent 50%),
+          linear-gradient(180deg, var(--water-deep), var(--water) 42%, #0a2438 100%);
+        min-height: 100vh;
+      }
+      a { color: #9ad4c6; }
+      button, textarea { font: inherit; }
+      .sea {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(173, 214, 204, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(173, 214, 204, 0.06) 1px, transparent 1px);
+        background-size: 72px 72px;
+        mask-image: radial-gradient(circle at 50% 40%, #000 40%, transparent 88%);
+      }
+      .rhumb {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          repeating-conic-gradient(from 12deg, transparent 0 18deg, rgba(157, 196, 186, 0.035) 18deg 19deg);
+        opacity: 0.7;
+      }
+      .wrap {
+        position: relative;
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 72px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: flex-end;
+        margin-bottom: 22px;
+      }
+      .office {
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #9ad4c6;
+      }
+      h1 {
+        margin: 8px 0 6px;
+        font-family: var(--display);
+        font-size: clamp(42px, 7vw, 76px);
+        font-weight: 680;
+        letter-spacing: -0.04em;
+        line-height: 0.9;
+      }
+      .lede {
+        max-width: 38em;
+        color: #b7c6c2;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+      .lead-line {
+        width: 86px;
+        flex: 0 0 auto;
+      }
+      .lead-line svg { width: 86px; height: 148px; display: block; }
+      .deck {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+        gap: 18px;
+      }
+      .cartouche {
+        background: var(--cream);
+        color: var(--cream-ink);
+        border-radius: 6px;
+        padding: 22px 22px 18px;
+        box-shadow:
+          0 0 0 1px rgba(243, 234, 210, 0.2),
+          0 18px 50px rgba(0, 0, 0, 0.35);
+        position: relative;
+      }
+      .cartouche::before {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        border: 1px solid rgba(27, 36, 48, 0.12);
+        pointer-events: none;
+      }
+      .cartouche h2 {
+        margin: 0 0 6px;
+        font-family: var(--display);
+        font-size: 28px;
+        letter-spacing: -0.03em;
+      }
+      .cartouche p { margin: 0 0 14px; color: var(--cream-mute); font-size: 14px; line-height: 1.45; }
+      .seeds { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+      .chip, .act {
+        border: 1px solid rgba(27, 36, 48, 0.16);
+        background: rgba(255, 255, 255, 0.35);
+        color: var(--cream-ink);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+      }
+      .chip.on, .act.primary {
+        background: #1b2430;
+        color: var(--cream);
+        border-color: #1b2430;
+      }
+      .acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+      textarea {
+        width: 100%;
+        min-height: 110px;
+        resize: vertical;
+        border: 1px solid rgba(27, 36, 48, 0.16);
+        background: rgba(255, 255, 255, 0.48);
+        color: var(--cream-ink);
+        border-radius: 4px;
+        padding: 10px 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .side { display: grid; gap: 14px; }
+      .stamp, .pins, .sinks, .facts {
+        background: rgba(6, 21, 37, 0.62);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 16px;
+        backdrop-filter: blur(8px);
+      }
+      .stamp b {
+        display: block;
+        font-family: var(--display);
+        font-size: 42px;
+        letter-spacing: -0.03em;
+        line-height: 0.9;
+        text-transform: lowercase;
+      }
+      .stamp.still b { color: var(--still); }
+      .stamp.bound b { color: var(--bound); }
+      .stamp.drift b { color: var(--drift); }
+      .stamp.lost b { color: var(--lost); }
+      .stamp.ack b { color: var(--ack); }
+      .stamp span { color: #9aaeb0; font-size: 13px; display: block; margin-top: 8px; line-height: 1.45; }
+      .marks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 7px;
+        border: 1px solid var(--line);
+        color: #8aa0b0;
+      }
+      .mark.on { color: var(--cream); border-color: rgba(243, 234, 210, 0.4); }
+      .pins h3, .sinks h3, .facts h3 {
+        margin: 0 0 10px;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #9ad4c6;
+      }
+      .pin {
+        display: grid;
+        grid-template-columns: 18px 1fr auto;
+        gap: 8px;
+        align-items: start;
+        padding: 8px 0;
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+      }
+      .pin:first-of-type { border-top: 0; }
+      .dot {
+        width: 10px;
+        height: 10px;
+        margin-top: 4px;
+        border-radius: 50%;
+        background: var(--lead);
+        box-shadow: 0 0 0 4px rgba(154, 163, 173, 0.12);
+      }
+      .dot.bound { background: var(--bound); }
+      .dot.ack { background: var(--ack); }
+      .dot.lost { background: var(--lost); }
+      .dot.drift { background: var(--drift); }
+      .pin small { color: #8aa0b0; display: block; font-family: var(--mono); font-size: 11px; }
+      .row {
+        display: grid;
+        grid-template-columns: 72px 1fr;
+        gap: 10px;
+        padding: 8px 0;
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+      }
+      .row:first-of-type { border-top: 0; }
+      .row b { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #9ad4c6; font-weight: 500; }
+      footer {
+        margin-top: 22px;
+        color: #8aa0b0;
+        font-size: 13px;
+      }
+      .soundings {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: rgba(173, 214, 204, 0.28);
+      }
+      .soundings span { position: absolute; }
+      @media (max-width: 860px) {
+        .deck { grid-template-columns: 1fr; }
+        header { flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sea" aria-hidden="true"></div>
+    <div class="rhumb" aria-hidden="true"></div>
+    <main class="wrap">
+      <div class="soundings" aria-hidden="true">
+        <span style="left:6%;top:18%">17</span>
+        <span style="left:18%;top:72%">9</span>
+        <span style="left:88%;top:22%">24</span>
+        <span style="left:76%;top:80%">6½</span>
+        <span style="left:42%;top:8%">31</span>
+      </div>
+      <header>
+        <div>
+          <p class="office">Hydrographic office · 04:50 Australia/Sydney</p>
+          <h1>Fathom</h1>
+          <p class="lede">
+            Pin standing rules outside the window. Compact drops them and keeps the
+            narrative. Bind re-injects <code>MUST:</code> lines. Score is mechanical.
+            Acknowledgment is not a hold. Idle word is <b>still</b>.
+          </p>
+        </div>
+        <div class="lead-line" aria-hidden="true">
+          <svg viewBox="0 0 86 148" fill="none">
+            <path d="M43 0 V92" stroke="#9aa3ad" stroke-width="1.4" stroke-dasharray="2 6" />
+            <path d="M43 92 L28 124 L43 148 L58 124 Z" fill="#8d959e" stroke="#c5ccd3" />
+            <circle cx="43" cy="92" r="4" fill="#d7eee6" />
+          </svg>
+        </div>
+      </header>
+      <section class="deck">
+        <article class="cartouche">
+          <h2>Sounding plate</h2>
+          <p>
+            Not a muster, lease, claim board, fuse, veil, or grant inbox. The glass
+            already holds #89733: compacted, not bound, the same rule acknowledged,
+            then a total reported.
+          </p>
+          <div class="seeds" id="seeds"></div>
+          <label for="draft" class="office" style="color:#5c6570">Draft on the glass</label>
+          <textarea id="draft" spellcheck="false"></textarea>
+          <div class="acts">
+            <button class="act" data-act="compact">Compact</button>
+            <button class="act" data-act="bind">Bind</button>
+            <button class="act" data-act="score">Score</button>
+            <button class="act" data-act="acknowledge">Acknowledge</button>
+            <button class="act" data-act="spawn">Spawn</button>
+            <button class="act primary" data-act="clear">Clear · still</button>
+          </div>
+        </article>
+        <aside class="side">
+          <div class="stamp still" id="stamp">
+            <b id="verdict">still</b>
+            <span id="copy">Idle sounding. No pins on the line.</span>
+            <div class="marks" id="marks"></div>
+          </div>
+          <div class="pins" id="pins"></div>
+          <div class="facts" id="facts"></div>
+          <div class="sinks" id="sinks"></div>
+        </aside>
+      </section>
+      <footer>
+        Evidence only: claude-code #89733 #82184 #59309 · codex #25792 #25884.
+        Catalog path <code>/fathom/</code>. Demo needs no secrets and no npm.
+      </footer>
+    </main>
+    <script>
+      const VERDICTS = ["still", "bound", "drift", "lost", "ack"];
+      const IDLE_WORD = "still";
+      const CHECKS = [
+        "forbid-total",
+        "forbid-jargon",
+        "require-named-count",
+        "require-review",
+        "require-progress",
+        "require-inherit",
+        "forbid-banned-tool",
+        "require-type-hint",
+      ];
+
+      function emptyBoard() {
+        return { pins: [], compacted: false, bound: false, spawned: false, inherited: true, narrative: "" };
+      }
+
+      function cloneBoard(board) {
+        const src = board || emptyBoard();
+        return {
+          pins: (src.pins || []).map((pin) => ({ ...pin })),
+          compacted: Boolean(src.compacted),
+          bound: Boolean(src.bound),
+          spawned: Boolean(src.spawned),
+          inherited: src.inherited !== false,
+          narrative: String(src.narrative || ""),
+        };
+      }
+
+      function normalizePin(raw, index) {
+        const check = CHECKS.indexOf(raw && raw.check) >= 0 ? raw.check : "forbid-total";
+        return {
+          id: String((raw && raw.id) || check || "pin-" + (index + 1)),
+          check,
+          text: raw && raw.text != null ? String(raw.text) : check,
+          acknowledged: Boolean(raw && raw.acknowledged),
+          priorProgress: raw && raw.priorProgress,
+        };
+      }
+
+      function runCheck(pin, draft, ctx) {
+        const text = String(draft || "");
+        if (pin.check === "forbid-total") return !/\b(totals?|averages?|avg\.?|mean)\b/i.test(text);
+        if (pin.check === "forbid-jargon") return !/\b(leverage|synergy|paradigm|utilize)\b/i.test(text);
+        if (pin.check === "require-named-count") {
+          if (!/\b\d+\s+of\s+\d+\b/i.test(text)) return true;
+          return /\b(namely|specifically|which were)\b/i.test(text);
+        }
+        if (pin.check === "require-review") {
+          if (!/\b(commit|landed|shipped|merged)\b/i.test(text)) return true;
+          return /\b(adversarial review|mandatory review|multi-lens)\b/i.test(text);
+        }
+        if (pin.check === "require-progress") {
+          const matches = Array.from(text.matchAll(/(\d+(?:\.\d+)?)%/g)).map((m) => Number(m[1]));
+          if (!matches.length) return true;
+          const prior = Number(pin.priorProgress || ctx.priorProgress || 97);
+          return matches.every((value) => value >= prior - 5);
+        }
+        if (pin.check === "require-inherit") return ctx.inherited === true;
+        if (pin.check === "forbid-banned-tool") return !/Write\s+CLAUDE\.md|omitClaudeMd|Bash\(rm/.test(text);
+        if (pin.check === "require-type-hint") {
+          if (/\btyped\b/i.test(text)) return true;
+          return !/\bany\b|as unknown|@ts-ignore/i.test(text);
+        }
+        return true;
+      }
+
+      function scorePin(pin, draft, ctx) {
+        if (runCheck(pin, draft, ctx)) return "bound";
+        if (pin.acknowledged) return "ack";
+        if (ctx.spawned && !ctx.inherited) return "lost";
+        if (ctx.compacted && !ctx.bound) return "lost";
+        return "drift";
+      }
+
+      function mustLine(pin) {
+        const lines = {
+          "forbid-total": "MUST: never write totals, averages, avg, or mean.",
+          "forbid-jargon": "MUST: keep language plain — no leverage, synergy, paradigm, or utilize.",
+          "require-named-count": "MUST: when stating N of M, name them (namely / specifically / which were).",
+          "require-review": "MUST: a commit, land, ship, or merge needs adversarial review.",
+          "require-progress": "MUST: a reported percent must stay within 5 of the prior sounding.",
+          "require-inherit": "MUST: standing rules inherit to every spawned subagent.",
+          "forbid-banned-tool": "MUST: do not Write CLAUDE.md, omitClaudeMd, or Bash(rm standing files.",
+          "require-type-hint": "MUST: no any / as unknown / @ts-ignore unless the draft is typed.",
+        };
+        return lines[pin.check] || ("MUST: " + (pin.text || pin.check));
+      }
+
+      function decide(payload) {
+        const actionName = payload.action || "inspect";
+        const board = cloneBoard(payload.board);
+        if (Array.isArray(payload.pins)) board.pins = payload.pins.map(normalizePin);
+        else board.pins = board.pins.map(normalizePin);
+        if (payload.compacted != null) board.compacted = Boolean(payload.compacted);
+        if (payload.bound != null) board.bound = Boolean(payload.bound);
+        if (payload.spawned != null) board.spawned = Boolean(payload.spawned);
+        if (payload.inherited != null) board.inherited = Boolean(payload.inherited);
+        const draft = String(payload.draft || "");
+        if (actionName === "clear") {
+          return pack("still", emptyBoard(), { action: "clear", draft: "", session: payload.session || "" });
+        }
+        if (actionName === "compact") {
+          board.compacted = true;
+          board.bound = false;
+        }
+        if (actionName === "bind") {
+          board.bound = true;
+          board.inherited = true;
+        }
+        if (actionName === "acknowledge") {
+          board.pins = board.pins.map((pin) => Object.assign({}, pin, { acknowledged: true }));
+        }
+        if (actionName === "spawn") {
+          board.spawned = true;
+          board.inherited = false;
+          board.bound = false;
+        }
+        const pinRows = board.pins.map((pin) => Object.assign({}, pin, {
+          holds: runCheck(pin, draft, board),
+          verdict: scorePin(pin, draft, board),
+        }));
+        let verdict = "still";
+        if (board.pins.length) {
+          const failed = pinRows.filter((row) => row.verdict !== "bound");
+          if (failed.length) {
+            verdict = failed.some((row) => row.verdict === "ack")
+              ? "ack"
+              : failed.some((row) => row.verdict === "lost")
+                ? "lost"
+                : "drift";
+          } else if (board.spawned && !board.inherited) {
+            verdict = "lost";
+          } else if (board.compacted && !board.bound) {
+            verdict = "lost";
+          } else {
+            verdict = "bound";
+          }
+        }
+        return pack(verdict, board, {
+          action: actionName,
+          draft,
+          session: payload.session || "",
+          issue: payload.issue || null,
+          source: payload.source || "",
+        }, {
+          pinRows,
+          injection: actionName === "bind" ? pinRows.map(mustLine).join("\n") : "",
+        });
+      }
+
+      function pack(verdict, board, action, extras) {
+        extras = extras || {};
+        return {
+          ok: true,
+          product: "fathom",
+          verdict,
+          state: verdict,
+          decision: verdict,
+          idleWord: IDLE_WORD,
+          alarm: verdict === "lost" || verdict === "ack" || verdict === "drift",
+          action: action.action,
+          session: action.session || "",
+          draft: action.draft || "",
+          board,
+          pins: extras.pinRows || [],
+          compacted: board.compacted,
+          bound: board.bound,
+          spawned: board.spawned,
+          inherited: board.inherited,
+          narrative: board.narrative,
+          injection: extras.injection || "",
+          issue: action.issue || null,
+          source: action.source || "",
+        };
+      }
+
+      function seed89733() {
+        return {
+          action: "score",
+          session: "sounding-89733",
+          issue: 89733,
+          source: "anthropics/claude-code#89733",
+          draft: "Across the eight cases the average is 12.4 and the total is 99...",
+          board: {
+            pins: [
+              { id: "no-total", check: "forbid-total", text: "plain", acknowledged: true },
+              { id: "plain", check: "forbid-jargon", text: "plain", acknowledged: true },
+            ],
+            compacted: true,
+            bound: false,
+            spawned: false,
+            inherited: true,
+            narrative: "CLAUDE.md and memory were read. The same rule was acknowledged three times.",
+          },
+        };
+      }
+      function seed82184() {
+        return {
+          action: "score",
+          session: "sounding-82184",
+          issue: 82184,
+          source: "anthropics/claude-code#82184",
+          draft: "I landed a commit that shipped the auth change and merged it.",
+          board: {
+            pins: [{ id: "require-review", check: "require-review", text: "adversarial review before land", acknowledged: false }],
+            compacted: true,
+            bound: false,
+            spawned: false,
+            inherited: true,
+            narrative: "Governance dropped. The story of the session survived.",
+          },
+        };
+      }
+      function seed59309() {
+        return {
+          action: "spawn",
+          session: "sounding-59309",
+          issue: 59309,
+          source: "anthropics/claude-code#59309",
+          inherited: false,
+          draft: "Write CLAUDE.md so the child can skip the parent file. omitClaudeMd. Bash(rm -rf .claude)",
+          board: {
+            pins: [
+              { id: "require-inherit", check: "require-inherit", text: "standing rules inherit", acknowledged: false },
+              { id: "forbid-banned-tool", check: "forbid-banned-tool", text: "do not write CLAUDE.md", acknowledged: false },
+            ],
+            compacted: false,
+            bound: false,
+            spawned: false,
+            inherited: true,
+            narrative: "Parent had CLAUDE.md. The spawned subagent did not.",
+          },
+        };
+      }
+      function seed25792() {
+        return {
+          action: "score",
+          session: "sounding-25792",
+          issue: 25792,
+          source: "openai/codex#25792",
+          priorProgress: 97,
+          draft: "Progress is 42%...",
+          board: {
+            pins: [{ id: "require-progress", check: "require-progress", text: "progress may not drop more than 5", acknowledged: false, priorProgress: 97 }],
+            compacted: true,
+            bound: false,
+            spawned: false,
+            inherited: true,
+            narrative: "AGENTS.md was in context. After compact the meter forgot the rule.",
+          },
+        };
+      }
+      function seed25884() {
+        return {
+          action: "score",
+          session: "sounding-25884",
+          issue: 25884,
+          source: "openai/codex#25884",
+          draft: "const value = data as unknown; // @ts-ignore leftover any",
+          board: {
+            pins: [{ id: "require-type-hint", check: "require-type-hint", text: "typed, never as unknown", acknowledged: false }],
+            compacted: false,
+            bound: true,
+            spawned: false,
+            inherited: true,
+            narrative: "AGENTS.md was read correctly. Application drifted.",
+          },
+        };
+      }
+
+      const SEEDS = {
+        89733: seed89733,
+        82184: seed82184,
+        59309: seed59309,
+        25792: seed25792,
+        25884: seed25884,
+      };
+
+      function adapters(result) {
+        const slack = result.verdict === "still"
+          ? "Would skip Slack — sounding is still."
+          : result.verdict === "bound"
+            ? "Would skip Slack — pins are bound."
+            : result.verdict === "ack"
+              ? "Would post to Slack: lost-rule alarm — acknowledgment is not a hold. #89733."
+              : result.verdict === "lost"
+                ? "Would post to Slack: lost-rule alarm — standing rules dropped after compact."
+                : "Would post to Slack: lost-rule alarm — rule was bound and the draft still failed.";
+        const github = "Would append a GitHub sounding ledger row. Demo: no token.";
+        const linear = result.verdict === "still" || result.verdict === "bound"
+          ? "Would skip Linear — no ack ticket."
+          : "Would open a Linear ack ticket: " + result.verdict + " · Fathom " + (result.session || "");
+        const hook = result.alarm
+          ? (result.action === "spawn" ? "SubagentStart" : result.action === "compact" || result.action === "bind" ? "PostCompact" : "Stop") +
+            " deny · interrupt true · " + result.verdict
+          : (result.action === "spawn" ? "SubagentStart" : result.action === "compact" || result.action === "bind" ? "PostCompact" : "Stop") +
+            " allow · " + result.verdict;
+        return [
+          { adapter: "Slack", summary: slack },
+          { adapter: "GitHub", summary: github },
+          { adapter: "Linear", summary: linear },
+          { adapter: "Hook", summary: hook },
+        ];
+      }
+
+      function copyFor(verdict) {
+        if (verdict === "still") return "Idle sounding. No pins on the line. The idle word is still — never the product name.";
+        if (verdict === "bound") return "Draft holds against every pin after bind. The mechanical check passed.";
+        if (verdict === "drift") return "The rule was in context (bound) and the draft still failed.";
+        if (verdict === "lost") return "Compacted and not bound, or a spawn without inheritance. Standing rules dropped.";
+        return "Pin.acknowledged is true and the mechanical check failed. Acknowledgment is not a hold.";
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      let current = seed89733();
+      let activeSeed = "89733";
+
+      function render() {
+        current.draft = document.getElementById("draft").value;
+        const result = decide(current);
+        const stamp = document.getElementById("stamp");
+        stamp.className = "stamp " + result.verdict;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("copy").textContent = copyFor(result.verdict);
+        document.getElementById("marks").innerHTML = VERDICTS.map((name) => {
+          return `<span class="mark${name === result.verdict ? " on" : ""}">${name}</span>`;
+        }).join("");
+        document.getElementById("pins").innerHTML = `<h3>Sounding pins</h3>${
+          result.pins.length
+            ? result.pins.map((pin) => `
+              <div class="pin">
+                <i class="dot ${pin.verdict}"></i>
+                <div>${escapeHtml(pin.check)}<small>${escapeHtml(pin.text || "")}${pin.acknowledged ? " · acknowledged" : ""}</small></div>
+                <b>${escapeHtml(pin.verdict)}</b>
+              </div>`).join("")
+            : `<p style="margin:0;color:#8aa0b0">No pins. The plate is still.</p>`
+        }`;
+        document.getElementById("facts").innerHTML = `<h3>Lead-line</h3>${[
+          ["compacted", String(result.compacted)],
+          ["bound", String(result.bound)],
+          ["spawned", String(result.spawned)],
+          ["inherited", String(result.inherited)],
+          ["alarm", String(result.alarm)],
+          ["idle", result.idleWord],
+        ].map(([k, v]) => `<div class="row"><b>${k}</b><span>${escapeHtml(v)}</span></div>`).join("")}${
+          result.injection ? `<div class="row"><b>inject</b><span>${escapeHtml(result.injection)}</span></div>` : ""
+        }`;
+        document.getElementById("sinks").innerHTML = `<h3>Ledger rows</h3>${adapters(result).map((row) => `
+          <div class="row"><b>${escapeHtml(row.adapter)}</b><span>${escapeHtml(row.summary)}</span></div>
+        `).join("")}`;
+        document.getElementById("seeds").innerHTML = Object.keys(SEEDS).map((id) => {
+          return `<button class="chip${activeSeed === id ? " on" : ""}" data-seed="${id}">#${id}</button>`;
+        }).join("");
+      }
+
+      function loadSeed(id) {
+        activeSeed = String(id);
+        current = SEEDS[id]();
+        document.getElementById("draft").value = current.draft;
+        render();
+      }
+
+      document.getElementById("seeds").addEventListener("click", (event) => {
+        const seed = event.target.getAttribute("data-seed");
+        if (seed) loadSeed(seed);
+      });
+      document.querySelector(".acts").addEventListener("click", (event) => {
+        const act = event.target.getAttribute("data-act");
+        if (!act) return;
+        current = {
+          action: act,
+          session: current.session,
+          draft: document.getElementById("draft").value,
+          board: act === "clear" ? emptyBoard() : (decide(Object.assign({}, current, { draft: document.getElementById("draft").value })).board),
+        };
+        if (act === "clear") {
+          activeSeed = "";
+          document.getElementById("draft").value = "";
+        }
+        render();
+      });
+      document.getElementById("draft").addEventListener("input", () => {
+        current.draft = document.getElementById("draft").value;
+        current.action = current.action || "score";
+        render();
+      });
+
+      loadSeed("89733");
+    </script>
+  </body>
+</html>
