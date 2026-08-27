@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Quench](https://hermes-playground-green.vercel.app/quench/)** — runtime fuse. Trip a hard kill, fire Slack, write the GitHub spend ledger. Folder: `projects/quench/`.
+**Featured: [Reveille](https://hermes-playground-green.vercel.app/reveille/)** — living muster. Heartbeats survive compaction; duplicate dispatch is held. Folder: `projects/reveille/`.
+
+**Listed: [Quench](https://hermes-playground-green.vercel.app/quench/)** — runtime fuse. Trip a hard kill, fire Slack, write the GitHub spend ledger. Folder: `projects/quench/`. Still listed. Not featured.
 
 **Listed: [Scrim](https://hermes-playground-green.vercel.app/scrim/)** — runtime DLP at the agent I/O boundary. Folder: `projects/scrim/`. Still listed. Not featured.
 
@@ -13,19 +15,21 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 ## Tree
 
 ```
-README.md                 catalog index (this file)
-catalog.json              3 products: Quench (featured), Scrim, Knock
-index.html                hub page at `/` (filesystem hit; not a product)
-hub/                      same catalog page at `/hub/`
-projects/quench/          runtime token-burn fuse (featured)
-projects/scrim/           agent I/O DLP (kept, unfeatured)
-projects/knock/           permission-gate relay (kept, unfeatured)
-vercel.json               path routes before filesystem so `/quench/`, `/scrim/`, `/knock/` reach products
-runs/hours.json           ship log index
-runs/2026-08-28-quench.md Quench ship log (00:50 Sydney)
-runs/2026-08-27-scrim.md  Scrim ship log (23:50 Sydney)
-runs/2026-08-27-knock.md  Knock ship log
-runs/2026-08-27-reset.md  leftover era closed
+README.md                   catalog index (this file)
+catalog.json                4 products: Reveille (featured), Quench, Scrim, Knock
+index.html                  hub page at `/` (filesystem hit; not a product)
+hub/                        same catalog page at `/hub/`
+projects/reveille/          living muster board (featured)
+projects/quench/            runtime token-burn fuse (kept, unfeatured)
+projects/scrim/             agent I/O DLP (kept, unfeatured)
+projects/knock/             permission-gate relay (kept, unfeatured)
+vercel.json                 path routes before filesystem so `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+runs/hours.json             ship log index
+runs/2026-08-28-reveille.md Reveille ship log (01:50 Sydney)
+runs/2026-08-28-quench.md   Quench ship log (00:50 Sydney)
+runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
+runs/2026-08-27-knock.md    Knock ship log
+runs/2026-08-27-reset.md    leftover era closed
 ```
 
 ## How a project lives
@@ -43,6 +47,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Reveille
+
+`projects/reveille/` is a living muster board. Compaction loses in-flight agent handles; workflow run records appear on disk only at completion; the session re-dispatches onto the same artifact. Reveille keeps heartbeats and claims across that boundary. Duplicate dispatch is held. A missed beat is orphan / missing.
+
+Live path: https://hermes-playground-green.vercel.app/reveille/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed collision `compact-90036` is already on the roll. Idle word is **quiet**, not the product name. Not a spend kill. Not a DLP veil. Not a grant inbox.
 
 ## Quench
 
@@ -73,6 +85,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/reveille/` → `projects/reveille/`
 - `/quench/` → `projects/quench/`
 - `/scrim/` → `projects/scrim/`
 - `/knock/` → `projects/knock/`
