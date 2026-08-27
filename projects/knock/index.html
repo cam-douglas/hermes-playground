@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Knock — fail-loud permission-gate relay. The call already fired. Don't let the run hang."
+    />
+    <title>Knock — permission gate</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #07080c;
+        --panel: #10131a;
+        --panel-2: #171b24;
+        --line: rgba(255, 214, 130, 0.16);
+        --text: #f4efe4;
+        --muted: #8d8a82;
+        --amber: #ffb020;
+        --allow: #3ee08f;
+        --deny: #ff5a5a;
+        --timeout: #c9b8ff;
+        --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        --sans: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: var(--sans);
+        background:
+          radial-gradient(1200px 600px at 10% -10%, rgba(255, 176, 32, 0.08), transparent 50%),
+          radial-gradient(800px 400px at 110% 10%, rgba(62, 224, 143, 0.06), transparent 45%),
+          var(--ink);
+        color: var(--text);
+      }
+      a { color: var(--amber); }
+      button, input, select, textarea { font: inherit; }
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 24px;
+        padding: 28px 32px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .knocker {
+        width: 42px;
+        height: 42px;
+        border: 1px solid var(--amber);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        position: relative;
+      }
+      .knocker::after {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--amber);
+        box-shadow: 0 0 0 0 rgba(255, 176, 32, 0.6);
+        animation: knock 1.6s infinite;
+      }
+      @keyframes knock {
+        0% { box-shadow: 0 0 0 0 rgba(255, 176, 32, 0.55); }
+        70% { box-shadow: 0 0 0 14px rgba(255, 176, 32, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 176, 32, 0); }
+      }
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: -0.05em;
+        font-weight: 600;
+      }
+      .lede {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 42em;
+      }
+      .mode {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--amber);
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+        white-space: nowrap;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr) 320px;
+        min-height: calc(100vh - 98px);
+      }
+      @media (max-width: 980px) {
+        .grid { grid-template-columns: 1fr; }
+        .rail, .ledger { border-right: 0; border-bottom: 1px solid var(--line); }
+      }
+      .rail, .stage, .ledger { padding: 20px; }
+      .rail { border-right: 1px solid var(--line); background: rgba(16, 19, 26, 0.7); }
+      .ledger { border-left: 1px solid var(--line); background: rgba(16, 19, 26, 0.55); }
+      .section-label {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 0 0 12px;
+      }
+      .item {
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        color: inherit;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        padding: 10px 10px 9px;
+        margin: 0 0 8px;
+        cursor: pointer;
+      }
+      .item:hover, .item.active { border-color: var(--line); background: var(--panel-2); }
+      .item .who { font-size: 13px; color: var(--muted); }
+      .item .tool { font-family: var(--mono); font-size: 13px; }
+      .pill {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 2px 6px;
+        border-radius: 999px;
+        margin-top: 6px;
+      }
+      .pending { color: var(--amber); border: 1px solid rgba(255, 176, 32, 0.35); }
+      .allowed { color: var(--allow); border: 1px solid rgba(62, 224, 143, 0.35); }
+      .denied { color: var(--deny); border: 1px solid rgba(255, 90, 90, 0.35); }
+      .timed_out { color: var(--timeout); border: 1px solid rgba(201, 184, 255, 0.35); }
+      .ring-wrap { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 28px; align-items: center; }
+      @media (max-width: 720px) { .ring-wrap { grid-template-columns: 1fr; } }
+      .ring {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: conic-gradient(var(--amber) calc(var(--pct) * 1%), #1c2029 0);
+        position: relative;
+      }
+      .ring > div {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: var(--ink);
+        display: grid;
+        place-items: center;
+        text-align: center;
+      }
+      .ttl {
+        font-family: var(--mono);
+        font-size: 34px;
+        letter-spacing: -0.06em;
+      }
+      .ttl small { display: block; font-size: 11px; color: var(--muted); letter-spacing: 0.14em; }
+      .meta { display: grid; gap: 8px; margin: 22px 0; }
+      .row {
+        display: grid;
+        grid-template-columns: 92px 1fr;
+        gap: 10px;
+        font-size: 14px;
+      }
+      .row span { color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .row code { font-family: var(--mono); font-size: 13px; }
+      .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+      .btn {
+        border: 0;
+        border-radius: 4px;
+        padding: 11px 16px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+      .allow { background: var(--allow); color: #062214; }
+      .deny { background: var(--deny); color: #2a0404; }
+      .ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+      form {
+        display: grid;
+        gap: 8px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+      label { font-size: 12px; color: var(--muted); }
+      input, textarea, select {
+        width: 100%;
+        background: #0b0d12;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 8px 9px;
+      }
+      .event {
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 13px;
+      }
+      .event b { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); }
+      .event time { display: block; color: var(--muted); font-family: var(--mono); font-size: 11px; margin-top: 4px; }
+      .thesis {
+        margin-top: 22px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <div class="knocker" aria-hidden="true"></div>
+        <div>
+          <h1>Knock.</h1>
+          <p class="lede">
+            The call already fired. The harness gate said no. Knock gets a human
+            on the line before the run dies waiting.
+          </p>
+        </div>
+      </div>
+      <div class="mode" id="mode">Demo mode · no Slack/GitHub/Linear secrets</div>
+    </header>
+    <main class="grid">
+      <aside class="rail">
+        <p class="section-label">Inbox</p>
+        <div id="list"></div>
+        <form id="create">
+          <p class="section-label">New knock</p>
+          <label>Tool <input name="toolName" value="mcp__github__push_files" required /></label>
+          <label>Agent <input name="agentId" value="subagent-review" required /></label>
+          <label>Run <input name="runId" value="" placeholder="auto" /></label>
+          <label>Reason <textarea name="reason" rows="2">Classifier denied MCP. No per-run grant.</textarea></label>
+          <label>TTL seconds <input name="ttlSeconds" type="number" min="8" max="600" value="120" /></label>
+          <button class="btn ghost" type="submit">Knock the gate</button>
+        </form>
+      </aside>
+      <section class="stage" id="stage"></section>
+      <aside class="ledger">
+        <p class="section-label">Grant ledger + adapters</p>
+        <div id="events"></div>
+        <p class="thesis">
+          Not a proxy. Not a millimetre leftover. Knock sits inside the permission
+          gate: allow is scoped to this run, timeout denies loud.
+        </p>
+      </aside>
+    </main>
+    <script>
+      const STATUSES = ["pending", "allowed", "denied", "timed_out"];
+      const KEY = "knock.inbox.v1";
+      const now = () => Date.now();
+
+      function hash(value) {
+        const text = JSON.stringify(value || {});
+        let h = 2166136261;
+        for (let i = 0; i < text.length; i += 1) {
+          h ^= text.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return (h >>> 0).toString(16).padStart(8, "0");
+      }
+
+      function seed(t) {
+        return [
+          {
+            id: "kn_demo_pending",
+            status: "pending",
+            toolName: "mcp__github__create_or_update_file",
+            argHash: hash({ path: "secrets.env" }),
+            agentId: "subagent-review",
+            runId: "run_86126",
+            reason: "Classifier denied MCP write. No per-run grant surface.",
+            createdAt: t - 18000,
+            expiresAt: t + 102000,
+            ttlSeconds: 120,
+            decidedBy: null,
+            decisionReason: "",
+            events: [
+              { at: t - 18000, adapter: "slack", summary: "Posted approve/deny card (simulated)." },
+              { at: t - 17500, adapter: "github", summary: "Opened in-progress check-run (simulated)." },
+            ],
+          },
+          {
+            id: "kn_demo_allowed",
+            status: "allowed",
+            toolName: "Bash",
+            argHash: hash({ command: "npm test" }),
+            agentId: "parent",
+            runId: "run_69482",
+            reason: "Remote permission prompt was invisible outside the TUI.",
+            createdAt: t - 540000,
+            expiresAt: t - 420000,
+            ttlSeconds: 120,
+            decidedBy: "ada@ops",
+            decisionReason: "Scoped allow for this run only.",
+            events: [
+              { at: t - 480000, adapter: "inbox", summary: "ada@ops allowed this run." },
+              { at: t - 480000, adapter: "github", summary: "Check-run completed: ALLOW (simulated)." },
+            ],
+          },
+          {
+            id: "kn_demo_denied",
+            status: "denied",
+            toolName: "Read",
+            argHash: hash({ path: "/etc/shadow" }),
+            agentId: "subagent-recon",
+            runId: "run_78487",
+            reason: "Tool is outside the run allowlist.",
+            createdAt: t - 2400000,
+            expiresAt: t - 2280000,
+            ttlSeconds: 120,
+            decidedBy: "sam@sec",
+            decisionReason: "Gate kept shut.",
+            events: [
+              { at: t - 2340000, adapter: "inbox", summary: "sam@sec denied the grant." },
+              { at: t - 2340000, adapter: "linear", summary: "Closed blocked-agent issue (simulated)." },
+            ],
+          },
+          {
+            id: "kn_demo_timeout",
+            status: "timed_out",
+            toolName: "mcp__linear__create_issue",
+            argHash: hash({ title: "follow up" }),
+            agentId: "unattended-nightly",
+            runId: "run_silent_55",
+            reason: "Nobody was in the TUI. Silent stalls run 19–58 minutes.",
+            createdAt: t - 180000,
+            expiresAt: t - 60000,
+            ttlSeconds: 120,
+            decidedBy: "timeout",
+            decisionReason: "Nobody answered. Fail-loud deny so the run never hangs.",
+            events: [{ at: t - 60000, adapter: "timeout", summary: "TTL elapsed. Denied loud." }],
+          },
+        ];
+      }
+
+      function load() {
+        try {
+          const raw = JSON.parse(localStorage.getItem(KEY) || "null");
+          if (raw && Array.isArray(raw.knocks) && raw.knocks.length) return raw;
+        } catch (_) {}
+        return { knocks: seed(now()), selected: "kn_demo_pending" };
+      }
+
+      function save(state) {
+        localStorage.setItem(KEY, JSON.stringify(state));
+      }
+
+      const state = load();
+      let selected = state.selected || state.knocks[0].id;
+
+      function remaining(knock) {
+        if (knock.status !== "pending") return 0;
+        return Math.max(0, knock.expiresAt - now());
+      }
+
+      function decide(id, decision, actor) {
+        const knock = state.knocks.find((item) => item.id === id);
+        if (!knock || knock.status !== "pending") return;
+        const timed = decision === "timeout";
+        knock.status = timed ? "timed_out" : decision === "allow" ? "allowed" : "denied";
+        knock.decidedBy = actor;
+        knock.decisionReason = timed
+          ? "Nobody answered. Fail-loud deny so the run never hangs."
+          : decision === "allow"
+            ? "Scoped allow for this run only."
+            : "Gate kept shut.";
+        knock.events.push({
+          at: now(),
+          adapter: timed ? "timeout" : "inbox",
+          summary: timed
+            ? "TTL elapsed. Denied loud."
+            : `${actor} ${knock.status} ${knock.toolName} for ${knock.runId}.`,
+        });
+        if (timed || knock.status === "denied" || knock.status === "allowed") {
+          knock.events.push({
+            at: now(),
+            adapter: "github",
+            summary: `Ledger updated: ${knock.status.toUpperCase()} (simulated).`,
+          });
+          knock.events.push({
+            at: now(),
+            adapter: "linear",
+            summary: knock.linearOpened
+              ? `Closed blocked-agent issue after ${knock.status} (simulated).`
+              : "No Linear issue was open yet.",
+          });
+        }
+        save(state);
+        render();
+      }
+
+      function sweep() {
+        for (const knock of state.knocks) {
+          if (knock.status === "pending" && now() >= knock.expiresAt) {
+            decide(knock.id, "timeout", "timeout");
+          } else if (
+            knock.status === "pending" &&
+            !knock.linearOpened &&
+            now() - knock.createdAt >= 20000
+          ) {
+            knock.linearOpened = true;
+            knock.events.push({
+              at: now(),
+              adapter: "linear",
+              summary: "Opened blocked-agent issue (simulated). Closes on decision.",
+            });
+            save(state);
+          }
+        }
+      }
+
+      function fmt(ms) {
+        const s = Math.ceil(ms / 1000);
+        const m = Math.floor(s / 60);
+        const r = String(s % 60).padStart(2, "0");
+        return `${m}:${r}`;
+      }
+
+      function renderList() {
+        const list = document.getElementById("list");
+        list.innerHTML = state.knocks
+          .slice()
+          .sort((a, b) => b.createdAt - a.createdAt)
+          .map((knock) => {
+            return `<button class="item ${knock.id === selected ? "active" : ""}" data-id="${knock.id}">
+              <div class="who">${knock.agentId} · ${knock.runId}</div>
+              <div class="tool">${knock.toolName}</div>
+              <span class="pill ${knock.status}">${knock.status.replace("_", " ")}</span>
+            </button>`;
+          })
+          .join("");
+        list.querySelectorAll(".item").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            selected = btn.dataset.id;
+            state.selected = selected;
+            save(state);
+            render();
+          });
+        });
+      }
+
+      function renderStage() {
+        const knock = state.knocks.find((item) => item.id === selected) || state.knocks[0];
+        if (!knock) return;
+        const left = remaining(knock);
+        const pct = knock.status === "pending" ? (left / (knock.ttlSeconds * 1000)) * 100 : 0;
+        const stage = document.getElementById("stage");
+        stage.innerHTML = `
+          <p class="section-label">Active knock</p>
+          <div class="ring-wrap">
+            <div class="ring" style="--pct:${pct}">
+              <div>
+                <div class="ttl">${knock.status === "pending" ? fmt(left) : knock.status.replace("_", " ")}<small>${knock.status === "pending" ? "THEN DENY" : (knock.decidedBy || "")}</small></div>
+              </div>
+            </div>
+            <div>
+              <h2 style="margin:0 0 8px;letter-spacing:-0.04em">${knock.toolName}</h2>
+              <p style="margin:0;color:var(--muted)">${knock.reason}</p>
+            </div>
+          </div>
+          <div class="meta">
+            <div class="row"><span>Agent</span><code>${knock.agentId}</code></div>
+            <div class="row"><span>Run</span><code>${knock.runId}</code></div>
+            <div class="row"><span>Arg hash</span><code>${knock.argHash}</code></div>
+            <div class="row"><span>Grant</span><code>${knock.status === "allowed" ? "this run only" : "none"}</code></div>
+          </div>
+          <div class="actions">
+            <button class="btn allow" data-act="allow" ${knock.status !== "pending" ? "disabled" : ""}>Let this run through</button>
+            <button class="btn deny" data-act="deny" ${knock.status !== "pending" ? "disabled" : ""}>Keep the gate shut</button>
+          </div>
+        `;
+        stage.querySelectorAll("[data-act]").forEach((btn) => {
+          btn.addEventListener("click", () => decide(knock.id, btn.dataset.act, "you"));
+        });
+        const events = document.getElementById("events");
+        events.innerHTML = (knock.events || [])
+          .slice()
+          .reverse()
+          .map((event) => `<div class="event"><b>${event.adapter}</b><div>${event.summary}</div><time>${new Date(event.at).toISOString()}</time></div>`)
+          .join("") || `<p class="thesis">No adapter events yet.</p>`;
+      }
+
+      function render() {
+        sweep();
+        renderList();
+        renderStage();
+      }
+
+      document.getElementById("create").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const t = now();
+        const ttl = Math.min(600, Math.max(8, Number(data.get("ttlSeconds") || 120)));
+        const knock = {
+          id: `kn_${Math.random().toString(16).slice(2, 10)}`,
+          status: "pending",
+          toolName: String(data.get("toolName")),
+          argHash: hash({ tool: data.get("toolName"), reason: data.get("reason") }),
+          agentId: String(data.get("agentId")),
+          runId: String(data.get("runId") || `run_${Math.random().toString(16).slice(2, 8)}`),
+          reason: String(data.get("reason") || "Permission gate blocked this tool."),
+          createdAt: t,
+          expiresAt: t + ttl * 1000,
+          ttlSeconds: ttl,
+          decidedBy: null,
+          decisionReason: "",
+          events: [
+            { at: t, adapter: "hook", summary: "PermissionRequest accepted at the harness gate." },
+            { at: t, adapter: "slack", summary: "Posted approve/deny card (simulated)." },
+            { at: t, adapter: "github", summary: "Opened grant ledger check-run (simulated)." },
+          ],
+        };
+        state.knocks.unshift(knock);
+        selected = knock.id;
+        state.selected = selected;
+        save(state);
+        render();
+      });
+
+      render();
+      setInterval(render, 1000);
+    </script>
+  </body>
+</html>
