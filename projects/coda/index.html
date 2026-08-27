@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Coda — splice desk for silently dropped assistant text. A last text block is not a hold. Concatenate every block. Compare delivered vs whole."
+    />
+    <title>Coda — splice desk</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #efe6d2;
+        --sheet: #f7f1e2;
+        --ink: #1c1812;
+        --mute: #5c5346;
+        --splice: #c4452d;
+        --brass: #8a6a3a;
+        --intact: #2f5d3a;
+        --film: #16130e;
+        --slug: #1c1812;
+        --rule: rgba(28, 24, 18, 0.16);
+        --serif: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, "Times New Roman", serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: var(--serif);
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% 8%, rgba(196, 69, 45, 0.05), transparent 28%),
+          repeating-linear-gradient(0deg, rgba(28, 24, 18, 0.03) 0 1px, transparent 1px 31px),
+          var(--paper);
+      }
+      a { color: var(--brass); }
+      button { font: inherit; cursor: pointer; }
+      .desk {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 64px;
+      }
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        gap: 28px;
+        align-items: flex-end;
+        margin-bottom: 18px;
+      }
+      .mast em {
+        display: block;
+        font-style: normal;
+        font-size: 11px;
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-size: clamp(56px, 9vw, 92px);
+        line-height: 0.78;
+        font-weight: 700;
+        letter-spacing: -0.045em;
+        text-shadow: 0 1px 0 rgba(247, 241, 226, 0.7);
+      }
+      .lede {
+        max-width: 28em;
+        margin: 0;
+        color: var(--mute);
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      .lede strong { color: var(--ink); }
+      .film {
+        position: relative;
+        margin: 18px 0 16px;
+        padding: 14px 18px 12px;
+        background: var(--film);
+        color: #efe6d2;
+        box-shadow: 0 10px 0 rgba(28, 24, 18, 0.08);
+      }
+      .film::before,
+      .film::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 14px;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            #efe6d2 0 5px,
+            transparent 5px 14px
+          );
+        opacity: 0.88;
+      }
+      .film::before { left: 4px; }
+      .film::after { right: 4px; }
+      .film-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #c4b89a;
+        margin: 0 16px 8px;
+      }
+      .frames {
+        display: grid;
+        grid-template-columns: repeat(24, minmax(0, 1fr));
+        gap: 3px;
+        margin: 0 16px;
+      }
+      .frame {
+        aspect-ratio: 3 / 4;
+        background: #2a2418;
+        border: 1px solid rgba(239, 230, 210, 0.18);
+      }
+      .frame.got { background: #d7c9a4; }
+      .frame.lost { background: var(--splice); }
+      .frame.full { background: var(--intact); }
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 16px;
+      }
+      .pill {
+        border: 1px solid var(--rule);
+        background: transparent;
+        color: var(--ink);
+        padding: 5px 11px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+      .pill.on {
+        background: var(--ink);
+        color: var(--sheet);
+        border-color: var(--ink);
+      }
+      .chase {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        background: var(--sheet);
+        border: 1px solid var(--ink);
+        position: relative;
+      }
+      .chase::before,
+      .chase::after {
+        content: "+";
+        position: absolute;
+        color: var(--brass);
+        font-size: 14px;
+        line-height: 1;
+      }
+      .chase::before { top: 6px; left: 8px; }
+      .chase::after { bottom: 6px; right: 8px; }
+      .galley {
+        min-height: 320px;
+        padding: 22px 20px 18px;
+        position: relative;
+      }
+      .galley.delivered {
+        border-right: 1px dashed rgba(28, 24, 18, 0.22);
+      }
+      .galley.delivered::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 10px;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            var(--splice) 0 7px,
+            transparent 7px 14px
+          );
+      }
+      .galley.delivered { padding-left: 28px; }
+      .galley h2 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brass);
+        font-weight: 600;
+      }
+      .proof {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 13px;
+        line-height: 1.45;
+        max-height: 280px;
+        overflow: auto;
+        color: var(--ink);
+      }
+      .proof.empty { color: var(--mute); font-style: italic; }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0 16px;
+      }
+      .acts button {
+        border: 1px solid var(--ink);
+        background: var(--sheet);
+        color: var(--ink);
+        padding: 9px 14px;
+        font-size: 15px;
+      }
+      .acts button.primary {
+        background: var(--splice);
+        color: #f7f1e2;
+        border-color: var(--splice);
+      }
+      .acts button.quiet {
+        background: var(--intact);
+        color: #f7f1e2;
+        border-color: var(--intact);
+      }
+      .slug {
+        background: var(--slug);
+        color: #f7f1e2;
+        padding: 18px 22px 16px;
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: flex-end;
+        box-shadow: inset 0 1px 0 rgba(247, 241, 226, 0.08);
+      }
+      .slug strong {
+        display: block;
+        font-size: clamp(42px, 8vw, 72px);
+        line-height: 0.82;
+        letter-spacing: -0.04em;
+        font-weight: 700;
+      }
+      .slug.intact strong { color: #9ec9a6; }
+      .slug.snip strong,
+      .slug.split strong,
+      .slug.void strong,
+      .slug.swallow strong,
+      .slug.raw strong { color: #f0b6aa; }
+      .slug p {
+        margin: 8px 0 0;
+        max-width: 36em;
+        color: #c9bda6;
+        font-size: 15px;
+        line-height: 1.4;
+      }
+      .slug i {
+        font-style: normal;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: #8a6a3a;
+      }
+      .facts {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 1px;
+        background: var(--rule);
+        border: 1px solid var(--rule);
+        margin: 16px 0;
+      }
+      .facts div {
+        background: var(--sheet);
+        padding: 12px 12px 10px;
+      }
+      .facts span {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 4px;
+      }
+      .sinks {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .sink {
+        border: 1px solid var(--rule);
+        background: var(--sheet);
+        padding: 14px 14px 12px;
+      }
+      .sink b {
+        display: block;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 6px;
+      }
+      .sink p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.4; }
+      footer {
+        margin-top: 28px;
+        color: var(--mute);
+        font-size: 14px;
+      }
+      @media (max-width: 860px) {
+        .mast, .chase, .slug, .facts, .sinks { display: block; }
+        .galley.delivered { border-right: 0; border-bottom: 1px dashed rgba(28, 24, 18, 0.22); }
+        .facts div, .sink { margin-bottom: 8px; }
+        .frames { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="desk">
+      <div class="mast">
+        <div>
+          <em>06:50 splice desk</em>
+          <h1>Coda</h1>
+        </div>
+        <p class="lede">
+          Silently dropped assistant text. The work was generated. The parent
+          received a fragment, or nothing. The loss looks like success.
+          <strong>A last text block is not a hold.</strong>
+        </p>
+      </div>
+
+      <section class="film" aria-label="Proof strip">
+        <div class="film-meta">
+          <span>got / lost / full</span>
+          <span id="film-label">24 frames</span>
+        </div>
+        <div class="frames" id="frames"></div>
+      </section>
+
+      <div class="pills" role="group" aria-label="Seeds">
+        <button class="pill on" id="seed-81838" type="button">#81838 split</button>
+        <button class="pill" id="seed-58109" type="button">#58109 snip</button>
+        <button class="pill" id="seed-20190" type="button">#20190 void</button>
+        <button class="pill" id="seed-74260" type="button">#74260 swallow</button>
+        <button class="pill" id="seed-17591" type="button">#17591 raw</button>
+        <button class="pill" id="seed-24849" type="button">#24849 snip</button>
+      </div>
+
+      <section class="chase" aria-label="Galleys">
+        <article class="galley delivered">
+          <h2>Delivered</h2>
+          <pre class="proof" id="delivered"></pre>
+        </article>
+        <article class="galley whole">
+          <h2>Whole</h2>
+          <pre class="proof" id="whole"></pre>
+        </article>
+      </section>
+
+      <div class="acts">
+        <button class="primary" id="splice" type="button">Splice · recover</button>
+        <button id="mark" type="button">Mark</button>
+        <button class="quiet" id="clear" type="button">Clear · intact</button>
+      </div>
+
+      <section class="slug" id="slug" aria-live="polite">
+        <div>
+          <i>slug</i>
+          <strong id="verdict">split</strong>
+          <p id="copy"></p>
+        </div>
+      </section>
+
+      <section class="facts" id="facts" aria-label="Facts"></section>
+
+      <section class="sinks" id="sinks" aria-label="Demo sinks"></section>
+
+      <footer>
+        Not a muster. Not a claim-vs-reality board. Not a reed-relay cabinet.
+      </footer>
+    </main>
+    <script>
+      const VERDICTS = ["intact", "snip", "split", "void", "swallow", "raw"];
+      const IDLE_WORD = "intact";
+      const ALARM_VERDICTS = ["snip", "split", "void", "swallow", "raw"];
+
+      function emptyGalley() {
+        return {
+          session: "",
+          delivered: "",
+          whole: "",
+          claimed: "",
+          persisted: true,
+          rawJsonl: false,
+          recovered: false,
+          blocks: [],
+          source: "",
+          issue: null,
+        };
+      }
+
+      function cloneBlock(raw) {
+        raw = raw || {};
+        return {
+          type: String(raw.type || "text"),
+          text: raw.text != null ? String(raw.text) : "",
+          name: raw.name != null ? String(raw.name) : "",
+          stopReason: raw.stopReason != null ? String(raw.stopReason) : "",
+        };
+      }
+
+      function cloneGalley(raw) {
+        raw = raw || {};
+        const blocks = Array.isArray(raw.blocks) ? raw.blocks.map(cloneBlock) : [];
+        return {
+          session: raw.session != null ? String(raw.session) : "",
+          delivered: raw.delivered != null ? String(raw.delivered) : "",
+          whole: raw.whole != null ? String(raw.whole) : "",
+          claimed: raw.claimed != null ? String(raw.claimed) : "",
+          persisted: raw.persisted !== false,
+          rawJsonl: Boolean(raw.rawJsonl),
+          recovered: Boolean(raw.recovered),
+          blocks: blocks,
+          source: raw.source != null ? String(raw.source) : "",
+          issue: raw.issue != null ? raw.issue : null,
+        };
+      }
+
+      function textOf(blocks) {
+        return (Array.isArray(blocks) ? blocks : [])
+          .filter(function (block) { return block && block.type === "text"; })
+          .map(function (block) { return block.text != null ? String(block.text) : ""; })
+          .join("");
+      }
+
+      function lastText(blocks) {
+        const texts = (Array.isArray(blocks) ? blocks : [])
+          .filter(function (block) { return block && block.type === "text"; })
+          .map(function (block) { return block.text != null ? String(block.text) : ""; })
+          .filter(function (text) { return text !== ""; });
+        return texts.length ? texts[texts.length - 1] : "";
+      }
+
+      function looksLikeJsonl(value) {
+        const trimmed = String(value == null ? "" : value).trim();
+        return trimmed.charAt(0) === "{" && /"type"\s*:\s*"(assistant|user|system|tool_use)"/.test(trimmed);
+      }
+
+      function withWhole(galley) {
+        if (galley.whole) return galley;
+        const fromBlocks = textOf(galley.blocks);
+        return fromBlocks ? Object.assign({}, galley, { whole: fromBlocks }) : galley;
+      }
+
+      function verdictOf(galley) {
+        const g = withWhole(cloneGalley(galley));
+        const delivered = g.delivered;
+        const whole = g.whole;
+        const blocks = g.blocks;
+        if (g.rawJsonl || looksLikeJsonl(delivered)) return "raw";
+        if (g.persisted === false) return "swallow";
+        if (g.recovered && delivered && whole && delivered === whole) return "intact";
+        const last = blocks[blocks.length - 1];
+        if (last && last.type === "tool_use" && delivered === "") return "void";
+        const hitMaxTokens = blocks.some(function (block) { return block.stopReason === "max_tokens"; });
+        if (hitMaxTokens && delivered && whole && delivered !== whole && delivered === lastText(blocks)) {
+          return "split";
+        }
+        if (whole && delivered !== whole) return "snip";
+        if (!delivered && whole) return "snip";
+        return "intact";
+      }
+
+      function ratio(delivered, whole) {
+        if (!whole.length) return delivered.length === 0 ? 1 : 0;
+        return Number((delivered.length / whole.length).toFixed(4));
+      }
+
+      function decide(payload) {
+        payload = payload || {};
+        const nested = payload.action && typeof payload.action === "object" ? payload.action : null;
+        const src = nested || payload;
+        const galleySrc = src.galley && typeof src.galley === "object" ? src.galley : payload.galley;
+        const fromFields = galleySrc && typeof galleySrc === "object" ? galleySrc : src;
+        let galley = withWhole(cloneGalley({
+          session: fromFields.session != null ? fromFields.session : src.session,
+          delivered: fromFields.delivered != null ? fromFields.delivered : src.delivered,
+          whole: fromFields.whole != null ? fromFields.whole : src.whole,
+          claimed: fromFields.claimed != null ? fromFields.claimed : src.claimed,
+          persisted: fromFields.persisted != null ? fromFields.persisted : src.persisted,
+          rawJsonl: fromFields.rawJsonl != null ? fromFields.rawJsonl : src.rawJsonl,
+          recovered: fromFields.recovered != null ? fromFields.recovered : src.recovered,
+          blocks: fromFields.blocks != null ? fromFields.blocks : src.blocks,
+          source: fromFields.source != null ? fromFields.source : src.source,
+          issue: fromFields.issue != null ? fromFields.issue : src.issue,
+        }));
+        const actionName = String((nested ? nested.action : payload.action) || "mark");
+        if (actionName === "clear") {
+          galley = emptyGalley();
+        } else if (actionName === "splice") {
+          if (galley.persisted === false) {
+            galley = Object.assign({}, galley, { recovered: false });
+          } else if ((galley.rawJsonl || looksLikeJsonl(galley.delivered)) && galley.whole) {
+            galley = Object.assign({}, galley, { delivered: galley.whole, rawJsonl: false, recovered: true });
+          } else if (galley.whole) {
+            galley = Object.assign({}, galley, { delivered: galley.whole, recovered: true });
+          } else {
+            galley = Object.assign({}, galley, { recovered: false });
+          }
+        }
+        const verdict = actionName === "clear" ? "intact" : verdictOf(galley);
+        const delivered = galley.delivered;
+        const whole = galley.whole;
+        return {
+          ok: true,
+          product: "coda",
+          verdict: verdict,
+          state: verdict,
+          decision: verdict,
+          idleWord: IDLE_WORD,
+          alarm: ALARM_VERDICTS.indexOf(verdict) !== -1,
+          action: actionName,
+          session: galley.session || String(src.session || ""),
+          source: galley.source || String(src.source || ""),
+          issue: galley.issue != null ? galley.issue : (src.issue != null ? src.issue : null),
+          delivered: delivered,
+          whole: whole,
+          claimed: galley.claimed,
+          persisted: galley.persisted,
+          rawJsonl: galley.rawJsonl,
+          recovered: galley.recovered,
+          completeness: ratio(delivered, whole),
+          lost: Math.max(0, whole.length - delivered.length),
+          deliveredChars: delivered.length,
+          wholeChars: whole.length,
+          blocks: galley.blocks,
+          galley: galley,
+        };
+      }
+
+      function numberedLines(from, to) {
+        const lines = [];
+        for (let n = from; n <= to; n += 1) lines.push(String(n));
+        return lines.join("\n");
+      }
+
+      function serialLines(from, to, skip) {
+        const lines = [];
+        for (let n = from; n <= to; n += 1) {
+          if (n === skip) continue;
+          lines.push("S-" + String(n).padStart(4, "0"));
+        }
+        return lines.join("\n");
+      }
+
+      function seedGalley(issue, source, extras) {
+        extras = extras || {};
+        const blocks = Array.isArray(extras.blocks) ? extras.blocks.map(cloneBlock) : [];
+        const session = extras.session || ("galley-" + issue);
+        return {
+          action: "mark",
+          session: session,
+          issue: issue,
+          source: source,
+          galley: {
+            session: session,
+            delivered: extras.delivered != null ? String(extras.delivered) : "",
+            whole: extras.whole != null ? String(extras.whole) : textOf(blocks),
+            claimed: extras.claimed != null ? String(extras.claimed) : "",
+            persisted: extras.persisted !== false,
+            rawJsonl: Boolean(extras.rawJsonl),
+            recovered: Boolean(extras.recovered),
+            blocks: blocks,
+            source: source,
+            issue: issue,
+          },
+        };
+      }
+
+      function seed81838() {
+        const first = numberedLines(1, 953) + "\n";
+        const last = numberedLines(954, 1200);
+        return seedGalley(81838, "anthropics/claude-code#81838", {
+          delivered: last,
+          blocks: [
+            { type: "text", text: first, stopReason: "max_tokens" },
+            { type: "text", text: last, stopReason: "end_turn" },
+          ],
+        });
+      }
+      function seed58109() {
+        const last = "Let me also examine that...";
+        return seedGalley(58109, "anthropics/claude-code#58109", {
+          delivered: last,
+          blocks: [
+            { type: "text", text: "## Verdict\nThe branch is safe to merge, with two caveats." },
+            { type: "text", text: last },
+            { type: "tool_use", name: "TaskUpdate" },
+          ],
+        });
+      }
+      function seed20190() {
+        return seedGalley(20190, "anthropics/claude-code#20190", {
+          delivered: "",
+          blocks: [
+            { type: "text", text: "---RESULT---\nSteerTrue header and the structured findings.\n---END---" },
+            { type: "tool_use", name: "TaskUpdate" },
+          ],
+        });
+      }
+      function seed74260() {
+        return seedGalley(74260, "anthropics/claude-code#74260", {
+          delivered: "",
+          claimed: "Did you review the list printed above?",
+          persisted: false,
+          blocks: [
+            { type: "thinking", text: "compose the list" },
+            { type: "thinking", text: "ask if they saw it" },
+            { type: "tool_use", name: "AskUserQuestion" },
+          ],
+        });
+      }
+      function seed17591() {
+        return seedGalley(17591, "anthropics/claude-code#17591", {
+          delivered: '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash"}]}}\n{"type":"user","message":{"content":[{"type":"tool_result"}]}}',
+          rawJsonl: true,
+          blocks: [
+            { type: "text", text: "--- RESULT ---\nThe findings are in the summary, not the transcript." },
+          ],
+        });
+      }
+      function seed24849() {
+        const whole = serialLines(1, 400);
+        return seedGalley(24849, "openai/codex#24849", {
+          delivered: serialLines(1, 400, 391),
+          whole: whole,
+          blocks: [{ type: "text", text: whole }],
+        });
+      }
+
+      function copyFor(verdict) {
+        if (verdict === "intact") return "Delivered matches the whole. Idle word is intact — never the product name.";
+        if (verdict === "split") return "max_tokens cut the turn. Only the last text block reached the parent. ~84% vanished with no marker.";
+        if (verdict === "snip") return "Delivered is not the whole. A last text block is not a hold.";
+        if (verdict === "void") return "Terminal tool_use. All text lost.";
+        if (verdict === "swallow") return "Mid-turn text was never persisted. Cannot splice from the JSONL.";
+        return "TaskOutput returned JSONL instead of the summary.";
+      }
+
+      function adapters(result) {
+        const slack = result.verdict === "intact"
+          ? "Would skip Slack — galley is intact."
+          : "Would post to Slack: splice alarm — " + result.verdict + " on the galley.";
+        const github = "Would append a GitHub coda ledger row. Demo: no token.";
+        const linear = result.verdict === "intact"
+          ? "Would skip Linear — galley is intact."
+          : "Would open a Linear recovery ticket: Recover · Coda " + result.verdict + ".";
+        return [
+          { adapter: "Slack", summary: slack },
+          { adapter: "GitHub", summary: github },
+          { adapter: "Linear", summary: linear },
+        ];
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function clip(text, limit) {
+        const value = String(text || "");
+        if (value.length <= limit) return value;
+        return value.slice(0, limit) + "\n… +" + (value.length - limit) + " chars";
+      }
+
+      function frameKind(result, index) {
+        if (result.verdict === "intact" && result.whole) return "full";
+        if (!result.wholeChars) return result.verdict === "intact" ? "full" : "lost";
+        const got = Math.round(result.completeness * 24);
+        if (index < got) return "got";
+        return "lost";
+      }
+
+      let current = seed81838();
+      let activeSeed = "81838";
+
+      function render() {
+        const result = decide(current);
+        const deliveredEl = document.getElementById("delivered");
+        const wholeEl = document.getElementById("whole");
+        deliveredEl.textContent = result.delivered || "(empty)";
+        wholeEl.textContent = result.whole || "(empty)";
+        deliveredEl.classList.toggle("empty", !result.delivered);
+        wholeEl.classList.toggle("empty", !result.whole);
+        if (result.delivered.length > 1200) deliveredEl.textContent = clip(result.delivered, 900);
+        if (result.whole.length > 1200) wholeEl.textContent = clip(result.whole, 900);
+
+        const frames = document.getElementById("frames");
+        frames.innerHTML = Array.from({ length: 24 }, function (_, index) {
+          return '<i class="frame ' + frameKind(result, index) + '"></i>';
+        }).join("");
+        document.getElementById("film-label").textContent =
+          result.verdict + " · " + result.completeness + " complete · " + result.lost + " lost";
+
+        const slug = document.getElementById("slug");
+        slug.className = "slug " + result.verdict;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("copy").textContent = copyFor(result.verdict);
+
+        document.getElementById("facts").innerHTML = [
+          ["idle", result.idleWord],
+          ["completeness", String(result.completeness)],
+          ["lost", String(result.lost)],
+          ["persisted", result.persisted ? "true" : "false"],
+          ["recovered", result.recovered ? "true" : "false"],
+          ["alarm", result.alarm ? "yes" : "no"],
+        ].map(function (pair) {
+          return "<div><span>" + pair[0] + "</span> " + escapeHtml(pair[1]) + "</div>";
+        }).join("");
+
+        document.getElementById("sinks").innerHTML = adapters(result).map(function (row) {
+          return '<article class="sink"><b>' + escapeHtml(row.adapter) + "</b><p>" + escapeHtml(row.summary) + "</p></article>";
+        }).join("");
+
+        document.querySelectorAll(".pill").forEach(function (button) {
+          button.classList.toggle("on", button.id === "seed-" + activeSeed);
+        });
+      }
+
+      function loadSeed(id, factory) {
+        current = factory();
+        activeSeed = id;
+        render();
+      }
+
+      function apply(action) {
+        const prior = decide(current);
+        current = {
+          action: action,
+          session: current.session,
+          issue: current.issue,
+          source: action === "clear" ? "" : current.source,
+          galley: action === "clear" ? emptyGalley() : prior.galley,
+        };
+        activeSeed = action === "clear" ? "" : activeSeed;
+        render();
+      }
+
+      document.getElementById("seed-81838").addEventListener("click", function () { loadSeed("81838", seed81838); });
+      document.getElementById("seed-58109").addEventListener("click", function () { loadSeed("58109", seed58109); });
+      document.getElementById("seed-20190").addEventListener("click", function () { loadSeed("20190", seed20190); });
+      document.getElementById("seed-74260").addEventListener("click", function () { loadSeed("74260", seed74260); });
+      document.getElementById("seed-17591").addEventListener("click", function () { loadSeed("17591", seed17591); });
+      document.getElementById("seed-24849").addEventListener("click", function () { loadSeed("24849", seed24849); });
+      document.getElementById("splice").addEventListener("click", function () { apply("splice"); });
+      document.getElementById("mark").addEventListener("click", function () { apply("mark"); });
+      document.getElementById("clear").addEventListener("click", function () { apply("clear"); });
+
+      void VERDICTS;
+      render();
+    </script>
+  </body>
+</html>
