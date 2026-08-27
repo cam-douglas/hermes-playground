@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Bloom — the polish is on, but a bloom still sits. Move the leftover bloom. See the residual cloudy bloom still sitting on a fixed polished face." />
+    <title>Bloom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #08090c;
+        --panel: #121418;
+        --ink: #e2e6ec;
+        --muted: #7e8690;
+        --line: rgba(160, 184, 208, 0.24);
+        --accent: #b8c8d8;
+        --timber: #2a2418;
+        --bloom: #d8e4ee;
+        --showing: #d0dce8;
+        --polished: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(184, 200, 216, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(10, 12, 16, 0.22), transparent 26%),
+          linear-gradient(180deg, #07080c 0%, #121418 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(18, 20, 24, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(184, 200, 216, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(18, 22, 28, 0.96), rgba(8, 10, 12, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(184, 200, 216, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #dce2ea; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #14181c;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #121418; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(184, 200, 216, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(184, 200, 216, 0.1), transparent 46%),
+          #08090c;
+        overflow: hidden;
+      }
+      #bloom-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(208, 220, 232, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-polished b { color: var(--polished); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #07080c;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #bloom-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> bloom · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover bloom on the polished face that still sits after the polish</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 27 Aug 2026 11:50</span>
+        <h1>Bloom</h1>
+        <p class="lede">
+          The polish is on, but a bloom still sits. Move the leftover bloom. See the residual cloudy bloom still sitting on a fixed polished face.
+          Not a holiday. Not a stain wash. Not a smear. Not a burn scorch. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="bloom-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover bloom still sits on the polished face after the polish</h2>
+          </div>
+          <span class="kicker" id="bloom-desk-meta">leftover 3 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="bloom-svg" viewBox="0 0 800 460" role="img" aria-labelledby="bloom-title bloom-desc">
+            <title id="bloom-title">Bloom is showing. Three millimetres of leftover bloom still sit on a fixed polished face.</title>
+            <desc id="bloom-desc">One workpiece whose leftover is the bloom — leftover residual cloudy bloom that still sits on a fixed polished face after the polish (leftover cloudy bloom haze still sitting on the polished face after the polish is on, not Holiday leftover missed bare patch, not Stain leftover wash, not Smear leftover streak after a wipe, not Burn leftover scorch, not a clock). One workpiece; the polish is on; the leftover is one leftover residual cloudy bloom haze sitting on that fixed polished face, not a bare holiday, not a stain wash, not a smear streak, not a burn scorch. The leftover that still sits is the bloom — leftover residual cloudy bloom still sitting on a fixed polished face. A sketch, not a mill sign-off. Not finish advice.</desc>
+            <defs>
+              <linearGradient id="bloom-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#141820" />
+                <stop offset="100%" stop-color="#08090c" />
+              </linearGradient>
+              <linearGradient id="bloom-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#1c1810" />
+                <stop offset="36%" stop-color="#3a3220" />
+                <stop offset="68%" stop-color="#6a6048" />
+                <stop offset="100%" stop-color="#2a2618" />
+              </linearGradient>
+              <linearGradient id="bloom-sheen-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d8e0ea" stop-opacity="0.22" />
+                <stop offset="42%" stop-color="#f0f4f8" stop-opacity="0.08" />
+                <stop offset="100%" stop-color="#101214" stop-opacity="0.04" />
+              </linearGradient>
+              <radialGradient id="leftover-bloom-haze" cx="46%" cy="42%" r="62%">
+                <stop offset="0%" stop-color="#f4f8fc" stop-opacity="0.86" />
+                <stop offset="38%" stop-color="#d0dce8" stop-opacity="0.62" />
+                <stop offset="72%" stop-color="#a8bcc8" stop-opacity="0.28" />
+                <stop offset="100%" stop-color="#8aa0b0" stop-opacity="0" />
+              </radialGradient>
+              <radialGradient id="leftover-bloom-haze-soft" cx="58%" cy="56%" r="70%">
+                <stop offset="0%" stop-color="#e8eef4" stop-opacity="0.48" />
+                <stop offset="54%" stop-color="#c4d0dc" stop-opacity="0.22" />
+                <stop offset="100%" stop-color="#90a4b4" stop-opacity="0" />
+              </radialGradient>
+              <linearGradient id="leftover-bloom-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1a1c20" />
+                <stop offset="100%" stop-color="#08090c" />
+              </linearGradient>
+              <linearGradient id="leftover-bloom-profile" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#a8bcc8" />
+                <stop offset="100%" stop-color="#f0f4f8" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#07080c" stroke="rgba(184,200,216,0.16)" />
+            <text x="36" y="42" fill="#7e8690" font-size="11" letter-spacing="2">ONE WORKPIECE · POLISH IS ON · LEFTOVER IS ONE CLOUDY BLOOM STILL SITTING ON A FIXED POLISHED FACE</text>
+            <g id="bloom-scene" data-view="finish-bloom" data-hero="leftover-bloom" data-bloom="3" data-leftover="showing" data-verdict="showing" data-bloom-state="sitting">
+              <g id="bloom-bench-layer"></g>
+              <g id="bloom-stock-layer"></g>
+              <g id="leftover-bloom-layer"></g>
+              <g id="bloom-mark-layer"></g>
+              <text id="bloom-scene-status" x="400" y="64" fill="#d0dce8" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 3 MM LEFTOVER BLOOM</text>
+              <text id="bloom-scene-sketch" x="400" y="434" fill="#4c545c" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER CLOUDY BLOOM STILL SITS ON A FIXED POLISHED FACE · NOT A HOLIDAY · NOT A STAIN WASH · NOT A SMEAR · NOT A BURN SCORCH · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="bloom-alt" class="sr-only" aria-live="polite">Bloom is showing. Three millimetres of leftover bloom still sit on a fixed polished face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="bloom-input">Leftover bloom (mm of sitting haze extent on the polished face)</label>
+            <input id="bloom-input" type="range" min="0" max="8" step="1" value="3" />
+            <div class="ticks" aria-hidden="true">
+              <span>polished / no leftover bloom</span>
+              <span>seed showing</span>
+              <span>larger leftover bloom</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="bloom-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Bloom <b id="bloom-stat-mm">3 mm</b></span>
+          <span id="bloom-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="bloom-stat-leftover">showing</b></span>
+          <span>Leftover bloom (sketch) <b id="bloom-stat-span">3 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The polish is on, but a bloom still sits. Bloom is leftover residual cloudy bloom that still sits on a fixed polished face. A sketch, not a mill sign-off, and not finish advice.
+        Seed is already showing — 3 mm of leftover sitting bloom haze on the polished face, not a polished-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a holiday. Not a stain wash. Not a smear. Not a burn scorch. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const BLOOM_SEED = { bloomMm: 3 };
+      const BLOOM_MIN = 0;
+      const BLOOM_MAX = 8;
+      const BLOOM_POLISHED_AT = 1;
+      const BLOOM_SCALE = 16;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const BLOOM_CX = 400;
+      const BLOOM_CY = 178;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 328;
+      const PROFILE_LEFT = 168;
+      const PROFILE_RIGHT = 632;
+
+      let bloomMm = BLOOM_SEED.bloomMm;
+
+      const bloomSvg = document.getElementById("bloom-svg");
+      const bloomScene = document.getElementById("bloom-scene");
+      const bloomTitle = document.getElementById("bloom-title");
+      const bloomAlt = document.getElementById("bloom-alt");
+      const bloomDeskMeta = document.getElementById("bloom-desk-meta");
+      const bloomInput = document.getElementById("bloom-input");
+      const bloomBenchLayer = document.getElementById("bloom-bench-layer");
+      const bloomStockLayer = document.getElementById("bloom-stock-layer");
+      const leftoverBloomLayer = document.getElementById("leftover-bloom-layer");
+      const bloomMarkLayer = document.getElementById("bloom-mark-layer");
+      const bloomSceneStatus = document.getElementById("bloom-scene-status");
+      const bloomStatMm = document.getElementById("bloom-stat-mm");
+      const bloomStatLeftover = document.getElementById("bloom-stat-leftover");
+      const bloomStatLeftoverWrap = document.getElementById("bloom-stat-leftover-wrap");
+      const bloomStatSpan = document.getElementById("bloom-stat-span");
+      const bloomBtnReset = document.getElementById("bloom-btn-reset");
+      const bloomBtnResetStage = document.getElementById("bloom-btn-reset-stage");
+
+      function bloomClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function bloomEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function bloomSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverBloomGeom(spanPx) {
+        const rx = Math.max(0, spanPx / 2);
+        const ry = Math.max(0, spanPx * 0.42);
+        return {
+          cx: BLOOM_CX,
+          cy: BLOOM_CY,
+          rx: rx,
+          ry: ry,
+          left: BLOOM_CX - rx,
+          right: BLOOM_CX + rx,
+          width: spanPx
+        };
+      }
+
+      function bloomPicture() {
+        const leftover = bloomMm <= BLOOM_POLISHED_AT ? "polished" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + bloomMm + " MM LEFTOVER BLOOM";
+          alt = "Bloom is showing. " + bloomSpokenMm(bloomMm).charAt(0).toUpperCase() + bloomSpokenMm(bloomMm).slice(1) + " millimetres of leftover bloom still sit on a fixed polished face.";
+        } else {
+          status = "POLISHED · NO LEFTOVER BLOOM";
+          alt = "Bloom is polished. The polish is on. No leftover bloom. A sketch, not a mill sign-off.";
+        }
+        const bloomPx = leftover === "showing" ? Math.max(20, bloomMm * BLOOM_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#d0dce8" : "#8ec8b4",
+          bloomPx: bloomPx,
+          bloomState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-bloom" : "polished-face"
+        };
+      }
+
+      function bloomPaint(pic) {
+        const isPolished = pic.leftover === "polished";
+        const bloom = leftoverBloomGeom(pic.bloomPx);
+
+        bloomBenchLayer.replaceChildren();
+        bloomBenchLayer.appendChild(bloomEl("rect", {
+          class: "site leftover-work leftover-bloom leftover-finish leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#bloom-bench-wash)",
+          stroke: "rgba(184,200,216,0.16)",
+          "stroke-width": "1.2"
+        }));
+        bloomBenchLayer.appendChild(bloomEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#5c646c",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · POLISH IS ON · ONE LEFTOVER CLOUDY BLOOM STILL SITS ON A FIXED POLISHED FACE";
+
+        bloomStockLayer.replaceChildren();
+        const stock = bloomEl("g", {
+          id: "bloom-stock",
+          class: isPolished
+            ? "stock leftover-polished leftover-no-bloom leftover-bloom leftover-finish leftover-true"
+            : "stock leftover-showing leftover-bloom leftover-sitting leftover-finish"
+        });
+        stock.appendChild(bloomEl("rect", {
+          id: "bloom-workpiece-face",
+          class: "stock-board leftover-stock leftover-workpiece leftover-bloom leftover-not-the-leftover leftover-not-a-holiday leftover-not-a-stain leftover-not-a-smear leftover-not-a-burn leftover-polish-context leftover-kept leftover-face leftover-fixed leftover-polished-face",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#bloom-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "polish-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(bloomEl("rect", {
+          id: "bloom-workpiece-sheen",
+          class: "stock-sheen leftover-stock leftover-workpiece leftover-bloom leftover-not-the-leftover leftover-polish leftover-sheen leftover-fixed leftover-not-a-holiday leftover-not-a-stain leftover-not-a-smear leftover-not-a-burn",
+          x: String(FACE_LEFT + 8),
+          y: String(FACE_TOP + 8),
+          width: String((FACE_RIGHT - FACE_LEFT) - 16),
+          height: String((FACE_BOT - FACE_TOP) - 16),
+          fill: "url(#bloom-sheen-wash)",
+          "data-shape": "polish-sheen",
+          "data-role": "polished-face",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(bloomEl("text", {
+          x: "400",
+          y: String(FACE_TOP + 20),
+          fill: "#c8d0d8",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "POLISHED FACE · FIXED · POLISH IS ON";
+        bloomStockLayer.appendChild(stock);
+
+        leftoverBloomLayer.replaceChildren();
+        const leftover = bloomEl("g", {
+          id: "leftover-bloom",
+          class: isPolished
+            ? "bloom leftover-bloom leftover-polished leftover-empty leftover-no-bloom leftover-finish leftover-true"
+            : "bloom leftover-bloom leftover-showing leftover-one leftover-sitting leftover-span leftover-haze leftover-cloudy leftover-residual leftover-on-face leftover-not-a-holiday leftover-not-a-stain leftover-not-a-smear leftover-not-a-burn",
+          "data-bloom-mm": String(bloomMm),
+          "data-bloom-px": String(pic.bloomPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isPolished) {
+          leftover.appendChild(bloomEl("ellipse", {
+            id: "leftover-bloom-haze",
+            class: "leftover-bloom leftover-showing leftover-one leftover-sitting leftover-span leftover-haze leftover-cloudy leftover-not-a-holiday leftover-not-a-stain leftover-not-a-smear leftover-not-a-burn leftover-local leftover-residual leftover-on-face leftover-not-a-bare leftover-not-a-wash leftover-not-a-streak leftover-not-a-scorch",
+            cx: String(bloom.cx.toFixed(1)),
+            cy: String(bloom.cy.toFixed(1)),
+            rx: String(bloom.rx.toFixed(1)),
+            ry: String(bloom.ry.toFixed(1)),
+            fill: "url(#leftover-bloom-haze)",
+            stroke: pic.accent,
+            "stroke-width": "1.05",
+            opacity: String(Math.min(0.96, 0.62 + bloomMm / 16)),
+            "data-shape": "leftover-bloom",
+            "data-bloom-mm": String(bloomMm),
+            "data-role": "sitting-bloom",
+            "data-bloom-px": String(pic.bloomPx.toFixed(1)),
+            "data-origin-x": String(BLOOM_CX),
+            "data-origin-y": String(BLOOM_CY)
+          }));
+          leftover.appendChild(bloomEl("ellipse", {
+            id: "leftover-bloom-haze-soft",
+            class: "leftover-bloom leftover-showing leftover-sitting leftover-haze leftover-cloudy leftover-soft leftover-not-a-holiday leftover-not-a-stain leftover-not-a-smear leftover-not-a-burn leftover-residual leftover-on-face",
+            cx: String((bloom.cx + bloom.rx * 0.18).toFixed(1)),
+            cy: String((bloom.cy + bloom.ry * 0.12).toFixed(1)),
+            rx: String((bloom.rx * 0.72).toFixed(1)),
+            ry: String((bloom.ry * 0.78).toFixed(1)),
+            fill: "url(#leftover-bloom-haze-soft)",
+            opacity: String(Math.min(0.88, 0.48 + bloomMm / 20)),
+            "data-shape": "leftover-bloom-cloud",
+            "data-role": "sitting-bloom-haze"
+          }));
+          leftover.appendChild(bloomEl("text", {
+            id: "leftover-bloom-label",
+            class: "bloom-label leftover-label leftover-bloom leftover-showing leftover-sitting leftover-span leftover-haze leftover-on-face",
+            x: String(bloom.cx.toFixed(1)),
+            y: String((bloom.cy + 4).toFixed(1)),
+            fill: "#121418",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "BLOOM";
+        } else {
+          leftover.appendChild(bloomEl("ellipse", {
+            id: "leftover-bloom-polished-path",
+            class: "leftover-bloom leftover-polished leftover-empty leftover-no-bloom leftover-finish leftover-true leftover-polished-face leftover-not-a-bloom leftover-not-a-holiday",
+            cx: String(BLOOM_CX),
+            cy: String(BLOOM_CY),
+            rx: "22",
+            ry: "10",
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "polished-face"
+          }));
+        }
+        leftoverBloomLayer.appendChild(leftover);
+
+        bloomMarkLayer.replaceChildren();
+        bloomMarkLayer.appendChild(bloomEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · POLISH IS ON · FIXED";
+        bloomMarkLayer.appendChild(bloomEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isPolished ? "FACE · POLISHED / NO LEFTOVER BLOOM" : "FACE · ONE LEFTOVER CLOUDY BLOOM STILL SITS";
+
+        bloomMarkLayer.appendChild(bloomEl("rect", {
+          id: "bloom-profile-face",
+          class: "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-polished-face leftover-finish",
+          x: String(PROFILE_LEFT),
+          y: String(PROFILE_FACE_Y),
+          width: String(PROFILE_RIGHT - PROFILE_LEFT),
+          height: String(PROFILE_BOT - 16 - PROFILE_FACE_Y),
+          fill: "url(#leftover-bloom-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          opacity: "0.94",
+          "data-fixed": "true"
+        }));
+        bloomMarkLayer.appendChild(bloomEl("line", {
+          id: "bloom-profile-polish",
+          class: isPolished
+            ? "profile leftover-polish leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-polished leftover-no-bloom leftover-not-a-holiday"
+            : "profile leftover-polish leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-with-bloom leftover-not-a-holiday",
+          x1: String(PROFILE_LEFT),
+          y1: String(PROFILE_FACE_Y),
+          x2: String(PROFILE_RIGHT),
+          y2: String(PROFILE_FACE_Y),
+          stroke: pic.accent,
+          "stroke-width": "1.8",
+          "stroke-dasharray": isPolished ? "3 4" : "2 5",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isPolished ? "polished-face" : "leftover-bloom-span"
+        }));
+
+        if (!isPolished) {
+          const hazeW = Math.max(14, pic.bloomPx * 0.72);
+          const hazeL = BLOOM_CX - hazeW / 2;
+          bloomMarkLayer.appendChild(bloomEl("ellipse", {
+            id: "leftover-bloom-profile-haze",
+            class: "leftover-bloom leftover-showing leftover-sitting leftover-haze leftover-profile leftover-not-a-holiday leftover-not-a-stain leftover-not-a-smear leftover-not-a-burn leftover-on-face leftover-cloudy leftover-residual",
+            cx: String(BLOOM_CX),
+            cy: String(PROFILE_FACE_Y - 6),
+            rx: String((hazeW / 2).toFixed(1)),
+            ry: "9",
+            fill: "url(#leftover-bloom-profile)",
+            stroke: pic.accent,
+            "stroke-width": "0.9",
+            opacity: "0.88",
+            "data-shape": "leftover-bloom",
+            "data-role": "sitting-bloom-profile"
+          }));
+          const dimY = PROFILE_FACE_Y - 22;
+          bloomMarkLayer.appendChild(bloomEl("line", {
+            id: "bloom-dim",
+            class: "bloom-dim leftover-bloom leftover-showing leftover-sitting leftover-span leftover-not-a-holiday leftover-not-a-stain leftover-not-a-smear leftover-not-a-burn leftover-haze",
+            x1: String(hazeL.toFixed(1)),
+            y1: String(dimY),
+            x2: String((hazeL + hazeW).toFixed(1)),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          bloomMarkLayer.appendChild(bloomEl("text", {
+            id: "bloom-mm-label",
+            class: "bloom-label leftover-label leftover-bloom leftover-showing leftover-sitting leftover-span leftover-haze leftover-on-face",
+            x: String(BLOOM_CX),
+            y: String(dimY - 6),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = bloomMm + " mm";
+          bloomMarkLayer.appendChild(bloomEl("text", {
+            id: "bloom-span-label",
+            class: "span-label leftover-bloom leftover-one leftover-sitting leftover-span leftover-haze leftover-not-a-holiday leftover-not-a-stain leftover-not-a-smear leftover-not-a-burn leftover-cloudy leftover-residual leftover-on-face",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#dce4ec",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER BLOOM · ONE CLOUDY HAZE ON A FIXED POLISHED FACE · NOT A HOLIDAY · NOT A STAIN WASH";
+        } else {
+          bloomMarkLayer.appendChild(bloomEl("text", {
+            id: "bloom-label",
+            class: "bloom-label leftover-label leftover-polished leftover-no-bloom leftover-finish leftover-empty leftover-true leftover-not-a-holiday",
+            x: "400",
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "POLISHED / NO LEFTOVER BLOOM";
+          bloomMarkLayer.appendChild(bloomEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · POLISHED / NO LEFTOVER BLOOM";
+        }
+
+        bloomSceneStatus.setAttribute("fill", pic.accent);
+        bloomSceneStatus.textContent = pic.status;
+        bloomScene.setAttribute("data-bloom", String(bloomMm));
+        bloomScene.setAttribute("data-leftover", pic.leftover);
+        bloomScene.setAttribute("data-verdict", pic.verdict);
+        bloomScene.setAttribute("data-view", "finish-bloom");
+        bloomScene.setAttribute("data-hero", "leftover-bloom");
+        bloomScene.setAttribute("data-bloom-mm", String(bloomMm));
+        bloomScene.setAttribute("data-bloom-px", String(pic.bloomPx.toFixed(1)));
+        bloomScene.setAttribute("data-bloom-state", pic.bloomState);
+        bloomScene.setAttribute("data-shape", pic.shape);
+        bloomScene.setAttribute("data-face-fixed", "true");
+        bloomScene.setAttribute("data-polish-fixed", "true");
+      }
+
+      function bloomToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-polished";
+      }
+
+      function bloomRender() {
+        const pic = bloomPicture();
+        bloomPaint(pic);
+        bloomTitle.textContent = pic.alt;
+        bloomAlt.textContent = pic.alt;
+        bloomSvg.setAttribute("aria-label", pic.alt);
+        bloomDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + bloomMm + " mm showing"
+          : "leftover polished";
+        bloomStatMm.textContent = bloomMm + " mm";
+        bloomStatLeftover.textContent = pic.leftover;
+        bloomStatSpan.textContent = pic.leftover === "showing"
+          ? bloomMm + " mm leftover"
+          : "polished";
+        bloomStatLeftoverWrap.classList.remove("is-showing", "is-polished");
+        bloomStatLeftoverWrap.classList.add(bloomToneClass(pic.leftover));
+        if (Number(bloomInput.value) !== bloomMm) bloomInput.value = String(bloomMm);
+        bloomInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function bloomResetSeed() {
+        bloomMm = BLOOM_SEED.bloomMm;
+        bloomRender();
+      }
+
+      bloomInput.addEventListener("input", function (event) {
+        bloomMm = bloomClamp(Math.round(Number(event.target.value)), BLOOM_MIN, BLOOM_MAX);
+        bloomRender();
+      });
+      bloomBtnReset.addEventListener("click", bloomResetSeed);
+      bloomBtnResetStage.addEventListener("click", bloomResetSeed);
+
+      bloomRender();
+    </script>
+  </body>
+</html>
