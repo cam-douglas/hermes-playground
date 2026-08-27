@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Hermes playground catalog. Nested daily projects, starting over." />
+    <title>hermes-playground</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0c0d10;
+        --panel: #14161b;
+        --line: rgba(255, 255, 255, 0.08);
+        --text: #f3f1ea;
+        --muted: #9a968b;
+        --accent: #e8dc8c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      a { color: inherit; }
+      .wrap { width: min(880px, calc(100% - 40px)); margin: 0 auto; padding: 48px 0 80px; }
+      .mark {
+        display: inline-block;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      h1 {
+        margin: 18px 0 12px;
+        font-size: clamp(36px, 6vw, 64px);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        font-weight: 600;
+      }
+      .lede { max-width: 36em; color: var(--muted); font-size: 18px; line-height: 1.5; }
+      .status {
+        margin: 28px 0 36px;
+        padding: 18px 20px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: var(--panel);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .status strong { display: block; font-size: 28px; letter-spacing: -0.03em; }
+      .status span { color: var(--muted); font-size: 14px; }
+      .empty {
+        padding: 48px 24px;
+        border: 1px dashed rgba(255, 255, 255, 0.16);
+        text-align: center;
+        color: var(--muted);
+      }
+      .empty h2 { margin: 0 0 8px; color: var(--text); font-size: 28px; letter-spacing: -0.03em; }
+      .empty p { margin: 0 auto; max-width: 32em; }
+      .grid { display: grid; gap: 16px; }
+      .card {
+        display: block;
+        padding: 22px 22px 18px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: var(--panel);
+        text-decoration: none;
+      }
+      .card h2 { margin: 8px 0 8px; font-size: 26px; letter-spacing: -0.03em; }
+      .card p { margin: 0 0 16px; color: var(--muted); }
+      .meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--muted); }
+      .chip {
+        display: inline-flex;
+        padding: 3px 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+      }
+      .chip.featured { color: var(--accent); border-color: rgba(232, 220, 140, 0.35); }
+      .links { display: flex; flex-wrap: wrap; gap: 14px; font-size: 14px; }
+      .links a { color: var(--accent); }
+      .error { color: #f0b4a4; }
+      footer { margin-top: 48px; color: var(--muted); font-size: 14px; }
+      footer code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <p class="mark">Hermes playground</p>
+      <h1>Catalog</h1>
+      <p class="lede">
+        Daily projects, each in its own folder, each on its own host.
+        The previous catalog was wiped. This index starts at zero.
+      </p>
+      <div class="status" aria-live="polite">
+        <div>
+          <strong id="count">0</strong>
+          <span>projects in catalog.json</span>
+        </div>
+        <div>
+          <strong>new</strong>
+          <span>nested under projects/</span>
+        </div>
+      </div>
+      <section id="desk" aria-label="Project list"></section>
+      <footer>
+        Hub at <code>/</code>. A project at <code>projects/&lt;slug&gt;/</code> is served from
+        <code>/&lt;slug&gt;/</code>, and from a subdomain once one is assigned.
+      </footer>
+    </main>
+    <script>
+      const desk = document.getElementById("desk");
+      const countEl = document.getElementById("count");
+
+      function productsFrom(data) {
+        if (Array.isArray(data)) return data;
+        if (data && Array.isArray(data.products)) return data.products;
+        return [];
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function renderEmpty() {
+        desk.innerHTML = `
+          <div class="empty">
+            <h2>The catalog is empty</h2>
+            <p>Starting over. Add a self-contained folder under <code>projects/&lt;slug&gt;/</code> and register it in <code>catalog.json</code>.</p>
+          </div>
+        `;
+      }
+
+      function renderCards(items) {
+        desk.innerHTML = `<div class="grid">${items.map((item) => {
+          const name = escapeHtml(item.name || item.slug || "Untitled");
+          const summary = escapeHtml(item.summary || "");
+          const day = escapeHtml(item.day || "");
+          const slug = escapeHtml(item.slug || "");
+          const href = item.href || (item.slug ? `/${item.slug}/` : "#");
+          const host = item.subdomain || "";
+          const featured = item.featured ? `<span class="chip featured">featured</span>` : "";
+          const hostLink = host
+            ? `<a href="${escapeHtml(host)}">subdomain</a>`
+            : `<span>subdomain pending</span>`;
+          return `
+            <article class="card">
+              <div class="meta">
+                ${featured}
+                <span class="chip">${day || "undated"}</span>
+                <span class="chip">${slug}</span>
+              </div>
+              <h2>${name}</h2>
+              <p>${summary}</p>
+              <div class="links">
+                ${hostLink}
+                <a href="${escapeHtml(href)}">path fallback</a>
+              </div>
+            </article>
+          `;
+        }).join("")}</div>`;
+      }
+
+      async function loadCatalog() {
+        const urls = ["/catalog.json", "../catalog.json"];
+        let lastError = null;
+        for (const url of urls) {
+          try {
+            const response = await fetch(url, { cache: "no-store" });
+            if (!response.ok) {
+              lastError = new Error(`${url} ${response.status}`);
+              continue;
+            }
+            return productsFrom(await response.json());
+          } catch (error) {
+            lastError = error;
+          }
+        }
+        throw lastError || new Error("catalog.json unavailable");
+      }
+
+      loadCatalog()
+        .then((items) => {
+          countEl.textContent = String(items.length);
+          if (!items.length) renderEmpty();
+          else renderCards(items);
+        })
+        .catch((error) => {
+          countEl.textContent = "0";
+          desk.innerHTML = `<p class="error">Could not read catalog.json. ${escapeHtml(error.message)}</p>`;
+        });
+    </script>
+  </body>
+</html>

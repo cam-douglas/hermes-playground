@@ -1,365 +1,97 @@
 # hermes-playground
 
-An hourly catalogue of local-first instruments — clocks, boards, paste wells, a clause loupe, an inventory cockpit, a night plan of empty booked rooms, a tide of sentence lengths, one stick that shows leftover millimetres, one bag that shows leftover grams, one sheet that shows the creases, one beam that shows the tilt, one mix whose faders sit on a bus, one hang whose bob is true while the wall is not, one span whose leftover is the sag in the middle, one lamp whose leftover is the warmth, one road whose leftover is the rise in the middle, one scene whose leftover is which plane is sharp, one elevation whose leftover is whether the eye line is clear, one plank whose leftover is the mismatch between the cut and the grain, one door whose leftover is whether the swing clears, two voices whose leftover is who has the floor, two gears whose leftover is the play in the mesh, one cut whose leftover is the gap the blade removed, one hull whose leftover is whether the rode holds the bottom, one register whose leftover is how far the plume travels before it dies, two wheels whose leftover is the angle they still point, one chair whose leftover is how far the back leans from vertical, one stair whose leftover is how much going a foot actually gets, one pedal whose leftover is how much free travel sits before the bite, one loft whose leftover is how much air sits above a standing head, one mark whose leftover is how far the heading still sits off a dashed true course, one approach whose leftover is how far you can still fly versus how far you still have, one window whose leftover is how much frame still shows around the sash, one roof whose leftover is how far the eave still sticks past the wall, one pair of rails whose leftover is how much one still sits higher than the other, one hull whose leftover is how far it still lists from upright, one retaining wall whose leftover is how far the face still leans from plumb, one course whose leftover is how far the upper course still offsets from the one below, one wing whose leftover is how far it still rolls from level, one sea whose leftover is how far the wind still has to run, one lot whose leftover is how far the building still sits back from the lot line, one crane whose leftover is how far the boom still turns from the last stop, one tree whose leftover is how far the canopy still sits clear of the wire, one joint whose leftover is how far the boards still overlap as a scarf, one hill whose leftover is how far the sheltered shadow still runs behind it, one vault whose leftover is how far the keystone still sits as leftover lock, one wall whose leftover is how far the plinth still steps out as leftover base, one opening whose leftover is how far the lintel still bears as leftover span, one hull whose leftover is how far it still sits above the water as leftover freeboard, one stack whose leftover is how far it still draws as leftover flue, one board whose leftover is how far the rebate still shoulders as leftover rabbet, one wall whose leftover is how far it still guards above the roof as leftover parapet, one stair whose leftover is how far the tread still hangs past the riser as leftover nosing, one vault whose leftover is how far the leftover triangle still sits as leftover infill, one wall whose leftover is how far the stone still juts as leftover carry, one window whose leftover is how far the leftover bar still divides the lights, one doorway whose leftover is how far the leftover bar still rises above the floor as leftover threshold, and one hatch whose leftover is how far the leftover lip still stands above the deck as leftover coaming, and one drain whose leftover is how far the leftover hole still opens through the bulwark as leftover scupper, and one hull whose leftover is how far the leftover knuckle still creases where bottom meets side as leftover chine, and one roof whose leftover is how far the leftover underside plane still runs under the eave as leftover soffit, and one roof edge whose leftover is how far the leftover board still covers the rafter tails as leftover fascia, and one joint whose leftover is how far the leftover sharp still stands where two planes meet as leftover arris, and one joint whose leftover is how far the leftover pack still fills the gap as leftover shim, and one roof whose leftover is how far the leftover peak still stands where two planes meet as leftover ridge, and one joint whose leftover is how far the leftover bevel still takes the sharp off the corner as leftover chamfer, and one joint whose leftover is how far the leftover radius still fills the concave corner as leftover fillet, and one board whose leftover is how far the leftover live edge still takes the square off the corner as leftover wane, and one board whose leftover is how far the leftover dish still stands across the width as leftover cup, and one board whose leftover is how far the leftover arch still stands along the length as leftover bow, and one board whose leftover is how far the leftover wind still spirals one end off the other as leftover twist, and one board whose leftover is how far the leftover split still opens along the face as leftover check, and one board whose leftover is how far the leftover housing groove still cuts across the grain as leftover dado, and one board whose leftover is how far the leftover closed pocket still opens in the face as leftover mortise, and one board whose leftover is how far the leftover tongue still projects from the end as leftover tenon, and one joint whose leftover is how far the leftover angle still cuts the square meet as leftover mitre, and one joint whose leftover is how far the leftover key still sits between two grooves as leftover spline, and one board whose leftover is how far the leftover dark still sits in the face as leftover knot, and one board whose leftover is how far the leftover sweep still curves the edge in plan as leftover crook, and one board whose leftover is how far the leftover swirl still sits in the figure as leftover burl, and one board whose leftover is how far the leftover resin still sits in the face as leftover pitch, and one board whose leftover is how far the leftover flash still cuts across the face as leftover ray, and one board whose leftover is how far the leftover pale still bands the face as leftover sap, and one board whose leftover is how far the leftover inner still sits in the core as leftover heart, and one board whose leftover is how far the leftover year still sits in the face as leftover ring, and one board whose leftover is how far the leftover wave still sits in the figure as leftover curl, and one board whose leftover is how far the leftover dimple still sits in the face as leftover eye, and one board whose leftover is how far the leftover blister still sits in the figure as leftover quilt, and one board whose leftover is how far the leftover zone-line still sits in the face as leftover spalt, and one board whose leftover is how far the leftover wash still sits in the face as leftover stain, and one board whose leftover is how far the leftover stripe still sits in the figure as leftover ribbon, and one board whose leftover is how far the leftover plume still sits in the crotch as leftover crotch, and one board whose leftover is how far the leftover blotch still sits in the figure as leftover mottle, and one board whose leftover is how far the leftover run still sits in the face as leftover drip, and one board whose leftover is how far the leftover leap still sits in the figure as leftover flame, and one board whose leftover is how far the leftover round still sits on the edge as leftover bead, and one wall whose leftover is how far the leftover strip still covers the joint as leftover batten, and one joint whose leftover is how far the leftover pin still joins two faces as leftover dowel, and one board whose leftover is how far the leftover hollow still sits in the face as leftover flute, and one board whose leftover is how far the leftover piece still sits in the recess as leftover inlay, and one board whose leftover is how far the leftover cavity still sits in the face as leftover pecky, and one board whose leftover is how far the leftover living layer still sits under the bark as leftover cambium, and one board whose leftover is how far the leftover spongy center still sits in the core as leftover pith, and one corner whose leftover is how far the leftover interlocking tails still sit in the corner as leftover dovetail, and one board whose leftover is how far the leftover dip still sits at the end of a pass as leftover snipe, and one joint whose leftover is how far the leftover oval wafer still sits in the slot as leftover biscuit, and one board whose leftover is how far the leftover keyed patch still sits across the split as leftover bowtie, and one corner whose leftover is how far the leftover scribed nest still sits against the molding as leftover coping, and one board whose leftover is how far the leftover scoop still sits in the face as leftover cove, and one board whose leftover is how far the leftover fork still sits at the end as leftover bridle, and one board whose leftover is how far the leftover tabs still sit at the edge as leftover finger, and one corner whose leftover is how far the leftover round still sits in the corner as leftover dogbone, and one joint whose leftover is how far the leftover offset still sits through the joint as leftover drawbore, and one tenon whose leftover is how far the leftover hidden wedge still sits in the tenon as leftover fox, and one face whose leftover is how far the leftover half-thickness overlap still sits along the face as leftover lap, and one post whose leftover is how far the leftover shallow recess still sits across the face as leftover housing, and one board whose leftover is how far the leftover torn fibres still sit at the cut as leftover tearout, and one face whose leftover is how far the leftover washboard ripple still sits from the cut as leftover chatter, and one face whose leftover is how far the leftover repair patch still sits in the face as leftover dutchman, and one joint whose leftover is how far the leftover bearing face still sits at the joint as leftover shoulder, and one tenon whose leftover is how far the leftover side face still sits on the tenon as leftover cheek, and one hole whose leftover is how far the leftover filler still sits in the drilled hole as leftover plug, and one cut whose leftover is how far the leftover heat mark still sits along the kerf as leftover burn, and one face whose leftover is how far the leftover raised fibres still stand after sanding as leftover fuzz, and one cut whose leftover is how far the leftover layout line still sits past the finished cut as leftover witness, and one cut whose leftover is how far the leftover loose sawdust still sits in the kerf as leftover dust, and one face whose leftover is how far the leftover crushed fibres still sit in the face as leftover bruise, and one corner whose leftover is how far the leftover uncut projection still stands at the inside corner as leftover nib, and one joint whose leftover is how far the leftover glue still sits outside a closed seam as leftover squeeze, and one cut whose leftover is how far the leftover raised lip still stands along the finished cut as leftover burr, and one face whose leftover is how far the leftover high still sits above the surrounding face as leftover proud, and one face whose leftover is how far the leftover veneer still sits off the substrate as leftover lift, and one cut whose leftover is how far the leftover extra run still sits past a fixed stop as leftover overcut, and one edge whose leftover is how far the leftover hair still stands at the planed edge as leftover whisker, and one cut whose leftover is how far the leftover chip still sits from the chisel as leftover chip, and one face whose leftover is how far the leftover skip still sits after the planer as leftover skip, and one tenon whose leftover is how far the leftover horn still sits past a fixed intended shoulder as leftover horn, and one face whose leftover is how far the leftover knife groove still sits in a fixed face after the cut as leftover score, and one edge whose leftover is how far the leftover V still sits in a fixed cut edge after the cut as leftover nick, and one face whose leftover is how far the leftover scooped hollow still sits in a fixed face after the carve as leftover gouge, and one face whose leftover is how far the leftover dent still sits in a fixed face after a blow as leftover dent, and one face whose leftover is how far the leftover scuff still sits on a fixed face after abrasion as leftover scuff, and one joint whose leftover is how far the leftover thin glue still sits along a closed seam after the clamp as leftover creep, and one cut whose leftover is how far the leftover remnant still sits after the cut as leftover stub, and one face whose leftover is how far the leftover bare holiday still sits after a brush coat as leftover holiday, and one face whose leftover is how far the leftover residual curl of shaving still sits after a plane pass as leftover shaving, and one joint whose leftover is how far the leftover residual open gap still sits along a fixed joint after assembly as leftover gap, and one face whose leftover is how far the leftover residual smear still sits on a fixed face after a wipe as leftover smear, and one tenon whose leftover is how far the leftover residual excess still sits on a fixed tenon beyond the shoulder as leftover relish, and one face whose leftover is how far the leftover residual cloudy bloom still sits on a fixed polished face after the polish as leftover bloom, and one face whose leftover is how far the leftover residual fine craze network still sits on a fixed coated face after the coat as leftover craze, and one face whose leftover is how far the leftover residual tiny pinhole still sits on a fixed coated face after the coat as leftover pinhole, and one edge whose leftover is how far the leftover residual thin flash still sits on a fixed trimmed edge after the trim as leftover flash, and one board whose leftover is how far the leftover residual local kink still sits in a fixed board edge after the straighten as leftover kink, and one cut whose leftover is how far the leftover residual thin sliver still sits on a fixed cut edge after the cut as leftover sliver, and one board whose leftover is how far the leftover residual local swell still sits on a fixed board face after the dry as leftover swell, and one face whose leftover is how far the leftover residual thick glaze still sits on a fixed wiped face after the wipe as leftover glaze, and one face whose leftover is how far the leftover residual surface flake still sits on a fixed sanded face after the sand as leftover flake, and one assembly whose leftover is how far the leftover residual spring-back still sits in a fixed clamped assembly after the clamp as leftover spring, and one face whose leftover is how far the leftover residual feather edge still sits on a fixed blended face after the blend as leftover feather — built as static HTML and kept on one desk. This hour is Feather: leftover feather that still sits after the blend. The blend is done, but a feather still sits. Feather is the featured instrument. 0 vacant holes remain on leftover row 12. Packed sky is full / leftover row is full / no vacant leftover holes remain.
+A catalog of self-contained daily projects. The leftover-instrument era is closed. The catalog is empty and ready to start again.
 
-Open the hub to browse one hundred and sixty-nine prototypes. A ship tape lists them in ship order — newest / this hour on the left; click a tick to open it. A packed sky maps them onto a lattice; leftover holes are unused cells — leftover row 12 is full / packed sky full / 0 vacant holes; click a star to open it. Search and tag compose with AND on the cards, the tape, and the sky — matching ticks and stars stay bright; the rest dim. Dated archive shelves group ships by day (27 / 26 / 25 / 24 / 23 / 22 / 21 / 20 / 19 / 18 Aug). A filtered desk is pasteable as `?q=` / `?tag=` / `?view=compact`. Press `/` to focus search; Escape clears filters. Press `j` / `k` or the arrows to walk the visible cards; Enter opens the selected product. Pin a card to keep it on a short desk-pins strip above the dated shelves — three at most, this session only. The hub persists `?day=` so a dated shelf is a shareable desk link. A compare well sits on the desk: two pickers, leftover overlap, shareable as `?compare=depth,camber`. The featured card is a living well: the instrument itself, via `?embed=1` on the featured product, not only the blurb. A run rail on the hub opens hourly logs in `runs/read.html`. The rail, the hours index, and the reader share `runs/hours.json`. Cards, the ship tape, the desk sky, and the compare well share `catalog.json`.
+Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
-This hour is Feather. Feather is featured this hour on the 27 Aug shelf at 21:50. Spring stays first-class on the 27 Aug archive shelf at 20:50. Flake stays first-class on the 27 Aug archive shelf at 19:50. Glaze stays first-class on the 27 Aug archive shelf at 18:50. Swell stays first-class on the 27 Aug archive shelf at 17:50. Sliver stays first-class on the 27 Aug archive shelf at 16:50. Kink stays first-class on the 27 Aug archive shelf at 15:50. Flash stays first-class on the 27 Aug archive shelf at 14:50. Pinhole stays first-class on the 27 Aug archive shelf at 13:50. Craze stays first-class on the 27 Aug archive shelf at 12:50. Bloom stays first-class on the 27 Aug archive shelf at 11:50. Relish stays first-class on the 27 Aug archive shelf at 10:50. Smear stays first-class on the 27 Aug archive shelf at 09:50. Gap stays first-class on the 27 Aug archive shelf at 07:50. Shaving stays first-class on the 27 Aug archive shelf at 06:50. Holiday stays first-class on the 27 Aug archive shelf at 05:50. Stub stays first-class on the 27 Aug archive shelf at 04:50. Creep stays first-class on the 27 Aug archive shelf at 03:50. Scuff stays first-class on the 27 Aug archive shelf at 02:50. Dent stays first-class on the 27 Aug archive shelf at 01:50. Gouge stays first-class on the 27 Aug archive shelf at 00:50. Nick stays first-class on the 26 Aug archive shelf at 23:50. Score stays first-class on the 26 Aug archive shelf at 22:50. Horn stays first-class on the 26 Aug archive shelf at 21:50. Skip stays first-class on the 26 Aug archive shelf at 20:50. Chip stays first-class on the 26 Aug archive shelf at 19:50. Whisker stays first-class on the 26 Aug archive shelf at 17:50. Overcut stays first-class on the 26 Aug archive shelf at 16:50. Lift stays first-class on the 26 Aug archive shelf at 15:50. Proud stays first-class on the 26 Aug archive shelf at 14:50. Burr stays first-class on the 26 Aug archive shelf at 13:50. Squeeze stays first-class on the 26 Aug archive shelf at 12:50. Nib stays first-class on the 26 Aug archive shelf at 11:50. Bruise stays first-class on the 26 Aug archive shelf at 10:50. Dust stays first-class on the 26 Aug archive shelf at 09:50. Witness stays first-class on the 26 Aug archive shelf at 08:50. Fuzz stays first-class on the 26 Aug archive shelf at 07:50. Burn stays first-class on the 26 Aug archive shelf at 06:50. Plug stays first-class on the 26 Aug archive shelf at 05:50. Cheek stays first-class on the 26 Aug archive shelf at 03:50. Shoulder stays first-class on the 26 Aug archive shelf at 02:50. Dutchman stays first-class on the 26 Aug archive shelf at 01:50. Chatter stays first-class on the 26 Aug archive shelf at 00:50. Tearout stays first-class on the 25 Aug archive shelf at 23:50. Housing stays first-class on the 25 Aug archive shelf at 21:50. Lap stays first-class on the 25 Aug archive shelf at 20:50. Fox stays first-class on the 25 Aug archive shelf at 19:50. Drawbore stays first-class on the 25 Aug archive shelf at 18:50. Dogbone stays first-class on the 25 Aug archive shelf at 17:50. Finger stays first-class on the 25 Aug archive shelf at 16:50. Bridle stays first-class on the 25 Aug archive shelf at 15:50. Cove stays first-class on the 25 Aug archive shelf at 14:50. Coping stays first-class on the 25 Aug archive shelf at 12:50. Bowtie stays first-class on the 25 Aug archive shelf at 11:50. Biscuit stays first-class on the 25 Aug archive shelf at 10:50. Snipe stays first-class on the 25 Aug archive shelf at 09:50. Dovetail stays first-class on the 25 Aug archive shelf at 08:50. Pith stays first-class on the 25 Aug archive shelf at 07:50. Cambium stays first-class on the 25 Aug archive shelf at 06:50. Pecky stays first-class on the 25 Aug archive shelf at 03:50. Inlay stays first-class on the 25 Aug archive shelf at 02:50. Flute stays first-class on the 24 Aug archive shelf at 23:50. Dowel stays first-class on the 24 Aug archive shelf at 22:50. Batten stays first-class on the 24 Aug archive shelf at 21:50. Bead stays first-class on the 24 Aug archive shelf at 20:50. Flame stays first-class on the 24 Aug archive shelf at 18:50. Drip stays first-class on the 24 Aug archive shelf at 17:50. Mottle stays first-class on the 24 Aug archive shelf at 16:50. Crotch stays first-class on the 24 Aug archive shelf at 15:50. Ribbon stays first-class on the 24 Aug archive shelf at 14:50. Stain stays first-class on the 24 Aug archive shelf at 13:50. Spalt stays first-class on the 24 Aug archive shelf at 12:50. Quilt stays first-class on the 24 Aug archive shelf at 11:50. Eye stays first-class on the 24 Aug archive shelf at 10:50. Curl stays first-class on the 24 Aug archive shelf at 09:50. Ring stays first-class on the 24 Aug archive shelf at 08:50. Heart stays first-class on the 24 Aug archive shelf at 07:50. Sap stays first-class on the 24 Aug archive shelf at 06:50. Ray stays first-class on the 24 Aug archive shelf at 05:50. Pitch stays first-class on the 24 Aug archive shelf at 04:50. Burl stays first-class on the 24 Aug archive shelf at 03:50. Crook stays first-class on the 24 Aug archive shelf at 02:50. Knot stays first-class on the 24 Aug archive shelf at 01:50. Spline stays first-class on the 24 Aug archive shelf at 00:50. Mitre stays first-class on the 23 Aug archive shelf at 23:50. Tenon stays first-class on the 23 Aug archive shelf at 22:50. Mortise stays first-class on the 23 Aug archive shelf at 21:50. Dado stays first-class on the 23 Aug archive shelf at 20:50. Check stays first-class on the 23 Aug archive shelf at 19:50. Twist stays first-class on the 23 Aug archive shelf at 18:50. Bow stays first-class on the 23 Aug archive shelf at 17:50. Cup stays first-class on the 23 Aug archive shelf at 16:50. Wane stays first-class on the 23 Aug archive shelf at 15:50. Fillet stays first-class on the 23 Aug archive shelf at 14:50. Chamfer stays first-class on the 23 Aug archive shelf at 13:50. Ridge stays first-class on the 23 Aug archive shelf at 12:50. Shim stays first-class on the 23 Aug archive shelf at 11:50. Arris stays first-class on the 23 Aug archive shelf at 10:50. Fascia stays first-class on the 23 Aug archive shelf at 09:50. Soffit stays first-class on the 23 Aug archive shelf at 08:50. Chine stays first-class on the 23 Aug archive shelf at 07:50. Scupper stays first-class on the 23 Aug archive shelf at 06:50. Coaming stays first-class on the 23 Aug archive shelf at 04:50. Threshold stays first-class on the 23 Aug archive shelf at 03:50. Mullion stays first-class on the 23 Aug archive shelf at 02:50. Corbel stays first-class on the 23 Aug archive shelf at 01:50. Spandrel stays first-class on the 23 Aug archive shelf at 00:50. Nosing stays first-class on the 22 Aug archive shelf at 23:50. Parapet stays first-class on the 22 Aug archive shelf at 22:50. Rabbet stays first-class on the 22 Aug archive shelf at 21:50. Flue stays first-class on the 22 Aug archive shelf at 20:50. Freeboard stays first-class on the 22 Aug archive shelf at 19:50. Lintel stays first-class on the 22 Aug archive shelf at 18:50. Plinth stays first-class on the 22 Aug archive shelf at 17:50. Keystone stays first-class on the 22 Aug archive shelf at 16:50. Lee stays first-class on the 22 Aug archive shelf at 15:50. Scarf stays first-class on the 22 Aug archive shelf at 14:50. Crown stays first-class on the 22 Aug archive shelf at 13:50. Slew stays first-class on the 22 Aug archive shelf at 12:50. Setback stays first-class on the 22 Aug archive shelf at 11:50. Fetch stays first-class on the 22 Aug archive shelf at 10:50. Bank stays first-class on the 22 Aug archive shelf at 09:50. Stagger stays first-class on the 22 Aug archive shelf at 08:50. Batter stays first-class on the 22 Aug archive shelf at 07:50. Heel stays first-class on the 22 Aug archive shelf at 06:50. Cant stays first-class on the 22 Aug archive shelf at 05:50. Eave stays first-class on the 22 Aug archive shelf at 04:50. Reveal stays first-class on the 22 Aug archive shelf at 03:50. Glide stays first-class on the 22 Aug archive shelf at 02:50. Yaw stays first-class on the 22 Aug archive shelf at 01:50. Headroom stays first-class on the 22 Aug archive shelf at 00:50. Bite, Going, Rake, Toe, Throw, Scope, Kerf, Backlash, Tally, Swing, Grain, Sightline, Depth, Camber, Kelvin, Wire Sag, Plumb, and Mix Bus stay first-class on the 21 Aug archive shelf. The other twenty stay first-class on the shelves. Product folders for the earlier ships are unchanged.
+## Tree
 
-## Active products
+```
+README.md                 catalog index (this file)
+catalog.json              0 products; schema for future entries
+hub/                      public catalog page (not a product)
+projects/                 future projects nest here, one folder each
+vercel.json               hub + per-project host and path routing
+runs/hours.json           reset log index
+runs/2026-08-27-reset.md  leftover era closed
+```
 
-- **Feather** (featured this hour · 27 Aug 2026, 21:50 Sydney) — the blend is done, but a feather still sits. Move the leftover feather. See the residual feather edge still sitting on a fixed blended face. `products/feather/` · feather, finish, leftover
-- **Spring** (archive · 27 Aug 2026, 20:50 Sydney) — the clamp is off, but a spring still sits. Move the leftover spring. See the residual spring-back still sitting in a fixed clamped assembly. `products/spring/` · spring, clamp, leftover
-- **Flake** (archive · 27 Aug 2026, 19:50 Sydney) — the sand is done, but a flake still sits. Move the leftover flake. See the residual surface flake still sitting on a fixed sanded face. `products/flake/` · flake, sand, leftover
-- **Glaze** (archive · 27 Aug 2026, 18:50 Sydney) — the wipe is done, but a glaze still sits. Move the leftover glaze. See the residual thick glaze still sitting on a fixed wiped face. `products/glaze/` · glaze, finish, leftover
-- **Swell** (archive · 27 Aug 2026, 17:50 Sydney) — the dry is done, but a swell still sits. Move the leftover swell. See the residual local swell still sitting on a fixed board face. `products/swell/` · swell, board, leftover
-- **Sliver** (archive · 27 Aug 2026, 16:50 Sydney) — the cut is done, but a sliver still sits. Move the leftover sliver. See the residual thin sliver still sitting on a fixed cut edge. `products/sliver/` · sliver, cut, leftover
-- **Kink** (archive · 27 Aug 2026, 15:50 Sydney) — the straighten is done, but a kink still sits. Move the leftover kink. See the residual local kink still sitting in a fixed board edge. `products/kink/` · kink, board, leftover
-- **Flash** (archive · 27 Aug 2026, 14:50 Sydney) — the trim is done, but a flash still sits. Move the leftover flash. See the residual thin flash still sitting on a fixed trimmed edge. `products/flash/` · flash, trim, leftover
-- **Pinhole** (archive · 27 Aug 2026, 13:50 Sydney) — the coat is on, but a pinhole still sits. Move the leftover pinhole. See the residual tiny pinhole still sitting on a fixed coated face. `products/pinhole/` · pinhole, finish, leftover
-- **Craze** (archive · 27 Aug 2026, 12:50 Sydney) — the coat is on, but a craze still sits. Move the leftover craze. See the residual fine craze network still sitting on a fixed coated face. `products/craze/` · craze, finish, leftover
-- **Bloom** (archive · 27 Aug 2026, 11:50 Sydney) — the polish is on, but a bloom still sits. Move the leftover bloom. See the residual cloudy bloom still sitting on a fixed polished face. `products/bloom/` · bloom, finish, leftover
-- **Relish** (archive · 27 Aug 2026, 10:50 Sydney) — the shoulder is cut, but the relish still sits. Move the leftover relish. See the residual excess length still sitting on a fixed tenon beyond the shoulder. `products/relish/` · relish, tenon, leftover
-- **Smear** (archive · 27 Aug 2026, 09:50 Sydney) — the wipe has passed, but a smear still sits. Move the leftover smear. See the residual smear still sitting on a fixed face after a wipe. `products/smear/` · smear, wipe, leftover
-- **Gap** (archive · 27 Aug 2026, 07:50 Sydney) — the joint is closed, but a gap still sits. Move the leftover gap. See the residual open gap still sitting along a fixed joint after assembly. `products/gap/` · gap, joint, leftover
-- **Shaving** (archive · 27 Aug 2026, 06:50 Sydney) — the plane has passed, but a shaving still sits. Move the leftover shaving. See the residual curl of shaving still sitting after a plane pass. `products/shaving/` · shaving, plane, leftover
-- **Holiday** (archive · 27 Aug 2026, 05:50 Sydney) — the coat is on, but a bare holiday still sits. Move the leftover holiday. See the residual missed bare patch still sitting after a brush coat. `products/holiday/` · holiday, finish, leftover
-- **Stub** (archive · 27 Aug 2026, 04:50 Sydney) — the cut is done, but a short remnant stub still sits. Move the leftover stub. See the residual short stub still sitting after a cut. `products/stub/` · stub, cut, leftover
-- **Creep** (archive · 27 Aug 2026, 03:50 Sydney) — the joint is closed, but a thin line of glue still sits. Move the leftover creep. See the residual late glue still sitting along a fixed seam after the clamp. `products/creep/` · creep, glue, leftover
-- **Scuff** (archive · 27 Aug 2026, 02:50 Sydney) — the face was scraped, but a scuff still sits. Move the leftover scuff. See the residual shallow abraded mark still sitting on a fixed face after abrasion. `products/scuff/` · scuff, abrasion, leftover
-- **Dent** (archive · 27 Aug 2026, 01:50 Sydney) — the face was struck, but a dent still sits. Move the leftover dent. See the residual shallow round crush still sitting in a fixed face after a blow. `products/dent/` · dent, blow, leftover
-- **Gouge** (archive · 27 Aug 2026, 00:50 Sydney) — the tool has passed, but a gouge still sits. Move the leftover gouge. See the residual curved hollow still sitting in a fixed face after the carve. `products/gouge/` · gouge, carve, leftover
-- **Nick** (archive · 26 Aug 2026, 23:50 Sydney) — the edge is cut, but a nick still sits. Move the leftover nick. See the residual V-shaped bite still sitting in a fixed cut edge after the cut. `products/nick/` · nick, edge, leftover
-- **Score** (archive · 26 Aug 2026, 22:50 Sydney) — the cut is done, but a score still sits. Move the leftover score. See the residual knife groove still sitting in a fixed face after the cut. `products/score/` · score, knife, leftover
-- **Horn** (archive · 26 Aug 2026, 21:50 Sydney) — the shoulder is cut, but a horn still sits. Move the leftover horn. See the residual length of tenon still sitting past a fixed intended shoulder. `products/horn/` · horn, tenon, leftover
-- **Skip** (archive · 26 Aug 2026, 20:50 Sydney) — the knives have passed, but a skip still sits. Move the leftover skip. See the residual low missed patch still sitting on a fixed planed face after the planer. `products/skip/` · skip, planer, leftover
-- **Chip** (archive · 26 Aug 2026, 19:50 Sydney) — the chisel has passed, but a chip still sits. Move the leftover chip. See the residual discrete chip of wood still sitting after a chisel cut. `products/chip/` · chip, chisel, leftover
-- **Whisker** (archive · 26 Aug 2026, 17:50 Sydney) — the plane has passed, but a whisker still sits at the edge. Move the leftover whisker. See the residual hair of wood still standing at a planed or cut edge. `products/whisker/` · whisker, hair, edge
-- **Overcut** (archive · 26 Aug 2026, 16:50 Sydney) — the stop is there, but the saw still ran past it. Move the leftover overcut. See the residual extra run still sitting past a fixed intended stop. `products/overcut/` · overcut, stop, cut
-- **Lift** (archive · 26 Aug 2026, 15:50 Sydney) — the glue is set, but a sheet still sits lifted off the face. Move the leftover lift. See the residual veneer leaf still sitting off the substrate. `products/lift/` · lift, veneer, face
-- **Proud** (archive · 26 Aug 2026, 14:50 Sydney) — the joint is closed, but a strip still sits proud of the face. Move the leftover high. See the residual proud still standing above the surrounding face. `products/proud/` · proud, high, face
-- **Burr** (archive · 26 Aug 2026, 13:50 Sydney) — the cut is through, but the burr still stands. Move the leftover standing lip. See the residual burr still standing along a finished cut. `products/burr/` · burr, lip, cut
-- **Squeeze** (archive · 26 Aug 2026, 12:50 Sydney) — the joint is closed, but the squeeze-out still sits along the seam. Move the leftover glue squeeze-out. See the residual bead still sitting outside a closed joint after clamping. `products/squeeze/` · squeeze, glue, seam
-- **Nib** (archive · 26 Aug 2026, 11:50 Sydney) — two cuts meet, but the corner still keeps a nib. Move the leftover corner nib. See the tiny uncut projection still standing at an inside corner after intersecting cuts. `products/nib/` · nib, corner, cut
-- **Bruise** (archive · 26 Aug 2026, 10:50 Sydney) — the clamp is gone, but the face still holds the bruise. Move the leftover compression. See how much crushed fibre still sits in the wood face after pressure. `products/bruise/` · bruise, compression, face
-- **Dust** (archive · 26 Aug 2026, 09:50 Sydney) — the cut is open, but the dust is still in it. Move the leftover sawdust. See how much loose particulate remains in a kerf after cutting. `products/dust/` · dust, sawdust, cut
-- **Witness** (archive · 26 Aug 2026, 08:50 Sydney) — the cut is done, but the layout line gives it away. Move the leftover line. See how much pencil or knife mark still sits past the finished cut. `products/witness/` · witness, line, cut
-- **Fuzz** (archive · 26 Aug 2026, 07:50 Sydney) — a surface looks finished until the light catches the fuzz. Move the leftover fibres. See the raised fibres still standing after sanding. `products/fuzz/` · fuzz, fibre, sand
-- **Burn** (archive · 26 Aug 2026, 06:50 Sydney) — a cut looks cool until you see the burn. Move the scorch. See the leftover heat mark still sitting along the kerf. `products/burn/` · burn, scorch, cut
-- **Plug** (archive · 26 Aug 2026, 05:50 Sydney) — a hole looks open until you see the plug. Move the filler. See the leftover plug still sitting in the hole. `products/plug/` · plug, hole, filler
-- **Cheek** (archive · 26 Aug 2026, 03:50 Sydney) — a tenon looks bare until you see the cheek. Move the side. See the leftover cheek still sitting on the tenon. `products/cheek/` · cheek, tenon, side
-- **Shoulder** (archive · 26 Aug 2026, 02:50 Sydney) — a joint looks flush until you see the shoulder. Move the bearing. See the leftover shoulder still sitting at the joint. `products/shoulder/` · shoulder, joint, bearing
-- **Dutchman** (archive · 26 Aug 2026, 01:50 Sydney) — a face looks open until you see the dutchman. Move the patch. See the leftover repair still sitting in the face. `products/dutchman/` · dutchman, patch, face
-- **Chatter** (archive · 26 Aug 2026, 00:50 Sydney) — a face looks smooth until you see the chatter. Move the ripple. See the leftover washboard from the cut. `products/chatter/` · chatter, ripple, cut
-- **Tearout** (archive · 25 Aug 2026, 23:50 Sydney) — a face looks clean until you see the tearout. Move the splinter. See the leftover fibres at the cut. `products/tearout/` · tearout, splinter, cut
-- **Housing** (archive · 25 Aug 2026, 21:50 Sydney) — a face looks proud until you see the housing. Move the recess. See the leftover seat. `products/housing/` · housing, recess, rail
-- **Lap** (archive · 25 Aug 2026, 20:50 Sydney) — a face looks flush until you see the lap. Move the overlap. See the leftover half. `products/lap/` · lap, overlap, half
-- **Fox** (archive · 25 Aug 2026, 19:50 Sydney) — a tenon looks loose until you see the fox. Move the wedge. See the leftover flare. `products/fox/` · fox, wedge, flare
-- **Drawbore** (archive · 25 Aug 2026, 18:50 Sydney) — a joint looks aligned until you see the drawbore. Move the offset. See the leftover pull. `products/drawbore/` · drawbore, offset, joint
-- **Dogbone** (archive · 25 Aug 2026, 17:50 Sydney) — a corner looks tight until you see the dogbone. Move the relief. See the leftover round. `products/dogbone/` · dogbone, relief, corner
-- **Finger** (archive · 25 Aug 2026, 16:50 Sydney) — a board looks plain until you see the finger. Move the tabs. See the leftover edge. `products/finger/` · finger, tabs, edge
-- **Bridle** (archive · 25 Aug 2026, 15:50 Sydney) — a board looks closed until you see the bridle. Move the fork. See the leftover opening. `products/bridle/` · bridle, fork, end
-- **Cove** (archive · 25 Aug 2026, 14:50 Sydney) — a board looks flat until you see the cove. Move the scoop. See the leftover hollow. `products/cove/` · cove, scoop, face
-- **Coping** (archive · 25 Aug 2026, 12:50 Sydney) — a corner looks mitred until you see the coping. Move the scribe. See the leftover nest. `products/coping/` · coping, scribe, nest
-- **Bowtie** (archive · 25 Aug 2026, 11:50 Sydney) — a split looks open until you see the bowtie. Move the patch. See the leftover lock. `products/bowtie/` · bowtie, patch, keyed
-- **Biscuit** (archive · 25 Aug 2026, 10:50 Sydney) — an edge looks closed until you see the biscuit. Move the wafer. See the leftover slot. `products/biscuit/` · biscuit, wafer, slot
-- **Snipe** (archive · 25 Aug 2026, 09:50 Sydney) — a pass looks even until you see the snipe. Move the dip. See the leftover end. `products/snipe/` · snipe, dip, end
-- **Dovetail** (archive · 25 Aug 2026, 08:50 Sydney) — a corner looks closed until you see the dovetail. Move the tail. See the leftover tails. `products/dovetail/` · dovetail, tail, lock
-- **Pith** (archive · 25 Aug 2026, 07:50 Sydney) — a board looks solid until you see the pith. Move the center. See the leftover pith. `products/pith/` · pith, spongy, center
-- **Cambium** (archive · 25 Aug 2026, 06:50 Sydney) — a board looks woody until you see the cambium. Move the layer. See the leftover skin. `products/cambium/` · cambium, layer, edge
-- **Pecky** (archive · 25 Aug 2026, 03:50 Sydney) — a board looks sound until you see the pecky. Move the pocket. See the leftover cavity. `products/pecky/` · pecky, cavity, face
-- **Inlay** (archive · 25 Aug 2026, 02:50 Sydney) — a board looks even until you see the inlay. Move the set. See the leftover piece. `products/inlay/` · inlay, set, face
-- **Flute** (archive · 24 Aug 2026, 23:50 Sydney) — a board looks even until you see the flute. Move the hollow. See the leftover channel. `products/flute/` · flute, hollow, face
-- **Dowel** (archive · 24 Aug 2026, 22:50 Sydney) — a joint looks closed until you see the dowel. Move the pin. See the leftover pin. `products/dowel/` · dowel, pin, join
-- **Batten** (archive · 24 Aug 2026, 21:50 Sydney) — a wall looks closed until you see the batten. Move the cover. See the leftover strip. `products/batten/` · batten, cover, joint
-- **Bead** (archive · 24 Aug 2026, 20:50 Sydney) — a board looks square until you see the bead. Move the edge. See the leftover round. `products/bead/` · bead, round, edge
-- **Flame** (archive · 24 Aug 2026, 18:50 Sydney) — a board looks even until you see the flame. Move the figure. See the leftover leap. `products/flame/` · flame, leap, figure
-- **Drip** (archive · 24 Aug 2026, 17:50 Sydney) — a board looks even until you see the drip. Move the figure. See the leftover run. `products/drip/` · drip, run, face
-- **Mottle** (archive · 24 Aug 2026, 16:50 Sydney) — a board looks even until you see the mottle. Move the figure. See the leftover blotch. `products/mottle/` · mottle, blotch, figure
-- **Crotch** (archive · 24 Aug 2026, 15:50 Sydney) — a board looks even until you see the crotch. Move the figure. See the leftover plume. `products/crotch/` · crotch, plume, figure
-- **Ribbon** (archive · 24 Aug 2026, 14:50 Sydney) — a board looks even until you see the ribbon. Move the figure. See the leftover stripe. `products/ribbon/` · ribbon, stripe, figure
-- **Stain** (archive · 24 Aug 2026, 13:50 Sydney) — a board looks even until you see the stain. Move the figure. See the leftover wash. `products/stain/` · stain, wash, face
-- **Spalt** (archive · 24 Aug 2026, 12:50 Sydney) — a board looks even until you see the spalt. Move the figure. See the leftover zone-line. `products/spalt/` · spalt, zone, figure
-- **Quilt** (archive · 24 Aug 2026, 11:50 Sydney) — a board looks even until you see the quilt. Move the figure. See the leftover blister. `products/quilt/` · quilt, blister, figure
-- **Eye** (archive · 24 Aug 2026, 10:50 Sydney) — a board looks even until you see the eye. Move the figure. See the leftover dimple. `products/eye/` · eye, dimple, figure
-- **Curl** (archive · 24 Aug 2026, 09:50 Sydney) — a board looks even until you see the curl. Move the figure. See the leftover wave. `products/curl/` · curl, figure, wave
-- **Ring** (archive · 24 Aug 2026, 08:50 Sydney) — a board looks even until you see the ring. Move the year. See the leftover growth. `products/ring/` · ring, year, growth
-- **Heart** (archive · 24 Aug 2026, 07:50 Sydney) — a board looks sap until you see the heart. Move the core. See the leftover inner. `products/heart/` · heart, core, inner
-- **Sap** (archive · 24 Aug 2026, 06:50 Sydney) — a board looks heart until you see the sap. Move the pale. See the leftover band. `products/sap/` · sap, pale, band
-- **Ray** (archive · 24 Aug 2026, 05:50 Sydney) — a board looks even until you see the ray. Move the flash. See the leftover spoke. `products/ray/` · ray, flash, spoke
-- **Pitch** (archive · 24 Aug 2026, 04:50 Sydney) — a board looks dry until you see the pitch. Move the resin. See the leftover gum. `products/pitch/` · pitch, resin, gum
-- **Burl** (archive · 24 Aug 2026, 03:50 Sydney) — a board looks even until you see the burl. Move the swirl. See the leftover figure. `products/burl/` · burl, swirl, figure
-- **Crook** (archive · 24 Aug 2026, 02:50 Sydney) — a board looks straight until you see the crook. Move the edge. See the leftover sweep. `products/crook/` · crook, edge, sweep
-- **Knot** (archive · 24 Aug 2026, 01:50 Sydney) — a board looks clean until you see the knot. Move the dark. See the leftover pith. `products/knot/` · knot, dark, pith
-- **Spline** (archive · 24 Aug 2026, 00:50 Sydney) — a joint looks closed until you see the spline. Move the key. See the leftover slip. `products/spline/` · spline, key, slip
-- **Mitre** (archive · 23 Aug 2026, 23:50 Sydney) — a joint looks square until you see the mitre. Move the angle. See the leftover meet. `products/mitre/` · mitre, angle, meet
-- **Tenon** (archive · 23 Aug 2026, 22:50 Sydney) — a board looks flush until you see the tenon. Move the tongue. See the leftover fit. `products/tenon/` · tenon, tongue, fit
-- **Mortise** (archive · 23 Aug 2026, 21:50 Sydney) — a board looks solid until you see the mortise. Move the pocket. See the leftover cavity. `products/mortise/` · mortise, pocket, cavity
-- **Dado** (archive · 23 Aug 2026, 20:50 Sydney) — a board looks whole until you see the dado. Move the groove. See the leftover housing. `products/dado/` · dado, groove, housing
-- **Check** (archive · 23 Aug 2026, 19:50 Sydney) — a board looks sound until you see the check. Move the split. See the leftover opening. `products/check/` · check, split, open
-- **Twist** (archive · 23 Aug 2026, 18:50 Sydney) — a board looks true until you see the twist. Move the wind. See the leftover spiral. `products/twist/` · twist, wind, spiral
-- **Bow** (archive · 23 Aug 2026, 17:50 Sydney) — a board looks straight until you see the bow. Move the arch. See the leftover length. `products/bow/` · bow, length, arch
-- **Cup** (archive · 23 Aug 2026, 16:50 Sydney) — a board looks flat until you see the cup. Move the dish. See the leftover warp. `products/cup/` · cup, dish, warp
-- **Wane** (archive · 23 Aug 2026, 15:50 Sydney) — a board looks square until you see the wane. Move the live edge. See the leftover bark. `products/wane/` · wane, bark, live
-- **Fillet** (archive · 23 Aug 2026, 14:50 Sydney) — a joint looks square until you see the fillet. Move the radius. See the leftover fill. `products/fillet/` · fillet, radius, fill
-- **Chamfer** (archive · 23 Aug 2026, 13:50 Sydney) — a joint looks sharp until you see the chamfer. Move the bevel. See the leftover ease. `products/chamfer/` · chamfer, bevel, ease
-- **Ridge** (archive · 23 Aug 2026, 12:50 Sydney) — a roof looks one plane until you see the ridge. Move the peak. See the leftover join. `products/ridge/` · ridge, peak, join
-- **Shim** (archive · 23 Aug 2026, 11:50 Sydney) — a joint looks closed until you see the shim. Move the pack. See the leftover fill. `products/shim/` · shim, pack, fill
-- **Arris** (archive · 23 Aug 2026, 10:50 Sydney) — a joint looks eased until you see the arris. Move the edge. See the leftover sharp. `products/arris/` · arris, sharp, edge
-- **Fascia** (archive · 23 Aug 2026, 09:50 Sydney) — a roof looks finished until you see the fascia. Move the board. See the leftover cover. `products/fascia/` · fascia, cover, tails
-- **Soffit** (archive · 23 Aug 2026, 08:50 Sydney) — a roof looks finished until you see the soffit. Move the underside. See the leftover plane. `products/soffit/` · soffit, underside, plane
-- **Chine** (archive · 23 Aug 2026, 07:50 Sydney) — a hull looks round until you see the chine. Move the knuckle. See the leftover crease. `products/chine/` · chine, knuckle, crease
-- **Scupper** (archive · 23 Aug 2026, 06:50 Sydney) — a deck looks closed until you see the scupper. Move the drain. See the leftover hole. `products/scupper/` · scupper, drain, bulwark
-- **Coaming** (archive · 23 Aug 2026, 04:50 Sydney) — a deck looks flush until you see the coaming. Move the hatch. See the leftover lip. `products/coaming/` · coaming, lip, hatch
-- **Threshold** (archive · 23 Aug 2026, 03:50 Sydney) — a door looks open until you see the threshold. Move the bar. See the leftover rise. `products/threshold/` · threshold, rise, strip
-- **Mullion** (archive · 23 Aug 2026, 02:50 Sydney) — a window looks open until you see the mullion. Move the lights. See the leftover bar. `products/mullion/` · mullion, bar, lights
-- **Corbel** (archive · 23 Aug 2026, 01:50 Sydney) — a wall looks flush until you see the corbel. Move the stone. See the leftover jut. `products/corbel/` · corbel, jut, carry
-- **Spandrel** (archive · 23 Aug 2026, 00:50 Sydney) — a vault looks solid until you see the spandrel. Move the fill. See the leftover triangle. `products/spandrel/` · spandrel, infill, triangle
-- **Nosing** (archive · 22 Aug 2026, 23:50 Sydney) — a stair looks flush until you see the nosing. Move the tread. See the leftover hang. `products/nosing/` · nosing, hang, riser
-- **Parapet** (archive · 22 Aug 2026, 22:50 Sydney) — a roof looks flush until you see the parapet. Move the wall. See the leftover guard. `products/parapet/` · parapet, roof, guard
-- **Rabbet** (archive · 22 Aug 2026, 21:50 Sydney) — a board looks square until you see the rabbet. Move the rebate. See the leftover shoulder. `products/rabbet/` · timber, rabbet, rebate
-- **Flue** (archive · 22 Aug 2026, 20:50 Sydney) — a stack looks still until you see the flue. Move the fire. See the leftover pull. `products/flue/` · flue, chimney, stack
-- **Freeboard** (archive · 22 Aug 2026, 19:50 Sydney) — a hull looks sunk until you see the freeboard. Move the water. See the leftover hull. `products/freeboard/` · hull, freeboard, waterline
-- **Lintel** (archive · 22 Aug 2026, 18:50 Sydney) — a door looks open until you see the lintel. Move the stone. See the leftover span. `products/lintel/` · lintel, span, opening
-- **Plinth** (archive · 22 Aug 2026, 17:50 Sydney) — a wall looks grounded until you see the plinth. Move the base. See the leftover step. `products/plinth/` · plinth, base, step
-- **Keystone** (archive · 22 Aug 2026, 16:50 Sydney) — a vault looks closed until you see the keystone. Move the stone. See the leftover lock. `products/keystone/` · arch, keystone, vault
-- **Lee** (archive · 22 Aug 2026, 15:50 Sydney) — a hill looks still until you see the lee. Move the hill. See the leftover shelter. `products/lee/` · hill, lee, shelter
-- **Scarf** (archive · 22 Aug 2026, 14:50 Sydney) — a joint looks flush until you see the scarf. Move the boards. See the leftover overlap. `products/scarf/` · timber, scarf, overlap
-- **Crown** (archive · 22 Aug 2026, 13:50 Sydney) — a wire looks clear until you see the crown. Move the tree. See the leftover gap. `products/crown/` · tree, crown, canopy
-- **Slew** (archive · 22 Aug 2026, 12:50 Sydney) — a boom looks still until you see the slew. Move the cab. See the leftover turn. `products/slew/` · crane, slew, boom
-- **Setback** (archive · 22 Aug 2026, 11:50 Sydney) — a lot looks full until you see the setback. Move the line. See the leftover yard. `products/setback/` · lot, setback, yard
-- **Fetch** (archive · 22 Aug 2026, 10:50 Sydney) — a sea looks still until you see the fetch. Move the wind. See the leftover run. `products/fetch/` · fetch, wave, wind
-- **Bank** (archive · 22 Aug 2026, 09:50 Sydney) — a wing looks level until you see the bank. Move the roll. See the leftover bank. `products/bank/` · wing, bank, roll
-- **Stagger** (archive · 22 Aug 2026, 08:50 Sydney) — a course looks even until you see the stagger. Move the bond. See the leftover offset. `products/stagger/` · brick, stagger, bond
-- **Batter** (archive · 22 Aug 2026, 07:50 Sydney) — a wall looks plumb until you see the batter. Move the slope. See the leftover set. `products/batter/` · retain, batter, slope
-- **Heel** (archive · 22 Aug 2026, 06:50 Sydney) — a hull looks upright until you see the heel. Move the list. See the leftover lean. `products/heel/` · hull, heel, list
-- **Cant** (archive · 22 Aug 2026, 05:50 Sydney) — a track looks level until you see the cant. Move the rail. See the leftover tilt. `products/cant/` · rail, cant, tilt
-- **Eave** (archive · 22 Aug 2026, 04:50 Sydney) — a roof looks flush until you see the eave. Move the overhang. See the leftover shade. `products/eave/` · eave, overhang, shade
-- **Reveal** (archive · 22 Aug 2026, 03:50 Sydney) — a window looks flush until you see the reveal. Move the sash. See the leftover frame. `products/reveal/` · sash, reveal, frame
-- **Glide** (archive · 22 Aug 2026, 02:50 Sydney) — an approach looks plenty until you see the glide. Move the range. See the leftover air. `products/glide/` · glide, range, approach
-- **Yaw** (archive · 22 Aug 2026, 01:50 Sydney) — a course looks true until you see the yaw. Move the heading. See the leftover course. `products/yaw/` · yaw, heading, course
-- **Headroom** (archive · 22 Aug 2026, 00:50 Sydney) — a loft looks fine in plan until you stand. Move the ceiling. See the leftover air. `products/headroom/` · loft, head, stand
-- **Bite** (archive · 21 Aug 2026, 23:50 Sydney) — a pedal looks ready until you feel the bite. Move the travel. See the leftover gap. `products/bite/` · pedal, bite, travel
-- **Going** (archive · 21 Aug 2026, 22:50 Sydney) — a stair looks even until you put a foot on it. Move the going. See the leftover tread. `products/going/` · stair, going, tread
-- **Rake** (archive · 21 Aug 2026, 21:50 Sydney) — a chair looks upright until you see the rake. Move the back. See the leftover sit. `products/rake/` · chair, rake, sit
-- **Toe** (archive · 21 Aug 2026, 20:50 Sydney) — two wheels look straight until you see the toe. Move the angle. See the leftover track. `products/toe/` · toe, track, align
-- **Throw** (archive · 21 Aug 2026, 19:50 Sydney) — a room looks even until you feel the register. Move the throw. See the leftover air. `products/throw/` · vent, plume, throw
-- **Scope** (archive · 21 Aug 2026, 18:50 Sydney) — the rode looks plenty until you see the depth. Pay more chain. See the leftover hold. `products/scope/` · rode, hold, scope
-- **Kerf** (archive · 21 Aug 2026, 16:50 Sydney) — a cut looks clean until you measure the gap. Move the kerf. See what the blade removed. `products/kerf/` · cut, kerf, remove
-- **Backlash** (archive · 21 Aug 2026, 15:50 Sydney) — two gears look meshed until you turn. Move the play. See the leftover slop. `products/backlash/` · mesh, play, gear
-- **Tally** (archive · 21 Aug 2026, 14:50 Sydney) — a meeting looks even until you see who spoke. Move the floor. See the leftover air. `products/tally/` · talk, air, tally
-- **Swing** (archive · 21 Aug 2026, 12:50 Sydney) — a door looks free until you see the arc. Move the swing. See the leftover clearance. `products/swing/` · door, swing, clearance
-- **Grain** (archive · 21 Aug 2026, 10:50 Sydney) — a board looks ready until you see the grain. Move the cut. See the leftover mismatch. `products/grain/` · grain, wood, cut
-- **Sightline** (archive · 21 Aug 2026, 09:50 Sydney) — a room looks open until you see the line. Move the partition. See the leftover block. `products/sightline/` · sight, line, view
-- **Depth** (archive · 21 Aug 2026, 07:50 Sydney) — a picture looks sharp until you see the plane. Move focus. See the leftover blur. `products/depth/` · focus, depth, field
-- **Camber** (archive · 21 Aug 2026, 05:50 Sydney) — a road looks flat until you see the crown. Move camber. See the rise. `products/camber/` · road, camber, crown
-- **Kelvin** (archive · 21 Aug 2026, 04:50 Sydney) — a lamp is on or off until you see the temperature. Move kelvin. See the warmth. `products/kelvin/` · light, kelvin, color
-- **Wire Sag** (archive · 21 Aug 2026, 03:50 Sydney) — a span looks tight until you see the dip. Two poles. One cable. See the sag. `products/wire-sag/` · wire, sag, span
-- **Plumb** (archive · 21 Aug 2026, 02:50 Sydney) — a wall looks straight until the bob hangs. The line is true. The wall is not. See the offset. `products/plumb/` · plumb, wall, true
-- **Mix Bus** (archive · 21 Aug 2026, 00:50 Sydney) — three channels sit at unity. The mix lives on the bus. Pull the faders. See what’s loud. `products/mix-bus/` · mix, faders, meeting
-- **Claim Scale** (archive · 20 Aug 2026, 23:50 Sydney) — two claims sit in a thread; the weight lives on the beam. Put them on the pans. See the tilt. `products/claim-scale/` · weigh, claims, balance
-- **Fold Sheet** (archive · 20 Aug 2026, 21:50 Sydney) — one page, a fold type, crease lines on the sheet. See which face lands outside. `products/fold-sheet/` · paper, fold, print
-- **Kit Weight** (archive · 20 Aug 2026, 20:50 Sydney) — items on, bag fill by mass, leftover capacity. See the grams in the bag. `products/kit-weight/` · kit, weight, pack
-- **Offcut** (archive · 20 Aug 2026, 18:50 Sydney) — one stock bar, placed cuts, leftover length after kerf. `products/offcut/` · workshop, stock, cut
-- **Sentence Tide** (archive · 20 Aug 2026, 15:50 Sydney) — paste prose and see a tide of sentence lengths; click a swell to find the long sentence. `products/sentence-tide/` · writing, paste, prose
-- **Dark Floor** (archive · 20 Aug 2026, 13:50 Sydney) — a night plan of rooms vs actual presence: booked-and-empty rooms go dark, occupied rooms keep their lights, free rooms stay outline. `products/dark-floor/` · ops, space, rooms
-- **Clause Lens** (archive · 20 Aug 2026, 11:50 Sydney) — paste a signed clause and see auto-renew, assignment, and unilateral-change tripwires highlighted in place. `products/clause-lens/` · legal, paste, contracts
-- **Twin Face** (archive · 20 Aug 2026, 09:50 Sydney) — one pasted timestamp decoded onto two analog faces, with a date-split flag and a compact hours/minutes delta. `products/twin-face/` · time, paste, clock
-- **Quote Drift** (archive · 20 Aug 2026, 07:50 Sydney) — a two-well paste instrument for quote vs invoice: money delta and a stacked strip of matched / extra / missing. `products/quote-drift/` · ops, money, paste
-- **Hold Stack** (archive · 20 Aug 2026, 06:50 Sydney) — a day-strip map of overlapping calendar holds, with lanes, heat, and a play-head you can scrub. `products/hold-stack/` · ops, calendar, overlap
-- **Pager Face** (archive · 20 Aug 2026, 05:50 Sydney) — a 24-hour pager clock for on-call rotations: shift arcs, a now-hand, and who is inside their own quiet hours. `products/pager-face/` · ops, oncall, clock
-- **Still Inside** (archive · 20 Aug 2026, 03:50 Sydney) — a leftover-access board for people who already left: badges, seats, break-glass keys, and a named revoker. `products/still-inside/` · ops, offboarding, access
-- **Quiet Landing** (archive · 20 Aug 2026, 02:50 Sydney) — a landing clock for scheduled Slack and email: their timezone, their quiet hours, and pings that hit them asleep. `products/quiet-landing/` · ops, timezone, courtesy
-- **Renew Trap** (archive · 20 Aug 2026, 01:50 Sydney) — a notice-window board for vendor auto-renewals: cancel-by dates, a named owner, and silence that still bills you. `products/renew-trap/` · ops, contracts, renewals
-- **Reread Clock** (archive · 19 Aug 2026, 23:50 Sydney) — a half-life board for attestations that are still live while nobody has re-read the pack. `products/reread-clock/` · trust, half-life, attestation
-- **Vouch Slip** (archive · 19 Aug 2026, 22:50 Sydney) — a named-owner attestation board for inbound skill packs: who read this pack, and who owns what it does. `products/vouch-slip/` · trust, attestation, inbound
-- **Unseen Ink** (archive · 19 Aug 2026, 21:50 Sydney) — a local inspector for inbound hidden Unicode in PRs, READMEs, and skill files. `products/unseen-ink/` · unicode, inbound, review
-- **Skill Clash** (archive · 19 Aug 2026, 20:50 Sydney) — a collision board for stacked agent skills: MUST/NEVER contradictions, overlapping domains, injection-shaped lines. `products/skill-clash/` · skills, collision, review
-- **Ghost Briefs** (archive · 19 Aug 2026) — a fluency map of shipped subsystems: who can still brief each surface in ninety seconds, and which are ghosts after an agent-heavy week. `products/ghost-briefs/` · fluency, ownership, handoff
-- **Reorder Radar** (archive · 18 Aug 2026) — a local inventory cockpit for pop-up shops and kiosks: low-stock SKUs, a buy-now queue, reorder quantities and lead days. `products/reorder-radar/` · inventory, ops
+## How a project lives
 
-## Research signal
+Each project is only its own folder:
 
-The GitHub feed is agent harnesses — skill packs, token compression, graphs. This catalogue is the other desk: human-ops instruments that sit beside that feed. Clocks, leftover-access boards, paste wells, fluency maps, a floor plan of empty booked rooms, a tide of sentence lengths, a stick that shows the offcut, a bag that shows leftover grams, a sheet that shows the creases, a beam that shows the tilt, a mix whose faders sit on a bus, a hang whose bob is true, a span whose leftover is the sag, a lamp whose leftover is the warmth, a road whose leftover is the rise, a scene whose leftover is which plane is sharp, an elevation whose leftover is whether the eye line is clear, a plank whose leftover is the mismatch between the cut and the grain, a door whose leftover is whether the swing clears, two voices whose leftover is who has the floor, two gears whose leftover is the play in the mesh, a cut whose leftover is the gap the blade removed, a hull whose leftover is whether the rode holds the bottom, a register whose leftover is how far the plume travels before it dies, two wheels whose leftover is the angle they still point, a chair whose leftover is how far the back leans from vertical, a stair whose leftover is how much going a foot actually gets, a pedal whose leftover is how much free travel sits before the bite, a loft whose leftover is how much air sits above a standing head, a mark whose leftover is how far the heading still sits off a dashed true course, an approach whose leftover is how far you can still fly versus how far you still have, a window whose leftover is how much frame still shows around the sash, a roof whose leftover is how far the eave still sticks past the wall, a pair of rails whose leftover is how much one still sits higher than the other, a hull whose leftover is how far it still lists from upright, a retaining wall whose leftover is how far the face still leans from plumb, a course whose leftover is how far the upper course still offsets from the one below, a wing whose leftover is how far it still rolls from level, a sea whose leftover is how far the wind still has to run, a lot whose leftover is how far the building still sits back from the lot line, a crane whose leftover is how far the boom still turns from the last stop, a tree whose leftover is how far the canopy still sits clear of the wire, a joint whose leftover is how far the boards still overlap as a scarf, a hill whose leftover is how far the sheltered shadow still runs behind it, a vault whose leftover is how far the keystone still sits as leftover lock, a wall whose leftover is how far the plinth still steps out as leftover base, an opening whose leftover is how far the lintel still bears as leftover span, a hull whose leftover is how far it still sits above the water as leftover freeboard, a stack whose leftover is how far it still draws as leftover flue, a board whose leftover is how far the rebate still shoulders as leftover rabbet, a wall whose leftover is how far it still guards above the roof as leftover parapet, a stair whose leftover is how far the tread still hangs past the riser as leftover nosing, a vault whose leftover is how far the leftover triangle still sits as leftover infill, a wall whose leftover is how far the stone still juts as leftover carry, a window whose leftover is how far the leftover bar still divides the lights, a doorway whose leftover is how far the leftover bar still rises above the floor as leftover threshold, a hatch whose leftover is how far the leftover lip still stands above the deck as leftover coaming, a drain whose leftover is how far the leftover hole still opens through the bulwark as leftover scupper, a hull whose leftover is how far the leftover knuckle still creases where bottom meets side as leftover chine, a roof whose leftover is how far the leftover underside plane still runs under the eave as leftover soffit, a roof edge whose leftover is how far the leftover board still covers the rafter tails as leftover fascia, a joint whose leftover is how far the leftover sharp still stands where two planes meet as leftover arris, a joint whose leftover is how far the leftover pack still fills the gap as leftover shim, a roof whose leftover is how far the leftover peak still stands where two planes meet as leftover ridge, a joint whose leftover is how far the leftover bevel still takes the sharp off the corner as leftover chamfer, a joint whose leftover is how far the leftover radius still fills the concave corner as leftover fillet, a board whose leftover is how far the leftover live edge still takes the square off the corner as leftover wane, a board whose leftover is how far the leftover dish still stands across the width as leftover cup, a board whose leftover is how far the leftover arch still stands along the length as leftover bow, a board whose leftover is how far the leftover wind still spirals one end off the other as leftover twist, a board whose leftover is how far the leftover split still opens along the face as leftover check, a board whose leftover is how far the leftover housing groove still cuts across the grain as leftover dado, a board whose leftover is how far the leftover closed pocket still opens in the face as leftover mortise, a board whose leftover is how far the leftover tongue still projects from the end as leftover tenon, a joint whose leftover is how far the leftover angle still cuts the square meet as leftover mitre, a joint whose leftover is how far the leftover key still sits between two grooves as leftover spline, a board whose leftover is how far the leftover dark still sits in the face as leftover knot, a board whose leftover is how far the leftover sweep still curves the edge in plan as leftover crook, a board whose leftover is how far the leftover swirl still sits in the figure as leftover burl, a board whose leftover is how far the leftover resin still sits in the face as leftover pitch, a board whose leftover is how far the leftover flash still cuts across the face as leftover ray, a board whose leftover is how far the leftover pale still bands the face as leftover sap, a board whose leftover is how far the leftover inner still sits in the core as leftover heart, a board whose leftover is how far the leftover year still sits in the face as leftover ring, a board whose leftover is how far the leftover wave still sits in the figure as leftover curl, a board whose leftover is how far the leftover dimple still sits in the face as leftover eye, a board whose leftover is how far the leftover blister still sits in the figure as leftover quilt, a board whose leftover is how far the leftover zone-line still sits in the face as leftover spalt, a board whose leftover is how far the leftover wash still sits in the face as leftover stain, a board whose leftover is how far the leftover stripe still sits in the figure as leftover ribbon, a board whose leftover is how far the leftover plume still sits in the crotch as leftover crotch, a board whose leftover is how far the leftover blotch still sits in the figure as leftover mottle, a board whose leftover is how far the leftover run still sits in the face as leftover drip, a board whose leftover is how far the leftover leap still sits in the figure as leftover flame, a board whose leftover is how far the leftover round still sits on the edge as leftover bead, a wall whose leftover is how far the leftover strip still covers the joint as leftover batten, a joint whose leftover is how far the leftover pin still joins two faces as leftover dowel, a board whose leftover is how far the leftover hollow still sits in the face as leftover flute, a board whose leftover is how far the leftover piece still sits in the recess as leftover inlay, a board whose leftover is how far the leftover cavity still sits in the face as leftover pecky, a board whose leftover is how far the leftover living layer still sits under the bark as leftover cambium, a board whose leftover is how far the leftover spongy center still sits in the core as leftover pith, a corner whose leftover is how far the leftover interlocking tails still sit in the corner as leftover dovetail, a board whose leftover is how far the leftover dip still sits at the end of a pass as leftover snipe, a joint whose leftover is how far the leftover oval wafer still sits in the slot as leftover biscuit, a board whose leftover is how far the leftover keyed patch still sits across the split as leftover bowtie, a corner whose leftover is how far the leftover scribed nest still sits against the molding as leftover coping, a board whose leftover is how far the leftover scoop still sits in the face as leftover cove, a board whose leftover is how far the leftover fork still sits at the end as leftover bridle, a board whose leftover is how far the leftover tabs still sit at the edge as leftover finger, a corner whose leftover is how far the leftover round still sits in the corner as leftover dogbone, a joint whose leftover is how far the leftover offset still sits through the joint as leftover drawbore, a tenon whose leftover is how far the leftover hidden wedge still sits in the tenon as leftover fox, a face whose leftover is how far the leftover half-thickness overlap still sits along the face as leftover lap, a post whose leftover is how far the leftover shallow recess still sits across the face as leftover housing, a board whose leftover is how far the leftover torn fibres still sit at the cut as leftover tearout, a face whose leftover is how far the leftover washboard ripple still sits from the cut as leftover chatter, a face whose leftover is how far the leftover repair patch still sits in the face as leftover dutchman, a joint whose leftover is how far the leftover bearing face still sits at the joint as leftover shoulder, a tenon whose leftover is how far the leftover side face still sits on the tenon as leftover cheek, a hole whose leftover is how far the leftover filler still sits in the drilled hole as leftover plug, and a cut whose leftover is how far the leftover heat mark still sits along the kerf as leftover burn, and a face whose leftover is how far the leftover raised fibres still stand after sanding as leftover fuzz, and a cut whose leftover is how far the leftover layout line still sits past the finished cut as leftover witness, and a cut whose leftover is how far the leftover loose sawdust still sits in the kerf as leftover dust, and a face whose leftover is how far the leftover crushed fibres still sit in the face as leftover bruise, and a corner whose leftover is how far the leftover uncut projection still stands at the inside corner as leftover nib, and a joint whose leftover is how far the leftover glue still sits outside a closed seam as leftover squeeze, and a cut whose leftover is how far the leftover raised lip still stands along the finished cut as leftover burr, and a face whose leftover is how far the leftover high still sits above the surrounding face as leftover proud, and a face whose leftover is how far the leftover veneer still sits off the substrate as leftover lift, and a cut whose leftover is how far the leftover extra run still sits past a fixed stop as leftover overcut, and an edge whose leftover is how far the leftover hair still stands at the planed edge as leftover whisker, and a cut whose leftover is how far the leftover chip still sits from the chisel as leftover chip, and a face whose leftover is how far the leftover skip still sits after the planer as leftover skip, and a tenon whose leftover is how far the leftover horn still sits past a fixed intended shoulder as leftover horn, and a face whose leftover is how far the leftover knife groove still sits in a fixed face after the cut as leftover score, and an edge whose leftover is how far the leftover V still sits in a fixed cut edge after the cut as leftover nick, and a face whose leftover is how far the leftover scooped hollow still sits in a fixed face after the carve as leftover gouge, and a face whose leftover is how far the leftover dent still sits in a fixed face after a blow as leftover dent, and a face whose leftover is how far the leftover scuff still sits on a fixed face after abrasion as leftover scuff, and a joint whose leftover is how far the leftover thin glue still sits along a closed seam after the clamp as leftover creep, and a cut whose leftover is how far the leftover remnant still sits after the cut as leftover stub, and a face whose leftover is how far the leftover bare holiday still sits after a brush coat as leftover holiday, and a face whose leftover is how far the leftover residual curl of shaving still sits after a plane pass as leftover shaving, and a joint whose leftover is how far the leftover residual open gap still sits along a fixed joint after assembly as leftover gap, and a face whose leftover is how far the leftover residual smear still sits on a fixed face after a wipe as leftover smear, and a tenon whose leftover is how far the leftover residual excess still sits on a fixed tenon beyond the shoulder as leftover relish, and a face whose leftover is how far the leftover residual cloudy bloom still sits on a fixed polished face after the polish as leftover bloom, and a face whose leftover is how far the leftover residual fine craze network still sits on a fixed coated face after the coat as leftover craze, and a face whose leftover is how far the leftover residual tiny pinhole still sits on a fixed coated face after the coat as leftover pinhole, and an edge whose leftover is how far the leftover residual thin flash still sits on a fixed trimmed edge after the trim as leftover flash, and a board whose leftover is how far the leftover residual local kink still sits in a fixed board edge after the straighten as leftover kink, and a cut whose leftover is how far the leftover residual thin sliver still sits on a fixed cut edge after the cut as leftover sliver, and a board whose leftover is how far the leftover residual local swell still sits on a fixed board face after the dry as leftover swell, and a face whose leftover is how far the leftover residual thick glaze still sits on a fixed wiped face after the wipe as leftover glaze, and a face whose leftover is how far the leftover residual surface flake still sits on a fixed sanded face after the sand as leftover flake, and an assembly whose leftover is how far the leftover residual spring-back still sits in a fixed clamped assembly after the clamp as leftover spring, and a face whose leftover is how far the leftover residual feather edge still sits on a fixed blended face after the blend as leftover feather. Local-first, no backend, no new cron.
+```
+projects/<slug>/
+  index.html              (or whatever that project needs)
+```
 
-## Repository shape
+Rules:
 
-- `index.html` — searchable catalogue hub (living featured well via `?embed=1` on the featured product, ship tape newest-left, run rail into the log reader, packed desk sky that follows `q` and `tag` with leftover row 12 full / packed sky full / 0 vacant holes, compare well as `?compare=`, desk keys `j`/`k` or arrows, desk pins as a session-only close set of three, this hour vs dated archive shelves including the 27 Aug, 26 Aug, 25 Aug, 24 Aug, 23 Aug, 22 Aug and 21 Aug shelves, live search, tags, URL-persisted `q` / `tag` / `view` / `day` / `compare`)
-- `catalog.json` — one ordered product list (cards, tape, sky, and the compare well share it). Feather is the featured instrument this hour
-- `runs/hours.json` — one ordered hours list (rail, index, and reader share it)
-- `runs/read.html` — log reader (`?log=` stem → same-origin `.md` rendered as HTML; allowlist from `hours.json`)
-- `products/feather/` — featured this-hour product prototype
-- `products/spring/` — archive product prototype
-- `products/flake/` — archive product prototype
-- `products/glaze/` — archive product prototype
-- `products/swell/` — archive product prototype
-- `products/sliver/` — archive product prototype
-- `products/kink/` — archive product prototype
-- `products/flash/` — archive product prototype
-- `products/pinhole/` — archive product prototype
-- `products/craze/` — archive product prototype
-- `products/bloom/` — archive product prototype
-- `products/relish/` — archive product prototype
-- `products/smear/` — archive product prototype
-- `products/gap/` — archive product prototype
-- `products/shaving/` — archive product prototype
-- `products/holiday/` — archive product prototype
-- `products/stub/` — archive product prototype
-- `products/creep/` — archive product prototype
-- `products/scuff/` — archive product prototype
-- `products/dent/` — archive product prototype
-- `products/gouge/` — archive product prototype
-- `products/nick/` — archive product prototype
-- `products/score/` — archive product prototype
-- `products/horn/` — archive product prototype
-- `products/skip/` — archive product prototype
-- `products/chip/` — archive product prototype
-- `products/whisker/` — archive product prototype
-- `products/overcut/` — archive product prototype
-- `products/lift/` — archive product prototype
-- `products/proud/` — archive product prototype
-- `products/burr/` — archive product prototype
-- `products/squeeze/` — archive product prototype
-- `products/nib/` — archive product prototype
-- `products/bruise/` — archive product prototype
-- `products/dust/` — archive product prototype
-- `products/witness/` — archive product prototype
-- `products/fuzz/` — archive product prototype
-- `products/burn/` — archive product prototype
-- `products/plug/` — archive product prototype
-- `products/cheek/` — archive product prototype
-- `products/shoulder/` — archive product prototype
-- `products/dutchman/` — archive product prototype
-- `products/chatter/` — archive product prototype
-- `products/tearout/` — archive product prototype
-- `products/housing/` — archive product prototype
-- `products/lap/` — archive product prototype
-- `products/fox/` — archive product prototype
-- `products/drawbore/` — archive product prototype
-- `products/dogbone/` — archive product prototype
-- `products/finger/` — archive product prototype
-- `products/bridle/` — archive product prototype
-- `products/cove/` — archive product prototype
-- `products/coping/` — archive product prototype
-- `products/bowtie/` — archive product prototype
-- `products/biscuit/` — archive product prototype
-- `products/snipe/` — archive product prototype
-- `products/dovetail/` — archive product prototype
-- `products/pith/` — archive product prototype
-- `products/cambium/` — archive product prototype
-- `products/pecky/` — archive product prototype
-- `products/inlay/` — archive product prototype
-- `products/flute/` — archive product prototype
-- `products/dowel/` — archive product prototype
-- `products/batten/` — archive product prototype
-- `products/bead/` — archive product prototype
-- `products/flame/` — archive product prototype
-- `products/drip/` — archive product prototype
-- `products/mottle/` — archive product prototype
-- `products/crotch/` — archive product prototype
-- `products/ribbon/` — archive product prototype
-- `products/stain/` — archive product prototype
-- `products/spalt/` — archive product prototype
-- `products/quilt/` — archive product prototype
-- `products/eye/` — archive product prototype
-- `products/curl/` — archive product prototype
-- `products/ring/` — archive product prototype
-- `products/heart/` — archive product prototype
-- `products/sap/` — archive product prototype
-- `products/ray/` — archive product prototype
-- `products/pitch/` — archive product prototype
-- `products/burl/` — archive product prototype
-- `products/crook/` — archive product prototype
-- `products/knot/` — archive product prototype
-- `products/spline/` — archive product prototype
-- `products/mitre/` — archive product prototype
-- `products/tenon/` — archive product prototype
-- `products/mortise/` — archive product prototype
-- `products/dado/` — archive product prototype
-- `products/check/` — archive product prototype
-- `products/twist/` — archive product prototype
-- `products/bow/` — archive product prototype
-- `products/cup/` — archive product prototype
-- `products/wane/` — archive product prototype
-- `products/fillet/` — archive product prototype
-- `products/chamfer/` — archive product prototype
-- `products/ridge/` — archive product prototype
-- `products/shim/` — archive product prototype
-- `products/arris/` — archive product prototype
-- `products/fascia/` — archive product prototype
-- `products/soffit/` — archive product prototype
-- `products/chine/` — archive product prototype
-- `products/scupper/` — archive product prototype
-- `products/coaming/` — archive product prototype
-- `products/threshold/` — archive product prototype
-- `products/mullion/` — archive product prototype
-- `products/corbel/` — archive product prototype
-- `products/spandrel/` — archive product prototype
-- `products/nosing/` — archive product prototype
-- `products/parapet/` — archive product prototype
-- `products/rabbet/` — archive product prototype
-- `products/flue/` — archive product prototype
-- `products/freeboard/` — archive product prototype
-- `products/lintel/` — archive product prototype
-- `products/plinth/` — archive product prototype
-- `products/keystone/` — archive product prototype
-- `products/lee/` — archive product prototype
-- `products/scarf/` — archive product prototype
-- `products/crown/` — archive product prototype
-- `products/slew/` — archive product prototype
-- `products/setback/` — archive product prototype
-- `products/fetch/` — archive product prototype
-- `products/bank/` — archive product prototype
-- `products/stagger/` — archive product prototype
-- `products/batter/` — archive product prototype
-- `products/heel/` — archive product prototype
-- `products/cant/` — archive product prototype
-- `products/eave/` — archive product prototype
-- `products/reveal/` — archive product prototype
-- `products/glide/` — archive product prototype
-- `products/yaw/` — archive product prototype
-- `products/headroom/` — archive product prototype
-- `products/bite/` — archive product prototype
-- `products/going/` — archive product prototype
-- `products/rake/` — archive product prototype
-- `products/toe/` — archive product prototype
-- `products/throw/` — archive product prototype
-- `products/scope/` — archive product prototype
-- `products/kerf/` — archive product prototype
-- `products/backlash/` — archive product prototype
-- `products/tally/` — archive product prototype
-- `products/swing/` — archive product prototype
-- `products/grain/` — archive product prototype
-- `products/sightline/` — archive product prototype
-- `products/depth/` — archive product prototype
-- `products/camber/` — archive product prototype
-- `products/kelvin/` — archive product prototype
-- `products/wire-sag/` — archive product prototype
-- `products/plumb/` — archive product prototype
-- `products/mix-bus/` — archive product prototype
-- `products/claim-scale/` — archive product prototype
-- `products/fold-sheet/` — archive product prototype
-- `products/kit-weight/` — archive product prototype
-- `products/offcut/` — archive product prototype
-- `products/sentence-tide/` — archive product prototype
-- `products/dark-floor/` — archive product prototype
-- `products/clause-lens/` — archive product prototype
-- `products/twin-face/` — archive product prototype
-- `products/quote-drift/` — archive product prototype
-- `products/hold-stack/` — archive product prototype
-- `products/pager-face/` — archive product prototype
-- `products/still-inside/` — archive product prototype
-- `products/quiet-landing/` — archive product prototype
-- `products/renew-trap/` — archive product prototype
-- `products/reread-clock/` — archive product prototype
-- `products/vouch-slip/` — archive product prototype
-- `products/unseen-ink/` — archive product prototype
-- `products/skill-clash/` — archive product prototype
-- `products/ghost-briefs/` — archive product prototype
-- `products/reorder-radar/` — archive product prototype
-- `runs/index.html` — living index of hourly ship logs
-- `runs/` — daily and hourly ship logs
+- Put **only** that project's content in `projects/<slug>/`.
+- Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
+- Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
+- Register the project in `catalog.json` so the hub can list it.
 
-## Verification
+## How to add one
 
-Each hourly run logs headless checks in `runs/`.
+1. Create `projects/<slug>/` with that project's files.
+2. Append one entry to `catalog.json` `products` (schema below).
+3. Ship. The hub card links to the project's host and to the path fallback.
+
+Do not put a new project at the repo root or under `products/`. That folder is gone.
+
+## catalog.json schema
+
+`products` is an array. Each entry needs at least:
+
+| Field | Meaning |
+|---|---|
+| `name` | Display name |
+| `slug` | Folder name under `projects/` |
+| `summary` | One-line hub description |
+| `day` | `YYYY-MM-DD` |
+| `subdomain` | Preferred host URL |
+| `href` | Path fallback, `/<slug>/` |
+| `featured` | `true` to highlight on the hub |
+
+Example (do not add until a real project ships):
+
+```json
+{
+  "name": "Example",
+  "slug": "example",
+  "summary": "A self-contained daily project.",
+  "day": "2026-08-28",
+  "subdomain": "https://example.hermes-playground-green.vercel.app",
+  "href": "/example/",
+  "featured": true
+}
+```
+
+The `schema` object in `catalog.json` documents the same fields. Keep `"products": []` until the first new project exists.
+
+## Hosting
+
+Production host today: `https://hermes-playground-green.vercel.app`.
+
+**Path fallback (works now).** `vercel.json` serves:
+
+- `/` → `hub/`
+- `/<slug>/` → `projects/<slug>/`
+
+A card on the hub can open `https://hermes-playground-green.vercel.app/<slug>/`.
+
+**Host routing (preferred, not live on `*.vercel.app`).** `vercel.json` also rewrites `https://<slug>.hermes-playground-green.vercel.app` to `projects/<slug>/`. That host pattern is the intended URL in `subdomain`. It will not resolve on its own.
+
+Vercel does **not** issue wildcard subdomains under `*.vercel.app`. You cannot attach `*.hermes-playground-green.vercel.app` in the project domain list. Nested hosts like `example.hermes-playground-green.vercel.app` are not assignable.
+
+To give a project its own host, pick one of these:
+
+1. **Extra Vercel project (no custom domain).** New project, same repo, Root Directory = `projects/<slug>`. Vercel assigns a real `*.vercel.app` URL. Put that URL in `subdomain`.
+2. **Custom domain with a wildcard.** Add a domain you own to this project, then add `*.your-domain`. Point nameservers at Vercel so wildcard TLS can issue. Update the host matchers in `vercel.json` from `hermes-playground-green.vercel.app` to `your-domain`. Then `https://<slug>.your-domain` can serve `projects/<slug>/`.
+
+Do not invent an apex domain this repo does not have. Until one of those steps is done, use the path fallback.
+
+## Hub
+
+`hub/index.html` is the public catalog. It reads `catalog.json` and lists cards. Each card links to `subdomain` and to `href`. With 0 products it says the catalog is empty and starting over.
