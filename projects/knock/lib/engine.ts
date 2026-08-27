@@ -102,7 +102,19 @@ export async function sweep() {
 
 export async function createKnock(raw: unknown) {
   await sweep();
-  const parsed = parseHookPayload(raw);
+  const parsed = parseHookPayload(raw) as {
+    ok: boolean;
+    error?: string;
+    hookEvent: string;
+    toolName: string;
+    toolInput: unknown;
+    argHash: string;
+    agentId: string;
+    runId: string;
+    reason: string;
+    ttlSeconds: number;
+    callbackUrl: string;
+  };
   if (!parsed.ok) return { ok: false as const, error: parsed.error, status: 400 };
 
   const existing = listKnocks().find(
@@ -192,7 +204,9 @@ export async function decideKnock(id: string, decision: string, actor: string) {
 
 export async function listPublicKnocks() {
   await sweep();
-  return listKnocks().map((item) => publicKnock(item));
+  return listKnocks()
+    .map((item) => publicKnock(item))
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
 }
 
 export async function getPublicKnock(id: string) {

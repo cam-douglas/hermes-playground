@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { seedKnocks, type seedKnocks as SeedFn } from "./core.mjs";
+import { seedKnocks } from "./core.mjs";
 import type { KnockRecord } from "./types";
 
 type StoreShape = {
@@ -103,5 +103,3 @@ export function replaceKnock(id: string, mutator: (current: KnockRecord) => Knoc
   saveStore(data);
   return clone(next);
 }
-
-export type { SeedFn };

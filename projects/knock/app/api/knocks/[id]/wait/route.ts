@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { hookDecisionPayload } from "@/lib/core.mjs";
-import { getPublicKnock, waitForDecision } from "@/lib/engine";
+import { waitForDecision } from "@/lib/engine";
 import type { KnockRecord } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -21,8 +21,4 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   return GET(request, context);
-}
-
-export async function GET_STATUS(id: string) {
-  return getPublicKnock(id);
 }
