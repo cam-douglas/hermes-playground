@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Swell — the dry is done, but a swell still sits. Move the leftover swell. See the residual local swell still sitting on a fixed board face." />
+    <title>Swell</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #0a0908;
+        --panel: #161410;
+        --ink: #e6e0d4;
+        --muted: #8a8274;
+        --line: rgba(200, 168, 112, 0.24);
+        --accent: #d4b878;
+        --timber: #2a2010;
+        --swell: #f0c878;
+        --showing: #f0c878;
+        --clear: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(212, 184, 120, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(12, 10, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #0a0806 0%, #161410 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(22, 20, 16, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 184, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(28, 22, 16, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 184, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #ece4d4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1810;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #161410; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 184, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 184, 120, 0.1), transparent 46%),
+          #0a0908;
+        overflow: hidden;
+      }
+      #swell-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(240, 200, 120, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-clear b { color: var(--clear); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #0a0806;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #swell-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> swell · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover swell on the board face that still sits after the dry</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 27 Aug 2026 17:50</span>
+        <h1>Swell</h1>
+        <p class="lede">
+          The dry is done, but a swell still sits. Move the leftover swell. See the residual local swell still sitting on a fixed board face.
+          Not a warp. Not a cup. Not a bow. Not a kink. Not a whisker. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="swell-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover swell still sits on the board face after the dry</h2>
+          </div>
+          <span class="kicker" id="swell-desk-meta">leftover 2 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="swell-svg" viewBox="0 0 800 460" role="img" aria-labelledby="swell-title swell-desc">
+            <title id="swell-title">Swell is showing. Two millimetres of leftover swell still sit on a fixed board face.</title>
+            <desc id="swell-desc">One workpiece whose leftover is the swell — leftover residual local swell that still sits on a fixed board face after the dry (leftover raised moisture swell bump still sitting on the face after drying, not a full-length warp, not a cup dish across the width, not a bow along the length, not a kink in an edge, not a whisker, not a clock). One workpiece; the dry is done; the leftover is one leftover residual local swell sitting on that fixed board face, not a warp, not a cup, not a bow, not a kink. The leftover that still sits is the swell — leftover residual local swell still sitting on a fixed board face. A sketch, not a mill sign-off. Not mill advice.</desc>
+            <defs>
+              <linearGradient id="swell-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#181410" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+              <linearGradient id="swell-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#24180c" />
+                <stop offset="36%" stop-color="#4a3418" />
+                <stop offset="68%" stop-color="#7a5830" />
+                <stop offset="100%" stop-color="#2e2210" />
+              </linearGradient>
+              <radialGradient id="leftover-swell-bump-wash" cx="38%" cy="32%" r="68%">
+                <stop offset="0%" stop-color="#f4d890" />
+                <stop offset="28%" stop-color="#e0b060" />
+                <stop offset="62%" stop-color="#b88840" />
+                <stop offset="100%" stop-color="#6a4818" />
+              </radialGradient>
+              <radialGradient id="leftover-swell-shine" cx="34%" cy="28%" r="46%">
+                <stop offset="0%" stop-color="#fff0c4" stop-opacity="0.72" />
+                <stop offset="100%" stop-color="#fff0c4" stop-opacity="0" />
+              </radialGradient>
+              <linearGradient id="leftover-swell-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1c1810" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#0a0806" stroke="rgba(212,184,120,0.16)" />
+            <text x="36" y="42" fill="#8a8274" font-size="11" letter-spacing="2">ONE WORKPIECE · DRY IS DONE · LEFTOVER IS ONE LOCAL SWELL STILL SITTING ON A FIXED BOARD FACE</text>
+            <g id="swell-scene" data-view="board-swell" data-hero="leftover-swell" data-swell="2" data-leftover="showing" data-verdict="showing" data-swell-state="sitting">
+              <g id="swell-bench-layer"></g>
+              <g id="swell-stock-layer"></g>
+              <g id="leftover-swell-layer"></g>
+              <g id="swell-mark-layer"></g>
+              <text id="swell-scene-status" x="400" y="64" fill="#f0c878" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 2 MM LEFTOVER SWELL</text>
+              <text id="swell-scene-sketch" x="400" y="434" fill="#545044" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER LOCAL SWELL STILL SITS ON A FIXED BOARD FACE · NOT A WARP · NOT A CUP · NOT A BOW · NOT A KINK · NOT A WHISKER · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="swell-alt" class="sr-only" aria-live="polite">Swell is showing. Two millimetres of leftover swell still sit on a fixed board face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="swell-input">Leftover swell (mm of sitting height on the board face)</label>
+            <input id="swell-input" type="range" min="0" max="8" step="1" value="2" />
+            <div class="ticks" aria-hidden="true">
+              <span>flat / no leftover swell</span>
+              <span>seed showing</span>
+              <span>taller leftover swell</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="swell-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Swell <b id="swell-stat-mm">2 mm</b></span>
+          <span id="swell-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="swell-stat-leftover">showing</b></span>
+          <span>Leftover swell (sketch) <b id="swell-stat-span">2 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The dry is done, but a swell still sits. Swell is leftover residual local swell that still sits on a fixed board face. A sketch, not a mill sign-off, and not mill advice.
+        Seed is already showing — 2 mm of leftover sitting swell on the board face, not a flat-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a warp. Not a cup. Not a bow. Not a kink. Not a whisker. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SWELL_SEED = { swellMm: 2 };
+      const SWELL_MIN = 0;
+      const SWELL_MAX = 8;
+      const SWELL_FLAT_AT = 0;
+      const SWELL_SCALE = 8;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const SWELL_CX = 400;
+      const SWELL_CY = (FACE_TOP + FACE_BOT) / 2;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 328;
+      const PROFILE_LEFT = 168;
+      const PROFILE_RIGHT = 632;
+
+      let swellMm = SWELL_SEED.swellMm;
+
+      const swellSvg = document.getElementById("swell-svg");
+      const swellScene = document.getElementById("swell-scene");
+      const swellTitle = document.getElementById("swell-title");
+      const swellAlt = document.getElementById("swell-alt");
+      const swellDeskMeta = document.getElementById("swell-desk-meta");
+      const swellInput = document.getElementById("swell-input");
+      const swellBenchLayer = document.getElementById("swell-bench-layer");
+      const swellStockLayer = document.getElementById("swell-stock-layer");
+      const leftoverSwellLayer = document.getElementById("leftover-swell-layer");
+      const swellMarkLayer = document.getElementById("swell-mark-layer");
+      const swellSceneStatus = document.getElementById("swell-scene-status");
+      const swellStatMm = document.getElementById("swell-stat-mm");
+      const swellStatLeftover = document.getElementById("swell-stat-leftover");
+      const swellStatLeftoverWrap = document.getElementById("swell-stat-leftover-wrap");
+      const swellStatSpan = document.getElementById("swell-stat-span");
+      const swellBtnReset = document.getElementById("swell-btn-reset");
+      const swellBtnResetStage = document.getElementById("swell-btn-reset-stage");
+
+      function swellClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function swellEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function swellSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverSwellGeom(heightPx) {
+        const height = Math.max(0, heightPx);
+        const rx = 46 + height * 0.22;
+        const ry = 22 + height * 0.14;
+        return {
+          cx: SWELL_CX,
+          cy: SWELL_CY,
+          rx: rx,
+          ry: ry,
+          height: height
+        };
+      }
+
+      function leftoverSwellSectionPath(heightPx) {
+        const left = PROFILE_LEFT;
+        const right = PROFILE_RIGHT;
+        const faceY = PROFILE_FACE_Y;
+        const mid = 400;
+        const half = 36 + heightPx * 0.18;
+        const peak = faceY - heightPx;
+        return "M " + left + " " + faceY +
+          " L " + (mid - half).toFixed(1) + " " + faceY +
+          " C " + (mid - half * 0.52).toFixed(1) + " " + faceY +
+          " " + (mid - half * 0.48).toFixed(1) + " " + peak.toFixed(1) +
+          " " + mid + " " + peak.toFixed(1) +
+          " C " + (mid + half * 0.48).toFixed(1) + " " + peak.toFixed(1) +
+          " " + (mid + half * 0.52).toFixed(1) + " " + faceY +
+          " " + (mid + half).toFixed(1) + " " + faceY +
+          " L " + right + " " + faceY +
+          " L " + right + " " + (PROFILE_BOT - 16) +
+          " L " + left + " " + (PROFILE_BOT - 16) + " Z";
+      }
+
+      function swellPicture() {
+        const leftover = swellMm <= SWELL_FLAT_AT ? "flat" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + swellMm + " MM LEFTOVER SWELL";
+          alt = "Swell is showing. " + swellSpokenMm(swellMm).charAt(0).toUpperCase() + swellSpokenMm(swellMm).slice(1) + " millimetre" + (swellMm === 1 ? "" : "s") + " of leftover swell still sit" + (swellMm === 1 ? "s" : "") + " on a fixed board face.";
+        } else {
+          status = "FLAT · NO LEFTOVER SWELL";
+          alt = "Swell is flat. The dry is done. No leftover swell. A sketch, not a mill sign-off.";
+        }
+        const swellPx = leftover === "showing" ? Math.max(16, swellMm * SWELL_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#f0c878" : "#8ec8b4",
+          swellPx: swellPx,
+          swellState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-swell" : "flat-face"
+        };
+      }
+
+      function swellPaint(pic) {
+        const isFlat = pic.leftover === "flat";
+        const bump = leftoverSwellGeom(pic.swellPx);
+
+        swellBenchLayer.replaceChildren();
+        swellBenchLayer.appendChild(swellEl("rect", {
+          class: "site leftover-work leftover-swell leftover-board leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#swell-bench-wash)",
+          stroke: "rgba(212,184,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        swellBenchLayer.appendChild(swellEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a6254",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · DRY IS DONE · ONE LEFTOVER LOCAL SWELL STILL SITS ON A FIXED BOARD FACE";
+
+        swellStockLayer.replaceChildren();
+        const stock = swellEl("g", {
+          id: "swell-stock",
+          class: isFlat
+            ? "stock leftover-flat leftover-no-swell leftover-swell leftover-board leftover-true"
+            : "stock leftover-showing leftover-swell leftover-sitting leftover-board"
+        });
+        stock.appendChild(swellEl("rect", {
+          id: "swell-workpiece-face",
+          class: "stock-board leftover-stock leftover-workpiece leftover-swell leftover-not-the-leftover leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink leftover-board-context leftover-kept leftover-face leftover-fixed leftover-board-face",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          rx: "3",
+          fill: "url(#swell-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "board-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(swellEl("line", {
+          id: "swell-face-edge-top",
+          class: "board-edge leftover-board leftover-fixed leftover-not-the-leftover leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink leftover-kept leftover-face leftover-fixed leftover-board-face",
+          x1: String(FACE_LEFT),
+          y1: String(FACE_TOP),
+          x2: String(FACE_RIGHT),
+          y2: String(FACE_TOP),
+          stroke: pic.accent,
+          "stroke-width": "1.4",
+          "stroke-linecap": "square",
+          "data-fixed": "true",
+          "data-role": "board-edge"
+        }));
+        stock.appendChild(swellEl("line", {
+          id: "swell-face-edge-bot",
+          class: "board-edge leftover-board leftover-fixed leftover-not-the-leftover leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink leftover-kept leftover-face leftover-fixed leftover-board-face",
+          x1: String(FACE_LEFT),
+          y1: String(FACE_BOT),
+          x2: String(FACE_RIGHT),
+          y2: String(FACE_BOT),
+          stroke: pic.accent,
+          "stroke-width": "1.4",
+          "stroke-linecap": "square",
+          "data-fixed": "true",
+          "data-role": "board-edge"
+        }));
+        stock.appendChild(swellEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 20),
+          fill: "#e8d8b0",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "BOARD FACE · FIXED · DRY IS DONE";
+        swellStockLayer.appendChild(stock);
+
+        leftoverSwellLayer.replaceChildren();
+        const leftover = swellEl("g", {
+          id: "leftover-swell",
+          class: isFlat
+            ? "swell leftover-swell leftover-flat leftover-empty leftover-no-swell leftover-board leftover-true"
+            : "swell leftover-swell leftover-showing leftover-one leftover-sitting leftover-span leftover-local leftover-bump leftover-raised leftover-moisture leftover-face leftover-residual leftover-on-face leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink leftover-not-a-whisker leftover-not-a-clock",
+          "data-swell-mm": String(swellMm),
+          "data-swell-px": String(pic.swellPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isFlat) {
+          leftover.appendChild(swellEl("ellipse", {
+            id: "leftover-swell-shade",
+            class: "leftover-swell leftover-showing leftover-sitting leftover-local leftover-shade leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink leftover-residual leftover-on-face leftover-raised leftover-moisture",
+            cx: String(bump.cx),
+            cy: String((bump.cy + bump.ry * 0.42).toFixed(1)),
+            rx: String((bump.rx * 1.08).toFixed(1)),
+            ry: String((bump.ry * 0.42).toFixed(1)),
+            fill: "#080604",
+            opacity: String(Math.min(0.42, 0.18 + swellMm / 28)),
+            "data-shape": "leftover-swell-shade",
+            "data-role": "sitting-swell-shade"
+          }));
+          leftover.appendChild(swellEl("ellipse", {
+            id: "leftover-swell-bump",
+            class: "leftover-swell leftover-showing leftover-one leftover-sitting leftover-span leftover-local leftover-bump leftover-raised leftover-moisture leftover-void leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink leftover-local leftover-residual leftover-on-face leftover-not-a-dish leftover-not-a-length-curve leftover-not-an-edge-bend",
+            cx: String(bump.cx),
+            cy: String(bump.cy),
+            rx: String(bump.rx.toFixed(1)),
+            ry: String(bump.ry.toFixed(1)),
+            fill: "url(#leftover-swell-bump-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.15",
+            opacity: "0.96",
+            "data-shape": "leftover-swell",
+            "data-swell-mm": String(swellMm),
+            "data-role": "sitting-swell",
+            "data-swell-px": String(pic.swellPx.toFixed(1)),
+            "data-origin-x": String(SWELL_CX),
+            "data-origin-y": String(SWELL_CY)
+          }));
+          leftover.appendChild(swellEl("ellipse", {
+            id: "leftover-swell-glint",
+            class: "leftover-swell leftover-showing leftover-sitting leftover-local leftover-glint leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink leftover-residual leftover-on-face leftover-raised leftover-moisture",
+            cx: String((bump.cx - bump.rx * 0.16).toFixed(1)),
+            cy: String((bump.cy - bump.ry * 0.28).toFixed(1)),
+            rx: String((bump.rx * 0.38).toFixed(1)),
+            ry: String((bump.ry * 0.32).toFixed(1)),
+            fill: "url(#leftover-swell-shine)",
+            opacity: String(Math.min(0.78, 0.4 + swellMm / 20)),
+            "data-shape": "leftover-swell-glint",
+            "data-role": "sitting-swell-glint"
+          }));
+          leftover.appendChild(swellEl("text", {
+            id: "leftover-swell-label",
+            class: "swell-label leftover-label leftover-swell leftover-showing leftover-sitting leftover-span leftover-local leftover-on-face leftover-raised leftover-moisture",
+            x: String(bump.cx),
+            y: String((bump.cy + 4).toFixed(1)),
+            fill: "#161410",
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "SWELL";
+        } else {
+          leftover.appendChild(swellEl("ellipse", {
+            id: "leftover-swell-flat-path",
+            class: "leftover-swell leftover-flat leftover-empty leftover-no-swell leftover-board leftover-true leftover-board-face leftover-not-a-swell leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink",
+            cx: String(SWELL_CX),
+            cy: String(SWELL_CY),
+            rx: "46",
+            ry: "22",
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "flat-face"
+          }));
+        }
+        leftoverSwellLayer.appendChild(leftover);
+
+        swellMarkLayer.replaceChildren();
+        swellMarkLayer.appendChild(swellEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · DRY IS DONE · FIXED";
+        swellMarkLayer.appendChild(swellEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isFlat ? "FACE · FLAT / NO LEFTOVER SWELL" : "FACE · ONE LEFTOVER LOCAL SWELL STILL SITS";
+
+        swellMarkLayer.appendChild(swellEl("path", {
+          id: "swell-profile-face",
+          class: isFlat
+            ? "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-board-face leftover-board leftover-flat leftover-no-swell leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink"
+            : "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-board-face leftover-board leftover-with-swell leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink",
+          d: leftoverSwellSectionPath(isFlat ? 0 : pic.swellPx),
+          fill: "url(#leftover-swell-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isFlat ? "flat-face" : "leftover-swell-span"
+        }));
+
+        if (!isFlat) {
+          const height = Math.max(16, pic.swellPx);
+          const dimX = 400;
+          const peakY = PROFILE_FACE_Y - height;
+          swellMarkLayer.appendChild(swellEl("line", {
+            id: "swell-dim",
+            class: "swell-dim leftover-swell leftover-showing leftover-sitting leftover-span leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink leftover-local leftover-raised leftover-moisture",
+            x1: String(dimX),
+            y1: String(PROFILE_FACE_Y),
+            x2: String(dimX),
+            y2: String(peakY.toFixed(1)),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          swellMarkLayer.appendChild(swellEl("text", {
+            id: "swell-mm-label",
+            class: "swell-label leftover-label leftover-swell leftover-showing leftover-sitting leftover-span leftover-local leftover-on-face leftover-raised leftover-moisture",
+            x: String(dimX + 18),
+            y: String((PROFILE_FACE_Y + peakY) / 2 + 3),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = swellMm + " mm";
+          swellMarkLayer.appendChild(swellEl("text", {
+            id: "swell-span-label",
+            class: "span-label leftover-swell leftover-one leftover-sitting leftover-span leftover-local leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink leftover-residual leftover-on-face leftover-raised leftover-moisture leftover-not-a-dish leftover-not-a-length-curve leftover-not-an-edge-bend",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#ece4d4",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER SWELL · ONE LOCAL RAISED BUMP ON A FIXED BOARD FACE · NOT A WARP · NOT A CUP · NOT A BOW · NOT A KINK";
+        } else {
+          swellMarkLayer.appendChild(swellEl("text", {
+            id: "swell-label",
+            class: "swell-label leftover-label leftover-flat leftover-no-swell leftover-board leftover-empty leftover-true leftover-not-a-warp leftover-not-a-cup leftover-not-a-bow leftover-not-a-kink",
+            x: "400",
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "FLAT / NO LEFTOVER SWELL";
+          swellMarkLayer.appendChild(swellEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · FLAT / NO LEFTOVER SWELL";
+        }
+
+        swellSceneStatus.setAttribute("fill", pic.accent);
+        swellSceneStatus.textContent = pic.status;
+        swellScene.setAttribute("data-swell", String(swellMm));
+        swellScene.setAttribute("data-leftover", pic.leftover);
+        swellScene.setAttribute("data-verdict", pic.verdict);
+        swellScene.setAttribute("data-view", "board-swell");
+        swellScene.setAttribute("data-hero", "leftover-swell");
+        swellScene.setAttribute("data-swell-mm", String(swellMm));
+        swellScene.setAttribute("data-swell-px", String(pic.swellPx.toFixed(1)));
+        swellScene.setAttribute("data-swell-state", pic.swellState);
+        swellScene.setAttribute("data-shape", pic.shape);
+        swellScene.setAttribute("data-face-fixed", "true");
+        swellScene.setAttribute("data-board-fixed", "true");
+      }
+
+      function swellToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-clear";
+      }
+
+      function swellRender() {
+        const pic = swellPicture();
+        swellPaint(pic);
+        swellTitle.textContent = pic.alt;
+        swellAlt.textContent = pic.alt;
+        swellSvg.setAttribute("aria-label", pic.alt);
+        swellDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + swellMm + " mm showing"
+          : "leftover flat";
+        swellStatMm.textContent = swellMm + " mm";
+        swellStatLeftover.textContent = pic.leftover;
+        swellStatSpan.textContent = pic.leftover === "showing"
+          ? swellMm + " mm leftover"
+          : "flat";
+        swellStatLeftoverWrap.classList.remove("is-showing", "is-clear");
+        swellStatLeftoverWrap.classList.add(swellToneClass(pic.leftover));
+        if (Number(swellInput.value) !== swellMm) swellInput.value = String(swellMm);
+        swellInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function swellResetSeed() {
+        swellMm = SWELL_SEED.swellMm;
+        swellRender();
+      }
+
+      swellInput.addEventListener("input", function (event) {
+        swellMm = swellClamp(Math.round(Number(event.target.value)), SWELL_MIN, SWELL_MAX);
+        swellRender();
+      });
+      swellBtnReset.addEventListener("click", swellResetSeed);
+      swellBtnResetStage.addEventListener("click", swellResetSeed);
+
+      swellRender();
+    </script>
+  </body>
+</html>
