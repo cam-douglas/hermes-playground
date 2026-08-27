@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Reed](https://hermes-playground-green.vercel.app/reed/)** — reed-relay cabinet. Four contacts on every MCP. Connected is not registered. One served call is not a hold. Folder: `projects/reed/`.
+**Featured: [Coda](https://hermes-playground-green.vercel.app/coda/)** — splice desk. A last text block is not a hold. Concatenate every block. Compare delivered vs whole. Folder: `projects/coda/`.
+
+**Listed: [Reed](https://hermes-playground-green.vercel.app/reed/)** — reed-relay cabinet. Four contacts on every MCP. Connected is not registered. One served call is not a hold. Folder: `projects/reed/`. Still listed. Not featured.
 
 **Listed: [Fathom](https://hermes-playground-green.vercel.app/fathom/)** — standing-rule sounding. Pin rules outside the window. Compact drops them. Bind and score. Ack is not a hold. Folder: `projects/fathom/`. Still listed. Not featured.
 
@@ -24,10 +26,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                8 products: Reed (featured), Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                9 products: Coda (featured), Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/reed/              reed-relay cabinet (featured)
+projects/coda/              splice desk (featured)
+projects/reed/              reed-relay cabinet (kept, unfeatured)
 projects/fathom/            standing-rule sounding plate (kept, unfeatured)
 projects/hasp/              file-lease plate (kept, unfeatured)
 projects/parity/            claim-vs-reality board (kept, unfeatured)
@@ -35,8 +38,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-coda.md     Coda ship log (06:50 Sydney)
 runs/2026-08-28-reed.md     Reed ship log (05:50 Sydney)
 runs/2026-08-28-fathom.md   Fathom ship log (04:50 Sydney)
 runs/2026-08-28-hasp.md     Hasp ship log (03:50 Sydney)
@@ -63,6 +67,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Coda
+
+`projects/coda/` is a splice desk for silently dropped assistant / subagent text. The work was generated. The parent received a fragment, or nothing. The loss looks like success. A last text block is not a hold. max_tokens is not a truncation marker. Swallowed mid-turn text cannot be spliced from the JSONL — it was never persisted. Verdicts: **intact**, **snip**, **split**, **void**, **swallow**, **raw**.
+
+Live path: https://hermes-playground-green.vercel.app/coda/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#81838` is already on the desk. Idle word is **intact**, not the product name. Not a reed-relay cabinet. Not a sounding plate. Not a file lease. Not a claim-vs-reality probe. Not a muster. Not a spend kill. Not a DLP veil. Not a grant inbox.
 
 ## Reed
 
@@ -133,6 +145,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/coda/` → `projects/coda/`
 - `/reed/` → `projects/reed/`
 - `/fathom/` → `projects/fathom/`
 - `/hasp/` → `projects/hasp/`
