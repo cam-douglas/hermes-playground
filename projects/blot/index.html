@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Blot — darkroom tray for image-poisoned sessions. A bad frame is not a hold. One unreadable image kills every later turn. Strip the blot."
+    />
+    <title>Blot — darkroom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Oswald:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #0c0708;
+        --well: #14090a;
+        --tray: #1b0d0f;
+        --film: #2a1a14;
+        --base: #c9b8a4;
+        --safe: #d4483a;
+        --amber: #e7b056;
+        --mute: #8a7466;
+        --fog: rgba(228, 196, 160, 0.12);
+        --display: Oswald, "Arial Black", system-ui, sans-serif;
+        --lab: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--lab);
+        color: var(--base);
+        background:
+          radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 72, 58, 0.22), transparent 55%),
+          radial-gradient(circle at 88% 12%, rgba(231, 176, 86, 0.08), transparent 28%),
+          repeating-radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px),
+          var(--void);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--amber); }
+      .room {
+        min-height: 100vh;
+        padding: 28px 0 56px;
+      }
+      .mast {
+        width: min(1180px, calc(100% - 36px));
+        margin: 0 auto 22px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        gap: 28px;
+        align-items: end;
+      }
+      .hour {
+        margin: 0;
+        font-size: 12px;
+        letter-spacing: 0.42em;
+        text-transform: uppercase;
+        color: var(--safe);
+      }
+      h1 {
+        margin: 8px 0 0;
+        font-family: var(--display);
+        font-size: clamp(84px, 16vw, 168px);
+        line-height: 0.76;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+        color: #f3e6d4;
+        text-shadow: 0 0 40px rgba(212, 72, 58, 0.28);
+      }
+      .lede {
+        margin: 0 0 8px;
+        max-width: 34em;
+        color: var(--mute);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .lede strong { color: var(--base); font-weight: 500; }
+      .strip {
+        position: relative;
+        margin: 0 0 28px;
+        padding: 18px 0 16px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #1a0e0c 0 14px,
+            #241410 14px 28px
+          );
+        box-shadow: inset 0 18px 0 #0a0506, inset 0 -18px 0 #0a0506, 0 18px 40px rgba(0, 0, 0, 0.45);
+      }
+      .strip::before,
+      .strip::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 18px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 10px,
+            #0c0708 10px 22px,
+            transparent 22px 36px
+          ),
+          radial-gradient(circle, #c9b8a4 0 4px, transparent 5px);
+        background-size: auto, 36px 18px;
+        background-repeat: repeat-x;
+        opacity: 0.92;
+      }
+      .strip::before { top: 0; }
+      .strip::after { bottom: 0; }
+      .sprockets {
+        width: min(1180px, calc(100% - 36px));
+        margin: 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 6px 8px;
+      }
+      .cell {
+        border: 0;
+        min-width: 92px;
+        padding: 10px 12px 8px;
+        background: #12080a;
+        color: var(--base);
+        text-align: left;
+        box-shadow: inset 0 0 0 1px rgba(201, 184, 164, 0.16);
+      }
+      .cell small {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .cell b {
+        display: block;
+        margin-top: 4px;
+        font-family: var(--display);
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .cell.on {
+        background: #3a1412;
+        color: #f6e7d4;
+        box-shadow: inset 0 0 0 1px var(--safe);
+      }
+      .cell.idle {
+        color: var(--amber);
+      }
+      .bench {
+        width: min(1180px, calc(100% - 36px));
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+        gap: 22px;
+        align-items: start;
+      }
+      .tray {
+        background:
+          linear-gradient(180deg, rgba(212, 72, 58, 0.08), transparent 28%),
+          var(--tray);
+        min-height: 420px;
+        padding: 18px 18px 22px;
+        box-shadow: inset 0 0 0 2px rgba(212, 72, 58, 0.28), 0 24px 0 #090405;
+      }
+      .tray h2,
+      .lamp h2,
+      .sinks h2 {
+        margin: 0 0 14px;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--safe);
+        font-weight: 500;
+      }
+      .sheet {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+      }
+      .print {
+        position: relative;
+        aspect-ratio: 1;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%),
+          #1f1410;
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(201, 184, 164, 0.2);
+      }
+      .print .meta {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        font-size: 11px;
+        line-height: 1.45;
+        color: #d8c7b2;
+        word-break: break-all;
+      }
+      .print .meta span { display: block; color: var(--mute); }
+      .stamp {
+        position: absolute;
+        top: 18px;
+        right: 12px;
+        transform: rotate(-12deg);
+        border: 3px solid currentColor;
+        padding: 4px 8px 2px;
+        font-family: var(--display);
+        font-size: 22px;
+        letter-spacing: 0.08em;
+        line-height: 1;
+        opacity: 0.92;
+      }
+      .print.spoof .stamp,
+      .print.replay .stamp { color: var(--safe); }
+      .print.heic .stamp,
+      .print.lfs .stamp { color: var(--amber); }
+      .print.rot .stamp { color: #e07a44; }
+      .print.clear .stamp { color: #7d9a6a; }
+      .empty-sheet {
+        min-height: 280px;
+        display: grid;
+        place-items: center;
+        color: var(--amber);
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+        font-family: var(--display);
+        font-size: 42px;
+        border: 1px dashed rgba(231, 176, 86, 0.28);
+      }
+      .side {
+        display: grid;
+        gap: 16px;
+      }
+      .lamp {
+        background: var(--well);
+        padding: 22px 20px 18px;
+        box-shadow: inset 0 0 0 1px rgba(231, 176, 86, 0.18);
+      }
+      .lamp.alarm {
+        box-shadow: inset 0 0 0 1px rgba(212, 72, 58, 0.45), 0 0 40px rgba(212, 72, 58, 0.12);
+      }
+      .glow {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--amber);
+        box-shadow: 0 0 18px var(--amber);
+        margin-bottom: 12px;
+      }
+      .lamp.alarm .glow {
+        background: var(--safe);
+        box-shadow: 0 0 22px var(--safe);
+      }
+      .word {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(56px, 8vw, 84px);
+        line-height: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: #f4eadb;
+      }
+      .copy {
+        margin: 12px 0 0;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .facts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 12px;
+        margin-top: 16px;
+        font-size: 12px;
+      }
+      .facts span { display: block; color: var(--mute); letter-spacing: 0.12em; text-transform: uppercase; font-size: 10px; }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .acts button {
+        border: 1px solid rgba(201, 184, 164, 0.28);
+        background: transparent;
+        padding: 9px 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 11px;
+      }
+      .acts .strip-act {
+        background: var(--safe);
+        border-color: var(--safe);
+        color: #14090a;
+        font-weight: 600;
+      }
+      .acts .idle-act { color: var(--amber); border-color: rgba(231, 176, 86, 0.4); }
+      .sinks {
+        width: min(1180px, calc(100% - 36px));
+        margin: 28px auto 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .sink {
+        padding: 14px 14px 12px;
+        background: #12080a;
+        box-shadow: inset 0 0 0 1px rgba(201, 184, 164, 0.12);
+      }
+      .sink b {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin-bottom: 8px;
+      }
+      .sink p { margin: 0; color: var(--mute); font-size: 12px; line-height: 1.5; }
+      footer {
+        width: min(1180px, calc(100% - 36px));
+        margin: 32px auto 0;
+        color: var(--mute);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      @media (max-width: 860px) {
+        .mast, .bench, .sinks { grid-template-columns: 1fr; }
+        h1 { font-size: 92px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="room">
+      <header class="mast">
+        <div>
+          <p class="hour">08:50 darkroom</p>
+          <h1>Blot</h1>
+        </div>
+        <p class="lede">
+          A bad frame is not a hold. One unreadable image kills every later turn.
+          <strong>Strip the blot.</strong> Inspect every image frame. Score it.
+          Replace the poison block with a text placeholder so the session can continue.
+        </p>
+      </header>
+
+      <section class="strip" aria-label="Seed film strip">
+        <div class="sprockets" role="group">
+          <button class="cell on" id="seed-24387" type="button"><small>#24387</small><b>spoof</b></button>
+          <button class="cell" id="seed-16169" type="button"><small>#16169</small><b>heic</b></button>
+          <button class="cell" id="seed-32764" type="button"><small>#32764</small><b>lfs</b></button>
+          <button class="cell" id="seed-47391" type="button"><small>#47391</small><b>replay</b></button>
+          <button class="cell" id="seed-10833" type="button"><small>#10833</small><b>replay</b></button>
+          <button class="cell idle" id="seed-clear" type="button"><small>Clear</small><b>clear</b></button>
+        </div>
+      </section>
+
+      <section class="bench">
+        <div class="tray">
+          <h2>Contact sheet</h2>
+          <div class="sheet" id="sheet"></div>
+        </div>
+        <aside class="side">
+          <section class="lamp" id="lamp" aria-live="polite">
+            <h2>Status lamp</h2>
+            <div class="glow" aria-hidden="true"></div>
+            <p class="word" id="verdict">spoof</p>
+            <p class="copy" id="copy"></p>
+            <div class="facts" id="facts"></div>
+          </section>
+          <div class="acts">
+            <button id="mark" type="button">Mark</button>
+            <button class="strip-act" id="strip" type="button">Strip</button>
+            <button id="abandon" type="button">Abandon</button>
+            <button class="idle-act" id="clear" type="button">Clear · clear</button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="sinks" id="sinks" aria-label="Demo sinks"></section>
+      <footer>
+        Not Coda, not Reed, not Fathom, not Hasp, not Parity, not Reveille, not Quench, not Scrim, not Knock.
+        Idle word is clear. Slack blot alarm / GitHub blot ledger / Linear recovery ticket stay honest demo rows
+        when secrets are missing. Never a leftover slider.
+      </footer>
+    </main>
+    <script>
+      const VERDICTS = ["clear", "heic", "lfs", "spoof", "rot", "replay"];
+      const IDLE_WORD = "clear";
+      const ALARM_VERDICTS = ["heic", "lfs", "spoof", "rot", "replay"];
+      const PLACEHOLDER = "[image removed to fix conversation]";
+      const LFS_PREFIX = "version https://git-lfs.github.com/spec/v1";
+      const REAL_MAGIC = { png: 1, jpeg: 1, jpg: 1, webp: 1, gif: 1 };
+      const IMAGE_EXT = /\.(png|jpe?g|gif|webp|heic|heif|bmp|tiff?)$/i;
+
+      function emptyTray() {
+        return { session: "", frames: [], recovered: false, abandoned: false, source: "", issue: null };
+      }
+
+      function cloneFrame(raw) {
+        raw = raw || {};
+        return {
+          path: raw.path != null ? String(raw.path) : "",
+          claimedType: raw.claimedType != null ? String(raw.claimedType) : "",
+          magic: raw.magic != null ? String(raw.magic) : "",
+          bytes: Number(raw.bytes) || 0,
+          preview: raw.preview != null ? String(raw.preview) : "",
+          apiStatus: raw.apiStatus != null ? Number(raw.apiStatus) : 0,
+          baked: Boolean(raw.baked),
+          looping: Boolean(raw.looping),
+          decodeFail: Boolean(raw.decodeFail),
+          type: raw.type != null ? String(raw.type) : "",
+          text: raw.text != null ? String(raw.text) : "",
+        };
+      }
+
+      function cloneTray(raw) {
+        raw = raw || {};
+        return {
+          session: raw.session != null ? String(raw.session) : "",
+          frames: Array.isArray(raw.frames) ? raw.frames.map(cloneFrame) : [],
+          recovered: Boolean(raw.recovered),
+          abandoned: Boolean(raw.abandoned),
+          source: raw.source != null ? String(raw.source) : "",
+          issue: raw.issue != null ? raw.issue : null,
+        };
+      }
+
+      function claimedImage(frame) {
+        return String(frame.claimedType).toLowerCase().indexOf("image/") === 0 || IMAGE_EXT.test(frame.path);
+      }
+      function isPlaceholder(frame) {
+        return Boolean(frame && frame.type === "text" && frame.text);
+      }
+      function isHeic(frame) {
+        if (!frame || isPlaceholder(frame)) return false;
+        const claimed = frame.claimedType.toLowerCase();
+        const path = frame.path.toLowerCase();
+        const magic = frame.magic.toLowerCase();
+        return claimed.indexOf("heic") !== -1 || claimed.indexOf("heif") !== -1 || magic === "heic" || magic === "heif" || path.slice(-5) === ".heic" || path.slice(-5) === ".heif";
+      }
+      function isLfs(frame) {
+        if (!frame || isPlaceholder(frame)) return false;
+        return frame.magic.toLowerCase() === "lfs" || frame.preview.indexOf(LFS_PREFIX) === 0;
+      }
+      function isSpoof(frame) {
+        if (!frame || isPlaceholder(frame) || isHeic(frame) || isLfs(frame)) return false;
+        const magic = frame.magic.toLowerCase();
+        return claimedImage(frame) && (magic === "text" || magic === "html" || magic === "none" || magic === "");
+      }
+      function isRot(frame) {
+        if (!frame || isPlaceholder(frame) || isHeic(frame) || isLfs(frame) || isSpoof(frame)) return false;
+        if (frame.decodeFail) return true;
+        return Boolean(REAL_MAGIC[frame.magic.toLowerCase()] && frame.apiStatus === 400 && !frame.looping && !frame.baked);
+      }
+      function isReplay(frame) {
+        if (!frame || isPlaceholder(frame)) return false;
+        if (frame.looping) return true;
+        return Boolean(frame.baked && frame.apiStatus === 400 && !isHeic(frame) && !isLfs(frame) && !isSpoof(frame));
+      }
+      function isPoison(frame) {
+        if (!frame || isPlaceholder(frame)) return false;
+        return Boolean(frame.looping || isHeic(frame) || isLfs(frame) || isSpoof(frame) || isRot(frame) || isReplay(frame));
+      }
+      function frameKind(frame) {
+        if (!frame || isPlaceholder(frame)) return "clear";
+        if (frame.looping) return "replay";
+        if (isHeic(frame)) return "heic";
+        if (isLfs(frame)) return "lfs";
+        if (isSpoof(frame)) return "spoof";
+        if (isRot(frame)) return "rot";
+        if (isReplay(frame)) return "replay";
+        return "clear";
+      }
+      function verdictOf(tray) {
+        const frames = cloneTray(tray).frames;
+        if (frames.some(function (frame) { return frame.looping; })) return "replay";
+        if (frames.some(isHeic)) return "heic";
+        if (frames.some(isLfs)) return "lfs";
+        if (frames.some(isSpoof)) return "spoof";
+        if (frames.some(isRot)) return "rot";
+        if (frames.some(function (frame) { return frame.baked && frame.apiStatus === 400 && !isHeic(frame) && !isLfs(frame) && !isSpoof(frame); })) return "replay";
+        return "clear";
+      }
+
+      function decide(payload) {
+        payload = payload || {};
+        const nested = payload.action && typeof payload.action === "object" ? payload.action : null;
+        const src = nested || payload;
+        const traySrc = src.tray && typeof src.tray === "object" ? src.tray : payload.tray;
+        const fromFields = traySrc && typeof traySrc === "object" ? traySrc : src;
+        let tray = cloneTray({
+          session: fromFields.session != null ? fromFields.session : src.session,
+          frames: fromFields.frames != null ? fromFields.frames : src.frames,
+          recovered: fromFields.recovered != null ? fromFields.recovered : src.recovered,
+          abandoned: fromFields.abandoned != null ? fromFields.abandoned : src.abandoned,
+          source: fromFields.source != null ? fromFields.source : src.source,
+          issue: fromFields.issue != null ? fromFields.issue : src.issue,
+        });
+        const actionName = String((nested ? nested.action : payload.action) || "mark");
+        let extras = {};
+        if (actionName === "clear") {
+          tray = emptyTray();
+        } else if (actionName === "abandon") {
+          tray = Object.assign({}, tray, { recovered: false, abandoned: true });
+          extras = { abandoned: true, recovered: false, abandon: true, sessionDeleted: true };
+        } else if (actionName === "strip") {
+          tray = Object.assign({}, tray, {
+            frames: tray.frames.map(function (frame) { return isPoison(frame) ? { type: "text", text: PLACEHOLDER } : frame; }).map(cloneFrame),
+            recovered: true,
+            abandoned: false,
+          });
+          extras = { recovered: true, abandoned: false, placeholder: PLACEHOLDER };
+        }
+        const verdict = actionName === "clear" ? "clear" : verdictOf(tray);
+        const poison = tray.frames.filter(isPoison);
+        const abandoned = extras.abandoned != null ? extras.abandoned : tray.abandoned;
+        const recovered = extras.recovered != null ? extras.recovered : tray.recovered;
+        return {
+          ok: true,
+          product: "blot",
+          verdict: verdict,
+          state: verdict,
+          decision: verdict,
+          idleWord: IDLE_WORD,
+          alarm: ALARM_VERDICTS.indexOf(verdict) !== -1,
+          action: actionName,
+          session: tray.session || String(src.session || ""),
+          source: tray.source || String(src.source || ""),
+          issue: tray.issue != null ? tray.issue : (src.issue != null ? src.issue : null),
+          frames: tray.frames,
+          poison: poison,
+          recovered: recovered,
+          abandoned: abandoned,
+          abandon: extras.abandon === true || abandoned,
+          sessionDeleted: extras.sessionDeleted === true,
+          looping: tray.frames.some(function (frame) { return frame.looping; }),
+          placeholder: extras.placeholder || "",
+          tray: Object.assign({}, tray, { recovered: recovered, abandoned: abandoned }),
+        };
+      }
+
+      function seedTray(issue, source, extras) {
+        extras = extras || {};
+        const session = extras.session != null ? String(extras.session) : String(issue);
+        return {
+          action: "mark",
+          session: session,
+          issue: issue,
+          source: source,
+          tray: {
+            session: session,
+            frames: Array.isArray(extras.frames) ? extras.frames.map(cloneFrame) : [],
+            recovered: false,
+            abandoned: false,
+            source: source,
+            issue: issue,
+          },
+        };
+      }
+
+      function seed24387() {
+        return seedTray(24387, "anthropics/claude-code#24387", {
+          session: "24387",
+          frames: [{ path: "/tmp/screenshot.png", claimedType: "image/png", magic: "text", bytes: 173, preview: "OSStatus error -2700", apiStatus: 400, baked: true, looping: false }],
+        });
+      }
+      function seed16169() {
+        return seedTray(16169, "anthropics/claude-code#16169", {
+          frames: [{ path: "~/Pictures/IMG_1042.HEIC", claimedType: "image/heic", magic: "heic", bytes: 482000, preview: "", apiStatus: 400, baked: true, looping: false }],
+        });
+      }
+      function seed32764() {
+        return seedTray(32764, "anthropics/claude-code#32764", {
+          frames: [{ path: "/tmp/test.png", claimedType: "image/png", magic: "lfs", bytes: 131, preview: "version https://git-lfs.github.com/spec/v1\noid sha256:796e62f8e6d70b18cbe2fcda3debc29ffce327eaa12bbdc3650fef6d6189bba4\nsize 914901", apiStatus: 400, baked: true, looping: false }],
+        });
+      }
+      function seed47391() {
+        return seedTray(47391, "anthropics/claude-code#47391", {
+          frames: [{ path: "/sdcard/screenshot.png", claimedType: "image/png", magic: "png", bytes: 140000, preview: "", apiStatus: 400, baked: true, looping: true }],
+        });
+      }
+      function seed10833() {
+        return seedTray(10833, "openai/codex#10833", {
+          frames: [{ path: "upload.heic", claimedType: "image/heic", magic: "heic", bytes: 2200000, preview: "", apiStatus: 400, baked: true, looping: true }],
+        });
+      }
+
+      function copyFor(result) {
+        if (result.verdict === "clear") return "No poison. Idle word is clear — never the product name.";
+        if (result.verdict === "spoof") return "Claimed image, not an image. OSStatus / HTML 404 / empty bytes baked as a .png.";
+        if (result.verdict === "heic") return "Unsupported format. HEIC/HEIF in the session JSONL kills later turns.";
+        if (result.verdict === "lfs") return "Git LFS pointer Read as an image. The pointer is not pixels.";
+        if (result.verdict === "rot") return "Header looks like an image. The API rejected the pixels.";
+        return "The poison frame is already in history. Every later turn dies.";
+      }
+
+      function adapters(result) {
+        const slack = result.verdict === "clear"
+          ? "Would skip Slack — tray is clear."
+          : "Would post to Slack: blot alarm — " + result.verdict + " on the tray.";
+        const github = "Would append a GitHub blot ledger row. Demo: no token.";
+        const linear = result.verdict === "clear"
+          ? "Would skip Linear — tray is clear."
+          : "Would open a Linear recovery ticket: Recover · Blot " + result.verdict + ".";
+        return [
+          { adapter: "Slack blot alarm", summary: slack },
+          { adapter: "GitHub blot ledger", summary: github },
+          { adapter: "Linear recovery ticket", summary: linear },
+        ];
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      let current = seed24387();
+      let activeSeed = "24387";
+
+      function render() {
+        const result = decide(current);
+        const sheet = document.getElementById("sheet");
+        if (!result.frames.length) {
+          sheet.innerHTML = '<div class="empty-sheet">clear</div>';
+        } else {
+          sheet.innerHTML = result.frames.map(function (frame) {
+            const kind = isPlaceholder(frame) ? "clear" : frameKind(frame);
+            const stamp = kind.toUpperCase();
+            const path = frame.type === "text" ? frame.text : frame.path;
+            const preview = frame.preview ? "<span>" + escapeHtml(frame.preview.slice(0, 80)) + "</span>" : "";
+            return (
+              '<article class="print ' + kind + '">' +
+                '<div class="stamp">' + stamp + "</div>" +
+                '<div class="meta">' +
+                  escapeHtml(path || "(frame)") +
+                  "<span>" + escapeHtml(String(frame.bytes || 0)) + " b · " + escapeHtml(frame.magic || frame.type || "text") + " · " + escapeHtml(frame.claimedType || "text") + "</span>" +
+                  preview +
+                "</div>" +
+              "</article>"
+            );
+          }).join("");
+        }
+
+        const lamp = document.getElementById("lamp");
+        lamp.className = "lamp" + (result.alarm ? " alarm" : "");
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("copy").textContent = copyFor(result);
+        document.getElementById("facts").innerHTML = [
+          ["idle", result.idleWord],
+          ["session", result.session || "—"],
+          ["poison", String(result.poison.length)],
+          ["recovered", result.recovered ? "true" : "false"],
+          ["abandoned", result.abandoned ? "true" : "false"],
+          ["alarm", result.alarm ? "yes" : "no"],
+        ].map(function (pair) {
+          return "<div><span>" + pair[0] + "</span> " + escapeHtml(pair[1]) + "</div>";
+        }).join("");
+
+        document.getElementById("sinks").innerHTML = adapters(result).map(function (row) {
+          return '<article class="sink"><b>' + escapeHtml(row.adapter) + "</b><p>" + escapeHtml(row.summary) + "</p></article>";
+        }).join("");
+
+        document.querySelectorAll(".cell").forEach(function (button) {
+          button.classList.toggle("on", button.id === "seed-" + activeSeed);
+        });
+      }
+
+      function loadSeed(id, factory) {
+        current = factory();
+        activeSeed = id;
+        render();
+      }
+
+      function apply(action) {
+        const prior = decide(current);
+        current = {
+          action: action,
+          session: current.session,
+          issue: current.issue,
+          source: action === "clear" ? "" : current.source,
+          tray: action === "clear" ? emptyTray() : prior.tray,
+        };
+        activeSeed = action === "clear" ? "clear" : activeSeed;
+        render();
+      }
+
+      document.getElementById("seed-24387").addEventListener("click", function () { loadSeed("24387", seed24387); });
+      document.getElementById("seed-16169").addEventListener("click", function () { loadSeed("16169", seed16169); });
+      document.getElementById("seed-32764").addEventListener("click", function () { loadSeed("32764", seed32764); });
+      document.getElementById("seed-47391").addEventListener("click", function () { loadSeed("47391", seed47391); });
+      document.getElementById("seed-10833").addEventListener("click", function () { loadSeed("10833", seed10833); });
+      document.getElementById("seed-clear").addEventListener("click", function () { loadSeed("clear", function () { return { action: "clear" }; }); });
+      document.getElementById("mark").addEventListener("click", function () { apply("mark"); });
+      document.getElementById("strip").addEventListener("click", function () { apply("strip"); });
+      document.getElementById("abandon").addEventListener("click", function () { apply("abandon"); });
+      document.getElementById("clear").addEventListener("click", function () { apply("clear"); });
+
+      void VERDICTS;
+      render();
+    </script>
+  </body>
+</html>
