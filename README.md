@@ -47,10 +47,10 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 
 Production host: `https://hermes-playground-green.vercel.app`.
 
-- `/` → hub (apex host is excluded from the slug wildcard; it is not a project)
+- `/` → hub (unconditional; the apex is not a project slug)
 - `/knock/` → `projects/knock/`
 
-Wildcard `*.hermes-playground-green.vercel.app` does not work on `vercel.app`. Knock is therefore served on the catalog path until a separate Vercel project with Root Directory `projects/knock` assigns a real `*.vercel.app` host.
+Host wildcards for `*.hermes-playground-green.vercel.app` were removed: they do not resolve on `vercel.app`, and Vercel treated the apex host itself as slug `hermes-playground-green`, 404ing `/`. Knock is served on the catalog path until a separate Vercel project with Root Directory `projects/knock` assigns a real `*.vercel.app` host.
 
 ## Hub
 
