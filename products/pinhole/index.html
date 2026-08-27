@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Pinhole — the coat is on, but a pinhole still sits. Move the leftover pinhole. See the residual tiny pinhole still sitting on a fixed coated face." />
+    <title>Pinhole</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #0a0908;
+        --panel: #161410;
+        --ink: #e6e0d4;
+        --muted: #8a8274;
+        --line: rgba(200, 168, 112, 0.24);
+        --accent: #d4b878;
+        --timber: #2a2010;
+        --pinhole: #f0c878;
+        --showing: #f0c878;
+        --sealed: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(212, 184, 120, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(12, 10, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #0a0806 0%, #161410 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(22, 20, 16, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 184, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(28, 22, 16, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 184, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #ece4d4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1810;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #161410; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 184, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 184, 120, 0.1), transparent 46%),
+          #0a0908;
+        overflow: hidden;
+      }
+      #pinhole-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(240, 200, 120, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-sealed b { color: var(--sealed); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #0a0806;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #pinhole-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> pinhole · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover pinhole on the coated face that still sits after the coat</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 27 Aug 2026 13:50</span>
+        <h1>Pinhole</h1>
+        <p class="lede">
+          The coat is on, but a pinhole still sits. Move the leftover pinhole. See the residual tiny pinhole still sitting on a fixed coated face.
+          Not a craze. Not a bloom. Not a holiday. Not a burr. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="pinhole-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover pinhole still sits on the coated face after the coat</h2>
+          </div>
+          <span class="kicker" id="pinhole-desk-meta">leftover 1 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="pinhole-svg" viewBox="0 0 800 460" role="img" aria-labelledby="pinhole-title pinhole-desc">
+            <title id="pinhole-title">Pinhole is showing. One millimetre of leftover pinhole still sits on a fixed coated face.</title>
+            <desc id="pinhole-desc">One workpiece whose leftover is the pinhole — leftover residual tiny round pinhole that still sits on a fixed coated face after the coat (leftover tiny round hole still sitting in the coat after the coat is on, not Craze leftover fine craze network, not Bloom leftover cloudy bloom haze, not Holiday leftover missed bare patch, not Burr leftover standing lip, not a clock). One workpiece; the coat is on; the leftover is one leftover residual tiny round pinhole sitting on that fixed coated face, not a craze network, not a cloudy bloom, not a bare holiday. The leftover that still sits is the pinhole — leftover residual tiny round pinhole still sitting on a fixed coated face. A sketch, not a mill sign-off. Not finish advice.</desc>
+            <defs>
+              <linearGradient id="pinhole-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#181410" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+              <linearGradient id="pinhole-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#24180c" />
+                <stop offset="36%" stop-color="#4a3418" />
+                <stop offset="68%" stop-color="#7a5830" />
+                <stop offset="100%" stop-color="#2e2210" />
+              </linearGradient>
+              <linearGradient id="pinhole-coat-wash" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#c88838" stop-opacity="0.42" />
+                <stop offset="42%" stop-color="#e8b060" stop-opacity="0.22" />
+                <stop offset="100%" stop-color="#6a4018" stop-opacity="0.16" />
+              </linearGradient>
+              <radialGradient id="leftover-pinhole-void-wash" cx="38%" cy="34%" r="62%">
+                <stop offset="0%" stop-color="#3a2410" />
+                <stop offset="46%" stop-color="#1a1008" />
+                <stop offset="100%" stop-color="#0a0604" />
+              </radialGradient>
+              <linearGradient id="leftover-pinhole-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1c1810" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#0a0806" stroke="rgba(212,184,120,0.16)" />
+            <text x="36" y="42" fill="#8a8274" font-size="11" letter-spacing="2">ONE WORKPIECE · COAT IS ON · LEFTOVER IS ONE TINY ROUND PINHOLE STILL SITTING ON A FIXED COATED FACE</text>
+            <g id="pinhole-scene" data-view="finish-pinhole" data-hero="leftover-pinhole" data-pinhole="1" data-leftover="showing" data-verdict="showing" data-pinhole-state="sitting">
+              <g id="pinhole-bench-layer"></g>
+              <g id="pinhole-stock-layer"></g>
+              <g id="leftover-pinhole-layer"></g>
+              <g id="pinhole-mark-layer"></g>
+              <text id="pinhole-scene-status" x="400" y="64" fill="#f0c878" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 1 MM LEFTOVER PINHOLE</text>
+              <text id="pinhole-scene-sketch" x="400" y="434" fill="#545044" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER TINY ROUND PINHOLE STILL SITS ON A FIXED COATED FACE · NOT A CRAZE · NOT A BLOOM · NOT A HOLIDAY · NOT A BURR · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="pinhole-alt" class="sr-only" aria-live="polite">Pinhole is showing. One millimetre of leftover pinhole still sits on a fixed coated face.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="pinhole-input">Leftover pinhole (mm of sitting diameter on the coated face)</label>
+            <input id="pinhole-input" type="range" min="0" max="6" step="1" value="1" />
+            <div class="ticks" aria-hidden="true">
+              <span>sealed / no leftover pinhole</span>
+              <span>seed showing</span>
+              <span>larger leftover pinhole</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="pinhole-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Pinhole <b id="pinhole-stat-mm">1 mm</b></span>
+          <span id="pinhole-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="pinhole-stat-leftover">showing</b></span>
+          <span>Leftover pinhole (sketch) <b id="pinhole-stat-span">1 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The coat is on, but a pinhole still sits. Pinhole is leftover residual tiny round pinhole that still sits on a fixed coated face. A sketch, not a mill sign-off, and not finish advice.
+        Seed is already showing — 1 mm of leftover sitting pinhole on the coated face, not a sealed-only face. Arrow keys move the focused control.
+        Refresh restores the seed. Not a craze. Not a bloom. Not a holiday. Not a burr. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const PINHOLE_SEED = { pinholeMm: 1 };
+      const PINHOLE_MIN = 0;
+      const PINHOLE_MAX = 6;
+      const PINHOLE_SEALED_AT = 0;
+      const PINHOLE_SCALE = 18;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const PINHOLE_CX = 400;
+      const PINHOLE_CY = 178;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 328;
+      const PROFILE_LEFT = 168;
+      const PROFILE_RIGHT = 632;
+
+      let pinholeMm = PINHOLE_SEED.pinholeMm;
+
+      const pinholeSvg = document.getElementById("pinhole-svg");
+      const pinholeScene = document.getElementById("pinhole-scene");
+      const pinholeTitle = document.getElementById("pinhole-title");
+      const pinholeAlt = document.getElementById("pinhole-alt");
+      const pinholeDeskMeta = document.getElementById("pinhole-desk-meta");
+      const pinholeInput = document.getElementById("pinhole-input");
+      const pinholeBenchLayer = document.getElementById("pinhole-bench-layer");
+      const pinholeStockLayer = document.getElementById("pinhole-stock-layer");
+      const leftoverPinholeLayer = document.getElementById("leftover-pinhole-layer");
+      const pinholeMarkLayer = document.getElementById("pinhole-mark-layer");
+      const pinholeSceneStatus = document.getElementById("pinhole-scene-status");
+      const pinholeStatMm = document.getElementById("pinhole-stat-mm");
+      const pinholeStatLeftover = document.getElementById("pinhole-stat-leftover");
+      const pinholeStatLeftoverWrap = document.getElementById("pinhole-stat-leftover-wrap");
+      const pinholeStatSpan = document.getElementById("pinhole-stat-span");
+      const pinholeBtnReset = document.getElementById("pinhole-btn-reset");
+      const pinholeBtnResetStage = document.getElementById("pinhole-btn-reset-stage");
+
+      function pinholeClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function pinholeEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function pinholeSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverPinholeGeom(diaPx) {
+        const r = Math.max(0, diaPx / 2);
+        return {
+          cx: PINHOLE_CX,
+          cy: PINHOLE_CY,
+          r: r,
+          left: PINHOLE_CX - r,
+          right: PINHOLE_CX + r,
+          diameter: diaPx
+        };
+      }
+
+      function pinholePicture() {
+        const leftover = pinholeMm <= PINHOLE_SEALED_AT ? "sealed" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + pinholeMm + " MM LEFTOVER PINHOLE";
+          alt = "Pinhole is showing. " + pinholeSpokenMm(pinholeMm).charAt(0).toUpperCase() + pinholeSpokenMm(pinholeMm).slice(1) + " millimetre" + (pinholeMm === 1 ? "" : "s") + " of leftover pinhole still sit" + (pinholeMm === 1 ? "s" : "") + " on a fixed coated face.";
+        } else {
+          status = "SEALED · NO LEFTOVER PINHOLE";
+          alt = "Pinhole is sealed. The coat is on. No leftover pinhole. A sketch, not a mill sign-off.";
+        }
+        const pinholePx = leftover === "showing" ? Math.max(10, pinholeMm * PINHOLE_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#f0c878" : "#8ec8b4",
+          pinholePx: pinholePx,
+          pinholeState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-pinhole" : "sealed-face"
+        };
+      }
+
+      function pinholePaint(pic) {
+        const isSealed = pic.leftover === "sealed";
+        const hole = leftoverPinholeGeom(pic.pinholePx);
+
+        pinholeBenchLayer.replaceChildren();
+        pinholeBenchLayer.appendChild(pinholeEl("rect", {
+          class: "site leftover-work leftover-pinhole leftover-finish leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#pinhole-bench-wash)",
+          stroke: "rgba(212,184,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        pinholeBenchLayer.appendChild(pinholeEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a6254",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · COAT IS ON · ONE LEFTOVER TINY ROUND PINHOLE STILL SITS ON A FIXED COATED FACE";
+
+        pinholeStockLayer.replaceChildren();
+        const stock = pinholeEl("g", {
+          id: "pinhole-stock",
+          class: isSealed
+            ? "stock leftover-sealed leftover-no-pinhole leftover-pinhole leftover-finish leftover-true"
+            : "stock leftover-showing leftover-pinhole leftover-sitting leftover-finish"
+        });
+        stock.appendChild(pinholeEl("rect", {
+          id: "pinhole-workpiece-face",
+          class: "stock-board leftover-stock leftover-workpiece leftover-pinhole leftover-not-the-leftover leftover-not-a-craze leftover-not-a-bloom leftover-not-a-holiday leftover-coat-context leftover-kept leftover-face leftover-fixed leftover-coated-face",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#pinhole-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "coat-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(pinholeEl("rect", {
+          id: "pinhole-workpiece-coat",
+          class: "stock-coat leftover-stock leftover-workpiece leftover-pinhole leftover-not-the-leftover leftover-coat leftover-sheen leftover-fixed leftover-not-a-craze leftover-not-a-bloom leftover-not-a-holiday",
+          x: String(FACE_LEFT + 8),
+          y: String(FACE_TOP + 8),
+          width: String((FACE_RIGHT - FACE_LEFT) - 16),
+          height: String((FACE_BOT - FACE_TOP) - 16),
+          fill: "url(#pinhole-coat-wash)",
+          "data-shape": "coat-film",
+          "data-role": "coated-face",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(pinholeEl("text", {
+          x: "400",
+          y: String(FACE_TOP + 20),
+          fill: "#e8d8b0",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "COATED FACE · FIXED · COAT IS ON";
+        pinholeStockLayer.appendChild(stock);
+
+        leftoverPinholeLayer.replaceChildren();
+        const leftover = pinholeEl("g", {
+          id: "leftover-pinhole",
+          class: isSealed
+            ? "pinhole leftover-pinhole leftover-sealed leftover-empty leftover-no-pinhole leftover-finish leftover-true"
+            : "pinhole leftover-pinhole leftover-showing leftover-one leftover-sitting leftover-span leftover-round leftover-tiny leftover-hole leftover-residual leftover-on-face leftover-not-a-craze leftover-not-a-bloom leftover-not-a-holiday leftover-not-a-burr",
+          "data-pinhole-mm": String(pinholeMm),
+          "data-pinhole-px": String(pic.pinholePx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isSealed) {
+          leftover.appendChild(pinholeEl("circle", {
+            id: "leftover-pinhole-void",
+            class: "leftover-pinhole leftover-showing leftover-one leftover-sitting leftover-span leftover-round leftover-tiny leftover-hole leftover-void leftover-not-a-craze leftover-not-a-bloom leftover-not-a-holiday leftover-local leftover-residual leftover-on-face leftover-not-a-network leftover-not-a-haze leftover-not-a-bare",
+            cx: String(hole.cx.toFixed(1)),
+            cy: String(hole.cy.toFixed(1)),
+            r: String(hole.r.toFixed(1)),
+            fill: "url(#leftover-pinhole-void-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.35",
+            opacity: "0.98",
+            "data-shape": "leftover-pinhole",
+            "data-pinhole-mm": String(pinholeMm),
+            "data-role": "sitting-pinhole",
+            "data-pinhole-px": String(pic.pinholePx.toFixed(1)),
+            "data-origin-x": String(PINHOLE_CX),
+            "data-origin-y": String(PINHOLE_CY)
+          }));
+          leftover.appendChild(pinholeEl("ellipse", {
+            id: "leftover-pinhole-glint",
+            class: "leftover-pinhole leftover-showing leftover-sitting leftover-round leftover-tiny leftover-glint leftover-not-a-craze leftover-not-a-bloom leftover-not-a-holiday leftover-residual leftover-on-face",
+            cx: String((hole.cx - hole.r * 0.28).toFixed(1)),
+            cy: String((hole.cy - hole.r * 0.32).toFixed(1)),
+            rx: String(Math.max(1.2, hole.r * 0.28).toFixed(1)),
+            ry: String(Math.max(0.8, hole.r * 0.16).toFixed(1)),
+            fill: "#ecd8b0",
+            opacity: "0.28",
+            "data-shape": "leftover-pinhole-glint",
+            "data-role": "sitting-pinhole-glint"
+          }));
+          leftover.appendChild(pinholeEl("circle", {
+            id: "leftover-pinhole-rim",
+            class: "leftover-pinhole leftover-showing leftover-sitting leftover-round leftover-tiny leftover-rim leftover-not-a-craze leftover-not-a-bloom leftover-not-a-holiday leftover-residual leftover-on-face",
+            cx: String(hole.cx.toFixed(1)),
+            cy: String(hole.cy.toFixed(1)),
+            r: String(Math.max(2.4, hole.r + 2.2).toFixed(1)),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "0.85",
+            opacity: "0.46",
+            "data-shape": "leftover-pinhole-rim",
+            "data-role": "sitting-pinhole-rim"
+          }));
+          leftover.appendChild(pinholeEl("text", {
+            id: "leftover-pinhole-label",
+            class: "pinhole-label leftover-label leftover-pinhole leftover-showing leftover-sitting leftover-span leftover-round leftover-on-face",
+            x: String(hole.cx.toFixed(1)),
+            y: String((hole.cy + hole.r + 18).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "middle"
+          })).textContent = "PINHOLE";
+        } else {
+          leftover.appendChild(pinholeEl("circle", {
+            id: "leftover-pinhole-sealed-path",
+            class: "leftover-pinhole leftover-sealed leftover-empty leftover-no-pinhole leftover-finish leftover-true leftover-coated-face leftover-not-a-pinhole leftover-not-a-holiday",
+            cx: String(PINHOLE_CX),
+            cy: String(PINHOLE_CY),
+            r: "14",
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "sealed-face"
+          }));
+        }
+        leftoverPinholeLayer.appendChild(leftover);
+
+        pinholeMarkLayer.replaceChildren();
+        pinholeMarkLayer.appendChild(pinholeEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · COAT IS ON · FIXED";
+        pinholeMarkLayer.appendChild(pinholeEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isSealed ? "FACE · SEALED / NO LEFTOVER PINHOLE" : "FACE · ONE LEFTOVER TINY ROUND PINHOLE STILL SITS";
+
+        pinholeMarkLayer.appendChild(pinholeEl("rect", {
+          id: "pinhole-profile-face",
+          class: "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-coated-face leftover-finish",
+          x: String(PROFILE_LEFT),
+          y: String(PROFILE_FACE_Y),
+          width: String(PROFILE_RIGHT - PROFILE_LEFT),
+          height: String(PROFILE_BOT - 16 - PROFILE_FACE_Y),
+          fill: "url(#leftover-pinhole-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          opacity: "0.94",
+          "data-fixed": "true"
+        }));
+        pinholeMarkLayer.appendChild(pinholeEl("line", {
+          id: "pinhole-profile-coat",
+          class: isSealed
+            ? "profile leftover-coat leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-sealed leftover-no-pinhole leftover-not-a-holiday"
+            : "profile leftover-coat leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-with-pinhole leftover-not-a-holiday",
+          x1: String(PROFILE_LEFT),
+          y1: String(PROFILE_FACE_Y),
+          x2: String(PROFILE_RIGHT),
+          y2: String(PROFILE_FACE_Y),
+          stroke: pic.accent,
+          "stroke-width": "1.8",
+          "stroke-dasharray": isSealed ? "3 4" : "2 5",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isSealed ? "sealed-face" : "leftover-pinhole-span"
+        }));
+
+        if (!isSealed) {
+          const dia = Math.max(8, pic.pinholePx * 0.72);
+          const left = PINHOLE_CX - dia / 2;
+          const right = PINHOLE_CX + dia / 2;
+          const depth = Math.max(5, 4 + pinholeMm * 1.6);
+          pinholeMarkLayer.appendChild(pinholeEl("path", {
+            id: "leftover-pinhole-profile-hole",
+            class: "leftover-pinhole leftover-showing leftover-sitting leftover-round leftover-profile leftover-not-a-craze leftover-not-a-bloom leftover-not-a-holiday leftover-on-face leftover-tiny leftover-residual",
+            d: "M " + left.toFixed(1) + " " + PROFILE_FACE_Y +
+              " A " + (dia / 2).toFixed(1) + " " + depth.toFixed(1) + " 0 0 0 " + right.toFixed(1) + " " + PROFILE_FACE_Y,
+            fill: "url(#leftover-pinhole-void-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.15",
+            "stroke-linecap": "round",
+            opacity: "0.94",
+            "data-shape": "leftover-pinhole",
+            "data-role": "sitting-pinhole-profile"
+          }));
+          const dimY = PROFILE_FACE_Y - 22;
+          pinholeMarkLayer.appendChild(pinholeEl("line", {
+            id: "pinhole-dim",
+            class: "pinhole-dim leftover-pinhole leftover-showing leftover-sitting leftover-span leftover-not-a-craze leftover-not-a-bloom leftover-not-a-holiday leftover-round",
+            x1: String(left.toFixed(1)),
+            y1: String(dimY),
+            x2: String(right.toFixed(1)),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          pinholeMarkLayer.appendChild(pinholeEl("text", {
+            id: "pinhole-mm-label",
+            class: "pinhole-label leftover-label leftover-pinhole leftover-showing leftover-sitting leftover-span leftover-round leftover-on-face",
+            x: String(PINHOLE_CX),
+            y: String(dimY - 6),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = pinholeMm + " mm";
+          pinholeMarkLayer.appendChild(pinholeEl("text", {
+            id: "pinhole-span-label",
+            class: "span-label leftover-pinhole leftover-one leftover-sitting leftover-span leftover-round leftover-not-a-craze leftover-not-a-bloom leftover-not-a-holiday leftover-tiny leftover-residual leftover-on-face",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#ece4d4",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER PINHOLE · ONE TINY ROUND HOLE ON A FIXED COATED FACE · NOT A CRAZE · NOT A BLOOM · NOT A HOLIDAY";
+        } else {
+          pinholeMarkLayer.appendChild(pinholeEl("text", {
+            id: "pinhole-label",
+            class: "pinhole-label leftover-label leftover-sealed leftover-no-pinhole leftover-finish leftover-empty leftover-true leftover-not-a-holiday",
+            x: "400",
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "SEALED / NO LEFTOVER PINHOLE";
+          pinholeMarkLayer.appendChild(pinholeEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · SEALED / NO LEFTOVER PINHOLE";
+        }
+
+        pinholeSceneStatus.setAttribute("fill", pic.accent);
+        pinholeSceneStatus.textContent = pic.status;
+        pinholeScene.setAttribute("data-pinhole", String(pinholeMm));
+        pinholeScene.setAttribute("data-leftover", pic.leftover);
+        pinholeScene.setAttribute("data-verdict", pic.verdict);
+        pinholeScene.setAttribute("data-view", "finish-pinhole");
+        pinholeScene.setAttribute("data-hero", "leftover-pinhole");
+        pinholeScene.setAttribute("data-pinhole-mm", String(pinholeMm));
+        pinholeScene.setAttribute("data-pinhole-px", String(pic.pinholePx.toFixed(1)));
+        pinholeScene.setAttribute("data-pinhole-state", pic.pinholeState);
+        pinholeScene.setAttribute("data-shape", pic.shape);
+        pinholeScene.setAttribute("data-face-fixed", "true");
+        pinholeScene.setAttribute("data-coat-fixed", "true");
+      }
+
+      function pinholeToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-sealed";
+      }
+
+      function pinholeRender() {
+        const pic = pinholePicture();
+        pinholePaint(pic);
+        pinholeTitle.textContent = pic.alt;
+        pinholeAlt.textContent = pic.alt;
+        pinholeSvg.setAttribute("aria-label", pic.alt);
+        pinholeDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + pinholeMm + " mm showing"
+          : "leftover sealed";
+        pinholeStatMm.textContent = pinholeMm + " mm";
+        pinholeStatLeftover.textContent = pic.leftover;
+        pinholeStatSpan.textContent = pic.leftover === "showing"
+          ? pinholeMm + " mm leftover"
+          : "sealed";
+        pinholeStatLeftoverWrap.classList.remove("is-showing", "is-sealed");
+        pinholeStatLeftoverWrap.classList.add(pinholeToneClass(pic.leftover));
+        if (Number(pinholeInput.value) !== pinholeMm) pinholeInput.value = String(pinholeMm);
+        pinholeInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function pinholeResetSeed() {
+        pinholeMm = PINHOLE_SEED.pinholeMm;
+        pinholeRender();
+      }
+
+      pinholeInput.addEventListener("input", function (event) {
+        pinholeMm = pinholeClamp(Math.round(Number(event.target.value)), PINHOLE_MIN, PINHOLE_MAX);
+        pinholeRender();
+      });
+      pinholeBtnReset.addEventListener("click", pinholeResetSeed);
+      pinholeBtnResetStage.addEventListener("click", pinholeResetSeed);
+
+      pinholeRender();
+    </script>
+  </body>
+</html>
