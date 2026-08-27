@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Parity — claim-vs-reality board. Paste what an agent asserted. Check GitHub, Vercel, Linear, and a functional probe."
+    />
+    <title>Parity — claim vs reality</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,640;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --charcoal: #0b0e12;
+        --slate: #12171d;
+        --plate: #181e26;
+        --ink: #e8eef2;
+        --mute: #7d8793;
+        --cyan: #3ee0d0;
+        --amber: #e8a23c;
+        --magenta: #e23d8a;
+        --unverified: #6b7c93;
+        --line: rgba(232, 238, 242, 0.1);
+        --hair: rgba(62, 224, 208, 0.14);
+        --sans: "Space Grotesk", "Avenir Next", "Helvetica Neue", sans-serif;
+        --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+        --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: var(--sans);
+        color: var(--ink);
+        background:
+          linear-gradient(180deg, rgba(11, 14, 18, 0.2), rgba(11, 14, 18, 0.55)),
+          repeating-linear-gradient(0deg, transparent, transparent 23px, rgba(232, 238, 242, 0.03) 24px),
+          repeating-linear-gradient(90deg, transparent, transparent 23px, rgba(232, 238, 242, 0.03) 24px),
+          var(--charcoal);
+      }
+      a { color: var(--cyan); }
+      button, textarea { font: inherit; }
+      .ticks {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(90deg, var(--hair) 0 1px, transparent 1px) 0 0 / 80px 100%,
+          linear-gradient(180deg, var(--hair) 0 1px, transparent 1px) 0 0 / 100% 80px;
+        mask-image: linear-gradient(180deg, #000 0 18%, transparent 38%, transparent 70%, #000 100%);
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 28px;
+        align-items: flex-end;
+        padding: 28px 32px 20px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(11, 14, 18, 0.78);
+      }
+      .brand { display: flex; gap: 16px; align-items: center; }
+      .sight {
+        width: 48px;
+        height: 48px;
+        border: 1px solid rgba(62, 224, 208, 0.45);
+        background: var(--plate);
+        position: relative;
+      }
+      .sight::before, .sight::after {
+        content: "";
+        position: absolute;
+        background: var(--cyan);
+      }
+      .sight::before { left: 50%; top: 8px; bottom: 8px; width: 1px; margin-left: -0.5px; }
+      .sight::after { top: 50%; left: 8px; right: 8px; height: 1px; margin-top: -0.5px; }
+      .word em {
+        display: block;
+        font-family: var(--mono);
+        font-style: normal;
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: 48px;
+        line-height: 0.88;
+        font-weight: 500;
+        font-style: italic;
+        letter-spacing: -0.03em;
+      }
+      .lede {
+        max-width: 36em;
+        color: var(--mute);
+        font-size: 16px;
+        line-height: 1.5;
+        font-family: var(--display);
+        font-style: italic;
+      }
+      .lede strong { color: var(--ink); font-style: normal; font-family: var(--sans); font-weight: 600; }
+      .lamps { display: flex; gap: 8px; flex-wrap: wrap; }
+      .lamp {
+        min-width: 86px;
+        padding: 8px 10px 7px;
+        border: 1px solid rgba(125, 135, 147, 0.22);
+        background: var(--slate);
+        text-align: center;
+      }
+      .lamp b {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        color: #4d5661;
+      }
+      .lamp i {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin-bottom: 5px;
+        background: #2a3138;
+      }
+      .lamp.on.even i { background: var(--mute); box-shadow: 0 0 10px var(--mute); }
+      .lamp.on.match i { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+      .lamp.on.drift i { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+      .lamp.on.unverified i { background: var(--unverified); box-shadow: 0 0 10px var(--unverified); }
+      .lamp.on.fabricated i { background: var(--magenta); box-shadow: 0 0 10px var(--magenta); }
+      .lamp.on b { color: var(--ink); }
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 14px 32px;
+        border-bottom: 1px solid var(--line);
+        background: var(--slate);
+      }
+      .seeds { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .seeds span {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .seed, .act {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--ink);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .seed { font-family: var(--mono); font-size: 12px; }
+      .seed.on { border-color: var(--cyan); color: var(--cyan); }
+      .act.primary { background: var(--ink); color: var(--charcoal); border-color: var(--ink); font-weight: 600; }
+      .act.ghost { color: var(--mute); }
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1px 1fr;
+        min-height: calc(100vh - 320px);
+      }
+      .col { padding: 22px 28px 28px; }
+      .datum { background: linear-gradient(180deg, transparent, var(--cyan), transparent); opacity: 0.45; }
+      .kicker {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 10px;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-family: var(--display);
+        font-size: 28px;
+        font-weight: 500;
+        font-style: italic;
+      }
+      textarea {
+        width: 100%;
+        min-height: 168px;
+        resize: vertical;
+        background: var(--plate);
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 14px;
+        line-height: 1.45;
+      }
+      .parsed, .table, .card, .event, .verdict, pre {
+        border: 1px solid var(--line);
+        background: var(--plate);
+      }
+      .parsed, .table, .card { padding: 12px 14px; margin-top: 12px; }
+      .parsed b, .table b, .card b {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 6px;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-family: var(--mono);
+        font-size: 13px;
+        padding: 4px 0;
+        border-top: 1px solid rgba(232, 238, 242, 0.06);
+      }
+      .channels { display: grid; gap: 10px; }
+      .card { display: grid; gap: 4px; }
+      .card .mark {
+        justify-self: start;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+      }
+      .mark.even { color: var(--mute); border: 1px solid var(--mute); }
+      .mark.match { color: var(--cyan); border: 1px solid var(--cyan); }
+      .mark.drift { color: var(--amber); border: 1px solid var(--amber); }
+      .mark.unverified { color: var(--unverified); border: 1px solid var(--unverified); }
+      .mark.fabricated { color: var(--magenta); border: 1px solid var(--magenta); }
+      .verdict {
+        margin: 0 32px 18px;
+        padding: 16px 18px;
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: center;
+      }
+      .verdict strong {
+        font-family: var(--display);
+        font-size: 36px;
+        font-style: italic;
+        font-weight: 500;
+        letter-spacing: -0.03em;
+      }
+      .verdict.even strong { color: var(--mute); }
+      .verdict.match strong { color: var(--cyan); }
+      .verdict.drift strong { color: var(--amber); }
+      .verdict.unverified strong { color: var(--unverified); }
+      .verdict.fabricated strong { color: var(--magenta); }
+      .verdict p { margin: 0; color: var(--mute); max-width: 42em; }
+      .sinks, .notes {
+        display: grid;
+        gap: 8px;
+        padding: 0 32px 18px;
+      }
+      .event {
+        padding: 10px 12px;
+        display: grid;
+        grid-template-columns: 88px 1fr;
+        gap: 12px;
+        font-size: 14px;
+      }
+      .event b {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .evidence, .hook-wrap { padding: 0 32px 28px; }
+      .evidence p, footer { color: var(--mute); font-size: 13px; line-height: 1.55; }
+      pre {
+        margin: 8px 0 0;
+        padding: 14px;
+        overflow: auto;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: #c5d0d6;
+      }
+      footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 16px 32px 28px;
+        border-top: 1px solid var(--line);
+      }
+      @media (max-width: 860px) {
+        .split { grid-template-columns: 1fr; }
+        .datum { display: none; }
+        header, .verdict { flex-direction: column; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ticks" aria-hidden="true"></div>
+    <header>
+      <div class="brand">
+        <div class="sight" aria-hidden="true"></div>
+        <div class="word">
+          <em>claim · reality · survey</em>
+          <h1>Parity</h1>
+        </div>
+      </div>
+      <p class="lede">
+        Paste what an agent asserted. Sight GitHub, Vercel, Linear, and a functional
+        probe. <strong>Cosmetic green is not a match.</strong> Idle word is even.
+      </p>
+      <div class="lamps" id="lamps" aria-label="Verdict lamps"></div>
+    </header>
+    <div class="toolbar">
+      <div class="seeds">
+        <span>Seeds</span>
+        <button class="seed on" id="seed-40861" type="button">#40861 false completion</button>
+        <button class="seed" id="seed-19520" type="button">#19520 fabricated SHA</button>
+        <button class="seed" id="seed-74427" type="button">#74427 zero-tool report</button>
+      </div>
+      <div class="seeds">
+        <button class="act primary" id="check" type="button">Check claim</button>
+        <button class="act ghost" id="clear" type="button">Clear · even</button>
+      </div>
+    </div>
+    <div class="split">
+      <section class="col" aria-labelledby="claim-title">
+        <div class="kicker">Station A</div>
+        <h2 id="claim-title">Claim</h2>
+        <textarea id="claim-text" spellcheck="false"></textarea>
+        <div class="parsed">
+          <b>Parsed</b>
+          <div class="row"><span>sha</span><span id="parsed-sha">—</span></div>
+          <div class="row"><span>pr</span><span id="parsed-pr">—</span></div>
+          <div class="row"><span>session</span><span id="parsed-session">—</span></div>
+        </div>
+        <div class="table" id="status-table"></div>
+      </section>
+      <div class="datum" aria-hidden="true"></div>
+      <section class="col" aria-labelledby="reality-title">
+        <div class="kicker">Station B</div>
+        <h2 id="reality-title">Reality</h2>
+        <div class="channels" id="channels"></div>
+      </section>
+    </div>
+    <section class="verdict even" id="verdict" aria-live="polite">
+      <strong>even</strong>
+      <p>Board empty. The idle word is even — not the product name.</p>
+    </section>
+    <section class="sinks" id="sinks" aria-label="Adapter sinks"></section>
+    <section class="evidence">
+      <p>
+        Evidence (do not invent more):
+        <a href="https://github.com/anthropics/claude-code/issues/40861">#40861</a>
+        reports broken deployments as working ·
+        <a href="https://github.com/anthropics/claude-code/issues/56870">#56870</a>
+        declares OK without verification ·
+        <a href="https://github.com/anthropics/claude-code/issues/43387">#43387</a>
+        done/deployed without real checks ·
+        <a href="https://github.com/anthropics/claude-code/issues/74427">#74427</a>
+        workflows reported done but never happened ·
+        <a href="https://github.com/anthropics/claude-code/issues/67730">#67730</a>
+        confident reports with zero tool calls ·
+        <a href="https://github.com/openai/codex/issues/19520">codex#19520</a>
+        fabricates non-existent commit SHAs.
+      </p>
+    </section>
+    <section class="hook-wrap">
+      <div class="kicker">ClaimCheck payload</div>
+      <pre id="hook"></pre>
+    </section>
+    <footer>
+      <span>Idle word is <i>even</i>. Never the product name.</span>
+      <span><a href="/">Catalog</a> · <code>projects/parity/</code></span>
+    </footer>
+    <script>
+      const STATES = ["even", "match", "drift", "unverified", "fabricated"];
+      const CHANNELS = ["github", "vercel", "linear", "functional"];
+
+      function emptyClaim(session) {
+        return {
+          session: session || "even-1",
+          text: "",
+          claims: {},
+          probes: {
+            github: { checked: false },
+            vercel: { checked: false },
+            linear: { checked: false },
+            functional: { checked: false },
+          },
+        };
+      }
+
+      function seedClaim40861() {
+        return {
+          session: "claim-40861",
+          issue: 40861,
+          text: "Deployed and working. Outreach bot fixed. Status table: outreach Deployed, adaptFrequency Disabled, service active. Robert will get his first properly formatted morning briefing tomorrow.",
+          claims: {
+            deployed: true,
+            working: true,
+            outreach: "Deployed",
+            adaptFrequency: "Disabled",
+            service: "active",
+          },
+          probes: {
+            github: { checked: true, deployStatus: "success", cosmetic: true },
+            vercel: { checked: true, ready: true, cosmetic: true },
+            linear: { checked: false },
+            functional: { checked: true, messagesSent: 0, working: false },
+          },
+        };
+      }
+
+      function seedClaim19520() {
+        return {
+          session: "claim-19520",
+          issue: 19520,
+          text: "Committed sha 9f3e2a1b on the current branch and created a follow-up PR #88 via the make_pr tool.",
+          claims: { committed: true, sha: "9f3e2a1b", pr: 88 },
+          probes: {
+            github: { checked: true, shaExists: false, prExists: false },
+            vercel: { checked: false },
+            linear: { checked: false },
+            functional: { checked: false },
+          },
+        };
+      }
+
+      function seedClaim74427() {
+        return {
+          session: "claim-74427",
+          issue: 74427,
+          text: "Workflow complete. Commits pushed, PR opened, issue filed. Tests 10/10 PASS.",
+          claims: { commits: true, pr: true, issue: true, tests: "10/10 PASS", toolUses: 0 },
+          probes: {
+            github: { checked: false },
+            vercel: { checked: false },
+            linear: { checked: false },
+            functional: { checked: true, toolUses: 0 },
+          },
+        };
+      }
+
+      function parseClaimText(text) {
+        const src = String(text || "");
+        const shaMatch =
+          src.match(/\b(?:sha|commit(?:ted)?)\s*(?:hash)?\s*[:=]?\s*`?([0-9a-f]{7,40})`?/i) ||
+          src.match(/\b([0-9a-f]{7,40})\b/);
+        const prMatch = src.match(/\b(?:pr|pull request|pull)\s*#?\s*(\d+)\b/i) || src.match(/#(\d+)/);
+        return {
+          sha: shaMatch ? shaMatch[1].toLowerCase() : null,
+          pr: prMatch ? Number(prMatch[1]) : null,
+        };
+      }
+
+      function claimedWorkArtifacts(claims) {
+        return Boolean(claims.commits || claims.committed || claims.sha || claims.pr || claims.issue || claims.tests);
+      }
+
+      function scoreGithub(claims, probe) {
+        if (!probe.checked) return "unverified";
+        if (claims.sha && probe.shaExists === false) return "fabricated";
+        if (claims.pr != null && claims.pr !== false && probe.prExists === false) return "fabricated";
+        if (probe.deployStatus === "failed" && (claims.deployed || claims.working)) return "drift";
+        if ((claims.deployed || claims.working) && (probe.deployStatus === "success" || probe.cosmetic)) return "match";
+        if (claims.sha && probe.shaExists === true) return "match";
+        if (typeof claims.pr === "number" && probe.prExists === true) return "match";
+        return "unverified";
+      }
+
+      function scoreVercel(claims, probe) {
+        if (!probe.checked) return "unverified";
+        if ((claims.deployed || claims.working) && probe.ready === false) return "drift";
+        if ((claims.deployed || claims.working) && (probe.ready === true || probe.cosmetic === true)) return "match";
+        return "unverified";
+      }
+
+      function scoreLinear(claims, probe) {
+        if (!probe.checked) return "unverified";
+        if (claims.issue && probe.issueExists === false) return "fabricated";
+        if (claims.issue && probe.issueExists === true) return "match";
+        return "unverified";
+      }
+
+      function scoreFunctional(claims, probe) {
+        if (!probe.checked) return "unverified";
+        const tools = probe.toolUses ?? claims.toolUses;
+        if (tools === 0 && claimedWorkArtifacts(claims)) return "fabricated";
+        if ((claims.working || claims.deployed) && probe.messagesSent === 0) return "drift";
+        if ((claims.working || claims.deployed) && (probe.working === true || Number(probe.messagesSent) > 0)) return "match";
+        return "unverified";
+      }
+
+      function scoreChannels(claims, probes) {
+        return {
+          github: scoreGithub(claims, probes.github || {}),
+          vercel: scoreVercel(claims, probes.vercel || {}),
+          linear: scoreLinear(claims, probes.linear || {}),
+          functional: scoreFunctional(claims, probes.functional || {}),
+        };
+      }
+
+      function rollup(channels, empty) {
+        if (empty) return "even";
+        const values = CHANNELS.map((name) => channels[name]).filter(Boolean);
+        if (!values.length) return "even";
+        const decided = values.filter((value) => value !== "unverified");
+        if (!decided.length) return "unverified";
+        if (decided.includes("fabricated")) return "fabricated";
+        if (decided.includes("drift")) return "drift";
+        if (decided.includes("match")) return "match";
+        return decided[0];
+      }
+
+      function hasSubstance(input) {
+        if (String(input.text || "").trim()) return true;
+        const c = input.claims || {};
+        return Boolean(c.deployed || c.working || c.sha || c.pr || c.commits || c.committed || c.issue || c.tests || c.outreach);
+      }
+
+      function decide(input) {
+        if (input.action === "clear") {
+          const cleared = emptyClaim(input.session || "even-1");
+          return { verdict: "even", state: "even", idleWord: "even", claim: cleared, channels: scoreChannels(cleared.claims, cleared.probes) };
+        }
+        const parsed = parseClaimText(input.text);
+        const claims = {
+          ...(input.claims || {}),
+          sha: (input.claims && input.claims.sha) || parsed.sha || null,
+          pr: (input.claims && input.claims.pr) ?? parsed.pr ?? null,
+        };
+        const probes = input.probes || emptyClaim().probes;
+        const channels = scoreChannels(claims, probes);
+        const verdict = rollup(channels, !hasSubstance({ text: input.text, claims }));
+        return {
+          verdict,
+          state: verdict,
+          idleWord: verdict === "even" ? "even" : verdict,
+          claim: { ...input, claims, probes, parsed },
+          channels,
+        };
+      }
+
+      function adapters(result) {
+        if (result.verdict === "even") {
+          return [
+            { adapter: "slack", summary: "Would skip Slack — board is even." },
+            { adapter: "github", summary: "Would skip GitHub claim ledger — board is even." },
+            { adapter: "linear", summary: "No reality ticket — board is even." },
+          ];
+        }
+        if (result.verdict === "fabricated") {
+          return [
+            { adapter: "slack", summary: "Would post to Slack: fabricated alarm — cited artifacts do not exist." },
+            { adapter: "github", summary: "Would write a GitHub claim ledger (gist / issue comment). Demo: no token." },
+            { adapter: "linear", summary: "Would open a Linear reality ticket: Fabricated claim · Parity " + result.claim.session },
+          ];
+        }
+        if (result.verdict === "drift") {
+          return [
+            { adapter: "slack", summary: "Would post to Slack: drift alarm — claim does not match reality." },
+            { adapter: "github", summary: "Would write a GitHub claim ledger (gist / issue comment). Demo: no token." },
+            { adapter: "linear", summary: "Would open a Linear reality ticket: Claim drift · Parity " + result.claim.session },
+          ];
+        }
+        return [
+          { adapter: "slack", summary: "Would post to Slack: claim check — channels agree or stay unverified." },
+          { adapter: "github", summary: "Would write a GitHub claim ledger (gist / issue comment). Demo: no token." },
+          { adapter: "linear", summary: "No reality ticket — claim was not disputed." },
+        ];
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function probeLines(name, probe) {
+        if (!probe || !probe.checked) return "unchecked";
+        if (name === "github") {
+          const bits = [];
+          if (probe.cosmetic) bits.push("cosmetic green");
+          if (probe.deployStatus) bits.push("deploy " + probe.deployStatus);
+          if (probe.shaExists === false) bits.push("shaExists=false");
+          if (probe.shaExists === true) bits.push("shaExists=true");
+          if (probe.prExists === false) bits.push("prExists=false");
+          return bits.join(" · ") || "checked";
+        }
+        if (name === "vercel") {
+          return probe.cosmetic ? "cosmetic green · ready" : probe.ready ? "ready" : "checked";
+        }
+        if (name === "linear") return probe.issueExists === false ? "issueExists=false" : "checked";
+        const bits = [];
+        if (probe.messagesSent != null) bits.push("messagesSent=" + probe.messagesSent);
+        if (probe.toolUses != null) bits.push("toolUses=" + probe.toolUses);
+        if (probe.working === false) bits.push("not working");
+        if (probe.working === true) bits.push("working");
+        return bits.join(" · ") || "checked";
+      }
+
+      function copyFor(verdict) {
+        if (verdict === "even") return "Board empty. The idle word is even — not the product name.";
+        if (verdict === "match") return "Claim and decided probes agree. Unchecked channels were ignored.";
+        if (verdict === "drift") return "Cosmetic green is not enough. A decided channel disagrees with the claim.";
+        if (verdict === "fabricated") return "Cited artifacts do not exist, or the work was reported with zero tool uses.";
+        return "No decided channel yet. Unverified is not a match.";
+      }
+
+      let current = seedClaim40861();
+      let activeSeed = "40861";
+
+      function render() {
+        const result = decide(current);
+        const parsed = parseClaimText(current.text);
+        document.getElementById("claim-text").value = current.text;
+        document.getElementById("parsed-sha").textContent = parsed.sha || current.claims.sha || "—";
+        document.getElementById("parsed-pr").textContent = parsed.pr || current.claims.pr || "—";
+        document.getElementById("parsed-session").textContent = current.session || "—";
+
+        const rows = [
+          ["outreach", current.claims.outreach],
+          ["adaptFrequency", current.claims.adaptFrequency],
+          ["service", current.claims.service],
+          ["tests", current.claims.tests],
+          ["toolUses", current.claims.toolUses],
+        ].filter((row) => row[1] != null);
+        const table = document.getElementById("status-table");
+        table.innerHTML = rows.length
+          ? "<b>Status table</b>" + rows.map(([key, value]) => `<div class="row"><span>${escapeHtml(key)}</span><span>${escapeHtml(value)}</span></div>`).join("")
+          : "<b>Status table</b><div class=\"row\"><span>none</span><span>even</span></div>";
+
+        document.getElementById("channels").innerHTML = CHANNELS.map((name) => {
+          const mark = result.channels[name];
+          return `<article class="card"><b>${name}</b><div class="mark ${mark}">${mark}</div><div>${escapeHtml(probeLines(name, current.probes[name]))}</div></article>`;
+        }).join("");
+
+        document.getElementById("lamps").innerHTML = STATES.map((name) => {
+          const on = name === result.verdict ? " on" : "";
+          return `<div class="lamp${on} ${name}"><i></i><b>${name.toUpperCase()}</b></div>`;
+        }).join("");
+
+        const strip = document.getElementById("verdict");
+        strip.className = "verdict " + result.verdict;
+        strip.innerHTML = `<strong>${result.verdict}</strong><p>${escapeHtml(copyFor(result.verdict))}</p>`;
+
+        document.getElementById("sinks").innerHTML = adapters(result)
+          .map((row) => `<div class="event"><b>${escapeHtml(row.adapter)}</b><div>${escapeHtml(row.summary)}</div></div>`)
+          .join("");
+
+        document.querySelectorAll(".seed").forEach((button) => {
+          button.classList.toggle("on", button.id === "seed-" + activeSeed);
+        });
+
+        document.getElementById("hook").textContent = JSON.stringify({
+          hook_event_name: "ClaimCheck",
+          decision: result.verdict,
+          state: result.state,
+          idleWord: result.idleWord,
+          channels: result.channels,
+          claim: {
+            session: current.session,
+            text: current.text,
+            claims: result.claim.claims,
+          },
+        }, null, 2);
+      }
+
+      document.getElementById("seed-40861").addEventListener("click", () => {
+        current = seedClaim40861();
+        activeSeed = "40861";
+        render();
+      });
+      document.getElementById("seed-19520").addEventListener("click", () => {
+        current = seedClaim19520();
+        activeSeed = "19520";
+        render();
+      });
+      document.getElementById("seed-74427").addEventListener("click", () => {
+        current = seedClaim74427();
+        activeSeed = "74427";
+        render();
+      });
+      document.getElementById("check").addEventListener("click", () => {
+        current = {
+          ...current,
+          text: document.getElementById("claim-text").value,
+        };
+        render();
+      });
+      document.getElementById("clear").addEventListener("click", () => {
+        current = emptyClaim("even-1");
+        activeSeed = "";
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>
