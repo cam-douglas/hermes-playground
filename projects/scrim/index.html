@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Scrim — runtime DLP at the agent I/O boundary. Redact tool_result before model, disk, and chat."
+    />
+    <title>Scrim — veil the secret at the wire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,640&family=Sora:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #efece3;
+        --paper-2: #f7f4ec;
+        --frost: rgba(255, 255, 255, 0.58);
+        --ink: #17191e;
+        --mute: #5d626b;
+        --ice: #6d8b97;
+        --line: rgba(22, 24, 29, 0.1);
+        --tape: #121212;
+        --tape-ink: #f4f0e6;
+        --high: #b42318;
+        --med: #8a5a12;
+        --clean: #1f6b4a;
+        --sans: "Sora", "Avenir Next", "Helvetica Neue", sans-serif;
+        --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+        --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: var(--sans);
+        color: var(--ink);
+        background:
+          radial-gradient(900px 520px at 8% -10%, rgba(255, 255, 255, 0.85), transparent 55%),
+          radial-gradient(700px 420px at 110% 0%, rgba(160, 190, 200, 0.28), transparent 50%),
+          repeating-linear-gradient(180deg, transparent, transparent 27px, rgba(23, 25, 30, 0.025) 28px),
+          var(--paper);
+      }
+      a { color: var(--ice); }
+      button, textarea { font: inherit; }
+      .veil {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 18%, transparent 82%, rgba(239, 236, 227, 0.7)),
+          repeating-linear-gradient(98deg, transparent, transparent 46px, rgba(255, 255, 255, 0.07) 47px);
+        mix-blend-mode: soft-light;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: flex-end;
+        padding: 28px 32px 22px;
+        border-bottom: 1px solid var(--line);
+        background: var(--frost);
+        backdrop-filter: blur(14px);
+      }
+      .brand { display: flex; gap: 16px; align-items: center; }
+      .mark {
+        width: 46px;
+        height: 46px;
+        border: 1px solid rgba(22, 24, 29, 0.16);
+        background:
+          linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(200, 214, 220, 0.35));
+        position: relative;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+      }
+      .mark::before, .mark::after {
+        content: "";
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        height: 7px;
+        background: var(--tape);
+        transform: rotate(-6deg);
+      }
+      .mark::before { top: 14px; }
+      .mark::after { top: 26px; opacity: 0.72; transform: rotate(4deg); }
+      h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: 40px;
+        letter-spacing: -0.04em;
+        font-weight: 640;
+        line-height: 0.9;
+      }
+      .lede {
+        margin: 6px 0 0;
+        color: var(--mute);
+        font-size: 14px;
+        max-width: 44em;
+        line-height: 1.45;
+      }
+      .mode {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ice);
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+        background: var(--paper-2);
+        white-space: nowrap;
+      }
+      main {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 28px 0 80px;
+        display: grid;
+        gap: 22px;
+      }
+      .toolbar, .frames, .lower { display: grid; gap: 14px; }
+      .toolbar {
+        grid-template-columns: 1fr auto;
+        align-items: end;
+      }
+      @media (max-width: 820px) {
+        header { flex-direction: column; align-items: flex-start; }
+        .toolbar, .frames, .lower { grid-template-columns: 1fr; }
+      }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      .btn {
+        border: 1px solid var(--line);
+        background: var(--paper-2);
+        color: var(--ink);
+        padding: 9px 12px;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .btn.primary { background: var(--tape); color: var(--tape-ink); border-color: var(--tape); }
+      .btn:hover { transform: translateY(-1px); }
+      .frames { grid-template-columns: 1fr 1fr; }
+      .frame {
+        background: var(--frost);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--line);
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+      }
+      .frame h2 {
+        margin: 0;
+        padding: 12px 14px;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        font-weight: 500;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+      }
+      textarea, pre {
+        margin: 0;
+        padding: 14px;
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        flex: 1;
+      }
+      textarea {
+        width: 100%;
+        min-height: 280px;
+        border: 0;
+        resize: vertical;
+        background: transparent;
+        color: var(--ink);
+      }
+      textarea:focus { outline: 2px solid rgba(109, 139, 151, 0.35); outline-offset: -2px; }
+      pre { margin: 0; }
+      .tape {
+        display: inline-block;
+        background: var(--tape);
+        color: var(--tape-ink);
+        padding: 0 7px 1px;
+        margin: 0 1px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        transform: rotate(-0.5deg);
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
+      }
+      .lower { grid-template-columns: 1.2fr 0.8fr; }
+      .panel {
+        background: var(--paper-2);
+        border: 1px solid var(--line);
+        padding: 16px;
+      }
+      .panel h2 {
+        margin: 0 0 12px;
+        font-family: var(--display);
+        font-size: 22px;
+        letter-spacing: -0.03em;
+      }
+      .finding, .event {
+        display: grid;
+        gap: 4px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 13px;
+      }
+      .finding:last-child, .event:last-child { border-bottom: 0; }
+      .id { font-family: var(--mono); font-size: 12px; }
+      .sev { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .sev.high { color: var(--high); }
+      .sev.medium { color: var(--med); }
+      .clean-state {
+        padding: 28px 8px 12px;
+        text-align: left;
+      }
+      .clean-state h3 {
+        margin: 0 0 6px;
+        font-family: var(--display);
+        font-size: 34px;
+        letter-spacing: -0.04em;
+        color: var(--clean);
+      }
+      .clean-state p { margin: 0; color: var(--mute); max-width: 36em; }
+      .evidence {
+        color: var(--mute);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .evidence a { color: inherit; }
+      .hook {
+        font-family: var(--mono);
+        font-size: 11px;
+        background: #17191e;
+        color: #e8e4d8;
+        padding: 14px;
+        overflow: auto;
+        max-height: 260px;
+      }
+      .count {
+        font-family: var(--display);
+        font-size: 42px;
+        letter-spacing: -0.05em;
+        line-height: 0.9;
+      }
+      .count small {
+        display: block;
+        font-family: var(--sans);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-top: 6px;
+      }
+      footer {
+        color: var(--mute);
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="veil" aria-hidden="true"></div>
+    <header>
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>Scrim.</h1>
+          <p class="lede">
+            Stop the secret at the agent I/O boundary. Redact
+            <code>tool_result</code> / stdio / jsonl before the model, the disk,
+            and the chat sink. Then rotate.
+          </p>
+        </div>
+      </div>
+      <div class="mode">Boundary · PostToolUse · demo veil</div>
+    </header>
+    <main>
+      <div class="toolbar">
+        <div>
+          <div class="count" id="count">0<small>tokens under tape</small></div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="load" type="button">Load the stdio leak</button>
+          <button class="btn" id="families" type="button">Load key family sheet</button>
+          <button class="btn" id="scrub" type="button">Drop the veil</button>
+          <button class="btn" id="clear" type="button">Clear</button>
+        </div>
+      </div>
+      <section class="frames">
+        <article class="frame">
+          <h2>Wet frame <span>original · masked in demo</span></h2>
+          <textarea id="input" spellcheck="false" aria-label="tool_result or transcript snippet"></textarea>
+        </article>
+        <article class="frame">
+          <h2>Veiled frame <span>redacted · forensic ids</span></h2>
+          <pre id="output" aria-live="polite"></pre>
+        </article>
+      </section>
+      <section class="lower">
+        <div class="panel">
+          <h2>Findings</h2>
+          <div id="findings"></div>
+        </div>
+        <div class="panel">
+          <h2>Sink ledger</h2>
+          <div id="ledger"></div>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Hook · POST in, veiled out</h2>
+        <pre class="hook" id="hook"></pre>
+        <p class="evidence">
+          Not GitGuardian. Not a grant inbox. Evidence, not folklore:
+          <a href="https://github.com/openai/codex/issues/40378">codex#40378</a>
+          leaked prod ACR/Postgres/Azure OpenAI into tool traces (2026-08-24).
+          <a href="https://github.com/github/gh-aw/issues/25103">gh-aw#25103</a>
+          wrote a bearer 8× into world-readable agent-stdio.log via Read
+          <code>tool_result</code>.
+          <a href="https://github.com/anthropics/claude-code/issues/63593">claude-code#63593</a>
+          — 15 secret-scanning alerts from unredacted
+          <code>~/.claude/projects/**/*.jsonl</code> tool stdout.
+        </p>
+      </section>
+      <footer>
+        <span>Synthetic DEMO tokens only. Same secret, same eight hex, two sinks.</span>
+        <span><a href="/">Catalog</a> · <a href="/knock/">Knock</a> · <code>projects/scrim/</code></span>
+      </footer>
+    </main>
+    <script>
+      const FAMILIES = [
+        { id: "gcp_sa", severity: "high", re: /\{[^{}]*"type"\s*:\s*"service_account"[\s\S]{0,1200}?"private_key"\s*:\s*"-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----\\n"[\s\S]{0,400}?\}/g },
+        { id: "github_fine", severity: "high", re: /github_pat_[A-Za-z0-9_]{20,}/g },
+        { id: "github_pat", severity: "high", re: /ghp_[A-Za-z0-9]{20,}/g },
+        { id: "github_oauth", severity: "medium", re: /gho_[A-Za-z0-9]{20,}/g },
+        { id: "anthropic", severity: "high", re: /sk-ant-[A-Za-z0-9_-]{8,}/g },
+        { id: "openrouter", severity: "high", re: /sk-or-v1-[A-Za-z0-9]{16,}/g },
+        { id: "stripe_live", severity: "high", re: /sk_live_[A-Za-z0-9]{16,}/g },
+        { id: "stripe_whsec", severity: "medium", re: /whsec_[A-Za-z0-9]{16,}/g },
+        { id: "openai", severity: "high", re: /sk-[A-Za-z0-9]{20,}/g },
+        { id: "azure", severity: "high", re: /(?:AZURE[_A-Z0-9]*KEY|AccountKey|SharedKey)\s*[=:]\s*([A-Za-z0-9+/=]{32,})/gi },
+        { id: "bearer", severity: "high", re: /(?:Authorization:\s*)?Bearer\s+[A-Za-z0-9._\-+/=]{16,}/gi },
+      ];
+
+      const D = "DEMO";
+      const SECRETS = {
+        anthropic: "sk-ant-" + D + "00000000000000000000000AAA",
+        openai: "sk-" + D + "0000000000000000000000000BBB",
+        openrouter: "sk-or-v1-" + D + "0000000000000000000000CCC",
+        stripe: "sk_live_" + D + "000000000000000000000DDD",
+        whsec: "whsec_" + D + "0000000000000000000000EEE",
+        ghp: "ghp_" + D + "000000000000000000000000FFF1",
+        gho: "gho_" + D + "000000000000000000000000GGG1",
+        gfpat: "github_pat_" + D + "0000000000000000_HHHHHHHHHH",
+        bearer: D + "GATEWAYTOKEN000000000000III",
+        azure: D + "AZURE0000000000000000000000KEYJJJ",
+      };
+
+      const TOKEN = (family, id) => `[REDACTED:${family}:${id}]`;
+
+      async function sha8(text) {
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+        return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 8);
+      }
+
+      function normalize(family, match) {
+        if (family === "bearer") return match.replace(/^[\s\S]*?Bearer\s+/i, "");
+        if (family === "azure") return match.replace(/(?:AZURE[_A-Z0-9]*KEY|AccountKey|SharedKey)\s*[=:]\s*/i, "");
+        return match;
+      }
+
+      function seedStdio() {
+        const s = SECRETS;
+        return JSON.stringify(
+          {
+            hook_event_name: "PostToolUse",
+            tool_name: "Read",
+            tool_input: { file_path: "/home/ubuntu/.claude/projects/acme-prod/agent-stdio.log" },
+            tool_result: {
+              type: "text",
+              content: [
+                "2026-08-24T14:11:02Z mcp.gateway Authorization: Bearer " + s.bearer,
+                "AZURE_OPENAI_API_KEY=" + s.azure,
+                "ANTHROPIC_API_KEY=" + s.anthropic,
+                "GITHUB_TOKEN=" + s.ghp,
+                "OPENAI_API_KEY=" + s.openai,
+              ].join("\n"),
+            },
+            transcript_tail:
+              '{"type":"tool_result","content":"token=' +
+              s.ghp +
+              ' leaked 8× into world-readable agent-stdio.log"}',
+            _scrim_note:
+              "SYNTHETIC demo only. Every token carries DEMO. Evidence: openai/codex#40378, github/gh-aw#25103, anthropics/claude-code#63593.",
+          },
+          null,
+          2,
+        );
+      }
+
+      function seedFamilies() {
+        const s = SECRETS;
+        return [
+          "sk-ant- " + s.anthropic,
+          "sk- " + s.openai,
+          "sk-or-v1- " + s.openrouter,
+          "sk_live_ " + s.stripe,
+          "whsec_ " + s.whsec,
+          "ghp_ " + s.ghp,
+          "gho_ " + s.gho,
+          "github_pat_ " + s.gfpat,
+          "Bearer " + s.bearer,
+          "AZURE_OPENAI_API_KEY=" + s.azure,
+          'GCP_SA={"type":"service_account","project_id":"scrim-demo","private_key_id":"demo0001","private_key":"-----BEGIN PRIVATE KEY-----\\nDEMO-NOT-A-REAL-KEY\\n-----END PRIVATE KEY-----\\n","client_email":"scrim-demo@scrim-demo.iam.gserviceaccount.com"}',
+        ].join("\n");
+      }
+
+      async function redactText(text) {
+        const findings = [];
+        let out = text;
+        for (const family of FAMILIES) {
+          const re = new RegExp(family.re.source, family.re.flags.includes("g") ? family.re.flags : family.re.flags + "g");
+          const matches = [...out.matchAll(re)];
+          for (const hit of matches) {
+            const match = hit[0];
+            if (match.includes("[REDACTED:")) continue;
+            const secret = normalize(family.id, match);
+            const id = await sha8(secret);
+            let row = findings.find((item) => item.id === id && item.family === family.id);
+            if (!row) {
+              row = {
+                id,
+                family: family.id,
+                severity: family.severity,
+                count: 0,
+                prefix: secret.slice(0, 12),
+              };
+              findings.push(row);
+            }
+            row.count += 1;
+            const token = TOKEN(family.id, id);
+            const replacement =
+              family.id === "azure" ? match.slice(0, match.length - secret.length) + token : token;
+            out = out.replace(match, replacement);
+          }
+        }
+        return { out, findings };
+      }
+
+      function maskDemo(text) {
+        let out = text;
+        for (const family of FAMILIES) {
+          const re = new RegExp(family.re.source, family.re.flags.includes("g") ? family.re.flags : family.re.flags + "g");
+          out = out.replace(re, (match) => {
+            const secret = normalize(family.id, match);
+            const shown = secret.length <= 16 ? `${secret.slice(0, 8)}···` : `${secret.slice(0, 12)}···${secret.slice(-4)}`;
+            if (family.id === "azure") return match.slice(0, match.length - secret.length) + shown;
+            if (family.id === "bearer") return match.replace(secret, shown);
+            return shown;
+          });
+        }
+        return out;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function tapeHtml(text) {
+        return escapeHtml(text).replace(
+          /\[REDACTED:([a-z0-9_]+):([0-9a-f]{8})\]/g,
+          '<span class="tape">$1 · $2</span>',
+        );
+      }
+
+      function ledgerFor(findings) {
+        if (!findings.length) {
+          return [
+            { adapter: "slack", summary: "Would skip Slack — frame is clean." },
+            { adapter: "github", summary: "Would skip GitHub ledger — frame is clean." },
+            { adapter: "linear", summary: "No high-severity family — no rotate ticket." },
+          ];
+        }
+        const high = findings.filter((row) => row.severity === "high");
+        return [
+          {
+            adapter: "slack",
+            summary: "Would post to Slack: leak alert with redacted snippet (no webhook in demo).",
+          },
+          {
+            adapter: "github",
+            summary: "Would append an append-only redaction ledger (gist / check / comment). Demo: no token.",
+          },
+          {
+            adapter: "linear",
+            summary: high.length
+              ? `Would open a Linear rotate ticket for ${[...new Set(high.map((r) => r.family))].join(", ")}.`
+              : "No high-severity family — no rotate ticket.",
+          },
+        ];
+      }
+
+      const input = document.getElementById("input");
+      const output = document.getElementById("output");
+      const findingsEl = document.getElementById("findings");
+      const ledgerEl = document.getElementById("ledger");
+      const hookEl = document.getElementById("hook");
+      const countEl = document.getElementById("count");
+      let raw = seedStdio();
+
+      function showMasked() {
+        input.value = maskDemo(raw);
+      }
+
+      async function render() {
+        const { out, findings } = await redactText(raw);
+        countEl.innerHTML = `${findings.length}<small>${findings.length ? "tokens under tape" : "clean frame"}</small>`;
+        if (!String(raw).trim()) {
+          output.innerHTML = `<div class="clean-state"><h3>Clear.</h3><p>Empty frame. Paste a tool_result, or load the stdio leak.</p></div>`;
+          findingsEl.innerHTML = `<div class="clean-state"><h3>Clear.</h3><p>Nothing in the buffer.</p></div>`;
+        } else if (!findings.length) {
+          output.innerHTML = `<div class="clean-state"><h3>Clean.</h3><p>No key-shaped tokens in this frame. The veil stays up. Repo scanners would have had nothing to do here.</p></div>`;
+          findingsEl.innerHTML = `<div class="clean-state"><h3>Clean.</h3><p>No rotate playbook. No Slack. No ledger row.</p></div>`;
+        } else {
+          output.innerHTML = tapeHtml(out);
+          findingsEl.innerHTML = findings
+            .map(
+              (row) =>
+                `<div class="finding"><div class="id">${escapeHtml(row.family)} · ${escapeHtml(row.id)}</div><div class="sev ${row.severity}">${row.severity} · ×${row.count} · ${escapeHtml(row.prefix)}···</div></div>`,
+            )
+            .join("");
+        }
+        ledgerEl.innerHTML = ledgerFor(findings)
+          .map((row) => `<div class="event"><b>${row.adapter}</b><div>${escapeHtml(row.summary)}</div></div>`)
+          .join("");
+        const payload = {
+          hook_event_name: "PostToolUse",
+          clean: findings.length === 0,
+          findings,
+          redacted: out,
+        };
+        hookEl.textContent = JSON.stringify(payload, null, 2);
+      }
+
+      function use(text) {
+        raw = text;
+        showMasked();
+        render();
+      }
+
+      document.getElementById("load").addEventListener("click", () => use(seedStdio()));
+      document.getElementById("families").addEventListener("click", () => use(seedFamilies()));
+      document.getElementById("scrub").addEventListener("click", () => {
+        raw = input.value.includes("···") ? raw : input.value;
+        render();
+      });
+      document.getElementById("clear").addEventListener("click", () => use(""));
+      input.addEventListener("input", () => {
+        raw = input.value;
+        render();
+      });
+
+      showMasked();
+      render();
+    </script>
+  </body>
+</html>
