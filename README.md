@@ -11,9 +11,10 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 ```
 README.md                 catalog index (this file)
 catalog.json              1 product: Knock
-hub/                      public catalog page (not a product)
+index.html                hub page at `/` (filesystem hit; not a product)
+hub/                      same catalog page at `/hub/`
 projects/knock/           permission-gate relay
-vercel.json               hub + per-project path routing (apex `/` is hub)
+vercel.json               path routes before filesystem so `/knock/` reaches the product
 runs/hours.json           ship log index
 runs/2026-08-27-knock.md  Knock ship log
 runs/2026-08-27-reset.md  leftover era closed
