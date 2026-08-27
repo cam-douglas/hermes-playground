@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Sliver — the cut is done, but a sliver still sits. Move the leftover sliver. See the residual thin sliver still sitting on a fixed cut edge." />
+    <title>Sliver</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #0a0908;
+        --panel: #161410;
+        --ink: #e6e0d4;
+        --muted: #8a8274;
+        --line: rgba(200, 168, 112, 0.24);
+        --accent: #d4b878;
+        --timber: #2a2010;
+        --sliver: #f0c878;
+        --showing: #f0c878;
+        --clear: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(212, 184, 120, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(12, 10, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #0a0806 0%, #161410 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(22, 20, 16, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 184, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(28, 22, 16, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 184, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #ece4d4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1810;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #161410; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 184, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 184, 120, 0.1), transparent 46%),
+          #0a0908;
+        overflow: hidden;
+      }
+      #sliver-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(240, 200, 120, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-clear b { color: var(--clear); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #0a0806;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #sliver-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> sliver · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover sliver on the cut edge that still sits after the cut</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 27 Aug 2026 16:50</span>
+        <h1>Sliver</h1>
+        <p class="lede">
+          The cut is done, but a sliver still sits. Move the leftover sliver. See the residual thin sliver still sitting on a fixed cut edge.
+          Not a shaving. Not a chip. Not a stub. Not an overcut. Not tearout. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="sliver-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover sliver still sits on the cut edge after the cut</h2>
+          </div>
+          <span class="kicker" id="sliver-desk-meta">leftover 2 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="sliver-svg" viewBox="0 0 800 460" role="img" aria-labelledby="sliver-title sliver-desc">
+            <title id="sliver-title">Sliver is showing. Two millimetres of leftover sliver still sit on a fixed cut edge.</title>
+            <desc id="sliver-desc">One workpiece whose leftover is the sliver — leftover residual thin sliver that still sits on a fixed cut edge after the cut (leftover thin detached or hanging fibre of material still sitting on the cut edge after the cut is done, not a plane shaving curl, not a chisel chip, not a stub cut remnant, not an overcut, not tearout, not a clock). One workpiece; the cut is done; the leftover is one leftover residual thin sliver sitting on that fixed cut edge, not a shaving curl, not a chip, not a stub remnant. The leftover that still sits is the sliver — leftover residual thin sliver still sitting on a fixed cut edge. A sketch, not a mill sign-off. Not cut advice.</desc>
+            <defs>
+              <linearGradient id="sliver-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#181410" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+              <linearGradient id="sliver-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#24180c" />
+                <stop offset="36%" stop-color="#4a3418" />
+                <stop offset="68%" stop-color="#7a5830" />
+                <stop offset="100%" stop-color="#2e2210" />
+              </linearGradient>
+              <linearGradient id="sliver-cut-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#c88838" stop-opacity="0.18" />
+                <stop offset="100%" stop-color="#e8b060" stop-opacity="0.08" />
+              </linearGradient>
+              <linearGradient id="leftover-sliver-fibre-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f0d090" />
+                <stop offset="42%" stop-color="#e8b868" />
+                <stop offset="100%" stop-color="#c88838" />
+              </linearGradient>
+              <linearGradient id="leftover-sliver-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1c1810" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#0a0806" stroke="rgba(212,184,120,0.16)" />
+            <text x="36" y="42" fill="#8a8274" font-size="11" letter-spacing="2">ONE WORKPIECE · CUT IS DONE · LEFTOVER IS ONE THIN SLIVER STILL SITTING ON A FIXED CUT EDGE</text>
+            <g id="sliver-scene" data-view="cut-sliver" data-hero="leftover-sliver" data-sliver="2" data-leftover="showing" data-verdict="showing" data-sliver-state="sitting">
+              <g id="sliver-bench-layer"></g>
+              <g id="sliver-stock-layer"></g>
+              <g id="leftover-sliver-layer"></g>
+              <g id="sliver-mark-layer"></g>
+              <text id="sliver-scene-status" x="400" y="64" fill="#f0c878" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 2 MM LEFTOVER SLIVER</text>
+              <text id="sliver-scene-sketch" x="400" y="434" fill="#545044" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER THIN SLIVER STILL SITS ON A FIXED CUT EDGE · NOT A SHAVING · NOT A CHIP · NOT A STUB · NOT AN OVERCUT · NOT TEAROUT · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="sliver-alt" class="sr-only" aria-live="polite">Sliver is showing. Two millimetres of leftover sliver still sit on a fixed cut edge.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="sliver-input">Leftover sliver (mm of sitting length on the cut edge)</label>
+            <input id="sliver-input" type="range" min="0" max="8" step="1" value="2" />
+            <div class="ticks" aria-hidden="true">
+              <span>clear / no leftover sliver</span>
+              <span>seed showing</span>
+              <span>longer leftover sliver</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="sliver-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Sliver <b id="sliver-stat-mm">2 mm</b></span>
+          <span id="sliver-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="sliver-stat-leftover">showing</b></span>
+          <span>Leftover sliver (sketch) <b id="sliver-stat-span">2 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The cut is done, but a sliver still sits. Sliver is leftover residual thin sliver that still sits on a fixed cut edge. A sketch, not a mill sign-off, and not cut advice.
+        Seed is already showing — 2 mm of leftover sitting sliver on the cut edge, not a clear-only edge. Arrow keys move the focused control.
+        Refresh restores the seed. Not a shaving. Not a chip. Not a stub. Not an overcut. Not tearout. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const SLIVER_SEED = { sliverMm: 2 };
+      const SLIVER_MIN = 0;
+      const SLIVER_MAX = 8;
+      const SLIVER_CLEAR_AT = 0;
+      const SLIVER_SCALE = 14;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 560;
+      const FACE_TOP = 108;
+      const FACE_BOT = 258;
+      const CUT_X = FACE_RIGHT;
+      const SLIVER_ATTACH_Y = 168;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 328;
+      const PROFILE_LEFT = 168;
+      const PROFILE_CUT_X = 560;
+
+      let sliverMm = SLIVER_SEED.sliverMm;
+
+      const sliverSvg = document.getElementById("sliver-svg");
+      const sliverScene = document.getElementById("sliver-scene");
+      const sliverTitle = document.getElementById("sliver-title");
+      const sliverAlt = document.getElementById("sliver-alt");
+      const sliverDeskMeta = document.getElementById("sliver-desk-meta");
+      const sliverInput = document.getElementById("sliver-input");
+      const sliverBenchLayer = document.getElementById("sliver-bench-layer");
+      const sliverStockLayer = document.getElementById("sliver-stock-layer");
+      const leftoverSliverLayer = document.getElementById("leftover-sliver-layer");
+      const sliverMarkLayer = document.getElementById("sliver-mark-layer");
+      const sliverSceneStatus = document.getElementById("sliver-scene-status");
+      const sliverStatMm = document.getElementById("sliver-stat-mm");
+      const sliverStatLeftover = document.getElementById("sliver-stat-leftover");
+      const sliverStatLeftoverWrap = document.getElementById("sliver-stat-leftover-wrap");
+      const sliverStatSpan = document.getElementById("sliver-stat-span");
+      const sliverBtnReset = document.getElementById("sliver-btn-reset");
+      const sliverBtnResetStage = document.getElementById("sliver-btn-reset-stage");
+
+      function sliverClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function sliverEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function sliverSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverSliverGeom(lengthPx) {
+        const length = Math.max(0, lengthPx);
+        const attachY = SLIVER_ATTACH_Y;
+        const hang = length * 0.34;
+        const thick = Math.max(2.4, 2.2 + sliverMm * 0.22);
+        return {
+          x: CUT_X,
+          y: attachY,
+          length: length,
+          thick: thick,
+          tipX: CUT_X + length,
+          tipY: attachY + hang,
+          midX: CUT_X + length * 0.58,
+          midY: attachY + hang * 0.38
+        };
+      }
+
+      function leftoverSliverFibrePath(geom) {
+        const x0 = geom.x;
+        const y0 = geom.y;
+        const half = geom.thick / 2;
+        const tipX = geom.tipX;
+        const tipY = geom.tipY;
+        const midX = geom.midX;
+        const midY = geom.midY;
+        const neck = Math.max(1.1, geom.thick * 0.42);
+        return "M " + x0.toFixed(1) + " " + (y0 - half).toFixed(1) +
+          " Q " + (midX + 1.2).toFixed(1) + " " + (midY - neck).toFixed(1) + " " + tipX.toFixed(1) + " " + tipY.toFixed(1) +
+          " Q " + (midX - 0.6).toFixed(1) + " " + (midY + neck).toFixed(1) + " " + x0.toFixed(1) + " " + (y0 + half).toFixed(1) +
+          " Z";
+      }
+
+      function sliverPicture() {
+        const leftover = sliverMm <= SLIVER_CLEAR_AT ? "clear" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + sliverMm + " MM LEFTOVER SLIVER";
+          alt = "Sliver is showing. " + sliverSpokenMm(sliverMm).charAt(0).toUpperCase() + sliverSpokenMm(sliverMm).slice(1) + " millimetre" + (sliverMm === 1 ? "" : "s") + " of leftover sliver still sit" + (sliverMm === 1 ? "s" : "") + " on a fixed cut edge.";
+        } else {
+          status = "CLEAR · NO LEFTOVER SLIVER";
+          alt = "Sliver is clear. The cut is done. No leftover sliver. A sketch, not a mill sign-off.";
+        }
+        const sliverPx = leftover === "showing" ? Math.max(16, sliverMm * SLIVER_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#f0c878" : "#8ec8b4",
+          sliverPx: sliverPx,
+          sliverState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-sliver" : "clear-edge"
+        };
+      }
+
+      function sliverPaint(pic) {
+        const isClear = pic.leftover === "clear";
+        const fibre = leftoverSliverGeom(pic.sliverPx);
+
+        sliverBenchLayer.replaceChildren();
+        sliverBenchLayer.appendChild(sliverEl("rect", {
+          class: "site leftover-work leftover-sliver leftover-cut leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#sliver-bench-wash)",
+          stroke: "rgba(212,184,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        sliverBenchLayer.appendChild(sliverEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a6254",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · CUT IS DONE · ONE LEFTOVER THIN SLIVER STILL SITS ON A FIXED CUT EDGE";
+
+        sliverStockLayer.replaceChildren();
+        const stock = sliverEl("g", {
+          id: "sliver-stock",
+          class: isClear
+            ? "stock leftover-clear leftover-no-sliver leftover-sliver leftover-cut leftover-true"
+            : "stock leftover-showing leftover-sliver leftover-sitting leftover-cut"
+        });
+        stock.appendChild(sliverEl("rect", {
+          id: "sliver-workpiece-face",
+          class: "stock-board leftover-stock leftover-workpiece leftover-sliver leftover-not-the-leftover leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub leftover-cut-context leftover-kept leftover-face leftover-fixed leftover-cut-edge",
+          x: String(FACE_LEFT),
+          y: String(FACE_TOP),
+          width: String(FACE_RIGHT - FACE_LEFT),
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#sliver-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "cut-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(sliverEl("rect", {
+          id: "sliver-workpiece-cut",
+          class: "stock-cut leftover-stock leftover-workpiece leftover-sliver leftover-not-the-leftover leftover-cut leftover-edge leftover-fixed leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub",
+          x: String(CUT_X - 3),
+          y: String(FACE_TOP),
+          width: "3",
+          height: String(FACE_BOT - FACE_TOP),
+          fill: "url(#sliver-cut-wash)",
+          "data-shape": "cut-edge",
+          "data-role": "cut-edge",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(sliverEl("line", {
+          id: "sliver-cut-edge",
+          class: "cut-edge leftover-cut leftover-fixed leftover-not-the-leftover leftover-cut-edge leftover-kept leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub leftover-not-an-overcut leftover-not-tearout",
+          x1: String(CUT_X),
+          y1: String(FACE_TOP),
+          x2: String(CUT_X),
+          y2: String(FACE_BOT),
+          stroke: pic.accent,
+          "stroke-width": "2.2",
+          "stroke-linecap": "square",
+          "data-fixed": "true",
+          "data-role": "cut-edge"
+        }));
+        stock.appendChild(sliverEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_TOP + 20),
+          fill: "#e8d8b0",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "CUT EDGE · FIXED · CUT IS DONE";
+        sliverStockLayer.appendChild(stock);
+
+        leftoverSliverLayer.replaceChildren();
+        const leftover = sliverEl("g", {
+          id: "leftover-sliver",
+          class: isClear
+            ? "sliver leftover-sliver leftover-clear leftover-empty leftover-no-sliver leftover-cut leftover-true"
+            : "sliver leftover-sliver leftover-showing leftover-one leftover-sitting leftover-span leftover-thin leftover-fibre leftover-hanging leftover-detached leftover-edge leftover-residual leftover-on-edge leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub leftover-not-an-overcut leftover-not-tearout leftover-not-a-clock",
+          "data-sliver-mm": String(sliverMm),
+          "data-sliver-px": String(pic.sliverPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        if (!isClear) {
+          leftover.appendChild(sliverEl("path", {
+            id: "leftover-sliver-fibre",
+            class: "leftover-sliver leftover-showing leftover-one leftover-sitting leftover-span leftover-thin leftover-fibre leftover-hanging leftover-detached leftover-void leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub leftover-local leftover-residual leftover-on-edge leftover-not-a-curl leftover-not-a-remnant leftover-not-tearout leftover-not-an-overcut",
+            d: leftoverSliverFibrePath(fibre),
+            fill: "url(#leftover-sliver-fibre-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.05",
+            "stroke-linejoin": "round",
+            "stroke-linecap": "round",
+            opacity: "0.96",
+            "data-shape": "leftover-sliver",
+            "data-sliver-mm": String(sliverMm),
+            "data-role": "sitting-sliver",
+            "data-sliver-px": String(pic.sliverPx.toFixed(1)),
+            "data-origin-x": String(CUT_X),
+            "data-origin-y": String(SLIVER_ATTACH_Y)
+          }));
+          leftover.appendChild(sliverEl("line", {
+            id: "leftover-sliver-glint",
+            class: "leftover-sliver leftover-showing leftover-sitting leftover-thin leftover-glint leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub leftover-residual leftover-on-edge leftover-hanging leftover-detached",
+            x1: String((CUT_X + 2).toFixed(1)),
+            y1: String((fibre.y - 0.4).toFixed(1)),
+            x2: String((fibre.midX + 1).toFixed(1)),
+            y2: String((fibre.midY - 0.6).toFixed(1)),
+            stroke: "#ecd8b0",
+            "stroke-width": "0.85",
+            opacity: "0.46",
+            "data-shape": "leftover-sliver-glint",
+            "data-role": "sitting-sliver-glint"
+          }));
+          leftover.appendChild(sliverEl("text", {
+            id: "leftover-sliver-label",
+            class: "sliver-label leftover-label leftover-sliver leftover-showing leftover-sitting leftover-span leftover-thin leftover-on-edge leftover-hanging leftover-detached",
+            x: String((fibre.tipX + 12).toFixed(1)),
+            y: String((fibre.tipY + 4).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "start"
+          })).textContent = "SLIVER";
+        } else {
+          leftover.appendChild(sliverEl("line", {
+            id: "leftover-sliver-clear-path",
+            class: "leftover-sliver leftover-clear leftover-empty leftover-no-sliver leftover-cut leftover-true leftover-cut-edge leftover-not-a-sliver leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub",
+            x1: String(CUT_X),
+            y1: String(FACE_TOP + 8),
+            x2: String(CUT_X),
+            y2: String(FACE_BOT - 8),
+            fill: "none",
+            stroke: pic.accent,
+            "stroke-width": "1.4",
+            "stroke-dasharray": "4 5",
+            opacity: "0.72",
+            "data-shape": "clear-edge"
+          }));
+        }
+        leftoverSliverLayer.appendChild(leftover);
+
+        sliverMarkLayer.replaceChildren();
+        sliverMarkLayer.appendChild(sliverEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · CUT IS DONE · FIXED";
+        sliverMarkLayer.appendChild(sliverEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isClear ? "EDGE · CLEAR / NO LEFTOVER SLIVER" : "EDGE · ONE LEFTOVER THIN SLIVER STILL SITS";
+
+        sliverMarkLayer.appendChild(sliverEl("rect", {
+          id: "sliver-profile-face",
+          class: "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-cut-edge leftover-cut",
+          x: String(PROFILE_LEFT),
+          y: String(PROFILE_FACE_Y),
+          width: String(PROFILE_CUT_X - PROFILE_LEFT),
+          height: String(PROFILE_BOT - 16 - PROFILE_FACE_Y),
+          fill: "url(#leftover-sliver-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          opacity: "0.94",
+          "data-fixed": "true"
+        }));
+        sliverMarkLayer.appendChild(sliverEl("line", {
+          id: "sliver-profile-cut",
+          class: isClear
+            ? "profile leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-clear leftover-no-sliver leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub"
+            : "profile leftover-cut leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-with-sliver leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub",
+          x1: String(PROFILE_CUT_X),
+          y1: String(PROFILE_FACE_Y),
+          x2: String(PROFILE_CUT_X),
+          y2: String(PROFILE_BOT - 16),
+          stroke: pic.accent,
+          "stroke-width": "2",
+          "stroke-dasharray": isClear ? "3 4" : "none",
+          opacity: "0.94",
+          "data-fixed": "true",
+          "data-shape": isClear ? "clear-edge" : "leftover-sliver-span"
+        }));
+
+        if (!isClear) {
+          const extent = Math.max(16, pic.sliverPx);
+          const hang = extent * 0.28;
+          const thick = Math.max(2.6, 2.2 + sliverMm * 0.2);
+          const attachY = PROFILE_FACE_Y + 8;
+          const tipX = PROFILE_CUT_X + extent;
+          const tipY = attachY + hang;
+          const midX = PROFILE_CUT_X + extent * 0.58;
+          const midY = attachY + hang * 0.38;
+          const neck = Math.max(1.1, thick * 0.42);
+          const profileD = "M " + PROFILE_CUT_X + " " + (attachY - thick / 2).toFixed(1) +
+            " Q " + (midX + 1).toFixed(1) + " " + (midY - neck).toFixed(1) + " " + tipX.toFixed(1) + " " + tipY.toFixed(1) +
+            " Q " + (midX - 0.4).toFixed(1) + " " + (midY + neck).toFixed(1) + " " + PROFILE_CUT_X + " " + (attachY + thick / 2).toFixed(1) +
+            " Z";
+          sliverMarkLayer.appendChild(sliverEl("path", {
+            id: "leftover-sliver-profile-fibre",
+            class: "leftover-sliver leftover-showing leftover-sitting leftover-thin leftover-profile leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub leftover-on-edge leftover-residual leftover-hanging leftover-detached leftover-not-tearout leftover-not-an-overcut",
+            d: profileD,
+            fill: "url(#leftover-sliver-fibre-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.05",
+            opacity: "0.94",
+            "data-shape": "leftover-sliver",
+            "data-role": "sitting-sliver-profile"
+          }));
+          const dimY = PROFILE_FACE_Y - 18;
+          sliverMarkLayer.appendChild(sliverEl("line", {
+            id: "sliver-dim",
+            class: "sliver-dim leftover-sliver leftover-showing leftover-sitting leftover-span leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub leftover-thin leftover-hanging leftover-detached",
+            x1: String(PROFILE_CUT_X),
+            y1: String(dimY),
+            x2: String((PROFILE_CUT_X + extent).toFixed(1)),
+            y2: String(dimY),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          sliverMarkLayer.appendChild(sliverEl("text", {
+            id: "sliver-mm-label",
+            class: "sliver-label leftover-label leftover-sliver leftover-showing leftover-sitting leftover-span leftover-thin leftover-on-edge leftover-hanging leftover-detached",
+            x: String(PROFILE_CUT_X + extent / 2),
+            y: String(dimY - 6),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "middle"
+          })).textContent = sliverMm + " mm";
+          sliverMarkLayer.appendChild(sliverEl("text", {
+            id: "sliver-span-label",
+            class: "span-label leftover-sliver leftover-one leftover-sitting leftover-span leftover-thin leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub leftover-residual leftover-on-edge leftover-hanging leftover-detached leftover-not-tearout leftover-not-an-overcut",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#ece4d4",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER SLIVER · ONE THIN HANGING FIBRE ON A FIXED CUT EDGE · NOT A SHAVING · NOT A CHIP · NOT A STUB";
+        } else {
+          sliverMarkLayer.appendChild(sliverEl("text", {
+            id: "sliver-label",
+            class: "sliver-label leftover-label leftover-clear leftover-no-sliver leftover-cut leftover-empty leftover-true leftover-not-a-shaving leftover-not-a-chip leftover-not-a-stub",
+            x: "400",
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "CLEAR / NO LEFTOVER SLIVER";
+          sliverMarkLayer.appendChild(sliverEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · CLEAR / NO LEFTOVER SLIVER";
+        }
+
+        sliverSceneStatus.setAttribute("fill", pic.accent);
+        sliverSceneStatus.textContent = pic.status;
+        sliverScene.setAttribute("data-sliver", String(sliverMm));
+        sliverScene.setAttribute("data-leftover", pic.leftover);
+        sliverScene.setAttribute("data-verdict", pic.verdict);
+        sliverScene.setAttribute("data-view", "cut-sliver");
+        sliverScene.setAttribute("data-hero", "leftover-sliver");
+        sliverScene.setAttribute("data-sliver-mm", String(sliverMm));
+        sliverScene.setAttribute("data-sliver-px", String(pic.sliverPx.toFixed(1)));
+        sliverScene.setAttribute("data-sliver-state", pic.sliverState);
+        sliverScene.setAttribute("data-shape", pic.shape);
+        sliverScene.setAttribute("data-edge-fixed", "true");
+        sliverScene.setAttribute("data-cut-fixed", "true");
+      }
+
+      function sliverToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-clear";
+      }
+
+      function sliverRender() {
+        const pic = sliverPicture();
+        sliverPaint(pic);
+        sliverTitle.textContent = pic.alt;
+        sliverAlt.textContent = pic.alt;
+        sliverSvg.setAttribute("aria-label", pic.alt);
+        sliverDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + sliverMm + " mm showing"
+          : "leftover clear";
+        sliverStatMm.textContent = sliverMm + " mm";
+        sliverStatLeftover.textContent = pic.leftover;
+        sliverStatSpan.textContent = pic.leftover === "showing"
+          ? sliverMm + " mm leftover"
+          : "clear";
+        sliverStatLeftoverWrap.classList.remove("is-showing", "is-clear");
+        sliverStatLeftoverWrap.classList.add(sliverToneClass(pic.leftover));
+        if (Number(sliverInput.value) !== sliverMm) sliverInput.value = String(sliverMm);
+        sliverInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function sliverResetSeed() {
+        sliverMm = SLIVER_SEED.sliverMm;
+        sliverRender();
+      }
+
+      sliverInput.addEventListener("input", function (event) {
+        sliverMm = sliverClamp(Math.round(Number(event.target.value)), SLIVER_MIN, SLIVER_MAX);
+        sliverRender();
+      });
+      sliverBtnReset.addEventListener("click", sliverResetSeed);
+      sliverBtnResetStage.addEventListener("click", sliverResetSeed);
+
+      sliverRender();
+    </script>
+  </body>
+</html>
