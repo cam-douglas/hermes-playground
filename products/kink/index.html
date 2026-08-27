@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Kink — the straighten is done, but a kink still sits. Move the leftover kink. See the residual local kink still sitting in a fixed board edge." />
+    <title>Kink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650;8..60,700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #0a0908;
+        --panel: #161410;
+        --ink: #e6e0d4;
+        --muted: #8a8274;
+        --line: rgba(200, 168, 112, 0.24);
+        --accent: #d4b878;
+        --timber: #2a2010;
+        --kink: #f0c878;
+        --showing: #f0c878;
+        --straight: #8ec8b4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 18% -8%, rgba(212, 184, 120, 0.12), transparent 30%),
+          radial-gradient(circle at 86% 16%, rgba(12, 10, 8, 0.22), transparent 26%),
+          linear-gradient(180deg, #0a0806 0%, #161410 100%);
+      }
+      button, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: min(1100px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 64px; }
+      .cmd {
+        display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        margin-bottom: 14px; color: var(--muted); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      }
+      .cmd-left, .cmd-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--line); background: rgba(22, 20, 16, 0.92);
+      }
+      .led {
+        width: 8px; height: 8px; border-radius: 1px; background: var(--accent);
+        box-shadow: 0 0 12px rgba(212, 184, 120, 0.7);
+      }
+      .mast {
+        padding: 26px 28px 22px; border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(28, 22, 16, 0.96), rgba(10, 8, 6, 0.94));
+      }
+      .eyebrow {
+        display: inline-block; padding: 3px 8px; border: 1px solid rgba(212, 184, 120, 0.45);
+        color: var(--accent); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      }
+      h1 {
+        font-family: "Source Serif 4", "Iowan Old Style", Georgia, serif; font-weight: 700;
+        margin: 12px 0 10px; font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.86; letter-spacing: -0.03em;
+      }
+      .lede { max-width: 76ch; color: #ece4d4; font-size: 14px; line-height: 1.6; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px;
+        border: 1px solid var(--line); background: #1c1810;
+        font-family: "Source Serif 4", Georgia, serif; letter-spacing: 0.04em; font-size: 15px;
+      }
+      .btn.primary { background: var(--accent); border-color: transparent; color: #161410; }
+      .btn:hover, .btn:focus-visible {
+        outline: 2px solid rgba(212, 184, 120, 0.5); outline-offset: 2px;
+      }
+      .stage { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); }
+      .panel-head {
+        display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+        padding: 12px 14px 10px; border-bottom: 1px solid var(--line);
+      }
+      .panel-head h2 {
+        font-family: "Source Serif 4", Georgia, serif; font-weight: 650;
+        margin: 0; font-size: 22px; letter-spacing: 0.01em;
+      }
+      .kicker { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .desk-stage {
+        padding: 8px 8px 4px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(212, 184, 120, 0.1), transparent 46%),
+          #0a0908;
+        overflow: hidden;
+      }
+      #kink-svg {
+        display: block; width: 100%; max-width: 800px; height: auto; margin: 0 auto;
+      }
+      .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+      }
+      .controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .strip-ctrl {
+        display: grid; gap: 10px;
+        padding: 14px 16px 16px;
+      }
+      .strip-ctrl label {
+        font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%; height: 28px; margin: 0;
+        accent-color: var(--showing);
+        background: transparent;
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(240, 200, 120, 0.7); outline-offset: 4px;
+      }
+      .ticks {
+        display: flex; justify-content: space-between; gap: 4px;
+        color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .reset-ctrl {
+        display: grid; align-content: center; justify-items: center; gap: 8px;
+        padding: 14px 16px; min-width: 168px;
+        border-left: 1px solid var(--line);
+      }
+      .readout {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
+        border-top: 1px solid var(--line);
+      }
+      .readout b { display: block; font-size: 20px; color: white; font-variant-numeric: tabular-nums; }
+      .readout span {
+        display: block; padding: 12px 14px;
+        color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      }
+      .readout span + span { border-left: 1px solid var(--line); }
+      .readout .is-showing b { color: var(--showing); }
+      .readout .is-straight b { color: var(--straight); }
+      .note {
+        margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55;
+      }
+      html.is-embed, html.is-embed body {
+        min-height: 0;
+        background: #0a0806;
+      }
+      html.is-embed .cmd,
+      html.is-embed .mast,
+      html.is-embed .note {
+        display: none;
+      }
+      html.is-embed .wrap {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      html.is-embed .stage {
+        margin-top: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+      @media (max-width: 720px) {
+        .controls { grid-template-columns: 1fr; }
+        .reset-ctrl,
+        .readout span + span { border-left: 0; border-top: 1px solid var(--line); }
+        .readout { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(40px, 14vw, 64px); }
+        #kink-svg { max-width: 100%; }
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("embed") === "1") {
+            document.documentElement.classList.add("is-embed");
+          }
+        } catch (err) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="cmd">
+        <div class="cmd-left">
+          <a class="pill" href="/">← catalogue</a>
+          <span class="pill"><span class="led"></span> kink · local</span>
+        </div>
+        <div class="cmd-right">
+          <span class="pill">leftover kink in the board edge that still sits after the straighten</span>
+        </div>
+      </div>
+
+      <header class="mast">
+        <span class="eyebrow">timber instrument · 27 Aug 2026 15:50</span>
+        <h1>Kink</h1>
+        <p class="lede">
+          The straighten is done, but a kink still sits. Move the leftover kink. See the residual local kink still sitting in a fixed board edge.
+          Not a warp. Not spring. Not lift. Not a clock.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="kink-btn-reset">Reset to seed</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="panel-head">
+          <div>
+            <div class="kicker">the leftover</div>
+            <h2>How much leftover kink still sits in the board edge after the straighten</h2>
+          </div>
+          <span class="kicker" id="kink-desk-meta">leftover 3 mm showing</span>
+        </div>
+        <div class="desk-stage">
+          <svg id="kink-svg" viewBox="0 0 800 460" role="img" aria-labelledby="kink-title kink-desc">
+            <title id="kink-title">Kink is showing. Three millimetres of leftover kink still sit in a fixed board edge.</title>
+            <desc id="kink-desc">One workpiece whose leftover is the kink — leftover residual local kink that still sits in a fixed board edge after the straighten (leftover sharp local bend still sitting in the edge after the straighten is done, not a full-length warp bow, not spring-back, not lift, not a clock). One workpiece; the straighten is done; the leftover is one leftover residual local kink sitting in that fixed board edge, not a warp, not spring, not lift. The leftover that still sits is the kink — leftover residual local kink still sitting in a fixed board edge. A sketch, not a mill sign-off. Not straighten advice.</desc>
+            <defs>
+              <linearGradient id="kink-bench-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#181410" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+              <linearGradient id="kink-face-wash" x1="0%" y1="0%" x2="100%" y2="18%">
+                <stop offset="0%" stop-color="#24180c" />
+                <stop offset="36%" stop-color="#4a3418" />
+                <stop offset="68%" stop-color="#7a5830" />
+                <stop offset="100%" stop-color="#2e2210" />
+              </linearGradient>
+              <linearGradient id="kink-edge-wash" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#c88838" stop-opacity="0.18" />
+                <stop offset="100%" stop-color="#e8b060" stop-opacity="0.08" />
+              </linearGradient>
+              <linearGradient id="leftover-kink-bend-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#f0d090" />
+                <stop offset="42%" stop-color="#e8b868" />
+                <stop offset="100%" stop-color="#c88838" />
+              </linearGradient>
+              <linearGradient id="leftover-kink-section-wash" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#1c1810" />
+                <stop offset="100%" stop-color="#0a0806" />
+              </linearGradient>
+            </defs>
+            <rect x="12" y="12" width="776" height="436" rx="6" fill="#0a0806" stroke="rgba(212,184,120,0.16)" />
+            <text x="36" y="42" fill="#8a8274" font-size="11" letter-spacing="2">ONE WORKPIECE · STRAIGHTEN IS DONE · LEFTOVER IS ONE LOCAL KINK STILL SITTING IN A FIXED BOARD EDGE</text>
+            <g id="kink-scene" data-view="board-kink" data-hero="leftover-kink" data-kink="3" data-leftover="showing" data-verdict="showing" data-kink-state="sitting">
+              <g id="kink-bench-layer"></g>
+              <g id="kink-stock-layer"></g>
+              <g id="leftover-kink-layer"></g>
+              <g id="kink-mark-layer"></g>
+              <text id="kink-scene-status" x="400" y="64" fill="#f0c878" font-size="12" letter-spacing="1.6" text-anchor="middle">SHOWING · 3 MM LEFTOVER KINK</text>
+              <text id="kink-scene-sketch" x="400" y="434" fill="#545044" font-size="10" letter-spacing="1.4" text-anchor="middle">SKETCH · ONE LEFTOVER LOCAL KINK STILL SITS IN A FIXED BOARD EDGE · NOT A WARP · NOT SPRING · NOT LIFT · NOT A CLOCK</text>
+            </g>
+          </svg>
+        </div>
+        <p id="kink-alt" class="sr-only" aria-live="polite">Kink is showing. Three millimetres of leftover kink still sit in a fixed board edge.</p>
+        <div class="controls">
+          <div class="strip-ctrl">
+            <label for="kink-input">Leftover kink (mm of sitting offset in the board edge)</label>
+            <input id="kink-input" type="range" min="0" max="10" step="1" value="3" />
+            <div class="ticks" aria-hidden="true">
+              <span>straight / no leftover kink</span>
+              <span>seed showing</span>
+              <span>larger leftover kink</span>
+            </div>
+          </div>
+          <div class="reset-ctrl">
+            <button type="button" class="btn" id="kink-btn-reset-stage">Reset to seed</button>
+          </div>
+        </div>
+        <div class="readout">
+          <span>Kink <b id="kink-stat-mm">3 mm</b></span>
+          <span id="kink-stat-leftover-wrap" class="is-showing">Leftover (sketch) <b id="kink-stat-leftover">showing</b></span>
+          <span>Leftover kink (sketch) <b id="kink-stat-span">3 mm leftover</b></span>
+        </div>
+      </section>
+
+      <p class="note">
+        The straighten is done, but a kink still sits. Kink is leftover residual local kink that still sits in a fixed board edge. A sketch, not a mill sign-off, and not straighten advice.
+        Seed is already showing — 3 mm of leftover sitting kink in the board edge, not a straight-only edge. Arrow keys move the focused control.
+        Refresh restores the seed. Not a warp. Not spring. Not lift. Not a clock.
+      </p>
+    </div>
+
+    <script>
+      const KINK_SEED = { kinkMm: 3 };
+      const KINK_MIN = 0;
+      const KINK_MAX = 10;
+      const KINK_STRAIGHT_AT = 0;
+      const KINK_SCALE = 7;
+      const FACE_LEFT = 88;
+      const FACE_RIGHT = 712;
+      const FACE_TOP = 148;
+      const FACE_BOT = 258;
+      const EDGE_Y = FACE_TOP;
+      const KINK_X = 336;
+      const KINK_HALF = 42;
+      const PROFILE_TOP = 292;
+      const PROFILE_BOT = 392;
+      const PROFILE_FACE_Y = 328;
+      const PROFILE_LEFT = 168;
+      const PROFILE_RIGHT = 560;
+      const PROFILE_KINK_X = 364;
+
+      let kinkMm = KINK_SEED.kinkMm;
+
+      const kinkSvg = document.getElementById("kink-svg");
+      const kinkScene = document.getElementById("kink-scene");
+      const kinkTitle = document.getElementById("kink-title");
+      const kinkAlt = document.getElementById("kink-alt");
+      const kinkDeskMeta = document.getElementById("kink-desk-meta");
+      const kinkInput = document.getElementById("kink-input");
+      const kinkBenchLayer = document.getElementById("kink-bench-layer");
+      const kinkStockLayer = document.getElementById("kink-stock-layer");
+      const leftoverKinkLayer = document.getElementById("leftover-kink-layer");
+      const kinkMarkLayer = document.getElementById("kink-mark-layer");
+      const kinkSceneStatus = document.getElementById("kink-scene-status");
+      const kinkStatMm = document.getElementById("kink-stat-mm");
+      const kinkStatLeftover = document.getElementById("kink-stat-leftover");
+      const kinkStatLeftoverWrap = document.getElementById("kink-stat-leftover-wrap");
+      const kinkStatSpan = document.getElementById("kink-stat-span");
+      const kinkBtnReset = document.getElementById("kink-btn-reset");
+      const kinkBtnResetStage = document.getElementById("kink-btn-reset-stage");
+
+      function kinkClamp(n, lo, hi) {
+        return Math.max(lo, Math.min(hi, n));
+      }
+
+      function kinkEl(name, attrs) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          node.setAttribute(key, attrs[key]);
+        });
+        return node;
+      }
+
+      function kinkSpokenMm(n) {
+        const words = {
+          0: "zero",
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten"
+        };
+        if (words[n] != null) return words[n];
+        return String(n);
+      }
+
+      function leftoverKinkGeom(offsetPx) {
+        const offset = Math.max(0, offsetPx);
+        return {
+          x: KINK_X,
+          y: EDGE_Y - offset,
+          left: KINK_X - KINK_HALF,
+          right: KINK_X + KINK_HALF,
+          offset: offset,
+          trueY: EDGE_Y
+        };
+      }
+
+      function kinkPicture() {
+        const leftover = kinkMm <= KINK_STRAIGHT_AT ? "straight" : "showing";
+        let status;
+        let alt;
+        if (leftover === "showing") {
+          status = "SHOWING · " + kinkMm + " MM LEFTOVER KINK";
+          alt = "Kink is showing. " + kinkSpokenMm(kinkMm).charAt(0).toUpperCase() + kinkSpokenMm(kinkMm).slice(1) + " millimetre" + (kinkMm === 1 ? "" : "s") + " of leftover kink still sit" + (kinkMm === 1 ? "s" : "") + " in a fixed board edge.";
+        } else {
+          status = "STRAIGHT · NO LEFTOVER KINK";
+          alt = "Kink is straight. The straighten is done. No leftover kink. A sketch, not a mill sign-off.";
+        }
+        const kinkPx = leftover === "showing" ? Math.max(8, kinkMm * KINK_SCALE) : 0;
+        return {
+          leftover: leftover,
+          verdict: leftover,
+          status: status,
+          alt: alt,
+          accent: leftover === "showing" ? "#f0c878" : "#8ec8b4",
+          kinkPx: kinkPx,
+          kinkState: leftover === "showing" ? "sitting" : "none",
+          shape: leftover === "showing" ? "leftover-kink" : "straight-edge"
+        };
+      }
+
+      function leftoverKinkBoardPath(geom) {
+        const x0 = FACE_LEFT;
+        const x1 = FACE_RIGHT;
+        const yTop = FACE_TOP;
+        const yBot = FACE_BOT;
+        if (geom.offset <= 0) {
+          return "M " + x0 + " " + yTop +
+            " L " + x1 + " " + yTop +
+            " L " + x1 + " " + yBot +
+            " L " + x0 + " " + yBot +
+            " Z";
+        }
+        return "M " + x0 + " " + yTop +
+          " L " + geom.left.toFixed(1) + " " + yTop +
+          " L " + geom.x.toFixed(1) + " " + geom.y.toFixed(1) +
+          " L " + geom.right.toFixed(1) + " " + yTop +
+          " L " + x1 + " " + yTop +
+          " L " + x1 + " " + yBot +
+          " L " + x0 + " " + yBot +
+          " Z";
+      }
+
+      function leftoverKinkEdgePath(geom) {
+        const x0 = FACE_LEFT;
+        const x1 = FACE_RIGHT;
+        const yTop = FACE_TOP;
+        if (geom.offset <= 0) {
+          return "M " + x0 + " " + yTop + " L " + x1 + " " + yTop;
+        }
+        return "M " + x0 + " " + yTop +
+          " L " + geom.left.toFixed(1) + " " + yTop +
+          " L " + geom.x.toFixed(1) + " " + geom.y.toFixed(1) +
+          " L " + geom.right.toFixed(1) + " " + yTop +
+          " L " + x1 + " " + yTop;
+      }
+
+      function leftoverKinkLocalPath(geom) {
+        return "M " + geom.left.toFixed(1) + " " + geom.trueY.toFixed(1) +
+          " L " + geom.x.toFixed(1) + " " + geom.y.toFixed(1) +
+          " L " + geom.right.toFixed(1) + " " + geom.trueY.toFixed(1) +
+          " Z";
+      }
+
+      function kinkPaint(pic) {
+        const isStraight = pic.leftover === "straight";
+        const kink = leftoverKinkGeom(pic.kinkPx);
+
+        kinkBenchLayer.replaceChildren();
+        kinkBenchLayer.appendChild(kinkEl("rect", {
+          class: "site leftover-work leftover-kink leftover-board leftover-one-workpiece leftover-sitting",
+          x: "48",
+          y: "72",
+          width: "704",
+          height: "336",
+          rx: "8",
+          fill: "url(#kink-bench-wash)",
+          stroke: "rgba(212,184,120,0.16)",
+          "stroke-width": "1.2"
+        }));
+        kinkBenchLayer.appendChild(kinkEl("text", {
+          x: "68",
+          y: "96",
+          fill: "#6a6254",
+          "font-size": "10",
+          "letter-spacing": "1.6"
+        })).textContent = "WORKPIECE · STRAIGHTEN IS DONE · ONE LEFTOVER LOCAL KINK STILL SITS IN A FIXED BOARD EDGE";
+
+        kinkStockLayer.replaceChildren();
+        const stock = kinkEl("g", {
+          id: "kink-stock",
+          class: isStraight
+            ? "stock leftover-straight leftover-no-kink leftover-kink leftover-board leftover-true"
+            : "stock leftover-showing leftover-kink leftover-sitting leftover-board"
+        });
+        stock.appendChild(kinkEl("path", {
+          id: "kink-workpiece-face",
+          class: "stock-board leftover-stock leftover-workpiece leftover-kink leftover-not-the-leftover leftover-not-a-warp leftover-not-spring leftover-not-lift leftover-board-context leftover-kept leftover-face leftover-fixed leftover-board-edge",
+          d: leftoverKinkBoardPath(kink),
+          fill: "url(#kink-face-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.5",
+          "data-shape": "workpiece",
+          "data-role": "board-context",
+          "data-fixed": "true"
+        }));
+        stock.appendChild(kinkEl("line", {
+          id: "kink-true-edge",
+          class: "true-edge leftover-board leftover-fixed leftover-not-the-leftover leftover-board-edge leftover-kept leftover-straighten",
+          x1: String(FACE_LEFT),
+          y1: String(FACE_TOP),
+          x2: String(FACE_RIGHT),
+          y2: String(FACE_TOP),
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          "stroke-dasharray": "5 4",
+          opacity: "0.38",
+          "data-fixed": "true",
+          "data-role": "true-edge"
+        }));
+        stock.appendChild(kinkEl("line", {
+          id: "kink-board-bottom",
+          class: "board-bottom leftover-board leftover-fixed leftover-not-the-leftover leftover-not-a-warp leftover-kept",
+          x1: String(FACE_LEFT),
+          y1: String(FACE_BOT),
+          x2: String(FACE_RIGHT),
+          y2: String(FACE_BOT),
+          stroke: pic.accent,
+          "stroke-width": "1.4",
+          "data-fixed": "true",
+          "data-role": "board-bottom"
+        }));
+        stock.appendChild(kinkEl("text", {
+          x: String((FACE_LEFT + FACE_RIGHT) / 2),
+          y: String(FACE_BOT - 14),
+          fill: "#e8d8b0",
+          "font-size": "9",
+          "letter-spacing": "1.4",
+          "text-anchor": "middle"
+        })).textContent = "BOARD EDGE · FIXED · STRAIGHTEN IS DONE";
+        kinkStockLayer.appendChild(stock);
+
+        leftoverKinkLayer.replaceChildren();
+        const leftover = kinkEl("g", {
+          id: "leftover-kink",
+          class: isStraight
+            ? "kink leftover-kink leftover-straight leftover-empty leftover-no-kink leftover-board leftover-true"
+            : "kink leftover-kink leftover-showing leftover-one leftover-sitting leftover-span leftover-local leftover-bend leftover-edge leftover-residual leftover-in-edge leftover-not-a-warp leftover-not-spring leftover-not-lift leftover-not-a-clock",
+          "data-kink-mm": String(kinkMm),
+          "data-kink-px": String(pic.kinkPx.toFixed(1)),
+          "data-shape": pic.shape
+        });
+
+        leftover.appendChild(kinkEl("path", {
+          id: isStraight ? "leftover-kink-straight-path" : "leftover-kink-edge",
+          class: isStraight
+            ? "leftover-kink leftover-straight leftover-empty leftover-no-kink leftover-board leftover-true leftover-board-edge leftover-not-a-kink leftover-not-a-warp"
+            : "leftover-kink leftover-showing leftover-one leftover-sitting leftover-span leftover-local leftover-bend leftover-void leftover-not-a-warp leftover-not-spring leftover-not-lift leftover-local leftover-residual leftover-in-edge leftover-not-a-bow leftover-not-a-rise leftover-not-spring-back",
+          d: leftoverKinkEdgePath(kink),
+          fill: "none",
+          stroke: pic.accent,
+          "stroke-width": isStraight ? "2.2" : "2.4",
+          "stroke-linejoin": "miter",
+          "stroke-linecap": "square",
+          "stroke-dasharray": isStraight ? "4 5" : "none",
+          opacity: isStraight ? "0.72" : "0.98",
+          "data-shape": pic.shape,
+          "data-kink-mm": String(kinkMm),
+          "data-role": isStraight ? "straight-edge" : "sitting-kink",
+          "data-kink-px": String(pic.kinkPx.toFixed(1)),
+          "data-origin-x": String(KINK_X),
+          "data-origin-y": String(EDGE_Y)
+        }));
+
+        if (!isStraight) {
+          leftover.appendChild(kinkEl("path", {
+            id: "leftover-kink-bend",
+            class: "leftover-kink leftover-showing leftover-one leftover-sitting leftover-span leftover-local leftover-bend leftover-void leftover-not-a-warp leftover-not-spring leftover-not-lift leftover-residual leftover-in-edge leftover-not-a-bow leftover-not-a-rise leftover-not-spring-back",
+            d: leftoverKinkLocalPath(kink),
+            fill: "url(#leftover-kink-bend-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.15",
+            opacity: "0.88",
+            "data-shape": "leftover-kink",
+            "data-kink-mm": String(kinkMm),
+            "data-role": "sitting-kink-bend",
+            "data-kink-px": String(pic.kinkPx.toFixed(1))
+          }));
+          leftover.appendChild(kinkEl("line", {
+            id: "leftover-kink-glint",
+            class: "leftover-kink leftover-showing leftover-sitting leftover-local leftover-glint leftover-not-a-warp leftover-not-spring leftover-not-lift leftover-residual leftover-in-edge",
+            x1: String(kink.x.toFixed(1)),
+            y1: String((kink.y + 2).toFixed(1)),
+            x2: String(kink.x.toFixed(1)),
+            y2: String((EDGE_Y - 2).toFixed(1)),
+            stroke: "#ecd8b0",
+            "stroke-width": "0.85",
+            opacity: "0.42",
+            "data-shape": "leftover-kink-glint",
+            "data-role": "sitting-kink-glint"
+          }));
+          leftover.appendChild(kinkEl("text", {
+            id: "leftover-kink-label",
+            class: "kink-label leftover-label leftover-kink leftover-showing leftover-sitting leftover-span leftover-local leftover-in-edge",
+            x: String((kink.x + 16).toFixed(1)),
+            y: String((kink.y - 8).toFixed(1)),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.6",
+            "text-anchor": "start"
+          })).textContent = "KINK";
+        }
+        leftoverKinkLayer.appendChild(leftover);
+
+        kinkMarkLayer.replaceChildren();
+        kinkMarkLayer.appendChild(kinkEl("text", {
+          x: String(FACE_LEFT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "start"
+        })).textContent = "WORKPIECE · STRAIGHTEN IS DONE · FIXED";
+        kinkMarkLayer.appendChild(kinkEl("text", {
+          x: String(FACE_RIGHT),
+          y: String(FACE_BOT + 20),
+          fill: pic.accent,
+          "font-size": "10",
+          "letter-spacing": "1.4",
+          "text-anchor": "end"
+        })).textContent = isStraight ? "EDGE · STRAIGHT / NO LEFTOVER KINK" : "EDGE · ONE LEFTOVER LOCAL KINK STILL SITS";
+
+        kinkMarkLayer.appendChild(kinkEl("rect", {
+          id: "kink-profile-face",
+          class: "profile leftover-face leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-board-edge leftover-board",
+          x: String(PROFILE_LEFT),
+          y: String(PROFILE_FACE_Y),
+          width: String(PROFILE_RIGHT - PROFILE_LEFT),
+          height: String(PROFILE_BOT - 16 - PROFILE_FACE_Y),
+          fill: "url(#leftover-kink-section-wash)",
+          stroke: pic.accent,
+          "stroke-width": "1.1",
+          opacity: "0.94",
+          "data-fixed": "true"
+        }));
+        kinkMarkLayer.appendChild(kinkEl("line", {
+          id: "kink-profile-true",
+          class: isStraight
+            ? "profile leftover-board leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-straight leftover-no-kink leftover-not-a-warp"
+            : "profile leftover-board leftover-fixed leftover-not-the-leftover leftover-not-changing leftover-with-kink leftover-not-a-warp",
+          x1: String(PROFILE_LEFT),
+          y1: String(PROFILE_FACE_Y),
+          x2: String(PROFILE_RIGHT),
+          y2: String(PROFILE_FACE_Y),
+          stroke: pic.accent,
+          "stroke-width": "1.2",
+          "stroke-dasharray": "4 4",
+          opacity: "0.42",
+          "data-fixed": "true",
+          "data-shape": "true-edge"
+        }));
+
+        if (!isStraight) {
+          const extent = Math.max(10, pic.kinkPx);
+          const half = 36;
+          const peakY = PROFILE_FACE_Y - extent;
+          const kinkD = "M " + (PROFILE_KINK_X - half) + " " + PROFILE_FACE_Y +
+            " L " + PROFILE_KINK_X + " " + peakY.toFixed(1) +
+            " L " + (PROFILE_KINK_X + half) + " " + PROFILE_FACE_Y;
+          kinkMarkLayer.appendChild(kinkEl("path", {
+            id: "leftover-kink-profile-bend",
+            class: "leftover-kink leftover-showing leftover-sitting leftover-local leftover-profile leftover-not-a-warp leftover-not-spring leftover-not-lift leftover-in-edge leftover-residual",
+            d: kinkD,
+            fill: "url(#leftover-kink-bend-wash)",
+            stroke: pic.accent,
+            "stroke-width": "1.6",
+            "stroke-linejoin": "miter",
+            opacity: "0.94",
+            "data-shape": "leftover-kink",
+            "data-role": "sitting-kink-profile"
+          }));
+          const dimX = PROFILE_KINK_X + half + 18;
+          kinkMarkLayer.appendChild(kinkEl("line", {
+            id: "kink-dim",
+            class: "kink-dim leftover-kink leftover-showing leftover-sitting leftover-span leftover-not-a-warp leftover-not-spring leftover-not-lift leftover-local",
+            x1: String(dimX),
+            y1: String(peakY.toFixed(1)),
+            x2: String(dimX),
+            y2: String(PROFILE_FACE_Y),
+            stroke: pic.accent,
+            "stroke-width": "1.4"
+          }));
+          kinkMarkLayer.appendChild(kinkEl("text", {
+            id: "kink-mm-label",
+            class: "kink-label leftover-label leftover-kink leftover-showing leftover-sitting leftover-span leftover-local leftover-in-edge",
+            x: String(dimX + 8),
+            y: String((peakY + PROFILE_FACE_Y) / 2 + 3),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.2",
+            "text-anchor": "start"
+          })).textContent = kinkMm + " mm";
+          kinkMarkLayer.appendChild(kinkEl("text", {
+            id: "kink-span-label",
+            class: "span-label leftover-kink leftover-one leftover-sitting leftover-span leftover-local leftover-not-a-warp leftover-not-spring leftover-not-lift leftover-residual leftover-in-edge",
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: "#ece4d4",
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "LEFTOVER KINK · ONE LOCAL BEND IN A FIXED BOARD EDGE · NOT A WARP · NOT SPRING · NOT LIFT";
+        } else {
+          kinkMarkLayer.appendChild(kinkEl("line", {
+            id: "kink-profile-straight",
+            class: "profile leftover-board leftover-straight leftover-no-kink leftover-empty leftover-true leftover-not-a-kink leftover-not-a-warp",
+            x1: String(PROFILE_LEFT + 8),
+            y1: String(PROFILE_FACE_Y),
+            x2: String(PROFILE_RIGHT - 8),
+            y2: String(PROFILE_FACE_Y),
+            stroke: pic.accent,
+            "stroke-width": "2",
+            "stroke-dasharray": "3 4",
+            opacity: "0.94",
+            "data-shape": "straight-edge"
+          }));
+          kinkMarkLayer.appendChild(kinkEl("text", {
+            id: "kink-label",
+            class: "kink-label leftover-label leftover-straight leftover-no-kink leftover-board leftover-empty leftover-true leftover-not-a-warp",
+            x: "400",
+            y: String((FACE_TOP + FACE_BOT) / 2 + 4),
+            fill: pic.accent,
+            "font-size": "11",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "STRAIGHT / NO LEFTOVER KINK";
+          kinkMarkLayer.appendChild(kinkEl("text", {
+            x: "400",
+            y: String(PROFILE_TOP + 8),
+            fill: pic.accent,
+            "font-size": "10",
+            "letter-spacing": "1.4",
+            "text-anchor": "middle"
+          })).textContent = "PROFILE · STRAIGHT / NO LEFTOVER KINK";
+        }
+
+        kinkSceneStatus.setAttribute("fill", pic.accent);
+        kinkSceneStatus.textContent = pic.status;
+        kinkScene.setAttribute("data-kink", String(kinkMm));
+        kinkScene.setAttribute("data-leftover", pic.leftover);
+        kinkScene.setAttribute("data-verdict", pic.verdict);
+        kinkScene.setAttribute("data-view", "board-kink");
+        kinkScene.setAttribute("data-hero", "leftover-kink");
+        kinkScene.setAttribute("data-kink-mm", String(kinkMm));
+        kinkScene.setAttribute("data-kink-px", String(pic.kinkPx.toFixed(1)));
+        kinkScene.setAttribute("data-kink-state", pic.kinkState);
+        kinkScene.setAttribute("data-shape", pic.shape);
+        kinkScene.setAttribute("data-edge-fixed", "true");
+        kinkScene.setAttribute("data-board-fixed", "true");
+      }
+
+      function kinkToneClass(leftover) {
+        return leftover === "showing" ? "is-showing" : "is-straight";
+      }
+
+      function kinkRender() {
+        const pic = kinkPicture();
+        kinkPaint(pic);
+        kinkTitle.textContent = pic.alt;
+        kinkAlt.textContent = pic.alt;
+        kinkSvg.setAttribute("aria-label", pic.alt);
+        kinkDeskMeta.textContent = pic.leftover === "showing"
+          ? "leftover " + kinkMm + " mm showing"
+          : "leftover straight";
+        kinkStatMm.textContent = kinkMm + " mm";
+        kinkStatLeftover.textContent = pic.leftover;
+        kinkStatSpan.textContent = pic.leftover === "showing"
+          ? kinkMm + " mm leftover"
+          : "straight";
+        kinkStatLeftoverWrap.classList.remove("is-showing", "is-straight");
+        kinkStatLeftoverWrap.classList.add(kinkToneClass(pic.leftover));
+        if (Number(kinkInput.value) !== kinkMm) kinkInput.value = String(kinkMm);
+        kinkInput.setAttribute("aria-valuetext", pic.alt);
+      }
+
+      function kinkResetSeed() {
+        kinkMm = KINK_SEED.kinkMm;
+        kinkRender();
+      }
+
+      kinkInput.addEventListener("input", function (event) {
+        kinkMm = kinkClamp(Math.round(Number(event.target.value)), KINK_MIN, KINK_MAX);
+        kinkRender();
+      });
+      kinkBtnReset.addEventListener("click", kinkResetSeed);
+      kinkBtnResetStage.addEventListener("click", kinkResetSeed);
+
+      kinkRender();
+    </script>
+  </body>
+</html>
