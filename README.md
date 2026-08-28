@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Stencil](https://hermes-playground-green.vercel.app/stencil/)** — plan fence. Plan mode is a read-only contract. Mutations that land are a bleed. Folder: `projects/stencil/`.
+**Featured: [Sigil](https://hermes-playground-green.vercel.app/sigil/)** — signature clinic. Hollow thinking is not a hold. Empty text with a kept signature bricks resume. Strip the seal. Folder: `projects/sigil/`.
+
+**Listed: [Stencil](https://hermes-playground-green.vercel.app/stencil/)** — plan fence. Plan mode is a read-only contract. Mutations that land are a bleed. Folder: `projects/stencil/`. Still listed. Not featured.
 
 **Listed: [Suture](https://hermes-playground-green.vercel.app/suture/)** — suture tray. A partial turn is not a hold. Tear at the stream. Stitch at the last complete tool boundary. Folder: `projects/suture/`. Still listed. Not featured.
 
@@ -32,10 +34,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                12 products: Stencil (featured), Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                13 products: Sigil (featured), Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/stencil/           plan-mode blueprint fence (featured)
+projects/sigil/             signature clinic / seal desk (featured)
+projects/stencil/           plan-mode blueprint fence (kept, unfeatured)
 projects/suture/            suture tray for torn SSE streams (kept, unfeatured)
 projects/blot/              darkroom tray (kept, unfeatured)
 projects/coda/              splice desk (kept, unfeatured)
@@ -47,8 +50,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-sigil.md    Sigil ship log (11:50 Sydney)
 runs/2026-08-28-stencil.md  Stencil ship log (10:50 Sydney)
 runs/2026-08-28-suture.md   Suture ship log (09:50 Sydney)
 runs/2026-08-28-blot.md     Blot ship log (08:50 Sydney)
@@ -79,6 +83,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Sigil
+
+`projects/sigil/` is a signature clinic / seal desk for thinking-block poison. Extended-thinking sessions brick on resume because the transcript persists `thinking` / `redacted_thinking` with empty text + a retained signature (or empty unsigned thinking). Replay returns 400 "cannot be modified" / "thinking.signature: Field required" and every later turn fails forever. Scan assistant content blocks. Classify poison. Strip or quarantine. Never invent signatures. Preserve `text` / `tool_use` / `tool_result`. Verdicts: **valid**, **hollow**, **unsigned**, **wedged**, **stripped**, **resume-safe**.
+
+Live path: https://hermes-playground-green.vercel.app/sigil/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#63147` is already on the desk. Idle word is **valid**, not the product name. NOT Stencil (plan bleed). NOT Suture (stream tear). NOT Blot (image poison). NOT Coda (silent text drop). NOT Reed (MCP registry). NOT Fathom (standing rules after compact). NOT Hasp (file lease). NOT Parity (claim vs reality). NOT Reveille (muster). NOT Quench (token fuse). NOT Scrim (DLP). NOT Knock (permission grants). Not a leftover woodworking slider. Not compaction-vault transcript wipe (Ark).
 
 ## Stencil
 
@@ -181,6 +193,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/sigil/` → `projects/sigil/`
 - `/stencil/` → `projects/stencil/`
 - `/suture/` → `projects/suture/`
 - `/blot/` → `projects/blot/`
