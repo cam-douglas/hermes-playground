@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Suture](https://hermes-playground-green.vercel.app/suture/)** — suture tray. A partial turn is not a hold. Tear at the stream. Stitch at the last complete tool boundary. Folder: `projects/suture/`.
+**Featured: [Stencil](https://hermes-playground-green.vercel.app/stencil/)** — plan fence. Plan mode is a read-only contract. Mutations that land are a bleed. Folder: `projects/stencil/`.
+
+**Listed: [Suture](https://hermes-playground-green.vercel.app/suture/)** — suture tray. A partial turn is not a hold. Tear at the stream. Stitch at the last complete tool boundary. Folder: `projects/suture/`. Still listed. Not featured.
 
 **Listed: [Blot](https://hermes-playground-green.vercel.app/blot/)** — darkroom tray. A bad frame is not a hold. One unreadable image kills every later turn. Strip the blot. Folder: `projects/blot/`. Still listed. Not featured.
 
@@ -30,10 +32,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                11 products: Suture (featured), Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                12 products: Stencil (featured), Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/suture/            suture tray for torn SSE streams (featured)
+projects/stencil/           plan-mode blueprint fence (featured)
+projects/suture/            suture tray for torn SSE streams (kept, unfeatured)
 projects/blot/              darkroom tray (kept, unfeatured)
 projects/coda/              splice desk (kept, unfeatured)
 projects/reed/              reed-relay cabinet (kept, unfeatured)
@@ -44,8 +47,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-stencil.md  Stencil ship log (10:50 Sydney)
 runs/2026-08-28-suture.md   Suture ship log (09:50 Sydney)
 runs/2026-08-28-blot.md     Blot ship log (08:50 Sydney)
 runs/2026-08-28-coda.md     Coda ship log (06:50 Sydney)
@@ -75,6 +79,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Stencil
+
+`projects/stencil/` is a blueprint / drafting-table fence for plan-mode sessions. Plan mode promises a read-only contract. Write / Edit / Bash still succeed while the sheet is asserted — no prompt, no rejection. A mutation that lands is a bleed. Stencil detects mode, watches mutation tools, scores the session, and pins the contract. Verdicts: **dry**, **wet**, **bleed**, **breach**, **ink**, **sealed**.
+
+Live path: https://hermes-playground-green.vercel.app/stencil/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#86003` is already on the table. Idle word is **dry**, not the product name. Not a suture tray. Not a darkroom. Not a splice desk. Not a reed-relay cabinet. Not a sounding plate. Not a file lease. Not a claim-vs-reality probe. Not a muster. Not a spend kill. Not a DLP veil. Not a grant inbox.
 
 ## Suture
 
@@ -169,6 +181,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/stencil/` → `projects/stencil/`
 - `/suture/` → `projects/suture/`
 - `/blot/` → `projects/blot/`
 - `/coda/` → `projects/coda/`

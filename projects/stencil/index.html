@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Stencil — blueprint fence for plan-mode sessions. Plan mode is a read-only contract. A mutation that lands is a bleed."
+    />
+    <title>Stencil — plan fence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #04101c;
+        --navy: #071628;
+        --sheet: #0a1c34;
+        --cyan: #67e0ff;
+        --line: #d7f4ff;
+        --mute: #6d8ea6;
+        --hold: #f3c85a;
+        --ink: #ff4f86;
+        --ok: #8cffc3;
+        --display: "Chakra Petch", "Trebuchet MS", "Arial Narrow", sans-serif;
+        --mono: "Azeret Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--mono);
+        color: var(--line);
+        background:
+          radial-gradient(ellipse 90% 55% at 50% -12%, rgba(103, 224, 255, 0.1), transparent 58%),
+          repeating-linear-gradient(0deg, rgba(103, 224, 255, 0.045) 0 1px, transparent 1px 28px),
+          repeating-linear-gradient(90deg, rgba(103, 224, 255, 0.045) 0 1px, transparent 1px 28px),
+          var(--void);
+      }
+      button { font: inherit; color: inherit; cursor: pointer; }
+      a { color: var(--cyan); }
+      .table {
+        min-height: 100vh;
+        padding: 18px 0 48px;
+      }
+      .tsquare {
+        width: min(1220px, calc(100% - 28px));
+        margin: 0 auto 14px;
+        display: grid;
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: 0;
+        border: 1px solid rgba(103, 224, 255, 0.28);
+        background: linear-gradient(180deg, #0b2238, #08182c);
+      }
+      .blade {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-right: 1px solid rgba(103, 224, 255, 0.28);
+        background:
+          repeating-linear-gradient(
+            180deg,
+            transparent 0 13px,
+            rgba(103, 224, 255, 0.35) 13px 14px
+          );
+        color: var(--cyan);
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-align: center;
+      }
+      .head {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+        gap: 20px;
+        align-items: end;
+        padding: 16px 20px 14px;
+      }
+      .hour {
+        margin: 0;
+        font-size: 11px;
+        letter-spacing: 0.38em;
+        text-transform: uppercase;
+        color: var(--cyan);
+      }
+      h1 {
+        margin: 4px 0 0;
+        font-family: var(--display);
+        font-size: clamp(72px, 13vw, 136px);
+        line-height: 0.78;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #f4fbff;
+        text-shadow: 0 0 0 1px rgba(103, 224, 255, 0.35);
+      }
+      .lede {
+        margin: 0;
+        max-width: 38em;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .lede strong { color: var(--line); font-weight: 600; }
+      .titleblock {
+        border: 1px solid rgba(103, 224, 255, 0.32);
+        padding: 10px 12px 8px;
+        background: rgba(4, 16, 28, 0.55);
+      }
+      .titleblock dl {
+        margin: 0;
+        display: grid;
+        grid-template-columns: 92px 1fr;
+        gap: 5px 10px;
+        font-size: 11px;
+      }
+      .titleblock dt { color: var(--mute); letter-spacing: 0.12em; text-transform: uppercase; }
+      .titleblock dd { margin: 0; color: var(--line); }
+      .titleblock .idle {
+        font-family: var(--display);
+        font-size: 28px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cyan);
+      }
+      .deck {
+        width: min(1220px, calc(100% - 28px));
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.55fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .sheet {
+        position: relative;
+        min-height: 520px;
+        padding: 16px;
+        background:
+          linear-gradient(180deg, rgba(103, 224, 255, 0.04), transparent 18%),
+          var(--sheet);
+        box-shadow:
+          inset 0 0 0 1px rgba(103, 224, 255, 0.22),
+          0 22px 0 #020910;
+        overflow: hidden;
+      }
+      .sheet::before {
+        content: "";
+        position: absolute;
+        inset: 12px;
+        pointer-events: none;
+        background:
+          repeating-linear-gradient(0deg, rgba(103, 224, 255, 0.06) 0 1px, transparent 1px 24px),
+          repeating-linear-gradient(90deg, rgba(103, 224, 255, 0.06) 0 1px, transparent 1px 24px);
+        mask-image: radial-gradient(circle at 50% 40%, #000 55%, transparent 88%);
+      }
+      .sheet h2,
+      .rail h2 {
+        position: relative;
+        margin: 0 0 12px;
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--cyan);
+        font-weight: 500;
+      }
+      .overlay {
+        position: relative;
+        min-height: 360px;
+      }
+      .overlay svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .plan-cut {
+        fill: rgba(10, 28, 52, 0.15);
+        stroke: var(--cyan);
+        stroke-width: 1.6;
+        stroke-dasharray: 7 4;
+      }
+      .fence {
+        fill: rgba(4, 16, 28, 0.72);
+        stroke: rgba(215, 244, 255, 0.55);
+        stroke-width: 1.2;
+      }
+      .punch {
+        fill: var(--ink);
+        opacity: 0;
+        transform-origin: center;
+      }
+      .sheet.bleed .punch,
+      .sheet.breach .punch { opacity: 0.92; }
+      .sheet.wet .held {
+        stroke: var(--hold);
+        fill: rgba(243, 200, 90, 0.18);
+      }
+      .sheet.dry .plan-cut { stroke-dasharray: none; }
+      .sheet.sealed .plan-cut {
+        stroke: var(--ok);
+        stroke-dasharray: none;
+      }
+      .sheet.ink .fence { opacity: 0.08; }
+      .sheet.breach .fence { opacity: 0.28; stroke-dasharray: 3 6; }
+      .sheet.ink .plan-cut { stroke: var(--ink); }
+      .score {
+        position: relative;
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .score b {
+        display: block;
+        border: 1px solid rgba(103, 224, 255, 0.22);
+        padding: 8px 6px 7px;
+        text-align: center;
+        font-family: var(--display);
+        font-size: 16px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--mute);
+        background: #061322;
+      }
+      .score b.on { color: var(--void); background: var(--cyan); border-color: var(--cyan); }
+      .score b.on.wet { background: var(--hold); border-color: var(--hold); }
+      .score b.on.bleed,
+      .score b.on.breach { background: var(--ink); border-color: var(--ink); color: #fff; }
+      .score b.on.ink { background: #ff7aa6; border-color: #ff7aa6; color: #2a0612; }
+      .score b.on.sealed { background: var(--ok); border-color: var(--ok); }
+      .log {
+        position: relative;
+        margin-top: 14px;
+        display: grid;
+        gap: 6px;
+      }
+      .call {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr) 86px;
+        gap: 10px;
+        padding: 8px 10px;
+        border: 1px solid rgba(103, 224, 255, 0.16);
+        background: rgba(4, 16, 28, 0.55);
+        font-size: 12px;
+      }
+      .call .tool { color: var(--cyan); letter-spacing: 0.08em; text-transform: uppercase; }
+      .call .path { color: var(--line); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .call .out { text-align: right; text-transform: uppercase; letter-spacing: 0.08em; }
+      .call.ok .out { color: var(--ink); }
+      .call.held .out { color: var(--hold); }
+      .call.read .out { color: var(--ok); }
+      .empty {
+        min-height: 220px;
+        display: grid;
+        place-items: center;
+        font-family: var(--display);
+        font-size: clamp(64px, 12vw, 110px);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--cyan);
+      }
+      .rail { display: grid; gap: 12px; }
+      .card {
+        border: 1px solid rgba(103, 224, 255, 0.24);
+        background: #08182c;
+        padding: 14px 14px 12px;
+      }
+      .card.alarm { box-shadow: inset 0 0 0 1px var(--ink); }
+      .verdict {
+        margin: 0;
+        font-family: var(--display);
+        font-size: 42px;
+        line-height: 0.9;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--cyan);
+      }
+      .copy { margin: 10px 0 0; color: var(--mute); font-size: 12px; line-height: 1.55; }
+      .facts {
+        margin-top: 12px;
+        display: grid;
+        gap: 6px;
+        font-size: 11px;
+      }
+      .facts div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed rgba(103, 224, 255, 0.16); padding-bottom: 4px; }
+      .facts span { color: var(--mute); letter-spacing: 0.1em; text-transform: uppercase; }
+      .plates {
+        width: min(1220px, calc(100% - 28px));
+        margin: 16px auto 0;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .plate {
+        border: 1px solid rgba(103, 224, 255, 0.28);
+        background:
+          linear-gradient(180deg, rgba(103, 224, 255, 0.06), transparent 40%),
+          #071422;
+        padding: 10px 8px 9px;
+        text-align: left;
+      }
+      .plate small {
+        display: block;
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .plate b {
+        display: block;
+        margin-top: 4px;
+        font-family: var(--display);
+        font-size: 18px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .plate.on {
+        background: #12324a;
+        box-shadow: inset 0 0 0 1px var(--cyan);
+        color: var(--line);
+      }
+      .sinks { display: grid; gap: 8px; }
+      .sink {
+        border: 1px solid rgba(103, 224, 255, 0.18);
+        padding: 10px 11px 9px;
+        background: #061322;
+      }
+      .sink b {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--cyan);
+      }
+      .sink p { margin: 6px 0 0; color: var(--mute); font-size: 12px; line-height: 1.5; }
+      .sink.live p { color: var(--line); }
+      footer {
+        width: min(1220px, calc(100% - 28px));
+        margin: 22px auto 0;
+        color: var(--mute);
+        font-size: 12px;
+      }
+      @media (max-width: 900px) {
+        .head, .deck, .plates { grid-template-columns: 1fr; }
+        .tsquare { grid-template-columns: 1fr; }
+        .blade { display: none; }
+        .score { grid-template-columns: repeat(3, 1fr); }
+        .call { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="table">
+      <header class="tsquare">
+        <div class="blade" aria-hidden="true">
+          <span>0</span><span>50</span><span>100</span><span>150</span><span>200</span>
+        </div>
+        <div class="head">
+          <div>
+            <p class="hour">10:50 Australia/Sydney · sheet 01 · scale 1:1</p>
+            <h1>Stencil</h1>
+          </div>
+          <p class="lede">
+            Plan mode is a read-only contract. The fence cuts only the plan outline.
+            Write, Edit, or Bash that lands while the sheet is asserted is a
+            <strong>bleed</strong>. Idle word is <strong>dry</strong> — never the product name.
+            Seed <strong>#86003</strong> is already on the table.
+          </p>
+        </div>
+      </header>
+
+      <div class="deck">
+        <section class="sheet" id="sheet" aria-label="Drafting sheet">
+          <h2>Fence overlay</h2>
+          <div class="overlay" id="overlay">
+            <svg viewBox="0 0 760 360" role="img" aria-label="Plan stencil overlay">
+              <defs>
+                <mask id="cut">
+                  <rect width="760" height="360" fill="#fff" />
+                  <rect x="210" y="58" width="250" height="230" rx="2" fill="#000" />
+                </mask>
+              </defs>
+              <rect class="fence" x="18" y="16" width="724" height="328" mask="url(#cut)" />
+              <rect class="plan-cut" x="210" y="58" width="250" height="230" />
+              <text x="230" y="92" fill="#67e0ff" font-size="13" font-family="Azeret Mono, monospace">PLAN OUTLINE</text>
+              <text x="230" y="118" fill="#6d8ea6" font-size="11" font-family="Azeret Mono, monospace">read-only sheet</text>
+              <text x="230" y="142" fill="#6d8ea6" font-size="11" font-family="Azeret Mono, monospace">mode: plan</text>
+              <line x1="230" y1="162" x2="430" y2="162" stroke="#67e0ff" stroke-opacity="0.45" />
+              <text x="230" y="186" fill="#d7f4ff" font-size="11" font-family="Azeret Mono, monospace" id="plan-note">no mutation punches</text>
+              <circle class="punch" cx="318" cy="230" r="18" />
+              <circle class="punch" cx="368" cy="248" r="11" />
+              <circle class="punch" cx="286" cy="252" r="8" />
+              <circle class="held" cx="520" cy="132" r="16" fill="none" stroke="transparent" stroke-width="2" />
+              <circle class="held" cx="560" cy="168" r="11" fill="none" stroke="transparent" stroke-width="2" />
+            </svg>
+          </div>
+          <div class="score" id="score" aria-label="Verdict strip"></div>
+          <div class="log" id="log"></div>
+        </section>
+
+        <aside class="rail">
+          <article class="titleblock card">
+            <dl>
+              <dt>drawing</dt><dd>STENCIL-86003</dd>
+              <dt>hour</dt><dd>10:50 A/S</dd>
+              <dt>idle</dt><dd class="idle" id="idle">dry</dd>
+              <dt>seed</dt><dd id="seed-label">#86003</dd>
+            </dl>
+          </article>
+          <article class="card" id="monitor">
+            <h2>Contract pin</h2>
+            <p class="verdict" id="verdict">bleed</p>
+            <p class="copy" id="copy"></p>
+            <div class="facts" id="facts"></div>
+          </article>
+          <section class="card" aria-label="Mock integrations">
+            <h2>Native mocks</h2>
+            <div class="sinks" id="sinks"></div>
+          </section>
+        </aside>
+      </div>
+
+      <nav class="plates" aria-label="Scenario plates">
+        <button class="plate" id="run-dry" type="button"><small>scenario</small><b>dry plan</b></button>
+        <button class="plate" id="run-wet" type="button"><small>scenario</small><b>wet blocked</b></button>
+        <button class="plate" id="run-bleed" type="button"><small>seed #86003</small><b>bleed success</b></button>
+        <button class="plate" id="run-breach" type="button"><small>scenario</small><b>breach ambiguous</b></button>
+        <button class="plate" id="run-ink" type="button"><small>scenario</small><b>ink write-session</b></button>
+        <button class="plate" id="run-sealed" type="button"><small>scenario</small><b>sealed close</b></button>
+      </nav>
+      <footer>
+        Self-contained drafting table. No npm. Demo Slack / GitHub / Linear rows are seeded mocks, not live posts.
+        Not a suture tray, darkroom, splice desk, reed cabinet, sounding plate, file lease, muster, fuse, DLP veil, or grant inbox.
+      </footer>
+    </div>
+    <script>
+      const IDLE = "dry";
+      const VERDICTS = ["dry", "wet", "bleed", "breach", "ink", "sealed"];
+
+      function session(partial) {
+        return Object.assign({
+          id: "86003",
+          source: "anthropics/claude-code#86003",
+          planAsserted: true,
+          modeFlag: "plan",
+          fenceArmed: true,
+          planComplete: false,
+          sessionKind: "plan",
+          tools: [],
+        }, partial || {});
+      }
+
+      function seedBleed() {
+        return session({
+          tools: [
+            { name: "Read", path: "~/.claude/plans/86003.md", outcome: "ok", kind: "read" },
+            { name: "ExitPlanMode", path: "user rejected", outcome: "held", kind: "mode" },
+            { name: "Write", path: "/Users/netsnap.sh", outcome: "ok", kind: "mutation" },
+            { name: "Write", path: "/Users/recover.sh", outcome: "ok", kind: "mutation" },
+            { name: "Bash", path: "chmod +x netsnap.sh recover.sh", outcome: "ok", kind: "mutation" },
+          ],
+        });
+      }
+
+      function seedDry() {
+        return session({
+          id: "dry-plan",
+          source: "dry plan",
+          tools: [
+            { name: "Read", path: "AGENTS.md", outcome: "ok", kind: "read" },
+            { name: "Grep", path: "permission_mode", outcome: "ok", kind: "read" },
+          ],
+        });
+      }
+
+      function seedWet() {
+        return session({
+          id: "wet-hold",
+          source: "fence hold",
+          tools: [
+            { name: "Write", path: "src/recover.sh", outcome: "held", kind: "mutation" },
+            { name: "Bash", path: "docker rm core-styles-demo", outcome: "held", kind: "mutation" },
+          ],
+        });
+      }
+
+      function seedBreach() {
+        return session({
+          id: "breach-flag",
+          source: "mode flag absent",
+          planAsserted: true,
+          modeFlag: "absent",
+          fenceArmed: false,
+          tools: [
+            { name: "Write", path: "infra/core-styles-demo.yml", outcome: "ok", kind: "mutation" },
+            { name: "Bash", path: "docker stop core-styles-demo && docker rm core-styles-demo", outcome: "ok", kind: "mutation" },
+          ],
+        });
+      }
+
+      function seedInk() {
+        return session({
+          id: "write-session",
+          source: "expected write",
+          planAsserted: false,
+          modeFlag: "write",
+          sessionKind: "write",
+          fenceArmed: false,
+          tools: [
+            { name: "Write", path: "projects/stencil/index.html", outcome: "ok", kind: "mutation" },
+          ],
+        });
+      }
+
+      function seedSealed() {
+        return session({
+          id: "sealed-close",
+          source: "plan complete",
+          planComplete: true,
+          fenceArmed: true,
+          tools: [
+            { name: "Read", path: "plan outline", outcome: "ok", kind: "read" },
+          ],
+        });
+      }
+
+      function mutations(tools) {
+        return (tools || []).filter(function (tool) { return tool.kind === "mutation"; });
+      }
+
+      function score(s) {
+        const muts = mutations(s.tools);
+        const landed = muts.filter(function (tool) { return tool.outcome === "ok"; });
+        const held = muts.filter(function (tool) { return tool.outcome === "held"; });
+        if (s.sessionKind === "write" || s.modeFlag === "write") return "ink";
+        if (s.planAsserted && (s.modeFlag === "absent" || s.modeFlag === "ambiguous") && muts.length) return "breach";
+        if (s.planAsserted && landed.length) return "bleed";
+        if (s.planAsserted && held.length && !landed.length) return "wet";
+        if (s.fenceArmed && s.planComplete && !muts.length) return "sealed";
+        if (s.planAsserted && !muts.length) return "dry";
+        return IDLE;
+      }
+
+      function copyFor(verdict) {
+        if (verdict === "dry") return "Plan mode on. Zero mutations observed. The stencil holds. Idle word is dry.";
+        if (verdict === "wet") return "Plan mode on. A mutation tried the plate and the fence held it. Wet, not a bleed.";
+        if (verdict === "bleed") return "Plan mode still asserted. Write and Bash returned success. Ink punched through the cutout. Contract broken.";
+        if (verdict === "breach") return "Plan was claimed, but the mode flag is missing or ambiguous while mutations ran.";
+        if (verdict === "ink") return "Write session. Mutations are in scope. Not a plan fence problem.";
+        return "Fence armed. Plan complete. Score stayed dry. Sheet sealed.";
+      }
+
+      function adapters(verdict) {
+        const slack = {
+          bleed: "Slack bleed alarm · #86003 Write/Bash landed while plan mode still active. No prompt.",
+          wet: "Slack bleed alarm · held. Fence stopped Write/Bash. Channel would stay quiet unless wet-notify is on.",
+          breach: "Slack bleed alarm · breach. Plan claimed, mode flag absent, mutations ran.",
+          ink: "Slack skipped · ink write-session is out of fence scope.",
+          dry: "Slack skipped · sheet is dry.",
+          sealed: "Slack skipped · sealed close, dry score.",
+        };
+        const github = {
+          bleed: "GitHub ledger · mode-breach row: plan=on, Write×2 + Bash chmod succeeded, reminder still said read-only.",
+          wet: "GitHub ledger · held row: plan=on, Write + Bash blocked by fence.",
+          breach: "GitHub ledger · ambiguous flag while docker stop/rm executed.",
+          ink: "GitHub ledger · ink row only, no breach.",
+          dry: "GitHub ledger · dry check-in, no mutation punches.",
+          sealed: "GitHub ledger · sealed. Fence armed, plan complete, dry.",
+        };
+        const linear = {
+          bleed: "Linear incident · optional: Plan fence bleed on #86003. Permission layer did not reject.",
+          wet: "Linear skipped · wet is a hold, not an incident.",
+          breach: "Linear incident · optional: mode flag absent during mutation.",
+          ink: "Linear skipped · expected write session.",
+          dry: "Linear skipped · dry.",
+          sealed: "Linear skipped · sealed.",
+        };
+        return [
+          { name: "Slack bleed alarm", text: slack[verdict], live: verdict === "bleed" || verdict === "breach" },
+          { name: "GitHub ledger", text: github[verdict], live: verdict !== "dry" && verdict !== "sealed" },
+          { name: "Linear incident", text: linear[verdict], live: verdict === "bleed" || verdict === "breach" },
+        ];
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      let current = seedBleed();
+      let active = "bleed";
+
+      function render() {
+        const verdict = score(current);
+        const sheet = document.getElementById("sheet");
+        sheet.className = "sheet " + verdict;
+        document.getElementById("plan-note").textContent =
+          verdict === "bleed" ? "ink through the cutout" :
+          verdict === "wet" ? "punches held on the plate" :
+          verdict === "breach" ? "overlay unregistered" :
+          verdict === "ink" ? "no stencil — write session" :
+          verdict === "sealed" ? "plan complete · dry score" :
+          "no mutation punches";
+
+        document.getElementById("score").innerHTML = VERDICTS.map(function (word) {
+          const on = word === verdict ? " on " + word : "";
+          return "<b class=\"" + on + "\">" + word + "</b>";
+        }).join("");
+
+        const tools = current.tools || [];
+        document.getElementById("log").innerHTML = tools.length
+          ? tools.map(function (tool) {
+              const cls = tool.kind === "read" ? "read" : (tool.outcome === "held" ? "held" : "ok");
+              return (
+                "<article class=\"call " + cls + "\">" +
+                  "<span class=\"tool\">" + escapeHtml(tool.name) + "</span>" +
+                  "<span class=\"path\">" + escapeHtml(tool.path) + "</span>" +
+                  "<span class=\"out\">" + escapeHtml(tool.outcome) + "</span>" +
+                "</article>"
+              );
+            }).join("")
+          : "<div class=\"empty\">dry</div>";
+
+        document.getElementById("verdict").textContent = verdict;
+        document.getElementById("idle").textContent = IDLE;
+        document.getElementById("seed-label").textContent = current.id === "86003" ? "#86003" : current.id;
+        document.getElementById("copy").textContent = copyFor(verdict);
+        document.getElementById("facts").innerHTML = [
+          ["idle", IDLE],
+          ["plan", current.planAsserted ? "asserted" : "off"],
+          ["flag", current.modeFlag],
+          ["fence", current.fenceArmed ? "armed" : "open"],
+          ["mutations", String(mutations(current.tools).length)],
+          ["landed", String(mutations(current.tools).filter(function (tool) { return tool.outcome === "ok"; }).length)],
+        ].map(function (pair) {
+          return "<div><span>" + pair[0] + "</span> " + escapeHtml(pair[1]) + "</div>";
+        }).join("");
+
+        document.getElementById("sinks").innerHTML = adapters(verdict).map(function (row) {
+          return "<article class=\"sink" + (row.live ? " live" : "") + "\"><b>" + escapeHtml(row.name) + "</b><p>" + escapeHtml(row.text) + "</p></article>";
+        }).join("");
+
+        document.getElementById("monitor").className = "card" + (verdict === "bleed" || verdict === "breach" ? " alarm" : "");
+        document.querySelectorAll(".plate").forEach(function (button) {
+          button.classList.toggle("on", button.id === "run-" + active);
+        });
+      }
+
+      function run(id, factory) {
+        current = factory();
+        active = id;
+        render();
+      }
+
+      document.getElementById("run-dry").addEventListener("click", function () { run("dry", seedDry); });
+      document.getElementById("run-wet").addEventListener("click", function () { run("wet", seedWet); });
+      document.getElementById("run-bleed").addEventListener("click", function () { run("bleed", seedBleed); });
+      document.getElementById("run-breach").addEventListener("click", function () { run("breach", seedBreach); });
+      document.getElementById("run-ink").addEventListener("click", function () { run("ink", seedInk); });
+      document.getElementById("run-sealed").addEventListener("click", function () { run("sealed", seedSealed); });
+
+      render();
+    </script>
+  </body>
+</html>
