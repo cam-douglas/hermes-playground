@@ -787,9 +787,9 @@ test("50 adapters stay honest when env is empty — never a fake live HTTP 200",
   assert.ok(fired.events.every((row) => !/HTTP 200/.test(row.summary)));
 });
 
-test("51 catalog wiring: 30 products, Pleat featured, Chad listed", () => {
+test("51 catalog wiring: 31 products, Pleat featured, Scant and Chad listed", () => {
   const catalog = JSON.parse(readFileSync(fileURLToPath(new URL("../../../catalog.json", import.meta.url)), "utf8"));
-  assert.equal(catalog.products.length, 30);
+  assert.equal(catalog.products.length, 31);
   const featured = catalog.products.filter((row) => row.featured);
   assert.equal(featured.length, 1);
   assert.equal(featured[0].name, "Pleat");
@@ -797,6 +797,9 @@ test("51 catalog wiring: 30 products, Pleat featured, Chad listed", () => {
   assert.equal(featured[0].href, "/pleat/");
   assert.equal(featured[0].day, "2026-08-29");
   assert.match(featured[0].summary, /05:50|rendered fold is not a hold|flat/);
+  const scant = catalog.products.find((row) => row.slug === "scant");
+  assert.ok(scant);
+  assert.equal(scant.featured, false);
   const chad = catalog.products.find((row) => row.slug === "chad");
   assert.ok(chad);
   assert.equal(chad.featured, false);
@@ -805,25 +808,27 @@ test("51 catalog wiring: 30 products, Pleat featured, Chad listed", () => {
   assert.equal(kist.featured, false);
   const slugs = catalog.products.map((row) => row.slug);
   assert.equal(slugs[0], "pleat");
+  assert.equal(slugs[1], "scant");
   assert.ok(slugs.includes("chad"));
   assert.ok(slugs.includes("knock"));
-  assert.ok(!slugs.includes("scant"));
   assert.ok(!slugs.includes("fold"));
   assert.ok(!slugs.includes("accordion"));
   assert.ok(!slugs.includes("bellows"));
 });
 
-test("52 vercel rewrite order puts /pleat before /chad and the slug fallback", () => {
+test("52 vercel rewrite order puts /pleat before /scant, /chad and the slug fallback", () => {
   const vercel = JSON.parse(readFileSync(fileURLToPath(new URL("../../../vercel.json", import.meta.url)), "utf8"));
   const sources = vercel.rewrites.map((row) => row.source);
   assert.equal(sources[0], "/pleat");
   assert.equal(sources[1], "/pleat/");
+  assert.equal(sources[2], "/scant");
+  assert.equal(sources[3], "/scant/");
   assert.ok(sources.includes("/chad"));
   assert.ok(sources.includes("/kist"));
   assert.ok(sources.includes("/:slug"));
-  assert.ok(sources.indexOf("/pleat") < sources.indexOf("/chad"));
+  assert.ok(sources.indexOf("/pleat") < sources.indexOf("/scant"));
+  assert.ok(sources.indexOf("/scant") < sources.indexOf("/chad"));
   assert.ok(sources.indexOf("/pleat/") < sources.indexOf("/:slug"));
-  assert.ok(!sources.includes("/scant"));
 });
 
 test("53 hours.json prepends the 05:50 Sydney Pleat ship", () => {
@@ -835,7 +840,9 @@ test("53 hours.json prepends the 05:50 Sydney Pleat ship", () => {
   assert.equal(hours[0].title, "Pleat");
   assert.equal(hours[0].kind, "ship");
   assert.match(hours[0].note, /flat/);
+  assert.match(hours[0].note, /Scant/);
   assert.match(hours[0].note, /Chad/);
+  assert.equal(hours[1].stem, "2026-08-29-scant");
 });
 
 test("54 clusterOf on #90425 includes buried folded swallowed midturn chrome fragment ghosted", () => {
