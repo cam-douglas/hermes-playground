@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Chute](https://hermes-playground-green.vercel.app/chute/)** — mail chute. A typed secret is not a handoff. Masked intake or admit clear. Folder: `projects/chute/`.
+**Featured: [Aside](https://hermes-playground-green.vercel.app/aside/)** — wing desk. A preamble is not an answer. Score the side channel or admit heard. Folder: `projects/aside/`.
+
+**Listed: [Chute](https://hermes-playground-green.vercel.app/chute/)** — mail chute. A typed secret is not a handoff. Masked intake or admit clear. Folder: `projects/chute/`. Still listed. Not featured.
 
 **Listed: [Tain](https://hermes-playground-green.vercel.app/tain/)** — one-way glass. A silvered tain is not a hold. Compare extension claim to session list. Name the class or admit paired. Folder: `projects/tain/`. Still listed. Not featured.
 
@@ -48,10 +50,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                20 products: Chute (featured), Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                21 products: Aside (featured), Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/chute/             mail chute / dead-drop for sanctioned secret handoff (featured)
+projects/aside/             theatre wing / side-stage whisper booth for /btw silent truncation (featured)
+projects/chute/             mail chute / dead-drop for sanctioned secret handoff (kept, unfeatured)
 projects/tain/              night window / one-way glass for Chrome pairing split (kept, unfeatured)
 projects/husk/              threshing desk / grain floor for hollow headless success (kept, unfeatured)
 projects/snib/              night-latch / thumb-turn for Trusted Devices fail-open (kept, unfeatured)
@@ -71,8 +74,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-aside.md    Aside ship log (19:50 Sydney)
 runs/2026-08-28-chute.md    Chute ship log (18:50 Sydney)
 runs/2026-08-28-tain.md     Tain ship log (17:50 Sydney)
 runs/2026-08-28-husk.md     Husk ship log (16:50 Sydney)
@@ -111,6 +115,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Aside
+
+`projects/aside/` is a theatrical side-channel / wing desk for Claude Code `/btw` silent truncation. When the side agent inherits tool-first context (project CLAUDE.md or a SessionStart hook saying must call a tool before ANY response) but `/btw` forbids tools, the model emits a short preamble then the exchange ends with NO answer and NO notice. A preamble is not an answer. Score the wing. Name the class or admit **heard**. Verdicts: **heard**, **preamble**, **muted**, **poisoned**, **toolish**, **inherited**, **ghost**, **sticky**, **noticed**, **forked**. Slack alarm on preamble / muted / poisoned / toolish / inherited / ghost / sticky / forked. Linear on preamble / poisoned.
+
+Live path: https://hermes-playground-green.vercel.app/aside/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90314` preamble is already in the booth. Idle word is **heard**, not the product name. NOT Coda (silent dropped assistant text in the MAIN turn). NOT Suture (stream-tear / partial MAIN turn). NOT Chute (secret handoff inbound). NOT Scrim (outbound DLP). NOT Knock, Quench, Hasp, Parity, Reveille, Reed, Fathom, Blot, Stencil, Sigil, Wicket, Assay, Veto, Snib, Husk, Tain. Not leftover woodworking sliders. Different problem: side-channel `/btw` tool-forbidden inheritance + notice-gated-on-empty-text + sticky poison + ghost transcript. Different UI: theatre wing / side-stage whisper booth.
 
 ## Chute
 
@@ -285,6 +297,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/aside/` → `projects/aside/`
 - `/chute/` → `projects/chute/`
 - `/tain/` → `projects/tain/`
 - `/husk/` → `projects/husk/`
