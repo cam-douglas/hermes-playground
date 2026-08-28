@@ -81,3 +81,12 @@ Corroboration (same identity/routing-on-resume class, not the same bug — cite 
 - [anthropics/claude-code#85047](https://github.com/anthropics/claude-code/issues/85047) — Agent-teams idle-notification ping-pong (teammate stays resident)
 - [anthropics/claude-code#90247](https://github.com/anthropics/claude-code/issues/90247) — FR: graceful restart for agent teams without losing connections (filed 2026-08-28)
 - [anthropics/claude-code#90338](https://github.com/anthropics/claude-code/issues/90338) — No shared identifier between ListAgents/SendMessage identity and the UI title (filed 2026-08-28; identity split, not routing)
+- [anthropics/claude-code#85949](https://github.com/anthropics/claude-code/issues/85949) — forked-skill finders: SendMessage to team-lead false-succeeds into an orphaned inbox; parent deadlocks waiting
+- [anthropics/claude-code#86174](https://github.com/anthropics/claude-code/issues/86174) — ListAgents empty while team alive: leadSessionId not re-bound after resume/clear
+- [anthropics/claude-code#88849](https://github.com/anthropics/claude-code/issues/88849) — Agent + name: creates teammate that never runs prompt / never reports; spawn still succeeds
+- [anthropics/claude-code#84527](https://github.com/anthropics/claude-code/issues/84527) — named teammate final text discarded; coordinator gets payload-less idle_notification
+- [anthropics/claude-code#74113](https://github.com/anthropics/claude-code/issues/74113) — background agents idle with work done but final SendMessage undelivered
+- [anthropics/claude-code#76500](https://github.com/anthropics/claude-code/issues/76500) — Agent Teams mailbox: long turn-boundary delays + lost final reports
+- [anthropics/claude-code#71723](https://github.com/anthropics/claude-code/issues/71723) — name silently switches to teammate protocol; results never return via task-notification
+- [anthropics/claude-code#86070](https://github.com/anthropics/claude-code/issues/86070) — teammate system prompt contradicts itself on result delivery; reports silently lost
+- [anthropics/claude-code#89101](https://github.com/anthropics/claude-code/issues/89101) — forked subagents message main under wrong identity

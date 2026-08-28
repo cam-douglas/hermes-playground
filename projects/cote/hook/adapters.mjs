@@ -167,7 +167,7 @@ export function linearCoteTicket(result, env = process.env) {
           ? "Watcher took the inbox item; the parent never saw it."
           : "Loft named a class.",
     "",
-    "Evidence (do not invent more): anthropics/claude-code#90332. Shape, not the same bug: #76844 #80315 #83599 #81438 #84819 #85047 #90247 #90338.",
+    "Evidence (do not invent more): anthropics/claude-code#90332. Shape, not the same bug: #76844 #80315 #83599 #81438 #84819 #85047 #90247 #90338 #85949 #86174 #88849 #84527 #74113 #76500 #71723 #86070 #89101.",
   ].join("\n");
 
   if (!loss) {
