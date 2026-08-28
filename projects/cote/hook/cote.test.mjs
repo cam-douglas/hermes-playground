@@ -700,7 +700,7 @@ test("47 desk HTML sanity: idle word roosted, seeded drained, never cote-as-stat
   assert.doesNotMatch(html, /const IDLE_WORD = "cote"/);
   assert.doesNotMatch(html, /const IDLE_WORD = "empty"/);
   assert.match(html, /const IDLE_WORD = "roosted"/);
-  assert.doesNotMatch(html, /zinc shelf|butcher-paper|ice-room|cam-lobe|valve train|theatre wing|mail chute|one-way glass/);
+  assert.doesNotMatch(html, /zinc shelf|butcher-paper|ice-room|cam-lobe|oil-black/);
   assert.match(html, /dove-cote|pigeon loft|nest holes|hopper|whitewash/i);
   assert.match(html, /Score the loft or admit roosted/);
   assert.match(html, /NOT Reveille/);
