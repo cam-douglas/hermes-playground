@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Chad](https://hermes-playground-green.vercel.app/chad/)** — hanging-chad ballot booth. A reported selection is not a hold. Score the ballot or admit spoilt. Folder: `projects/chad/`.
+**Featured: [Scant](https://hermes-playground-green.vercel.app/scant/)** — timber scantling yard. A written shell snapshot is not a hold. Score the board or admit fit. Folder: `projects/scant/`.
+
+**Listed: [Chad](https://hermes-playground-green.vercel.app/chad/)** — hanging-chad ballot booth. A reported selection is not a hold. Score the ballot or admit spoilt. Folder: `projects/chad/`. Still listed. Not featured.
 
 **Listed: [Kist](https://hermes-playground-green.vercel.app/kist/)** — undertaker's kist. A session still on the default list is not a hold. Score the lid or admit laid. Folder: `projects/kist/`. Still listed. Not featured.
 
@@ -66,10 +68,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                29 products: Chad (featured), Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                30 products: Scant (featured), Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/chad/              hanging-chad / ballot booth desk for AskUserQuestion phantom selection treated as consent (featured)
+projects/scant/             timber scantling yard / measuring bench for Windows Desktop shell-snapshot PATH truncation (featured)
+projects/chad/              hanging-chad / ballot booth desk for AskUserQuestion phantom selection treated as consent (kept, unfeatured)
 projects/kist/              undertaker's kist / coffin-chest desk for teardown-archive that never unarchives (kept, unfeatured)
 projects/wraith/            afterimage / deleted-inode desk for auto-updater live-image unlink (kept, unfeatured)
 projects/gasket/            steam-fitter flange / packing ring for project-scoped strictAllowlist silent discard (kept, unfeatured)
@@ -98,8 +101,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-scant.md    Scant ship log (04:50 Sydney)
 runs/2026-08-29-chad.md     Chad ship log (03:50 Sydney)
 runs/2026-08-29-kist.md     Kist ship log (02:50 Sydney)
 runs/2026-08-29-wraith.md   Wraith ship log (01:50 Sydney)
@@ -147,6 +151,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Scant
+
+`projects/scant/` is a timber scantling yard / measuring bench for Claude Code on Windows Desktop: the Bash tool's shell snapshot is silently truncated at ~7.2 KB (≈ Windows `cmd.exe` 8191 command-line limit) when plugin PATH bloat pushes the snapshot past that wall. Truncation cuts mid-`export PATH='...'` so the quote never closes. Every subsequent Bash call fails unexpected EOF. On-disk repair does not heal the session. Deleting the snapshot makes commands silently no-op. A written shell snapshot is not a hold. Score the board or admit **fit**. Verdicts: **fit**, **scant**, **clipped**, **open**, **poisoned**, **bloated**, **stubbed**, **mute**, **sealed**, **true**. Slack scant alarm on scant / clipped / poisoned / bloated. Linear scantling ticket on poisoned / clipped.
+
+Live path: https://hermes-playground-green.vercel.app/scant/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90421` scant is already on the slab. Idle word is **fit**, not the product name, not empty. NOT Larder (plugin-store freeze). NOT Reed (MCP contacts). NOT Assay (tool-arg furnace). NOT Quench (spend fuse). NOT Wraith (live-image unlink). NOT Chad / Kist / Gasket / Damper / Cote / leftover woodworking sliders. Different problem: snapshot writer clips PATH at the OS cmdline wall. Different UI: timber scantling yard, lumber rack, steel rule, end-grain stamps, sawdust, chalk.
 
 ## Chad
 
@@ -393,6 +405,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/scant/` → `projects/scant/`
 - `/chad/` → `projects/chad/`
 - `/kist/` → `projects/kist/`
 - `/wraith/` → `projects/wraith/`
