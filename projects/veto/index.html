@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Veto — palimpsest for silent heron_brook AgentTool veto. A standing CLAUDE.md is not a hold. Idle word is upheld."
+    />
+    <title>Veto — palimpsest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --chamber: #100f0c;
+        --panel: #1b1914;
+        --line: rgba(232, 220, 192, 0.12);
+        --vellum: #efe6d0;
+        --vellum-aged: #d8c9a4;
+        --gall: #2a2418;
+        --mute: #8a8170;
+        --cream: #f3ead6;
+        --plum: rgba(68, 42, 74, 0.52);
+        --carmine: #9b3040;
+        --carmine-ink: #f3d4c8;
+        --indigo: #7d89a0;
+        --word: #efe4c4;
+        --display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+        --serif: Newsreader, "Source Serif 4", Georgia, serif;
+        --lab: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--serif);
+        color: var(--cream);
+        background:
+          radial-gradient(ellipse 80% 50% at 50% 0%, rgba(68, 42, 74, 0.22), transparent 58%),
+          linear-gradient(180deg, #16140f, var(--chamber) 40%, #0c0b09);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--indigo); }
+      .chamber {
+        width: min(1080px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 72px;
+      }
+      .docket {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 12px;
+      }
+      .mark, .path {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--indigo);
+      }
+      h1 {
+        margin: 16px 0 8px;
+        font-family: var(--display);
+        font-size: clamp(44px, 8vw, 84px);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 0.88;
+      }
+      .lede {
+        max-width: 40em;
+        color: var(--mute);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      .stack-wrap {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.7fr);
+        gap: 28px;
+        align-items: start;
+      }
+      .folios {
+        position: relative;
+        min-height: 420px;
+      }
+      .leaf {
+        position: relative;
+        min-height: 380px;
+        padding: 22px 22px 20px;
+        background:
+          repeating-linear-gradient(
+            0deg,
+            rgba(42, 36, 24, 0.04) 0 28px,
+            transparent 28px 29px
+          ),
+          var(--vellum);
+        color: var(--gall);
+        box-shadow:
+          0 18px 40px rgba(0, 0, 0, 0.35),
+          inset 0 0 0 1px rgba(42, 36, 24, 0.12);
+      }
+      .leaf.under {
+        transform: rotate(-1.1deg);
+        z-index: 1;
+      }
+      .leaf.over {
+        position: absolute;
+        inset: 18px 8px auto 28px;
+        min-height: 340px;
+        background:
+          linear-gradient(180deg, rgba(68, 42, 74, 0.18), rgba(68, 42, 74, 0.08)),
+          rgba(239, 230, 208, 0.72);
+        backdrop-filter: blur(1.5px);
+        transform: rotate(1.4deg);
+        z-index: 2;
+        transition: transform 0.45s ease, opacity 0.35s ease, inset 0.45s ease;
+      }
+      .folios.lifted .leaf.over {
+        transform: translateY(-118%) rotate(-4deg);
+        opacity: 0.18;
+        pointer-events: none;
+      }
+      .leaf b {
+        display: block;
+        font-family: var(--lab);
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        font-weight: 500;
+      }
+      .leaf.under b { color: #6a5c3f; }
+      .leaf.over b { color: #6d3d72; }
+      .leaf pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-family: var(--lab);
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+      .court {
+        display: grid;
+        justify-items: center;
+        gap: 16px;
+      }
+      .stamp {
+        width: 210px;
+        height: 210px;
+        border-radius: 50%;
+        border: 7px double var(--carmine);
+        box-shadow: inset 0 0 0 3px rgba(155, 48, 64, 0.35);
+        display: grid;
+        place-items: center;
+        text-align: center;
+        background: radial-gradient(circle at 40% 32%, rgba(155, 48, 64, 0.16), transparent 62%);
+        transform: rotate(-8deg);
+      }
+      .stamp small {
+        display: block;
+        font-family: var(--lab);
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--carmine-ink);
+      }
+      .stamp strong {
+        display: block;
+        font-family: var(--display);
+        font-size: 42px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 0.9;
+        color: var(--word);
+        text-transform: lowercase;
+      }
+      .stamp.alarm { border-color: #c64b55; }
+      .stamp.idle strong { color: var(--vellum-aged); }
+      .idle-line {
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .idle-line em {
+        font-style: normal;
+        color: var(--word);
+      }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .acts button {
+        background: transparent;
+        border: 1px solid var(--line);
+        padding: 7px 11px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .acts button:hover { border-color: var(--indigo); }
+      .strip {
+        margin-top: 28px;
+      }
+      .strip b {
+        display: block;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--indigo);
+        margin-bottom: 8px;
+        font-weight: 400;
+      }
+      .dockets {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 10px 0 4px;
+      }
+      .dockets button {
+        flex: 0 0 auto;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 10px 12px;
+        min-width: 112px;
+        text-align: left;
+      }
+      .dockets button.on {
+        border-color: rgba(155, 48, 64, 0.55);
+        color: var(--word);
+      }
+      .dockets button span {
+        display: block;
+        font-family: var(--lab);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .facts {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 14px 14px 12px;
+      }
+      .card b {
+        display: block;
+        font-family: var(--lab);
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--indigo);
+        margin-bottom: 8px;
+        font-weight: 400;
+      }
+      .card ul {
+        margin: 0;
+        padding-left: 1.1em;
+        color: var(--mute);
+        font-size: 14px;
+      }
+      .sinks {
+        margin: 8px 0 0;
+        font-family: var(--lab);
+        font-size: 12px;
+        color: var(--mute);
+        line-height: 1.55;
+      }
+      footer {
+        margin-top: 36px;
+        color: var(--mute);
+        font-size: 14px;
+      }
+      footer code { font-family: var(--lab); font-size: 12px; }
+      @media (max-width: 820px) {
+        .stack-wrap { grid-template-columns: 1fr; }
+        .leaf.over { inset: 28px 4px auto 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="chamber">
+      <div class="docket">
+        <p class="mark">Hermes playground · court overlay</p>
+        <p class="path">/veto/</p>
+      </div>
+      <h1>Veto</h1>
+      <p class="lede">
+        A standing CLAUDE.md is not a hold. An ack is not a hold. The vendor edict
+        sits as a translucent overlay on the user's own rule. Lift the overlay.
+        Name the class or admit <em>upheld</em>. This is injection, not eviction.
+      </p>
+      <div class="stack-wrap">
+        <div id="folios" class="folios">
+          <article class="leaf under" aria-label="User standing policy">
+            <b>lower leaf · CLAUDE.md</b>
+            <pre id="under-text"></pre>
+          </article>
+          <article class="leaf over" id="overlay" aria-label="Injected edict">
+            <b>overlay · tengu_heron_brook</b>
+            <pre id="over-text"></pre>
+          </article>
+        </div>
+        <aside class="court">
+          <div id="stamp" class="stamp alarm" aria-live="polite">
+            <div>
+              <small>court finding</small>
+              <strong id="word">vetoed</strong>
+            </div>
+          </div>
+          <p class="idle-line">idle word <em>upheld</em> when no overlay is down</p>
+          <div class="acts">
+            <button type="button" id="act-lift">Lift</button>
+            <button type="button" id="act-drop">Drop</button>
+            <button type="button" id="act-score">Score</button>
+            <button type="button" id="act-restore">Restore</button>
+            <button type="button" id="act-clear">Clear · upheld</button>
+          </div>
+        </aside>
+      </div>
+      <section class="strip" aria-label="Scored probes">
+        <b>docket</b>
+        <div class="dockets">
+          <button type="button" class="on" id="seed-80988"><span>#80988</span>vetoed</button>
+          <button type="button" id="seed-87635"><span>#87635</span>misattributed</button>
+          <button type="button" id="seed-81263"><span>#81263</span>ghost</button>
+          <button type="button" id="seed-deadlock"><span>bradywardai</span>deadlock</button>
+          <button type="button" id="seed-shadowed"><span>#82371</span>shadowed</button>
+          <button type="button" id="seed-silent"><span>#80998</span>silent</button>
+          <button type="button" id="seed-restored"><span>workaround</span>restored</button>
+          <button type="button" id="seed-upheld"><span>sonnet</span>upheld</button>
+        </div>
+      </section>
+      <section class="facts">
+        <div class="card">
+          <b>reasons</b>
+          <ul id="reasons"></ul>
+        </div>
+        <div class="card">
+          <b>attribution · dispatches</b>
+          <div class="sinks" id="facts"></div>
+        </div>
+        <div class="card">
+          <b>slack · github · linear</b>
+          <div class="sinks" id="sinks"></div>
+        </div>
+      </section>
+      <footer>
+        Demo needs no secrets and no npm. Idle word is <code>upheld</code>.
+        NOT Fathom, NOT Knock, NOT Reveille, NOT Assay, NOT Wicket.
+        Evidence: <code>#80988</code> <code>#88778</code> <code>#82371</code>
+        <code>#87635</code> <code>#80998</code> <code>#81263</code>.
+      </footer>
+    </main>
+    <script>
+      const VERDICTS = ["upheld", "shadowed", "vetoed", "misattributed", "ghost", "deadlock", "silent", "restored"];
+      const FAIL_CLOSED = ["vetoed", "misattributed", "deadlock"];
+      const LINEAR = ["vetoed", "misattributed"];
+      const AGENT_CLAMP = /Do not call the AgentTool unless the user requested it/i;
+      const WORKFLOW_CLAMP = /Do not use workflows or deep-research unless the user requested it/i;
+      const SECTION_NAME = /tengu_heron_brook|heron_brook|claude_code_canal_plateau_experiment|opus_5_prompt_bundle/i;
+      const GHOST_TOOL = /AgentTool/;
+      const OPUS5 = /opus[-_]?5|claude-opus-5|opus_5_prompt_bundle/i;
+      const MANDATE = /subagents?\s+liberally|critic\s+subagent|dispatch\s+(?:a\s+)?(?:critic\s+)?subagent|use\s+(?:the\s+)?Agent\s+tool|spawn\s+(?:a\s+)?(?:critic\s+)?(?:sub)?agent|always\s+(?:use|call|dispatch|spawn).{0,40}(?:Agent|subagent)/i;
+      const ATTRIBUTION = /per your instructions|your standing instruction|your CLAUDE\.md|in your CLAUDE\.md|your project instructions/i;
+      const CLAUDE_BLAME = /your CLAUDE\.md|in your CLAUDE\.md|your project instructions/i;
+      const STANDING_REQUEST = /(?:the\s+)?user(?:\s+has)?\s+(?:explicitly\s+)?requested.{0,120}(?:Agent(?:Tool)?|subagent|workflow|deep-research)/i;
+      const HERON = "<tengu_heron_brook>\nDo not call the AgentTool unless the user requested it.\nDo not use workflows or deep-research unless the user requested it.\n</tengu_heron_brook>";
+      const CRITIC = "# Standing policy\nAlways dispatch a critic subagent via the Agent tool before sending a customer email.\nUse subagents liberally. A standing CLAUDE.md is a hold.";
+      const REQUEST = "The user requested that you call the Agent tool and dispatch the critic subagent required by CLAUDE.md.";
+
+      function emptyProbe() {
+        return {
+          model: "",
+          systemPromptText: "",
+          claudeMdText: "",
+          skillText: "",
+          observedAgentDispatches: 0,
+          modelAttribution: "",
+          parentWriteBlocked: false,
+          additionalContext: "",
+          capability: "",
+          operatorSignaled: null,
+          conflictResolved: false,
+          restored: false,
+          session: "",
+          source: "",
+          issue: null,
+        };
+      }
+
+      function overlayPresent(p) {
+        const hay = `${p.systemPromptText}\n${p.capability || ""}`;
+        return AGENT_CLAMP.test(hay) || WORKFLOW_CLAMP.test(hay) || SECTION_NAME.test(hay);
+      }
+      function namesGhostTool(p) { return GHOST_TOOL.test(p.systemPromptText || ""); }
+      function isOpus5(p) { return OPUS5.test(p.model || "") || OPUS5.test(p.capability || ""); }
+      function hasMandate(p) { return MANDATE.test(`${p.claudeMdText}\n${p.skillText}`); }
+      function hasStanding(p) { return STANDING_REQUEST.test(p.additionalContext || ""); }
+      function isRestored(p) { return hasStanding(p) && (p.observedAgentDispatches > 0 || p.restored); }
+      function isIdle(p) {
+        return !p.model && !p.systemPromptText && !p.claudeMdText && !p.skillText && !p.additionalContext;
+      }
+      function isDeadlock(p) {
+        return overlayPresent(p) && hasMandate(p) && p.parentWriteBlocked && p.observedAgentDispatches === 0 && !isRestored(p);
+      }
+      function isVetoed(p) {
+        return overlayPresent(p) && hasMandate(p) && p.observedAgentDispatches === 0 && !isRestored(p) && isOpus5(p);
+      }
+      function isMisattributed(p) {
+        if (!overlayPresent(p) || !ATTRIBUTION.test(p.modelAttribution || "")) return false;
+        return !AGENT_CLAMP.test(`${p.claudeMdText}\n${p.skillText}`);
+      }
+      function blamesClaude(p) { return CLAUDE_BLAME.test(p.modelAttribution || "") && isMisattributed(p); }
+      function isSilent(p) {
+        if (!overlayPresent(p) || !hasMandate(p) || p.observedAgentDispatches > 0 || isRestored(p) || isOpus5(p)) return false;
+        const signaled = p.operatorSignaled === true || Boolean((p.modelAttribution || "").trim());
+        return !signaled;
+      }
+
+      function classify(p) {
+        if (isIdle(p)) return "upheld";
+        if (isRestored(p)) return "restored";
+        if (isDeadlock(p)) return "deadlock";
+        if (isVetoed(p) && !blamesClaude(p)) return "vetoed";
+        if (isMisattributed(p)) return "misattributed";
+        if (isVetoed(p)) return "vetoed";
+        if (namesGhostTool(p) && !hasMandate(p)) return "ghost";
+        if (isSilent(p)) return "silent";
+        if (overlayPresent(p) && (hasMandate(p) || (p.claudeMdText || "").trim())) return "shadowed";
+        if (namesGhostTool(p)) return "ghost";
+        return "upheld";
+      }
+
+      function reasonsOf(p, verdict) {
+        const reasons = [];
+        reasons.push(overlayPresent(p) ? "heron_brook / AgentTool clamp present in the system prompt" : "no heron_brook / no AgentTool clamp line");
+        if (isOpus5(p)) reasons.push("opus-5 family / opus_5_prompt_bundle");
+        if (hasMandate(p)) reasons.push("CLAUDE.md or skill mandates Agent / subagent dispatch");
+        if (overlayPresent(p) && hasMandate(p)) reasons.push("user policy still visible underneath the overlay");
+        if (p.observedAgentDispatches === 0 && hasMandate(p)) reasons.push("mandated Agent dispatch count is zero");
+        if (p.observedAgentDispatches > 0) reasons.push(p.observedAgentDispatches + " Agent dispatch(es) observed");
+        if (isMisattributed(p)) reasons.push("model attributes the vendor edict to the user's instructions");
+        if (namesGhostTool(p)) reasons.push("clamp names AgentTool; the surface tool is Agent");
+        if (p.parentWriteBlocked) reasons.push("parent write is blocked by a local guard");
+        if (isRestored(p)) reasons.push("UserPromptSubmit standing-request satisfies unless the user requested it");
+        if (verdict === "silent") reasons.push("conflict resolved with no signal to the operator");
+        if (verdict === "upheld") reasons.push("user policy stands");
+        return reasons;
+      }
+
+      function decide(probe, action) {
+        let p = { ...emptyProbe(), ...probe };
+        if (action === "clear") p = emptyProbe();
+        if (action === "restore") {
+          p.additionalContext = p.additionalContext || REQUEST;
+          p.restored = true;
+          if (p.observedAgentDispatches === 0 && hasMandate(p)) p.observedAgentDispatches = 1;
+        }
+        const verdict = action === "clear" ? "upheld" : classify(p);
+        return {
+          verdict,
+          idleWord: "upheld",
+          alarm: FAIL_CLOSED.includes(verdict),
+          linear: LINEAR.includes(verdict),
+          overlayPresent: overlayPresent(p),
+          namesGhostTool: namesGhostTool(p),
+          restored: verdict === "restored" || isRestored(p),
+          reasons: reasonsOf(p, verdict),
+          mandate: hasMandate(p),
+          model: p.model,
+          modelAttribution: p.modelAttribution,
+          observedAgentDispatches: p.observedAgentDispatches,
+          parentWriteBlocked: p.parentWriteBlocked,
+          additionalContext: p.additionalContext,
+          claudeMdText: p.claudeMdText,
+          systemPromptText: p.systemPromptText,
+          source: p.source,
+          issue: p.issue,
+          probe: p,
+        };
+      }
+
+      function seed80988() {
+        return {
+          model: "claude-opus-5",
+          capability: "opus_5_prompt_bundle",
+          systemPromptText: "You are Claude Code.\n\n" + CRITIC + "\n\n" + HERON,
+          claudeMdText: CRITIC,
+          observedAgentDispatches: 0,
+          modelAttribution: "I skipped the critic because of your standing instruction.",
+          source: "anthropics/claude-code#80988",
+          issue: 80988,
+          session: "80988",
+        };
+      }
+      function seed87635() {
+        return {
+          model: "claude-opus-5",
+          capability: "opus_5_prompt_bundle",
+          systemPromptText: "You are Claude Code.\n\n" + HERON,
+          claudeMdText: "# Project\nPrefer short answers. Do not invent files.",
+          observedAgentDispatches: 1,
+          modelAttribution: "That line is in your CLAUDE.md.",
+          source: "anthropics/claude-code#87635",
+          issue: 87635,
+        };
+      }
+      function seed81263() {
+        return {
+          model: "claude-opus-5",
+          capability: "opus_5_prompt_bundle",
+          systemPromptText: "Background jobs may call the Agent tool to spawn workers.\nDo not call the AgentTool unless the user requested it.",
+          claudeMdText: "# Notes\nKeep commits small.",
+          observedAgentDispatches: 0,
+          source: "anthropics/claude-code#81263",
+          issue: 81263,
+        };
+      }
+      function seedDeadlock() {
+        return {
+          model: "claude-opus-5",
+          capability: "opus_5_prompt_bundle",
+          systemPromptText: HERON,
+          claudeMdText: CRITIC,
+          observedAgentDispatches: 0,
+          parentWriteBlocked: true,
+          source: "anthropics/claude-code#80988",
+          issue: 80988,
+          session: "80988-deadlock",
+        };
+      }
+      function seedShadowed() {
+        return {
+          model: "claude-opus-5",
+          capability: "opus_5_prompt_bundle",
+          systemPromptText: HERON,
+          claudeMdText: CRITIC,
+          observedAgentDispatches: 1,
+          source: "anthropics/claude-code#82371",
+          issue: 82371,
+        };
+      }
+      function seedSilent() {
+        return {
+          model: "claude-sonnet-4-6",
+          systemPromptText: HERON,
+          claudeMdText: CRITIC,
+          observedAgentDispatches: 0,
+          operatorSignaled: false,
+          conflictResolved: true,
+          source: "anthropics/claude-code#80998",
+          issue: 80998,
+        };
+      }
+      function seedRestored() {
+        return {
+          model: "claude-opus-5",
+          capability: "opus_5_prompt_bundle",
+          systemPromptText: HERON,
+          claudeMdText: CRITIC,
+          additionalContext: REQUEST,
+          observedAgentDispatches: 1,
+          restored: true,
+          source: "anthropics/claude-code#80988",
+          issue: 80988,
+        };
+      }
+      function seedUpheld() {
+        return {
+          model: "claude-sonnet-4-6",
+          systemPromptText: "You are Claude Code. Follow the user's CLAUDE.md.",
+          claudeMdText: CRITIC,
+          observedAgentDispatches: 2,
+          source: "upheld",
+        };
+      }
+
+      function demoSinks(result) {
+        const slack = FAIL_CLOSED.includes(result.verdict)
+          ? "Would post to Slack: overlay alarm — " + result.verdict + " on the vellum."
+          : "Would skip Slack — palimpsest is " + result.verdict + ".";
+        const linear = LINEAR.includes(result.verdict)
+          ? "Would open a Linear silent-override incident: " + result.verdict + " · " + (result.source || "heron_brook")
+          : "Would skip Linear — palimpsest is " + result.verdict + ".";
+        return {
+          slack,
+          github: "Would append a GitHub veto ledger row. Demo: no token.",
+          linear,
+        };
+      }
+
+      const wordEl = document.getElementById("word");
+      const stampEl = document.getElementById("stamp");
+      const foliosEl = document.getElementById("folios");
+      const underEl = document.getElementById("under-text");
+      const overEl = document.getElementById("over-text");
+      const reasonsEl = document.getElementById("reasons");
+      const factsEl = document.getElementById("facts");
+      const sinksEl = document.getElementById("sinks");
+
+      let current = seed80988();
+      let overlayDown = true;
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function show(result, seedKey) {
+        const display = overlayDown ? result.verdict : "upheld";
+        wordEl.textContent = display;
+        stampEl.className = "stamp" + (result.alarm && overlayDown ? " alarm" : "") + (!overlayDown ? " idle" : "");
+        foliosEl.classList.toggle("lifted", !overlayDown);
+        underEl.textContent = result.claudeMdText || "(empty leaf)";
+        const overlayText = (result.systemPromptText || "").match(/<tengu_heron_brook>[\s\S]*?<\/tengu_heron_brook>|Do not call the AgentTool[\s\S]*requested it\./i);
+        overEl.textContent = overlayText ? overlayText[0] : (result.overlayPresent ? result.systemPromptText : "(no overlay)");
+        reasonsEl.innerHTML = result.reasons.map((row) => "<li>" + escapeHtml(row) + "</li>").join("");
+        factsEl.innerHTML = [
+          "verdict " + result.verdict,
+          "model " + (result.model || "—"),
+          "dispatches " + result.observedAgentDispatches,
+          "attribution " + (result.modelAttribution || "none"),
+          "overlay " + (result.overlayPresent ? "present" : "absent"),
+          "ghost " + (result.namesGhostTool ? "AgentTool" : "none"),
+        ].map(escapeHtml).join("<br>");
+        const sinks = demoSinks(result);
+        sinksEl.innerHTML = [sinks.slack, sinks.github, sinks.linear].map(escapeHtml).join("<br>");
+        if (seedKey) {
+          document.querySelectorAll(".dockets button").forEach((btn) => btn.classList.remove("on"));
+          const on = document.getElementById("seed-" + seedKey);
+          if (on) on.classList.add("on");
+        }
+      }
+
+      function load(seedFn, key, down) {
+        current = seedFn();
+        overlayDown = down !== false && overlayPresent(current);
+        show(decide(current, "score"), key);
+      }
+
+      document.getElementById("seed-80988").addEventListener("click", () => load(seed80988, "80988", true));
+      document.getElementById("seed-87635").addEventListener("click", () => load(seed87635, "87635", true));
+      document.getElementById("seed-81263").addEventListener("click", () => load(seed81263, "81263", true));
+      document.getElementById("seed-deadlock").addEventListener("click", () => load(seedDeadlock, "deadlock", true));
+      document.getElementById("seed-shadowed").addEventListener("click", () => load(seedShadowed, "shadowed", true));
+      document.getElementById("seed-silent").addEventListener("click", () => load(seedSilent, "silent", true));
+      document.getElementById("seed-restored").addEventListener("click", () => load(seedRestored, "restored", true));
+      document.getElementById("seed-upheld").addEventListener("click", () => load(seedUpheld, "upheld", false));
+      document.getElementById("act-lift").addEventListener("click", () => {
+        overlayDown = false;
+        show(decide(current, "score"), null);
+      });
+      document.getElementById("act-drop").addEventListener("click", () => {
+        overlayDown = overlayPresent(current);
+        show(decide(current, "score"), null);
+      });
+      document.getElementById("act-score").addEventListener("click", () => {
+        overlayDown = overlayPresent(current);
+        show(decide(current, "score"), null);
+      });
+      document.getElementById("act-restore").addEventListener("click", () => {
+        const next = decide(current, "restore");
+        current = next.probe;
+        overlayDown = true;
+        show(next, "restored");
+      });
+      document.getElementById("act-clear").addEventListener("click", () => {
+        current = emptyProbe();
+        overlayDown = false;
+        show(decide(current, "clear"), "upheld");
+      });
+
+      show(decide(current, "score"), "80988");
+    </script>
+  </body>
+</html>

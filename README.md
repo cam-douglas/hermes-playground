@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Assay](https://hermes-playground-green.vercel.app/assay/)** — furnace. A parsed call is not a hold. Heat the envelope. Weigh delivered arguments against the schema and the raw markup. Name the impurity or admit sterling. Folder: `projects/assay/`.
+**Featured: [Veto](https://hermes-playground-green.vercel.app/veto/)** — palimpsest. A standing CLAUDE.md is not a hold. The vendor edict sits as a translucent overlay on the user's own rule. Lift the overlay. Name the class or admit upheld. Folder: `projects/veto/`.
+
+**Listed: [Assay](https://hermes-playground-green.vercel.app/assay/)** — furnace. A parsed call is not a hold. Heat the envelope. Weigh delivered arguments against the schema and the raw markup. Name the impurity or admit sterling. Folder: `projects/assay/`. Still listed. Not featured.
 
 **Listed: [Wicket](https://hermes-playground-green.vercel.app/wicket/)** — gatehouse. Isolation is a pin, not a promise. Score the probe against the pinned worktree. Admit home or name the class. Folder: `projects/wicket/`. Still listed. Not featured.
 
@@ -38,10 +40,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                15 products: Assay (featured), Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                16 products: Veto (featured), Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/assay/             furnace / cupel for silent tool-arg corruption (featured)
+projects/veto/              palimpsest / court overlay for silent heron_brook veto (featured)
+projects/assay/             furnace / cupel for silent tool-arg corruption (kept, unfeatured)
 projects/wicket/            gatehouse / turnstile for worktree isolation (kept, unfeatured)
 projects/sigil/             signature clinic / seal desk (kept, unfeatured)
 projects/stencil/           plan-mode blueprint fence (kept, unfeatured)
@@ -56,8 +59,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-veto.md     Veto ship log (14:50 Sydney)
 runs/2026-08-28-assay.md    Assay ship log (13:50 Sydney)
 runs/2026-08-28-wicket.md   Wicket ship log (12:50 Sydney)
 runs/2026-08-28-sigil.md    Sigil ship log (11:50 Sydney)
@@ -91,6 +95,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Veto
+
+`projects/veto/` is a palimpsest / two-layer vellum / court overlay for the Opus-5-only `heron_brook` system-prompt injection that silently vetoes user-configured Agent-tool delegation. A standing CLAUDE.md is not a hold. An ack is not a hold. The vendor edict sits as a translucent overlay on the user's own rule. Lift the overlay. Name the class or admit **upheld**. Verdicts: **upheld**, **shadowed**, **vetoed**, **misattributed**, **ghost**, **deadlock**, **silent**, **restored**. Fail-closed on vetoed / misattributed / deadlock.
+
+Live path: https://hermes-playground-green.vercel.app/veto/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#80988` is already on the palimpsest. Idle word is **upheld**, not the product name. NOT Fathom (compaction eviction). NOT Knock (permission grants). NOT Reveille (muster). NOT Assay (tool-arg furnace). NOT Wicket (worktree isolation). NOT Stencil / Sigil / Suture / Blot / Coda / Reed / Hasp / Parity / Quench / Scrim. Not leftover woodworking sliders. Not #67606 fake injection.
 
 ## Assay
 
@@ -217,6 +229,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/veto/` → `projects/veto/`
 - `/assay/` → `projects/assay/`
 - `/wicket/` → `projects/wicket/`
 - `/sigil/` → `projects/sigil/`
