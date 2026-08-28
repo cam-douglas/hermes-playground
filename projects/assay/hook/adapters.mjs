@@ -1,6 +1,6 @@
 /**
- * Assay sinks. Slack impurity alarm, GitHub assay ledger,
- * Linear incident on ghost or absorb (silent field loss).
+ * Assay sinks. Slack alarm on absorbed / hollow, GitHub assay ledger,
+ * Linear tool-assay incident on absorbed / tainted.
  * Missing secrets stay honest: a demo row, never a fake live 200.
  */
 
@@ -11,23 +11,23 @@ function headline(result) {
   return `${session} · ${result.verdict}${issue ? ` · ${issue}` : ""} · ${tool}`;
 }
 
-function isQuiet(result) {
+function isSlackAlarm(result) {
   const verdict = result.verdict || result.state;
-  return verdict === "intact";
+  return verdict === "absorbed" || verdict === "hollow";
 }
 
 function isLinear(result) {
-  return result.verdict === "ghost" || result.verdict === "absorb";
+  return result.verdict === "absorbed" || result.verdict === "tainted";
 }
 
 export function slackImpurityAlarm(result, env = process.env) {
   const webhook =
     env.ASSAY_SLACK_WEBHOOK || env.SLACK_WEBHOOK || env.SLACK_WEBHOOK_URL || "";
-  const quiet = isQuiet(result);
+  const alarm = isSlackAlarm(result);
 
-  const text = quiet
-    ? `Assay: cupel is ${result.verdict || "intact"} on ${result.session || "session"}.`
-    : `Assay ${String(result.verdict || "").toUpperCase()} · ${headline(result)}`;
+  const text = alarm
+    ? `Assay ${String(result.verdict || "").toUpperCase()} · ${headline(result)}`
+    : `Assay: cupel is ${result.verdict || "sterling"} on ${result.session || "session"}.`;
 
   const body = {
     text,
@@ -36,7 +36,7 @@ export function slackImpurityAlarm(result, env = process.env) {
         type: "header",
         text: {
           type: "plain_text",
-          text: quiet ? `Assay · ${result.verdict}` : `Assay · ${result.verdict} impurity alarm`,
+          text: alarm ? `Assay · ${result.verdict} impurity alarm` : `Assay · ${result.verdict}`,
         },
       },
       {
@@ -57,12 +57,12 @@ export function slackImpurityAlarm(result, env = process.env) {
     ],
   };
 
-  if (quiet) {
+  if (!alarm) {
     return {
       adapter: "slack",
       mode: "demo",
       ok: true,
-      summary: `Would skip Slack — cupel is ${result.verdict || "intact"}.`,
+      summary: `Would skip Slack — cupel is ${result.verdict || "sterling"}.`,
       body,
     };
   }
@@ -132,17 +132,17 @@ export function githubAssayLedger(result, env = process.env) {
 export function linearImpurityIncident(result, env = process.env) {
   const key = env.ASSAY_LINEAR_KEY || env.LINEAR_API_KEY || "";
   const loss = isLinear(result);
-  const title = `Silent field ${result.verdict} · Assay · ${result.source || "envelope"}`.trim();
+  const title = `Tool-assay ${result.verdict} · Assay · ${result.source || "envelope"}`.trim();
   const description = [
     "Assay refused a tool call because a parsed envelope is not a hold.",
     "",
     headline(result),
     "",
-    result.verdict === "ghost"
+    result.verdict === "tainted"
       ? "Parse succeeded. A delivered string contains an adjacent parameter's boundary tag."
       : "A declared field vanished. Residue of its parameter grammar sits in a host field.",
     "",
-    "Evidence (do not invent more): anthropics/claude-code#84405 #84362 #64774 #49747 #63879 #70544 #69522 #62123 #70657; openai/codex#19765 #31517 #26379.",
+    "Evidence (do not invent more): anthropics/claude-code#84405 #84362 #64774 #49747 #62123 #63604 #63870 #64108 #66153 #67307 #70657; openai/codex#19765 #31517 #26379.",
   ].join("\n");
 
   if (!loss) {
@@ -150,7 +150,7 @@ export function linearImpurityIncident(result, env = process.env) {
       adapter: "linear",
       mode: "demo",
       ok: true,
-      summary: `Would skip Linear — cupel is ${result.verdict || "intact"}.`,
+      summary: `Would skip Linear — cupel is ${result.verdict || "sterling"}.`,
       title,
       description,
     };
@@ -161,7 +161,7 @@ export function linearImpurityIncident(result, env = process.env) {
       adapter: "linear",
       mode: "demo",
       ok: true,
-      summary: `Would open a Linear impurity incident: ${title}`,
+      summary: `Would open a Linear tool-assay incident: ${title}`,
       title,
       description,
     };
@@ -171,7 +171,7 @@ export function linearImpurityIncident(result, env = process.env) {
     adapter: "linear",
     mode: "live",
     ok: null,
-    summary: `Opening Linear impurity incident: ${title}`,
+    summary: `Opening Linear tool-assay incident: ${title}`,
     title,
     description,
   };

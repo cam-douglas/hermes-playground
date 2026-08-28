@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Assay PreToolUse hook. A parsed call is not a hold.
- * Heat the envelope. Weigh delivered arguments. Name the impurity or admit intact.
+ * Heat the envelope. Weigh delivered arguments. Name the impurity or admit sterling.
  *
  *   echo '{"action":"weigh","charge":{...}}' | node index.mjs
  *   node index.mjs --listen 9070
@@ -9,7 +9,7 @@
  * Env:
  *   ASSAY_SLACK_WEBHOOK  Incoming webhook. Absent → demo "Would post to Slack".
  *   ASSAY_GITHUB_TOKEN   Private gist assay-ledger.jsonl. Absent → demo ledger.
- *   ASSAY_LINEAR_KEY     Ghost / absorb incident. Absent → demo row.
+ *   ASSAY_LINEAR_KEY     Absorbed / tainted incident. Absent → demo row.
  */
 import { createServer } from "node:http";
 import { stdin } from "node:process";
@@ -38,32 +38,32 @@ function readStdin() {
 }
 
 function shouldDeny(result) {
-  return Boolean(result.alarm) || Boolean(result.refused && result.verdict !== "intact");
+  return Boolean(result.alarm) || Boolean(result.refused && result.verdict !== "sterling");
 }
 
 function denyMessage(result) {
-  if (result.verdict === "ghost") {
-    return "Assay ghost. Parse succeeded, but a delivered string contains an adjacent parameter's boundary tag.";
+  if (result.verdict === "tainted") {
+    return "Assay tainted. Parse succeeded, but a delivered string contains an adjacent parameter's boundary tag.";
   }
-  if (result.verdict === "absorb") {
-    return "Assay absorb. A declared field vanished; its parameter grammar sits in a host field.";
+  if (result.verdict === "absorbed") {
+    return "Assay absorbed. A declared field vanished; sibling params were swallowed into a host field.";
   }
-  if (result.verdict === "mix") {
-    return "Assay mix. Legacy XML tool-use leaked into a JSON tool call.";
+  if (result.verdict === "leaked") {
+    return "Assay leaked. Legacy XML tool-use leaked into a JSON tool call.";
   }
-  if (result.verdict === "prefix") {
-    return "Assay prefix. Stray token or dropped antml: namespace on the envelope.";
+  if (result.verdict === "hollow") {
+    return "Assay hollow. The call rendered as plain text; Bash/Edit never ran.";
   }
-  if (result.verdict === "silent") {
-    return "Assay silent. A required argument arrived as an empty string.";
+  if (result.verdict === "spoiled") {
+    return "Assay spoiled. A malformed leftover contaminates later history.";
   }
-  if (result.verdict === "retry") {
-    return "Assay retry. The tool call could not be parsed, and retry also failed.";
+  if (result.verdict === "retried") {
+    return "Assay retried. The tool call could not be parsed, and retry also failed.";
   }
-  if (result.verdict === "mangled") {
-    return "Assay mangled. Envelope is unparseable, truncated, or the wrong type.";
+  if (result.verdict === "garbled") {
+    return "Assay garbled. Envelope is unparseable, truncated, or the wrong type.";
   }
-  return "Assay refuse. Cupel is not intact.";
+  return "Assay refuse. Cupel is not sterling.";
 }
 
 export async function handle(payload = {}, env = process.env) {
@@ -80,7 +80,7 @@ export async function handle(payload = {}, env = process.env) {
         behavior: deny ? "deny" : "allow",
         message: deny
           ? denyMessage(result)
-          : "Assay intact. Delivered arguments match the schema and the raw markup. Idle word is intact.",
+          : "Assay sterling. Delivered arguments match the schema and the raw markup. Idle word is sterling.",
         interrupt: deny,
       },
     },
@@ -110,7 +110,7 @@ export function listen(port = 9070) {
         ok: true,
         product: "assay",
         hook: "PreToolUse",
-        verbs: "intact|ghost|absorb|mix|prefix|silent|retry|mangled",
+        verbs: "sterling|tainted|absorbed|leaked|hollow|garbled|spoiled|retried",
       });
       return;
     }

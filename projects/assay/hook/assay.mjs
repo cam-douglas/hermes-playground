@@ -1,38 +1,40 @@
 /**
- * Assay — furnace / cupel for silent tool-argument corruption.
+ * Assay — touchstone / furnace for silent tool-argument corruption.
  * A parsed call is not a hold. Heat the envelope. Weigh delivered
  * arguments against the declared schema and the raw markup. Name the
- * impurity or admit intact.
+ * impurity or admit sterling.
  *
- * Verdicts: intact | ghost | absorb | mix | prefix | silent | retry | mangled
- * Idle word is intact. Never the product name.
+ * Verdicts: sterling | tainted | absorbed | leaked | hollow | garbled | spoiled | retried
+ * Idle word is sterling. Never the product name.
  *
- * Fail-closed on ghost / absorb / mangled.
+ * Fail-closed on tainted / absorbed / garbled.
+ * Slack alarm on absorbed / hollow. Linear on absorbed / tainted.
  * Not Coda (assistant text loss). Not Suture (SSE tear). Not Sigil
  * (thinking signature). Not Reed (MCP registry). Not Wicket (worktree).
  */
 
 export const VERDICTS = Object.freeze([
-  "intact",
-  "ghost",
-  "absorb",
-  "mix",
-  "prefix",
-  "silent",
-  "retry",
-  "mangled",
+  "sterling",
+  "tainted",
+  "absorbed",
+  "leaked",
+  "hollow",
+  "garbled",
+  "spoiled",
+  "retried",
 ]);
-export const IDLE_WORD = "intact";
+export const IDLE_WORD = "sterling";
 export const ALARM_VERDICTS = Object.freeze([
-  "ghost",
-  "absorb",
-  "mix",
-  "prefix",
-  "silent",
-  "retry",
-  "mangled",
+  "tainted",
+  "absorbed",
+  "leaked",
+  "hollow",
+  "garbled",
+  "spoiled",
+  "retried",
 ]);
-export const LINEAR_VERDICTS = Object.freeze(["ghost", "absorb"]);
+export const SLACK_VERDICTS = Object.freeze(["absorbed", "hollow"]);
+export const LINEAR_VERDICTS = Object.freeze(["absorbed", "tainted"]);
 
 const BOUNDARY_OPEN = /<parameter\s+name\s*=/i;
 const BOUNDARY_NAME = /<parameter\s+name\s*=\s*["']([^"']+)["']/gi;
@@ -58,6 +60,8 @@ export function emptyCharge() {
     argumentsKind: "",
     strayToken: "",
     droppedNamespace: false,
+    plainText: false,
+    dispatched: null,
     history: [],
     fired: false,
     weighed: false,
@@ -69,7 +73,7 @@ export function emptyCharge() {
   };
 }
 
-export function emptyAction(session = "intact-1") {
+export function emptyAction(session = "sterling-1") {
   return {
     action: "weigh",
     session,
@@ -111,6 +115,8 @@ export function cloneCharge(raw = {}) {
     argumentsKind: asText(src.argumentsKind),
     strayToken: asText(src.strayToken),
     droppedNamespace: Boolean(src.droppedNamespace),
+    plainText: Boolean(src.plainText),
+    dispatched: src.dispatched == null ? null : Boolean(src.dispatched),
     history: Array.isArray(src.history) ? src.history.map(asText) : [],
     fired: Boolean(src.fired),
     weighed: Boolean(src.weighed),
@@ -203,19 +209,21 @@ export function isIdle(charge = {}) {
     !next.argumentsKind &&
     !next.strayToken &&
     !next.droppedNamespace &&
+    !next.plainText &&
+    next.dispatched == null &&
     next.schema.required.length === 0 &&
     next.schema.optional.length === 0
   );
 }
 
-export function isGhost(charge = {}) {
+export function isTainted(charge = {}) {
   const next = cloneCharge(charge);
   if (next.parseOk !== true) return false;
   if (!hasBoundaryGhost(next.delivered)) return false;
   return missingRequired(next.schema, next.delivered).length === 0;
 }
 
-export function isAbsorb(charge = {}) {
+export function isAbsorbed(charge = {}) {
   const next = cloneCharge(charge);
   const vanished = declaredFields(next.schema).filter((key) => {
     const obj = deliveredObject(next.delivered);
@@ -227,33 +235,36 @@ export function isAbsorb(charge = {}) {
   return residue.some((name) => vanished.includes(name));
 }
 
-export function isMix(charge = {}) {
+export function isLeaked(charge = {}) {
   const next = cloneCharge(charge);
   return isJsonXmlMix(next.raw);
 }
 
-export function isPrefix(charge = {}) {
+const HOLLOW_TOKEN = /(?:^|\s)(?:court|call|count)(?=\s|<|$)/i;
+
+export function isHollow(charge = {}) {
   const next = cloneCharge(charge);
   const raw = next.raw;
-  if (next.droppedNamespace || next.strayToken) return true;
-  if (COURT.test(raw) && (BARE_INVOKE.test(raw) || XML_TOOL_TAG.test(raw))) return true;
-  if (BARE_INVOKE.test(raw) && !ANTML.test(raw) && next.parseOk === false) return true;
+  const token = next.strayToken || (HOLLOW_TOKEN.test(raw) ? "plain" : "");
+  const looksPlain = next.plainText || Boolean(token);
+  const neverRan = next.dispatched === false || (next.dispatched == null && next.parseOk === false);
+  if (!looksPlain || !neverRan) return false;
+  if (next.plainText && next.dispatched === false) return true;
+  if (token && (BARE_INVOKE.test(raw) || XML_TOOL_TAG.test(raw) || next.droppedNamespace)) return true;
   return false;
 }
 
-export function isSilent(charge = {}) {
+export function isSpoiled(charge = {}) {
   const next = cloneCharge(charge);
-  if (next.parseOk !== true) return false;
-  if (isGhost(next) || isAbsorb(next) || isMix(next)) return false;
-  return emptyRequired(next.schema, next.delivered).length > 0;
+  return next.contaminates === true;
 }
 
-export function isRetry(charge = {}) {
+export function isRetried(charge = {}) {
   const next = cloneCharge(charge);
   return next.parseOk === false && next.retryFailed === true;
 }
 
-export function isMangled(charge = {}) {
+export function isGarbled(charge = {}) {
   const next = cloneCharge(charge);
   if (next.parseOk === false) return true;
   if (["string", "truncated", "unparseable"].includes(next.argumentsKind)) return true;
@@ -264,34 +275,33 @@ export function isMangled(charge = {}) {
 
 export function classify(charge = {}) {
   const next = cloneCharge(charge);
-  if (isIdle(next)) return "intact";
-  if (isAbsorb(next)) return "absorb";
-  if (isGhost(next)) return "ghost";
-  if (isMix(next)) return "mix";
-  if (isPrefix(next)) return "prefix";
-  if (isSilent(next)) return "silent";
-  if (isRetry(next)) return "retry";
-  if (isMangled(next)) return "mangled";
-  return "intact";
+  if (isIdle(next)) return "sterling";
+  if (isAbsorbed(next)) return "absorbed";
+  if (isTainted(next)) return "tainted";
+  if (isLeaked(next)) return "leaked";
+  if (isHollow(next)) return "hollow";
+  if (isSpoiled(next)) return "spoiled";
+  if (isRetried(next)) return "retried";
+  if (isGarbled(next)) return "garbled";
+  return "sterling";
 }
 
 export function impurityOf(charge = {}, verdict = "") {
   const next = cloneCharge(charge);
   const kind = verdict || classify(next);
-  if (kind === "ghost") return "boundary tag injected into a parsed string";
-  if (kind === "absorb") return "declared field vanished; residue in a host field";
-  if (kind === "mix") return "legacy XML tool-use mixed into JSON";
-  if (kind === "prefix") return "stray token or dropped antml: namespace";
-  if (kind === "silent") return "empty-string required argument dropped";
-  if (kind === "retry") return "unparseable; retry also failed";
-  if (kind === "mangled") {
-    if (next.contaminates) return "malformed leftover contaminates later history";
+  if (kind === "tainted") return "parse succeeded; boundary tag injected into a delivered string";
+  if (kind === "absorbed") return "declared field vanished; sibling params swallowed into a host field";
+  if (kind === "leaked") return "legacy XML tool-use leaked into JSON arguments";
+  if (kind === "hollow") return "call rendered as plain text; Bash/Edit never ran";
+  if (kind === "spoiled") return "malformed leftover contaminates later history";
+  if (kind === "retried") return "unparseable; retry also failed";
+  if (kind === "garbled") {
     if (next.argumentsKind === "string") return "arguments arrived as a JSON string";
     if (UNICODE_ESCAPE.test(next.raw)) return "unicode-escaped arguments failed JSON parse";
     if (next.argumentsKind === "truncated" || looksTruncatedJson(next.raw)) {
       return "truncated function_call.arguments JSON";
     }
-    return "unparseable tool-call envelope";
+    return "unparseable tool_use envelope";
   }
   return "";
 }
@@ -318,6 +328,8 @@ export function readAction(payload = {}) {
     argumentsKind: fromFields.argumentsKind ?? src.argumentsKind ?? payload.argumentsKind,
     strayToken: fromFields.strayToken ?? src.strayToken ?? payload.strayToken,
     droppedNamespace: fromFields.droppedNamespace ?? src.droppedNamespace ?? payload.droppedNamespace,
+    plainText: fromFields.plainText ?? src.plainText ?? payload.plainText,
+    dispatched: fromFields.dispatched ?? src.dispatched ?? payload.dispatched,
     history: fromFields.history ?? src.history ?? payload.history,
     fired: fromFields.fired ?? src.fired ?? payload.fired,
     weighed: fromFields.weighed ?? src.weighed ?? payload.weighed,
@@ -364,6 +376,8 @@ function pack(verdict, charge, action, extras = {}) {
     argumentsKind: next.argumentsKind,
     strayToken: next.strayToken,
     droppedNamespace: next.droppedNamespace,
+    plainText: next.plainText,
+    dispatched: next.dispatched,
     history: next.history,
     fired: Boolean(next.fired),
     weighed: Boolean(next.weighed),
@@ -403,6 +417,8 @@ function seedCharge(issue, source, extras = {}) {
       argumentsKind: extras.argumentsKind || "",
       strayToken: extras.strayToken || "",
       droppedNamespace: Boolean(extras.droppedNamespace),
+      plainText: Boolean(extras.plainText),
+      dispatched: extras.dispatched == null ? null : Boolean(extras.dispatched),
       history: Array.isArray(extras.history) ? extras.history : [],
     },
   };
@@ -519,42 +535,92 @@ export function seed49747() {
   });
 }
 
-/** Stray "court" token + dropped antml: namespace. #63879 / #70544. */
-export function seed63879() {
-  return seedCharge(63879, "anthropics/claude-code#63879", {
-    session: "63879",
+/** Bash printed as raw `call` + invoke text; never dispatched. #63870. */
+export function seed63870() {
+  return seedCharge(63870, "anthropics/claude-code#63870", {
+    tool: "Bash",
+    schema: { required: ["command"] },
+    raw: "call\n<invoke name=\"Bash\">\n<parameter name=\"command\">git commit -m \"temp-player fix\"</parameter>\n</invoke>",
+    delivered: null,
+    parseOk: false,
+    strayToken: "call",
+    plainText: true,
+    dispatched: false,
+    argumentsKind: "unparseable",
+  });
+}
+
+/** court + raw invoke rendered as literal text. #64108. */
+export function seed64108() {
+  return seedCharge(64108, "anthropics/claude-code#64108", {
     tool: "Edit",
     schema: { required: ["file_path", "old_string", "new_string"] },
-    raw: 'court<invoke name="Edit"><parameter name="file_path">src/app.ts</parameter></invoke>',
+    raw: "court\n<invoke name=\"Edit\">\n<parameter name=\"file_path\">/path/to/file</parameter>\n</invoke>",
     delivered: null,
     parseOk: false,
     strayToken: "court",
+    plainText: true,
+    dispatched: false,
     droppedNamespace: true,
     argumentsKind: "unparseable",
   });
 }
 
-export function seed70544() {
-  return seedCharge(70544, "anthropics/claude-code#70544", {
-    session: "70544",
-    tool: "Write",
-    schema: { required: ["file_path", "content"] },
-    raw: '<invoke name="Write"><parameter name="file_path">メモ.md</parameter></invoke>',
+/** court instead of antml:invoke; tool never executed. #66153. */
+export function seed66153() {
+  return seedCharge(66153, "anthropics/claude-code#66153", {
+    tool: "Read",
+    schema: { required: ["file_path"] },
+    raw: "court\n<invoke name=\"Read\">\n<parameter name=\"file_path\">MEMORY.md</parameter>\n</invoke>",
     delivered: null,
     parseOk: false,
+    strayToken: "court",
+    plainText: true,
+    dispatched: false,
     droppedNamespace: true,
     argumentsKind: "unparseable",
   });
 }
 
-/** Long unicode-escaped arguments fail JSON parse. anthropics/claude-code#69522. */
-export function seed69522() {
-  return seedCharge(69522, "anthropics/claude-code#69522", {
-    tool: "AskUserQuestion",
-    schema: { required: ["questions"] },
-    raw: '{"questions":[{"question":"\\uC548\\uB155\\uD558\\uC138\\uC694, \\uC774 \\uC7A5\\uBB38\\uC758 \\uB2E8\\uC5B4\\uB97C \\uC120\\uD0DD\\uD574 \\uC8FC\\uC138\\uC694',
+/** count/call then tool call without antml: as plain text. #67307. */
+export function seed67307() {
+  return seedCharge(67307, "anthropics/claude-code#67307", {
+    tool: "Bash",
+    schema: { required: ["command"] },
+    raw: "count\n<invoke name=\"Bash\">\n<parameter name=\"command\">pwd</parameter>\n</invoke>",
     delivered: null,
     parseOk: false,
+    strayToken: "count",
+    plainText: true,
+    dispatched: false,
+    droppedNamespace: true,
+    argumentsKind: "unparseable",
+  });
+}
+
+/** Unparseable; retry also failed. #62123. */
+export function seed62123() {
+  return seedCharge(62123, "anthropics/claude-code#62123", {
+    tool: "Bash",
+    schema: { required: ["command"] },
+    raw: "The model's tool call could not be parsed (retry also failed).",
+    retryRaw: "The model's tool call could not be parsed (retry also failed).",
+    delivered: null,
+    parseOk: false,
+    retryFailed: true,
+    argumentsKind: "unparseable",
+  });
+}
+
+/** Malformed tool_use JSON; whole response discarded. #63604. */
+export function seed63604() {
+  return seedCharge(63604, "anthropics/claude-code#63604", {
+    tool: "mcp_telegram_reply",
+    schema: { required: ["text"] },
+    raw: '{"text":"hold the line, I will retry the connector',
+    delivered: null,
+    parseOk: false,
+    retryFailed: false,
     argumentsKind: "unparseable",
   });
 }
@@ -601,24 +667,27 @@ export function seed31517() {
   });
 }
 
-/** Empty-string required arg; parse still succeeds. No extra issue number. */
-export function seedSilent() {
-  return seedCharge("silent", "silent", {
-    session: "silent",
-    issue: null,
-    tool: "memory_write",
-    schema: { required: ["title", "body"] },
-    raw: '<invoke name="memory_write"><parameter name="title">ok</parameter><parameter name="body"></parameter></invoke>',
-    delivered: { title: "ok", body: "" },
-    parseOk: true,
-    argumentsKind: "object",
+/** Malformed tool_search arguments persist and poison resume. openai/codex#26379. */
+export function seed26379() {
+  return seedCharge(26379, "openai/codex#26379", {
+    tool: "tool_search",
+    schema: { required: ["query"] },
+    raw: '{"type":"tool_search_call","arguments":{">+ennialsf":"poisoned property"}}',
+    delivered: null,
+    parseOk: false,
+    contaminates: true,
+    argumentsKind: "unparseable",
+    history: [
+      "Invalid property name in input[55].arguments: property_name_above_max_length",
+      "resume 400 after the malformed tool_search_call was persisted",
+    ],
   });
 }
 
-/** Clean envelope. Weighs intact. */
-export function seedIntact() {
-  return seedCharge("intact", "intact", {
-    session: "intact",
+/** Clean envelope. Weighs sterling. */
+export function seedSterling() {
+  return seedCharge("sterling", "sterling", {
+    session: "sterling",
     issue: null,
     tool: "memory_write",
     schema: {
@@ -650,15 +719,18 @@ const SEEDS = {
   84405: seed84405,
   84362: seed84362,
   64774: seed64774,
+  62123: seed62123,
+  63604: seed63604,
   49747: seed49747,
-  63879: seed63879,
-  70544: seed70544,
-  69522: seed69522,
+  63870: seed63870,
+  64108: seed64108,
+  66153: seed66153,
+  67307: seed67307,
   70657: seed70657,
   19765: seed19765,
   31517: seed31517,
-  silent: seedSilent,
-  intact: seedIntact,
+  26379: seed26379,
+  sterling: seedSterling,
 };
 
 export function decideSeed(seed, extra = {}) {
@@ -675,7 +747,7 @@ export function decide(payload = {}) {
   let charge = cloneCharge(action.charge);
 
   if (action.action === "clear") {
-    return pack("intact", emptyCharge(), { ...action, action: "clear" });
+    return pack("sterling", emptyCharge(), { ...action, action: "clear" });
   }
 
   if (action.action === "refuse") {
@@ -692,8 +764,8 @@ export function decide(payload = {}) {
     const verdict = classify(charge);
     charge = {
       ...charge,
-      admitted: verdict === "intact",
-      refused: verdict !== "intact",
+      admitted: verdict === "sterling",
+      refused: verdict !== "sterling",
       held: false,
       weighed: true,
     };

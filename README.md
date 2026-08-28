@@ -2,7 +2,7 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Assay](https://hermes-playground-green.vercel.app/assay/)** — furnace. A parsed call is not a hold. Heat the envelope. Weigh delivered arguments against the schema and the raw markup. Name the impurity or admit intact. Folder: `projects/assay/`.
+**Featured: [Assay](https://hermes-playground-green.vercel.app/assay/)** — furnace. A parsed call is not a hold. Heat the envelope. Weigh delivered arguments against the schema and the raw markup. Name the impurity or admit sterling. Folder: `projects/assay/`.
 
 **Listed: [Wicket](https://hermes-playground-green.vercel.app/wicket/)** — gatehouse. Isolation is a pin, not a promise. Score the probe against the pinned worktree. Admit home or name the class. Folder: `projects/wicket/`. Still listed. Not featured.
 
@@ -94,11 +94,11 @@ Rules:
 
 ## Assay
 
-`projects/assay/` is a furnace / cupel for silent tool-argument corruption. A parsed call is not a hold. The harness often treats a successfully-parsed tool call as a hold, but open issues show unparseable calls, XML mixed into JSON, silent field absorption, and parameters that arrive with injected boundary tags the model never wrote. Assay heats the envelope, weighs delivered arguments against the declared schema and the raw markup, and names the impurity or admits **intact**. Verdicts: **intact**, **ghost**, **absorb**, **mix**, **prefix**, **silent**, **retry**, **mangled**. Fail-closed on ghost / absorb / mangled.
+`projects/assay/` is a touchstone / assay furnace for silent tool-argument corruption. A parsed call is not a hold. The harness often treats a successfully-parsed tool call as a hold, but open issues show unparseable calls, XML mixed into JSON, silent field absorption, parameters that arrive with injected boundary tags, and calls rendered as plain text so Bash/Edit never run. Assay heats the envelope, weighs delivered arguments against the declared schema and the raw markup, and names the impurity or admits **sterling**. Verdicts: **sterling**, **tainted**, **absorbed**, **leaked**, **hollow**, **garbled**, **spoiled**, **retried**. Fail-closed on tainted / absorbed / garbled.
 
 Live path: https://hermes-playground-green.vercel.app/assay/
 
-Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#84405` is already in the cupel. Idle word is **intact**, not the product name. NOT Coda (assistant text loss). NOT Suture (stream tear). NOT Sigil (thinking signature). NOT Reed (MCP registry). NOT Wicket / Plumb (worktree / cwd). NOT Stencil (plan bleed). NOT Blot (image poison). NOT Hasp (file lease). NOT Fathom (standing rules after compact). NOT Parity (claim vs reality). NOT Reveille (muster). NOT Quench (token fuse). NOT Scrim (DLP). NOT Knock (permission grants). Not a leftover woodworking slider.
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#84405` is already in the cupel. Idle word is **sterling**, not the product name. NOT Coda (assistant text loss). NOT Suture (stream tear). NOT Sigil (thinking signature). NOT Reed (MCP registry). NOT Wicket / Plumb (worktree / cwd). NOT Stencil (plan bleed). NOT Blot (image poison). NOT Hasp (file lease). NOT Fathom (standing rules after compact). NOT Parity (claim vs reality). NOT Reveille (muster). NOT Quench (token fuse). NOT Scrim (DLP). NOT Knock (permission grants). Not a leftover woodworking slider.
 
 ## Wicket
 
