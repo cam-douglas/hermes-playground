@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Tappet](https://hermes-playground-green.vercel.app/tappet/)** — valve train. A fired hook is not a seated injection. Score the spawn or admit seated. Folder: `projects/tappet/`.
+**Featured: [Larder](https://hermes-playground-green.vercel.app/larder/)** — stillroom. A sync stamp is not a delivery. Score the shelf or admit stocked. Folder: `projects/larder/`.
+
+**Listed: [Tappet](https://hermes-playground-green.vercel.app/tappet/)** — valve train. A fired hook is not a seated injection. Score the spawn or admit seated. Folder: `projects/tappet/`. Still listed. Not featured.
 
 **Listed: [Aside](https://hermes-playground-green.vercel.app/aside/)** — wing desk. A preamble is not an answer. Score the side channel or admit heard. Folder: `projects/aside/`. Still listed. Not featured.
 
@@ -52,10 +54,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                22 products: Tappet (featured), Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                23 products: Larder (featured), Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/tappet/            valve-train / engine-bay desk for silent hook injection (featured)
+projects/larder/            stillroom / cold larder for silent plugin-store freeze (featured)
+projects/tappet/            valve-train / engine-bay desk for silent hook injection (kept, unfeatured)
 projects/aside/             theatre wing / side-stage whisper booth for /btw silent truncation (kept, unfeatured)
 projects/chute/             mail chute / dead-drop for sanctioned secret handoff (kept, unfeatured)
 projects/tain/              night window / one-way glass for Chrome pairing split (kept, unfeatured)
@@ -77,8 +80,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-larder.md   Larder ship log (21:50 Sydney)
 runs/2026-08-28-tappet.md   Tappet ship log (20:50 Sydney)
 runs/2026-08-28-aside.md    Aside ship log (19:50 Sydney)
 runs/2026-08-28-chute.md    Chute ship log (18:50 Sydney)
@@ -119,6 +123,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Larder
+
+`projects/larder/` is a stillroom / cold larder for silent plugin-store freeze. A sync stamp is not a delivery. Per-workspace Claude Desktop plugin stores report healthy sync on a timer while downloading nothing. `manifest.json` `lastUpdated` advances; plugin folders stand still; every indicator stays green. Score the shelf. Name the class or admit **stocked**. Verdicts: **stocked**, **stamped**, **frozen**, **greened**, **toggled**, **drifted**, **lagged**, **aisled**, **aged**, **served**. Slack alarm on stamped / frozen / greened / drifted / aged / served. Linear on frozen / greened / served.
+
+Live path: https://hermes-playground-green.vercel.app/larder/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90329` stamped is already on the shelf. Idle word is **stocked**, not the product name. NOT Husk (hollow SUCCESS). NOT Reed (MCP contacts). NOT Parity (claim vs probe). NOT Tappet (hook injection). NOT Aside (/btw). NOT Chute, Tain, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Fathom, Hasp, Reveille, Quench, Scrim, Knock. Not leftover woodworking sliders. Different problem: plugin-store content clock vs sync stamp. Different UI: stillroom / cold larder. Zinc shelves, butcher-paper labels, hanging spring-scale, slate content clock, ice-room light.
 
 ## Tappet
 
@@ -309,6 +321,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/larder/` → `projects/larder/`
 - `/tappet/` → `projects/tappet/`
 - `/aside/` → `projects/aside/`
 - `/chute/` → `projects/chute/`

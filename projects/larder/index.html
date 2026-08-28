@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Larder — stillroom for silent plugin-store freeze. A sync stamp is not a delivery. Idle word is stocked."
+    />
+    <title>Larder — stillroom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --ice: #d7ece8;
+        --ice-deep: #9ec9c2;
+        --zinc: #8b9396;
+        --zinc-lite: #c5cbcd;
+        --zinc-dark: #4a5256;
+        --cream: #f3ead6;
+        --paper: #e8dcc0;
+        --slate: #2b3036;
+        --slate-ink: #dce3e6;
+        --brass: #b08a4a;
+        --brass-hot: #d4b36a;
+        --rust: #8b3a2a;
+        --rust-glow: #c45a3a;
+        --hold: #1f3a38;
+        --mute: #5c635c;
+        --line: rgba(43, 48, 54, 0.18);
+        --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+        --ui: "Source Serif 4", "Palatino Linotype", Palatino, Georgia, serif;
+        --lab: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--ui);
+        color: var(--slate);
+        background:
+          radial-gradient(ellipse 36% 28% at 12% 8%, rgba(158, 201, 194, 0.55), transparent 70%),
+          radial-gradient(ellipse 30% 24% at 88% 92%, rgba(139, 58, 42, 0.08), transparent 68%),
+          repeating-linear-gradient(180deg, rgba(75, 82, 86, 0.04) 0 1px, transparent 1px 28px),
+          linear-gradient(180deg, #eef4f2 0%, var(--ice) 42%, #c9d6d2);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--hold); }
+      .stillroom {
+        width: min(1120px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 80px;
+      }
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 10px;
+      }
+      .mark, .path {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--zinc-dark);
+      }
+      h1 {
+        margin: 18px 0 8px;
+        font-family: var(--display);
+        font-size: clamp(52px, 9vw, 96px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 0.88;
+        color: var(--hold);
+      }
+      .lede {
+        max-width: 44em;
+        color: var(--mute);
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      .lede em { color: var(--hold); font-style: italic; font-family: var(--display); }
+      .switches, .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin: 18px 0 14px;
+      }
+      .switches button, .acts button {
+        border: 1px solid var(--zinc);
+        background: linear-gradient(180deg, var(--cream), var(--paper));
+        border-radius: 1px;
+        padding: 8px 13px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--zinc-dark);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.65), 0 1px 0 rgba(43,48,54,0.12);
+      }
+      .switches button.on,
+      .switches button:hover,
+      .acts button:hover {
+        border-color: var(--hold);
+        color: var(--hold);
+        background: linear-gradient(180deg, #f7f1e2, #ddd0ae);
+      }
+      .room {
+        position: relative;
+        border: 1px solid rgba(74, 82, 86, 0.35);
+        background:
+          linear-gradient(180deg, rgba(214, 236, 232, 0.35), transparent 22%),
+          repeating-linear-gradient(90deg, #9aa3a6 0 10px, #8b9396 10px 20px);
+        box-shadow:
+          inset 0 0 80px rgba(31, 58, 56, 0.18),
+          0 0 0 10px #6f777a,
+          0 0 0 11px rgba(176, 138, 74, 0.28);
+        overflow: hidden;
+        min-height: 390px;
+      }
+      .frost {
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 18% 20%, rgba(255,255,255,0.18), transparent 36%),
+          linear-gradient(180deg, rgba(255,255,255,0.08), transparent 40%);
+        opacity: 0.35;
+      }
+      .room.frozen .frost,
+      .room.aged .frost { opacity: 0.85; }
+      .clock {
+        position: absolute;
+        top: 22px;
+        left: 28px;
+        width: 148px;
+        height: 148px;
+        border-radius: 8px;
+        background: var(--slate);
+        box-shadow: inset 0 0 0 6px #1a1e22, 0 10px 18px rgba(0,0,0,0.28);
+        color: var(--slate-ink);
+        font-family: var(--lab);
+      }
+      .clock h3 {
+        margin: 12px 0 0;
+        text-align: center;
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--ice-deep);
+      }
+      .face {
+        position: relative;
+        width: 88px;
+        height: 88px;
+        margin: 8px auto 0;
+        border-radius: 50%;
+        border: 2px solid #5a6368;
+      }
+      .hand {
+        position: absolute;
+        left: 50%;
+        bottom: 50%;
+        width: 2px;
+        transform-origin: bottom center;
+        background: var(--ice);
+      }
+      .hand.sync { height: 34px; animation: tick-sync 2.4s linear infinite; }
+      .hand.hold { height: 24px; background: var(--rust-glow); transform: rotate(-38deg); }
+      .room.stocked .hand.hold,
+      .room.toggled .hand.hold { transform: rotate(18deg); background: var(--ice-deep); }
+      .room.stamped .hand.hold,
+      .room.frozen .hand.hold,
+      .room.aged .hand.hold,
+      .room.aisled .hand.hold,
+      .room.served .hand.hold { transform: rotate(-48deg); }
+      .room.greened .hand.sync { animation-duration: 6s; }
+      .room.lagged .hand.hold { transform: rotate(-70deg); }
+      .clock .pair {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 12px 0;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+      }
+      .clock .pair span:last-child { color: var(--brass-hot); }
+      .scale {
+        position: absolute;
+        top: 8px;
+        right: 46px;
+        width: 72px;
+        text-align: center;
+      }
+      .scale .hook {
+        width: 3px;
+        height: 36px;
+        margin: 0 auto;
+        background: var(--zinc-dark);
+      }
+      .scale .beam {
+        height: 8px;
+        background: linear-gradient(90deg, #8a6a2e, var(--brass) 45%, var(--brass-hot) 55%, #8a6a2e);
+        border-radius: 2px;
+      }
+      .scale .pan {
+        width: 54px;
+        height: 18px;
+        margin: 10px auto 0;
+        border: 2px solid var(--brass);
+        border-top: 0;
+        border-radius: 0 0 28px 28px;
+        animation: scale-hang 3.6s ease-in-out infinite;
+      }
+      .room.toggled .scale .pan { animation-duration: 0.7s; }
+      .room.frozen .scale .pan,
+      .room.aged .scale .pan { animation: none; }
+      .shelf {
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        bottom: 78px;
+        height: 18px;
+        background: linear-gradient(180deg, var(--zinc-lite), var(--zinc) 55%, var(--zinc-dark));
+        box-shadow: 0 14px 18px rgba(0,0,0,0.22);
+      }
+      .shelf::after {
+        content: "";
+        position: absolute;
+        left: 8%;
+        right: 8%;
+        top: 18px;
+        height: 10px;
+        background: rgba(31, 58, 56, 0.18);
+        filter: blur(6px);
+      }
+      .crate {
+        position: absolute;
+        left: 50%;
+        bottom: 96px;
+        width: 118px;
+        height: 72px;
+        margin-left: -59px;
+        background:
+          repeating-linear-gradient(90deg, #cbb892 0 10px, #b79d6e 10px 12px),
+          var(--paper);
+        border: 2px solid #8a7348;
+        box-shadow: inset 0 0 0 4px rgba(243, 234, 214, 0.35);
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+      .crate .label {
+        position: absolute;
+        inset: 12px 10px;
+        background: var(--cream);
+        border: 1px dashed #8a7348;
+        font-family: var(--lab);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: grid;
+        place-items: center;
+        color: var(--slate);
+      }
+      .room.stocked .crate,
+      .room.toggled .crate { opacity: 1; transform: translateY(0); }
+      .stain {
+        position: absolute;
+        left: 22%;
+        bottom: 86px;
+        width: 70px;
+        height: 22px;
+        border-radius: 50%;
+        background: radial-gradient(ellipse, rgba(139, 58, 42, 0.45), transparent 70%);
+        opacity: 0;
+      }
+      .room.aged .stain,
+      .room.frozen .stain,
+      .room.served .stain { opacity: 1; }
+      .ticket {
+        position: absolute;
+        left: 18%;
+        bottom: 102px;
+        width: 92px;
+        height: 48px;
+        background: var(--cream);
+        box-shadow: 2px 3px 0 rgba(43, 48, 54, 0.12);
+        transform: rotate(-6deg);
+        font-family: var(--lab);
+        font-size: 10px;
+        padding: 8px 8px 0;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--zinc-dark);
+      }
+      .room.stocked .ticket,
+      .room.toggled .ticket { opacity: 0; }
+      .caption {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 16px;
+        margin: 0;
+        text-align: center;
+        font-family: var(--lab);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cream);
+        text-shadow: 0 1px 0 rgba(0,0,0,0.35);
+      }
+      .console, .ledger {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .panel, .ledger article {
+        background: rgba(243, 234, 214, 0.72);
+        border: 1px solid var(--line);
+        padding: 14px 16px;
+      }
+      .panel h2, .ledger h3 {
+        margin: 0 0 8px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--zinc-dark);
+      }
+      .verdict {
+        font-family: var(--display);
+        font-size: clamp(36px, 6vw, 52px);
+        line-height: 0.9;
+        letter-spacing: -0.03em;
+      }
+      .verdict.ok { color: var(--hold); }
+      .verdict.alarm { color: var(--rust); }
+      .feed { margin: 10px 0 0; color: var(--mute); font-size: 15px; line-height: 1.4; }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 14px;
+        padding: 3px 0;
+        border-bottom: 1px dashed rgba(43, 48, 54, 0.12);
+      }
+      .row b { font-family: var(--lab); font-weight: 500; }
+      #why ul { margin: 0; padding-left: 18px; color: var(--mute); font-size: 14px; }
+      .ledger p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.4; }
+      .checks {
+        margin-top: 16px;
+        font-family: var(--lab);
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .checks.ok { color: var(--hold); }
+      .checks.bad { color: var(--rust); }
+      .why-not {
+        margin-top: 22px;
+        color: var(--mute);
+        font-size: 14px;
+        max-width: 58em;
+        line-height: 1.5;
+      }
+      @keyframes tick-sync {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes scale-hang {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(5px); }
+      }
+      @media (max-width: 860px) {
+        .console, .ledger { grid-template-columns: 1fr; }
+        .room { min-height: 420px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="stillroom">
+      <header class="mast">
+        <p class="mark">21:50 stillroom · Australia/Sydney</p>
+        <p class="path"><a href="/">catalog</a> · /larder/</p>
+      </header>
+      <h1>Larder</h1>
+      <p class="lede">
+        A sync stamp is not a delivery. The store clock ticks. The shelves do not.
+        Score the content clock against the stamp, or admit
+        <em>stocked</em>.
+      </p>
+      <div class="switches" id="switches"></div>
+      <div class="acts">
+        <button type="button" data-act="score">Score</button>
+        <button type="button" data-act="admit">Admit stocked</button>
+        <button type="button" data-act="strike">Strike</button>
+        <button type="button" data-act="clear">Clear</button>
+      </div>
+      <section class="room" id="room" aria-label="Cold larder">
+        <div class="frost" aria-hidden="true"></div>
+        <div class="clock" aria-hidden="true">
+          <h3>content clock</h3>
+          <div class="face">
+            <div class="hand sync"></div>
+            <div class="hand hold"></div>
+          </div>
+          <div class="pair"><span>SYNC</span><span id="syncStamp">21:15</span></div>
+          <div class="pair"><span>HOLD</span><span id="holdStamp">11:15</span></div>
+        </div>
+        <div class="scale" aria-hidden="true">
+          <div class="hook"></div>
+          <div class="beam"></div>
+          <div class="pan"></div>
+        </div>
+        <div class="stain" aria-hidden="true"></div>
+        <div class="ticket" id="ticket">butcher paper · no crate</div>
+        <div class="crate" aria-hidden="true"><div class="label">hold</div></div>
+        <div class="shelf" aria-hidden="true"></div>
+        <p class="caption" id="caption">zinc shelf empty · slate clock still ticking</p>
+      </section>
+      <section class="console">
+        <article class="panel">
+          <h2>Class</h2>
+          <div class="verdict" id="spoken" aria-live="polite">stamped</div>
+          <p class="feed" id="feed"></p>
+        </article>
+        <article class="panel gauges" id="gauges"></article>
+        <article class="panel">
+          <h2>Reasons</h2>
+          <div id="why"></div>
+        </article>
+      </section>
+      <section class="ledger" id="ledger" aria-label="Demo sinks"></section>
+      <p class="checks" id="checks"></p>
+      <p class="why-not">
+        NOT Husk (hollow SUCCESS). NOT Reed (MCP contacts). NOT Parity (claim vs probe).
+        NOT Tappet (hook injection). NOT Aside (/btw). NOT Chute (secret handoff).
+        NOT Tain, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Fathom,
+        Hasp, Reveille, Quench, Scrim, Knock. NOT leftover woodworking.
+        Plugin-store content clock vs sync stamp only. Idle word is stocked.
+      </p>
+    </main>
+    <script>
+      /**
+       * Stillroom desk. A sync stamp is not a delivery.
+       * NOT Tappet (hook injection). NOT Aside (/btw). NOT Husk (hollow SUCCESS).
+       * Idle word is stocked. Never the product name.
+       */
+      const VERDICTS = ["stocked","stamped","frozen","greened","toggled","drifted","lagged","aisled","aged","served"];
+      const IDLE_WORD = "stocked";
+      const SLACK = ["stamped","frozen","greened","drifted","aged","served"];
+      const LINEAR = ["frozen","greened","served"];
+
+      function emptyProbe() {
+        return {
+          autoSyncOn: false, lastUpdatedAdvanced: false, pluginFolderMoved: false,
+          marketplaceVersion: "", localVersion: "", versionsBehind: 0, daysStale: 0,
+          otherWorkspacesCurrent: false, logsPresent: false, indicatorsGreen: false,
+          marketplacePageCurrent: false, toggleUnstick: false, reFroze: false,
+          contentClockBehind: false, cliPinsBehind: false, autoUpdateOn: false,
+          sessionsLoadFromStore: false, storePath: "", session: "", source: "",
+          issue: null, scored: false
+        };
+      }
+
+      function cloneProbe(raw) {
+        return { ...emptyProbe(), ...(raw && typeof raw === "object" ? raw : {}) };
+      }
+
+      function isIdle(probe) {
+        const n = cloneProbe(probe);
+        return !n.autoSyncOn && !n.lastUpdatedAdvanced && !n.pluginFolderMoved &&
+          !n.marketplaceVersion && !n.localVersion && n.versionsBehind === 0 &&
+          n.daysStale === 0 && !n.otherWorkspacesCurrent && !n.logsPresent &&
+          !n.indicatorsGreen && !n.marketplacePageCurrent && !n.toggleUnstick &&
+          !n.reFroze && !n.contentClockBehind && !n.cliPinsBehind &&
+          !n.autoUpdateOn && !n.sessionsLoadFromStore && !n.storePath;
+      }
+
+      function classify(probe) {
+        const n = cloneProbe(probe);
+        if (isIdle(n)) return "stocked";
+        if (n.toggleUnstick && n.pluginFolderMoved) return "toggled";
+        if (n.sessionsLoadFromStore && n.versionsBehind > 0) return "served";
+        if ((n.versionsBehind >= 10 || n.daysStale >= 3) && !n.pluginFolderMoved) return "aged";
+        if (n.cliPinsBehind && n.autoUpdateOn && !n.lastUpdatedAdvanced) return "drifted";
+        if (n.otherWorkspacesCurrent && !n.pluginFolderMoved && n.lastUpdatedAdvanced) return "aisled";
+        if (n.reFroze && !n.pluginFolderMoved) return "frozen";
+        if (n.lastUpdatedAdvanced && !n.pluginFolderMoved) return "stamped";
+        if (!n.logsPresent && n.indicatorsGreen && n.versionsBehind > 0 && !n.lastUpdatedAdvanced) return "greened";
+        if (n.contentClockBehind && !n.lastUpdatedAdvanced && !n.pluginFolderMoved) return "lagged";
+        if (n.pluginFolderMoved && n.versionsBehind === 0) return "stocked";
+        return "stocked";
+      }
+
+      function feedOf(probe, verdict) {
+        const kind = verdict || classify(probe);
+        if (kind === "stamped") return "● Stamped · sync stamp advanced · plugin folders stood still · a lastUpdated is not a delivery";
+        if (kind === "frozen") return "● Frozen · toggle unstuck once · store re-froze · shelves still empty";
+        if (kind === "greened") return "● Greened · every indicator green · main.log silent · versions behind with no stamp";
+        if (kind === "toggled") return "● Toggled · one-shot unstick · whole store re-downloaded · looks like a fix";
+        if (kind === "drifted") return "● Drifted · CLI pins behind · autoUpdate on · not a desktop store tick";
+        if (kind === "lagged") return "● Lagged · two clocks · content arrival behind the sync stamp";
+        if (kind === "aisled") return "● Aisled · sibling workspaces took content · this store did not · per-store, not machine-wide";
+        if (kind === "aged") return "● Aged · hold weeks-stale · folders never moved · content clock vs sync stamp";
+        if (kind === "served") return "● Served · Desktop / Cowork session loaded from THIS frozen store";
+        return "● Stocked · content arrived on the shelf · hold matches the marketplace";
+      }
+
+      function reasonsOf(probe, verdict) {
+        const n = cloneProbe(probe);
+        const kind = verdict || classify(n);
+        const reasons = [];
+        if (n.session) reasons.push("session " + n.session);
+        reasons.push(n.lastUpdatedAdvanced ? "manifest lastUpdated advanced (sync stamp moved)" : "lastUpdated did not advance this tick");
+        reasons.push(n.pluginFolderMoved ? "plugin folders moved (content arrived on the shelf)" : "plugin folders stood still (no delivery)");
+        if (n.marketplaceVersion || n.localVersion) reasons.push("local " + (n.localVersion || "—") + " vs marketplace " + (n.marketplaceVersion || "—"));
+        if (n.versionsBehind) reasons.push(n.versionsBehind + " versions behind");
+        if (n.daysStale) reasons.push(n.daysStale + " days stale");
+        reasons.push("content clock vs sync stamp: a healthy lastUpdated is not a hold");
+        reasons.push("NOT Husk / Reed / Parity / Tappet / Aside / Chute / Tain / Snib / Veto / Assay / Wicket / Sigil / Stencil / Suture / Blot / Coda / Fathom");
+        if (kind === "stocked") reasons.push("content arrived on the shelf; hold is current; idle word is stocked");
+        if (kind === "stamped") reasons.push("PRIMARY #90329: stamp moved, shelves did not");
+        if (kind === "frozen") reasons.push("toggle unstuck once (26 Aug), then the store stayed frozen (28 Aug)");
+        if (kind === "greened") reasons.push("every indicator green, no diagnostic trail, versions behind");
+        if (kind === "toggled") reasons.push("one-shot unstick that looks like a fix; the store will re-freeze");
+        if (kind === "drifted") reasons.push("CLI pins; not a desktop store tick");
+        if (kind === "lagged") reasons.push("two clocks exist; content arrival behind the sync stamp");
+        if (kind === "aisled") reasons.push("per-store, not machine-wide: sibling aisles took the delivery");
+        if (kind === "aged") reasons.push("real #90329 figures: 37 versions behind, 3 days stale (1.69.0 vs 1.106.1)");
+        if (kind === "served") reasons.push("the session diagnosing the freeze is itself loaded from it");
+        return reasons;
+      }
+
+      function score(probe) {
+        const n = cloneProbe(probe);
+        const verdict = classify(n);
+        return {
+          verdict,
+          reasons: reasonsOf(n, verdict),
+          feed: feedOf(n, verdict),
+          slack: SLACK.includes(verdict),
+          linear: LINEAR.includes(verdict),
+          github: true,
+          alarm: SLACK.includes(verdict),
+          idleWord: IDLE_WORD,
+          state: verdict,
+          probe: n,
+          ...n
+        };
+      }
+
+      function seedOf(kind) {
+        const base = emptyProbe();
+        if (kind === "stamped") {
+          return { ...base, autoSyncOn: true, lastUpdatedAdvanced: true, marketplaceVersion: "1.106.1", localVersion: "1.69.0", versionsBehind: 3, indicatorsGreen: true, marketplacePageCurrent: true, session: "90329-stamped", source: "anthropics/claude-code#90329", issue: 90329, scored: true };
+        }
+        if (kind === "stocked") {
+          return { ...base, autoSyncOn: true, lastUpdatedAdvanced: true, pluginFolderMoved: true, marketplaceVersion: "1.106.1", localVersion: "1.106.1", logsPresent: true, indicatorsGreen: true, marketplacePageCurrent: true, session: "stocked", source: "plugin-store", scored: true };
+        }
+        if (kind === "frozen") {
+          return { ...base, autoSyncOn: true, lastUpdatedAdvanced: true, marketplaceVersion: "1.106.1", localVersion: "1.104.0", versionsBehind: 2, daysStale: 2, indicatorsGreen: true, marketplacePageCurrent: true, reFroze: true, session: "90329-frozen", source: "anthropics/claude-code#90329", issue: 90329, scored: true };
+        }
+        if (kind === "greened") {
+          return { ...base, autoSyncOn: true, marketplaceVersion: "1.106.1", localVersion: "1.102.0", versionsBehind: 4, daysStale: 1, indicatorsGreen: true, marketplacePageCurrent: true, session: "90329-greened", source: "anthropics/claude-code#90329", issue: 90329, scored: true };
+        }
+        if (kind === "toggled") {
+          return { ...base, autoSyncOn: true, lastUpdatedAdvanced: true, pluginFolderMoved: true, marketplaceVersion: "1.106.1", localVersion: "1.106.1", logsPresent: true, indicatorsGreen: true, marketplacePageCurrent: true, toggleUnstick: true, session: "90329-toggled", source: "anthropics/claude-code#90329", issue: 90329, scored: true };
+        }
+        if (kind === "drifted") {
+          return { ...base, marketplaceVersion: "1.106.1", localVersion: "1.98.0", versionsBehind: 8, daysStale: 2, logsPresent: true, indicatorsGreen: true, marketplacePageCurrent: true, cliPinsBehind: true, autoUpdateOn: true, session: "90329-drifted", source: "anthropics/claude-code#90329", issue: 90329, scored: true };
+        }
+        if (kind === "lagged") {
+          return { ...base, autoSyncOn: true, marketplaceVersion: "1.106.1", localVersion: "1.105.0", versionsBehind: 1, logsPresent: true, contentClockBehind: true, session: "90329-lagged", source: "anthropics/claude-code#90329", issue: 90329, scored: true };
+        }
+        if (kind === "aisled") {
+          return { ...base, autoSyncOn: true, lastUpdatedAdvanced: true, marketplaceVersion: "1.106.1", localVersion: "1.104.0", versionsBehind: 2, otherWorkspacesCurrent: true, indicatorsGreen: true, marketplacePageCurrent: true, session: "90329-aisled", source: "anthropics/claude-code#90329", issue: 90329, scored: true };
+        }
+        if (kind === "aged") {
+          return { ...base, autoSyncOn: true, lastUpdatedAdvanced: true, marketplaceVersion: "1.106.1", localVersion: "1.69.0", versionsBehind: 37, daysStale: 3, indicatorsGreen: true, marketplacePageCurrent: true, session: "90329-aged", source: "anthropics/claude-code#90329", issue: 90329, scored: true };
+        }
+        if (kind === "served") {
+          return { ...base, autoSyncOn: true, lastUpdatedAdvanced: true, marketplaceVersion: "1.106.1", localVersion: "1.104.0", versionsBehind: 2, indicatorsGreen: true, marketplacePageCurrent: true, sessionsLoadFromStore: true, session: "90329-served", source: "anthropics/claude-code#90329", issue: 90329, scored: true };
+        }
+        return emptyProbe();
+      }
+
+      function decide(probe, action) {
+        let next = cloneProbe(probe);
+        const verb = String(action || "score").toLowerCase();
+        if (verb === "clear") next = emptyProbe();
+        else if (verb === "strike" && isIdle(next)) {
+          next = seedOf("stocked");
+        } else {
+          next.scored = true;
+        }
+        return score(next);
+      }
+
+      const CHIPS = [
+        { id: "stamped", label: "stamped #90329" },
+        { id: "stocked", label: "stocked" },
+        { id: "frozen", label: "frozen" },
+        { id: "greened", label: "greened" },
+        { id: "toggled", label: "toggled" },
+        { id: "drifted", label: "drifted" },
+        { id: "lagged", label: "lagged" },
+        { id: "aisled", label: "aisled" },
+        { id: "aged", label: "aged" },
+        { id: "served", label: "served" }
+      ];
+
+      const CAPTION = {
+        stocked: "crate on the zinc · content clock matches the stamp",
+        stamped: "slate clock ticks · butcher-paper shelf stays empty",
+        frozen: "ice-room frost · toggle was a one-shot · shelves re-froze",
+        greened: "every lamp green · no crate · main.log silent",
+        toggled: "spring-scale bouncing · whole store just landed",
+        drifted: "CLI pins on a side ticket · not this store's tick",
+        lagged: "two clocks on the slate · hold hand behind sync",
+        aisled: "neighbor aisle full · this shelf took nothing",
+        aged: "spoiled-meat rust · 37 behind · three days on ice",
+        served: "session plate drawing from this empty shelf"
+      };
+
+      const CLOCKS = {
+        stocked: { sync: "21:15", hold: "21:15" },
+        stamped: { sync: "21:15", hold: "11:15" },
+        frozen: { sync: "21:15", hold: "11:15" },
+        greened: { sync: "10:15", hold: "10:15" },
+        toggled: { sync: "11:15", hold: "11:15" },
+        drifted: { sync: "—", hold: "CLI" },
+        lagged: { sync: "21:15", hold: "18:40" },
+        aisled: { sync: "21:15", hold: "11:15" },
+        aged: { sync: "10:55", hold: "26/08" },
+        served: { sync: "21:15", hold: "11:15" }
+      };
+
+      let probe = seedOf("stamped");
+      let currentChip = "stamped";
+
+      function row(label, value) {
+        return '<div class="row"><span>' + label + "</span><b>" + String(value) + "</b></div>";
+      }
+
+      function sinks(result) {
+        const slack = result.slack
+          ? "Would post to Slack: " + result.verdict + " shelf alarm in the stillroom."
+          : "Would skip Slack — stillroom is " + result.verdict + ".";
+        const github = "Would open a GitHub larder-ledger issue. Demo: no token.";
+        const linear = result.linear
+          ? "Would open a Linear ticket: " + result.verdict + " · " + (result.source || "plugin-store")
+          : "Would skip Linear — stillroom is " + result.verdict + ".";
+        return { slack, github, linear };
+      }
+
+      function render() {
+        const result = decide(probe, "score");
+        document.getElementById("room").className = "room " + result.verdict;
+        document.getElementById("caption").textContent = CAPTION[result.verdict] || CAPTION.stocked;
+        const clocks = CLOCKS[result.verdict] || CLOCKS.stamped;
+        document.getElementById("syncStamp").textContent = clocks.sync;
+        document.getElementById("holdStamp").textContent = clocks.hold;
+        document.getElementById("ticket").textContent = result.pluginFolderMoved
+          ? "butcher paper · crate landed"
+          : "butcher paper · no crate";
+        document.getElementById("gauges").innerHTML = "<h2>Gauges</h2>" + [
+          row("stamp moved", result.lastUpdatedAdvanced ? "yes" : "no"),
+          row("folders moved", result.pluginFolderMoved ? "yes" : "no"),
+          row("behind", result.versionsBehind || 0),
+          row("days stale", result.daysStale || 0),
+          row("indicators", result.indicatorsGreen ? "green" : "—"),
+          row("logs", result.logsPresent ? "present" : "silent"),
+          row("issue", result.issue != null ? "#" + result.issue : "—")
+        ].join("");
+        const spoken = document.getElementById("spoken");
+        spoken.className = "verdict " + (result.verdict === "stocked" ? "ok" : result.alarm ? "alarm" : "");
+        spoken.textContent = result.verdict;
+        document.getElementById("feed").textContent = result.feed;
+        document.getElementById("why").innerHTML = "<ul>" + result.reasons.map(function (line) {
+          return "<li>" + line + "</li>";
+        }).join("") + "</ul>";
+        const s = sinks(result);
+        document.getElementById("ledger").innerHTML =
+          "<article><h3>Slack</h3><p>" + s.slack + "</p></article>" +
+          "<article><h3>GitHub</h3><p>" + s.github + "</p></article>" +
+          "<article><h3>Linear</h3><p>" + s.linear + "</p></article>";
+        document.querySelectorAll("#switches button").forEach(function (btn) {
+          btn.classList.toggle("on", btn.dataset.seed === currentChip);
+        });
+      }
+
+      function bayChecks() {
+        const misses = [];
+        if (classify(emptyProbe()) !== "stocked") misses.push("idle");
+        for (const chip of CHIPS) {
+          const got = classify(seedOf(chip.id));
+          if (got !== chip.id) misses.push(chip.id + "→" + got);
+        }
+        if (IDLE_WORD !== "stocked") misses.push("idleWord");
+        if (/larder/i.test(IDLE_WORD)) misses.push("idle is product name");
+        if (VERDICTS.join(" ") !== "stocked stamped frozen greened toggled drifted lagged aisled aged served") misses.push("vocab");
+        const el = document.getElementById("checks");
+        if (misses.length) {
+          el.className = "checks bad";
+          el.textContent = "stillroom check failed: " + misses.join(", ");
+        } else {
+          el.className = "checks ok";
+          el.textContent = "stillroom check: ten classes + idle stocked. Never the product name.";
+        }
+        return misses.length === 0;
+      }
+
+      const switches = document.getElementById("switches");
+      for (const chip of CHIPS) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.seed = chip.id;
+        btn.textContent = chip.label;
+        btn.addEventListener("click", function () {
+          currentChip = chip.id;
+          probe = seedOf(chip.id);
+          render();
+        });
+        switches.appendChild(btn);
+      }
+      document.querySelectorAll(".acts button").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const act = btn.dataset.act;
+          if (act === "clear") {
+            currentChip = "stocked";
+            probe = emptyProbe();
+          }
+          const result = decide(probe, act);
+          probe = result.probe;
+          if (act === "strike") currentChip = result.verdict;
+          render();
+        });
+      });
+      render();
+      bayChecks();
+    </script>
+  </body>
+</html>
