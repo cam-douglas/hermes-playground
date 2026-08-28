@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Sump](https://hermes-playground-green.vercel.app/sump/)** — basement catch-pit. A null path is not a hold. Score the silt or admit drained. Folder: `projects/sump/`.
+**Featured: [Shunt](https://hermes-playground-green.vercel.app/shunt/)** — night railway yard. A first delivery is not a hold. Score the road or admit stabled. Folder: `projects/shunt/`.
+
+**Listed: [Sump](https://hermes-playground-green.vercel.app/sump/)** — basement catch-pit. A null path is not a hold. Score the silt or admit drained. Folder: `projects/sump/`. Still listed. Not featured.
 
 **Listed: [Pleat](https://hermes-playground-green.vercel.app/pleat/)** — tailor's pressing board. A rendered fold is not a hold. Score the cloth or admit flat. Folder: `projects/pleat/`. Still listed. Not featured.
 
@@ -72,10 +74,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                32 products: Sump (featured), Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                33 products: Shunt (featured), Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/sump/              basement catch-pit / wet-concrete desk for worktree LFS hooks written to a literal dev/null/ (featured)
+projects/shunt/             night railway shunting yard / signal-box desk for nested SendMessage follow-up misroute to root (featured)
+projects/sump/              basement catch-pit / wet-concrete desk for worktree LFS hooks written to a literal dev/null/ (kept, unfeatured)
 projects/pleat/             tailor's pressing board / accordion-pleat desk for desktop mid-turn fold collapse (kept, unfeatured)
 projects/scant/             timber scantling yard / measuring bench for Windows Desktop shell-snapshot PATH truncation (kept, unfeatured)
 projects/chad/              hanging-chad / ballot booth desk for AskUserQuestion phantom selection treated as consent (kept, unfeatured)
@@ -107,8 +110,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-shunt.md    Shunt ship log (07:50 Sydney)
 runs/2026-08-29-sump.md     Sump ship log (06:50 Sydney)
 runs/2026-08-29-pleat.md    Pleat ship log (05:50 Sydney)
 runs/2026-08-29-scant.md    Scant ship log (04:50 Sydney)
@@ -159,6 +163,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Shunt
+
+`projects/shunt/` is a night railway shunting yard / signal-box / lever-frame desk for Claude Code nested-subagent SendMessage follow-up replies that are delivered to the root session instead of the requesting parent. First child answer is reliable to the parent. The follow-up is misrouted to root. The child sees `from="general-purpose"` (agent type, not an address) and an explicit reply fails with `No agent named 'general-purpose' is reachable`. A first delivery is not a hold. Score the road or admit **stabled**. Verdicts: **stabled**, **misrouted**, **orphaned**, **rootbound**, **typecast**, **stalled**, **tandem**, **dropped**, **crosstalk**, **sidetracked**. Slack shunt alarm on misrouted / orphaned / rootbound / typecast. Linear ticket on misrouted / orphaned / rootbound.
+
+Live path: https://hermes-playground-green.vercel.app/shunt/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90463` misrouted is already on the road. Idle word is **stabled**, not the product name, not empty. NOT Cote (resume hub identity split). NOT Tappet (silent hook injection). NOT Reveille (duplicate dispatch). NOT Sump / Pleat / Scant / leftover woodworking sliders. Different problem: nested SendMessage follow-up misroute to root + unresolvable from=type. Different UI: night railway yard, signal box, lever frame, oil lamps, points, wagons, wet rails.
 
 ## Scant
 
@@ -413,6 +425,9 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/shunt/` → `projects/shunt/`
+- `/sump/` → `projects/sump/`
+- `/pleat/` → `projects/pleat/`
 - `/scant/` → `projects/scant/`
 - `/chad/` → `projects/chad/`
 - `/kist/` → `projects/kist/`

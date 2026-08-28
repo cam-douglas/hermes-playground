@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Shunt — night railway shunting yard for Claude Code nested SendMessage follow-ups delivered to the root session instead of the requesting parent. A first delivery is not a hold. Idle word is stabled."
+    />
+    <title>Shunt — night railway yard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Source+Code+Pro:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --night: #070b12;
+        --box: #10161f;
+        --panel: #161d28;
+        --rail: #6b7788;
+        --wet: #1a2433;
+        --lamp: #e8a020;
+        --signal-red: #d42a2a;
+        --signal-green: #2ec27e;
+        --signal-amber: #f0c040;
+        --brass: #c4a35a;
+        --wagon: #3d2a1a;
+        --fog: #8a93a0;
+        --cream: #e8e4d8;
+        --display: "Barlow Condensed", "Impact", sans-serif;
+        --type: "Source Code Pro", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--display);
+        color: var(--cream);
+        background:
+          radial-gradient(ellipse 40% 28% at 12% 18%, rgba(232, 160, 32, 0.12), transparent 55%),
+          radial-gradient(ellipse 50% 22% at 88% 8%, rgba(212, 42, 42, 0.1), transparent 50%),
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 46px,
+            rgba(107, 119, 136, 0.08) 46px 48px
+          ),
+          linear-gradient(180deg, #0c121c 0%, var(--night) 55%, #05080d 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--signal-amber); }
+      .yard {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 20px 0 96px;
+      }
+      .rails {
+        height: 14px;
+        margin: 0 0 22px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #2a3340 0 18px,
+            #8a93a0 18px 20px,
+            #1a2433 20px 38px
+          ),
+          linear-gradient(180deg, #3a4654, #121820);
+        border-top: 2px solid #8a93a0;
+        border-bottom: 2px solid #4a5564;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(232, 228, 216, 0.08);
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .deck { grid-template-columns: 1fr; }
+      }
+      .mark {
+        font-family: var(--type);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--lamp);
+      }
+      h1 {
+        margin: 10px 0 8px;
+        font-size: clamp(44px, 8vw, 84px);
+        line-height: 0.84;
+        letter-spacing: 0.02em;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .lede {
+        max-width: 46ch;
+        color: var(--fog);
+        line-height: 1.45;
+        font-family: var(--type);
+        font-size: 13px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid rgba(232, 160, 32, 0.35);
+        background: rgba(16, 22, 31, 0.8);
+        font-family: var(--type);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .chip b { color: var(--lamp); font-weight: 600; }
+      .chip.alarm {
+        border-color: var(--signal-red);
+        color: #ffd0b8;
+        box-shadow: 0 0 0 1px rgba(212, 42, 42, 0.35);
+      }
+      .chip.hold { border-color: var(--signal-green); color: var(--signal-green); }
+      .signal-box {
+        background:
+          linear-gradient(180deg, rgba(22, 29, 40, 0.96), rgba(10, 14, 20, 0.96));
+        border: 1px solid rgba(196, 163, 90, 0.28);
+        padding: 18px 18px 16px;
+        box-shadow: inset 0 1px 0 rgba(232, 228, 216, 0.06);
+      }
+      .signal-box h2 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .lamps {
+        display: flex;
+        gap: 10px;
+        margin: 0 0 14px;
+      }
+      .lamp {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #2a2010;
+        border: 2px solid #3a3220;
+        box-shadow: inset 0 0 6px #000;
+      }
+      .lamp.red { background: var(--signal-red); box-shadow: 0 0 14px var(--signal-red); }
+      .lamp.amber { background: var(--signal-amber); box-shadow: 0 0 14px var(--signal-amber); }
+      .lamp.green { background: var(--signal-green); box-shadow: 0 0 14px var(--signal-green); }
+      .gauges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 14px;
+      }
+      .gauge {
+        border: 1px solid rgba(196, 163, 90, 0.22);
+        padding: 8px 10px;
+        font-family: var(--type);
+        font-size: 11px;
+        color: var(--fog);
+      }
+      .gauge strong {
+        display: block;
+        color: var(--cream);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .keys {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .keys button,
+      .levers button {
+        border: 1px solid rgba(196, 163, 90, 0.32);
+        background: #121820;
+        padding: 8px 12px;
+        font-size: 14px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .keys button:hover,
+      .levers button:hover { border-color: var(--lamp); color: var(--lamp); }
+      .keys button.primary {
+        background: var(--brass);
+        color: #1a1208;
+        border-color: var(--lamp);
+        font-weight: 600;
+      }
+      .keys button.warn {
+        background: var(--signal-red);
+        border-color: #ff6a3a;
+        color: #2a0808;
+        font-weight: 600;
+      }
+      .levers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .levers button {
+        font-family: var(--type);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+      }
+      .levers button[aria-pressed="true"] {
+        border-color: var(--lamp);
+        color: var(--lamp);
+      }
+      .siding {
+        margin-top: 18px;
+        border: 1px solid rgba(107, 119, 136, 0.35);
+        background:
+          linear-gradient(180deg, rgba(26, 36, 51, 0.55), #0a1018);
+        min-height: 220px;
+        position: relative;
+        overflow: hidden;
+      }
+      .wet-rail {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 28px;
+        height: 6px;
+        background: linear-gradient(90deg, #4a5564, #c8d0da, #4a5564);
+        box-shadow: 0 8px 0 #1a2433, 0 10px 18px rgba(200, 208, 218, 0.12);
+      }
+      .wet-rail.twin { bottom: 48px; opacity: 0.55; }
+      .wagons {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 38px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        z-index: 1;
+      }
+      .wagons span {
+        font-family: var(--type);
+        font-size: 11px;
+        padding: 8px 10px 6px;
+        background: var(--wagon);
+        border: 1px solid var(--brass);
+        color: var(--lamp);
+        box-shadow: 3px 0 0 #2a1c12;
+      }
+      .siding .caption {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        font-family: var(--type);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass);
+        z-index: 1;
+      }
+      .roads {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      .road {
+        border: 1px dashed rgba(196, 163, 90, 0.28);
+        padding: 10px;
+        font-family: var(--type);
+        font-size: 12px;
+      }
+      .road .lbl {
+        color: var(--fog);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .road code {
+        display: block;
+        margin-top: 6px;
+        color: var(--lamp);
+        word-break: break-all;
+      }
+      .ledger {
+        margin-top: 14px;
+        border-top: 3px solid var(--brass);
+        padding-top: 12px;
+      }
+      .ledger h3 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .ledger ol {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--fog);
+        font-family: var(--type);
+        font-size: 12px;
+      }
+      .feed {
+        font-family: var(--type);
+        font-size: 13px;
+        color: var(--lamp);
+        margin: 12px 0 0;
+      }
+      .horn {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--signal-red);
+        background: rgba(212, 42, 42, 0.12);
+        font-family: var(--type);
+        font-size: 12px;
+        color: #ffd0b8;
+      }
+      .horn.on { display: block; }
+      .paste {
+        width: 100%;
+        min-height: 92px;
+        margin-top: 10px;
+        resize: vertical;
+        background: #0a1018;
+        color: var(--cream);
+        border: 1px solid rgba(196, 163, 90, 0.22);
+        font-family: var(--type);
+        font-size: 12px;
+        padding: 10px;
+      }
+      .brief, .why {
+        margin-top: 22px;
+        color: var(--fog);
+        font-size: 15px;
+        line-height: 1.5;
+        font-family: var(--type);
+      }
+      .brief h2, .why h2 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        font-family: var(--display);
+      }
+      .integrations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+      }
+      @media (max-width: 720px) {
+        .integrations { grid-template-columns: 1fr; }
+      }
+      .integrations article {
+        border: 1px solid rgba(196, 163, 90, 0.18);
+        padding: 10px;
+        font-size: 14px;
+        color: var(--fog);
+      }
+      .integrations h3 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--lamp);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="yard">
+      <div class="rails" aria-hidden="true"></div>
+      <p class="mark">07:50 Sydney · shunt</p>
+      <div class="deck">
+        <section>
+          <h1>Shunt</h1>
+          <p class="lede">
+            A first delivery is not a hold. Nested SendMessage follow-ups
+            leave the parent road and arrive at root. The child sees
+            <code>from="general-purpose"</code> — a type, not an address.
+            Score the road or admit <b>stabled</b>.
+          </p>
+          <p id="chip" class="chip hold"><b>stabled</b> · idle</p>
+          <p id="feed" class="feed">● Stabled · wagons in the right road · no misroute · idle word is stabled</p>
+          <div id="horn" class="horn">
+            Slack shunt alarm: misrouted / orphaned / rootbound / typecast. The follow-up left the parent road.
+          </div>
+          <div class="siding" id="siding">
+            <div class="caption">night yard · wet rails · oil lamps</div>
+            <div class="wet-rail twin" aria-hidden="true"></div>
+            <div class="wet-rail" aria-hidden="true"></div>
+            <div id="wagons" class="wagons"></div>
+          </div>
+          <div class="roads">
+            <div class="road">
+              <div class="lbl">parent road</div>
+              <code id="parent-road">—</code>
+            </div>
+            <div class="road">
+              <div class="lbl">where the follow-up landed</div>
+              <code id="landed">—</code>
+            </div>
+          </div>
+          <div class="ledger">
+            <h3>Shunt ledger</h3>
+            <ol id="tray"><li>no wagons on the road</li></ol>
+          </div>
+        </section>
+        <aside class="signal-box">
+          <h2>Signal box · lever frame</h2>
+          <div class="lamps" aria-hidden="true">
+            <div id="lamp-red" class="lamp"></div>
+            <div id="lamp-amber" class="lamp"></div>
+            <div id="lamp-green" class="lamp"></div>
+          </div>
+          <div class="gauges">
+            <div class="gauge">first to parent<strong id="g-first">none</strong></div>
+            <div class="gauge">follow-up road<strong id="g-follow">none</strong></div>
+            <div class="gauge">from label<strong id="g-from">—</strong></div>
+            <div class="gauge">keepalive<strong id="g-keep">held</strong></div>
+          </div>
+          <div class="keys">
+            <button class="primary" type="button" id="btn-score">Score</button>
+            <button type="button" id="btn-bail">Bail · stabled</button>
+            <button class="warn" type="button" id="btn-road">Road</button>
+            <button type="button" id="btn-admit">Admit</button>
+          </div>
+          <div class="levers">
+            <button type="button" data-seed="stabled" aria-pressed="false">Stabled road</button>
+            <button type="button" data-seed="misrouted" aria-pressed="true">Misrouted #90463</button>
+            <button type="button" data-seed="orphaned">Orphaned</button>
+            <button type="button" data-seed="rootbound">Rootbound</button>
+            <button type="button" data-seed="typecast">Typecast</button>
+            <button type="button" data-seed="stalled">Stalled</button>
+            <button type="button" data-seed="tandem">Tandem</button>
+            <button type="button" data-seed="dropped">Dropped</button>
+            <button type="button" data-seed="crosstalk">Crosstalk</button>
+            <button type="button" data-seed="sidetracked">Sidetracked</button>
+          </div>
+          <label class="mark" for="paste" style="display:block;margin-top:14px">Paste session trace</label>
+          <textarea id="paste" class="paste" placeholder="FIRST-ANSWER / SECOND-ANSWER / from=&quot;general-purpose&quot; / attachment: queued_command — detect a nested SendMessage misroute"></textarea>
+          <button type="button" id="btn-probe" style="margin-top:8px;border:1px solid rgba(196,163,90,0.32);background:#121820;padding:8px 12px;font-size:14px;text-transform:uppercase">Probe paste</button>
+        </aside>
+      </div>
+      <div class="integrations">
+        <article>
+          <h3>Slack shunt alarm</h3>
+          Horn on misrouted / orphaned / rootbound / typecast. Demo posts nothing live without a webhook.
+        </article>
+        <article>
+          <h3>Linear ticket</h3>
+          Road ticket on misrouted / orphaned / rootbound. Honest demo row when the key is absent.
+        </article>
+        <article>
+          <h3>GitHub shunt-ledger</h3>
+          Every scored probe writes a road event. Private gist when a token is present.
+        </article>
+      </div>
+      <section class="brief">
+        <h2>Thesis</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90463">anthropics/claude-code#90463</a>
+          (filed 2026-08-28, re-verified 2026-08-29 on 2.1.251): Reply to
+          SendMessage from a nested subagent is delivered to the root session
+          instead of the requesting parent. 4/4 follow-up misroutes; first
+          delivery 18/18 to parent. Child <code>from="general-purpose"</code>
+          does not resolve — an explicit reply fails with
+          <code>No agent named 'general-purpose' is reachable</code>. Hypothesis
+          from the issue (not a claim): recipient helper resolves the parent
+          only while the parent is running, or completed and still holds
+          keepalive <code>agent:&lt;taskId&gt;</code>; that keepalive is cleared
+          after the first notification, so a parked parent falls back to root.
+        </p>
+        <p>
+          Shape only (not a new primary):
+          <a href="https://github.com/anthropics/claude-code/issues/77950">#77950</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/75043">#75043</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/76681">#76681</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/78338">#78338</a>.
+        </p>
+      </section>
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Cote (dove-cote / --resume team-hub identity split). NOT Tappet
+          (valve train / silent hook injection). NOT Reveille (duplicate
+          dispatch). NOT Sump / Pleat / Scant / Chad / Kist / Wraith / Gasket /
+          Damper / Larder / Aside / Chute / Tain / Husk / Snib / Veto / Assay /
+          Wicket / Sigil / Stencil / Suture / Blot / Coda / Reed / Fathom / Hasp /
+          Parity / Quench / Scrim / Knock. NOT leftover woodworking /
+          millimetre-slider clones. Different problem: nested SendMessage
+          follow-up misroute to root + unresolvable from=type. Different UI:
+          night railway shunting yard / signal box / lever frame / oil lamps /
+          points / wagons / wet rails. Different idle: <b>stabled</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "stabled";
+      const SLACK = ["misrouted", "orphaned", "rootbound", "typecast"];
+      const TYPE_LABEL = "general-purpose";
+
+      function emptyProbe() {
+        return {
+          firstAnswerToParent: false,
+          followUpToRoot: false,
+          parentReceivedFollowUp: false,
+          childProducedFollowUp: false,
+          fromIsAgentType: false,
+          fromResolves: false,
+          parentParkedWaiting: false,
+          keepaliveClearedAfterFirst: false,
+          parentRunning: false,
+          parentCompleted: false,
+          parentHoldsKeepalive: false,
+          replyAddressedByRequester: false,
+          notificationQueuedToRoot: false,
+          nestedDepth: 0,
+          childFromLabel: "",
+          observed: false,
+          session: "",
+          source: "",
+          issue: null,
+          scored: false,
+        };
+      }
+
+      function classify(probe) {
+        const next = { ...emptyProbe(), ...probe };
+        const idle =
+          !next.firstAnswerToParent &&
+          !next.followUpToRoot &&
+          !next.parentReceivedFollowUp &&
+          !next.childProducedFollowUp &&
+          !next.fromIsAgentType &&
+          !next.fromResolves &&
+          !next.parentParkedWaiting &&
+          !next.keepaliveClearedAfterFirst &&
+          !next.parentRunning &&
+          !next.parentCompleted &&
+          !next.parentHoldsKeepalive &&
+          !next.replyAddressedByRequester &&
+          !next.notificationQueuedToRoot &&
+          next.nestedDepth < 2 &&
+          !String(next.childFromLabel || "").trim() &&
+          !next.observed;
+        if (idle) return "stabled";
+        const nested = next.nestedDepth >= 2;
+        const toRoot = next.followUpToRoot || next.notificationQueuedToRoot;
+        if (
+          next.firstAnswerToParent &&
+          next.childProducedFollowUp &&
+          toRoot &&
+          !next.parentReceivedFollowUp &&
+          next.parentParkedWaiting &&
+          next.fromIsAgentType &&
+          !next.fromResolves &&
+          nested &&
+          next.keepaliveClearedAfterFirst
+        ) return "misrouted";
+        if (
+          next.childProducedFollowUp &&
+          !next.parentReceivedFollowUp &&
+          next.parentCompleted &&
+          !next.parentHoldsKeepalive &&
+          !toRoot
+        ) return "orphaned";
+        if (toRoot) return "rootbound";
+        if (next.fromIsAgentType && !next.fromResolves) return "typecast";
+        if (next.parentParkedWaiting) return "stalled";
+        if (next.parentRunning && next.parentHoldsKeepalive && next.firstAnswerToParent) return "tandem";
+        if (next.childProducedFollowUp && !next.parentReceivedFollowUp && !toRoot) return "dropped";
+        if (next.replyAddressedByRequester) return "crosstalk";
+        if (nested) return "sidetracked";
+        return "stabled";
+      }
+
+      function feedOf(kind) {
+        if (kind === "misrouted") return "● Misrouted · first answer to parent · SECOND-ANSWER queued to root · parent parked";
+        if (kind === "orphaned") return "● Orphaned · child produced a follow-up · parent already completed · no keepalive";
+        if (kind === "rootbound") return "● Rootbound · follow-up or notification queued to the root session";
+        if (kind === "typecast") return "● Typecast · from=general-purpose is an agent type · No agent named general-purpose is reachable";
+        if (kind === "stalled") return "● Stalled · parent parked waiting · no second answer on this road";
+        if (kind === "tandem") return "● Tandem · parent still running · keepalive held · first delivery is live";
+        if (kind === "dropped") return "● Dropped · child produced a follow-up · neither parent nor root took the wagon";
+        if (kind === "crosstalk") return "● Crosstalk · reply addressed by requester · roads crossed on the frame";
+        if (kind === "sidetracked") return "● Sidetracked · nested depth ≥ 2 · wagon left the intended road";
+        return "● Stabled · wagons in the right road · no misroute · idle word is stabled";
+      }
+
+      function clusterOf(probe, kind) {
+        const cluster = [];
+        const add = (word) => { if (word && word !== kind && !cluster.includes(word)) cluster.push(word); };
+        const toRoot = probe.followUpToRoot || probe.notificationQueuedToRoot;
+        if (probe.childProducedFollowUp && !probe.parentReceivedFollowUp && probe.parentCompleted && !probe.parentHoldsKeepalive) add("orphaned");
+        if (toRoot) add("rootbound");
+        if (probe.fromIsAgentType && !probe.fromResolves) add("typecast");
+        if (probe.parentParkedWaiting) add("stalled");
+        if (probe.parentRunning && probe.parentHoldsKeepalive && probe.firstAnswerToParent) add("tandem");
+        if (probe.childProducedFollowUp && !probe.parentReceivedFollowUp) add("dropped");
+        if (probe.replyAddressedByRequester) add("crosstalk");
+        if (probe.nestedDepth >= 2) add("sidetracked");
+        return cluster;
+      }
+
+      function seedOf(name) {
+        const base = emptyProbe();
+        if (name === "misrouted") {
+          return {
+            ...base,
+            firstAnswerToParent: true,
+            followUpToRoot: true,
+            parentReceivedFollowUp: false,
+            childProducedFollowUp: true,
+            fromIsAgentType: true,
+            fromResolves: false,
+            parentParkedWaiting: true,
+            keepaliveClearedAfterFirst: true,
+            parentRunning: false,
+            parentCompleted: true,
+            parentHoldsKeepalive: false,
+            notificationQueuedToRoot: true,
+            nestedDepth: 2,
+            childFromLabel: TYPE_LABEL,
+            session: "90463-misrouted",
+            source: "anthropics/claude-code#90463",
+            issue: 90463,
+            scored: true,
+          };
+        }
+        if (name === "orphaned") {
+          return { ...base, childProducedFollowUp: true, parentCompleted: true, parentHoldsKeepalive: false, session: "75043-orphaned", issue: 75043, scored: true };
+        }
+        if (name === "rootbound") {
+          return { ...base, notificationQueuedToRoot: true, session: "77950-rootbound", issue: 77950, scored: true };
+        }
+        if (name === "typecast") {
+          return { ...base, fromIsAgentType: true, fromResolves: false, childFromLabel: TYPE_LABEL, session: "90463-typecast", issue: 90463, scored: true };
+        }
+        if (name === "stalled") {
+          return { ...base, parentParkedWaiting: true, session: "77950-stalled", issue: 77950, scored: true };
+        }
+        if (name === "tandem") {
+          return { ...base, parentRunning: true, parentHoldsKeepalive: true, firstAnswerToParent: true, session: "90463-tandem", issue: 90463, scored: true };
+        }
+        if (name === "dropped") {
+          return { ...base, childProducedFollowUp: true, parentReceivedFollowUp: false, session: "78338-dropped", issue: 78338, scored: true };
+        }
+        if (name === "crosstalk") {
+          return { ...base, replyAddressedByRequester: true, session: "90463-crosstalk", issue: 90463, scored: true };
+        }
+        if (name === "sidetracked") {
+          return { ...base, nestedDepth: 2, session: "77950-sidetracked", issue: 77950, scored: true };
+        }
+        return { ...base, session: "stabled", scored: true };
+      }
+
+      function parseTrace(text) {
+        const firstAnswerToParent = /FIRST-ANSWER/i.test(text) && /delivered_to_agent|to the parent/i.test(text);
+        const childProducedFollowUp = /SECOND-ANSWER/i.test(text);
+        const followUpToRoot = childProducedFollowUp && (/attachment:\s*queued_command/i.test(text) || /delivered (directly )?to the root/i.test(text));
+        const fromMatch = text.match(/from=["']([^"']+)["']/i);
+        const childFromLabel = fromMatch ? fromMatch[1] : /general-purpose/i.test(text) ? TYPE_LABEL : "";
+        const fromIsAgentType = childFromLabel === TYPE_LABEL;
+        const nested = /spawnDepth["']?\s*[:=]\s*([0-9]+)/i.test(text)
+          ? Number(text.match(/spawnDepth["']?\s*[:=]\s*([0-9]+)/i)[1])
+          : /nested|depth[- ]?2|grandchild/i.test(text) ? 2 : (childProducedFollowUp ? 2 : 0);
+        return {
+          ...emptyProbe(),
+          firstAnswerToParent: firstAnswerToParent || (/FIRST-ANSWER/i.test(text) && !followUpToRoot),
+          followUpToRoot,
+          parentReceivedFollowUp: /parent received.*(SECOND-ANSWER|follow-?up)/i.test(text),
+          childProducedFollowUp,
+          fromIsAgentType,
+          fromResolves: false,
+          parentParkedWaiting: /waiting for (its )?second|parked waiting|never received/i.test(text),
+          keepaliveClearedAfterFirst: /keepalive.*(cleared|clears)|agent:<taskId>.*cleared/i.test(text),
+          parentCompleted: /owning subagent already completed|parent.*(completed|already gone)/i.test(text),
+          notificationQueuedToRoot: /queued.*(root|main)|attachment:\s*queued_command/i.test(text),
+          nestedDepth: nested,
+          childFromLabel,
+          session: "paste",
+          source: "paste",
+          scored: true,
+        };
+      }
+
+      let probe = seedOf("misrouted");
+
+      function render() {
+        const verdict = classify(probe);
+        const cluster = clusterOf(probe, verdict);
+        const alarm = SLACK.includes(verdict);
+        const chip = document.getElementById("chip");
+        chip.innerHTML = "<b>" + verdict + "</b> · " + (cluster.length ? cluster.join(" · ") : IDLE_WORD);
+        chip.className = "chip" + (alarm ? " alarm" : verdict === "stabled" ? " hold" : "");
+        document.getElementById("feed").textContent = feedOf(verdict);
+        document.getElementById("horn").className = "horn" + (alarm ? " on" : "");
+        document.getElementById("lamp-red").className = "lamp" + (alarm ? " red" : "");
+        document.getElementById("lamp-amber").className = "lamp" + (verdict !== "stabled" && !alarm ? " amber" : "");
+        document.getElementById("lamp-green").className = "lamp" + (verdict === "stabled" ? " green" : "");
+        const wagons = document.getElementById("wagons");
+        const tags = [];
+        if (probe.firstAnswerToParent) tags.push("FIRST-ANSWER");
+        if (probe.childProducedFollowUp) tags.push("SECOND-ANSWER");
+        if (probe.childFromLabel) tags.push("from=" + probe.childFromLabel);
+        if (probe.nestedDepth >= 2) tags.push("depth " + probe.nestedDepth);
+        wagons.innerHTML = tags.map((name) => "<span>" + name + "</span>").join("");
+        document.getElementById("parent-road").textContent = probe.firstAnswerToParent
+          ? "FIRST-ANSWER on parent"
+          : (probe.parentParkedWaiting ? "parent parked waiting" : "—");
+        document.getElementById("landed").textContent = probe.followUpToRoot || probe.notificationQueuedToRoot
+          ? "SECOND-ANSWER queued to root"
+          : (probe.childProducedFollowUp ? "follow-up produced · road unknown" : "—");
+        const tray = document.getElementById("tray");
+        const lines = [];
+        if (probe.firstAnswerToParent) lines.push("<li>first delivery to parent · not a hold</li>");
+        if (probe.childProducedFollowUp) lines.push("<li>child produced SECOND-ANSWER</li>");
+        if (probe.followUpToRoot || probe.notificationQueuedToRoot) lines.push("<li>follow-up queued to root</li>");
+        if (probe.parentParkedWaiting) lines.push("<li>parent parked waiting</li>");
+        if (probe.fromIsAgentType) lines.push("<li>from=" + (probe.childFromLabel || TYPE_LABEL) + " · type, not an address</li>");
+        if (probe.keepaliveClearedAfterFirst) lines.push("<li>keepalive cleared after first notification</li>");
+        tray.innerHTML = lines.length ? lines.join("") : "<li>no wagons on the road</li>";
+        document.getElementById("g-first").textContent = probe.firstAnswerToParent ? "to parent" : "none";
+        document.getElementById("g-follow").textContent = probe.followUpToRoot || probe.notificationQueuedToRoot ? "root" : probe.childProducedFollowUp ? "produced" : "none";
+        document.getElementById("g-from").textContent = probe.childFromLabel || (probe.fromIsAgentType ? TYPE_LABEL : "—");
+        document.getElementById("g-keep").textContent = probe.keepaliveClearedAfterFirst ? "cleared" : probe.parentHoldsKeepalive ? "held" : "—";
+        document.querySelectorAll(".levers button[data-seed]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", classify(probe) === btn.getAttribute("data-seed") ? "true" : "false");
+        });
+      }
+
+      document.getElementById("btn-score").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-bail").addEventListener("click", () => {
+        probe = seedOf("stabled");
+        render();
+      });
+      document.getElementById("btn-road").addEventListener("click", () => {
+        probe = seedOf("misrouted");
+        render();
+      });
+      document.getElementById("btn-admit").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-probe").addEventListener("click", () => {
+        const text = document.getElementById("paste").value || "";
+        probe = text.trim() ? parseTrace(text) : seedOf("misrouted");
+        render();
+      });
+      document.querySelectorAll(".levers button[data-seed]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          probe = seedOf(btn.getAttribute("data-seed"));
+          render();
+        });
+      });
+      render();
+    </script>
+  </body>
+</html>
