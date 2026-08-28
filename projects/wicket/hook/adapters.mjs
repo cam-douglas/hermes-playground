@@ -14,7 +14,7 @@ function headline(result) {
 
 function isQuiet(result) {
   const verdict = result.verdict || result.state;
-  return !["escape", "latch", "reap"].includes(verdict);
+  return !["escape", "latch", "reap", "hijack", "split"].includes(verdict);
 }
 
 function isDataLoss(result) {

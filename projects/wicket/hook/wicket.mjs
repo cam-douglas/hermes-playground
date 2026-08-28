@@ -4,7 +4,8 @@
  * session-wide latch, but Edit/Write with an absolute file_path still lands
  * in the main checkout. Score a probe against the pinned worktree root.
  * Admit the write (home) or name the failure class.
- * Verdicts: home | escape | latch | reap | swap | misbind. Idle word is home.
+ * Verdicts: home | escape | latch | reap | swap | misbind | hijack | split.
+ * Idle word is home. A successful EnterWorktree report is not a hold.
  * Path check is component-containment (is_relative_to / parents walk),
  * never a string prefix.
  * Not Hasp. Not Stencil. Not Reveille. Not Sigil / Suture / Blot / Coda /
@@ -18,9 +19,11 @@ export const VERDICTS = Object.freeze([
   "reap",
   "swap",
   "misbind",
+  "hijack",
+  "split",
 ]);
 export const IDLE_WORD = "home";
-export const ALARM_VERDICTS = Object.freeze(["escape", "latch", "reap"]);
+export const ALARM_VERDICTS = Object.freeze(["escape", "latch", "reap", "hijack", "split"]);
 export const MUTATING_TOOLS = Object.freeze([
   "Edit",
   "Write",
@@ -49,6 +52,15 @@ export function emptyGate() {
     siblingCwd: "",
     bindCwd: "",
     targetRepo: "",
+    logicalCwd: "",
+    shellCwd: "",
+    guardClaim: "",
+    enterWorktreeReportedSuccess: false,
+    hijackedBy: "",
+    lastWriterWins: false,
+    complexBash: false,
+    falseGitRedirect: false,
+    branchScope: "",
     mutatedMain: false,
     resetHard: false,
     guardFired: null,
@@ -100,6 +112,15 @@ export function cloneGate(raw = {}) {
     siblingCwd: asText(src.siblingCwd),
     bindCwd: asText(src.bindCwd),
     targetRepo: asText(src.targetRepo),
+    logicalCwd: asText(src.logicalCwd),
+    shellCwd: asText(src.shellCwd),
+    guardClaim: asText(src.guardClaim),
+    enterWorktreeReportedSuccess: Boolean(src.enterWorktreeReportedSuccess),
+    hijackedBy: asText(src.hijackedBy),
+    lastWriterWins: Boolean(src.lastWriterWins),
+    complexBash: Boolean(src.complexBash),
+    falseGitRedirect: Boolean(src.falseGitRedirect),
+    branchScope: asText(src.branchScope),
     mutatedMain: Boolean(src.mutatedMain),
     resetHard: Boolean(src.resetHard),
     guardFired: src.guardFired == null ? null : Boolean(src.guardFired),
@@ -204,13 +225,47 @@ export function looksResetHard(command = "") {
   return RESET_HARD.test(asText(command));
 }
 
+/** Three-way workspace identity: claimed pin, shell cwd, guard claim. */
+export function identityOf(gate = {}) {
+  const next = cloneGate(gate);
+  return {
+    logical: normalizePath(next.logicalCwd),
+    shell: normalizePath(next.shellCwd),
+    guard: normalizePath(next.guardClaim),
+  };
+}
+
+export function identitiesAgree(gate = {}) {
+  const { logical, shell, guard } = identityOf(gate);
+  const present = [logical, shell, guard].filter(Boolean);
+  if (present.length < 2) return true;
+  return present.every((part) => part === present[0]);
+}
+
+export function isSplit(gate = {}) {
+  const next = cloneGate(gate);
+  return Boolean(next.enterWorktreeReportedSuccess) && !identitiesAgree(next);
+}
+
+export function isHijack(gate = {}) {
+  const next = cloneGate(gate);
+  if (next.lastWriterWins || next.hijackedBy) return true;
+  if (next.branchScope === "repo") return true;
+  return !identitiesAgree(next) && !isSplit(next);
+}
+
 function isMutating(gate) {
   return MUTATING_TOOLS.includes(gate.tool) || looksResetHard(gate.command) || gate.resetHard;
 }
 
 export function isLatch(gate = {}) {
   const next = cloneGate(gate);
-  return next.latch || (next.enterWorktreeMidBatch && next.isolation === "worktree");
+  return (
+    next.latch ||
+    (next.enterWorktreeMidBatch && next.isolation === "worktree") ||
+    next.falseGitRedirect ||
+    (next.complexBash && next.guardFired !== false && identitiesAgree(next) && !next.enterWorktreeReportedSuccess)
+  );
 }
 
 export function isReap(gate = {}) {
@@ -268,8 +323,19 @@ export function classify(gate = {}) {
     !next.latch &&
     !next.reaped &&
     !next.bindCwd &&
-    !next.targetRepo;
+    !next.targetRepo &&
+    !next.logicalCwd &&
+    !next.shellCwd &&
+    !next.guardClaim &&
+    !next.hijackedBy &&
+    !next.lastWriterWins &&
+    !next.enterWorktreeReportedSuccess &&
+    !next.falseGitRedirect &&
+    !next.complexBash &&
+    !next.branchScope;
   if (idle) return "home";
+  if (isSplit(next)) return "split";
+  if (isHijack(next)) return "hijack";
   if (isLatch(next)) return "latch";
   if (isReap(next)) return "reap";
   if (isSwap(next)) return "swap";
@@ -338,6 +404,18 @@ export function readAction(payload = {}) {
     siblingCwd: fromFields.siblingCwd ?? src.siblingCwd ?? payload.siblingCwd,
     bindCwd: fromFields.bindCwd ?? src.bindCwd ?? payload.bindCwd,
     targetRepo: fromFields.targetRepo ?? src.targetRepo ?? payload.targetRepo,
+    logicalCwd: fromFields.logicalCwd ?? src.logicalCwd ?? payload.logicalCwd,
+    shellCwd: fromFields.shellCwd ?? src.shellCwd ?? payload.shellCwd,
+    guardClaim: fromFields.guardClaim ?? src.guardClaim ?? payload.guardClaim,
+    enterWorktreeReportedSuccess:
+      fromFields.enterWorktreeReportedSuccess ??
+      src.enterWorktreeReportedSuccess ??
+      payload.enterWorktreeReportedSuccess,
+    hijackedBy: fromFields.hijackedBy ?? src.hijackedBy ?? payload.hijackedBy,
+    lastWriterWins: fromFields.lastWriterWins ?? src.lastWriterWins ?? payload.lastWriterWins,
+    complexBash: fromFields.complexBash ?? src.complexBash ?? payload.complexBash,
+    falseGitRedirect: fromFields.falseGitRedirect ?? src.falseGitRedirect ?? payload.falseGitRedirect,
+    branchScope: fromFields.branchScope ?? src.branchScope ?? payload.branchScope,
     mutatedMain: fromFields.mutatedMain ?? src.mutatedMain ?? payload.mutatedMain,
     resetHard: fromFields.resetHard ?? src.resetHard ?? payload.resetHard,
     guardFired: fromFields.guardFired ?? src.guardFired ?? payload.guardFired,
@@ -387,6 +465,14 @@ function pack(verdict, gate, action, extras = {}) {
     siblingCwd: next.siblingCwd,
     bindCwd: next.bindCwd,
     targetRepo: next.targetRepo,
+    logicalCwd: next.logicalCwd,
+    shellCwd: next.shellCwd,
+    guardClaim: next.guardClaim,
+    enterWorktreeReportedSuccess: next.enterWorktreeReportedSuccess,
+    hijackedBy: next.hijackedBy,
+    lastWriterWins: next.lastWriterWins,
+    identitiesAgree: identitiesAgree(next),
+    identity: identityOf(next),
     mutatedMain: next.mutatedMain,
     resetHard: next.resetHard || looksResetHard(next.command),
     guardFired: next.guardFired,
@@ -433,6 +519,15 @@ function seedGate(issue, source, extras = {}) {
       siblingCwd: extras.siblingCwd || "",
       bindCwd: extras.bindCwd || "",
       targetRepo: extras.targetRepo || "",
+      logicalCwd: extras.logicalCwd || "",
+      shellCwd: extras.shellCwd || "",
+      guardClaim: extras.guardClaim || "",
+      enterWorktreeReportedSuccess: Boolean(extras.enterWorktreeReportedSuccess),
+      hijackedBy: extras.hijackedBy || "",
+      lastWriterWins: Boolean(extras.lastWriterWins),
+      complexBash: Boolean(extras.complexBash),
+      falseGitRedirect: Boolean(extras.falseGitRedirect),
+      branchScope: extras.branchScope || "",
       mutatedMain: Boolean(extras.mutatedMain),
       resetHard: Boolean(extras.resetHard),
       guardFired: extras.guardFired == null ? null : Boolean(extras.guardFired),
@@ -566,6 +661,86 @@ export function seed56137() {
   });
 }
 
+/** Session-global last-writer-wins hijack. anthropics/claude-code#84685. */
+export function seed84685() {
+  return seedGate(84685, "anthropics/claude-code#84685", {
+    pin: "/repo/.claude/worktrees/agent-b",
+    main: "/repo",
+    cwd: "/repo/.claude/worktrees/agent-a",
+    logicalCwd: "/repo/.claude/worktrees/agent-b",
+    shellCwd: "/repo/.claude/worktrees/agent-a",
+    guardClaim: "/repo/.claude/worktrees/agent-a",
+    hijackedBy: "agent-a",
+    lastWriterWins: true,
+    tool: "Bash",
+    command: "pwd",
+    isolation: "worktree",
+  });
+}
+
+/** Teammate EnterWorktree/ExitWorktree repoints the shared session. anthropics/claude-code#84493. */
+export function seed84493() {
+  return seedGate(84493, "anthropics/claude-code#84493", {
+    pin: "/repo",
+    main: "/repo",
+    cwd: "/repo/.claude/worktrees/childwt2",
+    logicalCwd: "/repo",
+    shellCwd: "/repo/.claude/worktrees/childwt2",
+    guardClaim: "/repo/.claude/worktrees/childwt2",
+    hijackedBy: "childwt-agent",
+    lastWriterWins: true,
+    tool: "Bash",
+    command: "pwd",
+  });
+}
+
+/** EnterWorktree reports success; Bash stays pinned to parent. anthropics/claude-code#84704. */
+export function seed84704() {
+  return seedGate(84704, "anthropics/claude-code#84704", {
+    pin: "/repo/.claude/worktrees/B",
+    main: "/repo",
+    cwd: "/repo/.claude/worktrees/A",
+    logicalCwd: "/repo/.claude/worktrees/B",
+    shellCwd: "/repo/.claude/worktrees/A",
+    guardClaim: "/repo/.claude/worktrees/A",
+    enterWorktreeReportedSuccess: true,
+    tool: "Bash",
+    command: "pwd",
+    isolation: "worktree",
+  });
+}
+
+/** Guard refuses non-simple Bash with a false git-redirect story. anthropics/claude-code#88776. */
+export function seed88776() {
+  return seedGate(88776, "anthropics/claude-code#88776", {
+    pin: "/repo/.claude/worktrees/agent-88776",
+    main: "/repo",
+    cwd: "/repo/.claude/worktrees/agent-88776",
+    logicalCwd: "/repo/.claude/worktrees/agent-88776",
+    shellCwd: "/repo/.claude/worktrees/agent-88776",
+    guardClaim: "/repo/.claude/worktrees/agent-88776",
+    tool: "Bash",
+    command: 'bin/lint.sh 2>&1 | tail -15; echo "EXIT=${PIPESTATUS[0]}"',
+    complexBash: true,
+    falseGitRedirect: true,
+    isolation: "worktree",
+  });
+}
+
+/** Codex Desktop branch selection scoped to the repo, not the worktree. openai/codex#19627. */
+export function seed19627() {
+  return seedGate(19627, "openai/codex#19627", {
+    pin: "/tmp/codex-worktree-demo.a",
+    main: "/tmp/codex-worktree-demo",
+    cwd: "/tmp/codex-worktree-demo.a",
+    logicalCwd: "/tmp/codex-worktree-demo.a",
+    shellCwd: "/tmp/codex-worktree-demo.a",
+    guardClaim: "/tmp/codex-worktree-demo",
+    branchScope: "repo",
+    tool: "Agent",
+  });
+}
+
 /** Write that stays inside the pin. */
 export function seedHome() {
   return seedGate("home", "home", {
@@ -590,6 +765,11 @@ const SEEDS = {
   59628: seed59628,
   64322: seed64322,
   56137: seed56137,
+  84685: seed84685,
+  84493: seed84493,
+  84704: seed84704,
+  88776: seed88776,
+  19627: seed19627,
   home: seedHome,
 };
 
@@ -625,6 +805,15 @@ export function decide(payload = {}) {
       childAlive: false,
       siblingCwd: "",
       bindCwd: gate.targetRepo || gate.bindCwd,
+      logicalCwd: gate.pin || gate.logicalCwd,
+      shellCwd: gate.pin || gate.shellCwd,
+      guardClaim: gate.pin || gate.guardClaim,
+      enterWorktreeReportedSuccess: false,
+      hijackedBy: "",
+      lastWriterWins: false,
+      complexBash: false,
+      falseGitRedirect: false,
+      branchScope: "",
       rebound: true,
       admitted: true,
       refused: false,

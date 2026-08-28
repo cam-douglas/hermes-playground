@@ -90,7 +90,7 @@ Rules:
 
 ## Wicket
 
-`projects/wicket/` is a gatehouse / turnstile for worktree isolation escapes. Isolation is a pin, not a promise. `isolation:"worktree"` / EnterWorktree sets a default cwd and sometimes a session-wide latch, but Edit/Write with an absolute `file_path` still lands in the main checkout. Score the probe against the pinned worktree root. Admit the write or name the failure class. Path check is component-containment, never a string prefix. Verdicts: **home**, **escape**, **latch**, **reap**, **swap**, **misbind**.
+`projects/wicket/` is a gatehouse / turnstile for worktree isolation escapes. Isolation is a pin, not a promise. `isolation:"worktree"` / EnterWorktree sets a default cwd and sometimes a session-wide latch, but Edit/Write with an absolute `file_path` still lands in the main checkout. Score the probe against the pinned worktree root. Admit the write or name the failure class. Path check is component-containment, never a string prefix. Logical cwd, shell cwd, and guard claim must agree. Verdicts: **home**, **escape**, **latch**, **reap**, **swap**, **misbind**, **hijack**, **split**.
 
 Live path: https://hermes-playground-green.vercel.app/wicket/
 

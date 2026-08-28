@@ -57,6 +57,12 @@ function denyMessage(result) {
   if (result.verdict === "misbind") {
     return "Wicket misbind. Isolation bound the worktree to the caller's Bash cwd, not the target repo.";
   }
+  if (result.verdict === "hijack") {
+    return "Wicket hijack. Logical cwd, shell cwd, and guard claim disagree. EnterWorktree last-writer-wins stole this agent's identity.";
+  }
+  if (result.verdict === "split") {
+    return "Wicket split. EnterWorktree reported success but Bash and the guard still pin the parent worktree.";
+  }
   return "Wicket refuse. Probe is not home.";
 }
 
@@ -104,7 +110,7 @@ export function listen(port = 9060) {
         ok: true,
         product: "wicket",
         hook: "PreToolUse",
-        verbs: "home|escape|latch|reap|swap|misbind",
+        verbs: "home|escape|latch|reap|swap|misbind|hijack|split",
       });
       return;
     }

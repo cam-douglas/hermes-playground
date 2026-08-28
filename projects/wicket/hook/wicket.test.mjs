@@ -18,16 +18,22 @@ import {
   isRelativeTo,
   normalizePath,
   reboundPath,
+  seed19627,
   seed56137,
   seed59628,
   seed64322,
   seed74726,
   seed81333,
+  seed84493,
+  seed84685,
+  seed84704,
   seed85448,
   seed86584reap,
   seed86584swap,
+  seed88776,
   seed89102,
   seedHome,
+  identitiesAgree,
   verdictOf,
 } from "./wicket.mjs";
 import { handle } from "./index.mjs";
@@ -296,9 +302,9 @@ test("17 fire demo events are honest, never a fake live 200", async () => {
   assert.doesNotMatch(JSON.stringify(sinks), /\b200\b/);
 });
 
-test("18 alarm set is escape/latch/reap; idle word is home", () => {
-  assert.deepEqual([...VERDICTS], ["home", "escape", "latch", "reap", "swap", "misbind"]);
-  assert.deepEqual([...ALARM_VERDICTS], ["escape", "latch", "reap"]);
+test("18 alarm set is escape/latch/reap/hijack/split; idle word is home", () => {
+  assert.deepEqual([...VERDICTS], ["home", "escape", "latch", "reap", "swap", "misbind", "hijack", "split"]);
+  assert.deepEqual([...ALARM_VERDICTS], ["escape", "latch", "reap", "hijack", "split"]);
   assert.equal(ALARM_VERDICTS.includes("home"), false);
   assert.equal(ALARM_VERDICTS.includes("swap"), false);
   assert.equal(ALARM_VERDICTS.includes("misbind"), false);
@@ -335,4 +341,59 @@ test("20 admit of an escape still names the class; rebound of prefix friend is h
   const bounced = decide({ action: "rebound", gate: prefix.gate });
   assert.equal(bounced.verdict, "home");
   assert.equal(bounced.filePath, "/tmp/wt/src/app.ts");
+});
+
+test("21 seed 84685 is hijack: last-writer-wins stole cwd and guard identity", () => {
+  const result = decide(seed84685());
+  assert.equal(result.verdict, "hijack");
+  assert.equal(result.alarm, true);
+  assert.equal(result.issue, 84685);
+  assert.equal(result.lastWriterWins, true);
+  assert.equal(result.hijackedBy, "agent-a");
+  assert.equal(identitiesAgree(result.gate), false);
+  assert.notEqual(result.logicalCwd, result.shellCwd);
+  assert.equal(result.shellCwd, result.guardClaim);
+  assert.equal(decideSeed(84685).verdict, "hijack");
+});
+
+test("22 seed 84493 is hijack: teammate EnterWorktree repoints the session", () => {
+  const result = decide(seed84493());
+  assert.equal(result.verdict, "hijack");
+  assert.equal(result.alarm, true);
+  assert.equal(result.issue, 84493);
+  assert.equal(result.hijackedBy, "childwt-agent");
+  assert.equal(identitiesAgree(result.gate), false);
+});
+
+test("23 seed 84704 is split: EnterWorktree success is not a hold", () => {
+  const result = decide(seed84704());
+  assert.equal(result.verdict, "split");
+  assert.equal(result.alarm, true);
+  assert.equal(result.issue, 84704);
+  assert.equal(result.enterWorktreeReportedSuccess, true);
+  assert.equal(identitiesAgree(result.gate), false);
+  assert.notEqual(result.verdict, "home");
+  assert.equal(result.logicalCwd, "/repo/.claude/worktrees/B");
+  assert.equal(result.shellCwd, "/repo/.claude/worktrees/A");
+  assert.equal(result.guardClaim, "/repo/.claude/worktrees/A");
+});
+
+test("24 seed 88776 is latch: false git-redirect on non-simple Bash", () => {
+  const result = decide(seed88776());
+  assert.equal(result.verdict, "latch");
+  assert.equal(result.alarm, true);
+  assert.equal(result.issue, 88776);
+  assert.equal(result.gate.falseGitRedirect, true);
+  assert.equal(result.gate.complexBash, true);
+  assert.equal(identitiesAgree(result.gate), true);
+  assert.match(result.command, /lint\.sh/);
+});
+
+test("25 seed 19627 is hijack: branch selection scoped to the repo not the worktree", () => {
+  const result = decide(seed19627());
+  assert.equal(result.verdict, "hijack");
+  assert.equal(result.alarm, true);
+  assert.equal(result.issue, 19627);
+  assert.equal(result.gate.branchScope, "repo");
+  assert.equal(identitiesAgree(result.gate), false);
 });

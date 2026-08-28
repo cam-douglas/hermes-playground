@@ -369,6 +369,11 @@
         <button class="cobble" id="seed-85448" type="button"><small>#85448</small><b>misbind</b></button>
         <button class="cobble" id="seed-59628" type="button"><small>#59628</small><b>escape</b></button>
         <button class="cobble" id="seed-64322" type="button"><small>#64322</small><b>escape</b></button>
+        <button class="cobble" id="seed-84685" type="button"><small>#84685</small><b>hijack</b></button>
+        <button class="cobble" id="seed-84493" type="button"><small>#84493</small><b>hijack</b></button>
+        <button class="cobble" id="seed-84704" type="button"><small>#84704</small><b>split</b></button>
+        <button class="cobble" id="seed-88776" type="button"><small>#88776</small><b>latch</b></button>
+        <button class="cobble" id="seed-19627" type="button"><small>#19627</small><b>hijack</b></button>
         <button class="cobble idle" id="seed-clear" type="button"><small>Clear</small><b>home</b></button>
       </section>
 
@@ -404,13 +409,13 @@
         NOT Hasp, Stencil, Reveille, Sigil, Suture, Blot, Coda, Reed, Fathom, Parity, Quench, Scrim, or Knock.
         Idle word is home. Slack isolation alarm / GitHub isolation ledger / Linear data-loss incident stay honest
         demo rows when secrets are missing. Path check is component-containment, never a string prefix.
-        Evidence: anthropics/claude-code#74726 #81333 #86584 #89102 #85448 #59628 #56137 #64322.
+        Evidence: anthropics/claude-code#74726 #81333 #86584 #89102 #85448 #59628 #56137 #64322 #84685 #84493 #84704 #88776 · openai/codex#19627.
       </footer>
     </main>
     <script>
-      const VERDICTS = ["home", "escape", "latch", "reap", "swap", "misbind"];
+      const VERDICTS = ["home", "escape", "latch", "reap", "swap", "misbind", "hijack", "split"];
       const IDLE_WORD = "home";
-      const ALARM_VERDICTS = ["escape", "latch", "reap"];
+      const ALARM_VERDICTS = ["escape", "latch", "reap", "hijack", "split"];
       const MUTATING_TOOLS = ["Edit", "Write", "MultiEdit", "NotebookEdit", "Bash"];
       const RESET_HARD = /\bgit\b[\s\S]*\breset\b[\s\S]*--hard\b/i;
 
@@ -432,6 +437,15 @@
           siblingCwd: "",
           bindCwd: "",
           targetRepo: "",
+          logicalCwd: "",
+          shellCwd: "",
+          guardClaim: "",
+          enterWorktreeReportedSuccess: false,
+          hijackedBy: "",
+          lastWriterWins: false,
+          complexBash: false,
+          falseGitRedirect: false,
+          branchScope: "",
           mutatedMain: false,
           resetHard: false,
           guardFired: null,
@@ -468,6 +482,15 @@
           siblingCwd: asText(raw.siblingCwd),
           bindCwd: asText(raw.bindCwd),
           targetRepo: asText(raw.targetRepo),
+          logicalCwd: asText(raw.logicalCwd),
+          shellCwd: asText(raw.shellCwd),
+          guardClaim: asText(raw.guardClaim),
+          enterWorktreeReportedSuccess: Boolean(raw.enterWorktreeReportedSuccess),
+          hijackedBy: asText(raw.hijackedBy),
+          lastWriterWins: Boolean(raw.lastWriterWins),
+          complexBash: Boolean(raw.complexBash),
+          falseGitRedirect: Boolean(raw.falseGitRedirect),
+          branchScope: asText(raw.branchScope),
           mutatedMain: Boolean(raw.mutatedMain),
           resetHard: Boolean(raw.resetHard),
           guardFired: raw.guardFired == null ? null : Boolean(raw.guardFired),
@@ -556,11 +579,22 @@
         return RESET_HARD.test(asText(command));
       }
 
+      function identitiesAgree(gate) {
+        const logical = normalizePath(gate.logicalCwd);
+        const shell = normalizePath(gate.shellCwd);
+        const guard = normalizePath(gate.guardClaim);
+        const present = [logical, shell, guard].filter(Boolean);
+        if (present.length < 2) return true;
+        return present.every(function (part) { return part === present[0]; });
+      }
+
       function classify(gate) {
         const next = cloneGate(gate);
-        const idle = !next.pin && !next.filePath && !next.cwd && !next.command && !next.latch && !next.reaped && !next.bindCwd && !next.targetRepo;
+        const idle = !next.pin && !next.filePath && !next.cwd && !next.command && !next.latch && !next.reaped && !next.bindCwd && !next.targetRepo && !next.logicalCwd && !next.shellCwd && !next.guardClaim && !next.hijackedBy && !next.lastWriterWins && !next.enterWorktreeReportedSuccess && !next.falseGitRedirect && !next.complexBash && !next.branchScope;
         if (idle) return "home";
-        if (next.latch || (next.enterWorktreeMidBatch && next.isolation === "worktree")) return "latch";
+        if (next.enterWorktreeReportedSuccess && !identitiesAgree(next)) return "split";
+        if (next.lastWriterWins || next.hijackedBy || next.branchScope === "repo" || !identitiesAgree(next)) return "hijack";
+        if (next.latch || (next.enterWorktreeMidBatch && next.isolation === "worktree") || next.falseGitRedirect || next.complexBash) return "latch";
         if (next.reaped && next.childAlive) return "reap";
         const cwd = normalizePath(next.cwd);
         const pin = normalizePath(next.pin);
@@ -630,6 +664,15 @@
             childAlive: false,
             siblingCwd: "",
             bindCwd: gate.targetRepo || gate.bindCwd,
+            logicalCwd: gate.pin || gate.logicalCwd,
+            shellCwd: gate.pin || gate.shellCwd,
+            guardClaim: gate.pin || gate.guardClaim,
+            enterWorktreeReportedSuccess: false,
+            hijackedBy: "",
+            lastWriterWins: false,
+            complexBash: false,
+            falseGitRedirect: false,
+            branchScope: "",
             rebound: true,
             admitted: true,
             refused: false,
@@ -792,6 +835,73 @@
           tool: "Write",
         });
       }
+      function seed84685() {
+        return seedGate(84685, "anthropics/claude-code#84685", {
+          pin: "/repo/.claude/worktrees/agent-b",
+          main: "/repo",
+          cwd: "/repo/.claude/worktrees/agent-a",
+          logicalCwd: "/repo/.claude/worktrees/agent-b",
+          shellCwd: "/repo/.claude/worktrees/agent-a",
+          guardClaim: "/repo/.claude/worktrees/agent-a",
+          hijackedBy: "agent-a",
+          lastWriterWins: true,
+          tool: "Bash",
+          command: "pwd",
+        });
+      }
+      function seed84493() {
+        return seedGate(84493, "anthropics/claude-code#84493", {
+          pin: "/repo",
+          main: "/repo",
+          cwd: "/repo/.claude/worktrees/childwt2",
+          logicalCwd: "/repo",
+          shellCwd: "/repo/.claude/worktrees/childwt2",
+          guardClaim: "/repo/.claude/worktrees/childwt2",
+          hijackedBy: "childwt-agent",
+          lastWriterWins: true,
+          tool: "Bash",
+          command: "pwd",
+        });
+      }
+      function seed84704() {
+        return seedGate(84704, "anthropics/claude-code#84704", {
+          pin: "/repo/.claude/worktrees/B",
+          main: "/repo",
+          cwd: "/repo/.claude/worktrees/A",
+          logicalCwd: "/repo/.claude/worktrees/B",
+          shellCwd: "/repo/.claude/worktrees/A",
+          guardClaim: "/repo/.claude/worktrees/A",
+          enterWorktreeReportedSuccess: true,
+          tool: "Bash",
+          command: "pwd",
+        });
+      }
+      function seed88776() {
+        return seedGate(88776, "anthropics/claude-code#88776", {
+          pin: "/repo/.claude/worktrees/agent-88776",
+          main: "/repo",
+          cwd: "/repo/.claude/worktrees/agent-88776",
+          logicalCwd: "/repo/.claude/worktrees/agent-88776",
+          shellCwd: "/repo/.claude/worktrees/agent-88776",
+          guardClaim: "/repo/.claude/worktrees/agent-88776",
+          tool: "Bash",
+          command: "bin/lint.sh 2>&1 | tail -15",
+          complexBash: true,
+          falseGitRedirect: true,
+        });
+      }
+      function seed19627() {
+        return seedGate(19627, "openai/codex#19627", {
+          pin: "/tmp/codex-worktree-demo.a",
+          main: "/tmp/codex-worktree-demo",
+          cwd: "/tmp/codex-worktree-demo.a",
+          logicalCwd: "/tmp/codex-worktree-demo.a",
+          shellCwd: "/tmp/codex-worktree-demo.a",
+          guardClaim: "/tmp/codex-worktree-demo",
+          branchScope: "repo",
+          tool: "Agent",
+        });
+      }
 
       function copyFor(result) {
         if (result.verdict === "home") return "Path is component-contained in the pinned worktree. The turnstile admits. Idle word is home.";
@@ -799,6 +909,8 @@
         if (result.verdict === "latch") return "EnterWorktree flipped a session-wide latch. Even pwd is refused for agents already inside their own worktrees.";
         if (result.verdict === "reap") return "A parent that idled reaped a live child's unchanged worktree. The path is gone.";
         if (result.verdict === "swap") return "A sibling session's cwd leaked onto this pin. The write would land in the other tree.";
+        if (result.verdict === "hijack") return "Logical cwd, shell cwd, and guard claim disagree. EnterWorktree last-writer-wins stole this agent's identity. Success is not a hold.";
+        if (result.verdict === "split") return "EnterWorktree reported success but Bash and the guard still pin the parent worktree. Success is not a hold.";
         return "Isolation bound the worktree to the caller's Bash cwd, not the target repo.";
       }
 
@@ -841,6 +953,7 @@
             ["cwd", result.cwd || "—", result.verdict === "swap" || (result.cwd && result.pin && result.cwd !== result.pin && result.verdict === "escape") ? "bad" : "ok"],
             ["tool", (result.tool || "—") + (result.command ? " · " + result.command : ""), result.resetHard && result.guardFired === false ? "bad" : ""],
             ["bind", result.bindCwd ? result.bindCwd + " → " + (result.targetRepo || "—") : "—", result.verdict === "misbind" ? "bad" : ""],
+            ["identity", (result.gate.logicalCwd || "—") + " / " + (result.gate.shellCwd || "—") + " / " + (result.gate.guardClaim || "—"), result.verdict === "hijack" || result.verdict === "split" ? "bad" : ""],
           ];
           probes.innerHTML = '<div class="probes">' + rows.map(function (row) {
             return (
@@ -903,6 +1016,11 @@
       document.getElementById("seed-85448").addEventListener("click", function () { loadSeed("85448", seed85448); });
       document.getElementById("seed-59628").addEventListener("click", function () { loadSeed("59628", seed59628); });
       document.getElementById("seed-64322").addEventListener("click", function () { loadSeed("64322", seed64322); });
+      document.getElementById("seed-84685").addEventListener("click", function () { loadSeed("84685", seed84685); });
+      document.getElementById("seed-84493").addEventListener("click", function () { loadSeed("84493", seed84493); });
+      document.getElementById("seed-84704").addEventListener("click", function () { loadSeed("84704", seed84704); });
+      document.getElementById("seed-88776").addEventListener("click", function () { loadSeed("88776", seed88776); });
+      document.getElementById("seed-19627").addEventListener("click", function () { loadSeed("19627", seed19627); });
       document.getElementById("seed-clear").addEventListener("click", function () { loadSeed("clear", function () { return { action: "clear" }; }); });
       document.getElementById("admit").addEventListener("click", function () { apply("admit"); });
       document.getElementById("refuse").addEventListener("click", function () { apply("refuse"); });

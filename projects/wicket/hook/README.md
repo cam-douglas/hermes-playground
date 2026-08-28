@@ -1,6 +1,6 @@
 # Wicket hook
 
-PreToolUse isolation-scorer middleware. POST `{ action, gate? }`; get `home`, `escape`, `latch`, `reap`, `swap`, or `misbind`.
+PreToolUse isolation-scorer middleware. POST `{ action, gate? }`; get `home`, `escape`, `latch`, `reap`, `swap`, `misbind`, `hijack`, or `split`.
 
 This is not a file lease. It is not a plan fence. It is not a muster. It is not a wax-seal clinic. It is not a suture tray. It is not a darkroom. It is not a splice desk. It does not keep four MCP contacts. It does not pin standing rules. It does not score claim-vs-reality. It does not trip a spend fuse. It does not redact `tool_result`. It does not approve grants. It is not a leftover woodworking slider. A harness calls it when `isolation:"worktree"` / EnterWorktree is only a pin, and Edit/Write/Bash might still leave the pinned root.
 
@@ -46,7 +46,7 @@ curl -s -X POST http://127.0.0.1:9060 \
 }
 ```
 
-Treat `verdict: "escape"` / `"latch"` / `"reap"` or `permissionDecision: "deny"` as a stop. A default cwd is not proof the write stayed home.
+Treat `verdict: "escape"` / `"latch"` / `"reap"` / `"hijack"` / `"split"` or `permissionDecision: "deny"` as a stop. A default cwd is not proof the write stayed home. A successful EnterWorktree report is not a hold — logical cwd, shell cwd, and guard claim must agree.
 
 ## Env
 
