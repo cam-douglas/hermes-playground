@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Gasket](https://hermes-playground-green.vercel.app/gasket/)** — steam flange. A written project key is not a seal. Score the joint or admit tight. Folder: `projects/gasket/`.
+**Featured: [Wraith](https://hermes-playground-green.vercel.app/wraith/)** — afterimage. A grant that is still ON is not a hold. Score the image or admit unlinked. Folder: `projects/wraith/`.
+
+**Listed: [Gasket](https://hermes-playground-green.vercel.app/gasket/)** — steam flange. A written project key is not a seal. Score the joint or admit tight. Folder: `projects/gasket/`. Still listed. Not featured.
 
 **Listed: [Damper](https://hermes-playground-green.vercel.app/damper/)** — chimney damper. A settings toggle is not a hold. Score the draft or admit banked. Folder: `projects/damper/`. Still listed. Not featured.
 
@@ -60,10 +62,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                26 products: Gasket (featured), Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                27 products: Wraith (featured), Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/gasket/            steam-fitter flange / packing ring for project-scoped strictAllowlist silent discard (featured)
+projects/wraith/            afterimage / deleted-inode desk for auto-updater live-image unlink (featured)
+projects/gasket/            steam-fitter flange / packing ring for project-scoped strictAllowlist silent discard (kept, unfeatured)
 projects/damper/            chimney damper / flue plate for Remote Control auto-enable (kept, unfeatured)
 projects/cote/              dove-cote / pigeon loft for resume hub identity split (kept, unfeatured)
 projects/larder/            stillroom / cold larder for silent plugin-store freeze (kept, unfeatured)
@@ -89,8 +92,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-wraith.md   Wraith ship log (01:50 Sydney)
 runs/2026-08-29-gasket.md   Gasket ship log (00:50 Sydney)
 runs/2026-08-28-damper.md   Damper ship log (23:50 Sydney)
 runs/2026-08-28-cote.md     Cote ship log (22:50 Sydney)
@@ -135,6 +139,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Wraith
+
+`projects/wraith/` is an afterimage / deleted-inode desk for Claude Code auto-updater that replaces the running version’s on-disk binary while a session is still live. A grant that is still ON is not a hold. Score the image or admit **unlinked**. Verdicts: **unlinked**, **pruned**, **ghosted**, **voided**, **orphaned**, **severed**, **stale**, **resurfaced**, **ejected**, **held**. Slack alarm on pruned / ghosted / voided / orphaned / severed. Linear on pruned / orphaned / severed.
+
+Live path: https://hermes-playground-green.vercel.app/wraith/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90373` pruned is already on the pane. Idle word is **unlinked**, not the product name, not empty. NOT Gasket (project-scoped `strictAllowlist` silently discarded; steam flange). Grants exist and stay enabled. NOT Damper (Remote Control auto-enable; chimney/flue). #70071 is post-update capability death while still “connected.” NOT Cote / Nixie (`--resume` team-hub identity split). NOT Snib (Trusted Devices fail-open). This is fail-closed mid-session with grants still true. NOT Knock (permission-grant stalls). NOT Hasp, Husk, Parity, Tain. NOT Livery / disclaimer-spawn / seisin: that was the first-read of #90373. The reporter corrected it to live-image unlink. Do not ship Livery. Not leftover woodworking sliders. Different problem: updater deletes the running image under a live session. Different UI: cold glass, afterimage, deleted-inode ledger, version tombstone.
 
 ## Gasket
 
@@ -357,6 +369,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/wraith/` → `projects/wraith/`
 - `/gasket/` → `projects/gasket/`
 - `/damper/` → `projects/damper/`
 - `/cote/` → `projects/cote/`

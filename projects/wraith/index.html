@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Wraith — afterimage desk for Claude Code auto-updater live-image unlink. A grant that is still ON is not a hold. Idle word is unlinked."
+    />
+    <title>Wraith — afterimage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,16..72,400;0,16..72,600;1,16..72,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #07090d;
+        --glass: #10161c;
+        --frost: #d7e4ec;
+        --ice: #7eb6c4;
+        --after: #8fa0ac;
+        --tomb: #1c242c;
+        --cut: #d06464;
+        --held: #6d9a7e;
+        --ink: #e6eef2;
+        --mute: #7a8890;
+        --line: rgba(215, 228, 236, 0.12);
+        --display: Newsreader, "Iowan Old Style", Palatino, Georgia, serif;
+        --ui: "IBM Plex Sans", "Helvetica Neue", Helvetica, sans-serif;
+        --lab: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--ui);
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 42% 28% at 18% 0%, rgba(126, 182, 196, 0.14), transparent 70%),
+          radial-gradient(ellipse 36% 24% at 88% 100%, rgba(208, 100, 100, 0.08), transparent 68%),
+          linear-gradient(180deg, #0a0d12 0%, var(--void) 54%, #0c1014);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--ice); }
+      .desk {
+        width: min(1160px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 80px;
+      }
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 10px;
+      }
+      .mark, .path {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ice);
+      }
+      h1 {
+        margin: 18px 0 8px;
+        font-family: var(--display);
+        font-size: clamp(56px, 11vw, 108px);
+        font-weight: 400;
+        letter-spacing: -0.03em;
+        line-height: 0.86;
+        color: var(--frost);
+      }
+      .lede {
+        max-width: 48em;
+        color: var(--mute);
+        font-size: 18px;
+        line-height: 1.55;
+      }
+      .lede em { color: var(--ice); font-style: italic; }
+      .switches, .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin: 18px 0 14px;
+      }
+      .switches button, .acts button {
+        border: 1px solid rgba(126, 182, 196, 0.35);
+        background: rgba(16, 22, 28, 0.88);
+        border-radius: 999px;
+        padding: 8px 13px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--frost);
+      }
+      .switches button.on,
+      .switches button:hover,
+      .acts button:hover {
+        border-color: var(--ice);
+        color: var(--void);
+        background: var(--ice);
+      }
+      .chamber {
+        position: relative;
+        min-height: 440px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.7fr);
+        border: 1px solid rgba(215, 228, 236, 0.16);
+        background:
+          linear-gradient(180deg, rgba(215, 228, 236, 0.04), transparent 28%),
+          var(--glass);
+        box-shadow: inset 0 0 80px rgba(7, 9, 13, 0.55), 0 18px 40px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+      }
+      @media (max-width: 860px) {
+        .chamber { grid-template-columns: 1fr; }
+      }
+      .pane {
+        position: relative;
+        min-height: 360px;
+        overflow: hidden;
+      }
+      .afterimage {
+        position: absolute;
+        inset: 18% 16% 28% 12%;
+        background:
+          radial-gradient(ellipse 46% 58% at 50% 38%, rgba(215, 228, 236, 0.22), transparent 68%),
+          radial-gradient(ellipse 18% 22% at 50% 18%, rgba(215, 228, 236, 0.28), transparent 70%);
+        filter: blur(10px);
+        opacity: 0.42;
+        transition: opacity 0.35s ease, filter 0.35s ease, transform 0.35s ease;
+      }
+      .afterimage::after {
+        content: "";
+        position: absolute;
+        left: 42%;
+        top: 8%;
+        width: 16%;
+        height: 72%;
+        background: linear-gradient(180deg, rgba(215, 228, 236, 0.35), rgba(126, 182, 196, 0.08));
+        border-radius: 40% 40% 18% 18%;
+      }
+      .chamber.unlinked .afterimage,
+      .chamber.held .afterimage { opacity: 0.22; filter: blur(6px); }
+      .chamber.pruned .afterimage,
+      .chamber.ghosted .afterimage { opacity: 0.7; filter: blur(14px); transform: translateX(8px); }
+      .chamber.voided .afterimage,
+      .chamber.stale .afterimage { opacity: 0.55; filter: blur(16px); }
+      .chamber.orphaned .afterimage,
+      .chamber.severed .afterimage { opacity: 0.8; filter: blur(18px) saturate(0.4); }
+      .chamber.ejected .afterimage { opacity: 0.12; filter: blur(22px); }
+      .chamber.resurfaced .afterimage { opacity: 0.34; filter: blur(4px); }
+      .ghost-label {
+        position: absolute;
+        left: 22px;
+        top: 18px;
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--ice);
+      }
+      .inode {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 12px 16px 14px;
+        background: rgba(7, 9, 13, 0.72);
+        border-top: 1px solid var(--line);
+        font-family: var(--lab);
+        font-size: 11px;
+        line-height: 1.55;
+        color: var(--after);
+      }
+      .inode b { color: var(--cut); font-weight: 500; }
+      .tombstone {
+        position: relative;
+        border-left: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, #243038, var(--tomb));
+        padding: 28px 22px 22px;
+        color: var(--frost);
+      }
+      @media (max-width: 860px) {
+        .tombstone { border-left: 0; border-top: 1px solid var(--line); }
+      }
+      .tombstone h2 {
+        margin: 0 0 10px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ice);
+      }
+      .ver {
+        font-family: var(--display);
+        font-size: 34px;
+        line-height: 1;
+        letter-spacing: -0.03em;
+      }
+      .ver.dead { color: var(--cut); text-decoration: line-through; }
+      .ver.live { color: var(--held); }
+      .tombstone p {
+        margin: 12px 0 0;
+        font-family: var(--lab);
+        font-size: 12px;
+        color: var(--after);
+      }
+      .caption {
+        margin: 10px 0 0;
+        font-family: var(--lab);
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .console {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1.2fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) {
+        .console { grid-template-columns: 1fr; }
+      }
+      .panel {
+        border: 1px solid var(--line);
+        background: rgba(16, 22, 28, 0.78);
+        padding: 14px 16px 16px;
+      }
+      .panel h2 {
+        margin: 0 0 8px;
+        font-family: var(--lab);
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ice);
+      }
+      .verdict {
+        font-family: var(--display);
+        font-size: clamp(36px, 6vw, 56px);
+        font-weight: 400;
+        letter-spacing: -0.03em;
+        line-height: 0.9;
+      }
+      .verdict.ok { color: var(--held); }
+      .verdict.alarm { color: var(--cut); }
+      .feed { margin: 10px 0 0; color: var(--mute); }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-family: var(--lab);
+        font-size: 12px;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(215, 228, 236, 0.06);
+      }
+      .row b { color: var(--ice); font-weight: 500; }
+      #why ul { margin: 0; padding-left: 18px; color: var(--mute); }
+      #why li { margin: 0 0 6px; }
+      .ledger {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 860px) {
+        .ledger { grid-template-columns: 1fr; }
+      }
+      .ledger article {
+        border: 1px solid var(--line);
+        background: rgba(16, 22, 28, 0.72);
+        padding: 12px 14px;
+      }
+      .ledger h3 {
+        margin: 0 0 6px;
+        font-family: var(--lab);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--ice);
+      }
+      .ledger p { margin: 0; color: var(--mute); font-size: 15px; }
+      .checks {
+        margin: 16px 0 0;
+        font-family: var(--lab);
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .checks.ok { color: var(--held); }
+      .checks.bad { color: var(--cut); }
+      .brief, .why-not {
+        margin: 28px 0 0;
+        max-width: 62em;
+        color: var(--mute);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      .brief h2, .why-not h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 28px;
+        font-weight: 400;
+        color: var(--frost);
+      }
+      .brief h3 {
+        margin: 18px 0 8px;
+        font-family: var(--lab);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ice);
+      }
+      .brief ul { margin: 0; padding-left: 18px; }
+      .brief li { margin: 0 0 8px; }
+      .brief blockquote {
+        margin: 12px 0;
+        padding: 10px 14px;
+        border-left: 2px solid var(--ice);
+        color: var(--frost);
+        font-family: var(--display);
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="desk">
+      <div class="mast">
+        <p class="mark">01:50 Sydney · wraith</p>
+        <p class="path"><a href="/">catalog</a> · /wraith/</p>
+      </div>
+      <h1>Wraith</h1>
+      <p class="lede">
+        A grant that is still ON is not a hold. The updater
+        <em>unlinks the running image</em> under a live session.
+        TCC fails against a deleted signature. Score the image or admit
+        <em>unlinked</em>.
+      </p>
+      <div class="switches" id="switches"></div>
+      <div class="acts">
+        <button type="button" data-act="press">Press</button>
+        <button type="button" data-act="seat">Seat</button>
+        <button type="button" data-act="trace">Trace</button>
+        <button type="button" data-act="unlink">Unlink</button>
+        <button type="button" data-act="hold">Hold</button>
+      </div>
+      <section class="chamber" id="chamber" aria-label="Deleted-image afterimage chamber">
+        <div class="pane">
+          <p class="ghost-label">afterimage</p>
+          <div class="afterimage" aria-hidden="true"></div>
+          <div class="inode" id="inode">txt …/2.1.237/claude  <b>(deleted)</b></div>
+        </div>
+        <aside class="tombstone" aria-label="Version tombstone">
+          <h2>version tombstone</h2>
+          <div class="ver dead" id="dead-ver">2.1.237</div>
+          <div class="ver live" id="live-ver">2.1.246</div>
+          <p id="tomb-note">running image deleted · newer version only on disk</p>
+        </aside>
+      </section>
+      <p class="caption" id="caption">updater unlinked the live image · grants still ON · EPERM mid-session</p>
+      <section class="console">
+        <article class="panel">
+          <h2>Class</h2>
+          <div class="verdict" id="spoken" aria-live="polite">pruned</div>
+          <p class="feed" id="feed"></p>
+        </article>
+        <article class="panel gauges" id="gauges"></article>
+        <article class="panel">
+          <h2>Reasons</h2>
+          <div id="why"></div>
+        </article>
+      </section>
+      <section class="ledger" id="ledger" aria-label="Demo sinks"></section>
+      <p class="checks" id="checks"></p>
+      <section class="brief" id="brief">
+        <h2>Research brief</h2>
+        <h3>The problem</h3>
+        <p>
+          The Claude Code auto-updater replaces or deletes the running version’s
+          on-disk binary while a session is still live. The process keeps
+          executing the deleted image (<code>lsof</code> shows the path as
+          deleted; only the new version remains on disk). On macOS, TCC
+          validates against the running binary’s code signature. Once the image
+          is gone, every access to a TCC-protected folder returns
+          <strong>EPERM mid-session, with no warning</strong>, while System
+          Settings still shows the folder grants toggled ON. In-app
+          “Folder access granted” reports success and changes nothing. A
+          concurrent session started after the update can read the same file.
+          Full Disk Access cannot help. The only reliable fix is restart.
+        </p>
+        <blockquote>
+          macOS validates a TCC grant against the running binary's code
+          signature. Once the on-disk image is deleted and replaced, that
+          validation fails… mid-session, with no warning, and with the grant
+          still enabled.
+        </blockquote>
+        <h3>GitHub sources (do not invent more)</h3>
+        <ul>
+          <li>
+            Primary:
+            <a href="https://github.com/anthropics/claude-code/issues/90373">anthropics/claude-code#90373</a>
+            — filed 2026-08-28 by TB-Glenn. Labels: bug, platform:macos, area:desktop.
+            Correction: updater deletes the running image under a live session;
+            TCC fails against the deleted signature; grants stay ON.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/86129">#86129</a>
+            — updater removes the running version from
+            <code>~/.local/share/claude/versions/</code>. Agent spawn
+            “Spawned successfully” + child ENOENT.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/75355">#75355</a>
+            — Linux <code>/proc/&lt;pid&gt;/exe → …/versions/2.1.198 (deleted)</code>.
+            Prune ignores process liveness.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/70071">#70071</a>
+            — long-lived remote-control after self-update: phone still
+            connected/green, new sessions EPERM; restart fixes.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/80941">#80941</a>
+            — mid-session TCC Documents grant death; looks like permissions, isn’t.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/26981">#26981</a>
+            — CloudStorage EPERM; dead-end FDA advice.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/64685">#64685</a>
+            — earlier disclaimer/TCC framing; the first-read that #90373’s
+            correction superseded.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/88726">#88726</a>
+            — Chrome native-host wrapper pins a version path the next update
+            deletes (adjacent class).
+          </li>
+        </ul>
+        <h3>Why this</h3>
+        <p>
+          A wraith is a process that still “lives” after its body — the on-disk
+          binary — was deleted. Grants stay lit. Spawns and remote-control still
+          look healthy. Reads and child execs silently die. Score the image.
+          Name the class or admit <strong>unlinked</strong>.
+        </p>
+      </section>
+      <section class="why-not">
+        <h2>Why this is not a clone</h2>
+        <p>
+          NOT Gasket (project-scoped <code>sandbox.network.strictAllowlist</code>
+          silently discarded; steam flange). Grants exist and stay enabled.
+          NOT Damper (Remote Control auto-enable without consent; chimney/flue).
+          #70071 is post-update capability death while still “connected.”
+          NOT Cote / Nixie (<code>--resume</code> team-hub identity split).
+          NOT Snib (Trusted Devices fail-open). This is fail-closed mid-session
+          with grants still true. NOT Knock (permission-grant stalls). No prompt
+          can fire. NOT Hasp (file-lease contention). NOT Husk (hollow API
+          success envelopes). Hollow <em>process image</em> after unlink.
+          NOT Parity (claim-vs-reality of a single tool result). Systemic
+          post-update ghost state. NOT Tain (Chrome path pin #88726 is adjacent
+          corroboration, not the thesis). NOT Wicket (worktree isolation
+          gatehouse). NOT Chute (mail chute / sanctioned secret handoff).
+          NOT Livery / disclaimer-spawn / seisin: that was the first-read of
+          #90373. The reporter corrected it to live-image unlink. Do not ship
+          Livery. NOT leftover woodworking / millimeter-slider clones.
+          Different problem: updater deletes the running image under a live
+          session. Different UI: cold glass, afterimage, deleted-inode ledger,
+          version tombstone. Different idle word: unlinked.
+        </p>
+      </section>
+    </main>
+    <script>
+      /**
+       * Afterimage desk. A grant that is still ON is not a hold.
+       * NOT Gasket (settings-key drop). NOT Damper (RC auto-enable).
+       * NOT Livery (disclaimer-spawn / seisin).
+       * Idle word is unlinked. Never the product name. Never empty.
+       */
+      const VERDICTS = ["unlinked","pruned","ghosted","voided","orphaned","severed","stale","resurfaced","ejected","held"];
+      const IDLE_WORD = "unlinked";
+      const SLACK = ["pruned","ghosted","voided","orphaned","severed"];
+      const LINEAR = ["pruned","orphaned","severed"];
+
+      function emptyProbe() {
+        return {
+          imageDeleted: false, updaterPrunedRunningVersion: false, lsofOrProcExeDeleted: false,
+          grantsStillOn: false, inAppGrantSuccessNoOp: false, bashEperm: false, readEperm: false,
+          postUpdateSessionReadsOk: false, spawnSuccessEnoent: false, remoteControlGreenButEperm: false,
+          restartRestores: false, observed: false, session: "", source: "", issue: null, scored: false
+        };
+      }
+
+      function cloneProbe(raw) {
+        return { ...emptyProbe(), ...(raw && typeof raw === "object" ? raw : {}) };
+      }
+
+      function isIdle(probe) {
+        const n = cloneProbe(probe);
+        return !n.imageDeleted && !n.updaterPrunedRunningVersion && !n.lsofOrProcExeDeleted &&
+          !n.grantsStillOn && !n.inAppGrantSuccessNoOp && !n.bashEperm && !n.readEperm &&
+          !n.postUpdateSessionReadsOk && !n.spawnSuccessEnoent && !n.remoteControlGreenButEperm &&
+          !n.restartRestores && !n.observed;
+      }
+
+      function classify(probe) {
+        const n = cloneProbe(probe);
+        if (isIdle(n)) return "unlinked";
+        if (n.spawnSuccessEnoent) return "orphaned";
+        if (n.remoteControlGreenButEperm) return "severed";
+        if (n.postUpdateSessionReadsOk && !n.updaterPrunedRunningVersion && !n.imageDeleted &&
+          !n.bashEperm && !n.readEperm) {
+          return "resurfaced";
+        }
+        if (n.updaterPrunedRunningVersion) return "pruned";
+        if (n.lsofOrProcExeDeleted) return "stale";
+        if (n.grantsStillOn && n.inAppGrantSuccessNoOp && (n.bashEperm || n.readEperm)) return "ghosted";
+        if (n.bashEperm || n.readEperm) return "voided";
+        if (n.restartRestores) return "ejected";
+        if (n.grantsStillOn && !n.imageDeleted && !n.lsofOrProcExeDeleted &&
+          !n.updaterPrunedRunningVersion && !n.bashEperm && !n.readEperm) {
+          return "held";
+        }
+        return "unlinked";
+      }
+
+      function feedOf(probe, verdict) {
+        const kind = verdict || classify(probe);
+        if (kind === "pruned") return "● Pruned · updater removed the running version from disk while the session was live · the image is a ghost";
+        if (kind === "ghosted") return "● Ghosted · grants still ON · in-app grant reports success · reads still EPERM · FDA cannot help";
+        if (kind === "voided") return "● Voided · TCC-protected path EPERM mid-session · no warning · the grant looks lit";
+        if (kind === "orphaned") return "● Orphaned · Agent spawn reports Spawned successfully · child ENOENT · version dir was pruned";
+        if (kind === "severed") return "● Severed · remote-control still connected / green · every new session EPERM";
+        if (kind === "stale") return "● Stale · lsof /proc/exe shows (deleted) · a newer version is the only image on disk";
+        if (kind === "resurfaced") return "● Resurfaced · a concurrent session started after the update reads the same file · the grant still exists";
+        if (kind === "ejected") return "● Ejected · only restart restores capability · the deleted image cannot be reseated";
+        if (kind === "held") return "● Held · current-image session · path readable · grants match reality";
+        return "● Unlinked · image seated · inode present · idle word is unlinked";
+      }
+
+      function reasonsOf(probe, verdict) {
+        const n = cloneProbe(probe);
+        const kind = verdict || classify(n);
+        const reasons = [];
+        if (n.session) reasons.push("session " + n.session);
+        reasons.push(n.imageDeleted ? "on-disk binary for the running version is deleted" : "on-disk image is still present");
+        reasons.push(n.updaterPrunedRunningVersion ? "updater pruned the running version while the session was live" : "updater did not prune the running version under this probe");
+        reasons.push(n.lsofOrProcExeDeleted ? "lsof txt or /proc/exe shows (deleted)" : "lsof / proc exe does not show (deleted)");
+        reasons.push(n.grantsStillOn ? "System Settings folder grants still toggled ON" : "folder grants are not claimed still ON");
+        reasons.push(n.readEperm ? "Read returned EPERM" : "Read did not return EPERM");
+        if (n.spawnSuccessEnoent) reasons.push("Agent/teammate spawn returned Spawned successfully then child ENOENT");
+        if (n.remoteControlGreenButEperm) reasons.push("remote-control still shows connected/green; new sessions EPERM");
+        if (n.observed) reasons.push("Trace checked lsof /proc/exe and the version tombstone");
+        reasons.push("a grant that is still ON is not a hold");
+        reasons.push("NOT Gasket / Damper / Cote / Nixie / Snib / Knock / Hasp / Husk / Parity / Tain / Livery / leftover woodworking / millimeter-slider");
+        if (kind === "unlinked") reasons.push("image seated or desk idle; idle word is unlinked");
+        if (kind === "pruned") reasons.push("PRIMARY #90373: updater deletes the running image under a live session; TCC fails against the deleted signature; grants stay ON");
+        if (kind === "ghosted") reasons.push("grants stay lit; in-app grant is a no-op; reads still EPERM; FDA is irrelevant");
+        if (kind === "voided") reasons.push("TCC-protected path EPERM mid-session with no warning");
+        if (kind === "orphaned") reasons.push("PRIMARY contrast #86129: spawn success envelope; child ENOENT because the version dir was pruned");
+        if (kind === "severed") reasons.push("PRIMARY contrast #70071: remote-control still connected/green; every new session EPERM");
+        if (kind === "stale") reasons.push("PRIMARY contrast #75355: /proc/exe or lsof txt shows (deleted); prune ignores process liveness");
+        if (kind === "resurfaced") reasons.push("control: a post-update session reads the same file; the grant still exists");
+        if (kind === "ejected") reasons.push("only restart restores capability; the deleted image cannot be reseated");
+        if (kind === "held") reasons.push("clean current-image session; path readable; grants match reality");
+        return reasons;
+      }
+
+      function score(probe) {
+        const n = cloneProbe(probe);
+        const verdict = classify(n);
+        return {
+          verdict,
+          reasons: reasonsOf(n, verdict),
+          unlinked: verdict === "unlinked",
+          ghosted: verdict === "ghosted",
+          pruned: verdict === "pruned",
+          feed: feedOf(n, verdict),
+          slack: SLACK.indexOf(verdict) >= 0,
+          linear: LINEAR.indexOf(verdict) >= 0,
+          github: true,
+          alarm: SLACK.indexOf(verdict) >= 0,
+          idleWord: IDLE_WORD,
+          state: verdict,
+          probe: n,
+          ...n
+        };
+      }
+
+      function seedOf(kind) {
+        const base = emptyProbe();
+        if (kind === "pruned") {
+          return { ...base, imageDeleted: true, updaterPrunedRunningVersion: true, lsofOrProcExeDeleted: true, grantsStillOn: true, bashEperm: true, readEperm: true, session: "90373-pruned", source: "anthropics/claude-code#90373", issue: 90373, scored: true };
+        }
+        if (kind === "ghosted") {
+          return { ...base, grantsStillOn: true, inAppGrantSuccessNoOp: true, bashEperm: true, readEperm: true, session: "90373-ghosted", source: "anthropics/claude-code#90373", issue: 90373, scored: true };
+        }
+        if (kind === "voided") {
+          return { ...base, bashEperm: true, readEperm: true, session: "80941-voided", source: "anthropics/claude-code#80941", issue: 80941, scored: true };
+        }
+        if (kind === "orphaned") {
+          return { ...base, spawnSuccessEnoent: true, updaterPrunedRunningVersion: true, imageDeleted: true, session: "86129-orphaned", source: "anthropics/claude-code#86129", issue: 86129, scored: true };
+        }
+        if (kind === "severed") {
+          return { ...base, remoteControlGreenButEperm: true, session: "70071-severed", source: "anthropics/claude-code#70071", issue: 70071, scored: true };
+        }
+        if (kind === "stale") {
+          return { ...base, lsofOrProcExeDeleted: true, imageDeleted: true, session: "75355-stale", source: "anthropics/claude-code#75355", issue: 75355, scored: true };
+        }
+        if (kind === "resurfaced") {
+          return { ...base, postUpdateSessionReadsOk: true, grantsStillOn: true, session: "90373-resurfaced", source: "anthropics/claude-code#90373", issue: 90373, scored: true };
+        }
+        if (kind === "ejected") {
+          return { ...base, restartRestores: true, session: "90373-ejected", source: "anthropics/claude-code#90373", issue: 90373, scored: true };
+        }
+        if (kind === "held") {
+          return { ...base, grantsStillOn: true, session: "held", source: "image", scored: true };
+        }
+        if (kind === "unlinked") {
+          return { ...base, session: "unlinked", source: "pane", scored: true };
+        }
+        return emptyProbe();
+      }
+
+      function decide(probe, action) {
+        let next = cloneProbe(probe);
+        const verb = String(action || "score").toLowerCase();
+        if (verb === "seat" || verb === "clear") next = emptyProbe();
+        else if (verb === "unlink") next = seedOf("pruned");
+        else if (verb === "trace" || verb === "observe") next = { ...next, observed: true, scored: true };
+        else if (verb === "hold") next = seedOf("held");
+        else if (verb === "restart") next = seedOf("ejected");
+        else next.scored = true;
+        return score(next);
+      }
+
+      const CHIPS = [
+        { id: "pruned", label: "pruned #90373" },
+        { id: "ghosted", label: "ghosted" },
+        { id: "voided", label: "voided" },
+        { id: "orphaned", label: "orphaned #86129" },
+        { id: "severed", label: "severed #70071" },
+        { id: "stale", label: "stale #75355" },
+        { id: "resurfaced", label: "resurfaced" },
+        { id: "ejected", label: "ejected" },
+        { id: "held", label: "held" },
+        { id: "unlinked", label: "Seat · unlinked" }
+      ];
+
+      const CAPTION = {
+        unlinked: "image seated · inode present · idle word is unlinked",
+        pruned: "updater unlinked the live image · grants still ON · EPERM mid-session",
+        ghosted: "grants still ON · Folder access granted · reads still EPERM",
+        voided: "TCC path EPERM mid-session · no warning fired",
+        orphaned: "Spawned successfully · child ENOENT · version dir gone",
+        severed: "remote-control green · every new session EPERM",
+        stale: "lsof txt (deleted) · 2.1.246 is the only image on disk",
+        resurfaced: "post-update session reads the same file · the grant still exists",
+        ejected: "only restart restores capability",
+        held: "current image · path readable · grants match reality"
+      };
+
+      const INODE = {
+        unlinked: "txt …/2.1.246/claude  mapped",
+        pruned: "txt …/2.1.237/claude  <b>(deleted)</b>",
+        ghosted: "txt …/2.1.237/claude  <b>(deleted)</b> · grant ON",
+        voided: "read ~/Documents  <b>EPERM</b> · no prompt",
+        orphaned: "spawn 2.1.221  Spawned successfully · <b>ENOENT</b>",
+        severed: "remote-control  connected · new session <b>EPERM</b>",
+        stale: "/proc/exe → …/2.1.198 <b>(deleted)</b>",
+        resurfaced: "post-update session  same path  <b>readable</b>",
+        ejected: "restart  capability restored",
+        held: "txt …/2.1.246/claude  current · readable"
+      };
+
+      let probe = seedOf("pruned");
+      let currentChip = "pruned";
+
+      function row(label, value) {
+        return '<div class="row"><span>' + label + "</span><b>" + String(value) + "</b></div>";
+      }
+
+      function sinks(result) {
+        const slack = result.slack
+          ? "Would post to Slack: " + result.verdict + " afterimage alarm on the deleted image."
+          : "Would skip Slack. Image is " + result.verdict + ".";
+        const github = "Would open a GitHub wraith-ledger issue. Demo: no token.";
+        const linear = result.linear
+          ? "Would open a Linear ticket: " + result.verdict + " · " + (result.source || "pane")
+          : "Would skip Linear. Image is " + result.verdict + ".";
+        return { slack, github, linear };
+      }
+
+      function render() {
+        const result = decide(probe, "score");
+        document.getElementById("chamber").className = "chamber " + result.verdict;
+        document.getElementById("caption").textContent = CAPTION[result.verdict] || CAPTION.unlinked;
+        document.getElementById("inode").innerHTML = INODE[result.verdict] || INODE.unlinked;
+        const dead = document.getElementById("dead-ver");
+        const live = document.getElementById("live-ver");
+        if (result.verdict === "held" || result.verdict === "unlinked" || result.verdict === "resurfaced") {
+          dead.textContent = "—";
+          dead.className = "ver";
+          live.textContent = "2.1.246";
+        } else {
+          dead.textContent = result.verdict === "stale" ? "2.1.198" : "2.1.237";
+          dead.className = "ver dead";
+          live.textContent = "2.1.246";
+        }
+        document.getElementById("tomb-note").textContent = result.imageDeleted || result.lsofOrProcExeDeleted
+          ? "running image deleted · newer version only on disk"
+          : result.verdict === "held" || result.verdict === "unlinked"
+            ? "current image mapped · inode present"
+            : "version tombstone";
+        document.getElementById("gauges").innerHTML = "<h2>Image</h2>" + [
+          row("image deleted", result.imageDeleted ? "yes" : "no"),
+          row("updater pruned", result.updaterPrunedRunningVersion ? "yes" : "no"),
+          row("lsof (deleted)", result.lsofOrProcExeDeleted ? "yes" : "no"),
+          row("grants ON", result.grantsStillOn ? "yes" : "no"),
+          row("Read EPERM", result.readEperm ? "yes" : "no"),
+          row("issue", result.issue != null ? "#" + result.issue : "-")
+        ].join("");
+        const spoken = document.getElementById("spoken");
+        spoken.className = "verdict " + (result.verdict === "unlinked" || result.verdict === "held" || result.verdict === "resurfaced" ? "ok" : result.alarm ? "alarm" : "");
+        spoken.textContent = result.verdict;
+        document.getElementById("feed").textContent = result.feed;
+        document.getElementById("why").innerHTML = "<ul>" + result.reasons.map(function (line) {
+          return "<li>" + line + "</li>";
+        }).join("") + "</ul>";
+        const s = sinks(result);
+        document.getElementById("ledger").innerHTML =
+          "<article><h3>Slack</h3><p>" + s.slack + "</p></article>" +
+          "<article><h3>GitHub</h3><p>" + s.github + "</p></article>" +
+          "<article><h3>Linear</h3><p>" + s.linear + "</p></article>";
+        document.querySelectorAll("#switches button").forEach(function (btn) {
+          btn.classList.toggle("on", btn.dataset.seed === currentChip);
+        });
+      }
+
+      function bayChecks() {
+        const misses = [];
+        if (classify(emptyProbe()) !== "unlinked") misses.push("idle");
+        for (const chip of CHIPS) {
+          const got = classify(seedOf(chip.id));
+          if (got !== chip.id) misses.push(chip.id + "→" + got);
+        }
+        if (IDLE_WORD !== "unlinked") misses.push("idleWord");
+        if (/wraith/i.test(IDLE_WORD)) misses.push("idle is product name");
+        if (/empty/i.test(IDLE_WORD)) misses.push("idle is empty");
+        if (VERDICTS.join(" ") !== "unlinked pruned ghosted voided orphaned severed stale resurfaced ejected held") misses.push("vocab");
+        const el = document.getElementById("checks");
+        if (misses.length) {
+          el.className = "checks bad";
+          el.textContent = "afterimage check failed: " + misses.join(", ");
+        } else {
+          el.className = "checks ok";
+          el.textContent = "afterimage check: ten classes + idle unlinked. Never the product name. Never empty.";
+        }
+        return misses.length === 0;
+      }
+
+      const switches = document.getElementById("switches");
+      for (const chip of CHIPS) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.seed = chip.id;
+        btn.textContent = chip.label;
+        btn.addEventListener("click", function () {
+          currentChip = chip.id;
+          probe = seedOf(chip.id);
+          render();
+        });
+        switches.appendChild(btn);
+      }
+      document.querySelectorAll(".acts button").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const act = btn.dataset.act;
+          if (act === "seat") {
+            currentChip = "unlinked";
+            probe = emptyProbe();
+          }
+          const result = decide(probe, act);
+          probe = result.probe;
+          if (act === "unlink" || act === "hold") currentChip = result.verdict;
+          render();
+        });
+      });
+      render();
+      bayChecks();
+    </script>
+  </body>
+</html>
