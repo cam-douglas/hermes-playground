@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Pleat](https://hermes-playground-green.vercel.app/pleat/)** — tailor's pressing board. A rendered fold is not a hold. Score the cloth or admit flat. Folder: `projects/pleat/`.
+**Featured: [Sump](https://hermes-playground-green.vercel.app/sump/)** — basement catch-pit. A null path is not a hold. Score the silt or admit drained. Folder: `projects/sump/`.
+
+**Listed: [Pleat](https://hermes-playground-green.vercel.app/pleat/)** — tailor's pressing board. A rendered fold is not a hold. Score the cloth or admit flat. Folder: `projects/pleat/`. Still listed. Not featured.
 
 **Listed: [Scant](https://hermes-playground-green.vercel.app/scant/)** — timber scantling yard. A written shell snapshot is not a hold. Score the board or admit fit. Folder: `projects/scant/`. Still listed. Not featured.
 
@@ -70,10 +72,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                31 products: Pleat (featured), Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                32 products: Sump (featured), Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/pleat/             tailor's pressing board / accordion-pleat desk for desktop mid-turn fold collapse (featured)
+projects/sump/              basement catch-pit / wet-concrete desk for worktree LFS hooks written to a literal dev/null/ (featured)
+projects/pleat/             tailor's pressing board / accordion-pleat desk for desktop mid-turn fold collapse (kept, unfeatured)
 projects/scant/             timber scantling yard / measuring bench for Windows Desktop shell-snapshot PATH truncation (kept, unfeatured)
 projects/chad/              hanging-chad / ballot booth desk for AskUserQuestion phantom selection treated as consent (kept, unfeatured)
 projects/kist/              undertaker's kist / coffin-chest desk for teardown-archive that never unarchives (kept, unfeatured)
@@ -104,8 +107,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-sump.md     Sump ship log (06:50 Sydney)
 runs/2026-08-29-pleat.md    Pleat ship log (05:50 Sydney)
 runs/2026-08-29-scant.md    Scant ship log (04:50 Sydney)
 runs/2026-08-29-chad.md     Chad ship log (03:50 Sydney)

@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Sump — basement catch-pit for Claude Code worktree provisioning that writes Git LFS hooks to a literal dev/null/ directory. A null path is not a hold. Idle word is drained."
+    />
+    <title>Sump — basement catch-pit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --concrete: #1b1f1d;
+        --wet: #121614;
+        --slab: #2a302c;
+        --rust: #b4532a;
+        --iron: #6b3a22;
+        --grate: #8a4a2a;
+        --amber: #e3b23c;
+        --bilge: #c98a1a;
+        --ochre: #c4843a;
+        --silt: #9a6a2c;
+        --teal: #1f9a88;
+        --pump: #2ec4b6;
+        --foam: #d7ece8;
+        --mute: #8b958e;
+        --rule: rgba(46, 196, 182, 0.14);
+        --display: "Space Grotesk", "Avenir Next", sans-serif;
+        --type: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--display);
+        color: var(--foam);
+        background:
+          radial-gradient(ellipse 70% 36% at 18% 100%, rgba(31, 154, 136, 0.16), transparent 58%),
+          radial-gradient(ellipse 50% 30% at 88% 8%, rgba(180, 83, 42, 0.18), transparent 50%),
+          repeating-linear-gradient(
+            0deg,
+            transparent 0 13px,
+            rgba(138, 74, 42, 0.05) 13px 14px
+          ),
+          linear-gradient(180deg, #232826 0%, var(--concrete) 42%, var(--wet) 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--pump); }
+      .well {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 20px 0 96px;
+      }
+      .grate-bar {
+        height: 18px;
+        margin: 0 0 22px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            var(--iron) 0 10px,
+            #3a2418 10px 14px,
+            var(--grate) 14px 24px,
+            #2a1a12 24px 28px
+          );
+        border: 1px solid #4a2a1a;
+        box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.35), 0 8px 18px rgba(180, 83, 42, 0.18);
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .deck { grid-template-columns: 1fr; }
+      }
+      .mark {
+        font-family: var(--type);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      h1 {
+        margin: 10px 0 8px;
+        font-size: clamp(40px, 7vw, 76px);
+        line-height: 0.88;
+        letter-spacing: -0.05em;
+        font-weight: 700;
+      }
+      .lede {
+        max-width: 46ch;
+        color: var(--mute);
+        line-height: 1.45;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid rgba(227, 178, 60, 0.35);
+        background: rgba(27, 31, 29, 0.7);
+        font-family: var(--type);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .chip b { color: var(--amber); font-weight: 600; }
+      .chip.alarm {
+        border-color: var(--rust);
+        color: #ffd0b8;
+        box-shadow: 0 0 0 1px rgba(180, 83, 42, 0.35);
+      }
+      .chip.hold { border-color: var(--teal); color: var(--pump); }
+      .pump-house {
+        background:
+          linear-gradient(180deg, rgba(42, 48, 44, 0.92), rgba(18, 22, 20, 0.94));
+        border: 1px solid rgba(46, 196, 182, 0.18);
+        padding: 18px 18px 16px;
+        box-shadow: inset 0 1px 0 rgba(215, 236, 232, 0.06);
+      }
+      .pump-house h2 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--pump);
+      }
+      .gauges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 14px;
+      }
+      .gauge {
+        border: 1px solid rgba(196, 132, 58, 0.22);
+        padding: 8px 10px;
+        font-family: var(--type);
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .gauge strong {
+        display: block;
+        color: var(--foam);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .keys {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .keys button,
+      .fixtures button {
+        border: 1px solid rgba(46, 196, 182, 0.28);
+        background: #171b19;
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+      .keys button:hover,
+      .fixtures button:hover { border-color: var(--pump); color: var(--pump); }
+      .keys button.primary {
+        background: var(--teal);
+        color: #04221d;
+        border-color: var(--pump);
+        font-weight: 600;
+      }
+      .keys button.warn {
+        background: var(--rust);
+        border-color: #d46a38;
+        color: #2a1008;
+        font-weight: 600;
+      }
+      .fixtures {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .fixtures button {
+        font-family: var(--type);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+      }
+      .fixtures button[aria-pressed="true"] {
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+      .cistern {
+        margin-top: 18px;
+        border: 1px solid rgba(138, 74, 42, 0.35);
+        background:
+          linear-gradient(180deg, rgba(42, 26, 18, 0.35) 0 18px, transparent 18px),
+          linear-gradient(180deg, #1a1e1c, #101412);
+        min-height: 220px;
+        position: relative;
+        overflow: hidden;
+      }
+      .water {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 28%;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            rgba(31, 154, 136, 0.08) 0 8px,
+            transparent 8px 16px
+          ),
+          linear-gradient(180deg, rgba(46, 196, 182, 0.22), rgba(154, 106, 44, 0.45));
+        transition: height 280ms ease;
+      }
+      .water.high { height: 72%; }
+      .water.mid { height: 48%; }
+      .sludge {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        z-index: 1;
+      }
+      .sludge span {
+        font-family: var(--type);
+        font-size: 11px;
+        padding: 4px 8px;
+        background: rgba(27, 18, 10, 0.72);
+        border: 1px solid var(--ochre);
+        color: var(--amber);
+      }
+      .cistern .caption {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        font-family: var(--type);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ochre);
+        z-index: 1;
+      }
+      .pipes {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      .pipe {
+        border: 1px dashed rgba(46, 196, 182, 0.28);
+        padding: 10px;
+        font-family: var(--type);
+        font-size: 12px;
+      }
+      .pipe .lbl {
+        color: var(--mute);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .pipe code {
+        display: block;
+        margin-top: 6px;
+        color: var(--amber);
+        word-break: break-all;
+      }
+      .silt-tray {
+        margin-top: 14px;
+        border-top: 3px solid var(--iron);
+        padding-top: 12px;
+      }
+      .silt-tray h3 {
+        margin: 0 0 8px;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--ochre);
+      }
+      .silt-tray ol {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--mute);
+        font-family: var(--type);
+        font-size: 12px;
+      }
+      .feed {
+        font-family: var(--type);
+        font-size: 13px;
+        color: var(--amber);
+        margin: 12px 0 0;
+      }
+      .horn {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--rust);
+        background: rgba(180, 83, 42, 0.12);
+        font-family: var(--type);
+        font-size: 12px;
+        color: #ffd0b8;
+      }
+      .horn.on { display: block; }
+      .paste {
+        width: 100%;
+        min-height: 92px;
+        margin-top: 10px;
+        resize: vertical;
+        background: #101412;
+        color: var(--foam);
+        border: 1px solid rgba(46, 196, 182, 0.2);
+        font-family: var(--type);
+        font-size: 12px;
+        padding: 10px;
+      }
+      .brief, .why {
+        margin-top: 22px;
+        color: var(--mute);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .brief h2, .why h2 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--pump);
+      }
+      .integrations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+      }
+      @media (max-width: 720px) {
+        .integrations { grid-template-columns: 1fr; }
+      }
+      .integrations article {
+        border: 1px solid rgba(227, 178, 60, 0.18);
+        padding: 10px;
+        font-size: 13px;
+        color: var(--mute);
+      }
+      .integrations h3 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="well">
+      <div class="grate-bar" aria-hidden="true"></div>
+      <p class="mark">06:50 Sydney · sump</p>
+      <div class="deck">
+        <section>
+          <h1>Sump</h1>
+          <p class="lede">
+            A null path is not a hold. Worktree provisioning wrote Git LFS hooks
+            into a literal relative <code>dev/null/</code> — a real directory —
+            instead of <code>.git/hooks/</code>. Score the silt or admit
+            <b>drained</b>.
+          </p>
+          <p id="chip" class="chip hold"><b>drained</b> · idle</p>
+          <p id="feed" class="feed">● Drained · sump emptied · no literal dev/null/ litter · idle word is drained</p>
+          <div id="horn" class="horn">
+            Slack sump alarm: silted / clogged / fouled / littered. The grate is holding silt that should have vanished.
+          </div>
+          <div class="cistern" id="cistern">
+            <div class="caption">catch-pit · rust grate</div>
+            <div id="water" class="water"></div>
+            <div id="sludge" class="sludge"></div>
+          </div>
+          <div class="pipes">
+            <div class="pipe">
+              <div class="lbl">claimed core.hookspath</div>
+              <code id="claimed">—</code>
+            </div>
+            <div class="pipe">
+              <div class="lbl">where LFS hooks landed</div>
+              <code id="landed">—</code>
+            </div>
+          </div>
+          <div class="silt-tray">
+            <h3>Silt tray</h3>
+            <ol id="tray"><li>no hook files in the pit</li></ol>
+          </div>
+        </section>
+        <aside class="pump-house">
+          <h2>Bilge pump house</h2>
+          <div class="gauges">
+            <div class="gauge">literal pit<strong id="g-pit">none</strong></div>
+            <div class="gauge">hooks in pit<strong id="g-hooks">0</strong></div>
+            <div class="gauge">absolute vs relative<strong id="g-abs">—</strong></div>
+            <div class="gauge">untracked silt<strong id="g-status">clean</strong></div>
+          </div>
+          <div class="keys">
+            <button class="primary" type="button" id="btn-score">Score</button>
+            <button type="button" id="btn-bail">Bail · drained</button>
+            <button class="warn" type="button" id="btn-silt">Silt</button>
+            <button type="button" id="btn-admit">Admit</button>
+          </div>
+          <div class="fixtures">
+            <button type="button" data-seed="drained" aria-pressed="false">Drained worktree</button>
+            <button type="button" data-seed="silted" aria-pressed="true">Silted pit #90456</button>
+            <button type="button" data-seed="diverted" aria-pressed="false">Diverted relative-null</button>
+            <button type="button" data-seed="clogged">Clogged</button>
+            <button type="button" data-seed="fouled">Fouled</button>
+            <button type="button" data-seed="pooled">Pooled</button>
+            <button type="button" data-seed="littered">Littered</button>
+            <button type="button" data-seed="phantom">Phantom</button>
+            <button type="button" data-seed="absolute">Absolute</button>
+            <button type="button" data-seed="hooked">Hooked</button>
+          </div>
+          <label class="mark" for="paste" style="display:block;margin-top:14px">Paste worktree status</label>
+          <textarea id="paste" class="paste" placeholder="git status / git config --worktree --list — detect literal dev/null/ and stranded LFS hooks"></textarea>
+          <button type="button" id="btn-probe" style="margin-top:8px;border:1px solid rgba(46,196,182,0.28);background:#171b19;padding:8px 12px;font-size:13px">Probe paste</button>
+        </aside>
+      </div>
+      <div class="integrations">
+        <article>
+          <h3>Slack sump alarm</h3>
+          Horn on silted / clogged / fouled / littered. Demo posts nothing live without a webhook.
+        </article>
+        <article>
+          <h3>Linear ticket</h3>
+          Silt ticket on silted / clogged / fouled. Honest demo row when the key is absent.
+        </article>
+        <article>
+          <h3>GitHub sump-ledger</h3>
+          Every scored probe writes a silt event. Private gist when a token is present.
+        </article>
+      </div>
+      <section class="brief">
+        <h2>Thesis</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90456">anthropics/claude-code#90456</a>
+          (filed 2026-08-28, has-repro, platform:windows): worktree provisioning writes
+          Git LFS hooks to a literal <code>dev/null/</code> directory instead of
+          <code>.git/hooks/</code>. Worktrees with worktree-scoped
+          <code>core.hookspath</code> got the pit — empty or fully populated with
+          valid LFS shims. Correlation: LFS install racing before hookspath is
+          established. Hypothesis from the issue: a relative <code>dev/null</code>
+          resolved before the worktree hookspath was absolute. On Windows there is
+          no <code>/dev/null</code> device, so git-lfs writes
+          <code>./dev/null/</code>. Suggested fix: skip per-worktree LFS install, or
+          resolve via <code>git rev-parse --git-common-dir</code> / read-back of
+          <code>core.hookspath</code> as an absolute path.
+        </p>
+        <p>
+          Shape only (not a new primary):
+          <a href="https://github.com/anthropics/claude-code/issues/69453">#69453</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/74033">#74033</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/79923">#79923</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/81812">#81812</a>.
+          Related hooksPath confusion:
+          <a href="https://github.com/anthropics/claude-code/issues/72714">#72714</a>.
+        </p>
+      </section>
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Wicket (gatehouse / worktree isolation probe). Wicket scores isolation
+          pin vs promise; Sump scores a wrong-path LFS hook install that materializes
+          <code>/dev/null</code> as a folder. NOT Scant (timber yard / shell-snapshot
+          PATH truncation). NOT Pleat (tailor fold / mid-turn Desktop collapse).
+          NOT Chad / Kist / Wraith / Gasket / Damper / Cote / Larder / Tappet / Aside /
+          Chute / Tain / Husk / Snib / Veto / Assay / Sigil / Stencil / Suture / Blot /
+          Coda / Reed / Fathom / Hasp / Parity / Reveille / Quench / Scrim / Knock.
+          NOT leftover woodworking / millimetre-slider clones. Different problem:
+          literal <code>dev/null/</code> LFS hook litter during worktree provision.
+          Different UI: industrial basement sump pit / wet concrete / rust grate /
+          bilge pump / silt tray. Different idle: <b>drained</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "drained";
+      const LFS_HOOKS = ["post-checkout", "post-commit", "post-merge", "pre-push"];
+      const SLACK = ["silted", "clogged", "fouled", "littered"];
+      const LINEAR = ["silted", "clogged", "fouled"];
+
+      function emptyProbe() {
+        return {
+          literalNullDir: false,
+          hookFiles: [],
+          emptyNullDir: false,
+          fullyPopulated: false,
+          hooksLandedInNull: false,
+          hooksAreLfsShims: false,
+          gitStatusUntracked: false,
+          pathResolvedRelative: false,
+          hooksNeverFire: false,
+          hooksLookReal: false,
+          realHookspathCorrect: false,
+          hookspathClaimed: "",
+          hookspathIsAbsolute: false,
+          relativeNullWrite: false,
+          lfsInstallRaced: false,
+          lfsShimsPresent: false,
+          observed: false,
+          session: "",
+          source: "",
+          issue: null,
+          scored: false,
+        };
+      }
+
+      function classify(probe) {
+        const next = { ...emptyProbe(), ...probe };
+        const files = Array.isArray(next.hookFiles) ? next.hookFiles : [];
+        const idle =
+          !next.literalNullDir &&
+          files.length === 0 &&
+          !next.emptyNullDir &&
+          !next.fullyPopulated &&
+          !next.hooksLandedInNull &&
+          !next.hooksAreLfsShims &&
+          !next.gitStatusUntracked &&
+          !next.pathResolvedRelative &&
+          !next.hooksNeverFire &&
+          !next.hooksLookReal &&
+          !next.realHookspathCorrect &&
+          !String(next.hookspathClaimed || "").trim() &&
+          !next.hookspathIsAbsolute &&
+          !next.relativeNullWrite &&
+          !next.lfsInstallRaced &&
+          !next.lfsShimsPresent &&
+          !next.observed;
+        if (idle) return "drained";
+        const populated = next.fullyPopulated || files.length >= 4;
+        if (next.literalNullDir && next.hooksLandedInNull && files.length && populated && next.gitStatusUntracked) return "silted";
+        if (next.literalNullDir && populated && files.length) return "clogged";
+        if (next.literalNullDir && next.hooksAreLfsShims && next.hooksLandedInNull && files.length) return "fouled";
+        if (next.literalNullDir && next.emptyNullDir && !files.length) return "pooled";
+        if (next.pathResolvedRelative) return "diverted";
+        if (next.literalNullDir && next.gitStatusUntracked) return "littered";
+        if (next.hooksNeverFire && (next.hooksLookReal || next.hooksAreLfsShims)) return "phantom";
+        if (next.hookspathIsAbsolute && next.relativeNullWrite) return "absolute";
+        if (next.hooksAreLfsShims || next.lfsShimsPresent) return "hooked";
+        if (next.literalNullDir) return "silted";
+        return "drained";
+      }
+
+      function feedOf(kind) {
+        if (kind === "silted") return "● Silted · literal dev/null/ pit holds stranded LFS hooks · untracked silt";
+        if (kind === "clogged") return "● Clogged · grate packed with all four LFS hook shims";
+        if (kind === "fouled") return "● Fouled · LFS shims contaminate the literal null pit";
+        if (kind === "pooled") return "● Pooled · empty literal dev/null/ directory standing · no files yet";
+        if (kind === "diverted") return "● Diverted · hooks path resolved relative · null became a folder";
+        if (kind === "littered") return "● Littered · git status shows untracked dev/null/ clutter";
+        if (kind === "phantom") return "● Phantom · hooks look real but never fire · real hookspath is elsewhere";
+        if (kind === "absolute") return "● Absolute · claimed hookspath is absolute · write targeted relative null";
+        if (kind === "hooked") return "● Hooked · LFS shims present · install ran against the wrong hold";
+        return "● Drained · sump emptied · no literal dev/null/ litter · idle word is drained";
+      }
+
+      function clusterOf(probe, kind) {
+        const cluster = [];
+        const add = (word) => { if (word && word !== kind && !cluster.includes(word)) cluster.push(word); };
+        if (probe.literalNullDir && probe.fullyPopulated) add("clogged");
+        if (probe.hooksAreLfsShims && probe.hooksLandedInNull) add("fouled");
+        if (probe.literalNullDir && probe.emptyNullDir) add("pooled");
+        if (probe.pathResolvedRelative) add("diverted");
+        if (probe.gitStatusUntracked) add("littered");
+        if (probe.hooksNeverFire && (probe.hooksLookReal || probe.hooksAreLfsShims)) add("phantom");
+        if (probe.hookspathIsAbsolute && probe.relativeNullWrite) add("absolute");
+        if (probe.hooksAreLfsShims || probe.lfsShimsPresent) add("hooked");
+        return cluster;
+      }
+
+      function seedOf(name) {
+        const base = emptyProbe();
+        if (name === "silted") {
+          return {
+            ...base,
+            literalNullDir: true,
+            hookFiles: LFS_HOOKS.slice(),
+            fullyPopulated: true,
+            hooksLandedInNull: true,
+            hooksAreLfsShims: true,
+            gitStatusUntracked: true,
+            pathResolvedRelative: true,
+            hooksNeverFire: true,
+            hooksLookReal: true,
+            realHookspathCorrect: true,
+            hookspathClaimed: "D:\\\\wkspaces\\\\Reveal-Platform\\\\.git\\\\hooks",
+            hookspathIsAbsolute: true,
+            relativeNullWrite: true,
+            lfsInstallRaced: true,
+            lfsShimsPresent: true,
+            session: "90456-silted",
+            source: "anthropics/claude-code#90456",
+            issue: 90456,
+            scored: true,
+          };
+        }
+        if (name === "clogged") {
+          return { ...base, literalNullDir: true, hookFiles: LFS_HOOKS.slice(), fullyPopulated: true, hooksLandedInNull: true, session: "90456-clogged", issue: 90456, scored: true };
+        }
+        if (name === "fouled") {
+          return { ...base, literalNullDir: true, hookFiles: ["post-checkout", "pre-push"], hooksLandedInNull: true, hooksAreLfsShims: true, session: "90456-fouled", issue: 90456, scored: true };
+        }
+        if (name === "pooled") {
+          return { ...base, literalNullDir: true, emptyNullDir: true, realHookspathCorrect: true, hookspathClaimed: "D:\\\\wkspaces\\\\Reveal-Platform\\\\.git\\\\hooks", hookspathIsAbsolute: true, session: "90456-pooled", issue: 90456, scored: true };
+        }
+        if (name === "diverted") {
+          return { ...base, pathResolvedRelative: true, relativeNullWrite: true, hookspathClaimed: "dev/null", session: "90456-diverted", issue: 90456, scored: true };
+        }
+        if (name === "littered") {
+          return { ...base, literalNullDir: true, gitStatusUntracked: true, session: "90456-littered", issue: 90456, scored: true };
+        }
+        if (name === "phantom") {
+          return { ...base, hooksNeverFire: true, hooksLookReal: true, hooksAreLfsShims: true, realHookspathCorrect: true, session: "69453-phantom", issue: 69453, scored: true };
+        }
+        if (name === "absolute") {
+          return { ...base, hookspathIsAbsolute: true, relativeNullWrite: true, hookspathClaimed: "D:\\\\wkspaces\\\\Reveal-Platform\\\\.git\\\\hooks", realHookspathCorrect: true, session: "90456-absolute", issue: 90456, scored: true };
+        }
+        if (name === "hooked") {
+          return { ...base, hooksAreLfsShims: true, lfsShimsPresent: true, session: "90456-hooked", issue: 90456, scored: true };
+        }
+        return { ...base, session: "drained", scored: true };
+      }
+
+      function parseStatus(text) {
+        const hookFiles = LFS_HOOKS.filter((name) => new RegExp("dev[\\\\/]null[\\\\/]" + name + "\\b", "i").test(text));
+        const literalNullDir = /dev[\\/]null/i.test(text);
+        const hookspathMatch = text.match(/core\.hooks(?:path|Path)\s*[=:]\s*(\S+)/i);
+        const hookspathClaimed = hookspathMatch ? hookspathMatch[1] : "";
+        return {
+          ...emptyProbe(),
+          literalNullDir,
+          hookFiles,
+          emptyNullDir: literalNullDir && hookFiles.length === 0,
+          fullyPopulated: hookFiles.length >= 4,
+          hooksLandedInNull: hookFiles.length > 0,
+          hooksAreLfsShims: hookFiles.length > 0,
+          gitStatusUntracked: /untracked|^\?\?/im.test(text) && literalNullDir,
+          hookspathClaimed,
+          hookspathIsAbsolute: /^([A-Za-z]:[\\/]|\/)/.test(hookspathClaimed),
+          pathResolvedRelative: /(?:^|[\s=])dev[\\/]null/i.test(text),
+          relativeNullWrite: /dev[\\/]null/i.test(text),
+          session: "paste",
+          source: "paste",
+          scored: true,
+        };
+      }
+
+      let probe = seedOf("silted");
+
+      function render() {
+        const verdict = classify(probe);
+        const cluster = clusterOf(probe, verdict);
+        const alarm = SLACK.includes(verdict);
+        const chip = document.getElementById("chip");
+        chip.innerHTML = "<b>" + verdict + "</b> · " + (cluster.length ? cluster.join(" · ") : IDLE_WORD);
+        chip.className = "chip" + (alarm ? " alarm" : verdict === "drained" ? " hold" : "");
+        document.getElementById("feed").textContent = feedOf(verdict);
+        document.getElementById("horn").className = "horn" + (alarm ? " on" : "");
+        const water = document.getElementById("water");
+        water.className = "water" + (verdict === "silted" || verdict === "clogged" ? " high" : verdict === "fouled" || verdict === "pooled" || verdict === "littered" ? " mid" : "");
+        const sludge = document.getElementById("sludge");
+        sludge.innerHTML = (probe.hookFiles || []).map((name) => "<span>" + name + "</span>").join("");
+        document.getElementById("claimed").textContent = probe.hookspathClaimed || (probe.pathResolvedRelative ? "dev/null (relative)" : "—");
+        document.getElementById("landed").textContent = probe.literalNullDir
+          ? "dev/null/" + ((probe.hookFiles && probe.hookFiles[0]) || "")
+          : (probe.hooksAreLfsShims || probe.lfsShimsPresent ? "LFS shims (not in a pit)" : "—");
+        const tray = document.getElementById("tray");
+        if (probe.hookFiles && probe.hookFiles.length) {
+          tray.innerHTML = probe.hookFiles.map((name) => "<li>" + name + " · LFS shim stranded in the pit</li>").join("");
+        } else if (probe.literalNullDir) {
+          tray.innerHTML = "<li>literal dev/null/ present · no hook files scored</li>";
+        } else {
+          tray.innerHTML = "<li>no hook files in the pit</li>";
+        }
+        document.getElementById("g-pit").textContent = probe.literalNullDir ? "dev/null/" : "none";
+        document.getElementById("g-hooks").textContent = String((probe.hookFiles || []).length);
+        document.getElementById("g-abs").textContent = probe.hookspathIsAbsolute ? "absolute claimed" : probe.pathResolvedRelative ? "relative null" : "—";
+        document.getElementById("g-status").textContent = probe.gitStatusUntracked ? "untracked" : "clean";
+        document.querySelectorAll(".fixtures button[data-seed]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-seed") === (probe.session || "").replace(/^\d+-/, "").replace(/^\d+$/, "") || classify(probe) === btn.getAttribute("data-seed") ? "true" : "false");
+        });
+      }
+
+      document.getElementById("btn-score").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-bail").addEventListener("click", () => {
+        probe = seedOf("drained");
+        render();
+      });
+      document.getElementById("btn-silt").addEventListener("click", () => {
+        probe = seedOf("silted");
+        render();
+      });
+      document.getElementById("btn-admit").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-probe").addEventListener("click", () => {
+        const text = document.getElementById("paste").value || "";
+        probe = text.trim() ? parseStatus(text) : seedOf("silted");
+        render();
+      });
+      document.querySelectorAll(".fixtures button[data-seed]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          probe = seedOf(btn.getAttribute("data-seed"));
+          render();
+        });
+      });
+      render();
+    </script>
+  </body>
+</html>
