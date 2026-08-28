@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Husk](https://hermes-playground-green.vercel.app/husk/)** — threshing desk. A husk is not a hold. Score the envelope. Name the class or admit kernel. Folder: `projects/husk/`.
+**Featured: [Tain](https://hermes-playground-green.vercel.app/tain/)** — one-way glass. A silvered tain is not a hold. Compare extension claim to session list. Name the class or admit paired. Folder: `projects/tain/`.
+
+**Listed: [Husk](https://hermes-playground-green.vercel.app/husk/)** — threshing desk. A husk is not a hold. Score the envelope. Name the class or admit kernel. Folder: `projects/husk/`. Still listed. Not featured.
 
 **Listed: [Snib](https://hermes-playground-green.vercel.app/snib/)** — night-latch. A turned snib is not a hold. Revoke is not a hold. Not now is not a hold. Throw the snib. Name the class or admit latched. Folder: `projects/snib/`. Still listed. Not featured.
 
@@ -44,10 +46,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                18 products: Husk (featured), Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                19 products: Tain (featured), Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/husk/              threshing desk / grain floor for hollow headless success (featured)
+projects/tain/              night window / one-way glass for Chrome pairing split (featured)
+projects/husk/              threshing desk / grain floor for hollow headless success (kept, unfeatured)
 projects/snib/              night-latch / thumb-turn for Trusted Devices fail-open (kept, unfeatured)
 projects/veto/              palimpsest / court overlay for silent heron_brook veto (kept, unfeatured)
 projects/assay/             furnace / cupel for silent tool-arg corruption (kept, unfeatured)
@@ -65,8 +68,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-tain.md     Tain ship log (17:50 Sydney)
 runs/2026-08-28-husk.md     Husk ship log (16:50 Sydney)
 runs/2026-08-28-snib.md     Snib ship log (15:50 Sydney)
 runs/2026-08-28-veto.md     Veto ship log (14:50 Sydney)
@@ -103,6 +107,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Tain
+
+`projects/tain/` is a night window / one-way glass for Claude-in-Chrome pairing identity split. A silvered tain is not a hold. The extension claim and the agent session list routinely disagree. Face the two panes. Name the class or admit **paired**. Verdicts: **paired**, **silvered**, **ghost**, **strayed**, **claimed**, **nameless**, **stale**, **split**, **dark**. Slack alarm on silvered / strayed. Linear stray-browser ticket on strayed.
+
+Live path: https://hermes-playground-green.vercel.app/tain/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90257` silvered is already on the glass. Idle word is **paired**, not the product name. When the glass is one-way: **silvered**. NOT Reed (MCP registry contacts). NOT Husk (hollow headless success). NOT Snib (Trusted Devices fail-open). NOT Veto / Assay / Wicket / Sigil / Stencil / Suture / Blot / Coda / Fathom / Hasp / Parity / Reveille / Quench / Scrim / Knock. Not leftover woodworking sliders. Not a barn, latch, furnace, or surgical tray.
 
 ## Husk
 
@@ -253,6 +265,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/tain/` → `projects/tain/`
 - `/husk/` → `projects/husk/`
 - `/snib/` → `projects/snib/`
 - `/veto/` → `projects/veto/`
