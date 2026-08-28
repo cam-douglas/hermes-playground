@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Wraith](https://hermes-playground-green.vercel.app/wraith/)** — afterimage. A grant that is still ON is not a hold. Score the image or admit unlinked. Folder: `projects/wraith/`.
+**Featured: [Kist](https://hermes-playground-green.vercel.app/kist/)** — undertaker's kist. A session still on the default list is not a hold. Score the lid or admit laid. Folder: `projects/kist/`.
+
+**Listed: [Wraith](https://hermes-playground-green.vercel.app/wraith/)** — afterimage. A grant that is still ON is not a hold. Score the image or admit unlinked. Folder: `projects/wraith/`. Still listed. Not featured.
 
 **Listed: [Gasket](https://hermes-playground-green.vercel.app/gasket/)** — steam flange. A written project key is not a seal. Score the joint or admit tight. Folder: `projects/gasket/`. Still listed. Not featured.
 
@@ -62,10 +64,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                27 products: Wraith (featured), Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                28 products: Kist (featured), Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/wraith/            afterimage / deleted-inode desk for auto-updater live-image unlink (featured)
+projects/kist/              undertaker's kist / coffin-chest desk for teardown-archive that never unarchives (featured)
+projects/wraith/            afterimage / deleted-inode desk for auto-updater live-image unlink (kept, unfeatured)
 projects/gasket/            steam-fitter flange / packing ring for project-scoped strictAllowlist silent discard (kept, unfeatured)
 projects/damper/            chimney damper / flue plate for Remote Control auto-enable (kept, unfeatured)
 projects/cote/              dove-cote / pigeon loft for resume hub identity split (kept, unfeatured)
@@ -92,8 +95,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-kist.md     Kist ship log (02:50 Sydney)
 runs/2026-08-29-wraith.md   Wraith ship log (01:50 Sydney)
 runs/2026-08-29-gasket.md   Gasket ship log (00:50 Sydney)
 runs/2026-08-28-damper.md   Damper ship log (23:50 Sydney)
@@ -139,6 +143,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Kist
+
+`projects/kist/` is an undertaker's kist / coffin-chest desk for Claude Code Remote Control sessions that are archived on process teardown and never unarchived. A session still on the default list is not a hold. Score the lid or admit **laid**. Verdicts: **laid**, **kisted**, **risen**, **hollow**, **stuck**, **lost**, **sealed**, **recalled**, **split**, **veiled**. Slack kist alarm on kisted / hollow / stuck / lost / sealed. Linear session-lost ticket on kisted / lost / sealed.
+
+Live path: https://hermes-playground-green.vercel.app/kist/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90387` kisted is already on the lid. Idle word is **laid**, not the product name, not empty. NOT Wraith (live-image unlink / afterimage). Same auto-update trigger, different harm: Wraith is the on-disk binary deleted under a live session so TCC/spawns die while grants stay ON. Kist is the cloud session being archived and never unarchived so it vanishes from mobile. NOT Damper (Remote Control auto-enable without consent). Damper is a settings toggle that is not a hold. Kist is archive-on-teardown + one-way archive propagation. NOT Snib (Trusted Devices fail-open). NOT Cote / Nixie. NOT Reveille. NOT Gasket. Not leftover woodworking sliders. Different problem: teardown-archive that never unarchives. Different UI: undertaker's / joiner's kist workshop. Warm linen, brass fittings, oak/ash chest, paper labels, hinged lid, ledger book.
 
 ## Wraith
 
@@ -369,6 +381,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/kist/` → `projects/kist/`
 - `/wraith/` → `projects/wraith/`
 - `/gasket/` → `projects/gasket/`
 - `/damper/` → `projects/damper/`
