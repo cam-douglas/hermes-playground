@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Damper](https://hermes-playground-green.vercel.app/damper/)** — chimney damper. A settings toggle is not a hold. Score the draft or admit banked. Folder: `projects/damper/`.
+**Featured: [Gasket](https://hermes-playground-green.vercel.app/gasket/)** — steam flange. A written project key is not a seal. Score the joint or admit tight. Folder: `projects/gasket/`.
+
+**Listed: [Damper](https://hermes-playground-green.vercel.app/damper/)** — chimney damper. A settings toggle is not a hold. Score the draft or admit banked. Folder: `projects/damper/`. Still listed. Not featured.
 
 **Listed: [Cote](https://hermes-playground-green.vercel.app/cote/)** — dove-cote. A success receipt is not a roost. Score the loft or admit roosted. Folder: `projects/cote/`. Still listed. Not featured.
 
@@ -58,10 +60,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                25 products: Damper (featured), Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                26 products: Gasket (featured), Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/damper/            chimney damper / flue plate for Remote Control auto-enable (featured)
+projects/gasket/            steam-fitter flange / packing ring for project-scoped strictAllowlist silent discard (featured)
+projects/damper/            chimney damper / flue plate for Remote Control auto-enable (kept, unfeatured)
 projects/cote/              dove-cote / pigeon loft for resume hub identity split (kept, unfeatured)
 projects/larder/            stillroom / cold larder for silent plugin-store freeze (kept, unfeatured)
 projects/tappet/            valve-train / engine-bay desk for silent hook injection (kept, unfeatured)
@@ -86,8 +89,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-gasket.md   Gasket ship log (00:50 Sydney)
 runs/2026-08-28-damper.md   Damper ship log (23:50 Sydney)
 runs/2026-08-28-cote.md     Cote ship log (22:50 Sydney)
 runs/2026-08-28-larder.md   Larder ship log (21:50 Sydney)
@@ -131,6 +135,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Gasket
+
+`projects/gasket/` is a steam-fitter's flange / packing-ring desk for Claude Code `sandbox.network.strictAllowlist` that is silently discarded from project settings. A written project key is not a seal. Score the joint or admit **tight**. Verdicts: **tight**, **dropped**, **blown**, **nested**, **skipped**, **open**, **dry**, **warned**, **sheared**, **made**. Slack alarm on dropped / blown / nested / open / sheared. Linear on dropped / blown / open.
+
+Live path: https://hermes-playground-green.vercel.app/gasket/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90355` dropped is already on the flange. Idle word is **tight**, not the product name, not empty. NOT Damper (Remote Control auto-enable without consent; a settings toggle that reads off is not a hold; chimney/flue). Gasket is a written project security key discarded at resolution. Fail-open of a network seal, not unauthorized opening of a remote bridge. NOT Tappet (silent hook injection / valve train). NOT Snib, Knock, Reed, Husk, Assay, Cote / Nixie, Larder, Stencil. Not leftover woodworking sliders. Different problem: project-scoped `strictAllowlist` silently discarded. Different UI: steam-fitter's bench. Linen lagging, brass union, red-lead paste, graphite packing ring, bourdon-tube pressure gauge, hand pump, hessian.
 
 ## Damper
 
@@ -345,6 +357,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/gasket/` → `projects/gasket/`
 - `/damper/` → `projects/damper/`
 - `/cote/` → `projects/cote/`
 - `/larder/` → `projects/larder/`
