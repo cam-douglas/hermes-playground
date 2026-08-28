@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Blot](https://hermes-playground-green.vercel.app/blot/)** — darkroom tray. A bad frame is not a hold. One unreadable image kills every later turn. Strip the blot. Folder: `projects/blot/`.
+**Featured: [Suture](https://hermes-playground-green.vercel.app/suture/)** — suture tray. A partial turn is not a hold. Tear at the stream. Stitch at the last complete tool boundary. Folder: `projects/suture/`.
+
+**Listed: [Blot](https://hermes-playground-green.vercel.app/blot/)** — darkroom tray. A bad frame is not a hold. One unreadable image kills every later turn. Strip the blot. Folder: `projects/blot/`. Still listed. Not featured.
 
 **Listed: [Coda](https://hermes-playground-green.vercel.app/coda/)** — splice desk. A last text block is not a hold. Concatenate every block. Compare delivered vs whole. Folder: `projects/coda/`. Still listed. Not featured.
 
@@ -28,10 +30,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                10 products: Blot (featured), Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                11 products: Suture (featured), Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/blot/              darkroom tray (featured)
+projects/suture/            suture tray for torn SSE streams (featured)
+projects/blot/              darkroom tray (kept, unfeatured)
 projects/coda/              splice desk (kept, unfeatured)
 projects/reed/              reed-relay cabinet (kept, unfeatured)
 projects/fathom/            standing-rule sounding plate (kept, unfeatured)
@@ -41,8 +44,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-suture.md   Suture ship log (09:50 Sydney)
 runs/2026-08-28-blot.md     Blot ship log (08:50 Sydney)
 runs/2026-08-28-coda.md     Coda ship log (06:50 Sydney)
 runs/2026-08-28-reed.md     Reed ship log (05:50 Sydney)
@@ -71,6 +75,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Suture
+
+`projects/suture/` is a surgical suture tray for torn SSE / streaming turns. A partial turn is not a hold. Sessions die mid-turn on idle timeout, mid-response close, stall with no `message_stop`, hang with no client timeout, or ultraplan refine timeout so the approval UI never appears. Last complete tool boundary is the only safe suture point. Detect the tear. Snapshot events up to the last complete `tool_use`↔`tool_result` pair. Verdicts: **sealed**, **torn**, **stalled**, **partial**, **resumed**, **discarded**.
+
+Live path: https://hermes-playground-green.vercel.app/suture/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#46987` is already on the tray. Idle word is **sealed**, not the product name. Not a darkroom. Not a splice desk. Not a reed-relay cabinet. Not a sounding plate. Not a file lease. Not a claim-vs-reality probe. Not a muster. Not a spend kill. Not a DLP veil. Not a grant inbox.
 
 ## Blot
 
@@ -157,6 +169,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/suture/` → `projects/suture/`
 - `/blot/` → `projects/blot/`
 - `/coda/` → `projects/coda/`
 - `/reed/` → `projects/reed/`
