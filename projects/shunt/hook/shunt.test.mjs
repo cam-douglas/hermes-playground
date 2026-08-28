@@ -790,16 +790,18 @@ test("49 adapters stay honest when env is empty — never a fake live HTTP 200",
   assert.ok(fired.events.every((row) => !/HTTP 200/.test(row.summary)));
 });
 
-test("50 catalog wiring: 33 products, Shunt featured, Sump and Pleat listed", () => {
+test("50 catalog wiring: 34 products, Leat featured, Shunt and Sump listed", () => {
   const catalog = JSON.parse(readFileSync(fileURLToPath(new URL("../../../catalog.json", import.meta.url)), "utf8"));
-  assert.equal(catalog.products.length, 33);
+  assert.equal(catalog.products.length, 34);
   const featured = catalog.products.filter((row) => row.featured);
   assert.equal(featured.length, 1);
-  assert.equal(featured[0].name, "Shunt");
-  assert.equal(featured[0].slug, "shunt");
-  assert.equal(featured[0].href, "/shunt/");
-  assert.equal(featured[0].day, "2026-08-29");
-  assert.match(featured[0].summary, /07:50|first delivery is not a hold|stabled/);
+  assert.equal(featured[0].name, "Leat");
+  const shunt = catalog.products.find((row) => row.slug === "shunt");
+  assert.ok(shunt);
+  assert.equal(shunt.featured, false);
+  assert.equal(shunt.href, "/shunt/");
+  assert.equal(shunt.day, "2026-08-29");
+  assert.match(shunt.summary, /07:50|first delivery is not a hold|stabled/);
   const sump = catalog.products.find((row) => row.slug === "sump");
   assert.ok(sump);
   assert.equal(sump.featured, false);
@@ -811,8 +813,8 @@ test("50 catalog wiring: 33 products, Shunt featured, Sump and Pleat listed", ()
   assert.ok(scant);
   assert.equal(scant.featured, false);
   const slugs = catalog.products.map((row) => row.slug);
-  assert.equal(slugs[0], "shunt");
-  assert.equal(slugs[1], "sump");
+  assert.equal(slugs[0], "leat");
+  assert.equal(slugs[1], "shunt");
   assert.ok(slugs.includes("pleat"));
   assert.ok(slugs.includes("scant"));
   assert.ok(slugs.includes("wicket"));
@@ -825,30 +827,32 @@ test("50 catalog wiring: 33 products, Shunt featured, Sump and Pleat listed", ()
 test("51 vercel rewrite order puts /shunt before /sump, /pleat and the slug fallback", () => {
   const vercel = JSON.parse(readFileSync(fileURLToPath(new URL("../../../vercel.json", import.meta.url)), "utf8"));
   const sources = vercel.rewrites.map((row) => row.source);
-  assert.equal(sources[0], "/shunt");
-  assert.equal(sources[1], "/shunt/");
-  assert.equal(sources[2], "/sump");
-  assert.equal(sources[3], "/sump/");
+  assert.equal(sources[0], "/leat");
+  assert.equal(sources[1], "/leat/");
+  assert.equal(sources[2], "/shunt");
+  assert.equal(sources[3], "/shunt/");
   assert.ok(sources.includes("/pleat"));
   assert.ok(sources.includes("/scant"));
   assert.ok(sources.includes("/:slug"));
+  assert.ok(sources.indexOf("/leat") < sources.indexOf("/shunt"));
   assert.ok(sources.indexOf("/shunt") < sources.indexOf("/sump"));
-  assert.ok(sources.indexOf("/sump") < sources.indexOf("/pleat"));
   assert.ok(sources.indexOf("/shunt/") < sources.indexOf("/:slug"));
 });
 
-test("52 hours.json prepends the 07:50 Sydney Shunt ship", () => {
+test("52 hours.json keeps the 07:50 Sydney Shunt ship after Leat", () => {
   const hours = JSON.parse(readFileSync(fileURLToPath(new URL("../../../runs/hours.json", import.meta.url)), "utf8"));
-  assert.equal(hours[0].stem, "2026-08-29-shunt");
-  assert.equal(hours[0].date, "2026-08-29");
-  assert.equal(hours[0].time, "07:50");
-  assert.equal(hours[0].tz, "Australia/Sydney");
-  assert.equal(hours[0].title, "Shunt");
-  assert.equal(hours[0].kind, "ship");
-  assert.match(hours[0].note, /stabled/);
-  assert.match(hours[0].note, /Sump/);
-  assert.match(hours[0].note, /Pleat/);
-  assert.equal(hours[1].stem, "2026-08-29-sump");
+  assert.equal(hours[0].stem, "2026-08-29-leat");
+  const shunt = hours.find((row) => row.stem === "2026-08-29-shunt");
+  assert.ok(shunt);
+  assert.equal(shunt.date, "2026-08-29");
+  assert.equal(shunt.time, "07:50");
+  assert.equal(shunt.tz, "Australia/Sydney");
+  assert.equal(shunt.title, "Shunt");
+  assert.equal(shunt.kind, "ship");
+  assert.match(shunt.note, /stabled/);
+  assert.match(shunt.note, /Sump/);
+  assert.match(shunt.note, /Pleat/);
+  assert.equal(hours[1].stem, "2026-08-29-shunt");
 });
 
 test("53 clusterOf on #90463 includes rootbound typecast stalled sidetracked dropped orphaned", () => {

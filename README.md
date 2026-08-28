@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Shunt](https://hermes-playground-green.vercel.app/shunt/)** — night railway yard. A first delivery is not a hold. Score the road or admit stabled. Folder: `projects/shunt/`.
+**Featured: [Leat](https://hermes-playground-green.vercel.app/leat/)** — mill leat. A blocked sleep is not a hold. Score the race or admit stilled. Folder: `projects/leat/`.
+
+**Listed: [Shunt](https://hermes-playground-green.vercel.app/shunt/)** — night railway yard. A first delivery is not a hold. Score the road or admit stabled. Folder: `projects/shunt/`. Still listed. Not featured.
 
 **Listed: [Sump](https://hermes-playground-green.vercel.app/sump/)** — basement catch-pit. A null path is not a hold. Score the silt or admit drained. Folder: `projects/sump/`. Still listed. Not featured.
 
@@ -74,10 +76,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                33 products: Shunt (featured), Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                34 products: Leat (featured), Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/shunt/             night railway shunting yard / signal-box desk for nested SendMessage follow-up misroute to root (featured)
+projects/leat/              mill leat / sluice-gate desk for Bash-tool sleep-block unbounded until-loop (featured)
+projects/shunt/             night railway shunting yard / signal-box desk for nested SendMessage follow-up misroute to root (kept, unfeatured)
 projects/sump/              basement catch-pit / wet-concrete desk for worktree LFS hooks written to a literal dev/null/ (kept, unfeatured)
 projects/pleat/             tailor's pressing board / accordion-pleat desk for desktop mid-turn fold collapse (kept, unfeatured)
 projects/scant/             timber scantling yard / measuring bench for Windows Desktop shell-snapshot PATH truncation (kept, unfeatured)

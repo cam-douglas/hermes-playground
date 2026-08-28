@@ -765,12 +765,12 @@ test("50 adapters stay honest when env is empty — never a fake live HTTP 200",
   assert.ok(fired.events.every((row) => !/HTTP 200/.test(row.summary)));
 });
 
-test("51 catalog wiring: 33 products, Shunt featured, Scant listed", () => {
+test("51 catalog wiring: 34 products, Leat featured, Scant listed", () => {
   const catalog = JSON.parse(readFileSync(fileURLToPath(new URL("../../../catalog.json", import.meta.url)), "utf8"));
-  assert.equal(catalog.products.length, 33);
+  assert.equal(catalog.products.length, 34);
   const featured = catalog.products.filter((row) => row.featured);
   assert.equal(featured.length, 1);
-  assert.equal(featured[0].name, "Shunt");
+  assert.equal(featured[0].name, "Leat");
   const scant = catalog.products.find((row) => row.slug === "scant");
   assert.ok(scant);
   assert.equal(scant.featured, false);
@@ -784,7 +784,7 @@ test("51 catalog wiring: 33 products, Shunt featured, Scant listed", () => {
   assert.ok(kist);
   assert.equal(kist.featured, false);
   const slugs = catalog.products.map((row) => row.slug);
-  assert.equal(slugs[0], "shunt");
+  assert.equal(slugs[0], "leat");
   assert.ok(slugs.includes("sump"));
   assert.ok(slugs.includes("pleat"));
   assert.ok(slugs.includes("scant"));
@@ -799,10 +799,10 @@ test("51 catalog wiring: 33 products, Shunt featured, Scant listed", () => {
 test("52 vercel rewrite order puts /shunt then /sump then /pleat then /scant before /chad and the slug fallback", () => {
   const vercel = JSON.parse(readFileSync(fileURLToPath(new URL("../../../vercel.json", import.meta.url)), "utf8"));
   const sources = vercel.rewrites.map((row) => row.source);
-  assert.equal(sources[0], "/shunt");
-  assert.equal(sources[1], "/shunt/");
-  assert.equal(sources[2], "/sump");
-  assert.equal(sources[3], "/sump/");
+  assert.equal(sources[0], "/leat");
+  assert.equal(sources[1], "/leat/");
+  assert.equal(sources[2], "/shunt");
+  assert.equal(sources[3], "/shunt/");
   assert.ok(sources.includes("/scant"));
   assert.ok(sources.includes("/chad"));
   assert.ok(sources.includes("/kist"));
@@ -819,9 +819,9 @@ test("53 hours.json keeps the 04:50 Sydney Scant ship after Shunt, Sump and Plea
   const hours = JSON.parse(readFileSync(fileURLToPath(new URL("../../../runs/hours.json", import.meta.url)), "utf8"));
   const scant = hours.find((row) => row.stem === "2026-08-29-scant");
   assert.ok(scant);
-  assert.equal(hours[0].stem, "2026-08-29-shunt");
-  assert.equal(hours[1].stem, "2026-08-29-sump");
-  assert.equal(hours[2].stem, "2026-08-29-pleat");
+  assert.equal(hours[0].stem, "2026-08-29-leat");
+  assert.equal(hours[1].stem, "2026-08-29-shunt");
+  assert.equal(hours[2].stem, "2026-08-29-sump");
   assert.ok(hours.some((row) => row.stem === "2026-08-29-scant"));
   assert.equal(scant.date, "2026-08-29");
   assert.equal(scant.time, "04:50");
