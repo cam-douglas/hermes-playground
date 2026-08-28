@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Sigil](https://hermes-playground-green.vercel.app/sigil/)** — signature clinic. Hollow thinking is not a hold. Empty text with a kept signature bricks resume. Strip the seal. Folder: `projects/sigil/`.
+**Featured: [Wicket](https://hermes-playground-green.vercel.app/wicket/)** — gatehouse. Isolation is a pin, not a promise. Score the probe against the pinned worktree. Admit home or name the class. Folder: `projects/wicket/`.
+
+**Listed: [Sigil](https://hermes-playground-green.vercel.app/sigil/)** — signature clinic. Hollow thinking is not a hold. Empty text with a kept signature bricks resume. Strip the seal. Folder: `projects/sigil/`. Still listed. Not featured.
 
 **Listed: [Stencil](https://hermes-playground-green.vercel.app/stencil/)** — plan fence. Plan mode is a read-only contract. Mutations that land are a bleed. Folder: `projects/stencil/`. Still listed. Not featured.
 
@@ -34,10 +36,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                13 products: Sigil (featured), Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                14 products: Wicket (featured), Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/sigil/             signature clinic / seal desk (featured)
+projects/wicket/            gatehouse / turnstile for worktree isolation (featured)
+projects/sigil/             signature clinic / seal desk (kept, unfeatured)
 projects/stencil/           plan-mode blueprint fence (kept, unfeatured)
 projects/suture/            suture tray for torn SSE streams (kept, unfeatured)
 projects/blot/              darkroom tray (kept, unfeatured)
@@ -50,8 +53,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-wicket.md   Wicket ship log (12:50 Sydney)
 runs/2026-08-28-sigil.md    Sigil ship log (11:50 Sydney)
 runs/2026-08-28-stencil.md  Stencil ship log (10:50 Sydney)
 runs/2026-08-28-suture.md   Suture ship log (09:50 Sydney)
@@ -83,6 +87,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Wicket
+
+`projects/wicket/` is a gatehouse / turnstile for worktree isolation escapes. Isolation is a pin, not a promise. `isolation:"worktree"` / EnterWorktree sets a default cwd and sometimes a session-wide latch, but Edit/Write with an absolute `file_path` still lands in the main checkout. Score the probe against the pinned worktree root. Admit the write or name the failure class. Path check is component-containment, never a string prefix. Verdicts: **home**, **escape**, **latch**, **reap**, **swap**, **misbind**.
+
+Live path: https://hermes-playground-green.vercel.app/wicket/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#74726` is already on the gate. Idle word is **home**, not the product name. NOT Hasp (file lease). NOT Stencil (plan bleed). NOT Reveille (muster). NOT Sigil / Suture / Blot / Coda / Reed / Fathom / Parity / Quench / Scrim / Knock. Not a leftover woodworking slider. Not a wax-seal desk.
 
 ## Sigil
 
@@ -193,6 +205,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/wicket/` → `projects/wicket/`
 - `/sigil/` → `projects/sigil/`
 - `/stencil/` → `projects/stencil/`
 - `/suture/` → `projects/suture/`
