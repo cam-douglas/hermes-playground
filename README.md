@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Tain](https://hermes-playground-green.vercel.app/tain/)** — one-way glass. A silvered tain is not a hold. Compare extension claim to session list. Name the class or admit paired. Folder: `projects/tain/`.
+**Featured: [Chute](https://hermes-playground-green.vercel.app/chute/)** — mail chute. A typed secret is not a handoff. Masked intake or admit clear. Folder: `projects/chute/`.
+
+**Listed: [Tain](https://hermes-playground-green.vercel.app/tain/)** — one-way glass. A silvered tain is not a hold. Compare extension claim to session list. Name the class or admit paired. Folder: `projects/tain/`. Still listed. Not featured.
 
 **Listed: [Husk](https://hermes-playground-green.vercel.app/husk/)** — threshing desk. A husk is not a hold. Score the envelope. Name the class or admit kernel. Folder: `projects/husk/`. Still listed. Not featured.
 
@@ -46,10 +48,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                19 products: Tain (featured), Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                20 products: Chute (featured), Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/tain/              night window / one-way glass for Chrome pairing split (featured)
+projects/chute/             mail chute / dead-drop for sanctioned secret handoff (featured)
+projects/tain/              night window / one-way glass for Chrome pairing split (kept, unfeatured)
 projects/husk/              threshing desk / grain floor for hollow headless success (kept, unfeatured)
 projects/snib/              night-latch / thumb-turn for Trusted Devices fail-open (kept, unfeatured)
 projects/veto/              palimpsest / court overlay for silent heron_brook veto (kept, unfeatured)
@@ -68,8 +71,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-chute.md    Chute ship log (18:50 Sydney)
 runs/2026-08-28-tain.md     Tain ship log (17:50 Sydney)
 runs/2026-08-28-husk.md     Husk ship log (16:50 Sydney)
 runs/2026-08-28-snib.md     Snib ship log (15:50 Sydney)
@@ -108,6 +112,14 @@ Rules:
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
 
+## Chute
+
+`projects/chute/` is a brass mail chute / pneumatic-tube desk for sanctioned secret handoff into an agent session. Claude Code has no sanctioned channel to hand it a secret — the only surface is the chat prompt, which IS the transcript. A typed secret is not a handoff. Drop it through the chute. Name the class or admit **clear**. Verdicts: **clear**, **typed**, **masked**, **burned**, **echoed**, **retained**, **brokered**, **vaulted**, **leaked**, **gap**. Slack alarm on typed / burned / echoed / retained / leaked / gap. Linear on burned / echoed.
+
+Live path: https://hermes-playground-green.vercel.app/chute/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90301` gap is already on the chute. Idle word is **clear**, not the product name. Never displays a real secret — fingerprints, lengths, names, verdicts only. NOT Scrim (outbound I/O DLP after the write). NOT Tain (Chrome pairing). NOT Husk (hollow success). NOT Snib (Trusted Devices). NOT Knock / Quench / Hasp / Parity / Veto / Assay / Wicket / Sigil / Stencil / Suture / Blot / Coda / Reed / Fathom / Reveille. Not leftover woodworking sliders.
+
 ## Tain
 
 `projects/tain/` is a night window / one-way glass for Claude-in-Chrome pairing identity split. A silvered tain is not a hold. The extension claim and the agent session list routinely disagree. Face the two panes. Name the class or admit **paired**. Verdicts: **paired**, **silvered**, **ghost**, **strayed**, **claimed**, **nameless**, **stale**, **split**, **dark**. Slack alarm on silvered / strayed. Linear stray-browser ticket on strayed.
@@ -124,7 +136,15 @@ Live path: https://hermes-playground-green.vercel.app/husk/
 
 Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#87159` is already on the floor. Idle word is **kernel**, not the product name. When hollow: **husked**. NOT Knock (fail-loud stalled permission grants). NOT Coda (silent last-text-block loss after the model DID run). NOT Assay (tool-arg corruption on a real call). NOT Suture (stream tear). NOT Reed (MCP register/contact). NOT Snib / Veto / Wicket / Sigil / Stencil / Blot / Fathom / Hasp / Parity / Reveille / Quench / Scrim. Not leftover woodworking sliders.
 
-## Snib
+## Chute
+
+`projects/chute/` is a brass mail chute / pneumatic-tube desk for sanctioned secret handoff into an agent session. Claude Code has no sanctioned channel to hand it a secret — the only surface is the chat prompt, which IS the transcript. A typed secret is not a handoff. Drop it through the chute. Name the class or admit **clear**. Verdicts: **clear**, **typed**, **masked**, **burned**, **echoed**, **retained**, **brokered**, **vaulted**, **leaked**, **gap**. Slack alarm on typed / burned / echoed / retained / leaked / gap. Linear on burned / echoed.
+
+Live path: https://hermes-playground-green.vercel.app/chute/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90301` gap is already on the chute. Idle word is **clear**, not the product name. Never displays a real secret — fingerprints, lengths, names, verdicts only. NOT Scrim (outbound I/O DLP after the write). NOT Tain (Chrome pairing). NOT Husk (hollow success). NOT Snib (Trusted Devices). NOT Knock / Quench / Hasp / Parity / Veto / Assay / Wicket / Sigil / Stencil / Suture / Blot / Coda / Reed / Fathom / Reveille. Not leftover woodworking sliders.
+
+## Tain
 
 `projects/snib/` is a night-latch / indoor thumb-turn for Trusted Devices fail-open on individual (Pro/Max) Claude Code Remote Control accounts. A turned snib is not a hold. Revoke is not a hold. Not now is not a hold. Turning the Yale thumb-turn looks locked from inside. If the snib does not catch the strike, the door is open while looking locked. Score the probe. Name the class or admit **latched**. Verdicts: **latched**, **dismissed**, **revoked**, **unobserved**, **attached**, **phantom**, **open**, **restored**. Fail-closed on dismissed / revoked / unobserved.
 
@@ -265,6 +285,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/chute/` → `projects/chute/`
 - `/tain/` → `projects/tain/`
 - `/husk/` → `projects/husk/`
 - `/snib/` → `projects/snib/`

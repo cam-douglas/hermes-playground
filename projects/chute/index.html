@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Chute — mail chute for sanctioned secret handoff. A typed secret is not a handoff. Idle word is clear."
+    />
+    <title>Chute — mail chute</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500;1,6..72,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --lobby: #0b0a08;
+        --marble: #161310;
+        --mahogany: #2a1b14;
+        --brass: #c9a36a;
+        --brass-shine: #f0d9a0;
+        --brass-deep: #7a5828;
+        --steel: #8b9aaa;
+        --steel-deep: #4a5662;
+        --amber: #e8b86d;
+        --cream: #f3ead8;
+        --mute: #a89880;
+        --line: rgba(201, 163, 106, 0.18);
+        --ok: #9cba8c;
+        --alarm: #d4785a;
+        --display: Newsreader, "Iowan Old Style", Palatino, Georgia, serif;
+        --ui: Manrope, "Segoe UI", Helvetica, sans-serif;
+        --lab: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--ui);
+        color: var(--cream);
+        background:
+          radial-gradient(ellipse 28% 22% at 12% 8%, rgba(232, 184, 109, 0.12), transparent 62%),
+          radial-gradient(ellipse 24% 30% at 88% 18%, rgba(201, 163, 106, 0.07), transparent 68%),
+          radial-gradient(ellipse 40% 28% at 50% 100%, rgba(42, 27, 20, 0.55), transparent 70%),
+          linear-gradient(180deg, #14110e 0%, var(--lobby) 42%, #070605);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--brass-shine); }
+      .lobby {
+        width: min(1240px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 88px;
+      }
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 12px;
+      }
+      .mark, .path {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      h1 {
+        margin: 20px 0 8px;
+        font-family: var(--display);
+        font-size: clamp(64px, 11vw, 120px);
+        font-weight: 500;
+        font-style: italic;
+        letter-spacing: -0.035em;
+        line-height: 0.78;
+        color: var(--brass-shine);
+      }
+      .lede {
+        max-width: 42em;
+        color: var(--mute);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      .lede em { color: var(--cream); font-style: italic; font-family: var(--display); font-size: 1.15em; }
+      .chips, .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 22px 0 18px;
+      }
+      .chips button, .acts button {
+        border: 1px solid var(--line);
+        background: rgba(22, 19, 16, 0.72);
+        border-radius: 999px;
+        padding: 7px 13px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        color: var(--brass);
+      }
+      .chips button.on,
+      .chips button:hover,
+      .acts button:hover {
+        border-color: rgba(240, 217, 160, 0.5);
+        color: var(--brass-shine);
+        background: rgba(201, 163, 106, 0.1);
+      }
+      .desk {
+        border: 1px solid rgba(201, 163, 106, 0.22);
+        background:
+          linear-gradient(180deg, rgba(42, 27, 20, 0.35), transparent 18%),
+          linear-gradient(#1a1511, #100d0b);
+        box-shadow:
+          inset 0 0 80px rgba(0, 0, 0, 0.45),
+          0 0 0 10px #0c0a08,
+          0 0 0 11px rgba(201, 163, 106, 0.2);
+        overflow: hidden;
+      }
+      .wall {
+        position: relative;
+        min-height: 420px;
+        display: grid;
+        grid-template-columns: 1fr 220px 1fr;
+        align-items: stretch;
+        background:
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 48px),
+          linear-gradient(180deg, #1c1713 0%, #12100e 100%);
+      }
+      .sconce {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 28px;
+      }
+      .sconce::before {
+        content: "";
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #fff6d2, var(--amber) 40%, #7a5828);
+        box-shadow: 0 0 28px 10px rgba(232, 184, 109, 0.28);
+      }
+      .sconce::after {
+        content: "";
+        width: 2px;
+        height: 36px;
+        background: linear-gradient(var(--brass-shine), var(--brass-deep));
+      }
+      .chute-col {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 18px 0 0;
+      }
+      .flap {
+        width: 92px;
+        height: 28px;
+        border-radius: 6px 6px 2px 2px;
+        background: linear-gradient(180deg, var(--brass-shine), var(--brass) 40%, var(--brass-deep));
+        box-shadow: 0 4px 0 var(--brass-deep), inset 0 1px 0 rgba(255,255,255,0.35);
+        transform-origin: top center;
+        transition: transform 0.45s ease;
+        z-index: 3;
+      }
+      .desk.masked .flap,
+      .desk.brokered .flap,
+      .desk.vaulted .flap { transform: rotateX(55deg); }
+      .desk.gap .flap { filter: grayscale(0.35) brightness(0.75); }
+      .plate {
+        margin-top: 8px;
+        font-family: var(--lab);
+        font-size: 10px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--brass-deep);
+        background: linear-gradient(180deg, #e8c98a, #b8893e);
+        padding: 3px 10px;
+        border-radius: 2px;
+      }
+      .tube {
+        position: relative;
+        width: 54px;
+        flex: 1;
+        min-height: 280px;
+        margin-top: 10px;
+        border-radius: 27px 27px 8px 8px;
+        background:
+          linear-gradient(90deg, #6a5330 0%, var(--brass) 18%, var(--brass-shine) 48%, var(--brass) 78%, #5a4322 100%);
+        box-shadow:
+          inset 6px 0 10px rgba(0,0,0,0.28),
+          inset -6px 0 10px rgba(0,0,0,0.18),
+          0 0 0 3px #3a2a14;
+      }
+      .tube::before,
+      .tube::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        width: 66px;
+        height: 10px;
+        transform: translateX(-50%);
+        border-radius: 6px;
+        background: linear-gradient(90deg, var(--steel-deep), var(--steel), var(--steel-deep));
+      }
+      .tube::before { top: 36px; }
+      .tube::after { bottom: 18px; }
+      .glass {
+        position: absolute;
+        top: 58px;
+        left: 10px;
+        right: 10px;
+        height: 64px;
+        border-radius: 6px;
+        background:
+          linear-gradient(180deg, rgba(180, 210, 230, 0.18), rgba(20, 24, 28, 0.45));
+        border: 1px solid rgba(240, 217, 160, 0.35);
+        box-shadow: inset 0 0 12px rgba(0,0,0,0.35);
+      }
+      .capsule {
+        position: absolute;
+        left: 9px;
+        width: 36px;
+        height: 52px;
+        border-radius: 18px;
+        background:
+          linear-gradient(90deg, #3d4a54, var(--steel) 40%, #c5d0d8 52%, var(--steel) 70%, #2e3840);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        transition: top 0.55s ease, opacity 0.35s ease, filter 0.35s ease;
+        top: 72px;
+      }
+      .desk.clear .capsule { top: 210px; opacity: 0.15; }
+      .desk.gap .capsule { top: 18px; opacity: 0.35; filter: grayscale(0.6); }
+      .desk.typed .capsule { top: 18px; filter: hue-rotate(-20deg); }
+      .desk.masked .capsule { top: 72px; }
+      .desk.brokered .capsule { top: 200px; }
+      .desk.vaulted .capsule { top: 150px; filter: saturate(1.3); }
+      .desk.burned .capsule { top: 210px; filter: hue-rotate(-35deg) saturate(1.4); }
+      .desk.echoed .capsule {
+        top: 72px;
+        filter: brightness(1.4);
+        box-shadow: 0 0 18px rgba(212, 120, 90, 0.7);
+      }
+      .desk.retained .capsule { top: 210px; opacity: 0.7; }
+      .desk.leaked .capsule { top: 210px; transform: rotate(18deg); }
+      .benches {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-top: 1px solid var(--line);
+      }
+      .bench {
+        padding: 18px 20px 22px;
+        min-width: 0;
+      }
+      .bench.prompt {
+        border-right: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(212, 120, 90, 0.05), transparent 50%);
+      }
+      .bench.panel {
+        background: linear-gradient(180deg, rgba(201, 163, 106, 0.07), transparent 50%);
+      }
+      .bench h2 {
+        margin: 0 0 12px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(201, 163, 106, 0.08);
+        font-size: 13px;
+      }
+      .row span { color: var(--mute); }
+      .row b {
+        font-weight: 500;
+        color: var(--cream);
+        text-align: right;
+        word-break: break-word;
+      }
+      .feed {
+        border-top: 1px solid var(--line);
+        padding: 12px 20px;
+        font-family: var(--lab);
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        color: var(--brass-shine);
+        background: rgba(8, 7, 6, 0.55);
+      }
+      .sill {
+        height: 16px;
+        background: linear-gradient(180deg, #3a2a1c, #1a120c);
+        border-top: 1px solid rgba(201, 163, 106, 0.2);
+      }
+      .spoken {
+        margin: 28px 0 8px;
+        min-height: 1.1em;
+      }
+      .spoken strong {
+        display: block;
+        font-family: var(--display);
+        font-style: italic;
+        font-weight: 500;
+        font-size: clamp(42px, 7vw, 78px);
+        letter-spacing: -0.03em;
+        line-height: 0.9;
+        color: var(--brass-shine);
+        text-shadow: 0 0 28px rgba(201, 163, 106, 0.22);
+      }
+      .spoken.typed strong,
+      .spoken.burned strong,
+      .spoken.echoed strong,
+      .spoken.retained strong,
+      .spoken.leaked strong,
+      .spoken.gap strong { color: var(--alarm); }
+      .spoken.clear strong,
+      .spoken.masked strong,
+      .spoken.brokered strong { color: var(--ok); }
+      .spoken.vaulted strong { color: var(--steel); }
+      .why {
+        max-width: 48em;
+        color: var(--mute);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .why li { margin: 0 0 4px; }
+      .ledger {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 22px;
+      }
+      .ledger article {
+        padding: 14px 14px 12px;
+        border: 1px solid var(--line);
+        background: rgba(16, 13, 11, 0.7);
+      }
+      .ledger h3 {
+        margin: 0 0 8px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .ledger p { margin: 0; color: var(--cream); font-size: 13px; line-height: 1.45; }
+      .checks {
+        margin-top: 28px;
+        font-family: var(--lab);
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .checks.ok { color: var(--ok); }
+      .checks.bad { color: var(--alarm); }
+      .cite {
+        margin-top: 28px;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .cite a { color: var(--brass); }
+      @media (max-width: 820px) {
+        .wall { grid-template-columns: 1fr; min-height: 340px; }
+        .sconce { display: none; }
+        .benches { grid-template-columns: 1fr; }
+        .bench.prompt { border-right: 0; border-bottom: 1px solid var(--line); }
+        .ledger { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="lobby">
+      <header class="mast">
+        <p class="mark">Chute · mail desk</p>
+        <p class="path"><a href="/">catalog</a> · /chute/</p>
+      </header>
+      <h1>Chute</h1>
+      <p class="lede">
+        A brass mail chute in a night lobby. Claude Code has no sanctioned channel to hand it a secret —
+        the only surface is the chat prompt, which <em>is</em> the transcript. A typed secret is not a handoff.
+        Drop it through the chute. Name the class or admit <em>clear</em>.
+      </p>
+      <div class="chips" id="chips"></div>
+      <div class="desk" id="desk">
+        <div class="wall">
+          <div class="sconce" aria-hidden="true"></div>
+          <div class="chute-col">
+            <div class="flap" id="flap" aria-hidden="true"></div>
+            <div class="plate">Mail</div>
+            <div class="tube" aria-hidden="true">
+              <div class="glass"></div>
+              <div class="capsule" id="capsule"></div>
+            </div>
+          </div>
+          <div class="sconce" aria-hidden="true"></div>
+        </div>
+        <div class="benches">
+          <section class="bench prompt">
+            <h2>Leaky prompt</h2>
+            <div id="left"></div>
+          </section>
+          <section class="bench panel">
+            <h2>AskUserSecret / Chute</h2>
+            <div id="right"></div>
+          </section>
+        </div>
+        <div class="feed" id="feed">● Clear · chute empty · no secret on the transcript path</div>
+        <div class="sill"></div>
+      </div>
+      <div class="spoken" id="spoken"><strong>clear</strong></div>
+      <div class="why" id="why"></div>
+      <div class="acts">
+        <button type="button" data-act="drop">Drop</button>
+        <button type="button" data-act="receive">Receive</button>
+        <button type="button" data-act="inject">Inject</button>
+        <button type="button" data-act="admit">Admit clear</button>
+        <button type="button" data-act="clear">Clear · clear</button>
+      </div>
+      <div class="ledger" id="ledger"></div>
+      <p class="checks" id="checks"></p>
+      <p class="cite">
+        Evidence (do not invent more):
+        <a href="https://github.com/anthropics/claude-code/issues/90301">#90301</a>
+        <a href="https://github.com/anthropics/claude-code/issues/77084">#77084</a>
+        <a href="https://github.com/anthropics/claude-code/issues/88165">#88165</a>
+        <a href="https://github.com/anthropics/claude-code/issues/88380">#88380</a>
+        <a href="https://github.com/anthropics/claude-code/issues/38797">#38797</a>
+        <a href="https://github.com/anthropics/claude-code/issues/44158">#44158</a>
+        · burn
+        <a href="https://github.com/anthropics/claude-code/issues/71654">#71654</a>
+        <a href="https://github.com/anthropics/claude-code/issues/82796">#82796</a>
+        <a href="https://github.com/anthropics/claude-code/issues/78344">#78344</a>
+        <a href="https://github.com/anthropics/claude-code/issues/44868">#44868</a>.
+        NOT Scrim, Tain, Husk, Snib, or leftover woodworking.
+      </p>
+    </div>
+    <script>
+      const IDLE_WORD = "clear";
+      const VERDICTS = ["clear", "typed", "masked", "burned", "echoed", "retained", "brokered", "vaulted", "leaked", "gap"];
+      const SLACK = ["typed", "burned", "echoed", "retained", "leaked", "gap"];
+      const LINEAR = ["burned", "echoed"];
+      const FP = "a3f1c8e2";
+      const NAME = "GITHUB_TOKEN";
+      const LEN = 40;
+
+      function emptyProbe() {
+        return {
+          channel: "",
+          askUserSecretAvailable: false,
+          onlyPromptBox: false,
+          gap: false,
+          secretInPrompt: false,
+          secretInTranscript: false,
+          secretInHistory: false,
+          secretInPasteCache: false,
+          secretInModelContext: false,
+          modelPrintedSecret: false,
+          wouldReachBugRetention: false,
+          agentCanUse: false,
+          agentCanRead: false,
+          fileReadIntoTranscript: false,
+          liveCredentialInTranscript: false,
+          sessionMemory: false,
+          secretName: "",
+          secretLength: 0,
+          fingerprint: "",
+          feed: "",
+          session: "",
+          source: "",
+          issue: null,
+          scored: false,
+        };
+      }
+
+      function cloneProbe(raw) {
+        const src = raw && typeof raw === "object" ? raw : emptyProbe();
+        return { ...emptyProbe(), ...src };
+      }
+
+      function leaky(n) {
+        return n.secretInPrompt || n.secretInTranscript || n.secretInHistory || n.secretInPasteCache || n.secretInModelContext || n.liveCredentialInTranscript || n.fileReadIntoTranscript || n.modelPrintedSecret;
+      }
+
+      function isIdle(probe) {
+        const n = cloneProbe(probe);
+        return (
+          !n.channel && !n.askUserSecretAvailable && !n.onlyPromptBox && !n.gap &&
+          !n.secretInPrompt && !n.secretInTranscript && !n.secretInHistory && !n.secretInPasteCache &&
+          !n.secretInModelContext && !n.modelPrintedSecret && !n.wouldReachBugRetention &&
+          !n.agentCanUse && !n.agentCanRead && !n.fileReadIntoTranscript && !n.liveCredentialInTranscript &&
+          !n.sessionMemory && !n.secretName && !n.secretLength && !n.fingerprint && !n.feed
+        );
+      }
+
+      function classify(probe) {
+        const n = cloneProbe(probe);
+        if (isIdle(n)) return "clear";
+        if (n.modelPrintedSecret) return "echoed";
+        if (n.liveCredentialInTranscript || (n.secretInTranscript && (n.secretInHistory || n.secretInPasteCache))) return "burned";
+        if (n.fileReadIntoTranscript) return "leaked";
+        if (n.wouldReachBugRetention) return "retained";
+        if (n.secretInPrompt || n.channel === "prompt") return "typed";
+        if (n.channel === "vault") return "vaulted";
+        if (n.channel === "envInject" || (n.agentCanUse && !n.agentCanRead && !leaky(n))) return "brokered";
+        if (n.channel === "askUserSecret" || n.channel === "chute" || (n.sessionMemory && !leaky(n))) return "masked";
+        if (n.gap || n.onlyPromptBox || n.channel === "none" || !n.askUserSecretAvailable) return "gap";
+        return "clear";
+      }
+
+      function feedOf(probe, verdict) {
+        const n = cloneProbe(probe);
+        const kind = verdict || classify(n);
+        if (n.feed) return n.feed;
+        const name = n.secretName || NAME;
+        const length = n.secretLength || LEN;
+        const fp = n.fingerprint || FP;
+        if (kind === "masked") return "● Secret received · " + name + " · " + length + " chars · fp " + fp + " · session memory";
+        if (kind === "brokered") return "● Brokered · " + name + " · " + length + " chars · fp " + fp + " · env inject · USE never READ";
+        if (kind === "vaulted") return "● Vaulted · " + name + " · " + length + " chars · fp " + fp + " · OS keychain / provider vault";
+        if (kind === "typed") return "● Typed into prompt · " + name + " · " + length + " chars · fp " + fp + " · value is the transcript";
+        if (kind === "burned") return "● Burned · live credential shape · fp " + fp + " · transcript / history / paste-cache";
+        if (kind === "echoed") return "● Echoed · model printed · never-print violated · fp " + fp;
+        if (kind === "retained") return "● Retained · would reach /bug · five-year feedback store · fp " + fp;
+        if (kind === "leaked") return "● Leaked · .env / credential file read into transcript · fp " + fp;
+        if (kind === "gap") return "● Gap · no AskUserSecret tool · only the prompt box exists";
+        return "● Clear · chute empty · no secret on the transcript path";
+      }
+
+      function reasonsOf(probe, verdict) {
+        const n = cloneProbe(probe);
+        const kind = verdict || classify(n);
+        const reasons = [];
+        if (n.session) reasons.push("session " + n.session);
+        reasons.push(n.channel ? "channel " + n.channel : "channel unset");
+        reasons.push(n.askUserSecretAvailable ? "AskUserSecret available" : "AskUserSecret missing");
+        if (n.onlyPromptBox) reasons.push("only the prompt box exists");
+        if (n.secretName) reasons.push("name " + n.secretName);
+        if (n.secretLength) reasons.push(n.secretLength + " chars");
+        if (n.fingerprint) reasons.push("fp " + n.fingerprint);
+        if (n.sessionMemory) reasons.push("session memory only");
+        if (n.secretInPrompt) reasons.push("secret pasted into the chat prompt");
+        if (n.secretInTranscript) reasons.push("secret present in transcript");
+        if (n.secretInHistory) reasons.push("secret present in history");
+        if (n.secretInPasteCache) reasons.push("secret present in paste-cache");
+        if (n.secretInModelContext) reasons.push("secret entered model context");
+        if (n.liveCredentialInTranscript) reasons.push("live credential already written into transcript");
+        if (n.fileReadIntoTranscript) reasons.push(".env / credential file read straight into transcript");
+        if (n.modelPrintedSecret) reasons.push("model printed the secret");
+        if (n.wouldReachBugRetention) reasons.push("would reach /bug or feedback five-year retention");
+        if (n.agentCanUse) reasons.push("agent can USE via env inject");
+        if (n.agentCanRead) reasons.push("agent can READ the value");
+        else if (n.agentCanUse) reasons.push("agent cannot READ the value");
+        if (kind === "clear") reasons.push("no secret on the leaky prompt path; sanctioned channel used or none needed");
+        if (kind === "typed") reasons.push("a typed secret is not a handoff");
+        if (kind === "masked") reasons.push("AskUserSecret / Chute panel used; value never entered transcript");
+        if (kind === "burned") reasons.push("live credential already written into transcript/history/paste-cache");
+        if (kind === "echoed") reasons.push("model violated never-print-secrets");
+        if (kind === "retained") reasons.push("would reach /bug or feedback five-year retention");
+        if (kind === "brokered") reasons.push("agent can USE via env inject, never READ");
+        if (kind === "vaulted") reasons.push("OS keychain / provider vault path (alternative, not the core primitive)");
+        if (kind === "leaked") reasons.push(".env / credential file read straight into transcript");
+        if (kind === "gap") reasons.push("no sanctioned channel available (the systemic missing input)");
+        return reasons;
+      }
+
+      function decide(probe, action) {
+        let next = cloneProbe(probe);
+        const verb = String(action || "score").toLowerCase();
+        if (verb === "clear") next = emptyProbe();
+        else if (verb === "drop") {
+          next = {
+            ...next,
+            channel: "askUserSecret",
+            askUserSecretAvailable: true,
+            onlyPromptBox: false,
+            gap: false,
+            sessionMemory: true,
+            secretInPrompt: false,
+            secretInTranscript: false,
+            secretInHistory: false,
+            secretInPasteCache: false,
+            secretInModelContext: false,
+            modelPrintedSecret: false,
+            liveCredentialInTranscript: false,
+            fileReadIntoTranscript: false,
+            wouldReachBugRetention: false,
+            agentCanUse: false,
+            agentCanRead: false,
+            secretName: next.secretName || NAME,
+            secretLength: next.secretLength || LEN,
+            fingerprint: next.fingerprint || FP,
+            feed: "",
+            scored: true,
+          };
+        } else if (verb === "inject") {
+          next = {
+            ...next,
+            channel: "envInject",
+            askUserSecretAvailable: true,
+            sessionMemory: true,
+            agentCanUse: true,
+            agentCanRead: false,
+            secretInPrompt: false,
+            secretInTranscript: false,
+            secretInHistory: false,
+            secretInPasteCache: false,
+            secretInModelContext: false,
+            modelPrintedSecret: false,
+            liveCredentialInTranscript: false,
+            fileReadIntoTranscript: false,
+            wouldReachBugRetention: false,
+            secretName: next.secretName || NAME,
+            secretLength: next.secretLength || LEN,
+            fingerprint: next.fingerprint || FP,
+            feed: "",
+            scored: true,
+          };
+        } else next.scored = true;
+        const verdict = classify(next);
+        return {
+          verdict,
+          state: verdict,
+          idleWord: IDLE_WORD,
+          alarm: SLACK.includes(verdict),
+          linear: LINEAR.includes(verdict),
+          reasons: reasonsOf(next, verdict),
+          feed: feedOf(next, verdict),
+          probe: next,
+          ...next,
+        };
+      }
+
+      function seedOf(kind) {
+        const base = emptyProbe();
+        const named = { secretName: NAME, secretLength: LEN, fingerprint: FP, scored: true };
+        if (kind === "gap") {
+          return { ...base, channel: "none", onlyPromptBox: true, gap: true, session: "90301-gap", source: "anthropics/claude-code#90301", issue: 90301, scored: true };
+        }
+        if (kind === "masked") {
+          return { ...base, ...named, channel: "askUserSecret", askUserSecretAvailable: true, sessionMemory: true, session: "masked", source: "askUserSecret", feed: "● Secret received · " + NAME + " · " + LEN + " chars · fp " + FP + " · session memory" };
+        }
+        if (kind === "burned") {
+          return { ...base, ...named, channel: "prompt", onlyPromptBox: true, secretInPrompt: true, secretInTranscript: true, secretInHistory: true, secretInPasteCache: true, secretInModelContext: true, liveCredentialInTranscript: true, session: "71654-burned", source: "anthropics/claude-code#71654", issue: 71654 };
+        }
+        if (kind === "echoed") {
+          return { ...base, ...named, channel: "prompt", secretInTranscript: true, secretInModelContext: true, modelPrintedSecret: true, session: "82796-echoed", source: "anthropics/claude-code#82796", issue: 82796 };
+        }
+        if (kind === "typed") {
+          return { ...base, ...named, channel: "prompt", onlyPromptBox: true, secretInPrompt: true, secretInModelContext: true, session: "typed", source: "prompt" };
+        }
+        if (kind === "retained") {
+          return { ...base, ...named, channel: "prompt", secretInPrompt: true, secretInTranscript: true, wouldReachBugRetention: true, session: "78344-retained", source: "anthropics/claude-code#78344", issue: 78344 };
+        }
+        if (kind === "brokered") {
+          return { ...base, ...named, channel: "envInject", askUserSecretAvailable: true, sessionMemory: true, agentCanUse: true, session: "77084-brokered", source: "anthropics/claude-code#77084", issue: 77084 };
+        }
+        if (kind === "vaulted") {
+          return { ...base, ...named, channel: "vault", askUserSecretAvailable: true, sessionMemory: true, agentCanUse: true, session: "vaulted", source: "vault" };
+        }
+        if (kind === "leaked") {
+          return { ...base, channel: "file", fileReadIntoTranscript: true, secretInTranscript: true, secretInModelContext: true, secretName: ".env", secretLength: 12, fingerprint: FP, session: "44868-leaked", source: "anthropics/claude-code#44868", issue: 44868, scored: true };
+        }
+        if (kind === "clear") return emptyProbe();
+        return emptyProbe();
+      }
+
+      const CHIPS = [
+        { id: "gap", label: "gap #90301" },
+        { id: "masked", label: "masked" },
+        { id: "burned", label: "burned #71654" },
+        { id: "echoed", label: "echoed #82796" },
+        { id: "typed", label: "typed" },
+        { id: "retained", label: "retained" },
+        { id: "brokered", label: "brokered" },
+        { id: "vaulted", label: "vaulted" },
+        { id: "leaked", label: "leaked" },
+        { id: "clear", label: "clear" },
+      ];
+
+      let probe = seedOf("gap");
+      let currentChip = "gap";
+
+      function row(label, value) {
+        return '<div class="row"><span>' + label + "</span><b>" + String(value) + "</b></div>";
+      }
+
+      function sinks(result) {
+        const slack = result.alarm
+          ? "Would post to Slack: " + result.verdict + " inbound alarm on the chute."
+          : "Would skip Slack — inbound channel is " + result.verdict + ".";
+        const github = "Would open a GitHub chute-ledger issue. Demo: no token.";
+        const linear = result.linear
+          ? "Would open a Linear ticket: " + result.verdict + " · " + (result.source || "inbound channel")
+          : "Would skip Linear — inbound channel is " + result.verdict + ".";
+        return { slack, github, linear };
+      }
+
+      function render() {
+        const result = decide(probe, "score");
+        document.getElementById("desk").className = "desk " + result.verdict;
+        document.getElementById("left").innerHTML = [
+          row("prompt box", result.onlyPromptBox || result.channel === "prompt" ? "only surface" : "present"),
+          row("pasted", result.secretInPrompt ? "yes — typed into chat" : "no"),
+          row("transcript", result.secretInTranscript ? "written" : "clean"),
+          row("history", result.secretInHistory ? "written" : "clean"),
+          row("paste-cache", result.secretInPasteCache ? "written" : "clean"),
+          row("model context", result.secretInModelContext ? "entered" : "never"),
+          row("/bug retain", result.wouldReachBugRetention ? "five-year store" : "no"),
+        ].join("");
+        document.getElementById("right").innerHTML = [
+          row("AskUserSecret", result.askUserSecretAvailable ? "available" : "missing"),
+          row("channel", result.channel || "—"),
+          row("session memory", result.sessionMemory ? "held" : "empty"),
+          row("name", result.secretName || "—"),
+          row("length", result.secretLength ? result.secretLength + " chars" : "—"),
+          row("fingerprint", result.fingerprint || "—"),
+          row("USE / READ", result.agentCanUse ? (result.agentCanRead ? "USE + READ" : "USE never READ") : "—"),
+        ].join("");
+        document.getElementById("feed").textContent = result.feed;
+        const spoken = document.getElementById("spoken");
+        spoken.className = "spoken " + result.verdict;
+        spoken.innerHTML = "<strong>" + result.verdict + "</strong>";
+        document.getElementById("why").innerHTML = "<ul>" + result.reasons.map((line) => "<li>" + line + "</li>").join("") + "</ul>";
+        const s = sinks(result);
+        document.getElementById("ledger").innerHTML =
+          "<article><h3>Slack</h3><p>" + s.slack + "</p></article>" +
+          "<article><h3>GitHub</h3><p>" + s.github + "</p></article>" +
+          "<article><h3>Linear</h3><p>" + s.linear + "</p></article>";
+        document.querySelectorAll("#chips button").forEach((btn) => {
+          btn.classList.toggle("on", btn.dataset.seed === currentChip);
+        });
+      }
+
+      function glassChecks() {
+        const cases = CHIPS.map((chip) => [chip.id, seedOf(chip.id)]);
+        const idle = classify(emptyProbe());
+        const misses = [];
+        if (idle !== "clear") misses.push("idle→" + idle);
+        for (const [word, seed] of cases) {
+          const got = classify(seed);
+          if (got !== word) misses.push(word + "→" + got);
+        }
+        if (IDLE_WORD !== "clear") misses.push("idleWord");
+        if (VERDICTS.join(" ") !== "clear typed masked burned echoed retained brokered vaulted leaked gap") misses.push("vocab");
+        const el = document.getElementById("checks");
+        if (misses.length) {
+          el.className = "checks bad";
+          el.textContent = "chute check failed: " + misses.join(", ");
+        } else {
+          el.className = "checks ok";
+          el.textContent = "chute check: ten classes + idle clear. No secret values on the desk.";
+        }
+        return misses.length === 0;
+      }
+
+      const chips = document.getElementById("chips");
+      for (const chip of CHIPS) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.seed = chip.id;
+        btn.textContent = chip.label;
+        btn.addEventListener("click", () => {
+          currentChip = chip.id;
+          probe = seedOf(chip.id);
+          render();
+        });
+        chips.appendChild(btn);
+      }
+      document.querySelectorAll(".acts button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const act = btn.dataset.act;
+          if (act === "clear") {
+            currentChip = "clear";
+            probe = emptyProbe();
+          }
+          const result = decide(probe, act);
+          probe = result.probe;
+          if (act === "drop") currentChip = "masked";
+          if (act === "inject") currentChip = "brokered";
+          render();
+        });
+      });
+      render();
+      glassChecks();
+    </script>
+  </body>
+</html>
