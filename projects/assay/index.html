@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Assay — furnace for silent tool-argument corruption. A parsed call is not a hold. Idle word is intact."
+    />
+    <title>Assay — cupellation house</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Oswald:wght@500;600;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --soot: #0c0604;
+        --brick: #4e2418;
+        --header: #6a2f1c;
+        --mortar: #1c0f0b;
+        --copper: #c4713b;
+        --bronze: #e0a25a;
+        --bead: #f6d27a;
+        --heat: #ff6a1a;
+        --ash: #cbb6a2;
+        --mute: #8d7364;
+        --slag: #241610;
+        --ok: #e8c36a;
+        --bad: #ff4d2a;
+        --display: Oswald, "Arial Narrow", Impact, system-ui, sans-serif;
+        --serif: Spectral, "Iowan Old Style", Georgia, serif;
+        --lab: "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--serif);
+        color: var(--ash);
+        background:
+          repeating-linear-gradient(
+            0deg,
+            #3a1a12 0 14px,
+            #2a110c 14px 16px,
+            #5a2a1c 16px 30px,
+            #2a110c 30px 32px
+          ),
+          var(--soot);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--bronze); }
+      .house {
+        min-height: 100vh;
+        padding: 20px 0 64px;
+        background:
+          radial-gradient(ellipse 70% 40% at 50% 18%, rgba(255, 106, 26, 0.16), transparent 58%),
+          linear-gradient(180deg, rgba(12, 6, 4, 0.35), rgba(12, 6, 4, 0.82));
+      }
+      .flue {
+        width: min(1080px, calc(100% - 28px));
+        margin: 0 auto 10px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        border-bottom: 3px solid rgba(196, 113, 59, 0.45);
+        padding-bottom: 10px;
+      }
+      .stamp, .house-name {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: var(--copper);
+      }
+      .kiln {
+        width: min(1080px, calc(100% - 28px));
+        margin: 18px auto 0;
+        display: grid;
+        grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
+        gap: 28px;
+        align-items: center;
+      }
+      .mouth {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 50% 42%, #ffb347 0 8%, #ff6a1a 18%, #8a2a12 42%, #2a100c 68%, #120806 100%);
+        box-shadow:
+          inset 0 0 0 14px #3a1a12,
+          inset 0 0 0 18px #c4713b,
+          0 0 60px rgba(255, 106, 26, 0.28);
+        display: grid;
+        place-items: center;
+      }
+      .mouth::before,
+      .mouth::after {
+        content: "";
+        position: absolute;
+        inset: 18%;
+        border-radius: 50%;
+        border: 1px solid rgba(246, 210, 122, 0.18);
+        animation: shimmer 4.8s ease-in-out infinite;
+        pointer-events: none;
+      }
+      .mouth::after { inset: 26%; animation-delay: -1.6s; }
+      @keyframes shimmer {
+        0%, 100% { transform: scale(1); opacity: 0.35; }
+        50% { transform: scale(1.06); opacity: 0.7; }
+      }
+      .cupel {
+        width: 72%;
+        aspect-ratio: 1.35;
+        border-radius: 50%;
+        background:
+          radial-gradient(ellipse at 50% 38%, #3a2418 0 28%, #1a0e0a 70%);
+        box-shadow: inset 0 -16px 24px rgba(0, 0, 0, 0.55);
+        display: grid;
+        place-items: center;
+        position: relative;
+        z-index: 1;
+      }
+      .bead {
+        font-family: var(--display);
+        font-size: clamp(42px, 8vw, 86px);
+        line-height: 0.8;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--bead);
+        text-shadow: 0 0 18px rgba(255, 106, 26, 0.55);
+      }
+      .mouth.alarm .bead { color: #ffd0b0; }
+      .mouth.intact .bead { color: var(--ok); }
+      .thesis {
+        margin: 0 0 14px;
+        font-size: clamp(22px, 3vw, 34px);
+        line-height: 1.15;
+        color: var(--bead);
+      }
+      .thesis strong { color: #fff3d2; font-weight: 600; }
+      .lede {
+        margin: 0 0 12px;
+        font-size: 17px;
+        line-height: 1.5;
+        color: var(--ash);
+      }
+      .diff {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 11px;
+        line-height: 1.65;
+        color: var(--mute);
+      }
+      .lots {
+        width: min(1080px, calc(100% - 28px));
+        margin: 22px auto 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .lot {
+        border: none;
+        min-width: 92px;
+        padding: 8px 10px 7px;
+        border-radius: 999px 12px 999px 12px;
+        background: linear-gradient(180deg, #8a4a28, #5a2a16);
+        box-shadow: inset 0 1px 0 rgba(255, 210, 140, 0.28), 0 1px 0 #2a100c;
+        font-family: var(--lab);
+        text-align: left;
+      }
+      .lot small {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #f0c49a;
+      }
+      .lot b {
+        display: block;
+        font-family: var(--display);
+        font-size: 16px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #fff4e0;
+      }
+      .lot.on {
+        background: linear-gradient(180deg, #e0a25a, #c4713b);
+        box-shadow: 0 0 0 2px #f6d27a;
+      }
+      .lot.on b, .lot.on small { color: #2a100c; }
+      .lot.idle {
+        background: linear-gradient(180deg, #3a2a1c, #241610);
+      }
+      .lot.idle b { color: var(--ok); }
+      .bench {
+        width: min(1080px, calc(100% - 28px));
+        margin: 18px auto 0;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 12px;
+      }
+      .plate {
+        background: var(--slag);
+        border: 1px solid rgba(196, 113, 59, 0.28);
+        padding: 16px 16px 14px;
+      }
+      .plate h2 {
+        margin: 0 0 10px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--copper);
+        font-weight: 400;
+      }
+      .fields { display: grid; gap: 8px; }
+      .field {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 10px;
+        padding: 8px 10px;
+        background: #180e0a;
+        font-family: var(--lab);
+        font-size: 12px;
+        line-height: 1.45;
+        word-break: break-word;
+      }
+      .field span {
+        color: var(--mute);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 10px;
+      }
+      .field.bad { box-shadow: inset 3px 0 0 var(--bad); }
+      .field.ok { box-shadow: inset 3px 0 0 var(--ok); }
+      .raw {
+        margin: 10px 0 0;
+        max-height: 180px;
+        overflow: auto;
+        padding: 10px;
+        background: #140c08;
+        color: #e8c9a8;
+        font-family: var(--lab);
+        font-size: 11px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+      .facts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .facts div {
+        padding: 8px 9px;
+        background: #180e0a;
+        font-family: var(--lab);
+        font-size: 12px;
+      }
+      .facts span {
+        display: block;
+        color: var(--mute);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 10px;
+        margin-bottom: 3px;
+      }
+      .impurity {
+        margin: 10px 0 0;
+        min-height: 3.2em;
+        font-size: 16px;
+        line-height: 1.4;
+        color: var(--bead);
+      }
+      .levers {
+        width: min(1080px, calc(100% - 28px));
+        margin: 16px auto 0;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .levers button {
+        border: none;
+        padding: 14px 8px 12px;
+        background: linear-gradient(180deg, #7a3a20, #3a1810);
+        font-family: var(--display);
+        font-size: 16px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        box-shadow: inset 0 1px 0 rgba(255, 210, 140, 0.25);
+      }
+      .levers .go {
+        background: linear-gradient(180deg, #e0a25a, #c4713b);
+        color: #2a100c;
+      }
+      .levers .idle-act {
+        background: linear-gradient(180deg, #3a2a1c, #1c120c);
+        color: var(--ok);
+      }
+      .sinks {
+        width: min(1080px, calc(100% - 28px));
+        margin: 16px auto 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .sink {
+        padding: 14px;
+        background: #180e0a;
+        border-top: 3px solid var(--copper);
+      }
+      .sink b {
+        display: block;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--copper);
+        margin-bottom: 8px;
+      }
+      .sink p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.5; }
+      footer {
+        width: min(1080px, calc(100% - 28px));
+        margin: 24px auto 0;
+        color: var(--mute);
+        font-size: 12px;
+        line-height: 1.65;
+        font-family: var(--lab);
+      }
+      @media (max-width: 860px) {
+        .kiln, .bench, .sinks, .facts, .levers { grid-template-columns: 1fr; }
+        .flue { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="house">
+      <header class="flue">
+        <p class="stamp">13:50 sydney · fifteenth</p>
+        <p class="house-name">cupellation house</p>
+      </header>
+
+      <section class="kiln">
+        <div class="mouth alarm" id="mouth" aria-live="polite">
+          <div class="cupel">
+            <span class="bead" id="word">ghost</span>
+          </div>
+        </div>
+        <div>
+          <p class="thesis">A parsed call is not a hold.</p>
+          <p class="lede">
+            Heat the envelope. Weigh delivered arguments against the declared schema
+            and the raw markup. Name the impurity or admit <strong>intact</strong>.
+          </p>
+          <p class="diff">
+            NOT Coda (text loss), Suture (stream tear), Sigil (thinking seal),
+            Reed (MCP registry), Wicket / Plumb (worktree), Stencil, Blot, Hasp,
+            Fathom, Parity, Reveille, Quench, Scrim, Knock.
+            Not a leftover woodworking slider.
+          </p>
+        </div>
+      </section>
+
+      <nav class="lots" aria-label="Evidence charges" role="group">
+        <button class="lot on" id="seed-84405" type="button"><small>#84405</small><b>ghost</b></button>
+        <button class="lot" id="seed-84362" type="button"><small>#84362</small><b>absorb</b></button>
+        <button class="lot" id="seed-64774" type="button"><small>#64774</small><b>retry</b></button>
+        <button class="lot" id="seed-49747" type="button"><small>#49747</small><b>mix</b></button>
+        <button class="lot" id="seed-63879" type="button"><small>#63879</small><b>prefix</b></button>
+        <button class="lot" id="seed-70544" type="button"><small>#70544</small><b>prefix</b></button>
+        <button class="lot" id="seed-69522" type="button"><small>#69522</small><b>mangled</b></button>
+        <button class="lot" id="seed-70657" type="button"><small>#70657</small><b>mangled</b></button>
+        <button class="lot" id="seed-19765" type="button"><small>#19765</small><b>mangled</b></button>
+        <button class="lot" id="seed-31517" type="button"><small>#31517</small><b>mangled</b></button>
+        <button class="lot" id="seed-intact" type="button"><small>control</small><b>intact</b></button>
+        <button class="lot idle" id="seed-clear" type="button"><small>clear</small><b>intact</b></button>
+      </nav>
+
+      <section class="bench">
+        <article class="plate">
+          <h2>Charge · delivered vs markup</h2>
+          <div class="fields" id="fields"></div>
+          <pre class="raw" id="raw"></pre>
+        </article>
+        <article class="plate">
+          <h2>Slag · impurity</h2>
+          <div class="facts" id="facts"></div>
+          <p class="impurity" id="impurity"></p>
+        </article>
+      </section>
+
+      <section class="levers" aria-label="Furnace actions">
+        <button type="button" id="act-fire">Fire</button>
+        <button type="button" class="go" id="act-weigh">Weigh</button>
+        <button type="button" id="act-admit">Admit</button>
+        <button type="button" id="act-refuse">Refuse</button>
+        <button type="button" class="idle-act" id="act-clear">Clear · intact</button>
+      </section>
+
+      <section class="sinks" aria-label="Ledger rows">
+        <article class="sink"><b>Slack</b><p id="slack-row"></p></article>
+        <article class="sink"><b>GitHub</b><p id="github-row"></p></article>
+        <article class="sink"><b>Linear</b><p id="linear-row"></p></article>
+      </section>
+
+      <footer>
+        Fifteenth post-wipe product. Evidence only:
+        anthropics/claude-code#84405 #84362 #64774 #49747 #63879 #70544 #69522 #62123 #70657
+        · openai/codex#19765 #31517 #26379.
+        Slack / GitHub / Linear stay demo unless hook env keys exist. Never a fake live 200.
+        Idle word is intact.
+      </footer>
+    </main>
+    <script>
+      const BOUNDARY_OPEN = /<parameter\s+name\s*=/i;
+      const BOUNDARY_NAME = /<parameter\s+name\s*=\s*["']([^"']+)["']/gi;
+      const XML_TOOL_TAG = /<\/?(?:function_calls|invoke|parameter|tool_use|antml:invoke|antml:parameter)\b/i;
+      const JSON_KEY = /["'][A-Za-z_][A-Za-z0-9_]*["']\s*:/;
+      const BARE_KV = /\b[A-Za-z_][A-Za-z0-9_]*\s*:\s*["[{]/;
+      const ANTML = /\bantml:/i;
+      const BARE_INVOKE = /<(?:invoke|parameter)\b/i;
+      const COURT = /(?:^|\s)court(?=\s|<|$)/i;
+      const UNICODE_ESCAPE = /\\u[0-9A-Fa-f]{4}/;
+      const LINEAR = ["ghost", "absorb"];
+      const ALARM = ["ghost", "absorb", "mix", "prefix", "silent", "retry", "mangled"];
+
+      function emptyCharge() {
+        return {
+          session: "", tool: "", schema: { required: [], optional: [] }, raw: "",
+          delivered: null, parseOk: null, retryFailed: false, retryRaw: "",
+          contaminates: false, argumentsKind: "", strayToken: "", droppedNamespace: false,
+          history: [], fired: false, weighed: false, admitted: false, refused: false,
+          held: false, source: "", issue: null,
+        };
+      }
+
+      function asSchema(raw) {
+        const src = raw && typeof raw === "object" ? raw : {};
+        return {
+          required: Array.isArray(src.required) ? src.required.map(String) : [],
+          optional: Array.isArray(src.optional) ? src.optional.map(String) : [],
+        };
+      }
+
+      function cloneCharge(raw) {
+        const src = raw && typeof raw === "object" ? raw : emptyCharge();
+        return {
+          ...emptyCharge(),
+          ...src,
+          schema: asSchema(src.schema),
+          delivered: src.delivered == null || typeof src.delivered !== "object"
+            ? src.delivered
+            : JSON.parse(JSON.stringify(src.delivered)),
+          history: Array.isArray(src.history) ? src.history.slice() : [],
+          parseOk: src.parseOk == null ? null : Boolean(src.parseOk),
+        };
+      }
+
+      function deliveredObject(delivered) {
+        return delivered && typeof delivered === "object" && !Array.isArray(delivered) ? delivered : null;
+      }
+
+      function stringValues(delivered) {
+        const obj = deliveredObject(delivered);
+        return obj
+          ? Object.entries(obj).filter(([, value]) => typeof value === "string")
+          : [];
+      }
+
+      function missingRequired(schema, delivered) {
+        const obj = deliveredObject(delivered);
+        return asSchema(schema).required.filter((key) => !obj || !(key in obj) || obj[key] === undefined);
+      }
+
+      function emptyRequired(schema, delivered) {
+        const obj = deliveredObject(delivered);
+        return asSchema(schema).required.filter((key) => obj && obj[key] === "");
+      }
+
+      function residueNames(delivered) {
+        const names = [];
+        for (const [, value] of stringValues(delivered)) {
+          BOUNDARY_NAME.lastIndex = 0;
+          let match = BOUNDARY_NAME.exec(value);
+          while (match) {
+            names.push(match[1]);
+            match = BOUNDARY_NAME.exec(value);
+          }
+        }
+        return names;
+      }
+
+      function hasBoundaryGhost(delivered) {
+        return stringValues(delivered).some(([, value]) => BOUNDARY_OPEN.test(value));
+      }
+
+      function isJsonXmlMix(raw) {
+        return (JSON_KEY.test(raw || "") || BARE_KV.test(raw || "")) && XML_TOOL_TAG.test(raw || "");
+      }
+
+      function looksTruncatedJson(raw) {
+        const text = String(raw || "").trim();
+        if (!text.startsWith("{") && !text.startsWith("[")) return false;
+        try {
+          JSON.parse(text);
+          return false;
+        } catch {
+          const opens = (text.match(/"/g) || []).length;
+          return !text.endsWith("}") && !text.endsWith("]") || opens % 2 === 1;
+        }
+      }
+
+      function isIdle(charge) {
+        return !charge.tool && !charge.raw && charge.delivered == null && charge.parseOk == null
+          && !charge.retryFailed && !charge.contaminates && !charge.argumentsKind
+          && !charge.strayToken && !charge.droppedNamespace
+          && charge.schema.required.length === 0 && charge.schema.optional.length === 0;
+      }
+
+      function isAbsorb(charge) {
+        const declared = [...charge.schema.required, ...charge.schema.optional];
+        const obj = deliveredObject(charge.delivered);
+        const vanished = declared.filter((key) => !obj || !(key in obj) || obj[key] === undefined);
+        const residue = residueNames(charge.delivered);
+        return vanished.length > 0 && residue.some((name) => vanished.includes(name));
+      }
+
+      function isGhost(charge) {
+        return charge.parseOk === true && hasBoundaryGhost(charge.delivered)
+          && missingRequired(charge.schema, charge.delivered).length === 0;
+      }
+
+      function isPrefix(charge) {
+        const raw = charge.raw || "";
+        if (charge.droppedNamespace || charge.strayToken) return true;
+        if (COURT.test(raw) && (BARE_INVOKE.test(raw) || XML_TOOL_TAG.test(raw))) return true;
+        return BARE_INVOKE.test(raw) && !ANTML.test(raw) && charge.parseOk === false;
+      }
+
+      function classify(charge) {
+        if (isIdle(charge)) return "intact";
+        if (isAbsorb(charge)) return "absorb";
+        if (isGhost(charge)) return "ghost";
+        if (isJsonXmlMix(charge.raw)) return "mix";
+        if (isPrefix(charge)) return "prefix";
+        if (charge.parseOk === true && emptyRequired(charge.schema, charge.delivered).length) return "silent";
+        if (charge.parseOk === false && charge.retryFailed) return "retry";
+        if (
+          charge.parseOk === false
+          || ["string", "truncated", "unparseable"].includes(charge.argumentsKind)
+          || typeof charge.delivered === "string"
+        ) return "mangled";
+        return "intact";
+      }
+
+      function impurityOf(charge, verdict) {
+        if (verdict === "ghost") return "boundary tag injected into a parsed string";
+        if (verdict === "absorb") return "declared field vanished; residue in a host field";
+        if (verdict === "mix") return "legacy XML tool-use mixed into JSON";
+        if (verdict === "prefix") return "stray token or dropped antml: namespace";
+        if (verdict === "silent") return "empty-string required argument dropped";
+        if (verdict === "retry") return "unparseable; retry also failed";
+        if (verdict === "mangled") {
+          if (charge.contaminates) return "malformed leftover contaminates later history";
+          if (charge.argumentsKind === "string") return "arguments arrived as a JSON string";
+          if (UNICODE_ESCAPE.test(charge.raw || "")) return "unicode-escaped arguments failed JSON parse";
+          if (charge.argumentsKind === "truncated" || looksTruncatedJson(charge.raw)) {
+            return "truncated function_call.arguments JSON";
+          }
+          return "unparseable tool-call envelope";
+        }
+        return "cupel is intact";
+      }
+
+      function seedCharge(issue, source, extras) {
+        const session = extras.session != null ? String(extras.session) : String(issue);
+        return {
+          action: "weigh",
+          session,
+          issue: extras.issue !== undefined ? extras.issue : issue,
+          source,
+          charge: {
+            ...emptyCharge(),
+            session,
+            source,
+            issue: extras.issue !== undefined ? extras.issue : issue,
+            ...extras,
+            schema: asSchema(extras.schema),
+          },
+        };
+      }
+
+      function seed84405() {
+        return seedCharge(84405, "anthropics/claude-code#84405", {
+          tool: "memory_write",
+          schema: { required: ["title", "body", "tags", "source", "confidence"] },
+          raw: "<function_calls>\n<invoke name=\"memory_write\">\n<parameter name=\"title\">session note</parameter>\n<parameter name=\"body\">Persist the turn outcome.\n<parameter name=\"tags\">\n</parameter>\n<parameter name=\"tags\">[\"mcp\",\"memory\"]</parameter>\n<parameter name=\"source\">user</parameter>\n<parameter name=\"confidence\">high</parameter>\n</invoke>\n</function_calls>",
+          delivered: {
+            title: "session note",
+            body: "Persist the turn outcome.\n<parameter name=\"tags\">",
+            tags: ["mcp", "memory"],
+            source: "user",
+            confidence: "high",
+          },
+          parseOk: true,
+          argumentsKind: "object",
+        });
+      }
+
+      function seed84362() {
+        return seedCharge(84362, "anthropics/claude-code#84362", {
+          tool: "memory_write",
+          schema: { required: ["title", "body"], optional: ["tags", "source"] },
+          raw: "<invoke name=\"memory_write\">\n<parameter name=\"title\">note</parameter>\n<parameter name=\"body\">Long prose field about the turn.\n</parametr>\n<parameter name=\"tags\">alpha,beta</parameter>\n<parameter name=\"source\">user</parameter>\n</invoke>",
+          delivered: {
+            title: "note",
+            body: "Long prose field about the turn.\n<parameter name=\"tags\">alpha,beta</parameter>\n<parameter name=\"source\">user</parameter>",
+          },
+          parseOk: true,
+          argumentsKind: "object",
+        });
+      }
+
+      function seed64774() {
+        return seedCharge(64774, "anthropics/claude-code#64774", {
+          tool: "Edit",
+          schema: { required: ["file_path", "old_string", "new_string"] },
+          raw: "The model's tool call could not be parsed (retry also failed).",
+          retryRaw: "The model's tool call could not be parsed (retry also failed).",
+          delivered: null,
+          parseOk: false,
+          retryFailed: true,
+          argumentsKind: "unparseable",
+        });
+      }
+
+      function seed49747() {
+        return seedCharge(49747, "anthropics/claude-code#49747", {
+          tool: "log_outcome",
+          schema: {
+            required: ["user_intent", "ai_reasoning", "summary_of_changes", "files_modified", "status"],
+            optional: ["tags", "model_name"],
+          },
+          raw: "log_outcome({\n  \"user_intent\": \"ship the furnace\",\n  \"ai_reasoning\": \"score the envelope\",\n  \"summary_of_changes\": \"Weighed delivered arguments against schema.</parameter>\",\n  <parameter name=\"files_modified\">[\"projects/assay/index.html\"]</parameter>\n  \"status\": \"completed\"\n})",
+          delivered: {
+            user_intent: "ship the furnace",
+            ai_reasoning: "score the envelope",
+            summary_of_changes: "Weighed delivered arguments against schema.</parameter>",
+            status: "completed",
+          },
+          parseOk: false,
+          argumentsKind: "unparseable",
+        });
+      }
+
+      function seed63879() {
+        return seedCharge(63879, "anthropics/claude-code#63879", {
+          tool: "Edit",
+          schema: { required: ["file_path", "old_string", "new_string"] },
+          raw: "court<invoke name=\"Edit\"><parameter name=\"file_path\">src/app.ts</parameter></invoke>",
+          delivered: null,
+          parseOk: false,
+          strayToken: "court",
+          droppedNamespace: true,
+          argumentsKind: "unparseable",
+        });
+      }
+
+      function seed70544() {
+        return seedCharge(70544, "anthropics/claude-code#70544", {
+          tool: "Write",
+          schema: { required: ["file_path", "content"] },
+          raw: "<invoke name=\"Write\"><parameter name=\"file_path\">メモ.md</parameter></invoke>",
+          delivered: null,
+          parseOk: false,
+          droppedNamespace: true,
+          argumentsKind: "unparseable",
+        });
+      }
+
+      function seed69522() {
+        return seedCharge(69522, "anthropics/claude-code#69522", {
+          tool: "AskUserQuestion",
+          schema: { required: ["questions"] },
+          raw: "{\"questions\":[{\"question\":\"\\uC548\\uB155\\uD558\\uC138\\uC694, \\uC774 \\uC7A5\\uBB38\\uC758 \\uB2E8\\uC5B4\\uB97C \\uC120\\uD0DD\\uD574 \\uC8FC\\uC138\\uC694",
+          delivered: null,
+          parseOk: false,
+          argumentsKind: "unparseable",
+        });
+      }
+
+      function seed70657() {
+        return seedCharge(70657, "anthropics/claude-code#70657", {
+          tool: "Write",
+          schema: { required: ["file_path", "content"] },
+          raw: "call Write LayoutEditor.tsx with the new panel markup",
+          delivered: null,
+          parseOk: false,
+          contaminates: true,
+          argumentsKind: "unparseable",
+          history: [
+            "Your tool call was malformed and could not be parsed. Please retry.",
+            "Jensen said the alignment researchers already reviewed this.",
+          ],
+        });
+      }
+
+      function seed19765() {
+        return seedCharge(19765, "openai/codex#19765", {
+          tool: "shell",
+          schema: { required: ["cmd"] },
+          raw: "{\"cmd\":\"echo hello",
+          delivered: null,
+          parseOk: false,
+          argumentsKind: "truncated",
+        });
+      }
+
+      function seed31517() {
+        return seedCharge(31517, "openai/codex#31517", {
+          tool: "tool_search",
+          schema: { required: ["query"], optional: ["limit"] },
+          raw: "{\"type\":\"tool_search_call\",\"arguments\":\"{\\\"query\\\":\\\"chrome devtools network\\\",\\\"limit\\\":10}\"}",
+          delivered: "{\"query\":\"chrome devtools network\",\"limit\":10}",
+          parseOk: false,
+          argumentsKind: "string",
+        });
+      }
+
+      function seedIntact() {
+        return seedCharge("intact", "intact", {
+          session: "intact",
+          issue: null,
+          tool: "memory_write",
+          schema: { required: ["title", "body", "tags"], optional: ["source"] },
+          raw: "<function_calls>\n<antml:invoke name=\"memory_write\">\n<antml:parameter name=\"title\">session note</antml:parameter>\n<antml:parameter name=\"body\">Persist the turn outcome.</antml:parameter>\n<antml:parameter name=\"tags\">[\"mcp\",\"memory\"]</antml:parameter>\n<antml:parameter name=\"source\">user</antml:parameter>\n</antml:invoke>\n</function_calls>",
+          delivered: {
+            title: "session note",
+            body: "Persist the turn outcome.",
+            tags: ["mcp", "memory"],
+            source: "user",
+          },
+          parseOk: true,
+          argumentsKind: "object",
+        });
+      }
+
+      function decide(payload) {
+        const action = payload && payload.action ? payload.action : "weigh";
+        if (action === "clear") {
+          return pack("intact", emptyCharge(), action);
+        }
+        let charge = cloneCharge(payload.charge || payload);
+        const verdict = classify(charge);
+        if (action === "refuse") charge = { ...charge, refused: true, admitted: false, weighed: true };
+        else if (action === "admit") {
+          charge = { ...charge, admitted: verdict === "intact", refused: verdict !== "intact", weighed: true };
+        } else if (action === "fire") charge = { ...charge, fired: true, weighed: true };
+        else charge = { ...charge, weighed: true };
+        return pack(classify(charge), charge, action);
+      }
+
+      function pack(verdict, charge, action) {
+        return {
+          verdict,
+          state: verdict,
+          idleWord: "intact",
+          alarm: ALARM.includes(verdict),
+          linear: LINEAR.includes(verdict),
+          action,
+          session: charge.session,
+          source: charge.source,
+          issue: charge.issue,
+          tool: charge.tool,
+          schema: charge.schema,
+          raw: charge.raw,
+          delivered: charge.delivered,
+          parseOk: charge.parseOk,
+          retryFailed: charge.retryFailed,
+          contaminates: charge.contaminates,
+          argumentsKind: charge.argumentsKind,
+          missing: missingRequired(charge.schema, charge.delivered),
+          empty: emptyRequired(charge.schema, charge.delivered),
+          residue: residueNames(charge.delivered),
+          impurity: impurityOf(charge, verdict),
+          admitted: charge.admitted,
+          refused: charge.refused,
+          fired: charge.fired,
+          weighed: charge.weighed,
+          charge,
+        };
+      }
+
+      function demoSinks(result) {
+        if (result.verdict === "intact") {
+          return {
+            slack: "Would skip Slack — cupel is intact.",
+            github: "Would append a GitHub assay ledger row. Demo: no token.",
+            linear: "Would skip Linear — cupel is intact.",
+          };
+        }
+        return {
+          slack: `Would post to Slack: impurity alarm — ${result.verdict} in the cupel.`,
+          github: "Would append a GitHub assay ledger row. Demo: no token.",
+          linear: LINEAR.includes(result.verdict)
+            ? `Would open a Linear impurity incident: Silent field ${result.verdict} · ${result.source}`
+            : `Would skip Linear — cupel is ${result.verdict}.`,
+        };
+      }
+
+      const SEEDS = {
+        84405: seed84405,
+        84362: seed84362,
+        64774: seed64774,
+        49747: seed49747,
+        63879: seed63879,
+        70544: seed70544,
+        69522: seed69522,
+        70657: seed70657,
+        19765: seed19765,
+        31517: seed31517,
+        intact: seedIntact,
+      };
+
+      const wordEl = document.getElementById("word");
+      const mouthEl = document.getElementById("mouth");
+      const fieldsEl = document.getElementById("fields");
+      const rawEl = document.getElementById("raw");
+      const factsEl = document.getElementById("facts");
+      const impurityEl = document.getElementById("impurity");
+      const slackEl = document.getElementById("slack-row");
+      const githubEl = document.getElementById("github-row");
+      const linearEl = document.getElementById("linear-row");
+
+      let current = seed84405();
+
+      function show(result, seedKey) {
+        wordEl.textContent = result.verdict;
+        mouthEl.className = `mouth ${result.alarm ? "alarm" : "intact"}`;
+        const obj = deliveredObject(result.delivered);
+        const rows = [];
+        if (result.tool) rows.push(["tool", result.tool, false]);
+        rows.push(["parse", result.parseOk == null ? "—" : String(result.parseOk), result.parseOk === false]);
+        if (typeof result.delivered === "string") {
+          rows.push(["args", result.delivered, true]);
+        } else if (obj) {
+          const keys = [...new Set([...result.schema.required, ...result.schema.optional, ...Object.keys(obj)])];
+          for (const key of keys) {
+            const value = obj[key];
+            const missing = !(key in obj) || value === undefined;
+            const ghosted = typeof value === "string" && BOUNDARY_OPEN.test(value);
+            rows.push([key, missing ? "— vanished —" : JSON.stringify(value), missing || ghosted]);
+          }
+        } else {
+          rows.push(["args", "unparseable", true]);
+        }
+        fieldsEl.innerHTML = rows.map(([label, value, bad]) => (
+          `<div class="field ${bad ? "bad" : "ok"}"><span>${label}</span><div>${escapeHtml(String(value))}</div></div>`
+        )).join("");
+        rawEl.textContent = result.raw || "(empty cupel)";
+        factsEl.innerHTML = [
+          ["verdict", result.verdict],
+          ["source", result.source || "—"],
+          ["missing", result.missing.length ? result.missing.join(", ") : "none"],
+          ["residue", result.residue.length ? result.residue.join(", ") : "none"],
+        ].map(([label, value]) => `<div><span>${label}</span>${escapeHtml(String(value))}</div>`).join("");
+        impurityEl.textContent = result.verdict === "intact" ? "intact" : result.impurity;
+        const sinks = demoSinks(result);
+        slackEl.textContent = sinks.slack;
+        githubEl.textContent = sinks.github;
+        linearEl.textContent = sinks.linear;
+        if (seedKey) {
+          document.querySelectorAll(".lot").forEach((btn) => btn.classList.remove("on"));
+          const on = document.getElementById(`seed-${seedKey}`);
+          if (on) on.classList.add("on");
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function load(seedFn, key) {
+        current = seedFn();
+        show(decide(current), key);
+      }
+
+      document.getElementById("seed-84405").addEventListener("click", () => load(seed84405, "84405"));
+      document.getElementById("seed-84362").addEventListener("click", () => load(seed84362, "84362"));
+      document.getElementById("seed-64774").addEventListener("click", () => load(seed64774, "64774"));
+      document.getElementById("seed-49747").addEventListener("click", () => load(seed49747, "49747"));
+      document.getElementById("seed-63879").addEventListener("click", () => load(seed63879, "63879"));
+      document.getElementById("seed-70544").addEventListener("click", () => load(seed70544, "70544"));
+      document.getElementById("seed-69522").addEventListener("click", () => load(seed69522, "69522"));
+      document.getElementById("seed-70657").addEventListener("click", () => load(seed70657, "70657"));
+      document.getElementById("seed-19765").addEventListener("click", () => load(seed19765, "19765"));
+      document.getElementById("seed-31517").addEventListener("click", () => load(seed31517, "31517"));
+      document.getElementById("seed-intact").addEventListener("click", () => load(seedIntact, "intact"));
+      document.getElementById("seed-clear").addEventListener("click", () => {
+        current = { action: "clear", charge: emptyCharge() };
+        show(decide({ action: "clear" }), "clear");
+      });
+      document.getElementById("act-fire").addEventListener("click", () => show(decide({ action: "fire", charge: current.charge }), null));
+      document.getElementById("act-weigh").addEventListener("click", () => show(decide({ action: "weigh", charge: current.charge }), null));
+      document.getElementById("act-admit").addEventListener("click", () => {
+        const next = decide({ action: "admit", charge: current.charge });
+        current = { ...current, charge: next.charge };
+        show(next, null);
+      });
+      document.getElementById("act-refuse").addEventListener("click", () => {
+        const next = decide({ action: "refuse", charge: current.charge });
+        current = { ...current, charge: next.charge };
+        show(next, null);
+      });
+      document.getElementById("act-clear").addEventListener("click", () => {
+        current = { action: "clear", charge: emptyCharge() };
+        show(decide({ action: "clear" }), "clear");
+      });
+
+      show(decide(current), "84405");
+    </script>
+  </body>
+</html>

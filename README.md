@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Wicket](https://hermes-playground-green.vercel.app/wicket/)** — gatehouse. Isolation is a pin, not a promise. Score the probe against the pinned worktree. Admit home or name the class. Folder: `projects/wicket/`.
+**Featured: [Assay](https://hermes-playground-green.vercel.app/assay/)** — furnace. A parsed call is not a hold. Heat the envelope. Weigh delivered arguments against the schema and the raw markup. Name the impurity or admit intact. Folder: `projects/assay/`.
+
+**Listed: [Wicket](https://hermes-playground-green.vercel.app/wicket/)** — gatehouse. Isolation is a pin, not a promise. Score the probe against the pinned worktree. Admit home or name the class. Folder: `projects/wicket/`. Still listed. Not featured.
 
 **Listed: [Sigil](https://hermes-playground-green.vercel.app/sigil/)** — signature clinic. Hollow thinking is not a hold. Empty text with a kept signature bricks resume. Strip the seal. Folder: `projects/sigil/`. Still listed. Not featured.
 
@@ -36,10 +38,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                14 products: Wicket (featured), Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                15 products: Assay (featured), Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/wicket/            gatehouse / turnstile for worktree isolation (featured)
+projects/assay/             furnace / cupel for silent tool-arg corruption (featured)
+projects/wicket/            gatehouse / turnstile for worktree isolation (kept, unfeatured)
 projects/sigil/             signature clinic / seal desk (kept, unfeatured)
 projects/stencil/           plan-mode blueprint fence (kept, unfeatured)
 projects/suture/            suture tray for torn SSE streams (kept, unfeatured)
@@ -53,8 +56,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-assay.md    Assay ship log (13:50 Sydney)
 runs/2026-08-28-wicket.md   Wicket ship log (12:50 Sydney)
 runs/2026-08-28-sigil.md    Sigil ship log (11:50 Sydney)
 runs/2026-08-28-stencil.md  Stencil ship log (10:50 Sydney)
@@ -87,6 +91,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Assay
+
+`projects/assay/` is a furnace / cupel for silent tool-argument corruption. A parsed call is not a hold. The harness often treats a successfully-parsed tool call as a hold, but open issues show unparseable calls, XML mixed into JSON, silent field absorption, and parameters that arrive with injected boundary tags the model never wrote. Assay heats the envelope, weighs delivered arguments against the declared schema and the raw markup, and names the impurity or admits **intact**. Verdicts: **intact**, **ghost**, **absorb**, **mix**, **prefix**, **silent**, **retry**, **mangled**. Fail-closed on ghost / absorb / mangled.
+
+Live path: https://hermes-playground-green.vercel.app/assay/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#84405` is already in the cupel. Idle word is **intact**, not the product name. NOT Coda (assistant text loss). NOT Suture (stream tear). NOT Sigil (thinking signature). NOT Reed (MCP registry). NOT Wicket / Plumb (worktree / cwd). NOT Stencil (plan bleed). NOT Blot (image poison). NOT Hasp (file lease). NOT Fathom (standing rules after compact). NOT Parity (claim vs reality). NOT Reveille (muster). NOT Quench (token fuse). NOT Scrim (DLP). NOT Knock (permission grants). Not a leftover woodworking slider.
 
 ## Wicket
 
@@ -205,6 +217,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/assay/` → `projects/assay/`
 - `/wicket/` → `projects/wicket/`
 - `/sigil/` → `projects/sigil/`
 - `/stencil/` → `projects/stencil/`
