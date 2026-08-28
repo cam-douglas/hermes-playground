@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Aside](https://hermes-playground-green.vercel.app/aside/)** — wing desk. A preamble is not an answer. Score the side channel or admit heard. Folder: `projects/aside/`.
+**Featured: [Tappet](https://hermes-playground-green.vercel.app/tappet/)** — valve train. A fired hook is not a seated injection. Score the spawn or admit seated. Folder: `projects/tappet/`.
+
+**Listed: [Aside](https://hermes-playground-green.vercel.app/aside/)** — wing desk. A preamble is not an answer. Score the side channel or admit heard. Folder: `projects/aside/`. Still listed. Not featured.
 
 **Listed: [Chute](https://hermes-playground-green.vercel.app/chute/)** — mail chute. A typed secret is not a handoff. Masked intake or admit clear. Folder: `projects/chute/`. Still listed. Not featured.
 
@@ -50,10 +52,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                21 products: Aside (featured), Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                22 products: Tappet (featured), Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/aside/             theatre wing / side-stage whisper booth for /btw silent truncation (featured)
+projects/tappet/            valve-train / engine-bay desk for silent hook injection (featured)
+projects/aside/             theatre wing / side-stage whisper booth for /btw silent truncation (kept, unfeatured)
 projects/chute/             mail chute / dead-drop for sanctioned secret handoff (kept, unfeatured)
 projects/tain/              night window / one-way glass for Chrome pairing split (kept, unfeatured)
 projects/husk/              threshing desk / grain floor for hollow headless success (kept, unfeatured)
@@ -74,8 +77,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-tappet.md   Tappet ship log (20:50 Sydney)
 runs/2026-08-28-aside.md    Aside ship log (19:50 Sydney)
 runs/2026-08-28-chute.md    Chute ship log (18:50 Sydney)
 runs/2026-08-28-tain.md     Tain ship log (17:50 Sydney)
@@ -115,6 +119,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Tappet
+
+`projects/tappet/` is a valve-train / engine-bay desk for silent hook injection. A fired hook is not a seated injection. UserPromptSubmit (and sibling hook events) are the user's primary steering channel. Two silent failure modes: (A) mid-turn / queued messages never spawn the hook process; (B) the hook runs and returns additionalContext, but it never reaches the model transcript. Zero hook-execution telemetry, so users cannot self-diagnose. Score the valve train. Name the class or admit **seated**. Verdicts: **seated**, **missed**, **slipped**, **folded**, **mute**, **oversize**, **misfiled**, **inert**, **blind**, **wave**. Slack alarm on missed / slipped / folded / mute / oversize / misfiled / inert / wave. Linear on missed / slipped / inert.
+
+Live path: https://hermes-playground-green.vercel.app/tappet/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90296` missed is already in the bay. Idle word is **seated**, not the product name. NOT Fathom (compaction). NOT Reed (MCP registry). NOT Coda (main-turn text drop). NOT Aside (/btw wing). NOT Suture (SSE tear). NOT Knock (permission stall). NOT Husk (hollow success). NOT Chute (inbound secret). NOT Scrim (outbound DLP). NOT Tain, Snib, Veto, Assay, Wicket, Sigil, Stencil, Blot, Hasp, Parity, Reveille, Quench. Not leftover woodworking sliders. Different problem: hook-injection path — process spawn vs additionalContext seating vs telemetry vs UI render. Different UI: valve-train / engine-bay desk.
 
 ## Aside
 
@@ -297,6 +309,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/tappet/` → `projects/tappet/`
 - `/aside/` → `projects/aside/`
 - `/chute/` → `projects/chute/`
 - `/tain/` → `projects/tain/`
