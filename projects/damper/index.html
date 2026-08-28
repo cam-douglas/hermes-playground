@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Damper — chimney damper for Remote Control auto-enable. A settings toggle that reads off is not a hold. Idle word is banked."
+    />
+    <title>Damper — chimney flue</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --soot: #120e0b;
+        --ash: #241c16;
+        --iron: #3a342e;
+        --brick: #6b2e22;
+        --brick-deep: #4a1c16;
+        --ember: #e85d1c;
+        --ember-hot: #ff8a3a;
+        --coal: #1a1410;
+        --copper: #b87333;
+        --copper-hot: #e0a060;
+        --plate: #c9a24e;
+        --mercury: #c41e1e;
+        --glass: #7eb8b0;
+        --cream: #f0e6d2;
+        --mute: #a89880;
+        --line: rgba(201, 162, 78, 0.22);
+        --display: "Big Shoulders Display", "Impact", "Arial Narrow", sans-serif;
+        --ui: Newsreader, "Iowan Old Style", Georgia, serif;
+        --lab: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--ui);
+        color: var(--cream);
+        background:
+          radial-gradient(ellipse 34% 26% at 78% 12%, rgba(232, 93, 28, 0.16), transparent 70%),
+          radial-gradient(ellipse 40% 30% at 8% 88%, rgba(184, 115, 51, 0.1), transparent 68%),
+          repeating-linear-gradient(180deg, rgba(255,255,255,0.015) 0 1px, transparent 1px 31px),
+          linear-gradient(180deg, #1b1612 0%, var(--soot) 48%, #0a0806);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--copper-hot); }
+      .hearth {
+        width: min(1160px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 80px;
+      }
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 10px;
+      }
+      .mark, .path {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--copper);
+      }
+      h1 {
+        margin: 16px 0 8px;
+        font-family: var(--display);
+        font-size: clamp(56px, 10vw, 108px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 0.82;
+        text-transform: uppercase;
+        color: var(--cream);
+        text-shadow: 0 2px 0 #0a0806, 0 0 28px rgba(232, 93, 28, 0.18);
+      }
+      .lede {
+        max-width: 46em;
+        color: var(--mute);
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      .lede em { color: var(--ember-hot); font-style: italic; }
+      .switches, .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin: 18px 0 14px;
+      }
+      .switches button, .acts button {
+        border: 1px solid #6a4a22;
+        background: linear-gradient(180deg, #4a3824, #2c2116);
+        border-radius: 2px;
+        padding: 8px 13px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--plate);
+        box-shadow: inset 0 1px 0 rgba(224, 160, 96, 0.18), 0 1px 0 rgba(0,0,0,0.4);
+      }
+      .switches button.on,
+      .switches button:hover,
+      .acts button:hover {
+        border-color: var(--ember);
+        color: var(--ember-hot);
+        background: linear-gradient(180deg, #5a2a16, #3a1a10);
+      }
+      .stack {
+        position: relative;
+        min-height: 430px;
+        border: 10px solid #3d2a22;
+        background:
+          repeating-linear-gradient(90deg, var(--brick-deep) 0 28px, var(--brick) 28px 56px),
+          var(--brick);
+        box-shadow:
+          inset 0 0 80px rgba(10, 6, 4, 0.55),
+          0 0 0 2px #1a100c,
+          0 18px 40px rgba(0,0,0,0.45);
+        overflow: hidden;
+      }
+      .stack::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          repeating-linear-gradient(0deg, transparent 0 16px, rgba(0,0,0,0.18) 16px 18px),
+          radial-gradient(ellipse 70% 40% at 50% 100%, rgba(232, 93, 28, 0.22), transparent 70%);
+        pointer-events: none;
+      }
+      .soot {
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 18% 12%, rgba(0,0,0,0.35), transparent 36%),
+          linear-gradient(180deg, rgba(10,8,6,0.45), transparent 38%, rgba(10,8,6,0.55));
+        opacity: 0.7;
+      }
+      .stack.drawn .soot,
+      .stack.defaulted .soot,
+      .stack.lit .soot { opacity: 0.4; }
+      .stack.banked .soot,
+      .stack.sealed .soot { opacity: 0.9; }
+      .thermo {
+        position: absolute;
+        top: 28px;
+        left: 28px;
+        width: 54px;
+        height: 210px;
+        border-radius: 28px;
+        background: linear-gradient(180deg, #2a3230, #1a201e);
+        box-shadow: inset 0 0 0 3px #0e1211, 0 8px 16px rgba(0,0,0,0.4);
+        z-index: 2;
+      }
+      .thermo .tube {
+        position: absolute;
+        left: 22px;
+        top: 16px;
+        width: 10px;
+        height: 140px;
+        border-radius: 8px;
+        background: #0c1212;
+        overflow: hidden;
+      }
+      .thermo .mercury {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 38%;
+        background: linear-gradient(180deg, var(--ember-hot), var(--mercury));
+        transition: height 0.35s ease;
+      }
+      .stack.banked .mercury,
+      .stack.sealed .mercury { height: 12%; }
+      .stack.ajar .mercury { height: 42%; }
+      .stack.drawn .mercury,
+      .stack.defaulted .mercury,
+      .stack.bridged .mercury { height: 72%; }
+      .stack.forced .mercury,
+      .stack.lit .mercury,
+      .stack.disclosed .mercury { height: 86%; }
+      .stack.vented .mercury { height: 58%; }
+      .thermo .bulb {
+        position: absolute;
+        left: 11px;
+        bottom: 14px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #ffb08a, var(--mercury));
+        box-shadow: 0 0 12px rgba(232, 93, 28, 0.45);
+      }
+      .thermo label {
+        position: absolute;
+        top: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: var(--lab);
+        font-size: 9px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--glass);
+        white-space: nowrap;
+      }
+      .gauge {
+        position: absolute;
+        top: 28px;
+        right: 28px;
+        width: 132px;
+        height: 132px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 50% 54%, #1c1814 0 46%, #2a241c 47% 70%, #0e0c0a 71%);
+        box-shadow: inset 0 0 0 6px #2a2218, 0 0 0 3px var(--copper), 0 10px 18px rgba(0,0,0,0.4);
+        z-index: 2;
+      }
+      .gauge .needle {
+        position: absolute;
+        left: 50%;
+        top: 22px;
+        width: 3px;
+        height: 46px;
+        background: var(--ember-hot);
+        transform-origin: 50% 90%;
+        transform: translateX(-50%) rotate(-40deg);
+        transition: transform 0.35s ease;
+      }
+      .stack.banked .needle,
+      .stack.sealed .needle { transform: translateX(-50%) rotate(-50deg); }
+      .stack.ajar .needle { transform: translateX(-50%) rotate(8deg); }
+      .stack.drawn .needle,
+      .stack.defaulted .needle { transform: translateX(-50%) rotate(38deg); }
+      .stack.forced .needle,
+      .stack.lit .needle { transform: translateX(-50%) rotate(62deg); }
+      .stack.bridged .needle,
+      .stack.disclosed .needle { transform: translateX(-50%) rotate(48deg); }
+      .stack.vented .needle { transform: translateX(-50%) rotate(22deg); }
+      .gauge .hub {
+        position: absolute;
+        left: 50%;
+        top: 62%;
+        width: 14px;
+        height: 14px;
+        margin: -7px 0 0 -7px;
+        border-radius: 50%;
+        background: var(--plate);
+      }
+      .gauge label {
+        position: absolute;
+        bottom: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: var(--lab);
+        font-size: 9px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--plate);
+        white-space: nowrap;
+      }
+      .plate-wrap {
+        position: absolute;
+        left: 50%;
+        top: 54%;
+        width: 210px;
+        height: 210px;
+        margin: -105px 0 0 -105px;
+        z-index: 3;
+      }
+      .plate {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 32% 28%, #e8c878, var(--plate) 38%, #8a6a28 78%);
+        box-shadow:
+          inset 0 0 0 10px #7a5a22,
+          inset 0 0 0 14px #c9a24e,
+          0 10px 24px rgba(0,0,0,0.5);
+        transform: rotate(8deg);
+        transition: transform 0.45s ease;
+        display: grid;
+        place-items: center;
+      }
+      .plate::after {
+        content: "";
+        width: 70%;
+        height: 10px;
+        background: #3a2a12;
+        border-radius: 3px;
+        box-shadow: 0 0 0 2px #d4b36a;
+      }
+      .stack.banked .plate,
+      .stack.sealed .plate { transform: rotate(0deg); }
+      .stack.ajar .plate { transform: rotate(28deg); }
+      .stack.drawn .plate,
+      .stack.defaulted .plate,
+      .stack.bridged .plate,
+      .stack.disclosed .plate,
+      .stack.vented .plate { transform: rotate(82deg); }
+      .stack.forced .plate,
+      .stack.lit .plate { transform: rotate(96deg); }
+      .embers {
+        position: absolute;
+        left: 18%;
+        right: 18%;
+        bottom: 0;
+        height: 88px;
+        background:
+          radial-gradient(ellipse at 30% 80%, rgba(255, 138, 58, 0.55), transparent 42%),
+          radial-gradient(ellipse at 68% 90%, rgba(196, 30, 30, 0.45), transparent 46%),
+          linear-gradient(180deg, transparent, #2a1008);
+        opacity: 0.15;
+        transition: opacity 0.3s ease;
+      }
+      .stack.drawn .embers,
+      .stack.defaulted .embers,
+      .stack.bridged .embers,
+      .stack.disclosed .embers { opacity: 0.85; }
+      .stack.forced .embers,
+      .stack.lit .embers { opacity: 1; }
+      .stack.ajar .embers,
+      .stack.vented .embers { opacity: 0.5; }
+      .url-ribbon {
+        position: absolute;
+        left: 18%;
+        right: 18%;
+        top: 36%;
+        padding: 6px 10px;
+        font-family: var(--lab);
+        font-size: 11px;
+        color: var(--glass);
+        background: rgba(10, 12, 12, 0.72);
+        border: 1px dashed rgba(126, 184, 176, 0.4);
+        opacity: 0;
+        z-index: 4;
+        text-align: center;
+      }
+      .stack.bridged .url-ribbon,
+      .stack.defaulted .url-ribbon,
+      .stack.ajar .url-ribbon,
+      .stack.vented .url-ribbon { opacity: 1; }
+      .papers {
+        position: absolute;
+        left: 22%;
+        top: 18%;
+        width: 56px;
+        height: 72px;
+        background: #efe4c8;
+        color: #2a2218;
+        font-family: var(--lab);
+        font-size: 9px;
+        padding: 8px 6px;
+        transform: rotate(-12deg);
+        opacity: 0;
+        z-index: 4;
+      }
+      .stack.disclosed .papers,
+      .stack.bridged .papers,
+      .stack.defaulted .papers { opacity: 1; }
+      .caption {
+        position: absolute;
+        left: 24px;
+        right: 24px;
+        bottom: 16px;
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        color: var(--cream);
+        text-shadow: 0 1px 0 #000;
+        z-index: 4;
+      }
+      .console {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1.2fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) {
+        .console { grid-template-columns: 1fr; }
+      }
+      .panel {
+        border: 1px solid var(--line);
+        background: rgba(26, 20, 16, 0.86);
+        padding: 14px 16px 16px;
+      }
+      .panel h2 {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: 20px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--copper);
+      }
+      .verdict {
+        font-family: var(--display);
+        font-size: clamp(36px, 6vw, 56px);
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        line-height: 0.9;
+      }
+      .verdict.ok { color: var(--glass); }
+      .verdict.alarm { color: var(--ember-hot); }
+      .feed { margin: 10px 0 0; color: var(--mute); }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-family: var(--lab);
+        font-size: 12px;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(240, 230, 210, 0.06);
+      }
+      .row b { color: var(--plate); font-weight: 500; }
+      #why ul { margin: 0; padding-left: 18px; color: var(--mute); }
+      #why li { margin: 0 0 6px; }
+      .ledger {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 860px) {
+        .ledger { grid-template-columns: 1fr; }
+      }
+      .ledger article {
+        border: 1px solid var(--line);
+        background: rgba(18, 14, 11, 0.8);
+        padding: 12px 14px;
+      }
+      .ledger h3 {
+        margin: 0 0 6px;
+        font-family: var(--display);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 16px;
+        color: var(--copper);
+      }
+      .ledger p { margin: 0; color: var(--mute); font-size: 14px; }
+      .checks {
+        margin: 16px 0 0;
+        font-family: var(--lab);
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .checks.ok { color: var(--glass); }
+      .checks.bad { color: var(--ember-hot); }
+      .why-not {
+        margin: 22px 0 0;
+        max-width: 58em;
+        color: var(--mute);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="hearth">
+      <div class="mast">
+        <p class="mark">23:50 Sydney · chimney damper</p>
+        <p class="path"><a href="/">catalog</a> · /damper/</p>
+      </div>
+      <h1>Damper</h1>
+      <p class="lede">
+        A settings toggle that reads off is not a hold. Remote Control can open
+        the flue before you throw <em>/rc</em>. Score the draft or admit
+        <em>banked</em>.
+      </p>
+      <div class="switches" id="switches"></div>
+      <div class="acts">
+        <button type="button" data-act="throw">Throw</button>
+        <button type="button" data-act="bank">Bank</button>
+        <button type="button" data-act="draw">Draw</button>
+        <button type="button" data-act="observe">Observe</button>
+        <button type="button" data-act="sever">Sever</button>
+      </div>
+      <section class="stack" id="stack" aria-label="Chimney flue">
+        <div class="soot" aria-hidden="true"></div>
+        <div class="thermo" aria-hidden="true">
+          <label>flue °</label>
+          <div class="tube"><div class="mercury"></div></div>
+          <div class="bulb"></div>
+        </div>
+        <div class="gauge" aria-hidden="true">
+          <div class="needle"></div>
+          <div class="hub"></div>
+          <label>draft gauge</label>
+        </div>
+        <div class="plate-wrap" aria-hidden="true"><div class="plate"></div></div>
+        <div class="embers" aria-hidden="true"></div>
+        <div class="url-ribbon" id="ribbon">no remote URL</div>
+        <div class="papers" aria-hidden="true">tool_result</div>
+        <p class="caption" id="caption">cast-iron plate shut · fire banked · no remote draft</p>
+      </section>
+      <section class="console">
+        <article class="panel">
+          <h2>Class</h2>
+          <div class="verdict" id="spoken" aria-live="polite">defaulted</div>
+          <p class="feed" id="feed"></p>
+        </article>
+        <article class="panel gauges" id="gauges"></article>
+        <article class="panel">
+          <h2>Reasons</h2>
+          <div id="why"></div>
+        </article>
+      </section>
+      <section class="ledger" id="ledger" aria-label="Demo sinks"></section>
+      <p class="checks" id="checks"></p>
+      <p class="why-not">
+        NOT Snib (Trusted Devices fail-open: revoke / Not now leaves an already-attached
+        session steerable). Damper is RC starting / auto-enabling without opt-in.
+        The flue opens before you throw anything. NOT Knock (fail-loud permission
+        grant stalls). NOT Hasp (file-path lease). NOT Cote / Nixie (--resume
+        team-hub identity split). NOT Larder / Tappet / Aside / Chute / Tain / Husk /
+        Veto / Assay / Wicket / Sigil / Stencil / Suture / Blot / Coda / Reed /
+        Fathom / Parity / Quench / Scrim / Reveille. NOT leftover woodworking.
+        Idle word is banked.
+      </p>
+    </main>
+    <script>
+      /**
+       * Chimney desk. A settings toggle that reads off is not a hold.
+       * NOT Snib (already-attached Trusted Devices). NOT Cote / Nixie.
+       * Idle word is banked. Never the product name. Never empty.
+       */
+      const VERDICTS = ["banked","drawn","vented","ajar","forced","defaulted","bridged","disclosed","sealed","lit"];
+      const IDLE_WORD = "banked";
+      const SLACK = ["defaulted","drawn","forced","disclosed"];
+      const LINEAR = ["defaulted","disclosed"];
+
+      function emptyProbe() {
+        return {
+          neverInvokedRc: false, uiDefaultToggleOff: false,
+          remoteControlAtStartupAbsent: false, remoteControlAtStartupFalse: false,
+          disableClaudeAiConnectorsTrue: false, rcActive: false, liveRemoteUrl: false,
+          remoteUrl: "", toolResultsCrossing: false, fileContentsExposed: false,
+          seenAutoOnNotification: false, vscodeNewTab: false, surface: "",
+          observed: false, session: "", source: "", issue: null, scored: false
+        };
+      }
+
+      function cloneProbe(raw) {
+        return { ...emptyProbe(), ...(raw && typeof raw === "object" ? raw : {}) };
+      }
+
+      function isIdle(probe) {
+        const n = cloneProbe(probe);
+        return !n.neverInvokedRc && !n.uiDefaultToggleOff &&
+          !n.remoteControlAtStartupAbsent && !n.remoteControlAtStartupFalse &&
+          !n.disableClaudeAiConnectorsTrue && !n.rcActive && !n.liveRemoteUrl &&
+          !n.remoteUrl && !n.toolResultsCrossing && !n.fileContentsExposed &&
+          !n.seenAutoOnNotification && !n.vscodeNewTab && !n.surface && !n.observed;
+      }
+
+      function classify(probe) {
+        const n = cloneProbe(probe);
+        if (isIdle(n)) return "banked";
+        if (n.remoteControlAtStartupFalse && !n.rcActive) return "sealed";
+        if (n.vscodeNewTab && n.rcActive && n.neverInvokedRc) return "forced";
+        if (n.uiDefaultToggleOff && n.rcActive) return "ajar";
+        if (n.rcActive && n.neverInvokedRc && !n.disableClaudeAiConnectorsTrue &&
+          !n.uiDefaultToggleOff && !n.vscodeNewTab && !n.seenAutoOnNotification &&
+          !n.liveRemoteUrl && !n.toolResultsCrossing && !n.fileContentsExposed) {
+          return "lit";
+        }
+        if (n.toolResultsCrossing && n.rcActive && n.neverInvokedRc &&
+          !n.fileContentsExposed && !n.disableClaudeAiConnectorsTrue) {
+          return "disclosed";
+        }
+        if (n.liveRemoteUrl && n.fileContentsExposed && n.rcActive &&
+          !n.disableClaudeAiConnectorsTrue) {
+          return "bridged";
+        }
+        if (n.neverInvokedRc && n.disableClaudeAiConnectorsTrue && n.rcActive &&
+          n.remoteControlAtStartupAbsent) {
+          return "defaulted";
+        }
+        if (n.rcActive && n.neverInvokedRc) return "drawn";
+        if (n.rcActive && !n.neverInvokedRc) return "vented";
+        return "banked";
+      }
+
+      function feedOf(probe, verdict) {
+        const kind = verdict || classify(probe);
+        if (kind === "drawn") return "● Drawn · flue open · never ran /rc · draft is pulling without opt-in";
+        if (kind === "vented") return "● Vented · you threw /rc · plate is open on purpose · smoke has a path";
+        if (kind === "ajar") return "● Ajar · UI toggle reads off · session still live-bridged · a settings toggle is not a hold";
+        if (kind === "forced") return "● Forced · VS Code new tab auto-enabled RC · remoteControl=default ignored";
+        if (kind === "defaulted") return "● Defaulted · new session · disableClaudeAiConnectors true ignored · RC already on";
+        if (kind === "bridged") return "● Bridged · live claude.ai/code URL · file contents on the far side";
+        if (kind === "disclosed") return "● Disclosed · tool results crossing the bridge · no consent to open the flue";
+        if (kind === "sealed") return "● Sealed · remoteControlAtStartup:false holds · plate stays shut on this surface";
+        if (kind === "lit") return "● Lit · RC auto-triggered with no explicit path · fire started itself";
+        return "● Banked · fire banked · plate shut · no remote draft";
+      }
+
+      function reasonsOf(probe, verdict) {
+        const n = cloneProbe(probe);
+        const kind = verdict || classify(n);
+        const reasons = [];
+        if (n.session) reasons.push("session " + n.session);
+        reasons.push(n.neverInvokedRc ? "never ran /rc, --rc, or claude remote-control" : "an explicit RC path was invoked");
+        reasons.push(n.rcActive ? "Remote Control is active" : "Remote Control is off");
+        reasons.push(n.uiDefaultToggleOff ? 'UI "Enable remote control by default" reads off' : "UI default toggle is on, unset, or not this surface");
+        if (n.disableClaudeAiConnectorsTrue) reasons.push("disableClaudeAiConnectors: true (did not stop RC)");
+        if (n.liveRemoteUrl || n.remoteUrl) reasons.push(n.remoteUrl ? "live remote URL " + n.remoteUrl : "live claude.ai/code URL present");
+        if (n.toolResultsCrossing) reasons.push("tool results crossing the bridge");
+        if (n.fileContentsExposed) reasons.push("file contents exposed across the bridge");
+        if (n.seenAutoOnNotification) reasons.push('seenNotifications["remote-control-auto-on"] is stamped');
+        if (n.vscodeNewTab) reasons.push("VS Code new tab opened with RC already on");
+        if (n.observed) reasons.push("Observe checked the notification stamp and settings");
+        reasons.push("a settings toggle that reads off is not a hold");
+        reasons.push("NOT Snib / Knock / Hasp / Cote / Nixie / Larder / Tappet / leftover woodworking");
+        if (kind === "banked") reasons.push("fire banked, plate shut, no remote draft; idle word is banked");
+        if (kind === "drawn") reasons.push("draft is pulling; RC on without /rc; the flue opened itself");
+        if (kind === "vented") reasons.push("you opened the plate; this is a consented draft, not auto-on");
+        if (kind === "ajar") reasons.push("PRIMARY contrast #89568: Desktop toggle off, session still connected");
+        if (kind === "forced") reasons.push("PRIMARY contrast #89146: every VS Code tab auto-enables RC");
+        if (kind === "defaulted") reasons.push("PRIMARY #90341: new session, never /rc, connectors disabled, RC live");
+        if (kind === "bridged") reasons.push("live URL plus file disclosure; the chimney connects two rooms");
+        if (kind === "disclosed") reasons.push("tool results crossed without consent; the draft carried them");
+        if (kind === "sealed") reasons.push("explicit remoteControlAtStartup:false held this surface");
+        if (kind === "lit") reasons.push("PRIMARY contrast #77517: RC sessions auto-triggering with no explicit path");
+        return reasons;
+      }
+
+      function score(probe) {
+        const n = cloneProbe(probe);
+        const verdict = classify(n);
+        const flueOpen = n.rcActive || ["drawn","vented","ajar","forced","defaulted","bridged","disclosed","lit"].indexOf(verdict) >= 0;
+        return {
+          verdict,
+          reasons: reasonsOf(n, verdict),
+          flueOpen: flueOpen,
+          damperClosed: verdict === "banked" || verdict === "sealed",
+          consented: n.rcActive && !n.neverInvokedRc,
+          bridged: Boolean(n.liveRemoteUrl || n.remoteUrl || verdict === "bridged"),
+          feed: feedOf(n, verdict),
+          slack: SLACK.indexOf(verdict) >= 0,
+          linear: LINEAR.indexOf(verdict) >= 0,
+          github: true,
+          alarm: SLACK.indexOf(verdict) >= 0,
+          idleWord: IDLE_WORD,
+          state: verdict,
+          probe: n,
+          ...n
+        };
+      }
+
+      function seedOf(kind) {
+        const base = emptyProbe();
+        if (kind === "defaulted") {
+          return { ...base, neverInvokedRc: true, remoteControlAtStartupAbsent: true, disableClaudeAiConnectorsTrue: true, rcActive: true, liveRemoteUrl: true, remoteUrl: "https://claude.ai/code/session/90341", toolResultsCrossing: true, fileContentsExposed: true, seenAutoOnNotification: true, surface: "cli", session: "90341-defaulted", source: "anthropics/claude-code#90341", issue: 90341, scored: true };
+        }
+        if (kind === "drawn") {
+          return { ...base, neverInvokedRc: true, rcActive: true, seenAutoOnNotification: true, surface: "cli", session: "90341-drawn", source: "anthropics/claude-code#90341", issue: 90341, scored: true };
+        }
+        if (kind === "vented") {
+          return { ...base, rcActive: true, liveRemoteUrl: true, remoteUrl: "https://claude.ai/code/session/vented", surface: "cli", session: "vented", source: "consent", scored: true };
+        }
+        if (kind === "ajar") {
+          return { ...base, neverInvokedRc: true, uiDefaultToggleOff: true, remoteControlAtStartupAbsent: true, rcActive: true, liveRemoteUrl: true, remoteUrl: "https://claude.ai/code/session/89568", surface: "desktop", session: "89568-ajar", source: "anthropics/claude-code#89568", issue: 89568, scored: true };
+        }
+        if (kind === "forced") {
+          return { ...base, neverInvokedRc: true, rcActive: true, vscodeNewTab: true, surface: "vscode", session: "89146-forced", source: "anthropics/claude-code#89146", issue: 89146, scored: true };
+        }
+        if (kind === "lit") {
+          return { ...base, neverInvokedRc: true, rcActive: true, surface: "cli", session: "77517-lit", source: "anthropics/claude-code#77517", issue: 77517, scored: true };
+        }
+        if (kind === "bridged") {
+          return { ...base, neverInvokedRc: true, rcActive: true, liveRemoteUrl: true, remoteUrl: "https://claude.ai/code/session/bridged", fileContentsExposed: true, toolResultsCrossing: true, seenAutoOnNotification: true, surface: "desktop", session: "90341-bridged", source: "anthropics/claude-code#90341", issue: 90341, scored: true };
+        }
+        if (kind === "disclosed") {
+          return { ...base, neverInvokedRc: true, rcActive: true, toolResultsCrossing: true, seenAutoOnNotification: true, surface: "cli", session: "90341-disclosed", source: "anthropics/claude-code#90341", issue: 90341, scored: true };
+        }
+        if (kind === "sealed") {
+          return { ...base, neverInvokedRc: true, remoteControlAtStartupFalse: true, surface: "desktop", session: "89568-sealed", source: "anthropics/claude-code#89568", issue: 89568, scored: true };
+        }
+        if (kind === "banked") {
+          return { ...base, session: "banked", source: "flue", scored: true };
+        }
+        return emptyProbe();
+      }
+
+      function decide(probe, action) {
+        let next = cloneProbe(probe);
+        const verb = String(action || "score").toLowerCase();
+        if (verb === "bank" || verb === "clear") next = emptyProbe();
+        else if (verb === "draw" && isIdle(next)) next = seedOf("drawn");
+        else if (verb === "draw") next = { ...next, rcActive: true, scored: true };
+        else if (verb === "observe") next = { ...next, observed: true, scored: true };
+        else if (verb === "sever") {
+          next = { ...next, rcActive: false, liveRemoteUrl: false, remoteUrl: "", toolResultsCrossing: false, fileContentsExposed: false, scored: true };
+        } else {
+          next.scored = true;
+        }
+        return score(next);
+      }
+
+      const CHIPS = [
+        { id: "defaulted", label: "defaulted #90341" },
+        { id: "drawn", label: "drawn" },
+        { id: "ajar", label: "ajar #89568" },
+        { id: "forced", label: "forced #89146" },
+        { id: "lit", label: "lit #77517" },
+        { id: "bridged", label: "bridged" },
+        { id: "disclosed", label: "disclosed" },
+        { id: "sealed", label: "sealed" },
+        { id: "vented", label: "vented" },
+        { id: "banked", label: "Clear · banked" }
+      ];
+
+      const CAPTION = {
+        banked: "cast-iron plate shut · fire banked · no remote draft",
+        drawn: "brass plate swung open · draft pulling · never threw /rc",
+        vented: "you opened the flue · consented smoke path",
+        ajar: "plate cracked · toggle reads off · live URL still glowing",
+        forced: "VS Code tab slammed the plate open · default ignored",
+        defaulted: "new session · connectors disabled · flue already drawing",
+        bridged: "live claude.ai/code ribbon · file pages in the updraft",
+        disclosed: "tool_result pages climbing the flue · no consent",
+        sealed: "startup:false pin holds · plate stays shut",
+        lit: "embers lit themselves · no /rc, no toggle, no stamp"
+      };
+
+      let probe = seedOf("defaulted");
+      let currentChip = "defaulted";
+
+      function row(label, value) {
+        return '<div class="row"><span>' + label + "</span><b>" + String(value) + "</b></div>";
+      }
+
+      function sinks(result) {
+        const slack = result.slack
+          ? "Would post to Slack: " + result.verdict + " flue alarm on the chimney plate."
+          : "Would skip Slack. Flue is " + result.verdict + ".";
+        const github = "Would open a GitHub damper-ledger issue. Demo: no token.";
+        const linear = result.linear
+          ? "Would open a Linear ticket: " + result.verdict + " · " + (result.source || "flue")
+          : "Would skip Linear. Flue is " + result.verdict + ".";
+        return { slack, github, linear };
+      }
+
+      function render() {
+        const result = decide(probe, "score");
+        document.getElementById("stack").className = "stack " + result.verdict;
+        document.getElementById("caption").textContent = CAPTION[result.verdict] || CAPTION.banked;
+        document.getElementById("ribbon").textContent = result.remoteUrl || (result.liveRemoteUrl ? "https://claude.ai/code" : "no remote URL");
+        document.getElementById("gauges").innerHTML = "<h2>Gauges</h2>" + [
+          row("RC active", result.rcActive ? "yes" : "no"),
+          row("never /rc", result.neverInvokedRc ? "yes" : "no"),
+          row("flue open", result.flueOpen ? "yes" : "no"),
+          row("plate shut", result.damperClosed ? "yes" : "no"),
+          row("consented", result.consented ? "yes" : "no"),
+          row("bridged", result.bridged ? "yes" : "no"),
+          row("issue", result.issue != null ? "#" + result.issue : "-")
+        ].join("");
+        const spoken = document.getElementById("spoken");
+        spoken.className = "verdict " + (result.verdict === "banked" || result.verdict === "sealed" || result.verdict === "vented" ? "ok" : result.alarm ? "alarm" : "");
+        spoken.textContent = result.verdict;
+        document.getElementById("feed").textContent = result.feed;
+        document.getElementById("why").innerHTML = "<ul>" + result.reasons.map(function (line) {
+          return "<li>" + line + "</li>";
+        }).join("") + "</ul>";
+        const s = sinks(result);
+        document.getElementById("ledger").innerHTML =
+          "<article><h3>Slack</h3><p>" + s.slack + "</p></article>" +
+          "<article><h3>GitHub</h3><p>" + s.github + "</p></article>" +
+          "<article><h3>Linear</h3><p>" + s.linear + "</p></article>";
+        document.querySelectorAll("#switches button").forEach(function (btn) {
+          btn.classList.toggle("on", btn.dataset.seed === currentChip);
+        });
+      }
+
+      function bayChecks() {
+        const misses = [];
+        if (classify(emptyProbe()) !== "banked") misses.push("idle");
+        for (const chip of CHIPS) {
+          const got = classify(seedOf(chip.id));
+          if (got !== chip.id) misses.push(chip.id + "→" + got);
+        }
+        if (IDLE_WORD !== "banked") misses.push("idleWord");
+        if (/damper/i.test(IDLE_WORD)) misses.push("idle is product name");
+        if (/empty/i.test(IDLE_WORD)) misses.push("idle is empty");
+        if (VERDICTS.join(" ") !== "banked drawn vented ajar forced defaulted bridged disclosed sealed lit") misses.push("vocab");
+        const el = document.getElementById("checks");
+        if (misses.length) {
+          el.className = "checks bad";
+          el.textContent = "flue check failed: " + misses.join(", ");
+        } else {
+          el.className = "checks ok";
+          el.textContent = "flue check: ten classes + idle banked. Never the product name. Never empty.";
+        }
+        return misses.length === 0;
+      }
+
+      const switches = document.getElementById("switches");
+      for (const chip of CHIPS) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.seed = chip.id;
+        btn.textContent = chip.label;
+        btn.addEventListener("click", function () {
+          currentChip = chip.id;
+          probe = seedOf(chip.id);
+          render();
+        });
+        switches.appendChild(btn);
+      }
+      document.querySelectorAll(".acts button").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const act = btn.dataset.act;
+          if (act === "bank") {
+            currentChip = "banked";
+            probe = emptyProbe();
+          }
+          const result = decide(probe, act);
+          probe = result.probe;
+          if (act === "draw" || act === "sever") currentChip = result.verdict;
+          render();
+        });
+      });
+      render();
+      bayChecks();
+    </script>
+  </body>
+</html>

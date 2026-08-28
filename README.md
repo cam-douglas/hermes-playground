@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Larder](https://hermes-playground-green.vercel.app/larder/)** — stillroom. A sync stamp is not a delivery. Score the shelf or admit stocked. Folder: `projects/larder/`.
+**Featured: [Damper](https://hermes-playground-green.vercel.app/damper/)** — chimney damper. A settings toggle is not a hold. Score the draft or admit banked. Folder: `projects/damper/`.
+
+**Listed: [Larder](https://hermes-playground-green.vercel.app/larder/)** — stillroom. A sync stamp is not a delivery. Score the shelf or admit stocked. Folder: `projects/larder/`. Still listed. Not featured.
 
 **Listed: [Tappet](https://hermes-playground-green.vercel.app/tappet/)** — valve train. A fired hook is not a seated injection. Score the spawn or admit seated. Folder: `projects/tappet/`. Still listed. Not featured.
 
@@ -54,10 +56,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                23 products: Larder (featured), Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                24 products: Damper (featured), Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/larder/            stillroom / cold larder for silent plugin-store freeze (featured)
+projects/damper/            chimney damper / flue plate for Remote Control auto-enable (featured)
+projects/larder/            stillroom / cold larder for silent plugin-store freeze (kept, unfeatured)
 projects/tappet/            valve-train / engine-bay desk for silent hook injection (kept, unfeatured)
 projects/aside/             theatre wing / side-stage whisper booth for /btw silent truncation (kept, unfeatured)
 projects/chute/             mail chute / dead-drop for sanctioned secret handoff (kept, unfeatured)
@@ -80,8 +83,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/damper/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-damper.md   Damper ship log (23:50 Sydney)
 runs/2026-08-28-larder.md   Larder ship log (21:50 Sydney)
 runs/2026-08-28-tappet.md   Tappet ship log (20:50 Sydney)
 runs/2026-08-28-aside.md    Aside ship log (19:50 Sydney)
@@ -123,6 +127,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Damper
+
+`projects/damper/` is a chimney damper / flue plate for Claude Code Remote Control that auto-enables without user consent. A settings toggle that reads off is not a hold. Score the draft or admit **banked**. Verdicts: **banked**, **drawn**, **vented**, **ajar**, **forced**, **defaulted**, **bridged**, **disclosed**, **sealed**, **lit**. Slack alarm on defaulted / drawn / forced / disclosed. Linear on defaulted / disclosed.
+
+Live path: https://hermes-playground-green.vercel.app/damper/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90341` defaulted is already on the plate. Idle word is **banked**, not the product name, not empty. NOT Snib (Trusted Devices fail-open: revoke / Not now leaves an already-attached session steerable). Damper is RC starting / auto-enabling without opt-in. The flue opens before you throw anything. NOT Knock (fail-loud permission grant stalls). NOT Hasp (file-path lease). NOT Cote / Nixie (--resume team-hub identity split). NOT Larder / Tappet / Aside / Chute / Tain / Husk / Veto / Assay / Wicket / Sigil / Stencil / Suture / Blot / Coda / Reed / Fathom / Parity / Quench / Scrim / Reveille. Not leftover woodworking sliders. Different problem: Remote Control auto-enable without consent. Different UI: chimney / flue / brass damper-plate / draft-gauge. Soot wash, ember accents, cast-iron plate, flue thermometer.
 
 ## Larder
 
@@ -321,6 +333,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/damper/` → `projects/damper/`
 - `/larder/` → `projects/larder/`
 - `/tappet/` → `projects/tappet/`
 - `/aside/` → `projects/aside/`
