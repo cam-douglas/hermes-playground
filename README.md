@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Kist](https://hermes-playground-green.vercel.app/kist/)** — undertaker's kist. A session still on the default list is not a hold. Score the lid or admit laid. Folder: `projects/kist/`.
+**Featured: [Chad](https://hermes-playground-green.vercel.app/chad/)** — hanging-chad ballot booth. A reported selection is not a hold. Score the ballot or admit spoilt. Folder: `projects/chad/`.
+
+**Listed: [Kist](https://hermes-playground-green.vercel.app/kist/)** — undertaker's kist. A session still on the default list is not a hold. Score the lid or admit laid. Folder: `projects/kist/`. Still listed. Not featured.
 
 **Listed: [Wraith](https://hermes-playground-green.vercel.app/wraith/)** — afterimage. A grant that is still ON is not a hold. Score the image or admit unlinked. Folder: `projects/wraith/`. Still listed. Not featured.
 
@@ -64,10 +66,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                28 products: Kist (featured), Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                29 products: Chad (featured), Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/kist/              undertaker's kist / coffin-chest desk for teardown-archive that never unarchives (featured)
+projects/chad/              hanging-chad / ballot booth desk for AskUserQuestion phantom selection treated as consent (featured)
+projects/kist/              undertaker's kist / coffin-chest desk for teardown-archive that never unarchives (kept, unfeatured)
 projects/wraith/            afterimage / deleted-inode desk for auto-updater live-image unlink (kept, unfeatured)
 projects/gasket/            steam-fitter flange / packing ring for project-scoped strictAllowlist silent discard (kept, unfeatured)
 projects/damper/            chimney damper / flue plate for Remote Control auto-enable (kept, unfeatured)
@@ -95,8 +98,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-chad.md     Chad ship log (03:50 Sydney)
 runs/2026-08-29-kist.md     Kist ship log (02:50 Sydney)
 runs/2026-08-29-wraith.md   Wraith ship log (01:50 Sydney)
 runs/2026-08-29-gasket.md   Gasket ship log (00:50 Sydney)
@@ -143,6 +147,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Chad
+
+`projects/chad/` is a hanging-chad / ballot booth desk for Claude Code `AskUserQuestion` returning an option the user never selected, then the assistant acting on that forged consent. A reported selected option is not a hold. Score the ballot or admit **spoilt**. Verdicts: **spoilt**, **punched**, **blank**, **carried**, **miscast**, **phantom**, **rubbered**, **forced**, **defaulted**, **clear**. Slack chad alarm on punched / carried / miscast / phantom / forced. Linear false-consent ticket on punched / carried / phantom.
+
+Live path: https://hermes-playground-green.vercel.app/chad/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90407` punched is already on the ballot. Idle word is **spoilt**, not the product name, not empty. NOT Knock (fail-loud permission-grant stall). Knock is stalled grants; Chad is a false affirmative on a question tool. NOT Damper (Remote Control auto-enable without consent). Damper is a settings toggle; Chad is AskUserQuestion phantom selection + acted-upon side effects. NOT Parity (claim vs reality). Parity checks agent assertions against external truth; Chad scores ballot provenance. NOT Kist / Wraith / Gasket / leftover woodworking sliders. Different problem: phantom AskUserQuestion selection treated as consent. Different UI: polling-station / hanging-chad ballot booth. Paper ballots, punch cards, hanging chads, ink stamp, canvas bag, election night ledger.
 
 ## Kist
 
@@ -381,6 +393,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/chad/` → `projects/chad/`
 - `/kist/` → `projects/kist/`
 - `/wraith/` → `projects/wraith/`
 - `/gasket/` → `projects/gasket/`

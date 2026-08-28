@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Chad — hanging-chad ballot booth for Claude Code AskUserQuestion phantom selection treated as consent. A reported selection is not a hold. Idle word is spoilt."
+    />
+    <title>Chad — hanging-chad ballot booth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Libre+Franklin:ital,wght@0,400;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --hall: #1a2433;
+        --dusk: #0e1622;
+        --tube: #c8f5d4;
+        --fluorescent: #7de3a0;
+        --manila: #f3e2b8;
+        --inkpad: #8c1d2c;
+        --stamp: #c42b3a;
+        --canvas: #c4b089;
+        --curtain: #1e3a5f;
+        --precinct: #f4c95d;
+        --navy: #0b1a2b;
+        --mute: #8fa3b8;
+        --rule: rgba(200, 245, 212, 0.14);
+        --display: "Archivo Black", "Libre Franklin", Impact, sans-serif;
+        --copy: "Libre Franklin", "Helvetica Neue", sans-serif;
+        --type: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--copy);
+        color: #e8f0f6;
+        background:
+          linear-gradient(180deg, rgba(125, 227, 160, 0.08), transparent 28%),
+          repeating-linear-gradient(
+            180deg,
+            transparent 0 3px,
+            rgba(200, 245, 212, 0.03) 3px 4px
+          ),
+          radial-gradient(ellipse 70% 28% at 50% -8%, rgba(200, 245, 212, 0.18), transparent 58%),
+          linear-gradient(180deg, #152033 0%, var(--hall) 46%, var(--dusk) 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--fluorescent); }
+      .precinct {
+        width: min(1140px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 24px 0 80px;
+      }
+      .tube {
+        height: 10px;
+        margin: 0 8% 18px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, transparent, var(--tube), var(--fluorescent), var(--tube), transparent);
+        box-shadow: 0 0 24px rgba(125, 227, 160, 0.45), 0 0 2px #fff;
+      }
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 12px;
+      }
+      .mark, .path {
+        margin: 0;
+        font-family: var(--type);
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        color: var(--mute);
+      }
+      h1 {
+        margin: 20px 0 10px;
+        font-family: var(--display);
+        font-size: clamp(48px, 8vw, 88px);
+        font-weight: 400;
+        letter-spacing: -0.02em;
+        line-height: 0.9;
+        color: var(--manila);
+        text-transform: uppercase;
+      }
+      .lede {
+        max-width: 42em;
+        color: var(--mute);
+        font-size: 18px;
+        line-height: 1.55;
+      }
+      .lede em { color: var(--manila); font-style: italic; }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 22px 0 12px;
+      }
+      .tags button {
+        border: 1px solid rgba(243, 226, 184, 0.28);
+        background: #223044;
+        padding: 7px 11px 6px;
+        font-family: var(--type);
+        font-size: 12px;
+        letter-spacing: 0.02em;
+      }
+      .tags button.on,
+      .tags button:hover {
+        border-color: var(--precinct);
+        background: #2b3d28;
+        color: var(--manila);
+      }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 22px;
+      }
+      .acts button {
+        border: 1px solid rgba(196, 43, 58, 0.45);
+        background: linear-gradient(180deg, #d64552, var(--inkpad));
+        color: #fff7ea;
+        padding: 9px 16px;
+        font-family: var(--display);
+        font-size: 14px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      }
+      .acts button:hover { filter: brightness(1.08); }
+      .hall {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .hall { grid-template-columns: 1fr; }
+      }
+      .booth {
+        position: relative;
+        background:
+          linear-gradient(180deg, rgba(30, 58, 95, 0.55), rgba(11, 26, 43, 0.92)),
+          repeating-linear-gradient(90deg, rgba(243, 226, 184, 0.05) 0 10px, transparent 10px 22px);
+        border: 2px solid rgba(200, 245, 212, 0.22);
+        min-height: 440px;
+        padding: 18px 18px 22px;
+        box-shadow: 0 0 0 8px #122033, 0 28px 40px rgba(0, 0, 0, 0.35);
+      }
+      .curtain-bar {
+        display: flex;
+        gap: 4px;
+        margin: -6px 0 14px;
+      }
+      .pleat {
+        flex: 1;
+        height: 28px;
+        background: linear-gradient(180deg, #2a5078, var(--curtain) 70%, #12243a);
+        border-radius: 0 0 40% 40%;
+        box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.18);
+      }
+      .punchcard {
+        position: relative;
+        background: var(--manila);
+        color: #2a2114;
+        min-height: 168px;
+        padding: 16px 18px 22px;
+        margin-bottom: 16px;
+        font-family: var(--type);
+        box-shadow: 6px 8px 0 rgba(0, 0, 0, 0.22);
+      }
+      .punchcard::before,
+      .punchcard::after {
+        content: "";
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        height: 8px;
+        background: repeating-radial-gradient(circle, #2a2114 0 1.5px, transparent 1.6px 10px);
+        opacity: 0.35;
+      }
+      .punchcard::before { top: 6px; }
+      .punchcard::after { bottom: 6px; }
+      .punchcard h2 {
+        margin: 0 0 6px;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #6a5330;
+      }
+      .punchcard p { margin: 0; font-family: var(--copy); font-size: 20px; line-height: 1.25; font-weight: 600; }
+      .hanging {
+        position: absolute;
+        width: 18px;
+        height: 14px;
+        right: 28px;
+        bottom: -8px;
+        background: var(--manila);
+        border: 1px solid #2a2114;
+        transform-origin: top center;
+        box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.2);
+      }
+      .booth.punched .hanging,
+      .booth.carried .hanging,
+      .booth.miscast .hanging,
+      .booth.forced .hanging,
+      .booth.defaulted .hanging,
+      .booth.rubbered .hanging { transform: rotate(18deg) translateY(6px); }
+      .booth.phantom .hanging { transform: rotate(-12deg) translateY(4px); opacity: 0.55; }
+      .booth.spoilt .hanging,
+      .booth.blank .hanging,
+      .booth.clear .hanging { transform: none; opacity: 0.2; }
+      .kit {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .stamppad, .canvas-bag {
+        min-height: 92px;
+        padding: 12px;
+        font-family: var(--type);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .stamppad {
+        background: radial-gradient(circle at 40% 40%, #a32636, var(--inkpad));
+        color: #ffe8ea;
+        border-radius: 4px;
+        box-shadow: inset 0 0 0 6px rgba(0, 0, 0, 0.18);
+      }
+      .canvas-bag {
+        background:
+          repeating-linear-gradient(135deg, rgba(42, 33, 20, 0.08) 0 6px, transparent 6px 12px),
+          linear-gradient(180deg, #d8c49a, var(--canvas));
+        color: #3a2d18;
+        border: 2px dashed #6a5330;
+      }
+      .spoken {
+        margin-top: 16px;
+        font-family: var(--display);
+        font-size: clamp(28px, 5vw, 42px);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--manila);
+      }
+      .spoken.alarm { color: #ff8a93; }
+      .spoken.ok { color: var(--fluorescent); }
+      .feed { margin: 6px 0 0; color: var(--mute); font-size: 14px; line-height: 1.45; }
+      .night {
+        background: #101820;
+        border: 1px solid rgba(244, 201, 93, 0.28);
+        padding: 16px 16px 12px;
+        min-height: 440px;
+        font-family: var(--type);
+        color: var(--precinct);
+      }
+      .night h2 {
+        margin: 0 0 12px;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 7px 0;
+        border-bottom: 1px dashed rgba(244, 201, 93, 0.18);
+        font-size: 12px;
+      }
+      .row b { color: var(--manila); font-weight: 600; }
+      .scorecard, .reasons, .brief, .why-not {
+        margin-top: 28px;
+      }
+      .scorecard h2, .reasons h2, .brief h2, .why-not h2 {
+        font-family: var(--display);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 18px;
+        color: var(--manila);
+      }
+      .tickets, .causes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .tickets button, .causes button {
+        border: 1px dashed rgba(200, 245, 212, 0.28);
+        background: transparent;
+        padding: 7px 10px;
+        font-family: var(--type);
+        font-size: 12px;
+      }
+      .tickets button.on, .causes button.on {
+        border-style: solid;
+        border-color: var(--fluorescent);
+        color: var(--fluorescent);
+      }
+      .reasons ul { padding-left: 18px; color: var(--mute); }
+      .sinks {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 22px;
+      }
+      @media (max-width: 860px) {
+        .sinks { grid-template-columns: 1fr; }
+      }
+      .sinks article {
+        border: 1px solid var(--rule);
+        padding: 12px 14px;
+        background: rgba(16, 24, 32, 0.7);
+      }
+      .sinks h3 {
+        margin: 0 0 8px;
+        font-family: var(--type);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--precinct);
+      }
+      .sinks p { margin: 0; color: var(--mute); font-size: 14px; }
+      .checks { margin-top: 18px; font-family: var(--type); font-size: 12px; color: var(--mute); }
+      .checks.ok { color: var(--fluorescent); }
+      .checks.bad { color: #ff8a93; }
+      .brief p, .why-not p, .brief li { color: var(--mute); line-height: 1.55; }
+      blockquote {
+        margin: 12px 0;
+        padding: 10px 14px;
+        border-left: 3px solid var(--stamp);
+        background: rgba(140, 29, 44, 0.18);
+        color: #f3d4d7;
+      }
+      code { font-family: var(--type); font-size: 0.92em; color: var(--manila); }
+    </style>
+  </head>
+  <body>
+    <main class="precinct">
+      <div class="tube" aria-hidden="true"></div>
+      <header class="mast">
+        <p class="mark">03:50 Sydney · chad</p>
+        <p class="path">/chad/ · precinct 29</p>
+      </header>
+      <h1>Chad</h1>
+      <p class="lede">
+        Hanging-chad ballot booth for Claude Code
+        <code>AskUserQuestion</code>. A reported selected option is
+        <em>not a hold</em>. Score the ballot or admit <em>spoilt</em>.
+      </p>
+      <div class="tags" id="tags"></div>
+      <div class="acts">
+        <button type="button" data-act="score">Score</button>
+        <button type="button" data-act="shut">Shut</button>
+        <button type="button" data-act="punch">Punch</button>
+        <button type="button" data-act="clear">Clear</button>
+      </div>
+      <section class="hall">
+        <div class="booth" id="booth">
+          <div class="curtain-bar" aria-hidden="true">
+            <div class="pleat"></div><div class="pleat"></div><div class="pleat"></div>
+            <div class="pleat"></div><div class="pleat"></div><div class="pleat"></div>
+          </div>
+          <article class="punchcard" id="card">
+            <h2>AskUserQuestion ballot</h2>
+            <p id="caption">AskUserQuestion reported Recommended · user never chose · docker compose ran</p>
+            <span class="hanging" aria-hidden="true"></span>
+          </article>
+          <div class="kit">
+            <div class="stamppad">Ink stamp · admit does not lie</div>
+            <div class="canvas-bag">Canvas bag · precinct returns</div>
+          </div>
+          <div class="spoken alarm" id="spoken">punched</div>
+          <p class="feed" id="feed"></p>
+        </div>
+        <aside class="night" id="book" aria-label="Election night ledger">
+          <h2>Election night</h2>
+        </aside>
+      </section>
+      <section class="scorecard" aria-label="Ballot score">
+        <h2>Score the ballot</h2>
+        <p class="lede" style="font-size:16px;margin:0 0 10px">
+          Reported option, then provenance. A highlighted Recommended is not a
+          hold. Mid-turn typing should dismiss, not punch.
+        </p>
+        <div class="causes" id="causes"></div>
+        <div class="tickets" id="tickets" style="margin-top:10px"></div>
+      </section>
+      <section class="reasons">
+        <h2>Reasons</h2>
+        <div id="why"></div>
+      </section>
+      <section class="sinks" id="sinks" aria-label="Demo sinks"></section>
+      <p class="checks" id="checks"></p>
+      <section class="brief" id="brief">
+        <h2>Research brief</h2>
+        <h3>The problem</h3>
+        <p>
+          <code>AskUserQuestion</code> returned an option the user never
+          selected, then the assistant acted on that forged consent. A reported
+          selected option is not a hold. Score the ballot or admit
+          <strong>spoilt</strong>.
+        </p>
+        <blockquote>
+          AskUserQuestion reported “You run it (Recommended)” the user never
+          chose. The assistant started Docker containers
+          (<code>docker compose up --build -d</code>) against a standing
+          instruction. Hypotheses: Enter meant for the text prompt submitted
+          the highlighted Recommended option; a race between the question UI
+          and mid-turn message input; the question UI auto-resolving when the
+          user sends a message instead of answering.
+        </blockquote>
+        <p>
+          Expected: a pending question should resolve as unanswered/dismissed,
+          not as the highlighted option. A mid-turn user message should take
+          precedence.
+        </p>
+        <h3>GitHub sources (do not invent more)</h3>
+        <ul>
+          <li>
+            Primary:
+            <a href="https://github.com/anthropics/claude-code/issues/90407">anthropics/claude-code#90407</a>
+            — filed 2026-08-28. AskUserQuestion reported “You run it
+            (Recommended)” the user never chose; assistant started Docker
+            containers.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/76616">#76616</a>
+            — Focus click triggers option selection (adjacent false-punch path).
+            Cite as shape, not a new primary.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/88790">#88790</a>
+            — AskUserQuestion tool result cannot be distinguished from a
+            genuine human response (trust/provenance gap).
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/84970">#84970</a>
+            — options repeatedly reappear on mobile.
+          </li>
+          <li>
+            <a href="https://github.com/anthropics/claude-code/issues/86918">#86918</a>
+            — AskUserQuestion never times out while terminal focused.
+          </li>
+        </ul>
+        <h3>Why Chad</h3>
+        <p>
+          A chad is the scrap punched from a ballot card. When it hangs, the
+          machine still reads a vote. AskUserQuestion reported Recommended.
+          The user never chose. Docker ran. Score the ballot. Name the class
+          or admit <strong>spoilt</strong>.
+        </p>
+      </section>
+      <section class="why-not">
+        <h2>Why this is not a clone</h2>
+        <p>
+          NOT Knock (fail-loud permission-grant stall). Knock is stalled
+          grants; Chad is a false affirmative on a question tool.
+          NOT Damper (Remote Control auto-enable without consent). Damper is a
+          settings toggle; Chad is AskUserQuestion phantom selection +
+          acted-upon side effects.
+          NOT Parity (claim vs reality probes of GitHub/Vercel/Linear). Parity
+          checks agent assertions against external truth; Chad scores ballot
+          provenance (reported selection vs user intent / dismissal).
+          NOT Snib / Veto / Assay / Gasket / Wraith / Kist / Cote / Larder /
+          Tappet / Aside / Chute / Tain / Husk / Wicket / Sigil / Stencil /
+          Suture / Blot / Coda / Reed / Fathom / Hasp / Reveille / Quench /
+          Scrim.
+          NOT leftover woodworking / millimetre-slider clones. A chad is a
+          ballot-punch metaphor for a diagnostic desk, not a leftover
+          instrument.
+          Do not ship Livery, Nixie, Crypt, Booth-as-rename-of-Chad, Ballot,
+          Teller, or Placet.
+          Different problem: phantom AskUserQuestion selection treated as
+          consent.
+          Different UI: polling-station / hanging-chad ballot booth. Paper
+          ballots, punch cards, hanging chads, ink stamp, canvas bag, election
+          night ledger. Fluorescent or dusk civic hall light.
+          Different idle word: spoilt.
+        </p>
+      </section>
+    </main>
+    <script>
+      /**
+       * Hanging-chad ballot booth. A reported selection is not a hold.
+       * NOT Knock (stalled grant). NOT Damper (RC auto-enable).
+       * NOT Parity (claim vs reality). NOT leftover woodworking.
+       * Idle word is spoilt. Never the product name. Never empty.
+       */
+      const VERDICTS = ["spoilt","punched","blank","carried","miscast","phantom","rubbered","forced","defaulted","clear"];
+      const IDLE_WORD = "spoilt";
+      const SLACK = ["punched","carried","miscast","phantom","forced"];
+      const LINEAR = ["punched","carried","phantom"];
+
+      function emptyProbe() {
+        return {
+          reportedOption: "", userDeniesSelection: false, userNeverChose: false,
+          recommendedWasHighlighted: false, enterWhileTyping: false, focusClickSelected: false,
+          midTurnMessageAutoResolved: false, assistantActedOnResult: false, sideEffectLanded: false,
+          resultIndistinguishableFromHuman: false, questionDismissedUnanswered: false,
+          deliberateSelectionVerified: false, observed: false, session: "", source: "",
+          issue: null, scored: false
+        };
+      }
+
+      function cloneProbe(raw) {
+        return { ...emptyProbe(), ...(raw && typeof raw === "object" ? raw : {}) };
+      }
+
+      function hasOption(n) {
+        return String(n.reportedOption || "").trim() !== "";
+      }
+
+      function isIdle(probe) {
+        const n = cloneProbe(probe);
+        return !hasOption(n) && !n.userDeniesSelection && !n.userNeverChose &&
+          !n.recommendedWasHighlighted && !n.enterWhileTyping && !n.focusClickSelected &&
+          !n.midTurnMessageAutoResolved && !n.assistantActedOnResult && !n.sideEffectLanded &&
+          !n.resultIndistinguishableFromHuman && !n.questionDismissedUnanswered &&
+          !n.deliberateSelectionVerified && !n.observed;
+      }
+
+      function classify(probe) {
+        const n = cloneProbe(probe);
+        if (isIdle(n)) return "spoilt";
+        if (hasOption(n) && (n.userDeniesSelection || n.userNeverChose)) return "punched";
+        if (n.questionDismissedUnanswered) return "blank";
+        if (n.deliberateSelectionVerified) return "clear";
+        if (n.assistantActedOnResult || n.sideEffectLanded) return "carried";
+        if (n.enterWhileTyping || n.focusClickSelected) return "miscast";
+        if (n.resultIndistinguishableFromHuman) return "phantom";
+        if (n.recommendedWasHighlighted && hasOption(n) && !n.deliberateSelectionVerified) return "rubbered";
+        if (n.midTurnMessageAutoResolved) return "forced";
+        if (hasOption(n) && !n.deliberateSelectionVerified) return "defaulted";
+        return "spoilt";
+      }
+
+      function clusterOf(probe, verdict) {
+        const n = cloneProbe(probe);
+        const kind = verdict || classify(n);
+        const cluster = [];
+        const add = function (word) {
+          if (word && word !== kind && cluster.indexOf(word) < 0) cluster.push(word);
+        };
+        if (n.assistantActedOnResult || n.sideEffectLanded) add("carried");
+        if (n.enterWhileTyping || n.focusClickSelected) add("miscast");
+        if (n.resultIndistinguishableFromHuman) add("phantom");
+        if (n.midTurnMessageAutoResolved) add("forced");
+        if (n.recommendedWasHighlighted && !n.deliberateSelectionVerified) add("defaulted");
+        return cluster;
+      }
+
+      function feedOf(probe, verdict) {
+        const kind = verdict || classify(probe);
+        if (kind === "punched") return "● Punched · tool reported a selected option the user denies / never chose · hanging chad";
+        if (kind === "blank") return "● Blank · question unresolved / dismissed / unanswered · mid-turn message took precedence";
+        if (kind === "carried") return "● Carried · assistant acted on the reported option · side effect landed";
+        if (kind === "miscast") return "● Miscast · Enter or focus-click submitted the highlighted Recommended option";
+        if (kind === "phantom") return "● Phantom · result looks like a genuine human answer · provenance is missing";
+        if (kind === "rubbered") return "● Rubbered · rubber-stamp Recommended default submitted without a deliberate pick";
+        if (kind === "forced") return "● Forced · mid-turn message caused auto-resolve to the highlighted option";
+        if (kind === "defaulted") return "● Defaulted · first / Recommended option submitted by accident of UI default";
+        if (kind === "clear") return "● Clear · verified deliberate selection with distinguishable human provenance";
+        return "● Spoilt · spoilt ballot · nothing scored · idle word is spoilt";
+      }
+
+      function reasonsOf(probe, verdict) {
+        const n = cloneProbe(probe);
+        const kind = verdict || classify(n);
+        const reasons = [];
+        if (n.session) reasons.push("session " + n.session);
+        reasons.push(hasOption(n) ? "reported option " + n.reportedOption : "no option reported on this ballot");
+        reasons.push(n.userDeniesSelection || n.userNeverChose ? "user denies the selection / never chose the reported option" : "user did not deny a reported selection");
+        reasons.push("a reported selection is not a hold");
+        reasons.push("NOT Knock (stalled grant) / Damper (RC auto-enable) / Parity (claim vs reality) / Kist / leftover woodworking / millimetre-slider");
+        if (kind === "spoilt") reasons.push("spoilt ballot or desk idle; idle word is spoilt");
+        if (kind === "punched") reasons.push("PRIMARY #90407: AskUserQuestion reported You run it (Recommended) the user never chose; assistant started Docker containers");
+        if (kind === "miscast") reasons.push("PRIMARY contrast #76616: Enter or focus-click submitted the highlighted Recommended option");
+        if (kind === "phantom") reasons.push("PRIMARY contrast #88790: AskUserQuestion tool result cannot be distinguished from a genuine human response");
+        const cluster = clusterOf(n, kind);
+        if (cluster.length) reasons.push("supporting cluster: " + cluster.join(", "));
+        return reasons;
+      }
+
+      function score(probe) {
+        const n = cloneProbe(probe);
+        const verdict = classify(n);
+        return {
+          verdict,
+          reasons: reasonsOf(n, verdict),
+          cluster: clusterOf(n, verdict),
+          spoilt: verdict === "spoilt",
+          punched: verdict === "punched",
+          carried: verdict === "carried",
+          feed: feedOf(n, verdict),
+          slack: SLACK.indexOf(verdict) >= 0,
+          linear: LINEAR.indexOf(verdict) >= 0,
+          github: true,
+          alarm: SLACK.indexOf(verdict) >= 0,
+          idleWord: IDLE_WORD,
+          state: verdict,
+          probe: n,
+          ...n
+        };
+      }
+
+      function seedOf(kind) {
+        const base = emptyProbe();
+        if (kind === "punched") {
+          return { ...base, reportedOption: "You run it (Recommended)", userDeniesSelection: true, userNeverChose: true, recommendedWasHighlighted: true, enterWhileTyping: true, midTurnMessageAutoResolved: true, assistantActedOnResult: true, sideEffectLanded: true, resultIndistinguishableFromHuman: true, session: "90407-punched", source: "anthropics/claude-code#90407", issue: 90407, scored: true };
+        }
+        if (kind === "blank") {
+          return { ...base, questionDismissedUnanswered: true, session: "90407-blank", source: "anthropics/claude-code#90407", issue: 90407, scored: true };
+        }
+        if (kind === "carried") {
+          return { ...base, reportedOption: "You run it (Recommended)", assistantActedOnResult: true, sideEffectLanded: true, session: "90407-carried", source: "anthropics/claude-code#90407", issue: 90407, scored: true };
+        }
+        if (kind === "miscast") {
+          return { ...base, reportedOption: "You run it (Recommended)", recommendedWasHighlighted: true, focusClickSelected: true, enterWhileTyping: true, session: "76616-miscast", source: "anthropics/claude-code#76616", issue: 76616, scored: true };
+        }
+        if (kind === "phantom") {
+          return { ...base, reportedOption: "You run it (Recommended)", resultIndistinguishableFromHuman: true, session: "88790-phantom", source: "anthropics/claude-code#88790", issue: 88790, scored: true };
+        }
+        if (kind === "rubbered") {
+          return { ...base, reportedOption: "You run it (Recommended)", recommendedWasHighlighted: true, session: "90407-rubbered", source: "anthropics/claude-code#90407", issue: 90407, scored: true };
+        }
+        if (kind === "forced") {
+          return { ...base, midTurnMessageAutoResolved: true, session: "90407-forced", source: "anthropics/claude-code#90407", issue: 90407, scored: true };
+        }
+        if (kind === "defaulted") {
+          return { ...base, reportedOption: "You run it (Recommended)", session: "90407-defaulted", source: "anthropics/claude-code#90407", issue: 90407, scored: true };
+        }
+        if (kind === "clear") {
+          return { ...base, reportedOption: "I'll handle it", deliberateSelectionVerified: true, session: "clear", source: "ballot", scored: true };
+        }
+        if (kind === "spoilt") {
+          return { ...base, session: "spoilt", source: "booth", scored: true };
+        }
+        return emptyProbe();
+      }
+
+      function decide(probe, action) {
+        let next = cloneProbe(probe);
+        const verb = String(action || "score").toLowerCase();
+        if (verb === "shut" || verb === "seat" || verb === "spoilt") next = emptyProbe();
+        else if (verb === "punch" || verb === "forge") next = seedOf("punched");
+        else if (verb === "clear") next = seedOf("clear");
+        else if (verb === "ledger" || verb === "trace" || verb === "observe") next = { ...next, observed: true, scored: true };
+        else next.scored = true;
+        return score(next);
+      }
+
+      const CHIPS = [
+        { id: "punched", label: "punched #90407" },
+        { id: "blank", label: "blank" },
+        { id: "carried", label: "carried" },
+        { id: "miscast", label: "miscast #76616" },
+        { id: "phantom", label: "phantom #88790" },
+        { id: "rubbered", label: "rubbered" },
+        { id: "forced", label: "forced" },
+        { id: "defaulted", label: "defaulted" },
+        { id: "clear", label: "clear" },
+        { id: "spoilt", label: "Shut · spoilt" }
+      ];
+
+      const TICKETS = [
+        { key: "userNeverChose", label: "user never chose" },
+        { key: "userDeniesSelection", label: "user denies" },
+        { key: "recommendedWasHighlighted", label: "Recommended highlighted" },
+        { key: "enterWhileTyping", label: "Enter while typing" },
+        { key: "focusClickSelected", label: "focus click" },
+        { key: "midTurnMessageAutoResolved", label: "mid-turn auto-resolve" },
+        { key: "assistantActedOnResult", label: "assistant acted" },
+        { key: "sideEffectLanded", label: "side effect landed" },
+        { key: "resultIndistinguishableFromHuman", label: "no provenance" },
+        { key: "questionDismissedUnanswered", label: "dismissed unanswered" },
+        { key: "deliberateSelectionVerified", label: "deliberate verified" }
+      ];
+
+      const CAPTION = {
+        spoilt: "spoilt ballot · nothing scored · idle word is spoilt",
+        punched: "AskUserQuestion reported Recommended · user never chose · docker compose ran",
+        blank: "question unresolved / dismissed / unanswered · healthy path",
+        carried: "assistant acted on the reported option · side effect landed",
+        miscast: "Enter or focus-click submitted the highlighted Recommended",
+        phantom: "result looks human · provenance is missing · #88790",
+        rubbered: "rubber-stamp Recommended default · no deliberate pick",
+        forced: "mid-turn message auto-resolved to the highlighted option",
+        defaulted: "first / Recommended option submitted by UI default",
+        clear: "verified deliberate selection · distinguishable human provenance"
+      };
+
+      let probe = seedOf("punched");
+      let currentChip = "punched";
+
+      function row(label, value) {
+        return '<div class="row"><span>' + label + "</span><b>" + String(value) + "</b></div>";
+      }
+
+      function sinks(result) {
+        const slack = result.slack
+          ? "Would post to Slack: " + result.verdict + " chad alarm on the hanging ballot."
+          : "Would skip Slack. Ballot is " + result.verdict + ".";
+        const github = "Would open a GitHub chad-ledger issue. Demo: no token.";
+        const linear = result.linear
+          ? "Would open a Linear ticket: false-consent " + result.verdict + " · " + (result.source || "booth")
+          : "Would skip Linear. Ballot is " + result.verdict + ".";
+        return { slack, github, linear };
+      }
+
+      function render() {
+        const result = decide(probe, "score");
+        document.getElementById("booth").className = "booth " + result.verdict;
+        document.getElementById("caption").textContent = CAPTION[result.verdict] || CAPTION.spoilt;
+        const spoken = document.getElementById("spoken");
+        spoken.className = "spoken " + (result.verdict === "spoilt" || result.verdict === "blank" || result.verdict === "clear" ? "ok" : result.alarm ? "alarm" : "");
+        spoken.textContent = result.verdict;
+        document.getElementById("feed").textContent = result.feed + (result.cluster && result.cluster.length ? " · cluster " + result.cluster.join(" / ") : "");
+        document.getElementById("book").innerHTML = "<h2>Election night</h2>" + [
+          row("verdict", result.verdict),
+          row("cluster", result.cluster && result.cluster.length ? result.cluster.join(", ") : "—"),
+          row("reported", result.reportedOption || "—"),
+          row("user denies", result.userDeniesSelection || result.userNeverChose ? "yes" : "no"),
+          row("Recommended", result.recommendedWasHighlighted ? "highlighted" : "—"),
+          row("acted", result.assistantActedOnResult ? "yes" : "no"),
+          row("side effect", result.sideEffectLanded ? "landed" : "—"),
+          row("issue", result.issue != null ? "#" + result.issue : "-")
+        ].join("");
+        document.getElementById("why").innerHTML = "<ul>" + result.reasons.map(function (line) {
+          return "<li>" + line + "</li>";
+        }).join("") + "</ul>";
+        const s = sinks(result);
+        document.getElementById("sinks").innerHTML =
+          "<article><h3>Slack</h3><p>" + s.slack + "</p></article>" +
+          "<article><h3>GitHub</h3><p>" + s.github + "</p></article>" +
+          "<article><h3>Linear</h3><p>" + s.linear + "</p></article>";
+        document.querySelectorAll("#tags button").forEach(function (btn) {
+          btn.classList.toggle("on", btn.dataset.seed === currentChip);
+        });
+        document.querySelectorAll("#tickets button").forEach(function (btn) {
+          btn.classList.toggle("on", Boolean(probe[btn.dataset.key]));
+        });
+      }
+
+      function bayChecks() {
+        const misses = [];
+        if (classify(emptyProbe()) !== "spoilt") misses.push("idle");
+        for (const chip of CHIPS) {
+          const got = classify(seedOf(chip.id));
+          if (got !== chip.id) misses.push(chip.id + "→" + got);
+        }
+        if (IDLE_WORD !== "spoilt") misses.push("idleWord");
+        if (/chad/i.test(IDLE_WORD)) misses.push("idle is product name");
+        if (/empty/i.test(IDLE_WORD)) misses.push("idle is empty");
+        if (VERDICTS.join(" ") !== "spoilt punched blank carried miscast phantom rubbered forced defaulted clear") misses.push("vocab");
+        const el = document.getElementById("checks");
+        if (misses.length) {
+          el.className = "checks bad";
+          el.textContent = "precinct check failed: " + misses.join(", ");
+        } else {
+          el.className = "checks ok";
+          el.textContent = "precinct check: ten classes + idle spoilt. Never the product name. Never empty.";
+        }
+        return misses.length === 0;
+      }
+
+      const tags = document.getElementById("tags");
+      for (const chip of CHIPS) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.seed = chip.id;
+        btn.textContent = chip.label;
+        btn.addEventListener("click", function () {
+          currentChip = chip.id;
+          probe = seedOf(chip.id);
+          render();
+        });
+        tags.appendChild(btn);
+      }
+
+      const tickets = document.getElementById("tickets");
+      for (const ticket of TICKETS) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.key = ticket.key;
+        btn.textContent = ticket.label;
+        btn.addEventListener("click", function () {
+          probe = cloneProbe(probe);
+          probe[ticket.key] = !probe[ticket.key];
+          if (!hasOption(probe) && (ticket.key === "userNeverChose" || ticket.key === "userDeniesSelection")) {
+            probe.reportedOption = "You run it (Recommended)";
+          }
+          currentChip = classify(probe);
+          render();
+        });
+        tickets.appendChild(btn);
+      }
+
+      document.querySelectorAll(".acts button").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const act = btn.dataset.act;
+          if (act === "shut") {
+            currentChip = "spoilt";
+            probe = emptyProbe();
+          }
+          const result = decide(probe, act);
+          probe = result.probe;
+          if (act === "punch" || act === "clear") currentChip = result.verdict;
+          render();
+        });
+      });
+      render();
+      bayChecks();
+    </script>
+  </body>
+</html>
