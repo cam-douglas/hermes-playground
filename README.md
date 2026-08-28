@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Veto](https://hermes-playground-green.vercel.app/veto/)** — palimpsest. A standing CLAUDE.md is not a hold. The vendor edict sits as a translucent overlay on the user's own rule. Lift the overlay. Name the class or admit upheld. Folder: `projects/veto/`.
+**Featured: [Snib](https://hermes-playground-green.vercel.app/snib/)** — night-latch. A turned snib is not a hold. Revoke is not a hold. Not now is not a hold. Throw the snib. Name the class or admit latched. Folder: `projects/snib/`.
+
+**Listed: [Veto](https://hermes-playground-green.vercel.app/veto/)** — palimpsest. A standing CLAUDE.md is not a hold. The vendor edict sits as a translucent overlay on the user's own rule. Lift the overlay. Name the class or admit upheld. Folder: `projects/veto/`. Still listed. Not featured.
 
 **Listed: [Assay](https://hermes-playground-green.vercel.app/assay/)** — furnace. A parsed call is not a hold. Heat the envelope. Weigh delivered arguments against the schema and the raw markup. Name the impurity or admit sterling. Folder: `projects/assay/`. Still listed. Not featured.
 
@@ -40,10 +42,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                16 products: Veto (featured), Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                17 products: Snib (featured), Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/veto/              palimpsest / court overlay for silent heron_brook veto (featured)
+projects/snib/              night-latch / thumb-turn for Trusted Devices fail-open (featured)
+projects/veto/              palimpsest / court overlay for silent heron_brook veto (kept, unfeatured)
 projects/assay/             furnace / cupel for silent tool-arg corruption (kept, unfeatured)
 projects/wicket/            gatehouse / turnstile for worktree isolation (kept, unfeatured)
 projects/sigil/             signature clinic / seal desk (kept, unfeatured)
@@ -59,8 +62,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-snib.md     Snib ship log (15:50 Sydney)
 runs/2026-08-28-veto.md     Veto ship log (14:50 Sydney)
 runs/2026-08-28-assay.md    Assay ship log (13:50 Sydney)
 runs/2026-08-28-wicket.md   Wicket ship log (12:50 Sydney)
@@ -95,6 +99,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Snib
+
+`projects/snib/` is a night-latch / indoor thumb-turn for Trusted Devices fail-open on individual (Pro/Max) Claude Code Remote Control accounts. A turned snib is not a hold. Revoke is not a hold. Not now is not a hold. Turning the Yale thumb-turn looks locked from inside. If the snib does not catch the strike, the door is open while looking locked. Score the probe. Name the class or admit **latched**. Verdicts: **latched**, **dismissed**, **revoked**, **unobserved**, **attached**, **phantom**, **open**, **restored**. Fail-closed on dismissed / revoked / unobserved.
+
+Live path: https://hermes-playground-green.vercel.app/snib/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90265` dismissed is already on the latch. Idle word is **latched**, not the product name. NOT Knock (permission-grant stalls). NOT Hasp (file-path lease). NOT Wicket (worktree isolation). NOT Veto (heron_brook injection). NOT Reveille (muster). NOT Assay / Sigil / Stencil / Suture / Blot / Coda / Reed / Fathom / Parity / Quench / Scrim. Not leftover woodworking sliders.
 
 ## Veto
 
@@ -229,6 +241,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/snib/` → `projects/snib/`
 - `/veto/` → `projects/veto/`
 - `/assay/` → `projects/assay/`
 - `/wicket/` → `projects/wicket/`

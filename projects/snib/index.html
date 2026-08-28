@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Snib — night-latch for Trusted Devices fail-open. A turned snib is not a hold. Idle word is latched."
+    />
+    <title>Snib — night-latch</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --hall: #0b0c10;
+        --plaster: #16141a;
+        --oxblood: #5a1b22;
+        --oxblood-deep: #3a1016;
+        --oxblood-edge: #7a2a31;
+        --brass: #c4a15a;
+        --brass-deep: #7a5a28;
+        --brass-shine: #e8d39a;
+        --warm: #f0b45a;
+        --spill: #ffcf7a;
+        --cream: #f4ead6;
+        --mute: #9a8b76;
+        --line: rgba(232, 211, 154, 0.16);
+        --alarm: #e07a6a;
+        --display: Fraunces, "Iowan Old Style", Palatino, Georgia, serif;
+        --serif: Literata, "Source Serif 4", Georgia, serif;
+        --lab: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--serif);
+        color: var(--cream);
+        background:
+          radial-gradient(ellipse 42% 28% at 18% 18%, rgba(240, 180, 90, 0.08), transparent 62%),
+          radial-gradient(ellipse 30% 40% at 88% 70%, rgba(90, 27, 34, 0.28), transparent 70%),
+          linear-gradient(180deg, #121018, var(--hall) 46%, #08090c);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--brass-shine); }
+      .hall {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 20px 0 80px;
+      }
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: baseline;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 12px;
+      }
+      .mark, .path {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      h1 {
+        margin: 18px 0 8px;
+        font-family: var(--display);
+        font-size: clamp(52px, 9vw, 96px);
+        font-weight: 500;
+        letter-spacing: -0.04em;
+        line-height: 0.84;
+      }
+      .lede {
+        max-width: 42em;
+        color: var(--mute);
+        font-size: 17px;
+        line-height: 1.5;
+      }
+      .lede em { color: var(--cream); font-style: italic; }
+      .dockets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 22px 0 20px;
+      }
+      .dockets button, .acts button {
+        border: 1px solid var(--line);
+        background: rgba(22, 20, 26, 0.72);
+        border-radius: 2px;
+        padding: 7px 11px;
+        font-family: var(--lab);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+      }
+      .dockets button.on,
+      .acts button:hover,
+      .dockets button:hover {
+        border-color: rgba(196, 161, 90, 0.55);
+        color: var(--brass-shine);
+      }
+      .stage {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+        gap: 22px;
+        align-items: stretch;
+      }
+      .scene {
+        position: relative;
+        min-height: 520px;
+        overflow: hidden;
+        border-radius: 3px;
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent 18%),
+          linear-gradient(#2a241c 0 18px, transparent 18px 100%),
+          repeating-linear-gradient(
+            90deg,
+            #1c1914 0 46px,
+            #1a1712 46px 48px
+          );
+        box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.45);
+      }
+      .wainscot {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 38%;
+        background:
+          linear-gradient(180deg, rgba(0, 0, 0, 0.2), transparent 18%),
+          repeating-linear-gradient(
+            90deg,
+            #14110e 0 72px,
+            #0f0d0b 72px 74px
+          );
+        border-top: 8px solid #2a2218;
+      }
+      .floor {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 18%;
+        background:
+          linear-gradient(180deg, #1a140e, #0c0a08);
+        box-shadow: inset 0 20px 40px rgba(0, 0, 0, 0.4);
+      }
+      .sconce {
+        position: absolute;
+        top: 46px;
+        left: 36px;
+        width: 18px;
+        height: 46px;
+        background: linear-gradient(#3a2e20, var(--brass-deep));
+        border-radius: 2px 2px 8px 8px;
+        box-shadow: 0 0 40px 12px rgba(240, 180, 90, 0.18);
+      }
+      .sconce::after {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: -6px;
+        width: 30px;
+        height: 16px;
+        background: radial-gradient(circle, var(--spill), transparent 70%);
+        opacity: 0.7;
+      }
+      .rack {
+        position: absolute;
+        top: 88px;
+        left: 28px;
+        width: 132px;
+        padding: 10px 10px 12px;
+        background: linear-gradient(#2a2118, #1a1510);
+        border: 1px solid rgba(196, 161, 90, 0.35);
+        box-shadow: 4px 8px 0 rgba(0, 0, 0, 0.35);
+      }
+      .rack b {
+        display: block;
+        font-family: var(--lab);
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 8px;
+      }
+      .hooks {
+        display: grid;
+        gap: 8px;
+      }
+      .hook {
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        gap: 8px;
+        align-items: center;
+        font-family: var(--lab);
+        font-size: 10px;
+        color: var(--mute);
+      }
+      .hook i {
+        width: 16px;
+        height: 22px;
+        border: 2px solid var(--brass);
+        border-radius: 40% 40% 2px 2px;
+        display: block;
+        position: relative;
+        background: transparent;
+      }
+      .hook i::after {
+        content: "";
+        position: absolute;
+        left: 4px;
+        bottom: -6px;
+        width: 4px;
+        height: 8px;
+        background: var(--brass-deep);
+      }
+      .hook.empty i {
+        border-color: #3a342c;
+        opacity: 0.45;
+      }
+      .hook.empty i::after { display: none; }
+      .doorway {
+        position: absolute;
+        right: 54px;
+        top: 36px;
+        bottom: 8%;
+        width: min(280px, 46%);
+        perspective: 1100px;
+      }
+      .jamb {
+        position: absolute;
+        inset: 0;
+        border: 10px solid #2c2118;
+        border-bottom: 0;
+        background: #070708;
+        box-shadow: inset 0 0 0 4px #1a120e;
+      }
+      .interior {
+        position: absolute;
+        inset: 10px 10px 0;
+        background:
+          radial-gradient(ellipse at 20% 40%, rgba(255, 207, 122, 0.55), transparent 42%),
+          linear-gradient(180deg, #3a2414, #1a100a);
+        transition: background 0.4s ease, opacity 0.4s ease;
+      }
+      .scene.phantom .interior {
+        background: #050508;
+        box-shadow: inset 0 0 40px #000;
+      }
+      .scene.latched .interior { opacity: 0; }
+      .door {
+        position: absolute;
+        inset: 10px 10px 0;
+        transform-origin: left center;
+        transform: rotateY(0deg);
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent 12%),
+          repeating-linear-gradient(
+            180deg,
+            var(--oxblood) 0 46px,
+            var(--oxblood-edge) 46px 48px,
+            var(--oxblood-deep) 48px 94px,
+            var(--oxblood) 94px 96px
+          );
+        border: 1px solid #2a0c10;
+        box-shadow: 8px 0 18px rgba(0, 0, 0, 0.35);
+        transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      .scene.ajar .door {
+        transform: rotateY(-16deg);
+        box-shadow: 18px 0 40px rgba(0, 0, 0, 0.45);
+      }
+      .scene.restored .door {
+        transform: rotateY(-4deg);
+      }
+      .crack {
+        position: absolute;
+        top: 10px;
+        bottom: 0;
+        right: 8px;
+        width: 0;
+        background: var(--spill);
+        box-shadow: none;
+        transition: width 0.45s ease, box-shadow 0.45s ease;
+      }
+      .scene.ajar .crack {
+        width: 10px;
+        box-shadow: -16px 0 40px 8px rgba(255, 196, 110, 0.45);
+      }
+      .scene.phantom .crack {
+        background: #1a1c24;
+        box-shadow: -10px 0 24px 4px rgba(80, 90, 120, 0.2);
+      }
+      .scene.latched .crack { width: 0; box-shadow: none; }
+      .lock {
+        position: absolute;
+        right: 18px;
+        top: 42%;
+        width: 72px;
+        height: 118px;
+      }
+      .case {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(160deg, var(--brass-shine), var(--brass) 40%, var(--brass-deep));
+        border-radius: 4px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.35),
+          3px 6px 0 rgba(0, 0, 0, 0.35);
+      }
+      .cylinder {
+        position: absolute;
+        left: 22px;
+        top: 12px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #efe0b0, #8a6a30 62%, #3a2a12);
+        box-shadow: inset 0 0 0 3px #6a4e20;
+      }
+      .snib {
+        position: absolute;
+        left: 30px;
+        top: 48px;
+        width: 12px;
+        height: 36px;
+        background: linear-gradient(#efe0b0, var(--brass-deep));
+        border-radius: 6px;
+        transform-origin: 50% 8px;
+        transform: rotate(0deg);
+        transition: transform 0.4s ease;
+        box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.35);
+      }
+      .scene.thrown .snib { transform: rotate(82deg); }
+      .scene.restored .snib { transform: rotate(0deg); }
+      .word {
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        bottom: 8px;
+        margin: 0;
+        text-align: center;
+        font-family: var(--display);
+        font-size: 15px;
+        font-style: italic;
+        letter-spacing: -0.03em;
+        color: #2a1c0c;
+        line-height: 1;
+      }
+      .scene.alarm .word { color: #4a1010; }
+      .bolt {
+        position: absolute;
+        right: -10px;
+        top: 58px;
+        width: 16px;
+        height: 10px;
+        background: linear-gradient(#efe0b0, #8a6a30);
+        border-radius: 0 2px 2px 0;
+        transition: transform 0.35s ease, opacity 0.35s ease;
+      }
+      .scene.latched .bolt { transform: translateX(14px); }
+      .scene.ajar .bolt { transform: translateX(2px); opacity: 0.85; }
+      .scene.restored .bolt { transform: translateX(-8px); opacity: 0.4; }
+      .strike {
+        position: absolute;
+        right: 44px;
+        top: calc(42% + 56px);
+        width: 12px;
+        height: 22px;
+        background: linear-gradient(#b8944a, #6a4e20);
+        border-radius: 1px;
+        box-shadow: inset 2px 0 0 #3a2a10;
+      }
+      .scene.latched .strike { box-shadow: inset 2px 0 0 #3a2a10, inset 0 0 0 3px #1a1208; }
+      .plaque {
+        display: grid;
+        align-content: start;
+        gap: 14px;
+        padding: 16px 16px 18px;
+        background: linear-gradient(180deg, #1c1916, #121014);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        box-shadow: inset 0 0 0 1px rgba(196, 161, 90, 0.08);
+      }
+      .plaque h2 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: 28px;
+        font-weight: 500;
+        letter-spacing: -0.03em;
+      }
+      .acts { display: flex; flex-wrap: wrap; gap: 8px; }
+      .facts, .sinks, .reasons {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--mute);
+      }
+      .reasons { padding-left: 18px; color: var(--cream); }
+      .reasons li { margin: 0 0 4px; }
+      .kicker {
+        margin: 0;
+        font-family: var(--lab);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .status-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip {
+        font-family: var(--lab);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        padding: 3px 7px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--mute);
+      }
+      .chip.hot { color: var(--alarm); border-color: rgba(224, 122, 106, 0.4); }
+      .chip.ok { color: var(--brass-shine); border-color: rgba(196, 161, 90, 0.4); }
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        place-items: center;
+        background: rgba(6, 6, 8, 0.62);
+        z-index: 8;
+        padding: 24px;
+      }
+      .modal.show { display: grid; }
+      .modal-card {
+        width: min(420px, 100%);
+        background: #f4ead6;
+        color: #2a1c12;
+        padding: 22px 22px 18px;
+        border-radius: 6px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+      }
+      .modal-card h3 {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: 28px;
+        font-weight: 500;
+      }
+      .modal-card p {
+        margin: 0 0 18px;
+        color: #5a4634;
+        line-height: 1.45;
+      }
+      .modal-card .row { display: flex; gap: 8px; justify-content: flex-end; }
+      .modal-card button {
+        border: 1px solid #2a1c12;
+        background: transparent;
+        padding: 8px 12px;
+        font-family: var(--lab);
+        font-size: 12px;
+        color: #2a1c12;
+      }
+      .modal-card button.primary {
+        background: #2a1c12;
+        color: #f4ead6;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--mute);
+        font-size: 14px;
+      }
+      footer code { font-family: var(--lab); font-size: 12px; }
+      @media (max-width: 860px) {
+        .stage { grid-template-columns: 1fr; }
+        .scene { min-height: 440px; }
+        .doorway { width: 52%; right: 28px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="hall">
+      <div class="mast">
+        <p class="mark">hermes-playground · featured</p>
+        <p class="path">/snib/</p>
+      </div>
+      <h1>Snib</h1>
+      <p class="lede">
+        A Yale night-latch for Trusted Devices on individual Remote Control.
+        Turning the indoor thumb-turn <em>looks</em> locked. If the snib misses
+        the strike, the door is open. A turned snib is not a hold. Revoke is not
+        a hold. Not now is not a hold. Idle word is <em>latched</em>.
+      </p>
+      <div class="dockets" role="tablist" aria-label="Seed dockets">
+        <button type="button" id="seed-dismissed" class="on">#90265 dismissed</button>
+        <button type="button" id="seed-revoked">#90265 revoked</button>
+        <button type="button" id="seed-unobserved">#90265 unobserved</button>
+        <button type="button" id="seed-open">#90266 open</button>
+        <button type="button" id="seed-phantom">#87863 phantom</button>
+        <button type="button" id="seed-attached">attached</button>
+        <button type="button" id="seed-restored">restored</button>
+        <button type="button" id="seed-latched">latched</button>
+      </div>
+      <div class="stage">
+        <section class="scene ajar thrown alarm" id="scene" aria-label="Night latch">
+          <div class="sconce" aria-hidden="true"></div>
+          <aside class="rack">
+            <b>Key rack</b>
+            <div class="hooks">
+              <div class="hook" id="key-phone"><i></i>phone</div>
+              <div class="hook" id="key-laptop"><i></i>laptop</div>
+              <div class="hook" id="key-browser"><i></i>browser</div>
+            </div>
+          </aside>
+          <div class="wainscot"></div>
+          <div class="floor"></div>
+          <div class="doorway">
+            <div class="jamb">
+              <div class="interior" id="interior"></div>
+            </div>
+            <div class="door" id="door">
+              <div class="lock">
+                <div class="case"></div>
+                <div class="cylinder"></div>
+                <div class="snib" id="snib"></div>
+                <div class="bolt" id="bolt"></div>
+                <p class="word" id="word">dismissed</p>
+              </div>
+            </div>
+            <div class="crack" id="crack"></div>
+          </div>
+          <div class="strike" aria-hidden="true"></div>
+        </section>
+        <aside class="plaque">
+          <p class="kicker">latch plate</p>
+          <h2 id="plate-word">dismissed</h2>
+          <div class="status-row" id="chips"></div>
+          <div class="acts">
+            <button type="button" id="act-throw">Throw</button>
+            <button type="button" id="act-notnow">Not now</button>
+            <button type="button" id="act-revoke">Revoke</button>
+            <button type="button" id="act-observe">Observe</button>
+            <button type="button" id="act-restore">Restore</button>
+            <button type="button" id="act-clear">Clear · latched</button>
+          </div>
+          <p class="kicker">reasons</p>
+          <ol class="reasons" id="reasons"></ol>
+          <p class="kicker">facts</p>
+          <p class="facts" id="facts"></p>
+          <p class="kicker">sinks</p>
+          <p class="sinks" id="sinks"></p>
+        </aside>
+      </div>
+      <footer>
+        Live path <code>https://hermes-playground-green.vercel.app/snib/</code>.
+        Evidence:
+        <a href="https://github.com/anthropics/claude-code/issues/90265">#90265</a>,
+        <a href="https://github.com/anthropics/claude-code/issues/90266">#90266</a>,
+        <a href="https://github.com/anthropics/claude-code/issues/87863">#87863</a>,
+        <a href="https://github.com/anthropics/claude-code/issues/55196">#55196</a>,
+        <a href="https://github.com/anthropics/claude-code/issues/82095">#82095</a>,
+        <a href="https://github.com/anthropics/claude-code/issues/81550">#81550</a>,
+        <a href="https://github.com/anthropics/claude-code/issues/83122">#83122</a>.
+        Not Knock, Hasp, Wicket, Veto, or Reveille.
+      </footer>
+    </main>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-card">
+        <h3 id="modal-title">Sign in again to verify your device</h3>
+        <p>
+          This Trusted Device check is shown. Enrollment may exist. On individual
+          Remote Control both enforcement points can fail open. Sign in, or dismiss.
+        </p>
+        <div class="row">
+          <button type="button" id="modal-signin">Sign in</button>
+          <button type="button" class="primary" id="modal-notnow">Not now</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      const IDLE_WORD = "latched";
+      const FAIL_CLOSED = ["dismissed", "revoked", "unobserved"];
+      const LINEAR = ["dismissed", "revoked"];
+      const HEARTBEAT = "CCRClient heartbeat ok epoch=3\nCCRClient heartbeat ok epoch=3\nCCRClient heartbeat ok epoch=3";
+      const VERIFY_LOG = "CCRClient heartbeat ok epoch=3\ndevice verification prompt shown\ntrusted device check 200";
+
+      function emptyProbe() {
+        return {
+          plan: "",
+          enrolledCount: 0,
+          revokedAll: false,
+          liveSessionStillAttached: false,
+          modalShown: false,
+          modalChoice: null,
+          hostLogMentionsVerify: false,
+          hostLog: "",
+          toolExecutionAfterDecline: false,
+          envGone404: false,
+          enforcementToggleAvailable: false,
+          cookieOnly: false,
+          restored: false,
+          sessionReadOnly: false,
+          session: "",
+          source: "",
+          issue: null,
+        };
+      }
+
+      function cloneProbe(raw) {
+        const src = raw && typeof raw === "object" ? raw : emptyProbe();
+        const hostLog = src.hostLog != null ? String(src.hostLog) : "";
+        const mentions = src.hostLogMentionsVerify != null
+          ? Boolean(src.hostLogMentionsVerify)
+          : hostLog
+            ? /verify|device|trust|401|403|elevated_auth/i.test(hostLog)
+            : false;
+        const choice = src.modalChoice === "sign-in" || src.modalChoice === "not-now" ? src.modalChoice : null;
+        return {
+          ...emptyProbe(),
+          ...src,
+          plan: src.plan != null ? String(src.plan) : "",
+          enrolledCount: Number(src.enrolledCount) > 0 ? Math.floor(Number(src.enrolledCount)) : 0,
+          revokedAll: Boolean(src.revokedAll),
+          liveSessionStillAttached: Boolean(src.liveSessionStillAttached),
+          modalShown: Boolean(src.modalShown),
+          modalChoice: choice,
+          hostLogMentionsVerify: mentions,
+          hostLog,
+          toolExecutionAfterDecline: Boolean(src.toolExecutionAfterDecline),
+          envGone404: Boolean(src.envGone404),
+          enforcementToggleAvailable: Boolean(src.enforcementToggleAvailable),
+          cookieOnly: Boolean(src.cookieOnly),
+          restored: Boolean(src.restored),
+          sessionReadOnly: Boolean(src.sessionReadOnly),
+          session: src.session != null ? String(src.session) : "",
+          source: src.source != null ? String(src.source) : "",
+          issue: src.issue == null || src.issue === "" ? null : src.issue,
+        };
+      }
+
+      function isIdle(probe) {
+        const next = cloneProbe(probe);
+        return (
+          !next.plan &&
+          next.enrolledCount === 0 &&
+          !next.revokedAll &&
+          !next.liveSessionStillAttached &&
+          !next.modalShown &&
+          next.modalChoice == null &&
+          !next.hostLogMentionsVerify &&
+          !next.hostLog &&
+          !next.toolExecutionAfterDecline &&
+          !next.envGone404 &&
+          !next.enforcementToggleAvailable &&
+          !next.cookieOnly &&
+          !next.restored &&
+          !next.sessionReadOnly
+        );
+      }
+
+      function classify(probe) {
+        const next = cloneProbe(probe);
+        if (isIdle(next)) return "latched";
+        if (next.restored && (!next.liveSessionStillAttached || next.sessionReadOnly)) return "restored";
+        if (next.envGone404 && next.modalShown) return "phantom";
+        if (next.modalShown && next.modalChoice === "not-now" && next.liveSessionStillAttached && next.toolExecutionAfterDecline) {
+          return "dismissed";
+        }
+        if (next.revokedAll && next.liveSessionStillAttached) return "revoked";
+        if (next.liveSessionStillAttached && !next.hostLogMentionsVerify && (next.modalShown || next.revokedAll || next.cookieOnly)) {
+          return "unobserved";
+        }
+        if (!next.enforcementToggleAvailable && next.cookieOnly && next.liveSessionStillAttached) return "open";
+        if (next.liveSessionStillAttached && next.enrolledCount === 0 && next.cookieOnly) return "attached";
+        return "latched";
+      }
+
+      function reasonsOf(probe, verdict) {
+        const next = cloneProbe(probe);
+        const kind = verdict || classify(next);
+        const reasons = [];
+        if (next.plan) reasons.push("plan " + next.plan);
+        reasons.push(next.enrolledCount > 0 ? next.enrolledCount + " trusted device(s) enrolled" : "no trusted devices enrolled");
+        if (next.revokedAll) reasons.push("all enrolled Trusted Devices revoked");
+        reasons.push(next.liveSessionStillAttached ? "already-active Remote Control session still attached" : "no live Remote Control attachment");
+        if (next.sessionReadOnly) reasons.push("session is read-only");
+        if (next.modalShown) {
+          reasons.push(
+            next.modalChoice === "not-now"
+              ? 'modal "Sign in again to verify your device" — Not now'
+              : next.modalChoice === "sign-in"
+                ? 'modal "Sign in again to verify your device" — Sign in'
+                : 'modal "Sign in again to verify your device" shown'
+          );
+        }
+        if (next.toolExecutionAfterDecline) reasons.push("tool execution after decline, including paths outside cwd");
+        if (next.hostLogMentionsVerify) reasons.push("host log mentions verify / device / trust");
+        else if (next.liveSessionStillAttached || next.modalShown || next.revokedAll) {
+          reasons.push("host log silent: CCRClient heartbeats only; zero verify/device/trust/401/403/elevated_auth");
+        }
+        if (next.envGone404) reasons.push("environment gone 404; auth still healthy");
+        if (next.cookieOnly) reasons.push("a valid session cookie is the only gate");
+        if (!next.enforcementToggleAvailable && next.cookieOnly) {
+          reasons.push("Pro/Max cannot REQUIRE a Trusted Device at Remote Control attachment");
+        }
+        if (next.enforcementToggleAvailable && next.enrolledCount > 0 && !next.cookieOnly) {
+          reasons.push("enrolled device, enforcement held");
+        }
+        if (next.restored) reasons.push("restore actually dropped or read-only'd the attachment");
+        if (kind === "latched") reasons.push("snib caught the strike; door is shut");
+        if (kind === "dismissed") reasons.push("Not now dismissed the modal; session stayed fully attached and steerable");
+        if (kind === "revoked") reasons.push("revoking every Trusted Device did not force re-verification");
+        if (kind === "unobserved") reasons.push("the host has no local record that a device-verification prompt was shown or declined");
+        if (kind === "phantom") reasons.push("same modal fires for a dead 404 environment — opposite defect");
+        if (kind === "open") reasons.push("enrollment exists; requirement does not");
+        if (kind === "attached") reasons.push("never-enrolled device; cookie attached the host");
+        if (kind === "restored") reasons.push("attachment dropped or read-only; a turned snib is not this");
+        return reasons;
+      }
+
+      function decide(probe, action) {
+        let next = cloneProbe(probe);
+        const verb = String(action || "score").toLowerCase();
+        if (verb === "clear") next = emptyProbe();
+        if (verb === "not-now" || verb === "notnow" || verb === "dismiss") {
+          next.modalShown = true;
+          next.modalChoice = "not-now";
+          next.liveSessionStillAttached = true;
+          next.toolExecutionAfterDecline = true;
+          next.restored = false;
+          next.sessionReadOnly = false;
+        }
+        if (verb === "revoke") {
+          next.enrolledCount = 0;
+          next.revokedAll = true;
+          next.liveSessionStillAttached = true;
+          next.restored = false;
+          next.sessionReadOnly = false;
+        }
+        if (verb === "observe") {
+          next.hostLog = next.hostLog || HEARTBEAT;
+          next.hostLogMentionsVerify = /verify|device|trust|401|403|elevated_auth/i.test(next.hostLog);
+        }
+        if (verb === "restore") {
+          next.restored = true;
+          next.liveSessionStillAttached = false;
+          next.sessionReadOnly = false;
+          next.toolExecutionAfterDecline = false;
+        }
+        const verdict = classify(next);
+        return {
+          verdict,
+          state: verdict,
+          idleWord: IDLE_WORD,
+          alarm: FAIL_CLOSED.includes(verdict),
+          linear: LINEAR.includes(verdict),
+          failOpen: verdict !== "latched" && verdict !== "restored",
+          doorAjar: ["dismissed", "revoked", "unobserved", "attached", "open", "phantom"].includes(verdict),
+          snibThrown: verdict !== "restored",
+          latchInStrike: verdict === "latched",
+          reasons: reasonsOf(next, verdict),
+          probe: next,
+          ...next,
+        };
+      }
+
+      function seedDismissed() {
+        return {
+          plan: "max-individual",
+          enrolledCount: 2,
+          liveSessionStillAttached: true,
+          modalShown: true,
+          modalChoice: "not-now",
+          hostLogMentionsVerify: false,
+          hostLog: HEARTBEAT,
+          toolExecutionAfterDecline: true,
+          cookieOnly: true,
+          session: "90265-dismissed",
+          source: "anthropics/claude-code#90265",
+          issue: 90265,
+        };
+      }
+      function seedRevoked() {
+        return {
+          plan: "max-individual",
+          enrolledCount: 0,
+          revokedAll: true,
+          liveSessionStillAttached: true,
+          hostLogMentionsVerify: false,
+          hostLog: HEARTBEAT,
+          cookieOnly: true,
+          session: "90265-revoked",
+          source: "anthropics/claude-code#90265",
+          issue: 90265,
+        };
+      }
+      function seedUnobserved() {
+        return {
+          plan: "max-individual",
+          enrolledCount: 2,
+          liveSessionStillAttached: true,
+          modalShown: true,
+          hostLogMentionsVerify: false,
+          hostLog: HEARTBEAT,
+          cookieOnly: true,
+          session: "90265-unobserved",
+          source: "anthropics/claude-code#90265",
+          issue: 90265,
+        };
+      }
+      function seedOpen() {
+        return {
+          plan: "pro-max",
+          enrolledCount: 1,
+          liveSessionStillAttached: true,
+          hostLogMentionsVerify: true,
+          hostLog: VERIFY_LOG,
+          cookieOnly: true,
+          session: "90266-open",
+          source: "anthropics/claude-code#90266",
+          issue: 90266,
+        };
+      }
+      function seedPhantom() {
+        return {
+          plan: "max-individual",
+          enrolledCount: 1,
+          liveSessionStillAttached: true,
+          modalShown: true,
+          hostLogMentionsVerify: false,
+          hostLog: HEARTBEAT,
+          envGone404: true,
+          cookieOnly: true,
+          session: "87863-phantom",
+          source: "anthropics/claude-code#87863",
+          issue: 87863,
+        };
+      }
+      function seedAttached() {
+        return {
+          plan: "max-individual",
+          enrolledCount: 0,
+          liveSessionStillAttached: true,
+          hostLogMentionsVerify: true,
+          hostLog: VERIFY_LOG,
+          enforcementToggleAvailable: true,
+          cookieOnly: true,
+          session: "attached",
+          source: "attached",
+        };
+      }
+      function seedRestored() {
+        return {
+          plan: "max-individual",
+          enrolledCount: 0,
+          revokedAll: true,
+          liveSessionStillAttached: false,
+          modalShown: true,
+          modalChoice: "not-now",
+          hostLogMentionsVerify: true,
+          hostLog: VERIFY_LOG,
+          enforcementToggleAvailable: true,
+          restored: true,
+          session: "restored",
+          source: "anthropics/claude-code#90265",
+          issue: 90265,
+        };
+      }
+      function seedLatched() {
+        return {
+          plan: "team-enterprise",
+          enrolledCount: 2,
+          liveSessionStillAttached: true,
+          hostLogMentionsVerify: true,
+          hostLog: VERIFY_LOG,
+          enforcementToggleAvailable: true,
+          cookieOnly: false,
+          session: "latched",
+          source: "latched",
+        };
+      }
+
+      function demoSinks(result) {
+        const slack = FAIL_CLOSED.includes(result.verdict)
+          ? "Would post to Slack: fail-open alarm — " + result.verdict + " on the snib."
+          : "Would skip Slack — night-latch is " + result.verdict + ".";
+        const linear = LINEAR.includes(result.verdict)
+          ? "Would open a Linear Trusted-device incident: " + result.verdict + " · " + (result.source || "Remote Control")
+          : "Would skip Linear — night-latch is " + result.verdict + ".";
+        return {
+          slack,
+          github: "Would append a GitHub snib ledger row. Demo: no token.",
+          linear,
+        };
+      }
+
+      const sceneEl = document.getElementById("scene");
+      const wordEl = document.getElementById("word");
+      const plateEl = document.getElementById("plate-word");
+      const reasonsEl = document.getElementById("reasons");
+      const factsEl = document.getElementById("facts");
+      const sinksEl = document.getElementById("sinks");
+      const chipsEl = document.getElementById("chips");
+      const modalEl = document.getElementById("modal");
+      const keyPhone = document.getElementById("key-phone");
+      const keyLaptop = document.getElementById("key-laptop");
+      const keyBrowser = document.getElementById("key-browser");
+
+      let current = seedDismissed();
+      let modalOpen = false;
+      let seedKey = "dismissed";
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function show(result, key, keepModal) {
+        wordEl.textContent = result.verdict;
+        plateEl.textContent = result.verdict;
+        sceneEl.className = "scene"
+          + (result.doorAjar ? " ajar" : "")
+          + (result.snibThrown ? " thrown" : "")
+          + (result.latchInStrike ? " latched" : "")
+          + (result.verdict === "phantom" ? " phantom" : "")
+          + (result.verdict === "restored" ? " restored" : "")
+          + (result.alarm ? " alarm" : "");
+        const enrolled = result.enrolledCount || 0;
+        const wiped = result.revokedAll || enrolled === 0;
+        keyPhone.classList.toggle("empty", wiped);
+        keyLaptop.classList.toggle("empty", wiped && result.verdict !== "latched");
+        keyBrowser.classList.toggle("empty", result.cookieOnly && enrolled < 2);
+        if (result.verdict === "latched") {
+          keyPhone.classList.remove("empty");
+          keyLaptop.classList.remove("empty");
+          keyBrowser.classList.remove("empty");
+        }
+        if (result.verdict === "attached") {
+          keyPhone.classList.add("empty");
+          keyLaptop.classList.remove("empty");
+          keyBrowser.classList.remove("empty");
+        }
+        reasonsEl.innerHTML = result.reasons.map((row) => "<li>" + escapeHtml(row) + "</li>").join("");
+        factsEl.innerHTML = [
+          "verdict " + result.verdict,
+          "plan " + (result.plan || "—"),
+          "enrolled " + (result.enrolledCount ?? 0),
+          "live " + (result.liveSessionStillAttached ? "attached" : "dropped"),
+          "modal " + (result.modalChoice || (result.modalShown ? "shown" : "none")),
+          "host log " + (result.hostLogMentionsVerify ? "mentions verify" : "silent"),
+          "cookie-only " + (result.cookieOnly ? "yes" : "no"),
+          "enforcement " + (result.enforcementToggleAvailable ? "available" : "absent"),
+        ].map(escapeHtml).join("<br>");
+        const sinks = demoSinks(result);
+        sinksEl.innerHTML = [sinks.slack, sinks.github, sinks.linear].map(escapeHtml).join("<br>");
+        chipsEl.innerHTML = [
+          result.alarm ? '<span class="chip hot">fail-open alarm</span>' : '<span class="chip ok">no slack alarm</span>',
+          result.doorAjar ? '<span class="chip hot">door ajar</span>' : '<span class="chip ok">door shut</span>',
+          result.latchInStrike ? '<span class="chip ok">latch in strike</span>' : '<span class="chip">latch missed</span>',
+          result.cookieOnly ? '<span class="chip">cookie only</span>' : "",
+        ].join("");
+        if (key) {
+          seedKey = key;
+          document.querySelectorAll(".dockets button").forEach((btn) => btn.classList.remove("on"));
+          const on = document.getElementById("seed-" + key);
+          if (on) on.classList.add("on");
+        }
+        if (!keepModal) {
+          modalOpen = Boolean(result.modalShown && result.modalChoice == null);
+          modalEl.classList.toggle("show", modalOpen);
+        }
+      }
+
+      function load(seedFn, key) {
+        current = seedFn();
+        const result = decide(current, "score");
+        current = result.probe;
+        show(result, key);
+      }
+
+      function act(verb, key) {
+        const result = decide(current, verb);
+        current = result.probe;
+        show(result, key || null);
+      }
+
+      document.getElementById("seed-dismissed").addEventListener("click", () => load(seedDismissed, "dismissed"));
+      document.getElementById("seed-revoked").addEventListener("click", () => load(seedRevoked, "revoked"));
+      document.getElementById("seed-unobserved").addEventListener("click", () => load(seedUnobserved, "unobserved"));
+      document.getElementById("seed-open").addEventListener("click", () => load(seedOpen, "open"));
+      document.getElementById("seed-phantom").addEventListener("click", () => load(seedPhantom, "phantom"));
+      document.getElementById("seed-attached").addEventListener("click", () => load(seedAttached, "attached"));
+      document.getElementById("seed-restored").addEventListener("click", () => load(seedRestored, "restored"));
+      document.getElementById("seed-latched").addEventListener("click", () => load(seedLatched, "latched"));
+      document.getElementById("act-throw").addEventListener("click", () => act("throw"));
+      document.getElementById("act-notnow").addEventListener("click", () => {
+        modalEl.classList.add("show");
+        modalOpen = true;
+      });
+      document.getElementById("act-revoke").addEventListener("click", () => act("revoke", "revoked"));
+      document.getElementById("act-observe").addEventListener("click", () => act("observe"));
+      document.getElementById("act-restore").addEventListener("click", () => act("restore", "restored"));
+      document.getElementById("act-clear").addEventListener("click", () => {
+        current = emptyProbe();
+        show(decide(current, "clear"), "latched");
+      });
+      document.getElementById("modal-notnow").addEventListener("click", () => {
+        modalEl.classList.remove("show");
+        modalOpen = false;
+        act("not-now", "dismissed");
+      });
+      document.getElementById("modal-signin").addEventListener("click", () => {
+        current = {
+          ...current,
+          modalShown: true,
+          modalChoice: "sign-in",
+          hostLogMentionsVerify: true,
+          hostLog: VERIFY_LOG,
+        };
+        modalEl.classList.remove("show");
+        modalOpen = false;
+        show(decide(current, "score"));
+      });
+      modalEl.addEventListener("click", (event) => {
+        if (event.target === modalEl) {
+          modalEl.classList.remove("show");
+          modalOpen = false;
+          act("not-now", "dismissed");
+        }
+      });
+
+      show(decide(current, "score"), "dismissed");
+    </script>
+  </body>
+</html>
