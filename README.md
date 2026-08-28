@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Snib](https://hermes-playground-green.vercel.app/snib/)** — night-latch. A turned snib is not a hold. Revoke is not a hold. Not now is not a hold. Throw the snib. Name the class or admit latched. Folder: `projects/snib/`.
+**Featured: [Husk](https://hermes-playground-green.vercel.app/husk/)** — threshing desk. A husk is not a hold. Score the envelope. Name the class or admit kernel. Folder: `projects/husk/`.
+
+**Listed: [Snib](https://hermes-playground-green.vercel.app/snib/)** — night-latch. A turned snib is not a hold. Revoke is not a hold. Not now is not a hold. Throw the snib. Name the class or admit latched. Folder: `projects/snib/`. Still listed. Not featured.
 
 **Listed: [Veto](https://hermes-playground-green.vercel.app/veto/)** — palimpsest. A standing CLAUDE.md is not a hold. The vendor edict sits as a translucent overlay on the user's own rule. Lift the overlay. Name the class or admit upheld. Folder: `projects/veto/`. Still listed. Not featured.
 
@@ -42,10 +44,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                17 products: Snib (featured), Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                18 products: Husk (featured), Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/snib/              night-latch / thumb-turn for Trusted Devices fail-open (featured)
+projects/husk/              threshing desk / grain floor for hollow headless success (featured)
+projects/snib/              night-latch / thumb-turn for Trusted Devices fail-open (kept, unfeatured)
 projects/veto/              palimpsest / court overlay for silent heron_brook veto (kept, unfeatured)
 projects/assay/             furnace / cupel for silent tool-arg corruption (kept, unfeatured)
 projects/wicket/            gatehouse / turnstile for worktree isolation (kept, unfeatured)
@@ -62,8 +65,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-husk.md     Husk ship log (16:50 Sydney)
 runs/2026-08-28-snib.md     Snib ship log (15:50 Sydney)
 runs/2026-08-28-veto.md     Veto ship log (14:50 Sydney)
 runs/2026-08-28-assay.md    Assay ship log (13:50 Sydney)
@@ -99,6 +103,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Husk
+
+`projects/husk/` is a threshing desk / grain floor for hollow headless success envelopes. Claude Code (and Agent SDK / Actions) reports `subtype:"success"`, `is_error:false`, exit 0, empty `result`, and `num_turns:0` when the model never ran. A husk is not a hold. Score the envelope. Name the class or admit **kernel**. Verdicts: **kernel**, **husked**, **aborted**, **denied**, **nested**, **contended**, **zeroed**, **ghosted**. Fail-closed on every hollow class.
+
+Live path: https://hermes-playground-green.vercel.app/husk/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#87159` is already on the floor. Idle word is **kernel**, not the product name. When hollow: **husked**. NOT Knock (fail-loud stalled permission grants). NOT Coda (silent last-text-block loss after the model DID run). NOT Assay (tool-arg corruption on a real call). NOT Suture (stream tear). NOT Reed (MCP register/contact). NOT Snib / Veto / Wicket / Sigil / Stencil / Blot / Fathom / Hasp / Parity / Reveille / Quench / Scrim. Not leftover woodworking sliders.
 
 ## Snib
 
@@ -241,6 +253,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/husk/` → `projects/husk/`
 - `/snib/` → `projects/snib/`
 - `/veto/` → `projects/veto/`
 - `/assay/` → `projects/assay/`
