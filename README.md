@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Larder](https://hermes-playground-green.vercel.app/larder/)** — stillroom. A sync stamp is not a delivery. Score the shelf or admit stocked. Folder: `projects/larder/`.
+**Featured: [Cote](https://hermes-playground-green.vercel.app/cote/)** — dove-cote. A success receipt is not a roost. Score the loft or admit roosted. Folder: `projects/cote/`.
+
+**Listed: [Larder](https://hermes-playground-green.vercel.app/larder/)** — stillroom. A sync stamp is not a delivery. Score the shelf or admit stocked. Folder: `projects/larder/`. Still listed. Not featured.
 
 **Listed: [Tappet](https://hermes-playground-green.vercel.app/tappet/)** — valve train. A fired hook is not a seated injection. Score the spawn or admit seated. Folder: `projects/tappet/`. Still listed. Not featured.
 
@@ -54,10 +56,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                23 products: Larder (featured), Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                24 products: Cote (featured), Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/larder/            stillroom / cold larder for silent plugin-store freeze (featured)
+projects/cote/              dove-cote / pigeon loft for resume hub identity split (featured)
+projects/larder/            stillroom / cold larder for silent plugin-store freeze (kept, unfeatured)
 projects/tappet/            valve-train / engine-bay desk for silent hook injection (kept, unfeatured)
 projects/aside/             theatre wing / side-stage whisper booth for /btw silent truncation (kept, unfeatured)
 projects/chute/             mail chute / dead-drop for sanctioned secret handoff (kept, unfeatured)
@@ -80,8 +83,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-28-cote.md     Cote ship log (22:50 Sydney)
 runs/2026-08-28-larder.md   Larder ship log (21:50 Sydney)
 runs/2026-08-28-tappet.md   Tappet ship log (20:50 Sydney)
 runs/2026-08-28-aside.md    Aside ship log (19:50 Sydney)
@@ -123,6 +127,14 @@ Rules:
 - Do not add leftover millimetre sliders, packed-sky lattices, or shared desk chrome.
 - Slug is URL-safe. Reserved: `hub`, `runs`, `projects`.
 - Register the project in `catalog.json` so the hub can list it.
+
+## Cote
+
+`projects/cote/` is a dove-cote / pigeon loft for Claude Code `--resume` hub identity split. A success receipt is not a roost. `--resume` registers the agent-team hub under a throwaway startup placeholder. Teammate `SendMessage` replies report `success:true`, get consumed from the inbox, and never appear in the resumed parent transcript. Named agents park idle forever. Score the loft. Name the class or admit **roosted**. Verdicts: **roosted**, **lofted**, **flown**, **drained**, **parked**, **stray**, **banded**, **crossed**, **consumed**, **late**. Slack alarm on drained / parked / stray / crossed / consumed / late. Linear on drained / parked / consumed.
+
+Live path: https://hermes-playground-green.vercel.app/cote/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90332` drained is already on the loft. Idle word is **roosted**, not the product name. NOT Reveille (compaction muster). NOT Husk (hollow SUCCESS). NOT Coda (dropped text). NOT Suture (stream tear). NOT Aside (/btw). NOT Chute (mail chute). NOT Tain, Larder, Tappet, Snib, Veto, Assay, Wicket, Sigil, Stencil, Blot, Reed, Fathom, Hasp, Parity, Quench, Scrim, Knock. Not leftover woodworking sliders. Different problem: team-hub session id vs resumed conversation id. Different UI: dove-cote / pigeon loft. Numbered nest holes, brass leg bands, hopper trap, loft clock, slate board.
 
 ## Larder
 
@@ -321,6 +333,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/cote/` → `projects/cote/`
 - `/larder/` → `projects/larder/`
 - `/tappet/` → `projects/tappet/`
 - `/aside/` → `projects/aside/`
