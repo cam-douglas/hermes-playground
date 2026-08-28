@@ -13,11 +13,11 @@ Verdicts: **kernel**, **husked**, **aborted**, **denied**, **nested**, **contend
 
 Primary cluster — same failure *shape*, different triggers:
 
-1. [anthropics/claude-code#87159](https://github.com/anthropics/claude-code/issues/87159) — Headless `-p "/skill"` with failing `` !`preamble` `` silently aborts pre-turn; reports success, num_turns:0, duration_api_ms:0. Only visible with stream-json --verbose as a user event. Confirmed reproduced 2.1.234.
+1. [anthropics/claude-code#87159](https://github.com/anthropics/claude-code/issues/87159) — Headless `-p "/skill"` with failing `` !`preamble` `` silently aborts pre-turn; reports success, num_turns:0, duration_api_ms:0. Only visible with stream-json --verbose as a user event. Confirmed reproduced 2.1.234 (macOS and Linux). On Linux the verbose user event is `<local-command-stderr>`.
 2. [anthropics/claude-code#80223](https://github.com/anthropics/claude-code/issues/80223) — Denied skill-frontmatter shell substitution: typed `permission_denials:[]` empty, envelope is SDKResultSuccess, only signal is untyped `<local-command-stderr>` in a synthetic user message. Reproduced.
 3. [anthropics/claude-plugins-official#2197](https://github.com/anthropics/claude-plugins-official/issues/2197) — nested `claude -p` while any parent interactive session is alive → num_turns=0 success (global single-flight lock). Hooks cannot reliably get a turn.
 
-GHA / Max OAuth paths have produced the identical success+num_turns:0 envelope. Treat as corroboration of the shape, not a separate product.
+Same envelope, other triggers (corroboration, not extra fixtures): [claude-code#85066](https://github.com/anthropics/claude-code/issues/85066) (headless exits success after dispatching subagents; work orphaned), [claude-code#87249](https://github.com/anthropics/claude-code/issues/87249) (piped `-p` prompt recorded but never reaches the model), [claude-code#87983](https://github.com/anthropics/claude-code/issues/87983) (intermittent `is_error:false` with no `result` after long print-mode runs). GHA / Max OAuth paths have produced the identical success+num_turns:0 envelope. Treat as corroboration of the shape, not a separate product.
 
 ## Explicit contrasts
 

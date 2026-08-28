@@ -136,6 +136,8 @@ test("9 locked vocabulary and fail-closed set", () => {
   );
   assert.equal(FAIL_CLOSED.includes("kernel"), false);
   assert.equal(IDLE_WORD, "kernel");
+  assert.equal(VERDICTS.includes("hollow"), false);
+  assert.doesNotMatch(IDLE_WORD, /hollow/i);
 });
 
 test("10 CLI adapters: husked fails even when the envelope is success / exit 0", () => {

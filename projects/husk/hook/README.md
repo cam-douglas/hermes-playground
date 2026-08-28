@@ -6,7 +6,7 @@ A husk is not a hold. Score the envelope. Name the class or admit **kernel**. Tr
 
 This is not Knock (permission-grant stalls). Not Coda (last-text-block loss after a real turn). Not Assay (tool-arg corruption). Not Suture (stream tear). Not Reed (MCP contacts). Not Snib / Veto / Wicket / Sigil / Stencil / Blot / Fathom / Hasp / Parity / Reveille / Quench / Scrim.
 
-Idle word is **kernel**, never the product name. When hollow: **husked**.
+Idle word is **kernel**, never the product name. When the envelope is a husk: **husked**. The scored verdict is never Assay's **hollow**.
 
 ## CLI
 
