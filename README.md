@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Ordo](https://hermes-playground-green.vercel.app/ordo/)** — sacristy's missal desk. A written plugin command is not a hold. Score the missal or admit appointed. Folder: `projects/ordo/`.
+**Featured: [Fob](https://hermes-playground-green.vercel.app/fob/)** — hotel key-rack. A new stamp is not a hold. Score the rack or admit hung. Folder: `projects/fob/`.
+
+**Listed: [Ordo](https://hermes-playground-green.vercel.app/ordo/)** — sacristy's missal desk. A written plugin command is not a hold. Score the missal or admit appointed. Folder: `projects/ordo/`. Still listed. Not featured.
 
 **Listed: [Cinch](https://hermes-playground-green.vercel.app/cinch/)** — saddler's cinch desk. A trusted folder list is not a hold. Score the girth or admit cinched. Folder: `projects/cinch/`. Still listed. Not featured.
 
@@ -92,10 +94,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                42 products: Ordo (featured), Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                43 products: Fob (featured), Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/ordo/              sacristy's missal desk for headless plugin-command resolution (featured)
+projects/fob/               hotel key-rack for Keychain credential litter (featured)
+projects/ordo/              sacristy's missal desk for headless plugin-command resolution (kept, unfeatured)
 projects/cinch/             saddler's / packer's cinch desk for silent partial mounts (kept, unfeatured)
 projects/ullage/            cooper's gauging desk for silent context ullage (kept, unfeatured)
 projects/visa/              passport-control / visa-stamp desk for MCP OAuth missing resource (kept, unfeatured)
@@ -137,8 +140,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-1750.md     Fob ship log (17:50 Sydney)
 runs/2026-08-29-ordo.md     Ordo ship log (16:50 Sydney)
 runs/2026-08-29-cinch.md    Cinch ship log (15:50 Sydney)
 runs/2026-08-29-ullage.md   Ullage ship log (14:50 Sydney)
@@ -183,6 +187,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Fob
+
+`projects/fob/` is a hotel front-desk key rack / locksmith fob board for Claude Code macOS Keychain credential proliferation and store split-brain. A new stamp is not a hold. Score the rack or admit **hung**. Verdicts: **hung**, **minted**, **hoard**, **split**, **false-cut**, **scope-key**. Slack alarm on minted / hoard / split / false-cut / scope-key. Linear ticket on minted / hoard / split.
+
+Live path: https://hermes-playground-green.vercel.app/fob/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90527` minted is already on the rack. Idle word is **hung**, not the product name, not empty. NOT Visa (MCP OAuth missing resource). NOT Snib (night-latch). NOT Chute (secret handoff). NOT Wraith (live-image unlink). NOT Iota (path-key identity). NOT Ordo (headless plugin unknown). NOT Cinch (partial mounts). NOT Ullage (silent context drop). NOT leftover woodworking sliders. Different problem: a grant minted another hash-suffixed Keychain item instead of updating the live fob; CLI and desktop never share; stale items are never GC'd. Different UI: hotel key-rack. Dark oak, stamped brass, numbered hooks, hanging tags. Italiana + IBM Plex Mono + Newsreader.
 
 ## Ordo
 
@@ -517,6 +529,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/fob/` → `projects/fob/`
 - `/ordo/` → `projects/ordo/`
 - `/cinch/` → `projects/cinch/`
 - `/ullage/` → `projects/ullage/`
