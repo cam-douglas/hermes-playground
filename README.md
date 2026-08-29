@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Spile](https://hermes-playground-green.vercel.app/spile/)** — brewery/cellar bung-mallet station. An open spile is not a hold. Score the tap or admit bunged. Folder: `projects/spile/`.
+**Featured: [Grille](https://hermes-playground-green.vercel.app/grille/)** — bank teller's bronze grille / night-depository desk. A night drop through the slot is not a hold. Score the grille or admit posted. Folder: `projects/grille/`.
+
+**Listed: [Spile](https://hermes-playground-green.vercel.app/spile/)** — brewery/cellar bung-mallet station. An open spile is not a hold. Score the tap or admit bunged. Folder: `projects/spile/`. Still listed. Not featured.
 
 **Listed: [Bollard](https://hermes-playground-green.vercel.app/bollard/)** — wet pier / bollard plate. A slack hawser is not a hold. Score the bollard or admit belayed. Folder: `projects/bollard/`. Still listed. Not featured.
 
@@ -108,10 +110,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                50 products: Spile (featured), Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                51 products: Grille (featured), Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/spile/             brewery/cellar bung-mallet station for hook stdin kept open without EOF + unenforced declared timeout (featured)
+projects/grille/            bank teller's bronze grille / night-depository desk for permission-mode Bash-steered edits (featured)
+projects/spile/             brewery/cellar bung-mallet station for hook stdin kept open without EOF + unenforced declared timeout (kept, unfeatured)
 projects/bollard/           wet pier / bollard plate for remote-control environment GC after a supervisor gap (kept, unfeatured)
 projects/clew/              sail loft / rigger's bench for sandbox deny-list E2BIG at MAX_ARG_STRLEN (kept, unfeatured)
 projects/sounder/           telegraph night desk for a completed background waiter whose notification never re-invokes the session (kept, unfeatured)
@@ -161,8 +164,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-30-0150-grille.md Grille ship log (01:50 Sydney)
 runs/2026-08-30-spile.md    Spile ship log (00:50 Sydney)
 runs/2026-08-29-bollard.md  Bollard ship log (23:50 Sydney)
 runs/2026-08-29-2250.md     Clew ship log (22:50 Sydney)
@@ -214,6 +218,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Grille
+
+`projects/grille/` is a bank teller's bronze grille / night-depository desk for a real Claude Code failure: bypass-permissions (and other permission modes) inject a system-prompt directive that steers file mutations through Bash `sed`/heredocs/short scripts instead of Edit/Write. Edit/Write tool cards render diffs; Bash does not. So all edit diffs silently vanish. PreToolUse hooks matching Write|Edit|NotebookEdit never fire. `diffTool` and path-deny go blind. The only workaround is a CLAUDE.md prompt overriding a prompt. A night drop through the slot is not a hold. Score the grille or admit **posted**. Verdicts: **posted**, **slotted**, **steered**, **unreceipted**, **unhooked**, **killed**, **overlay**, **ungated**, **allowlisted**, **restored**. Slack alarm on slotted / steered / unreceipted / unhooked / killed / allowlisted. Linear ticket on slotted / steered / unhooked / killed.
+
+Live path: https://hermes-playground-green.vercel.app/grille/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90599` steered is already on the desk. Idle word is **posted**, not the product name, not empty. NOT Stencil (plan-mode fence). NOT Veto (heron_brook Agent-tool veto). NOT Tappet (silent hook injection). NOT Spile (hook stdin EOF). NOT Iota (type-case). NOT Blot (darkroom). NOT Wicket (gatehouse). NOT leftover woodworking sliders. Different problem: permission-mode system prompt steers file mutations to Bash → diffs vanish + write hooks/deny rules go blind. Different UI: teller's bronze grille. Marble counter, bronze lattice, receipt stamp, cash drawer, night-depository slot, bypass-mode lamp. Playfair Display + Source Serif 4 + JetBrains Mono.
 
 ## Spile
 
@@ -596,6 +608,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/grille/` → `projects/grille/`
 - `/spile/` → `projects/spile/`
 - `/bollard/` → `projects/bollard/`
 - `/clew/` → `projects/clew/`
