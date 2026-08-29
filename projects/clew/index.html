@@ -489,35 +489,47 @@
           with E2BIG — including <code>sleep 5</code>. Measured: 261
           worktrees; 687 deny paths of which 524 are worktree-admin
           files; command line 130.7KB across 3 args (largest single arg
-          130.7KB); environment 9.5KB. Same-class
-          <a href="https://github.com/anthropics/claude-code/issues/73468">#73468</a>,
-          <a href="https://github.com/anthropics/claude-code/issues/73437">#73437</a>,
-          <a href="https://github.com/anthropics/claude-code/issues/82840">#82840</a>,
+          130.7KB); environment 9.5KB.           Same-class
+          <a href="https://github.com/anthropics/claude-code/issues/82840">#82840</a>
+          (profile cached; sweep stale; <code>isolation:"worktree"</code> Workflow fan-outs),
+          <a href="https://github.com/anthropics/claude-code/issues/73468">#73468</a>
+          (macOS sandbox-exec -p vs ARG_MAX ~1000 trees),
+          <a href="https://github.com/anthropics/claude-code/issues/73437">#73437</a>
+          (2.1.196 regression; ancestor expander; ~50-tree cliff on macOS),
           <a href="https://github.com/anthropics/claude-code/issues/74081">#74081</a>,
           <a href="https://github.com/anthropics/claude-code/issues/82173">#82173</a>,
           <a href="https://github.com/anthropics/claude-code/issues/78253">#78253</a>,
-          <a href="https://github.com/anthropics/claude-code/issues/51126">#51126</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/51126">#51126</a>
+          (closed not-planned as “configure fewer user denies” — rejected pole, not a fix;
+          #90569 has no user-configured deny rules),
           <a href="https://github.com/anthropics/claude-code/issues/46461">#46461</a>,
           <a href="https://github.com/anthropics/claude-code/issues/74032">#74032</a>.
           Cross-ecosystem
-          <a href="https://github.com/openai/codex/issues/33479">openai/codex#33479</a>,
-          <a href="https://github.com/openai/codex/issues/37632">#37632</a>,
-          <a href="https://github.com/openai/codex/issues/34878">#34878</a>.
+          <a href="https://github.com/openai/codex/issues/33479">openai/codex#33479</a>
+          +
+          <a href="https://github.com/openai/codex/issues/37632">#37632</a>
+          (writable roots 5→253 until E2BIG),
+          <a href="https://github.com/openai/codex/issues/34878">#34878</a>
+          (notify as one argv).
+          Suggested remediations from the issue (not shipped here): invoke bwrap
+          with a real argv / <code>--args-fd</code>, or deny <code>.git/worktrees/</code>
+          once and allow back only the current session’s admin dir (O(1)).
+          The product scores the coil.
         </p>
       </section>
       <section class="why">
         <h2>Why not a clone</h2>
         <p>
-          NOT Wicket (isolation pin vs actual isolation — opposite pole: Wicket is a leak; Clew is a choke).
+          NOT Wicket (Wicket scores whether isolation holds; Clew scores whether the CVE-mitigation deny list still lets /bin/bash spawn — isolation <i>working</i> is what stuffs the clew).
           NOT Scant (PATH truncation inside a shell snapshot).
           NOT Sump (literal /dev/null LFS hooks).
           NOT Cinch (silent partial folder mounts).
           NOT Hasp (file lease / last-writer-wins).
           NOT Sounder (missed background wakeup).
           NOT leftover woodworking / millimetre-slider clones.
-          Different problem: did the deny-list coil cross 128KB and kill every Bash spawn?
+          NOT Dunnage / Pawl / Quoin. Product name is Clew only. Idle word is <b>rove</b>.
+          Different problem: did the deny-list coil cross 128KB and kill every Bash spawn, including the cleanup that would shrink it?
           Different UI: sail loft / rigger's bench. Fonts: Cinzel + Lora + Overpass Mono.
-          Different idle: <b>rove</b>.
         </p>
       </section>
     </div>
@@ -558,12 +570,13 @@
           twinnedShape: row.worktreeCount > 0 && ratio >= 1.8 && ratio <= 2.2,
           swollenShape: row.totalDenyCount > baseline + 2 * row.worktreeCount,
           jammedShape: argOver,
-          cachedShape: row.profileCached && row.prunedButNotRestarted,
+          cachedShape: row.profileCached || row.prunedButNotRestarted,
           globbedShape: row.globExpandedPerFile,
           prunedShape: row.scored && row.worktreeCount === 0 && row.totalDenyCount > 0 &&
             row.totalDenyCount <= baseline && !row.e2big && !row.spawnFailed && !row.sleepFailed &&
             !argOver && !row.profileCached && !row.prunedButNotRestarted && !row.globExpandedPerFile,
-          roveHold: !row.spawnFailed && !row.sleepFailed && !row.e2big && row.largestArgBytes < maxArg
+          roveHold: !row.spawnFailed && !row.sleepFailed && !row.e2big && row.largestArgBytes < maxArg &&
+            !row.profileCached && !row.prunedButNotRestarted
         };
       }
 
@@ -571,12 +584,12 @@
         if (isIdle(row)) return IDLE_WORD;
         const facts = analyze(row);
         if (facts.fouledShape) return "fouled";
+        if (facts.cachedShape) return "cached";
         if (facts.overcoiledShape) return "overcoiled";
         if (facts.chokedShape) return "choked";
         if (facts.twinnedShape) return "twinned";
         if (facts.swollenShape) return "swollen";
         if (facts.jammedShape) return "jammed";
-        if (facts.cachedShape) return "cached";
         if (facts.globbedShape) return "globbed";
         if (facts.prunedShape) return "pruned";
         if (facts.roveHold) return IDLE_WORD;
@@ -584,14 +597,14 @@
       }
 
       function feedOf(kind) {
-        if (kind === "fouled") return "● Fouled · 261 worktrees · 524 worktree denies · 130.7KB single arg · E2BIG · even sleep 5 fails · primary #90569";
+        if (kind === "fouled") return "● Fouled · 261 worktrees · 524 worktree denies · 130.7KB single arg · E2BIG · even sleep 5 fails · cleanup dies too · HEADLESS-BRICK / self-heal-none · primary #90569";
         if (kind === "overcoiled") return "● Overcoiled · deny list grew two entries per registered worktree without bound";
         if (kind === "choked") return "● Choked · every Bash spawn fails (sleep 5 / echo hello / monitor) with E2BIG";
         if (kind === "twinned") return "● Twinned · ~2 deny entries per worktree (admin files under .git/worktrees/<id>/)";
         if (kind === "swollen") return "● Swollen · deny count unbounded vs a fixed baseline (~160 baseline + 2×trees)";
         if (kind === "jammed") return "● Jammed · single /bin/bash -c argument exceeds 128KB MAX_ARG_STRLEN";
-        if (kind === "pruned") return "● Pruned · worktrees removed + profile rebuilt · spawn lives again · cure path, not idle";
-        if (kind === "cached") return "● Cached · profile cached per session so prune without restart still fouls · macOS #82840 shape";
+        if (kind === "pruned") return "● Pruned · worktrees removed + profile rebuilt after restart · spawn lives again · cure path, not idle";
+        if (kind === "cached") return "● Cached · sweep + git worktree prune without restart · profile cached for the whole session · stale registrations still count · #82840 · never rove";
         if (kind === "globbed") return "● Globbed · recursive deny globs expanded per-file into bwrap binds · #74081 shape";
         return "● Rove · working-size clew · spawn lives · sheet reeved · idle word is rove";
       }
@@ -678,7 +691,7 @@
         if (/~2 deny entries per worktree|\.git\/worktrees/i.test(raw)) return seedOf("twinned");
         if (/unbounded vs a fixed baseline|~160 baseline/i.test(raw)) return seedOf("swollen");
         if (/exceeds 128KB MAX_ARG_STRLEN|MAX_ARG_STRLEN/i.test(raw)) return seedOf("jammed");
-        if (/profile cached per session|#82840/i.test(raw)) return seedOf("cached");
+        if (/profile cached per session|prune without restart|sweep \+ git worktree prune|#82840|sweep stale/i.test(raw)) return seedOf("cached");
         if (/globs expanded per-file|#74081/i.test(raw)) return seedOf("globbed");
         if (/worktrees removed \+ profile rebuilt|spawn lives again/i.test(raw)) return seedOf("pruned");
         try {
@@ -740,7 +753,7 @@
         if (facts.swollenShape && verdict === "swollen") lines.push("<li>deny count unbounded vs ~160 baseline + 2×trees<span class='dim'>swollen</span></li>");
         if (facts.jammedShape && verdict === "jammed") lines.push("<li>single /bin/bash -c argument exceeds 128KB<span class='dim'>jammed</span></li>");
         if (facts.prunedShape && verdict === "pruned") lines.push("<li>worktrees removed · profile rebuilt · spawn lives<span class='dim'>pruned</span></li>");
-        if (facts.cachedShape && verdict === "cached") lines.push("<li>profile cached · prune without restart still fouls · #82840<span class='dim'>cached</span></li>");
+        if (facts.cachedShape && verdict === "cached") lines.push("<li>sweep + prune without restart · session cache · stale registrations still count · #82840 · never rove<span class='dim'>cached</span></li>");
         if (facts.globbedShape && verdict === "globbed") lines.push("<li>recursive deny globs expanded per-file · #74081<span class='dim'>globbed</span></li>");
         document.getElementById("lines").innerHTML = lines.length ? lines.join("") : "<li>line on · sheave free · working-size clew · idle word is rove<span class='dim'>hold</span></li>";
         document.getElementById("masked").textContent = "Masked view · trees " + (clew.worktreeCount || 0) + " · denies " + (clew.worktreeDenyCount || 0) + " · argv " + (clew.largestArgBytes || 0) + "B · e2big " + (clew.e2big ? "yes" : "no") + ". No secrets.";

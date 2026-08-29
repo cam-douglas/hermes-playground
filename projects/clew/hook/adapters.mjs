@@ -178,7 +178,7 @@ export function linearClewTicket(result, env = process.env) {
       ? "Fouled, choked, or jammed: the single bwrap argv crossed MAX_ARG_STRLEN and Bash spawn is dead."
       : "Not a fouled / choked / jammed clew. Linear stays quiet.",
     "",
-    "Evidence (do not invent more): anthropics/claude-code#90569. Same-class #73468 #73437 #82840 #74081 #82173 #78253 #51126 #46461 #74032. NOT Wicket / Scant / Sump / Cinch / Hasp / Sounder / leftover woodworking. openai/codex#33479 #37632 #34878 (same-class ARG_MAX / E2BIG).",
+    "Evidence (do not invent more): anthropics/claude-code#90569. Same-class #82840 (profile cached; sweep stale; isolation worktree fan-outs) #73468 (macOS sandbox-exec -p vs ARG_MAX ~1000 trees) #73437 (2.1.196 ancestor expander; ~50-tree cliff) #74081 #82173 #78253. #51126 is the rejected pole (closed not-planned: configure fewer user denies — not a fix; #90569 has no user-configured deny rules). #46461 #74032. NOT Wicket (isolation hold vs spawn choke) / Scant / Sump / Cinch / Hasp / Sounder / leftover woodworking. openai/codex#33479 #37632 (writable roots 5→253 until E2BIG) #34878 (notify as one argv). Suggested remediations from the issue (not shipped here): bwrap real argv / --args-fd, or deny .git/worktrees/ once and allow back only the current session admin dir (O(1)).",
   ].join("\n");
 
   if (!loss) {

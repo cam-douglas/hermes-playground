@@ -47,6 +47,7 @@ import {
   seedPruned,
   seedReset,
   seedRove,
+  seedSweepNoRestart,
   seedSwollen,
   seedTwinned,
   verdictOf,
@@ -216,7 +217,7 @@ test("9 pruned: worktrees removed + profile rebuilt; spawn lives again", () => {
   assert.equal(decideSeed("pruned").verdict, "pruned");
 });
 
-test("10 cached: prune without restart still fouls", () => {
+test("10 cached: prune without restart still fouls, never rove", () => {
   const result = decide(seedCached());
   assert.equal(result.verdict, "cached");
   assert.equal(result.clewCached, true);
@@ -224,7 +225,9 @@ test("10 cached: prune without restart still fouls", () => {
   assert.equal(result.prunedButNotRestarted, true);
   assert.equal(result.alarm, true);
   assert.equal(result.rove, false);
-  assert.match(result.feed, /Cached|#82840/);
+  assert.notEqual(result.verdict, "rove");
+  assert.notEqual(result.verdict, "pruned");
+  assert.match(result.feed, /Cached|#82840|never rove/);
   assert.equal(decideSeed("cached").verdict, "cached");
 });
 
@@ -363,6 +366,9 @@ test("20 forbidden idle list includes clew, empty, leftover names", () => {
   assert.ok(words.includes("wicket"));
   assert.ok(words.includes("sounder"));
   assert.ok(words.includes("plimsoll"));
+  assert.ok(words.includes("dunnage"));
+  assert.ok(words.includes("pawl"));
+  assert.ok(words.includes("quoin"));
   assert.ok(!words.includes("rove"));
 });
 
@@ -584,7 +590,7 @@ test("32 HTML why-not names Wicket, Scant, Sump, Cinch, Hasp, Sounder", () => {
 
 test("33 README names contrasts and rove idle", () => {
   const readme = readFileSync(fileURLToPath(new URL("../README.md", import.meta.url)), "utf8");
-  assert.match(readme, /NOT \*\*Wicket\*\*|NOT Wicket/);
+  assert.match(readme, /NOT \*\*Wicket\*\*|NOT Wicket|CVE-mitigation deny list/);
   assert.match(readme, /NOT \*\*Scant\*\*|NOT Scant/);
   assert.match(readme, /NOT \*\*Sump\*\*|NOT Sump/);
   assert.match(readme, /NOT \*\*Sounder\*\*|NOT Sounder/);
@@ -648,4 +654,102 @@ test("36 Slack skip on rove / control / pruned / twinned", () => {
     assert.equal(result.slack, false, result.verdict);
     assert.match(slackClewAlarm(result, {}).summary, /Would skip Slack/);
   }
+});
+
+test("37 sweep + prune without restart is cached not rove even when disk looks rebuilt", () => {
+  const result = decide(seedSweepNoRestart());
+  assert.equal(result.verdict, "cached");
+  assert.equal(result.rove, false);
+  assert.notEqual(result.verdict, "pruned");
+  assert.notEqual(result.verdict, "rove");
+  assert.equal(result.worktreeCount, 0);
+  assert.equal(result.prunedButNotRestarted, true);
+  assert.equal(result.profileCached, true);
+  assert.equal(decideSeed("sweep").verdict, "cached");
+  assert.equal(decideSeed("sweep-no-restart").verdict, "cached");
+});
+
+test("38 prunedButNotRestarted alone is cached, never rove", () => {
+  const result = score({
+    worktreeCount: 0,
+    totalDenyCount: 160,
+    baselineDenyCount: 160,
+    largestArgBytes: 4096,
+    maxArgStrlen: MAX_ARG_STRLEN,
+    e2big: false,
+    spawnFailed: false,
+    sleepFailed: false,
+    prunedButNotRestarted: true,
+    scored: true,
+  });
+  assert.equal(result.verdict, "cached");
+  assert.equal(result.rove, false);
+});
+
+test("39 profileCached alone is cached, never rove", () => {
+  const result = score({
+    worktreeCount: 0,
+    totalDenyCount: 160,
+    baselineDenyCount: 160,
+    largestArgBytes: 4096,
+    maxArgStrlen: MAX_ARG_STRLEN,
+    e2big: false,
+    spawnFailed: false,
+    sleepFailed: false,
+    profileCached: true,
+    scored: true,
+  });
+  assert.equal(result.verdict, "cached");
+  assert.equal(result.rove, false);
+});
+
+test("40 261-tree cliff including cleanup is fouled, never rove (HEADLESS-BRICK)", () => {
+  const result = score({
+    worktreeCount: 261,
+    worktreeDenyCount: 524,
+    baselineDenyCount: 160,
+    totalDenyCount: 687,
+    largestArgBytes: DEMO_LARGEST_ARG_BYTES,
+    maxArgStrlen: MAX_ARG_STRLEN,
+    e2big: true,
+    spawnFailed: true,
+    sleepFailed: true,
+    echoFailed: true,
+    monitorFailed: true,
+  });
+  assert.equal(result.verdict, "fouled");
+  assert.equal(result.rove, false);
+  assert.match(result.feed, /HEADLESS-BRICK|self-heal-none|cleanup/);
+  const reasons = reasonsOf(seedFouled().clew, "fouled");
+  assert.ok(reasons.some((row) => /HEADLESS-BRICK|self-heal-none|cleanup/.test(row)));
+  assert.ok(reasons.some((row) => /no user-configured deny rules|#51126/.test(row)));
+});
+
+test("41 admit still does not lie after sweep-without-restart", () => {
+  const admitted = decide({ ...seedSweepNoRestart(), action: "admit" });
+  assert.equal(admitted.verdict, "cached");
+  assert.equal(admitted.rove, false);
+  const fouled = decide({ ...seedFouled(), action: "admit" });
+  assert.equal(fouled.verdict, "fouled");
+  assert.equal(fouled.rove, false);
+});
+
+test("42 README and loft cite #51126 as rejected pole and isolation working", () => {
+  const readme = readFileSync(fileURLToPath(new URL("../README.md", import.meta.url)), "utf8");
+  assert.match(readme, /closed not-planned|rejected pole/i);
+  assert.match(readme, /no user-configured deny rules/);
+  assert.match(readme, /isolation \*working\*|isolation working/i);
+  assert.match(readme, /--args-fd|args-fd/);
+  assert.match(readme, /HEADLESS-BRICK|self-heal-none/);
+  assert.doesNotMatch(readme, /idle word is dunnage|idle word is pawl|idle word is quoin/i);
+  const html = readFileSync(fileURLToPath(new URL("../index.html", import.meta.url)), "utf8");
+  assert.match(html, /rejected pole/);
+  assert.match(html, /CVE-mitigation deny list/);
+  assert.match(html, /--args-fd|args-fd/);
+  assert.match(html, /73468/);
+  assert.match(html, /73437/);
+  assert.match(html, /82840/);
+  assert.match(html, /33479/);
+  assert.match(html, /37632/);
+  assert.match(html, /34878/);
 });

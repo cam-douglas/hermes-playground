@@ -10,18 +10,18 @@ NEVER reuse prior idles: keyed, housed, beamed, snug, hung, appointed, cinched, 
 
 Verdicts: **rove**, **fouled**, **overcoiled**, **choked**, **twinned**, **swollen**, **jammed**, **pruned**, **cached**, **globbed**. Slack alarm on fouled / overcoiled / choked / jammed / swollen / cached / globbed. Linear ticket on fouled / choked / jammed. GitHub clew-ledger of scored coils on every score.
 
-The #90569 fouled case (261 worktrees, 524 worktree denies, 130.7KB single arg, E2BIG, even sleep 5 fails) is **fouled**, never **rove**.
+The #90569 fouled case (261 worktrees, 524 worktree denies, 130.7KB single arg, E2BIG, even sleep 5 fails) is **fouled**, never **rove**. The cliff is sudden, not a fade: at 261 trees every spawn dies, including the cleanup commands that would shrink the list (HEADLESS-BRICK / self-heal-none). Sweep + `git worktree prune` without a process restart is **cached**, never **rove** — only rebuild-after-restart can be pruned/rove.
 
 ## Why not a clone
 
-NOT **Wicket** — isolation pin vs actual isolation (writes escaping a pinned worktree). Opposite pole: Wicket is a leak; Clew is a choke. Same noun (worktree), different failure (spawn ARG_MAX vs isolation lie).
+NOT **Wicket** — Wicket scores whether isolation holds (writes escaping a pinned worktree). Clew scores whether the CVE-mitigation deny list still lets `/bin/bash` spawn. `isolation: "worktree"` agent fan-outs feed the list; isolation *working* is what stuffs the clew. Opposite pole: Wicket is a leak; Clew is a choke. Same noun (worktree), different failure (spawn ARG_MAX vs isolation lie).
 NOT **Scant** — PATH truncation inside a shell snapshot. Clew is the sandbox profile itself as one argv.
 NOT **Sump** — literal /dev/null LFS hooks.
 NOT **Cinch** — silent partial folder mounts.
 NOT **Hasp** — file lease / last-writer-wins.
 NOT **Sounder** — missed background wakeup (waiter exited; notification never re-invoked).
 NOT leftover woodworking / millimetre-slider.
-Do NOT ship alternate names Plimsoll, Flake, Hawse, Skein, Oakum, Burthen, Marline, Bight, Rode, Stow, Lading, Coil, Flemish, Thrum, Ravel. Product name is **Clew** only.
+Do NOT ship alternate names Plimsoll, Flake, Hawse, Skein, Oakum, Burthen, Marline, Bight, Rode, Stow, Lading, Coil, Flemish, Thrum, Ravel, Dunnage, Pawl, Quoin. Product name is **Clew** only.
 
 Different problem: DENY LIST GROWS TWO ENTRIES PER WORKTREE → SINGLE BWRAP ARGV CROSSES MAX_ARG_STRLEN → EVERY BASH SPAWN DIES WITH E2BIG. Sudden, total, not gradual.
 Different UI: sail loft / rigger's bench. Hemp clew, tarred oak, brass thimble, lignum sheave, lantern. A growing ball of yarn that swells toward a 128KB load line. When fouled the sheave jams and no sheet pays. NOT a telegraph night desk, NOT a brass binnacle, NOT a weaver's pirn, NOT a mill leat, NOT a hotel key-rack.
@@ -37,8 +37,8 @@ Different idle word: **rove**.
 4. Switch **twinned** — ~2 deny entries per worktree (admin files under `.git/worktrees/<id>/`).
 5. Switch **swollen** — deny count unbounded vs a fixed baseline (~160 baseline + 2×trees).
 6. Switch **jammed** — single `/bin/bash -c` argument exceeds 128KB MAX_ARG_STRLEN.
-7. Switch **pruned** — worktrees removed + profile rebuilt; spawn lives again (cure path, not idle).
-8. Switch **cached** — profile cached per session so prune without restart still fouls (macOS #82840 shape).
+7. Switch **pruned** — worktrees removed + profile rebuilt **after restart**; spawn lives again (cure path, not idle). Sweep without restart is not this.
+8. Switch **cached** — sweep + `git worktree prune` without a process restart. Profile cached for the whole session; stale registrations from killed workflows still count (#82840). Never rove.
 9. Switch **globbed** — recursive deny globs expanded per-file into bwrap binds (#74081 shape).
 10. Switch **control rove** — working-size clew, spawn lives → **rove**.
 11. Switch **Reset · rove** — idle loft → **rove**. Idle word is **rove** when the loft is reset. Line on; sheave free; never an empty or error state.
@@ -61,30 +61,36 @@ Primary:
 
 Same-class / nearby (not new primaries):
 
-- [anthropics/claude-code#73468](https://github.com/anthropics/claude-code/issues/73468) — open — macOS sandbox-exec -p exceeds ARG_MAX with many git worktrees
-- [anthropics/claude-code#73437](https://github.com/anthropics/claude-code/issues/73437) — open — E2BIG from unbounded ancestor rule expansion with many worktrees (macOS)
-- [anthropics/claude-code#82840](https://github.com/anthropics/claude-code/issues/82840) — open — seatbelt profile grows one deny per registered worktree → E2BIG; profile cached per session
+- [anthropics/claude-code#82840](https://github.com/anthropics/claude-code/issues/82840) — open — profile cached for the whole session; sweep stale; `isolation: "worktree"` Workflow fan-outs feed the list. Isolation *working* is what stuffs the clew.
+- [anthropics/claude-code#73468](https://github.com/anthropics/claude-code/issues/73468) — open — macOS sandbox-exec -p vs ARG_MAX ~1000 trees
+- [anthropics/claude-code#73437](https://github.com/anthropics/claude-code/issues/73437) — open — 2.1.196 regression; ancestor expander; ~50-tree cliff on macOS
 - [anthropics/claude-code#74081](https://github.com/anthropics/claude-code/issues/74081) — open — Linux recursive Read() deny globs expand to per-file bwrap binds → E2BIG on echo hello
 - [anthropics/claude-code#82173](https://github.com/anthropics/claude-code/issues/82173) — open — absolute deny patterns joined to cwd inflate profile; E2BIG with only 5 worktrees
 - [anthropics/claude-code#78253](https://github.com/anthropics/claude-code/issues/78253) — open — spawn E2BIG; profile size scales with working-tree file count
-- [anthropics/claude-code#51126](https://github.com/anthropics/claude-code/issues/51126) — closed — mechanics: bubblewrap wrapped in a single `/bin/bash -c` string vs MAX_ARG_STRLEN
+- [anthropics/claude-code#51126](https://github.com/anthropics/claude-code/issues/51126) — closed not-planned as “configure fewer user denies.” Rejected pole, **not a fix**. #90569 has no user-configured deny rules; Claude Code’s own worktree enumeration is the unbounded term. Mechanics still: bubblewrap wrapped in a single `/bin/bash -c` string vs MAX_ARG_STRLEN.
 - [anthropics/claude-code#46461](https://github.com/anthropics/claude-code/issues/46461) — closed — mid-path glob deny rules expand per-file → E2BIG
 - [anthropics/claude-code#74032](https://github.com/anthropics/claude-code/issues/74032) — closed — worktree isolation inflates env past ARG_MAX
 
 Cross-check nearby bugs are DIFFERENT (cite only as “not this”):
 
-- NOT Wicket isolation pin vs actual isolation. Opposite pole: Wicket is a leak; Clew is a choke.
+- NOT Wicket. Wicket scores whether isolation holds; Clew scores whether the CVE-mitigation deny list still lets `/bin/bash` spawn. Opposite pole: Wicket is a leak; Clew is a choke.
 - NOT Scant PATH truncation inside a shell snapshot.
 - NOT Sump literal /dev/null LFS hooks.
 - NOT Cinch silent partial folder mounts.
 - NOT Hasp file lease / last-writer-wins.
 - NOT Sounder missed background wakeup.
+- NOT #51126 as a fix. Closed not-planned: configure fewer user denies. #90569 has none.
 
 Cross-ecosystem:
 
-- [openai/codex#33479](https://github.com/openai/codex/issues/33479) — open — `:workspace_roots` write rules recursively expand until E2BIG
+- [openai/codex#33479](https://github.com/openai/codex/issues/33479) — open — `:workspace_roots` write rules recursively expand (writable roots 5→253) until E2BIG
 - [openai/codex#37632](https://github.com/openai/codex/issues/37632) — open — same class regression on 0.147.0
 - [openai/codex#34878](https://github.com/openai/codex/issues/34878) — open — notify payload as single argv exceeds MAX_ARG_STRLEN
+
+Suggested remediations from the issue (do not invent more; the product scores the coil and does **not** claim to have shipped these):
+
+- invoke bwrap with a real argv / `--args-fd`
+- or deny `.git/worktrees/` once and allow back only the current session’s admin dir (O(1))
 
 ## Integrations
 

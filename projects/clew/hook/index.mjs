@@ -96,7 +96,7 @@ function denyMessage(result) {
     return "Clew swollen. Deny count unbounded vs a fixed baseline (~160 baseline + 2×trees).";
   }
   if (result.verdict === "cached") {
-    return "Clew cached. Profile cached per session so prune without restart still fouls.";
+    return "Clew cached. Sweep + git worktree prune without a process restart. Profile cached for the whole session; stale registrations still count. Never rove.";
   }
   if (result.verdict === "globbed") {
     return "Clew globbed. Recursive deny globs expanded per-file into bwrap binds.";
