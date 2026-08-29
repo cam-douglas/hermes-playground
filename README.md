@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Clew](https://hermes-playground-green.vercel.app/clew/)** — sail loft / rigger's bench. A working-size coil is not a hold. Score the clew or admit rove. Folder: `projects/clew/`.
+**Featured: [Bollard](https://hermes-playground-green.vercel.app/bollard/)** — wet pier / bollard plate. A slack hawser is not a hold. Score the bollard or admit belayed. Folder: `projects/bollard/`.
+
+**Listed: [Clew](https://hermes-playground-green.vercel.app/clew/)** — sail loft / rigger's bench. A working-size coil is not a hold. Score the clew or admit rove. Folder: `projects/clew/`. Still listed. Not featured.
 
 **Listed: [Sounder](https://hermes-playground-green.vercel.app/sounder/)** — telegraph night desk. A completed waiter is not a hold. Score the sounder or admit keyed. Folder: `projects/sounder/`. Still listed. Not featured.
 
@@ -104,10 +106,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                48 products: Clew (featured), Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                49 products: Bollard (featured), Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/clew/              sail loft / rigger's bench for sandbox deny-list E2BIG at MAX_ARG_STRLEN (featured)
+projects/bollard/           wet pier / bollard plate for remote-control environment GC after a supervisor gap (featured)
+projects/clew/              sail loft / rigger's bench for sandbox deny-list E2BIG at MAX_ARG_STRLEN (kept, unfeatured)
 projects/sounder/           telegraph night desk for a completed background waiter whose notification never re-invokes the session (kept, unfeatured)
 projects/binnacle/          ship's brass binnacle for TUI origin split after ANTHROPIC_BASE_URL is named (kept, unfeatured)
 projects/pirn/              weaver's pirn-winder bench for instruction-shaped idle_notification truncation (kept, unfeatured)
@@ -155,8 +158,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-bollard.md  Bollard ship log (23:50 Sydney)
 runs/2026-08-29-2250.md     Clew ship log (22:50 Sydney)
 runs/2026-08-29-2150.md     Sounder ship log (21:50 Sydney)
 runs/2026-08-29-2050.md     Binnacle ship log (20:50 Sydney)
@@ -206,6 +210,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Bollard
+
+`projects/bollard/` is a wet pier / dock-bollard plate for Claude Code remote-control environment retention. A long-lived `claude rc` supervisor (often under systemd Restart=always) can exit for transient reasons. Measured: supervisor gap 1–3 s (clean restart) → environment preserved; supervisor gap ~10–11 s (crash → Restart=always) → server GC → new environment ID; every previously attached session permanently unresumable (mobile shows “environment deleted”). A slack hawser is not a hold. Score the bollard or admit **belayed**. Verdicts: **belayed**, **gap-short**, **gap-fatal**, **poll-401**, **orphaned**, **sessions-dead**, **cred-stale**, **mem-thrash**, **offline-lie**, **reattach-denied**. Slack alarm on orphaned / gap-fatal / sessions-dead / poll-401 / offline-lie / mem-thrash / cred-stale / reattach-denied. Linear ticket on orphaned / gap-fatal / sessions-dead / poll-401.
+
+Live path: https://hermes-playground-green.vercel.app/bollard/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90581` orphaned is already on the pier. Idle word is **belayed**, not the product name, not empty. NOT Clew (ARG_MAX / deny-list E2BIG). NOT Sounder (missed background wakeup). NOT Reveille (living muster). NOT Cote (--resume hub identity). NOT Binnacle (TUI origin split). NOT Hasp / Wicket / Parity. NOT leftover woodworking sliders. Different problem: supervisor gap ≥~10s → server GC → new environment ID → every prior session permanently unresumable. Different UI: wet pier. Cast iron bollard, hawser eyes, tide marks, quay lamp. Alfa Slab One + Bitter + Space Mono.
 
 ## Clew
 
@@ -572,6 +584,9 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/bollard/` → `projects/bollard/`
+- `/clew/` → `projects/clew/`
+- `/sounder/` → `projects/sounder/`
 - `/cotter/` → `projects/cotter/`
 - `/fob/` → `projects/fob/`
 - `/ordo/` → `projects/ordo/`
