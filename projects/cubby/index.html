@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Cubby — school/office mailroom cubby wall for Claude Code auto-memory that resolves to the wrong ancestor cache. A stuffed cubby is not a hold. Idle word is stowed."
+    />
+    <title>Cubby — mailroom cubby wall</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Red+Hat+Mono:wght@400;600&family=Young+Serif&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --charcoal: #1c1814;
+        --oak: #8a5a2a;
+        --oak-deep: #5c3a18;
+        --oak-lit: #c4883a;
+        --brass: #c9a24a;
+        --brass-lit: #ecd07a;
+        --cream: #f4ead6;
+        --amber: #e39a28;
+        --copy: #efe6d4;
+        --mute: #b8a890;
+        --ink: #1a1410;
+        --fail: #d46a28;
+        --head: "Young Serif", "Palatino Linotype", Palatino, serif;
+        --body: "Outfit", "Avenir Next", "Segoe UI", sans-serif;
+        --mono: "Red Hat Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          radial-gradient(ellipse 48% 30% at 82% 8%, rgba(227, 154, 40, 0.14), transparent 60%),
+          radial-gradient(ellipse 34% 26% at 6% 94%, rgba(92, 58, 24, 0.45), transparent 58%),
+          linear-gradient(180deg, #2a2218 0%, var(--charcoal) 46%, #100e0c 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--brass-lit); }
+      .mailroom-hall {
+        width: min(1160px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 20px 0 88px;
+      }
+      .cubby-rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 18px;
+        padding: 10px 4px 16px;
+        border-bottom: 1px solid rgba(201, 162, 74, 0.28);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--brass-lit);
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-family: var(--head);
+        font-size: clamp(52px, 10vw, 96px);
+        font-weight: 400;
+        line-height: 0.86;
+        letter-spacing: -0.03em;
+        color: var(--cream);
+      }
+      .lede {
+        max-width: 40ch;
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.5;
+      }
+      .cubby-wall {
+        position: relative;
+        margin: 22px 0 18px;
+        padding: 28px 16px 16px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #6a4420 0 18px,
+            #7a4e24 18px 20px,
+            #5c3a18 20px 38px
+          );
+        border: 12px solid #3a2410;
+        box-shadow:
+          inset 0 0 0 4px var(--brass),
+          0 28px 54px rgba(0, 0, 0, 0.5);
+      }
+      .cubby-wall::before {
+        content: "CUBBY · MAILROOM WALL NO. 52 · AUTO-MEMORY BAY";
+        position: absolute;
+        top: 8px;
+        left: 16px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: rgba(236, 208, 122, 0.5);
+      }
+      .oak-grain {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        padding: 18px 4px 8px;
+      }
+      @media (max-width: 860px) {
+        .oak-grain { grid-template-columns: 1fr; }
+        .cubby-rail { flex-direction: column; align-items: start; }
+      }
+      .oak-bay {
+        min-height: 248px;
+        padding: 12px;
+        background: linear-gradient(180deg, #4a2e14, #2a1a0c 72%);
+        border: 3px solid #2a180c;
+        box-shadow: inset 0 18px 24px rgba(0, 0, 0, 0.45);
+        position: relative;
+      }
+      .card-kicker {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass-lit);
+      }
+      .brass-nameplate {
+        margin: 8px 0 0;
+        padding: 4px 8px;
+        display: inline-block;
+        background: linear-gradient(180deg, #e8c86a, var(--brass));
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        box-shadow: 0 2px 0 #6a5018;
+      }
+      .host {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .amber-slot {
+        width: 78%;
+        height: 88px;
+        margin: 22px auto 0;
+        background: linear-gradient(180deg, #1a1208, #0c0804);
+        border: 4px solid #3a2a12;
+        position: relative;
+        overflow: hidden;
+      }
+      .safety-envelope {
+        position: absolute;
+        left: 12%;
+        right: 12%;
+        top: 14px;
+        height: 42px;
+        background: linear-gradient(180deg, #f6eed8, #d8c89a);
+        border: 1px solid #8a7040;
+        opacity: 0.18;
+        transform: translateY(-4px);
+        transition: opacity 0.35s ease, transform 0.35s ease;
+      }
+      .safety-envelope::after {
+        content: "NEVER PUSH MAIN";
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 0.12em;
+        color: #6a4018;
+      }
+      .ancestor-cubby.lit .amber-slot {
+        box-shadow: inset 0 0 24px rgba(227, 154, 40, 0.55);
+        border-color: var(--amber);
+      }
+      .ancestor-cubby.lit .safety-envelope,
+      .ancestor-cubby.stuffed .safety-envelope {
+        opacity: 1;
+        transform: translateY(8px);
+      }
+      .project-cubby.empty .safety-envelope {
+        opacity: 0.08;
+        transform: translateY(-10px);
+      }
+      .project-cubby.held .safety-envelope {
+        opacity: 1;
+        transform: translateY(8px);
+      }
+      .directory-lamp .lamp-globe {
+        width: 68px;
+        height: 68px;
+        margin: 28px auto 0;
+        border-radius: 50%;
+        background: radial-gradient(circle at 36% 30%, #3a3018, #120e08 68%);
+        box-shadow: 0 0 0 6px #2a180c;
+        transition: background 0.3s ease, box-shadow 0.3s ease;
+      }
+      .directory-lamp.lit .lamp-globe {
+        background: radial-gradient(circle at 36% 30%, #ffe08a, var(--amber) 46%, #6a3a08 78%);
+        box-shadow: 0 0 0 6px #2a180c, 0 0 28px rgba(227, 154, 40, 0.55);
+        animation: lamp-pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes lamp-pulse {
+        50% { box-shadow: 0 0 0 6px #2a180c, 0 0 40px rgba(227, 154, 40, 0.8); }
+      }
+      .wall-desk {
+        margin-top: 12px;
+        padding: 14px;
+        background: linear-gradient(180deg, #3a2a18, #24180e);
+        border-top: 4px solid var(--brass);
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1fr;
+        gap: 12px;
+      }
+      @media (max-width: 860px) {
+        .wall-desk { grid-template-columns: 1fr; }
+      }
+      .mirror-stamp,
+      .diff-tape,
+      .hold-plate {
+        min-height: 88px;
+        padding: 10px 12px;
+        background: rgba(20, 14, 8, 0.55);
+        border: 1px solid rgba(201, 162, 74, 0.28);
+      }
+      .mirror-stamp .stamp-pad {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 10px;
+        border: 3px solid var(--fail);
+        color: var(--fail);
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        transform: rotate(-6deg);
+      }
+      .mirror-stamp.ok .stamp-pad {
+        border-color: var(--brass);
+        color: var(--brass-lit);
+      }
+      .tape-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .tape-mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 2px 7px;
+        background: #2a1e10;
+        border: 1px dashed var(--brass);
+      }
+      .tape-mark.gap { opacity: 0.55; }
+      .board-row {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 1fr;
+        gap: 14px;
+        margin: 8px 0 18px;
+      }
+      @media (max-width: 860px) {
+        .board-row { grid-template-columns: 1fr; }
+      }
+      .tap-slate,
+      .cellar-keys,
+      .tap-intake,
+      .integrations article,
+      .brief,
+      .why {
+        padding: 16px 16px 14px;
+        background: rgba(16, 12, 8, 0.78);
+        border: 1px solid rgba(201, 162, 74, 0.22);
+      }
+      h2, h3 {
+        margin: 0 0 10px;
+        font-family: var(--head);
+        font-weight: 400;
+        font-size: 22px;
+      }
+      .verdict-die {
+        display: flex;
+        align-items: center;
+        min-height: 72px;
+        padding: 8px 12px;
+        border: 1px solid rgba(201, 162, 74, 0.35);
+        background: #1a140c;
+      }
+      .verdict-die .word {
+        font-family: var(--head);
+        font-size: clamp(28px, 5vw, 42px);
+        line-height: 1;
+      }
+      .verdict-die.fail { border-color: var(--amber); color: var(--amber); }
+      .chip {
+        margin: 10px 0 8px;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .chip.alarm { color: var(--amber); }
+      .chip.hold { color: var(--mute); }
+      .feed { margin: 0 0 10px; color: var(--mute); }
+      .lines { margin: 0; padding-left: 18px; }
+      .lines li { margin: 0 0 6px; }
+      .lines .dim {
+        display: inline-block;
+        margin-left: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--brass);
+      }
+      .wind-keys, .yarn-bank {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .wind-keys { margin-bottom: 12px; }
+      button {
+        padding: 8px 10px;
+        background: #2a1e12;
+        border: 1px solid rgba(201, 162, 74, 0.38);
+      }
+      button.primary { background: #3a2a12; border-color: var(--brass); color: var(--brass-lit); }
+      button.warn { border-color: var(--amber); color: var(--amber); }
+      button[aria-pressed="true"] { background: #4a3214; color: var(--brass-lit); }
+      .paste {
+        width: 100%;
+        min-height: 110px;
+        padding: 10px;
+        background: #140e08;
+        color: var(--cream);
+        border: 1px solid rgba(201, 162, 74, 0.28);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .masked { font-family: var(--mono); font-size: 12px; color: var(--mute); }
+      .integrations {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+      @media (max-width: 860px) {
+        .integrations { grid-template-columns: 1fr; }
+      }
+      .ledger-line { margin: 0; color: var(--mute); font-size: 15px; }
+      .brief p, .why p { margin: 0; line-height: 1.55; color: var(--mute); }
+      .brief, .why { margin-bottom: 14px; }
+      code { font-family: var(--mono); font-size: 12px; color: var(--brass-lit); }
+    </style>
+  </head>
+  <body>
+    <div class="mailroom-hall">
+      <div class="cubby-rail">
+        <div>
+          <p class="mark">02:50 Sydney · cubby</p>
+          <h1>Cubby</h1>
+        </div>
+        <p class="lede">
+          A stuffed cubby is not a hold.
+          Score the wall or admit
+          <b>stowed</b>. The oak cubby
+          that matches cwd is the hold.
+          An ancestor cubby is mail
+          for someone else.
+        </p>
+      </div>
+      <div class="cubby-wall" id="cubby-wall" aria-label="Mailroom cubby wall">
+        <div class="oak-grain">
+          <section class="oak-bay ancestor-cubby lit stuffed" id="ancestor-cubby">
+            <div class="card-kicker">ANCESTOR CUBBY</div>
+            <div class="brass-nameplate">/home/user</div>
+            <p class="host" id="ancestor-host">lit · ~/.claude/projects/-home-user/memory/</p>
+            <div class="amber-slot" aria-hidden="true">
+              <div class="safety-envelope" aria-hidden="true"></div>
+            </div>
+          </section>
+          <section class="oak-bay project-cubby empty" id="project-cubby">
+            <div class="card-kicker">PROJECT CUBBY</div>
+            <div class="brass-nameplate">soft-shop</div>
+            <p class="host" id="project-host">empty · safety-rule envelope missing</p>
+            <div class="amber-slot" aria-hidden="true">
+              <div class="safety-envelope" aria-hidden="true"></div>
+            </div>
+          </section>
+          <section class="oak-bay directory-lamp lit" id="directory-lamp">
+            <div class="card-kicker">DIRECTORY LAMP</div>
+            <div class="brass-nameplate">diff</div>
+            <p class="host" id="lamp-host">lit · cache path unsurfaced</p>
+            <div class="lamp-globe" aria-hidden="true"></div>
+          </section>
+        </div>
+        <div class="wall-desk">
+          <section class="mirror-stamp" id="mirror-stamp">
+            <div class="card-kicker">MIRROR STAMP</div>
+            <div class="stamp-pad" id="stamp-pad">invisible</div>
+          </section>
+          <section class="diff-tape" id="diff-tape">
+            <div class="card-kicker">DIRECTORY TAPE</div>
+            <div class="tape-row" id="tape-row">
+              <span class="tape-mark">#90604</span>
+              <span class="tape-mark">ancestor</span>
+              <span class="tape-mark gap">no rule</span>
+            </div>
+          </section>
+          <section class="hold-plate" id="hold-plate">
+            <div class="card-kicker">HOLD PLATE</div>
+            <p class="host" id="hold-host">stowed false · rule never reached session</p>
+          </section>
+        </div>
+      </div>
+      <div class="board-row">
+        <section class="tap-slate">
+          <h2>Wall blotter</h2>
+          <div id="verdict-die" class="verdict-die">
+            <div class="word" id="verdict-word">stowed</div>
+          </div>
+          <p id="chip" class="chip hold"><b>stowed</b> · hold</p>
+          <p id="feed" class="feed">● Stowed · correct cubby · idle word is stowed</p>
+          <ol class="lines" id="lines"></ol>
+        </section>
+        <aside class="cellar-keys">
+          <h2>Mailroom keys</h2>
+          <div class="wind-keys">
+            <button class="primary" type="button" id="btn-score">Score</button>
+            <button type="button" id="btn-admit">Admit stowed</button>
+            <button type="button" id="btn-reset">Reset · stowed</button>
+            <button class="warn" type="button" id="btn-restore">Restore · #90604</button>
+          </div>
+          <div class="yarn-bank">
+            <button type="button" data-seed="invisible" aria-pressed="true">Seed #90604 invisible</button>
+            <button type="button" data-seed="misfiled">misfiled</button>
+            <button type="button" data-seed="ancestor">ancestor</button>
+            <button type="button" data-seed="stale">stale</button>
+            <button type="button" data-seed="invisible">invisible</button>
+            <button type="button" data-seed="walked-up">walked-up</button>
+            <button type="button" data-seed="unsurfaced">unsurfaced</button>
+            <button type="button" data-seed="ghosted">ghosted</button>
+            <button type="button" data-seed="mirrored-fail">mirrored-fail</button>
+            <button type="button" data-seed="restored">restored</button>
+            <button type="button" data-seed="control">control stowed</button>
+            <button type="button" data-seed="reset">Reset · stowed</button>
+            <button type="button" data-seed="invisible">Restore · #90604</button>
+          </div>
+        </aside>
+        <aside class="tap-intake">
+          <h2>Mail intake</h2>
+          <label class="mark" for="paste" style="display:block;margin-bottom:8px;color:#b8a890">Paste a cache-path probe. Score the wall, not the slug.</label>
+          <textarea id="paste" class="paste" placeholder='{"cwd":"/home/user/source/soft-shop","injectedCachePath":"~/.claude/projects/-home-user/memory/","ancestorWalkUp":true,"safetyRuleInAuthoritativeOnly":true}'></textarea>
+          <button type="button" id="btn-probe" class="primary">Score wall</button>
+          <p class="masked" id="masked">Masked view · cwd, injected cache, ancestor walk. No secrets.</p>
+        </aside>
+      </div>
+      <div class="integrations">
+        <article>
+          <h3>Slack alarm</h3>
+          <p class="ledger-line" id="slack-ledger">Would post to Slack: invisible wall alarm on the cubby.</p>
+        </article>
+        <article>
+          <h3>Linear ticket</h3>
+          <p class="ledger-line" id="linear-ledger">Would open a Linear ticket: cubby invisible · Cubby · #90604.</p>
+        </article>
+        <article>
+          <h3>GitHub cubby-ledger</h3>
+          <p class="ledger-line" id="github-ledger">Would open a GitHub cubby-ledger issue. Demo: no token.</p>
+        </article>
+      </div>
+      <section class="brief">
+        <h2>Thesis</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90604">anthropics/claude-code#90604</a>:
+          auto-memory cache path silently stale/wrong-directory; real safety rule missed.
+          Recurrence of closed
+          <a href="https://github.com/anthropics/claude-code/issues/52772">#52772</a> /
+          <a href="https://github.com/anthropics/claude-code/issues/53734">#53734</a>.
+          Session cwd was <code>/home/user/source/soft-shop</code> (git root with populated
+          <code>memory/</code>), but <code># auto memory</code> was injected from
+          <code>~/.claude/projects/-home-user/memory/</code> (ancestor <code>/home/user</code>).
+          Neither local cache matched the repo's authoritative memory (hundreds of files missing).
+          A “never git push origin main without go-ahead” rule was invisible; the session
+          pushed to main three times. Chosen cache path is never surfaced in the system
+          prompt/transcript. Filed 2026-08-29, open, platform:linux, area:core, memory.
+          Same-class
+          <a href="https://github.com/anthropics/claude-code/issues/52772">#52772</a>
+          (CWD vs git-root),
+          <a href="https://github.com/anthropics/claude-code/issues/53734">#53734</a>
+          (ancestor walk),
+          <a href="https://github.com/anthropics/claude-code/issues/89915">#89915</a>
+          (wrong project hash),
+          <a href="https://github.com/anthropics/claude-code/issues/90046">#90046</a>
+          (transcript vs index),
+          <a href="https://github.com/anthropics/claude-code/issues/85591">#85591</a>
+          (Read wrong scope),
+          <a href="https://github.com/anthropics/claude-code/issues/88945">#88945</a>
+          (path-scoped unreachable),
+          <a href="https://github.com/anthropics/claude-code/issues/76617">#76617</a>
+          (Non-ASCII slug).
+          Cross-ecosystem
+          <a href="https://github.com/openai/codex/issues/16799">openai/codex#16799</a>,
+          <a href="https://github.com/openai/codex/issues/37950">#37950</a>.
+          The product scores the cubby. A stuffed cubby is not a hold.
+        </p>
+      </section>
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Ullage (silent 157K context drop then prefix-frozen cache thrash. Cubby is wrong <em>directory</em> for auto-memory injection, not context compaction).
+          NOT Iota (path-key casing / type-case identity. Cubby is ancestor-walk / hash mismatch, not case folding).
+          NOT Fob (Keychain credential litter).
+          NOT Cinch (silent partial folder mounts on scheduled Cowork).
+          NOT Wicket (worktree isolation gatehouse).
+          NOT Grille (Bash-steered edits under bypass-permissions).
+          NOT Spile (hook stdin wedge / unenforced timeout).
+          NOT Bollard (RC env orphan after supervisor gap).
+          NOT Clew (sandbox deny-list E2BIG).
+          NOT Hasp (file-path lease races).
+          NOT leftover woodworking / millimetre-slider clones.
+          NOT Sorter / Fiche / Carrel / Niche / Locker / Pigeon / Tray / Cabinet / Folio / Docket / Alcove / Stack / Binder / Press / Rolodex / Cardex / Misfile / Shelf / Pigeonhole. Product name is Cubby only. Idle word is <b>stowed</b>.
+          Different problem: auto-memory resolves to ancestor/wrong-hash cache → safety rules in authoritative memory never reach the session.
+          Different UI: school/office mailroom cubby wall. Warm oak cubbies, brass nameplates, ancestor cubby lit amber, project cubby empty of the safety-rule envelope, directory-diff lamp, mirror-fail stamp. Fonts: Young Serif + Outfit + Red Hat Mono.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "stowed";
+      const SLACK = ["misfiled", "ancestor", "stale", "invisible", "walked-up", "ghosted", "mirrored-fail"];
+      const LINEAR = ["invisible", "ancestor", "walked-up", "ghosted"];
+      const DEMO_CWD = "/home/user/source/soft-shop";
+      const DEMO_EXPECTED = "~/.claude/projects/-home-user-source-soft-shop/memory/";
+      const DEMO_INJECTED = "~/.claude/projects/-home-user/memory/";
+
+      function emptyCubby() {
+        return {
+          session: "", issue: null, source: "",
+          cwd: "", gitRoot: "", expectedCachePath: "", injectedCachePath: "",
+          ancestorWalkUp: false, cwdVsGitRootSplit: false,
+          authoritativeMemoryPath: "", injectedMissingFileCount: 0,
+          safetyRuleInAuthoritativeOnly: false, cachePathSurfaced: false,
+          nonAsciiSlugCorrupt: false, wrongProjectHash: false,
+          pathScopedUnreachable: false, readReturnedWrongScope: false,
+          restoredDiagnostic: false, scored: false
+        };
+      }
+
+      function isIdle(row) {
+        return !row.cwd && !row.gitRoot && !row.expectedCachePath && !row.injectedCachePath &&
+          !row.authoritativeMemoryPath && !row.ancestorWalkUp && !row.cwdVsGitRootSplit &&
+          !(row.injectedMissingFileCount > 0) && !row.safetyRuleInAuthoritativeOnly &&
+          !row.cachePathSurfaced && !row.nonAsciiSlugCorrupt && !row.wrongProjectHash &&
+          !row.pathScopedUnreachable && !row.readReturnedWrongScope && !row.restoredDiagnostic;
+      }
+
+      function analyze(row) {
+        const cacheMisfiled = !!row.expectedCachePath && !!row.injectedCachePath &&
+          row.expectedCachePath.replace(/\/+$/, "") !== row.injectedCachePath.replace(/\/+$/, "");
+        const invisibleShape = row.safetyRuleInAuthoritativeOnly === true;
+        const ancestorShape = !invisibleShape && row.ancestorWalkUp === true;
+        const walkedUpShape = !invisibleShape && !ancestorShape && row.cwdVsGitRootSplit === true;
+        const misfiledShape = !invisibleShape && !ancestorShape && !walkedUpShape && cacheMisfiled;
+        const staleShape = !invisibleShape && !ancestorShape && !walkedUpShape && !misfiledShape &&
+          row.injectedMissingFileCount > 0;
+        const ghostedShape = !invisibleShape && !ancestorShape && !walkedUpShape && !misfiledShape &&
+          !staleShape && (row.nonAsciiSlugCorrupt || row.wrongProjectHash);
+        const mirroredFailShape = !invisibleShape && !ancestorShape && !walkedUpShape && !misfiledShape &&
+          !staleShape && !ghostedShape && (row.pathScopedUnreachable || row.readReturnedWrongScope);
+        const unsurfacedShape = !invisibleShape && !ancestorShape && !walkedUpShape && !misfiledShape &&
+          !staleShape && !ghostedShape && !mirroredFailShape &&
+          row.cachePathSurfaced !== true && !!row.injectedCachePath;
+        const restoredShape = !invisibleShape && !ancestorShape && !walkedUpShape && !misfiledShape &&
+          !staleShape && !ghostedShape && !mirroredFailShape && !unsurfacedShape &&
+          row.restoredDiagnostic === true;
+        return {
+          invisibleShape: invisibleShape,
+          ancestorShape: ancestorShape,
+          walkedUpShape: walkedUpShape,
+          misfiledShape: misfiledShape,
+          staleShape: staleShape,
+          ghostedShape: ghostedShape,
+          mirroredFailShape: mirroredFailShape,
+          unsurfacedShape: unsurfacedShape,
+          restoredShape: restoredShape
+        };
+      }
+
+      function classify(row) {
+        if (isIdle(row)) return IDLE_WORD;
+        const facts = analyze(row);
+        if (facts.invisibleShape) return "invisible";
+        if (facts.ancestorShape) return "ancestor";
+        if (facts.walkedUpShape) return "walked-up";
+        if (facts.misfiledShape) return "misfiled";
+        if (facts.staleShape) return "stale";
+        if (facts.ghostedShape) return "ghosted";
+        if (facts.mirroredFailShape) return "mirrored-fail";
+        if (facts.unsurfacedShape) return "unsurfaced";
+        if (facts.restoredShape) return "restored";
+        return IDLE_WORD;
+      }
+
+      function feedOf(kind) {
+        if (kind === "invisible") return "● Invisible · safety rule present only in authoritative memory never reached the session · never git push origin main without go-ahead · primary #90604";
+        if (kind === "ancestor") return "● Ancestor · resolver walked up to an ancestor-encoded project directory · #53734 / #90604 shape";
+        if (kind === "walked-up") return "● Walked-up · CWD vs git-root path split · prompt path and /memory or index path disagree · #52772 / #90046";
+        if (kind === "misfiled") return "● Misfiled · injected auto-memory came from a different project-hash folder than the session cwd/git-root encodes";
+        if (kind === "stale") return "● Stale · chosen local cache significantly behind authoritative repo memory/ · files missing · mirror step silently failing";
+        if (kind === "ghosted") return "● Ghosted · Non-ASCII / hash corruption breaks continuity · #76617 · or wrong project hash · #89915";
+        if (kind === "mirrored-fail") return "● Mirrored-fail · Read/tool path returns wrong scope memory · #85591 · or path-scoped rules make auto-memory unreachable · #88945";
+        if (kind === "unsurfaced") return "● Unsurfaced · resolved cache path never shown in system prompt or transcript · mismatch undetectable without a manual directory diff";
+        if (kind === "restored") return "● Restored · diagnostic surfaces the resolved path and/or re-resolve against actual git-root/cwd · recovery class";
+        return "● Stowed · correct cache for cwd/git-root · authoritative memory mirrored · safety rules would be visible · cache path would be detectable · idle word is stowed";
+      }
+
+      function seedOf(name) {
+        const base = emptyCubby();
+        if (name === "invisible") {
+          return Object.assign({}, base, {
+            session: "90604-invisible", issue: 90604, source: "anthropics/claude-code#90604", scored: true,
+            cwd: DEMO_CWD, gitRoot: DEMO_CWD, expectedCachePath: DEMO_EXPECTED,
+            injectedCachePath: DEMO_INJECTED, ancestorWalkUp: true,
+            authoritativeMemoryPath: "/home/user/source/soft-shop/memory/",
+            injectedMissingFileCount: 247, safetyRuleInAuthoritativeOnly: true, cachePathSurfaced: false
+          });
+        }
+        if (name === "ancestor") {
+          return Object.assign({}, base, {
+            session: "90604-ancestor", issue: 53734, scored: true,
+            cwd: DEMO_CWD, gitRoot: DEMO_CWD, expectedCachePath: DEMO_EXPECTED,
+            injectedCachePath: DEMO_INJECTED, ancestorWalkUp: true
+          });
+        }
+        if (name === "walked-up") {
+          return Object.assign({}, base, {
+            session: "90604-walked-up", issue: 52772, scored: true,
+            cwd: "/home/user/source/soft-shop/packages/app", gitRoot: DEMO_CWD,
+            expectedCachePath: "~/.claude/projects/-home-user-source-soft-shop-packages-app/memory/",
+            injectedCachePath: DEMO_EXPECTED, cwdVsGitRootSplit: true
+          });
+        }
+        if (name === "misfiled") {
+          return Object.assign({}, base, {
+            session: "90604-misfiled", issue: 89915, scored: true,
+            cwd: DEMO_CWD, gitRoot: DEMO_CWD, expectedCachePath: DEMO_EXPECTED,
+            injectedCachePath: "~/.claude/projects/-home-user-source-other-shop/memory/"
+          });
+        }
+        if (name === "stale") {
+          return Object.assign({}, base, {
+            session: "90604-stale", issue: 90604, scored: true,
+            cwd: DEMO_CWD, gitRoot: DEMO_CWD, expectedCachePath: DEMO_EXPECTED,
+            injectedCachePath: DEMO_EXPECTED, injectedMissingFileCount: 247
+          });
+        }
+        if (name === "ghosted") {
+          return Object.assign({}, base, {
+            session: "90604-ghosted", issue: 76617, scored: true,
+            cwd: DEMO_CWD, gitRoot: DEMO_CWD, expectedCachePath: DEMO_EXPECTED,
+            injectedCachePath: DEMO_EXPECTED,
+            nonAsciiSlugCorrupt: true, wrongProjectHash: true
+          });
+        }
+        if (name === "mirrored-fail") {
+          return Object.assign({}, base, {
+            session: "90604-mirrored-fail", issue: 85591, scored: true,
+            cwd: DEMO_CWD, gitRoot: DEMO_CWD, expectedCachePath: DEMO_EXPECTED,
+            injectedCachePath: DEMO_EXPECTED, pathScopedUnreachable: true, readReturnedWrongScope: true
+          });
+        }
+        if (name === "unsurfaced") {
+          return Object.assign({}, base, {
+            session: "90604-unsurfaced", issue: 90604, scored: true,
+            cwd: DEMO_CWD, gitRoot: DEMO_CWD, expectedCachePath: DEMO_EXPECTED,
+            injectedCachePath: DEMO_EXPECTED, cachePathSurfaced: false
+          });
+        }
+        if (name === "restored") {
+          return Object.assign({}, base, {
+            session: "90604-restored", issue: 90604, scored: true,
+            cwd: DEMO_CWD, gitRoot: DEMO_CWD, expectedCachePath: DEMO_EXPECTED,
+            injectedCachePath: DEMO_EXPECTED, cachePathSurfaced: true, restoredDiagnostic: true
+          });
+        }
+        if (name === "control") {
+          return Object.assign({}, base, {
+            session: "90604-control", scored: true,
+            cwd: DEMO_CWD, gitRoot: DEMO_CWD, expectedCachePath: DEMO_EXPECTED,
+            injectedCachePath: DEMO_EXPECTED, cachePathSurfaced: true
+          });
+        }
+        return Object.assign({}, base, { session: "stowed", scored: true });
+      }
+
+      function parseTrace(text) {
+        const raw = String(text || "");
+        if (/never git push origin main|#90604|safety rule/i.test(raw) && /invisible|missed|injected from/i.test(raw)) return seedOf("invisible");
+        if (/ancestor-encoded|walked up to an ancestor|#53734/i.test(raw) && !/invisible/i.test(raw)) return seedOf("ancestor");
+        if (/walked-up|CWD vs git-root|#52772|#90046/i.test(raw)) return seedOf("walked-up");
+        if (/misfiled|different project-hash/i.test(raw)) return seedOf("misfiled");
+        if (/stale|files missing|mirror step/i.test(raw) && !/invisible/i.test(raw)) return seedOf("stale");
+        if (/ghosted|Non-ASCII|#76617|#89915/i.test(raw)) return seedOf("ghosted");
+        if (/mirrored-fail|#85591|#88945|path-scoped|wrong scope/i.test(raw)) return seedOf("mirrored-fail");
+        if (/unsurfaced|never shown|directory diff/i.test(raw)) return seedOf("unsurfaced");
+        if (/restored|re-resolve|diagnostic surfaces/i.test(raw)) return seedOf("restored");
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") return Object.assign(emptyCubby(), parsed, { scored: true });
+        } catch (e) { /* prose */ }
+        return seedOf("reset");
+      }
+
+      let cubby = seedOf("invisible");
+
+      function render() {
+        const verdict = classify(cubby);
+        const facts = analyze(cubby);
+        const alarm = SLACK.indexOf(verdict) >= 0;
+        const die = document.getElementById("verdict-die");
+        document.getElementById("verdict-word").textContent = verdict;
+        die.className = "verdict-die" + (alarm ? " fail" : "");
+        const chip = document.getElementById("chip");
+        chip.innerHTML = "<b>" + verdict + "</b> · " + (verdict === IDLE_WORD ? "hold" : "wall");
+        chip.className = "chip" + (alarm ? " alarm" : " hold");
+        document.getElementById("feed").textContent = feedOf(verdict);
+        const ancestorLit = verdict === "invisible" || verdict === "ancestor";
+        const stuffed = ancestorLit || verdict === "misfiled" || verdict === "ghosted";
+        const projectEmpty = verdict === "invisible" || verdict === "stale" || verdict === "ancestor";
+        const projectHeld = verdict === IDLE_WORD || verdict === "restored";
+        const lampLit = alarm || verdict === "unsurfaced";
+        document.getElementById("ancestor-cubby").className = "oak-bay ancestor-cubby" + (ancestorLit ? " lit" : "") + (stuffed ? " stuffed" : "");
+        document.getElementById("project-cubby").className = "oak-bay project-cubby" + (projectHeld ? " held" : projectEmpty ? " empty" : "");
+        document.getElementById("directory-lamp").className = "oak-bay directory-lamp" + (lampLit ? " lit" : "");
+        document.getElementById("mirror-stamp").className = "mirror-stamp" + (projectHeld ? " ok" : "");
+        document.getElementById("stamp-pad").textContent = projectHeld ? "stowed" : verdict;
+        document.getElementById("ancestor-host").textContent = ancestorLit
+          ? "lit · ~/.claude/projects/-home-user/memory/"
+          : stuffed
+            ? "ajar · wrong-hash mail"
+            : "dark · ancestor cubby unused";
+        document.getElementById("project-host").textContent = projectHeld
+          ? "held · safety-rule envelope stowed"
+          : projectEmpty
+            ? "empty · safety-rule envelope missing"
+            : "ajar · " + verdict;
+        document.getElementById("lamp-host").textContent = lampLit
+          ? (verdict === "unsurfaced" ? "lit · cache path unsurfaced" : "lit · directory mismatch")
+          : "dark · cache path would be detectable";
+        document.getElementById("hold-host").textContent = projectHeld
+          ? "stowed true · rule would be visible"
+          : "stowed false · rule never reached session";
+        const tape = document.getElementById("tape-row");
+        if (verdict === "invisible") {
+          tape.innerHTML = "<span class='tape-mark'>#90604</span><span class='tape-mark'>ancestor</span><span class='tape-mark gap'>no rule</span>";
+        } else if (verdict === "ancestor") {
+          tape.innerHTML = "<span class='tape-mark'>#53734</span><span class='tape-mark'>walked up</span>";
+        } else if (verdict === "walked-up") {
+          tape.innerHTML = "<span class='tape-mark'>#52772</span><span class='tape-mark'>#90046</span><span class='tape-mark gap'>cwd≠root</span>";
+        } else if (verdict === "misfiled") {
+          tape.innerHTML = "<span class='tape-mark'>#89915</span><span class='tape-mark gap'>wrong hash</span>";
+        } else if (verdict === "stale") {
+          tape.innerHTML = "<span class='tape-mark'>247 missing</span><span class='tape-mark gap'>mirror fail</span>";
+        } else if (verdict === "ghosted") {
+          tape.innerHTML = "<span class='tape-mark'>#76617</span><span class='tape-mark'>#89915</span>";
+        } else if (verdict === "mirrored-fail") {
+          tape.innerHTML = "<span class='tape-mark'>#85591</span><span class='tape-mark'>#88945</span>";
+        } else if (verdict === "unsurfaced") {
+          tape.innerHTML = "<span class='tape-mark gap'>path never shown</span>";
+        } else if (verdict === "restored") {
+          tape.innerHTML = "<span class='tape-mark'>re-resolve</span><span class='tape-mark'>path surfaced</span>";
+        } else if (verdict === IDLE_WORD) {
+          tape.innerHTML = "<span class='tape-mark gap'>mailroom cubby · stowed</span>";
+        } else {
+          tape.innerHTML = "<span class='tape-mark gap'>" + verdict + "</span>";
+        }
+        const lines = [];
+        if (isIdle(cubby) || verdict === "stowed") {
+          lines.push("<li>correct cubby · authoritative memory mirrored · safety rules visible · cache path detectable · idle word is stowed<span class='dim'>hold</span></li>");
+        }
+        if (facts.invisibleShape) lines.push("<li>safety rule present only in authoritative memory never reached the session · never git push origin main · #90604<span class='dim'>invisible</span></li>");
+        if (facts.ancestorShape && verdict === "ancestor") lines.push("<li>resolver walked up to an ancestor-encoded project directory · #53734<span class='dim'>ancestor</span></li>");
+        if (facts.walkedUpShape && verdict === "walked-up") lines.push("<li>CWD vs git-root path split · prompt path and /memory disagree · #52772 / #90046<span class='dim'>walked-up</span></li>");
+        if (facts.misfiledShape && verdict === "misfiled") lines.push("<li>injected auto-memory from a different project-hash folder<span class='dim'>misfiled</span></li>");
+        if (facts.staleShape && verdict === "stale") lines.push("<li>chosen local cache behind authoritative memory/ · files missing<span class='dim'>stale</span></li>");
+        if (facts.ghostedShape && verdict === "ghosted") lines.push("<li>Non-ASCII slug or wrong project hash · #76617 / #89915<span class='dim'>ghosted</span></li>");
+        if (facts.mirroredFailShape && verdict === "mirrored-fail") lines.push("<li>Read/tool wrong scope or path-scoped unreachable · #85591 / #88945<span class='dim'>mirrored-fail</span></li>");
+        if (facts.unsurfacedShape && verdict === "unsurfaced") lines.push("<li>resolved cache path never shown in system prompt or transcript<span class='dim'>unsurfaced</span></li>");
+        if (facts.restoredShape && verdict === "restored") lines.push("<li>diagnostic surfaces the resolved path and/or re-resolves against git-root/cwd<span class='dim'>restored</span></li>");
+        document.getElementById("lines").innerHTML = lines.length ? lines.join("") : "<li>correct cubby · authoritative memory mirrored · idle word is stowed<span class='dim'>hold</span></li>";
+        document.getElementById("masked").textContent = "Masked view · cwd " + (cubby.cwd || "—") + " · injected " + (cubby.injectedCachePath || "—") + " · ancestor " + (cubby.ancestorWalkUp ? "yes" : "no") + " · rule-only " + (cubby.safetyRuleInAuthoritativeOnly ? "yes" : "no") + ". No secrets.";
+        document.getElementById("slack-ledger").textContent = alarm
+          ? "Would post to Slack: " + verdict + " wall alarm on the cubby."
+          : "Would skip Slack. Cubby is " + verdict + ".";
+        document.getElementById("linear-ledger").textContent = LINEAR.indexOf(verdict) >= 0
+          ? "Would open a Linear ticket: cubby " + verdict + " · Cubby · #" + (cubby.issue || "90604") + "."
+          : "Would skip Linear. Verdict " + verdict + " is not invisible / ancestor / walked-up / ghosted.";
+        document.getElementById("github-ledger").textContent = "Would open a GitHub cubby-ledger issue. Demo: no token. " + (cubby.session || "session") + " · " + verdict + ".";
+        document.querySelectorAll(".yarn-bank button[data-seed]").forEach(function (btn) {
+          const seedName = btn.getAttribute("data-seed");
+          const pressed = seedName === "reset"
+            ? verdict === "stowed" && isIdle(cubby)
+            : seedName === "control"
+              ? verdict === "stowed" && cubby.cachePathSurfaced === true
+              : classify(cubby) === seedName;
+          btn.setAttribute("aria-pressed", pressed ? "true" : "false");
+        });
+      }
+
+      document.getElementById("btn-score").addEventListener("click", function () {
+        cubby = Object.assign({}, cubby, { scored: true });
+        render();
+      });
+      document.getElementById("btn-admit").addEventListener("click", function () {
+        cubby = Object.assign({}, cubby, { scored: true });
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", function () {
+        cubby = seedOf("reset");
+        render();
+      });
+      document.getElementById("btn-restore").addEventListener("click", function () {
+        cubby = seedOf("invisible");
+        render();
+      });
+      document.getElementById("btn-probe").addEventListener("click", function () {
+        const text = document.getElementById("paste").value || "";
+        cubby = text.trim() ? parseTrace(text) : seedOf("invisible");
+        render();
+      });
+      document.querySelectorAll(".yarn-bank button[data-seed]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          cubby = seedOf(btn.getAttribute("data-seed"));
+          render();
+        });
+      });
+      render();
+    </script>
+  </body>
+</html>

@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Grille](https://hermes-playground-green.vercel.app/grille/)** — bank teller's bronze grille / night-depository desk. A night drop through the slot is not a hold. Score the grille or admit posted. Folder: `projects/grille/`.
+**Featured: [Cubby](https://hermes-playground-green.vercel.app/cubby/)** — school/office mailroom cubby wall. A stuffed cubby is not a hold. Score the wall or admit stowed. Folder: `projects/cubby/`.
+
+**Listed: [Grille](https://hermes-playground-green.vercel.app/grille/)** — bank teller's bronze grille / night-depository desk. A night drop through the slot is not a hold. Score the grille or admit posted. Folder: `projects/grille/`. Still listed. Not featured.
 
 **Listed: [Spile](https://hermes-playground-green.vercel.app/spile/)** — brewery/cellar bung-mallet station. An open spile is not a hold. Score the tap or admit bunged. Folder: `projects/spile/`. Still listed. Not featured.
 
@@ -110,10 +112,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                51 products: Grille (featured), Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                52 products: Cubby (featured), Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/grille/            bank teller's bronze grille / night-depository desk for permission-mode Bash-steered edits (featured)
+projects/cubby/             school/office mailroom cubby wall for auto-memory that resolves to the wrong ancestor cache (featured)
+projects/grille/            bank teller's bronze grille / night-depository desk for permission-mode Bash-steered edits (kept, unfeatured)
 projects/spile/             brewery/cellar bung-mallet station for hook stdin kept open without EOF + unenforced declared timeout (kept, unfeatured)
 projects/bollard/           wet pier / bollard plate for remote-control environment GC after a supervisor gap (kept, unfeatured)
 projects/clew/              sail loft / rigger's bench for sandbox deny-list E2BIG at MAX_ARG_STRLEN (kept, unfeatured)
@@ -166,6 +169,7 @@ projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
 vercel.json                 path routes before filesystem so `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-30-0250-cubby.md Cubby ship log (02:50 Sydney)
 runs/2026-08-30-0150-grille.md Grille ship log (01:50 Sydney)
 runs/2026-08-30-spile.md    Spile ship log (00:50 Sydney)
 runs/2026-08-29-bollard.md  Bollard ship log (23:50 Sydney)
@@ -218,6 +222,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Cubby
+
+`projects/cubby/` is a school/office mailroom cubby wall for a real Claude Code failure: auto-memory silently resolves to the wrong ancestor-encoded project cache directory, so a real user-authored safety rule in the repo's authoritative `memory/` never reaches the session. Recurrence of closed #52772/#53734 with fresh harm (#90604): session cwd was `/home/user/source/soft-shop`; `# auto memory` was injected from `~/.claude/projects/-home-user/memory/`; a “never git push origin main without go-ahead” rule was invisible. A stuffed cubby is not a hold. Score the wall or admit **stowed**. Verdicts: **stowed**, **misfiled**, **ancestor**, **stale**, **invisible**, **walked-up**, **unsurfaced**, **ghosted**, **mirrored-fail**, **restored**. Slack alarm on misfiled / ancestor / stale / invisible / walked-up / ghosted / mirrored-fail. Linear ticket on invisible / ancestor / walked-up / ghosted.
+
+Live path: https://hermes-playground-green.vercel.app/cubby/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90604` invisible is already on the desk. Idle word is **stowed**, not the product name, not empty. NOT Ullage (silent context drop). NOT Iota (path-key casing). NOT Fob (Keychain litter). NOT Cinch (partial Cowork mounts). NOT Wicket (gatehouse). NOT Grille (Bash-steered edits). NOT Spile (hook stdin EOF). NOT leftover woodworking sliders. Different problem: auto-memory resolves to ancestor/wrong-hash cache → safety rules in authoritative memory never reach the session. Different UI: mailroom cubby wall. Warm oak cubbies, brass nameplates, ancestor cubby lit amber, project cubby empty of the safety-rule envelope, directory-diff lamp, mirror-fail stamp. Young Serif + Outfit + Red Hat Mono.
 
 ## Grille
 
@@ -608,6 +620,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/cubby/` → `projects/cubby/`
 - `/grille/` → `projects/grille/`
 - `/spile/` → `projects/spile/`
 - `/bollard/` → `projects/bollard/`
