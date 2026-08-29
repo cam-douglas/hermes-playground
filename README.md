@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Quoin](https://hermes-playground-green.vercel.app/quoin/)** — letterpress quoin. A shifted form is not a hold. Score the chase or admit locked. Folder: `projects/quoin/`.
+**Featured: [Fascia](https://hermes-playground-green.vercel.app/fascia/)** — shopfront fascia. A misnamed fascia is not a hold. Score the shopfront or admit fronted. Folder: `projects/fascia/`.
+
+**Listed: [Quoin](https://hermes-playground-green.vercel.app/quoin/)** — letterpress quoin. A shifted form is not a hold. Score the chase or admit locked. Folder: `projects/quoin/`. Still listed. Not featured.
 
 **Listed: [Gaff](https://hermes-playground-green.vercel.app/gaff/)** — vaudeville gaff. A billed full house is not a hold. Score the crook or admit yanked. Folder: `projects/gaff/`. Still listed. Not featured.
 
@@ -118,10 +120,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                55 products: Quoin (featured), Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                56 products: Fascia (featured), Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/quoin/             letterpress quoin for Bash tool unescaping inside a quoted heredoc (featured)
+projects/fascia/            shopfront fascia for trust dialog that names spawn_task cwd while the session runs in .claude/worktrees (featured)
+projects/quoin/             letterpress quoin for Bash tool unescaping inside a quoted heredoc (kept, unfeatured)
 projects/gaff/              vaudeville gaff for timeout/SIGKILL of background Bash reported as completed exit 0 (kept, unfeatured)
 projects/sear/              gunsmith's sear desk for Bash-tool set -e that is structurally inert (kept, unfeatured)
 projects/cubby/             school/office mailroom cubby wall for auto-memory that resolves to the wrong ancestor cache (kept, unfeatured)
