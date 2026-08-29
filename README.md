@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Fob](https://hermes-playground-green.vercel.app/fob/)** — hotel key-rack. A new stamp is not a hold. Score the rack or admit hung. Folder: `projects/fob/`.
+**Featured: [Cotter](https://hermes-playground-green.vercel.app/cotter/)** — machine-shop cotter-pin tray. A written fireAt is not a hold. Score the pin or admit snug. Folder: `projects/cotter/`.
+
+**Listed: [Fob](https://hermes-playground-green.vercel.app/fob/)** — hotel key-rack. A new stamp is not a hold. Score the rack or admit hung. Folder: `projects/fob/`. Still listed. Not featured.
 
 **Listed: [Ordo](https://hermes-playground-green.vercel.app/ordo/)** — sacristy's missal desk. A written plugin command is not a hold. Score the missal or admit appointed. Folder: `projects/ordo/`. Still listed. Not featured.
 
@@ -94,10 +96,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                43 products: Fob (featured), Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                44 products: Cotter (featured), Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/fob/               hotel key-rack for Keychain credential litter (featured)
+projects/cotter/            machine-shop cotter-pin tray for poison-pill scheduled-task registry (featured)
+projects/fob/               hotel key-rack for Keychain credential litter (kept, unfeatured)
 projects/ordo/              sacristy's missal desk for headless plugin-command resolution (kept, unfeatured)
 projects/cinch/             saddler's / packer's cinch desk for silent partial mounts (kept, unfeatured)
 projects/ullage/            cooper's gauging desk for silent context ullage (kept, unfeatured)
@@ -140,8 +143,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-1850.md     Cotter ship log (18:50 Sydney)
 runs/2026-08-29-1750.md     Fob ship log (17:50 Sydney)
 runs/2026-08-29-ordo.md     Ordo ship log (16:50 Sydney)
 runs/2026-08-29-cinch.md    Cinch ship log (15:50 Sydney)
@@ -187,6 +191,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Cotter
+
+`projects/cotter/` is a machine-shop cotter-pin / axle-pin bench for Claude Desktop’s poison-pill scheduled-task registry. A written fireAt is not a hold. Score the pin or admit **snug**. Verdicts: **snug**, **poison**, **wipe**, **hollow**, **vanish**, **mute-mcp**. Slack alarm on poison / wipe / hollow / vanish / mute-mcp. Linear ticket on poison / wipe.
+
+Live path: https://hermes-playground-green.vercel.app/cotter/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90533` poison is already on the tray. Idle word is **snug**, not the product name, not empty. NOT Fusee (early schedule dispatch). NOT Cinch (partial mounts). NOT Reveille (muster). NOT Fob (keychain litter). NOT Ordo (headless plugin unknown). NOT Ullage (silent context drop). NOT Visa (MCP OAuth resource). NOT leftover woodworking sliders. Different problem: one ISO string `fireAt` fail-closes the entire routine set while green proxies lie. Different UI: steel bench, oil-stained felt, calipers, numbered pin slots, lying green pressure/grease gauges, a poison pin glowing wrong-typed. Big Shoulders Stencil + Sora + Share Tech Mono.
 
 ## Fob
 
@@ -529,6 +541,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/cotter/` → `projects/cotter/`
 - `/fob/` → `projects/fob/`
 - `/ordo/` → `projects/ordo/`
 - `/cinch/` → `projects/cinch/`
