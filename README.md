@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Cinch](https://hermes-playground-green.vercel.app/cinch/)** — saddler's cinch desk. A trusted folder list is not a hold. Score the girth or admit cinched. Folder: `projects/cinch/`.
+**Featured: [Ordo](https://hermes-playground-green.vercel.app/ordo/)** — sacristy's missal desk. A written plugin command is not a hold. Score the missal or admit appointed. Folder: `projects/ordo/`.
+
+**Listed: [Cinch](https://hermes-playground-green.vercel.app/cinch/)** — saddler's cinch desk. A trusted folder list is not a hold. Score the girth or admit cinched. Folder: `projects/cinch/`. Still listed. Not featured.
 
 **Listed: [Ullage](https://hermes-playground-green.vercel.app/ullage/)** — cooper's gauging desk. A missing compaction ticket is not a hold. Score the cask or admit gauged. Folder: `projects/ullage/`. Still listed. Not featured.
 
@@ -90,10 +92,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                41 products: Cinch (featured), Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                42 products: Ordo (featured), Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/cinch/             saddler's / packer's cinch desk for silent partial mounts (featured)
+projects/ordo/              sacristy's missal desk for headless plugin-command resolution (featured)
+projects/cinch/             saddler's / packer's cinch desk for silent partial mounts (kept, unfeatured)
 projects/ullage/            cooper's gauging desk for silent context ullage (kept, unfeatured)
 projects/visa/              passport-control / visa-stamp desk for MCP OAuth missing resource (kept, unfeatured)
 projects/sprag/             overrunning-clutch bench for boot-cached MCP attach failure (kept, unfeatured)
@@ -134,8 +137,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-ordo.md     Ordo ship log (16:50 Sydney)
 runs/2026-08-29-cinch.md    Cinch ship log (15:50 Sydney)
 runs/2026-08-29-ullage.md   Ullage ship log (14:50 Sydney)
 runs/2026-08-29-visa.md     Visa ship log (13:50 Sydney)
@@ -179,6 +183,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Ordo
+
+`projects/ordo/` is a sacristan's missal / kalendar desk for Claude Code plugin slash commands that fail to resolve in headless `-p` mode. A written plugin command is not a hold. Score the missal or admit **appointed**. Verdicts: **appointed**, **unknown**, **silent**, **hollow**, **builtin**, **missing**, **loud**, **stale**, **resolved**, **cache-ok**. Slack alarm on silent / hollow / unknown. Linear ticket on silent.
+
+Live path: https://hermes-playground-green.vercel.app/ordo/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90515` silent is already on the missal. Idle word is **appointed**, not the product name, not missal. NOT Larder (plugin-store freeze). NOT Tappet (hook injection). NOT Reed (MCP registry). NOT Assay (tool-arg furnace). NOT Cinch (silent partial mounts). NOT Sprag (boot-cached MCP). NOT Visa (OAuth resource). NOT leftover woodworking sliders. Different problem: headless `-p` did not resolve a plugin office that is enabled and cached; the wrapper saw exit 0 / `is_error` false and stored the error string as the result. Different UI: liturgical parchment. Cream page, red rubrics, black appointed offices, kalendar of hours. Cormorant Garamond + Crimson Pro.
 
 ## Cinch
 
@@ -505,6 +517,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/ordo/` → `projects/ordo/`
 - `/cinch/` → `projects/cinch/`
 - `/ullage/` → `projects/ullage/`
 - `/visa/` → `projects/visa/`
