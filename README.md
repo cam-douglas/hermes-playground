@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Fusee](https://hermes-playground-green.vercel.app/fusee/)** — clockmaker's fusee. A written cron is not a hold. Score the dial or admit wound. Folder: `projects/fusee/`.
+**Featured: [Lazaret](https://hermes-playground-green.vercel.app/lazaret/)** — lazaretto / yellow jack. A written reminder is not a hold. Score the desk or admit pratique. Folder: `projects/lazaret/`.
+
+**Listed: [Fusee](https://hermes-playground-green.vercel.app/fusee/)** — clockmaker's fusee. A written cron is not a hold. Score the dial or admit wound. Folder: `projects/fusee/`. Still listed. Not featured.
 
 **Listed: [Iota](https://hermes-playground-green.vercel.app/iota/)** — typesetter's type-case. A second casing is not a plot. Score the keys or admit bound. Folder: `projects/iota/`. Still listed. Not featured.
 
@@ -80,10 +82,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                36 products: Fusee (featured), Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                37 products: Lazaret (featured), Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/fusee/             clockmaker's fusee / conical-pulley desk for early schedule dispatch (featured)
+projects/lazaret/           lazaretto / yellow-jack / pratique desk for unattended malware-reminder refusals (featured)
+projects/fusee/             clockmaker's fusee / conical-pulley desk for early schedule dispatch (kept, unfeatured)
 projects/iota/              typesetter's upper/lower type-case desk for Windows project-path identity (kept, unfeatured)
 projects/leat/              mill leat / sluice-gate desk for Bash-tool sleep-block unbounded until-loop (kept, unfeatured)
 projects/shunt/             night railway shunting yard / signal-box desk for nested SendMessage follow-up misroute to root (kept, unfeatured)
@@ -119,8 +122,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-lazaret.md  Lazaret ship log (11:50 Sydney)
 runs/2026-08-29-fusee.md    Fusee ship log (10:50 Sydney)
 runs/2026-08-29-iota.md     Iota ship log (09:50 Sydney)
 runs/2026-08-29-leat.md     Leat ship log (08:50 Sydney)
@@ -159,6 +163,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Lazaret
+
+`projects/lazaret/` is a lazaretto / yellow-jack / pratique desk for Claude Code per-Read malware system-reminders that refuse legitimate files. A written reminder is not a hold. Score the desk or admit **pratique**. Verdicts: **pratique**, **refused**, **lost**, **stranded**, **cordoned**, **yellow**, **false**, **timed**, **held**, **passed**. Slack lazaret alarm on refused / lost / stranded / cordoned / yellow / false / timed. Linear ticket on refused / lost / stranded / false.
+
+Live path: https://hermes-playground-green.vercel.app/lazaret/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90326` lost is already on the bill. Idle word is **pratique**, not the product name, not empty. NOT Fusee (early schedule). NOT Iota (path-key identity). NOT Leat (until-loop). NOT Knock (permission grant). NOT Scrim (DLP redaction). NOT leftover woodworking sliders. Different problem: safety-reminder false positive on legitimate files bricks unattended cloud-agent seats. Different UI: yellow jack, inspection lantern, bill of health, stone hospital on a spit of rock. Sea-stone, tarred rope, salt-white lime, verdigris lamp, tide.
 
 ## Fusee
 
