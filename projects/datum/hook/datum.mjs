@@ -477,7 +477,11 @@ export function analyze(datum = {}) {
   const scopeBleedShape =
     !wrongBaseShape && !masterLieShape && namedOff.length > 0 && !majorityOff;
   const findingsBleedShape =
-    !wrongBaseShape && !masterLieShape && !scopeBleedShape && majorityOff;
+    !wrongBaseShape &&
+    !masterLieShape &&
+    !scopeBleedShape &&
+    majorityOff &&
+    findingsInDiff > 0;
   const unrelatedShape =
     !wrongBaseShape &&
     !masterLieShape &&
