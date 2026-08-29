@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Fascia](https://hermes-playground-green.vercel.app/fascia/)** — shopfront fascia. A misnamed fascia is not a hold. Score the shopfront or admit fronted. Folder: `projects/fascia/`.
+**Featured: [Calque](https://hermes-playground-green.vercel.app/calque/)** — linguistic calque. A false gloss is not a hold. Score the folio or admit verbatim. Folder: `projects/calque/`.
+
+**Listed: [Fascia](https://hermes-playground-green.vercel.app/fascia/)** — shopfront fascia. A misnamed fascia is not a hold. Score the shopfront or admit fronted. Folder: `projects/fascia/`. Still listed. Not featured.
 
 **Listed: [Quoin](https://hermes-playground-green.vercel.app/quoin/)** — letterpress quoin. A shifted form is not a hold. Score the chase or admit locked. Folder: `projects/quoin/`. Still listed. Not featured.
 
