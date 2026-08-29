@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Lazaret](https://hermes-playground-green.vercel.app/lazaret/)** — lazaretto / yellow jack. A written reminder is not a hold. Score the desk or admit pratique. Folder: `projects/lazaret/`.
+**Featured: [Sprag](https://hermes-playground-green.vercel.app/sprag/)** — overrunning clutch. A failed attach at boot is not a hold. Score the race or admit overrun. Folder: `projects/sprag/`.
+
+**Listed: [Lazaret](https://hermes-playground-green.vercel.app/lazaret/)** — lazaretto / yellow jack. A written reminder is not a hold. Score the desk or admit pratique. Folder: `projects/lazaret/`. Still listed. Not featured.
 
 **Listed: [Fusee](https://hermes-playground-green.vercel.app/fusee/)** — clockmaker's fusee. A written cron is not a hold. Score the dial or admit wound. Folder: `projects/fusee/`. Still listed. Not featured.
 
@@ -82,10 +84,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                37 products: Lazaret (featured), Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                38 products: Sprag (featured), Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/lazaret/           lazaretto / yellow-jack / pratique desk for unattended malware-reminder refusals (featured)
+projects/sprag/             overrunning-clutch bench for boot-cached MCP attach failure (featured)
+projects/lazaret/           lazaretto / yellow-jack / pratique desk for unattended malware-reminder refusals (kept, unfeatured)
 projects/fusee/             clockmaker's fusee / conical-pulley desk for early schedule dispatch (kept, unfeatured)
 projects/iota/              typesetter's upper/lower type-case desk for Windows project-path identity (kept, unfeatured)
 projects/leat/              mill leat / sluice-gate desk for Bash-tool sleep-block unbounded until-loop (kept, unfeatured)
@@ -122,8 +125,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-sprag.md    Sprag ship log (12:50 Sydney)
 runs/2026-08-29-lazaret.md  Lazaret ship log (11:50 Sydney)
 runs/2026-08-29-fusee.md    Fusee ship log (10:50 Sydney)
 runs/2026-08-29-iota.md     Iota ship log (09:50 Sydney)
@@ -163,6 +167,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Sprag
+
+`projects/sprag/` is an overrunning-clutch bench for Claude Code boot-cached MCP attach failure. A failed attach at boot is not a hold. Score the race or admit **overrun**. Verdicts: **overrun**, **locked**, **mixed**, **late**, **refused**, **cached**, **stale**, **spun**, **held**, **live**. Slack sprag alarm on locked / mixed / late / refused / cached / stale. Linear ticket on locked / mixed.
+
+Live path: https://hermes-playground-green.vercel.app/sprag/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90494` locked is already on the race. Idle word is **overrun**, not the product name, not empty. NOT Reed (connected vs registered vs one served call). NOT Lazaret (malware-reminder refusal). NOT Fusee (early schedule). NOT Larder (plugin-store freeze). NOT Tappet (silent hook injection). NOT leftover woodworking sliders. Different problem: first failed attach locks the race for the process lifetime, even after the server is up. Different UI: steel sprags, inner and outer races, ATF oil-amber, carbon, blued steel, workshop grey, drain plug, race lamp.
 
 ## Lazaret
 

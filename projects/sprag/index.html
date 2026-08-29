@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Sprag — overrunning-clutch bench for Claude Code boot-cached MCP attach failure. A failed attach at boot is not a hold. Idle word is overrun."
+    />
+    <title>Sprag — overrunning clutch</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Teko:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --carbon: #121416;
+        --workshop: #2a2e32;
+        --atf: #d08a28;
+        --blued: #3a4e62;
+        --race: #8a93a0;
+        --drain: #6a4a2a;
+        --sprag-steel: #c8ccd2;
+        --soot: #0a0c0e;
+        --lamp: #f0c46a;
+        --jam: #c44a28;
+        --free: #6a8a72;
+        --display: "Teko", "Impact", "Arial Narrow", sans-serif;
+        --card: "Atkinson Hyperlegible", "Helvetica Neue", ui-sans-serif, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--card);
+        color: #e6e2d8;
+        background:
+          radial-gradient(ellipse 36% 22% at 88% 8%, rgba(208, 138, 40, 0.14), transparent 56%),
+          radial-gradient(ellipse 40% 30% at 8% 92%, rgba(58, 78, 98, 0.28), transparent 60%),
+          linear-gradient(180deg, #1a1c1e 0%, var(--carbon) 48%, var(--soot) 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--atf); }
+      .shop {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 20px 0 96px;
+      }
+      .hex-rail {
+        height: 12px;
+        margin: 0 0 22px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #3a3e42 0 14px,
+            #1e2226 14px 16px,
+            #5a5048 16px 28px,
+            #1e2226 28px 30px
+          );
+        border-top: 2px solid #6a6258;
+        border-bottom: 2px solid #1a1c1e;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+      }
+      .bay {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .bay { grid-template-columns: 1fr; }
+      }
+      .mark {
+        font-family: var(--display);
+        font-size: 14px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--atf);
+      }
+      h1 {
+        margin: 8px 0 8px;
+        font-family: var(--display);
+        font-size: clamp(56px, 10vw, 108px);
+        line-height: 0.78;
+        letter-spacing: 0.04em;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .lede {
+        max-width: 48ch;
+        color: #c8c2b4;
+        line-height: 1.45;
+        font-size: 14px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid rgba(208, 138, 40, 0.4);
+        background: rgba(10, 12, 14, 0.82);
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .chip b { color: var(--atf); font-weight: 700; }
+      .chip.alarm {
+        border-color: var(--jam);
+        color: #f0b4a0;
+        box-shadow: 0 0 0 1px rgba(196, 74, 40, 0.4);
+      }
+      .chip.hold { border-color: var(--free); color: #b8d4bc; }
+      .gearbox {
+        background:
+          linear-gradient(180deg, rgba(42, 46, 50, 0.96), rgba(10, 12, 14, 0.96));
+        border: 1px solid rgba(138, 147, 160, 0.28);
+        padding: 18px 18px 16px;
+        box-shadow: inset 0 1px 0 rgba(200, 204, 210, 0.06);
+      }
+      .gearbox h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 18px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--atf);
+      }
+      .lamps {
+        display: flex;
+        gap: 10px;
+        margin: 0 0 14px;
+      }
+      .lamp {
+        width: 18px;
+        height: 22px;
+        clip-path: polygon(20% 0, 80% 0, 100% 28%, 100% 100%, 0 100%, 0 28%);
+        background: #1a1c1e;
+        border: 2px solid #3a3e42;
+        box-shadow: inset 0 0 6px #000;
+      }
+      .lamp.jam { background: var(--jam); box-shadow: 0 0 14px var(--jam); }
+      .lamp.atf { background: var(--atf); box-shadow: 0 0 14px var(--atf); }
+      .lamp.free { background: var(--free); box-shadow: 0 0 14px var(--free); }
+      .gauges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 14px;
+      }
+      .gauge {
+        border: 1px solid rgba(138, 147, 160, 0.22);
+        padding: 8px 10px;
+        font-size: 11px;
+        color: #b0aa9c;
+      }
+      .gauge strong {
+        display: block;
+        color: #e6e2d8;
+        font-size: 13px;
+        margin-top: 4px;
+        word-break: break-all;
+      }
+      .keys {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .keys button,
+      .gates button {
+        border: 1px solid rgba(138, 147, 160, 0.32);
+        background: #16181a;
+        padding: 8px 12px;
+        font-family: var(--display);
+        font-size: 16px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .keys button:hover,
+      .gates button:hover { border-color: var(--atf); color: var(--atf); }
+      .keys button.primary {
+        background: var(--atf);
+        color: #1a1208;
+        border-color: var(--atf);
+        font-weight: 700;
+      }
+      .keys button.warn {
+        background: var(--jam);
+        border-color: #e06040;
+        color: #f4e8d8;
+        font-weight: 700;
+      }
+      .gates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .gates button {
+        font-size: 14px;
+        letter-spacing: 0.06em;
+      }
+      .gates button[aria-pressed="true"] {
+        border-color: var(--atf);
+        color: var(--atf);
+      }
+      .clutch-cut {
+        margin-top: 18px;
+        border: 1px solid rgba(58, 78, 98, 0.55);
+        background:
+          radial-gradient(circle at 50% 42%, rgba(58, 78, 98, 0.18), transparent 52%),
+          linear-gradient(180deg, #1e2226 0%, #141618 58%, #0c0e10 100%);
+        min-height: 320px;
+        position: relative;
+        overflow: hidden;
+        padding: 36px 16px 72px;
+      }
+      .clutch-cut .caption {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        font-family: var(--display);
+        font-size: 14px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--atf);
+        z-index: 2;
+      }
+      .race-lamp {
+        position: absolute;
+        top: 18px;
+        right: 22px;
+        width: 36px;
+        height: 54px;
+        z-index: 2;
+      }
+      .race-lamp .cage {
+        width: 28px;
+        height: 36px;
+        margin: 12px auto 0;
+        border: 2px solid #6a6258;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 4px,
+            rgba(106, 98, 88, 0.55) 4px 5px
+          ),
+          radial-gradient(circle at 50% 40%, var(--lamp), #8a6020 70%);
+        box-shadow: 0 0 22px rgba(240, 196, 106, 0.35);
+      }
+      .race-lamp .hook {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 10px;
+        height: 12px;
+        margin-left: -5px;
+        border: 2px solid #6a6258;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+      }
+      .races {
+        width: 220px;
+        height: 220px;
+        margin: 8px auto 0;
+        position: relative;
+      }
+      .outer-race {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 16px solid var(--race);
+        box-shadow:
+          inset 0 0 0 3px #2a2e32,
+          0 0 0 3px #1a1c1e,
+          0 8px 18px rgba(0, 0, 0, 0.45);
+        background: radial-gradient(circle at 50% 50%, transparent 58%, rgba(18, 20, 22, 0.2) 59%);
+      }
+      .inner-race {
+        position: absolute;
+        inset: 52px;
+        border-radius: 50%;
+        background:
+          repeating-conic-gradient(from 0deg, var(--blued) 0 12deg, #2a3848 12deg 18deg);
+        border: 8px solid #4a5e72;
+        box-shadow: inset 0 0 16px #0a1016;
+      }
+      .inner-race::after {
+        content: "";
+        position: absolute;
+        inset: 28%;
+        border-radius: 50%;
+        background: var(--soot);
+        box-shadow: inset 0 0 8px #000;
+      }
+      .sprag-wedge {
+        position: absolute;
+        width: 18px;
+        height: 34px;
+        background: linear-gradient(180deg, var(--sprag-steel), #8a9098);
+        clip-path: polygon(20% 0, 100% 18%, 80% 100%, 0 78%);
+        box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.45);
+        transform-origin: 50% 100%;
+      }
+      .sprag-wedge:nth-child(1) { top: 18px; left: 101px; transform: rotate(0deg); }
+      .sprag-wedge:nth-child(2) { top: 46px; left: 158px; transform: rotate(45deg); }
+      .sprag-wedge:nth-child(3) { top: 101px; left: 184px; transform: rotate(90deg); }
+      .sprag-wedge:nth-child(4) { top: 156px; left: 158px; transform: rotate(135deg); }
+      .sprag-wedge:nth-child(5) { top: 176px; left: 101px; transform: rotate(180deg); }
+      .sprag-wedge:nth-child(6) { top: 156px; left: 44px; transform: rotate(225deg); }
+      .sprag-wedge:nth-child(7) { top: 101px; left: 18px; transform: rotate(270deg); }
+      .sprag-wedge:nth-child(8) { top: 46px; left: 44px; transform: rotate(315deg); }
+      .clutch-cut.jammed .sprag-wedge {
+        background: linear-gradient(180deg, #e8a090, var(--jam));
+        box-shadow: 0 0 10px rgba(196, 74, 40, 0.45);
+      }
+      .clutch-cut.freewheel .sprag-wedge {
+        background: linear-gradient(180deg, #c8d4c8, var(--free));
+      }
+      .clutch-cut.mixed-pin .outer-race { border-color: #6a88a8; }
+      .clutch-cut.mixed-pin .inner-race { border-color: var(--atf); }
+      .atf-sump {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 54px;
+        background:
+          linear-gradient(180deg, transparent, rgba(208, 138, 40, 0.22) 28%, rgba(106, 74, 42, 0.72));
+      }
+      .drain-plug {
+        position: absolute;
+        left: 50%;
+        bottom: 8px;
+        width: 28px;
+        height: 18px;
+        margin-left: -14px;
+        background: #4a3a28;
+        border: 2px solid #8a7050;
+        clip-path: polygon(15% 0, 85% 0, 100% 40%, 85% 100%, 15% 100%, 0 40%);
+        box-shadow: 0 2px 0 #1a1208;
+      }
+      .slots {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      .slot {
+        border: 1px dashed rgba(208, 138, 40, 0.28);
+        padding: 10px;
+        font-size: 12px;
+      }
+      .slot .lbl {
+        color: #b0aa9c;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .slot code {
+        display: block;
+        margin-top: 6px;
+        color: var(--atf);
+        word-break: break-all;
+      }
+      .ledger {
+        margin-top: 14px;
+        border-top: 3px solid var(--atf);
+        padding-top: 12px;
+      }
+      .ledger h3 {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: 16px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--atf);
+      }
+      .ledger ol {
+        margin: 0;
+        padding-left: 18px;
+        color: #c8c2b4;
+        font-size: 12px;
+      }
+      .feed {
+        font-size: 14px;
+        color: var(--atf);
+        margin: 12px 0 0;
+      }
+      .horn {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--jam);
+        background: rgba(196, 74, 40, 0.16);
+        font-size: 12px;
+        color: #f0b4a0;
+      }
+      .horn.on { display: block; }
+      .paste {
+        width: 100%;
+        min-height: 92px;
+        margin-top: 10px;
+        resize: vertical;
+        background: #0a0c0e;
+        color: #e6e2d8;
+        border: 1px solid rgba(138, 147, 160, 0.22);
+        font-family: var(--card);
+        font-size: 12px;
+        padding: 10px;
+      }
+      .brief, .why {
+        margin-top: 22px;
+        color: #c8c2b4;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .brief h2, .why h2 {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: 16px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--atf);
+      }
+      .integrations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+      }
+      @media (max-width: 720px) {
+        .integrations { grid-template-columns: 1fr; }
+      }
+      .integrations article {
+        border: 1px solid rgba(138, 147, 160, 0.18);
+        padding: 10px;
+        font-size: 14px;
+        color: #b0aa9c;
+      }
+      .integrations h3 {
+        margin: 0 0 6px;
+        font-family: var(--display);
+        font-size: 15px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--atf);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shop">
+      <div class="hex-rail" aria-hidden="true"></div>
+      <p class="mark">12:50 Sydney · sprag</p>
+      <div class="bay">
+        <section>
+          <h1>Sprag</h1>
+          <p class="lede">
+            A failed attach at boot is not a hold. A sprag is the one-way
+            element in an overrunning clutch: it locks against reverse
+            rotation and freewheels the other way. The first refuse locks
+            the race for the whole process. Later success cannot reverse
+            it until the process is rebuilt. Score the race or admit
+            <b>overrun</b>.
+          </p>
+          <p id="chip" class="chip hold"><b>overrun</b> · idle</p>
+          <p id="feed" class="feed">● Overrun · attach not a hold · nothing scored · idle word is overrun</p>
+          <div id="horn" class="horn">
+            Slack sprag alarm: locked / mixed / late / refused / cached / stale. The first refuse locked the race.
+          </div>
+          <div class="clutch-cut" id="clutch-cut">
+            <div class="caption">inner race · steel sprags · outer race</div>
+            <div class="race-lamp" aria-hidden="true" title="race lamp">
+              <div class="hook"></div>
+              <div class="cage"></div>
+            </div>
+            <div class="races" aria-hidden="true">
+              <div class="outer-race"></div>
+              <div class="sprag-wedge"></div>
+              <div class="sprag-wedge"></div>
+              <div class="sprag-wedge"></div>
+              <div class="sprag-wedge"></div>
+              <div class="sprag-wedge"></div>
+              <div class="sprag-wedge"></div>
+              <div class="sprag-wedge"></div>
+              <div class="sprag-wedge"></div>
+              <div class="inner-race" title="inner race"></div>
+            </div>
+            <div class="atf-sump" aria-hidden="true">
+              <div class="drain-plug" title="drain plug"></div>
+            </div>
+          </div>
+          <div class="slots">
+            <div class="slot">
+              <div class="lbl">boot / now</div>
+              <code id="bootnow">—</code>
+            </div>
+            <div class="slot">
+              <div class="lbl">transport</div>
+              <code id="transport">—</code>
+            </div>
+          </div>
+          <div class="ledger">
+            <h3>Race ledger</h3>
+            <ol id="tray"><li>attach not a hold · idle word is overrun</li></ol>
+          </div>
+        </section>
+        <aside class="gearbox">
+          <h2>Clutch bench · race lamp</h2>
+          <div class="lamps" aria-hidden="true">
+            <div id="lamp-jam" class="lamp"></div>
+            <div id="lamp-atf" class="lamp"></div>
+            <div id="lamp-free" class="lamp"></div>
+          </div>
+          <div class="gauges">
+            <div class="gauge">attach<strong id="g-attach">none</strong></div>
+            <div class="gauge">server now<strong id="g-now">none</strong></div>
+            <div class="gauge">reconnect<strong id="g-reconnect">none</strong></div>
+            <div class="gauge">tools<strong id="g-tools">none</strong></div>
+          </div>
+          <div class="keys">
+            <button class="primary" type="button" id="btn-score">Score</button>
+            <button type="button" id="btn-bail">Bail · overrun</button>
+            <button class="warn" type="button" id="btn-race">Race</button>
+            <button type="button" id="btn-admit">Admit</button>
+          </div>
+          <div class="gates">
+            <button type="button" data-seed="overrun" aria-pressed="false">Bail · overrun</button>
+            <button type="button" data-seed="locked" aria-pressed="true">Locked #90494</button>
+            <button type="button" data-seed="mixed">Mixed</button>
+            <button type="button" data-seed="late">Late</button>
+            <button type="button" data-seed="refused">Refused</button>
+            <button type="button" data-seed="cached">Cached</button>
+            <button type="button" data-seed="stale">Stale</button>
+            <button type="button" data-seed="spun">Spun</button>
+            <button type="button" data-seed="held">Held</button>
+            <button type="button" data-seed="live">Live</button>
+          </div>
+          <label class="mark" for="paste" style="display:block;margin-top:14px">Paste session trace</label>
+          <textarea id="paste" class="paste" placeholder="ConnectionRefused / start the server / curl succeeds / still failed / /clear / No token data found / HTTP+bearer → stdio / fully restart — detect a locked race"></textarea>
+          <button type="button" id="btn-probe" style="margin-top:8px;border:1px solid rgba(138,147,160,0.32);background:#16181a;padding:8px 12px;font-family:Teko,sans-serif;font-size:16px;text-transform:uppercase;letter-spacing:0.08em">Probe paste</button>
+        </aside>
+      </div>
+      <div class="integrations">
+        <article>
+          <h3>Slack sprag alarm</h3>
+          Horn on locked / mixed / late / refused / cached / stale. Demo posts nothing live without a webhook.
+        </article>
+        <article>
+          <h3>Linear ticket</h3>
+          Race ticket on locked / mixed. Honest demo row when the key is absent.
+        </article>
+        <article>
+          <h3>GitHub sprag-ledger</h3>
+          Every scored probe writes a race event. Private gist when a token is present.
+        </article>
+      </div>
+      <section class="brief">
+        <h2>Thesis</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90494">anthropics/claude-code#90494</a>
+          (filed 2026-08-29, open): MCP server that starts after Claude
+          Code is never connected — no retry, and /mcp reconnect fails
+          with “No token data found”. Claude Code 2.1.248, macOS.
+          Repro 1: start <code>claude</code> while the local HTTP/stdio
+          MCP server is down → ConnectionRefused, 3 attempts at startup,
+          then nothing; start the server; curl succeeds; same process
+          still shows failed; /clear still failed; full quit+relaunch
+          connects instantly. Repro 2: config migrated HTTP+bearer →
+          stdio while process running; /mcp reconnect fails “No token
+          data found” (boot-pinned transport + current credentials).
+        </p>
+        <p>
+          Related-but-distinct (shape, not a new primary):
+          <a href="https://github.com/anthropics/claude-code/issues/84778">#84778</a>
+          — a failed MCP server attach at startup is terminal for the session — no retry, even for transient network errors. Healthy initialize 0.42–0.94s; unreachable proxy errors in ~0.2s; 12-hour probe 213/720 failures in contiguous blocks; a 7s recovery that was previously fatal attaches after an 8.2s wrapper wait.
+          <a href="https://github.com/anthropics/claude-code/issues/81042">#81042</a>
+          — MCP server down at session start is unrecoverable for the session even after account-level reconnect succeeds (claude mcp list shows ✔ Connected; running session still has no tools; nested headless claude -p was the workaround).
+          <a href="https://github.com/anthropics/claude-code/issues/85766">#85766</a>
+          — claude mcp add during a running session doesn't appear in /mcp until a new session starts.
+          <a href="https://github.com/anthropics/claude-code/issues/83044">#83044</a>
+          — /mcp reconnect rebuilds transport but not broker state; /mcp shows Connected throughout a wedge.
+        </p>
+      </section>
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Reed (four-contact cabinet for a server that reports
+          Connected — connected vs registered vs one served call).
+          NOT Lazaret (malware-reminder refusal). NOT Fusee
+          (clockmaker fusee / early schedule dispatch). NOT Larder
+          (plugin-store freeze). NOT Tappet (silent hook injection /
+          valve train). NOT Iota (path-key identity). NOT Leat
+          (millrace). NOT Shunt (railway). NOT leftover woodworking /
+          millimetre-slider clones. Different problem: first failed
+          attach locks the race for the whole process, even after the
+          server is up. Desktop-app-bundled MCP servers look permanently
+          broken whenever the user's terminal was opened first.
+          Different UI: gearbox / overrunning-clutch bench. Steel sprags
+          between inner and outer races, ATF oil-amber, carbon, blued
+          steel, workshop grey, drain plug, race lamp. Different idle:
+          <b>overrun</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "overrun";
+      const SLACK = ["locked", "mixed", "late", "refused", "cached", "stale"];
+
+      function emptyProbe() {
+        return {
+          serverRunningAtBoot: false,
+          serverRunningNow: false,
+          attachFailed: false,
+          retried: false,
+          reconnectAttempted: false,
+          reconnectError: "",
+          transportPinnedAtBoot: "",
+          transportNow: "",
+          credentialsNow: "",
+          tokenDataFound: false,
+          processRestarted: false,
+          toolsAvailable: false,
+          observed: false,
+          session: "",
+          source: "",
+          issue: null,
+          scored: false,
+        };
+      }
+
+      function classify(probe) {
+        const next = { ...emptyProbe(), ...probe };
+        const idle =
+          !next.serverRunningAtBoot &&
+          !next.serverRunningNow &&
+          !next.attachFailed &&
+          !next.retried &&
+          !next.reconnectAttempted &&
+          !next.reconnectError &&
+          !next.transportPinnedAtBoot &&
+          !next.transportNow &&
+          !next.credentialsNow &&
+          !next.tokenDataFound &&
+          !next.processRestarted &&
+          !next.toolsAvailable &&
+          !next.observed;
+        if (idle) return "overrun";
+        const lockedRace =
+          next.attachFailed &&
+          next.serverRunningNow &&
+          !next.processRestarted &&
+          !next.toolsAvailable &&
+          !next.retried;
+        if (lockedRace) return "locked";
+        const tokenMismatch = /no token data found/i.test(next.reconnectError);
+        if (next.reconnectAttempted && tokenMismatch) return "mixed";
+        if (!next.serverRunningAtBoot && next.serverRunningNow && !next.processRestarted) return "late";
+        if (next.attachFailed && !next.serverRunningAtBoot && !next.serverRunningNow && !next.processRestarted && !next.observed) return "refused";
+        if (next.attachFailed && !next.retried && !next.processRestarted && !next.toolsAvailable && next.observed) return "cached";
+        if (next.reconnectAttempted && next.transportPinnedAtBoot) return "stale";
+        if (next.processRestarted && next.toolsAvailable) return "spun";
+        if (next.serverRunningAtBoot && !next.attachFailed && next.toolsAvailable) return "live";
+        if (next.attachFailed || next.reconnectAttempted || next.observed || next.processRestarted) return "held";
+        return "overrun";
+      }
+
+      function feedOf(kind) {
+        if (kind === "locked") return "● Locked · first attach failed; server later reachable; still failed for process lifetime · primary #90494";
+        if (kind === "mixed") return "● Mixed · reconnect used boot-pinned transport + current credentials → No token data found";
+        if (kind === "late") return "● Late · server started after the claude process";
+        if (kind === "refused") return "● Refused · ConnectionRefused at boot · 3 attempts, then nothing";
+        if (kind === "cached") return "● Cached · failed connection cached for process lifetime";
+        if (kind === "stale") return "● Stale · reconnect used boot-pinned transport";
+        if (kind === "spun") return "● Spun · recovered only by full process restart";
+        if (kind === "held") return "● Held · classification uncertain";
+        if (kind === "live") return "● Live · server was up at boot, connected, tools available";
+        return "● Overrun · attach not a hold · nothing scored · idle word is overrun";
+      }
+
+      function clusterOf(probe, kind) {
+        const cluster = [];
+        const add = (word) => { if (word && word !== kind && !cluster.includes(word)) cluster.push(word); };
+        if (probe.attachFailed && probe.serverRunningNow && !probe.processRestarted && !probe.toolsAvailable && !probe.retried) add("locked");
+        if (probe.reconnectAttempted && /no token data found/i.test(probe.reconnectError || "")) add("mixed");
+        if (!probe.serverRunningAtBoot && probe.serverRunningNow && !probe.processRestarted) add("late");
+        if (/connectionrefused/i.test(probe.reconnectError || "")) add("refused");
+        if (probe.attachFailed && !probe.retried && !probe.processRestarted) add("cached");
+        if (probe.reconnectAttempted && probe.transportPinnedAtBoot) add("stale");
+        if (probe.processRestarted && probe.toolsAvailable) add("spun");
+        if (probe.serverRunningAtBoot && !probe.attachFailed && probe.toolsAvailable) add("live");
+        return cluster;
+      }
+
+      function seedOf(name) {
+        const base = emptyProbe();
+        if (name === "locked") {
+          return {
+            ...base,
+            serverRunningAtBoot: false,
+            serverRunningNow: true,
+            attachFailed: true,
+            retried: false,
+            reconnectError: "ConnectionRefused",
+            processRestarted: false,
+            toolsAvailable: false,
+            session: "90494-locked",
+            source: "anthropics/claude-code#90494",
+            issue: 90494,
+            scored: true,
+          };
+        }
+        if (name === "mixed") {
+          return {
+            ...base,
+            serverRunningAtBoot: false,
+            serverRunningNow: true,
+            attachFailed: true,
+            retried: true,
+            reconnectAttempted: true,
+            reconnectError: "No token data found",
+            transportPinnedAtBoot: "http",
+            transportNow: "stdio",
+            credentialsNow: "stdio",
+            tokenDataFound: false,
+            session: "90494-mixed",
+            issue: 90494,
+            scored: true,
+          };
+        }
+        if (name === "late") {
+          return { ...base, serverRunningNow: true, session: "84778-late", issue: 84778, scored: true };
+        }
+        if (name === "refused") {
+          return { ...base, attachFailed: true, reconnectError: "ConnectionRefused", session: "90494-refused", issue: 90494, scored: true };
+        }
+        if (name === "cached") {
+          return { ...base, attachFailed: true, observed: true, session: "81042-cached", issue: 81042, scored: true };
+        }
+        if (name === "stale") {
+          return {
+            ...base,
+            serverRunningAtBoot: true,
+            serverRunningNow: true,
+            attachFailed: true,
+            retried: true,
+            reconnectAttempted: true,
+            transportPinnedAtBoot: "http",
+            transportNow: "http",
+            tokenDataFound: true,
+            session: "83044-stale",
+            issue: 83044,
+            scored: true,
+          };
+        }
+        if (name === "spun") {
+          return { ...base, serverRunningNow: true, attachFailed: true, processRestarted: true, toolsAvailable: true, session: "90494-spun", issue: 90494, scored: true };
+        }
+        if (name === "held") {
+          return { ...base, attachFailed: true, processRestarted: true, session: "85766-held", issue: 85766, scored: true };
+        }
+        if (name === "live") {
+          return { ...base, serverRunningAtBoot: true, serverRunningNow: true, toolsAvailable: true, session: "live", scored: true };
+        }
+        return { ...base, session: "overrun", scored: true };
+      }
+
+      function parseTrace(text) {
+        const tokenErr = /no token data found/i.test(text);
+        const refused = /connectionrefused|econnrefused/i.test(text);
+        const restarted = /quit|relaunch|fully restart|process restart/i.test(text);
+        const reconnect = /\/mcp reconnect|reconnect/i.test(text);
+        const late = /starts after|started after|not running yet|terminal was opened first/i.test(text);
+        const httpToStdio = /http\+bearer|http.*stdio|migrated/i.test(text);
+        return {
+          ...emptyProbe(),
+          serverRunningAtBoot: /up at boot|running at boot|server was up/i.test(text) && !late,
+          serverRunningNow: /curl succeeds|server (is )?reachable|server (is )?up now|start the server/i.test(text) || (/connected instantly/i.test(text) && restarted),
+          attachFailed: refused || /marked failed|still (shows )?failed|never connected/i.test(text),
+          retried: /retried|lazy retry/i.test(text) && !/no retry|never retried/i.test(text),
+          reconnectAttempted: reconnect,
+          reconnectError: tokenErr ? "No token data found" : refused ? "ConnectionRefused" : "",
+          transportPinnedAtBoot: httpToStdio || /http/i.test(text) ? "http" : "",
+          transportNow: httpToStdio || /stdio/i.test(text) ? "stdio" : /http/i.test(text) ? "http" : "",
+          credentialsNow: httpToStdio ? "stdio" : "",
+          tokenDataFound: tokenErr ? false : /token data found/i.test(text),
+          processRestarted: restarted,
+          toolsAvailable: /tools (are )?available|connects instantly|connected instantly/i.test(text) && !/still has no tools|tools are unavailable/i.test(text),
+          observed: /\/clear|tools\/call|observed|race sounded/i.test(text),
+          session: /#90494|90494/.test(text) ? "paste-locked" : "paste",
+          source: /#90494/.test(text) ? "anthropics/claude-code#90494" : "paste",
+          issue: /#90494/.test(text) ? 90494 : /#84778/.test(text) ? 84778 : null,
+          scored: true,
+        };
+      }
+
+      let probe = seedOf("locked");
+
+      function render() {
+        const verdict = classify(probe);
+        const cluster = clusterOf(probe, verdict);
+        const alarm = SLACK.includes(verdict);
+        const chip = document.getElementById("chip");
+        chip.innerHTML = "<b>" + verdict + "</b> · " + (cluster.length ? cluster.join(" · ") : IDLE_WORD);
+        chip.className = "chip" + (alarm ? " alarm" : verdict === "overrun" || verdict === "live" || verdict === "spun" ? " hold" : "");
+        document.getElementById("feed").textContent = feedOf(verdict);
+        document.getElementById("horn").className = "horn" + (alarm ? " on" : "");
+        document.getElementById("lamp-jam").className = "lamp" + (alarm ? " jam" : "");
+        document.getElementById("lamp-atf").className = "lamp" + (verdict !== "overrun" && verdict !== "live" && !alarm ? " atf" : "");
+        document.getElementById("lamp-free").className = "lamp" + (verdict === "overrun" || verdict === "live" || verdict === "spun" ? " free" : "");
+        const cut = document.getElementById("clutch-cut");
+        cut.className = "clutch-cut" + (verdict === "locked" || verdict === "refused" || verdict === "cached" ? " jammed" : verdict === "overrun" || verdict === "live" || verdict === "spun" ? " freewheel" : verdict === "mixed" || verdict === "stale" ? " mixed-pin" : "");
+        document.getElementById("bootnow").textContent = (probe.serverRunningAtBoot ? "up at boot" : "down at boot") + " / " + (probe.serverRunningNow ? "up now" : "down now");
+        document.getElementById("transport").textContent = probe.transportPinnedAtBoot || probe.transportNow
+          ? (probe.transportPinnedAtBoot || "—") + " → " + (probe.transportNow || "—")
+          : "—";
+        const tray = document.getElementById("tray");
+        const lines = [];
+        if (probe.attachFailed) lines.push("<li>first attach failed</li>");
+        if (probe.serverRunningNow && !probe.serverRunningAtBoot) lines.push("<li>server started after the process</li>");
+        if (probe.reconnectError) lines.push("<li>" + probe.reconnectError + "</li>");
+        if (probe.reconnectAttempted) lines.push("<li>reconnect attempted</li>");
+        if (!probe.retried && probe.attachFailed) lines.push("<li>no retry after the first refuse</li>");
+        if (probe.processRestarted) lines.push("<li>process restarted</li>");
+        if (!probe.toolsAvailable && verdict !== "overrun") lines.push("<li>tools unavailable</li>");
+        tray.innerHTML = lines.length ? lines.join("") : "<li>attach not a hold · idle word is overrun</li>";
+        document.getElementById("g-attach").textContent = probe.attachFailed ? "failed" : "none";
+        document.getElementById("g-now").textContent = probe.serverRunningNow ? "reachable" : "down";
+        document.getElementById("g-reconnect").textContent = probe.reconnectError || (probe.reconnectAttempted ? "tried" : "none");
+        document.getElementById("g-tools").textContent = probe.toolsAvailable ? "available" : "none";
+        document.querySelectorAll(".gates button[data-seed]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", classify(probe) === btn.getAttribute("data-seed") ? "true" : "false");
+        });
+      }
+
+      document.getElementById("btn-score").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-bail").addEventListener("click", () => {
+        probe = seedOf("overrun");
+        render();
+      });
+      document.getElementById("btn-race").addEventListener("click", () => {
+        probe = seedOf("locked");
+        render();
+      });
+      document.getElementById("btn-admit").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-probe").addEventListener("click", () => {
+        const text = document.getElementById("paste").value || "";
+        probe = text.trim() ? parseTrace(text) : seedOf("locked");
+        render();
+      });
+      document.querySelectorAll(".gates button[data-seed]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          probe = seedOf(btn.getAttribute("data-seed"));
+          render();
+        });
+      });
+      render();
+    </script>
+  </body>
+</html>
