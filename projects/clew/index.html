@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Clew — rigger's sail loft for a sandbox deny list that winds two entries per git worktree onto one /bin/bash -c argument until MAX_ARG_STRLEN. A working-size coil is not a hold. Idle word is rove."
+    />
+    <title>Clew — rigger's loft</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Overpass+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --hemp: #d8c09a;
+        --hemp-deep: #a8895a;
+        --tar: #16120e;
+        --tar-oak: #2b2118;
+        --lantern: #e8a84a;
+        --lantern-glow: #ffc857;
+        --thimble: #c9a227;
+        --sheave: #3d2a1a;
+        --seafoam: #7eb8a2;
+        --foam-deep: #3d7a6a;
+        --copy: #efe4cf;
+        --mute: #9a8870;
+        --foul: #c45a3a;
+        --head: "Cinzel", "Times New Roman", serif;
+        --body: "Lora", Georgia, serif;
+        --mono: "Overpass Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          radial-gradient(ellipse 42% 28% at 18% 8%, rgba(232, 168, 74, 0.18), transparent 62%),
+          radial-gradient(ellipse 36% 30% at 88% 12%, rgba(126, 184, 162, 0.12), transparent 60%),
+          linear-gradient(180deg, #0e0c09 0%, var(--tar) 46%, #1c1610 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--thimble); }
+      .sail-loft {
+        width: min(1160px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 20px 0 84px;
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--seafoam);
+      }
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 22px;
+        margin: 10px 0 20px;
+      }
+      h1 {
+        margin: 0;
+        font-family: var(--head);
+        font-size: clamp(56px, 10vw, 104px);
+        font-weight: 500;
+        line-height: 0.84;
+        letter-spacing: 0.02em;
+        color: var(--hemp);
+      }
+      .lede {
+        max-width: 40ch;
+        margin: 0;
+        color: var(--copy);
+        font-size: 17px;
+        line-height: 1.5;
+      }
+      .rigger-bench {
+        position: relative;
+        margin: 0 0 18px;
+        padding: 40px 18px 18px;
+        background:
+          repeating-linear-gradient(90deg, #241910 0 4px, #33261b 4px 10px, #1e160f 10px 13px),
+          linear-gradient(180deg, #3a2c20 0%, var(--tar-oak) 58%, #120e0a 100%);
+        border: 10px solid #4a3826;
+        box-shadow:
+          inset 0 0 0 2px #6a5030,
+          0 26px 48px rgba(0, 0, 0, 0.55);
+      }
+      .rigger-bench::before {
+        content: "CLEW · SAIL LOFT NO. 48 · COIL";
+        position: absolute;
+        top: 12px;
+        left: 16px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.24em;
+        color: rgba(216, 192, 154, 0.4);
+      }
+      .loft-beam {
+        position: absolute;
+        top: -10px;
+        left: 8%;
+        right: 8%;
+        height: 10px;
+        background: linear-gradient(90deg, #2a1c12, #5a4030, #2a1c12);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+      }
+      .bench-row {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 0.9fr;
+        gap: 14px;
+        align-items: stretch;
+        padding-top: 8px;
+      }
+      @media (max-width: 820px) {
+        .bench-row { grid-template-columns: 1fr; }
+        .mast { flex-direction: column; align-items: start; }
+      }
+      .hemp-clew, .lignum-sheave, .loft-lantern {
+        min-height: 236px;
+        padding: 14px;
+        border: 2px solid #6a5030;
+        background: rgba(12, 10, 8, 0.7);
+        position: relative;
+      }
+      .card-kicker {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--seafoam);
+      }
+      .plate {
+        margin: 8px 0 0;
+        font-family: var(--head);
+        font-size: 24px;
+        letter-spacing: 0.04em;
+      }
+      .host {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .yarn-ball {
+        width: 88px;
+        height: 88px;
+        margin: 18px auto 0;
+        border-radius: 50%;
+        background:
+          repeating-radial-gradient(circle at 42% 38%, #c4a06a 0 5px, #8a6840 5px 8px);
+        box-shadow:
+          inset -10px -8px 0 rgba(22, 18, 14, 0.25),
+          0 0 0 3px var(--hemp-deep);
+        position: relative;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+      }
+      .yarn-ball::after {
+        content: "";
+        position: absolute;
+        left: 8%;
+        right: 8%;
+        top: 58%;
+        height: 2px;
+        background: var(--foul);
+        opacity: 0.35;
+      }
+      .hemp-clew.working .yarn-ball { transform: scale(0.72); }
+      .hemp-clew.swelling .yarn-ball { transform: scale(1.05); }
+      .hemp-clew.fouled-coil .yarn-ball {
+        transform: scale(1.28);
+        box-shadow:
+          inset -10px -8px 0 rgba(22, 18, 14, 0.25),
+          0 0 0 3px var(--foul),
+          0 0 22px rgba(196, 90, 58, 0.45);
+      }
+      .load-line {
+        width: 92px;
+        margin: 10px auto 0;
+        height: 8px;
+        border-top: 2px dashed var(--seafoam);
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-align: center;
+        color: var(--seafoam);
+      }
+      .sheave-wheel {
+        width: 86px;
+        height: 86px;
+        margin: 18px auto 0;
+        border-radius: 50%;
+        border: 8px solid #5a3e28;
+        background:
+          radial-gradient(circle at 50% 50%, #2a1c12 0 18px, #4a3220 18px 28px, #2a1c12 28px);
+        position: relative;
+        box-shadow: inset 0 0 0 4px var(--thimble);
+      }
+      .sheave-wheel::before {
+        content: "";
+        position: absolute;
+        inset: 28px;
+        border-radius: 50%;
+        background: var(--thimble);
+      }
+      .lignum-sheave.free .sheave-wheel { animation: pay 2.8s linear infinite; }
+      .lignum-sheave.jammed .sheave-wheel {
+        filter: saturate(0.4);
+        animation: none;
+        box-shadow: inset 0 0 0 4px var(--foul);
+      }
+      @keyframes pay {
+        to { transform: rotate(360deg); }
+      }
+      .brass-thimble {
+        width: 36px;
+        height: 42px;
+        margin: 20px auto 0;
+        border-radius: 40% 40% 20% 20%;
+        background: linear-gradient(180deg, #e8d078, var(--thimble) 55%, #7a5e14);
+        box-shadow: inset 0 8px 0 rgba(255, 240, 180, 0.35);
+      }
+      .flame {
+        width: 22px;
+        height: 34px;
+        margin: 20px auto 0;
+        border-radius: 50% 50% 40% 40%;
+        background: radial-gradient(circle at 40% 30%, #fff6c8, var(--lantern-glow) 40%, var(--lantern));
+        box-shadow: 0 0 24px rgba(255, 200, 87, 0.55);
+      }
+      .loft-lantern.dark .flame {
+        background: #2a2014;
+        box-shadow: none;
+      }
+      .loft-lantern.live .flame {
+        background: radial-gradient(circle at 40% 30%, #fff6c8, var(--lantern-glow) 40%, var(--seafoam));
+        box-shadow: 0 0 22px rgba(126, 184, 162, 0.55);
+      }
+      .coil-tape {
+        margin-top: 14px;
+        min-height: 48px;
+        padding: 10px 12px;
+        background: linear-gradient(180deg, #efe0c0, #d8c09a);
+        color: #2a1c12;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        border: 1px solid #b89a68;
+      }
+      .coil-mark {
+        display: inline-block;
+        margin-right: 10px;
+        padding: 0 4px;
+        border-bottom: 2px solid #2a1c12;
+      }
+      .coil-mark.gap { border-bottom-style: dashed; color: #6a5030; }
+      .board-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.95fr) minmax(0, 0.95fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) {
+        .board-row { grid-template-columns: 1fr; }
+      }
+      .loft-slate, .coil-keys, .intake {
+        border: 1px solid rgba(126, 184, 162, 0.28);
+        background: rgba(14, 12, 9, 0.82);
+        padding: 14px;
+      }
+      .loft-slate h2, .coil-keys h2, .intake h2 {
+        margin: 0 0 10px;
+        font-family: var(--head);
+        font-size: 22px;
+        letter-spacing: 0.04em;
+      }
+      .verdict-die .word {
+        font-family: var(--head);
+        font-size: clamp(40px, 8vw, 64px);
+        line-height: 0.85;
+      }
+      .verdict-die.fail .word { color: var(--foul); }
+      .chip {
+        display: inline-block;
+        margin: 8px 0;
+        padding: 4px 8px;
+        border: 1px solid #6a5030;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .chip.alarm { color: #ffd2c8; border-color: var(--foul); }
+      .chip.hold { color: #c8f0e0; border-color: var(--seafoam); }
+      .feed { margin: 0 0 10px; color: var(--hemp); }
+      .lines { margin: 0; padding-left: 18px; color: var(--copy); }
+      .lines .dim { float: right; color: var(--mute); font-family: var(--mono); font-size: 11px; }
+      .wind-keys, .yarn-bank {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .wind-keys button, .yarn-bank button, .intake button {
+        border: 1px solid #6a5030;
+        background: #241910;
+        color: var(--hemp);
+        padding: 7px 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .wind-keys button.primary { background: #163028; border-color: var(--seafoam); }
+      .wind-keys button.warn { background: #4a1f14; border-color: var(--foul); }
+      .yarn-bank button[aria-pressed="true"] {
+        background: var(--thimble);
+        color: #1a1206;
+      }
+      .paste {
+        width: 100%;
+        min-height: 110px;
+        resize: vertical;
+        border: 1px solid #6a5030;
+        background: #120e0a;
+        color: var(--hemp);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 8px;
+      }
+      .masked {
+        margin-top: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .integrations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 18px;
+      }
+      @media (max-width: 860px) {
+        .integrations { grid-template-columns: 1fr; }
+      }
+      .integrations article {
+        border: 1px solid rgba(126, 184, 162, 0.24);
+        padding: 10px;
+        font-size: 14px;
+        background: rgba(14, 12, 9, 0.7);
+      }
+      .integrations h3 {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--seafoam);
+      }
+      .ledger-line {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--hemp);
+      }
+      .brief, .why {
+        margin-top: 22px;
+        color: var(--copy);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      .brief h2, .why h2 {
+        margin: 0 0 8px;
+        font-family: var(--head);
+        font-size: 24px;
+        color: var(--hemp);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sail-loft">
+      <p class="mark">22:50 Sydney · clew</p>
+      <div class="mast">
+        <h1>Clew</h1>
+        <p class="lede">
+          A working-size coil is not a hold. Score the clew or admit
+          <b>rove</b>. The yarn ball swells toward a 128KB load line.
+          When fouled the sheave jams and no sheet pays.
+        </p>
+      </div>
+      <div class="rigger-bench tarred-oak" id="rigger-bench" aria-label="Rigger's sail loft">
+        <div class="loft-beam" aria-hidden="true"></div>
+        <div class="bench-row">
+          <section class="hemp-clew fouled-coil" id="hemp-clew">
+            <div class="card-kicker">HEMP CLEW</div>
+            <div class="plate">coil</div>
+            <p class="host" id="clew-host">261 trees · 130.7KB · past the load line</p>
+            <div class="yarn-ball" aria-hidden="true"></div>
+            <div class="load-line">128KB load line</div>
+          </section>
+          <section class="lignum-sheave jammed" id="lignum-sheave">
+            <div class="card-kicker">LIGNUM SHEAVE</div>
+            <div class="plate">pay</div>
+            <p class="host" id="sheave-host">jammed · no sheet pays</p>
+            <div class="sheave-wheel" aria-hidden="true"></div>
+            <div class="coil-tape" id="coil-tape" aria-label="Coil tape">
+              <span class="coil-mark">261 trees</span>
+              <span class="coil-mark gap">E2BIG</span>
+            </div>
+          </section>
+          <section class="loft-lantern dark" id="loft-lantern">
+            <div class="card-kicker">LOFT LANTERN</div>
+            <div class="plate">line</div>
+            <p class="host" id="lantern-host">should stay lit while spawn lives</p>
+            <div class="flame" aria-hidden="true"></div>
+            <div class="brass-thimble" aria-hidden="true"></div>
+          </section>
+        </div>
+      </div>
+      <div class="board-row">
+        <section class="loft-slate">
+          <h2>Loft slate</h2>
+          <div id="verdict-die" class="verdict-die">
+            <div class="word" id="verdict-word">rove</div>
+          </div>
+          <p id="chip" class="chip hold"><b>rove</b> · idle</p>
+          <p id="feed" class="feed">● Rove · working-size clew · idle word is rove</p>
+          <ol class="lines" id="lines"></ol>
+        </section>
+        <aside class="coil-keys">
+          <h2>Coil keys</h2>
+          <div class="wind-keys">
+            <button class="primary" type="button" id="btn-score">Score</button>
+            <button type="button" id="btn-admit">Admit rove</button>
+            <button type="button" id="btn-reset">Reset · rove</button>
+            <button class="warn" type="button" id="btn-restore">Restore · #90569</button>
+          </div>
+          <div class="yarn-bank">
+            <button type="button" data-seed="fouled" aria-pressed="true">Seed #90569 fouled</button>
+            <button type="button" data-seed="overcoiled">overcoiled</button>
+            <button type="button" data-seed="choked">choked</button>
+            <button type="button" data-seed="twinned">twinned</button>
+            <button type="button" data-seed="swollen">swollen</button>
+            <button type="button" data-seed="jammed">jammed</button>
+            <button type="button" data-seed="pruned">pruned</button>
+            <button type="button" data-seed="cached">cached</button>
+            <button type="button" data-seed="globbed">globbed</button>
+            <button type="button" data-seed="control">control rove</button>
+            <button type="button" data-seed="reset">Reset · rove</button>
+            <button type="button" data-seed="fouled">Restore · #90569</button>
+          </div>
+        </aside>
+        <aside class="intake">
+          <h2>Coil intake</h2>
+          <label class="mark" for="paste" style="display:block;margin-bottom:8px;color:#9a8870">Paste a deny-list probe. Score the clew, not the deny count.</label>
+          <textarea id="paste" class="paste" placeholder='{"worktreeCount":261,"worktreeDenyCount":524,"largestArgBytes":133837,"e2big":true,"sleepFailed":true}'></textarea>
+          <button type="button" id="btn-probe" class="primary">Score coil</button>
+          <p class="masked" id="masked">Masked view · trees, denies, argv. No secrets.</p>
+        </aside>
+      </div>
+      <div class="integrations">
+        <article>
+          <h3>Slack alarm</h3>
+          <p class="ledger-line" id="slack-ledger">Would post to Slack: fouled coil alarm on the clew.</p>
+        </article>
+        <article>
+          <h3>Linear ticket</h3>
+          <p class="ledger-line" id="linear-ledger">Would open a Linear ticket: clew fouled · Clew · #90569.</p>
+        </article>
+        <article>
+          <h3>GitHub clew-ledger</h3>
+          <p class="ledger-line" id="github-ledger">Would open a GitHub clew-ledger issue. Demo: no token.</p>
+        </article>
+      </div>
+      <section class="brief">
+        <h2>Thesis</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90569">anthropics/claude-code#90569</a>:
+          Bash sandbox winds roughly two filesystem deny entries per
+          registered git worktree onto a single clew. The whole sandbox
+          profile is stuffed into one <code>/bin/bash -c "&lt;bwrap …&gt;"</code>
+          argument. At ~250 worktrees the ball crosses Linux
+          <code>MAX_ARG_STRLEN</code> (128 KB). Then every Bash spawn dies
+          with E2BIG — including <code>sleep 5</code>. Measured: 261
+          worktrees; 687 deny paths of which 524 are worktree-admin
+          files; command line 130.7KB across 3 args (largest single arg
+          130.7KB); environment 9.5KB. Same-class
+          <a href="https://github.com/anthropics/claude-code/issues/73468">#73468</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/73437">#73437</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/82840">#82840</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/74081">#74081</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/82173">#82173</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/78253">#78253</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/51126">#51126</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/46461">#46461</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/74032">#74032</a>.
+          Cross-ecosystem
+          <a href="https://github.com/openai/codex/issues/33479">openai/codex#33479</a>,
+          <a href="https://github.com/openai/codex/issues/37632">#37632</a>,
+          <a href="https://github.com/openai/codex/issues/34878">#34878</a>.
+        </p>
+      </section>
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Wicket (isolation pin vs actual isolation — opposite pole: Wicket is a leak; Clew is a choke).
+          NOT Scant (PATH truncation inside a shell snapshot).
+          NOT Sump (literal /dev/null LFS hooks).
+          NOT Cinch (silent partial folder mounts).
+          NOT Hasp (file lease / last-writer-wins).
+          NOT Sounder (missed background wakeup).
+          NOT leftover woodworking / millimetre-slider clones.
+          Different problem: did the deny-list coil cross 128KB and kill every Bash spawn?
+          Different UI: sail loft / rigger's bench. Fonts: Cinzel + Lora + Overpass Mono.
+          Different idle: <b>rove</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "rove";
+      const SLACK = ["fouled", "overcoiled", "choked", "jammed", "swollen", "cached", "globbed"];
+      const LINEAR = ["fouled", "choked", "jammed"];
+      const MAX_ARG = 131072;
+      const DEMO_ARG = 133837;
+
+      function emptyClew() {
+        return {
+          session: "", issue: null, source: "",
+          worktreeCount: 0, worktreeDenyCount: 0, baselineDenyCount: 0, totalDenyCount: 0,
+          largestArgBytes: 0, maxArgStrlen: MAX_ARG,
+          e2big: false, spawnFailed: false, sleepFailed: false, echoFailed: false, monitorFailed: false,
+          profileCached: false, prunedButNotRestarted: false, globExpandedPerFile: false,
+          ancestorExpanded: false, scored: false
+        };
+      }
+
+      function isIdle(row) {
+        return !(row.worktreeCount > 0) && !(row.worktreeDenyCount > 0) && !(row.totalDenyCount > 0) &&
+          !(row.largestArgBytes > 0) && !row.e2big && !row.spawnFailed && !row.sleepFailed &&
+          !row.echoFailed && !row.monitorFailed && !row.profileCached && !row.prunedButNotRestarted &&
+          !row.globExpandedPerFile && !row.ancestorExpanded;
+      }
+
+      function analyze(row) {
+        const maxArg = row.maxArgStrlen || MAX_ARG;
+        const argOver = row.largestArgBytes >= maxArg;
+        const baseline = row.baselineDenyCount > 0 ? row.baselineDenyCount : 160;
+        const ratio = row.worktreeCount > 0 ? row.worktreeDenyCount / row.worktreeCount : 0;
+        return {
+          fouledShape: row.e2big && row.sleepFailed && row.spawnFailed && argOver && row.worktreeCount >= 250,
+          overcoiledShape: row.worktreeCount >= 40 && row.worktreeDenyCount >= 2 * row.worktreeCount,
+          chokedShape: row.sleepFailed && row.echoFailed && row.monitorFailed && row.e2big,
+          twinnedShape: row.worktreeCount > 0 && ratio >= 1.8 && ratio <= 2.2,
+          swollenShape: row.totalDenyCount > baseline + 2 * row.worktreeCount,
+          jammedShape: argOver,
+          cachedShape: row.profileCached && row.prunedButNotRestarted,
+          globbedShape: row.globExpandedPerFile,
+          prunedShape: row.scored && row.worktreeCount === 0 && row.totalDenyCount > 0 &&
+            row.totalDenyCount <= baseline && !row.e2big && !row.spawnFailed && !row.sleepFailed &&
+            !argOver && !row.profileCached && !row.prunedButNotRestarted && !row.globExpandedPerFile,
+          roveHold: !row.spawnFailed && !row.sleepFailed && !row.e2big && row.largestArgBytes < maxArg
+        };
+      }
+
+      function classify(row) {
+        if (isIdle(row)) return IDLE_WORD;
+        const facts = analyze(row);
+        if (facts.fouledShape) return "fouled";
+        if (facts.overcoiledShape) return "overcoiled";
+        if (facts.chokedShape) return "choked";
+        if (facts.twinnedShape) return "twinned";
+        if (facts.swollenShape) return "swollen";
+        if (facts.jammedShape) return "jammed";
+        if (facts.cachedShape) return "cached";
+        if (facts.globbedShape) return "globbed";
+        if (facts.prunedShape) return "pruned";
+        if (facts.roveHold) return IDLE_WORD;
+        return IDLE_WORD;
+      }
+
+      function feedOf(kind) {
+        if (kind === "fouled") return "● Fouled · 261 worktrees · 524 worktree denies · 130.7KB single arg · E2BIG · even sleep 5 fails · primary #90569";
+        if (kind === "overcoiled") return "● Overcoiled · deny list grew two entries per registered worktree without bound";
+        if (kind === "choked") return "● Choked · every Bash spawn fails (sleep 5 / echo hello / monitor) with E2BIG";
+        if (kind === "twinned") return "● Twinned · ~2 deny entries per worktree (admin files under .git/worktrees/<id>/)";
+        if (kind === "swollen") return "● Swollen · deny count unbounded vs a fixed baseline (~160 baseline + 2×trees)";
+        if (kind === "jammed") return "● Jammed · single /bin/bash -c argument exceeds 128KB MAX_ARG_STRLEN";
+        if (kind === "pruned") return "● Pruned · worktrees removed + profile rebuilt · spawn lives again · cure path, not idle";
+        if (kind === "cached") return "● Cached · profile cached per session so prune without restart still fouls · macOS #82840 shape";
+        if (kind === "globbed") return "● Globbed · recursive deny globs expanded per-file into bwrap binds · #74081 shape";
+        return "● Rove · working-size clew · spawn lives · sheet reeved · idle word is rove";
+      }
+
+      function seedOf(name) {
+        const base = emptyClew();
+        if (name === "fouled") {
+          return Object.assign({}, base, {
+            session: "90569-fouled", issue: 90569, source: "anthropics/claude-code#90569", scored: true,
+            worktreeCount: 261, worktreeDenyCount: 524, baselineDenyCount: 160, totalDenyCount: 687,
+            largestArgBytes: DEMO_ARG, maxArgStrlen: MAX_ARG,
+            e2big: true, spawnFailed: true, sleepFailed: true, echoFailed: true, monitorFailed: true
+          });
+        }
+        if (name === "overcoiled") {
+          return Object.assign({}, base, {
+            session: "90569-overcoiled", issue: 90569, scored: true,
+            worktreeCount: 80, worktreeDenyCount: 160, baselineDenyCount: 160, totalDenyCount: 320,
+            largestArgBytes: 48000
+          });
+        }
+        if (name === "choked") {
+          return Object.assign({}, base, {
+            session: "90569-choked", issue: 90569, scored: true,
+            largestArgBytes: 120000, e2big: true, spawnFailed: true,
+            sleepFailed: true, echoFailed: true, monitorFailed: true
+          });
+        }
+        if (name === "twinned") {
+          return Object.assign({}, base, {
+            session: "90569-twinned", issue: 90569, scored: true,
+            worktreeCount: 8, worktreeDenyCount: 16, baselineDenyCount: 160, totalDenyCount: 176,
+            largestArgBytes: 12000
+          });
+        }
+        if (name === "swollen") {
+          return Object.assign({}, base, {
+            session: "90569-swollen", issue: 90569, scored: true,
+            worktreeCount: 10, worktreeDenyCount: 15, baselineDenyCount: 160, totalDenyCount: 400,
+            largestArgBytes: 24000
+          });
+        }
+        if (name === "jammed") {
+          return Object.assign({}, base, {
+            session: "51126-jammed", issue: 51126, scored: true,
+            largestArgBytes: 140000, e2big: true, spawnFailed: true
+          });
+        }
+        if (name === "pruned") {
+          return Object.assign({}, base, {
+            session: "90569-pruned", issue: 90569, scored: true,
+            baselineDenyCount: 160, totalDenyCount: 160, largestArgBytes: 4096
+          });
+        }
+        if (name === "cached") {
+          return Object.assign({}, base, {
+            session: "82840-cached", issue: 82840, scored: true,
+            largestArgBytes: 4096, e2big: true, spawnFailed: true, sleepFailed: true,
+            profileCached: true, prunedButNotRestarted: true
+          });
+        }
+        if (name === "globbed") {
+          return Object.assign({}, base, {
+            session: "74081-globbed", issue: 74081, scored: true,
+            largestArgBytes: 24000, e2big: true, spawnFailed: true, echoFailed: true,
+            globExpandedPerFile: true
+          });
+        }
+        if (name === "control") {
+          return Object.assign({}, base, {
+            session: "90569-control", scored: true,
+            worktreeCount: 2, worktreeDenyCount: 2, baselineDenyCount: 160, totalDenyCount: 162,
+            largestArgBytes: 8192
+          });
+        }
+        return Object.assign({}, base, { session: "rove", scored: true });
+      }
+
+      function parseTrace(text) {
+        const raw = String(text || "");
+        if (/261 worktrees|524 worktree den|130\.7KB|#90569/i.test(raw) && /E2BIG|sleep 5|fouled/i.test(raw)) return seedOf("fouled");
+        if (/two entries per registered worktree without bound|overcoiled/i.test(raw)) return seedOf("overcoiled");
+        if (/every Bash spawn fails|sleep 5 \/ echo hello \/ monitor/i.test(raw)) return seedOf("choked");
+        if (/~2 deny entries per worktree|\.git\/worktrees/i.test(raw)) return seedOf("twinned");
+        if (/unbounded vs a fixed baseline|~160 baseline/i.test(raw)) return seedOf("swollen");
+        if (/exceeds 128KB MAX_ARG_STRLEN|MAX_ARG_STRLEN/i.test(raw)) return seedOf("jammed");
+        if (/profile cached per session|#82840/i.test(raw)) return seedOf("cached");
+        if (/globs expanded per-file|#74081/i.test(raw)) return seedOf("globbed");
+        if (/worktrees removed \+ profile rebuilt|spawn lives again/i.test(raw)) return seedOf("pruned");
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") return Object.assign(emptyClew(), parsed, { scored: true });
+        } catch (e) { /* prose */ }
+        return seedOf("reset");
+      }
+
+      let clew = seedOf("fouled");
+
+      function render() {
+        const verdict = classify(clew);
+        const facts = analyze(clew);
+        const alarm = SLACK.indexOf(verdict) >= 0;
+        const die = document.getElementById("verdict-die");
+        document.getElementById("verdict-word").textContent = verdict;
+        die.className = "verdict-die" + (alarm ? " fail" : "");
+        const chip = document.getElementById("chip");
+        chip.innerHTML = "<b>" + verdict + "</b> · " + (verdict === IDLE_WORD ? "idle" : "coil");
+        chip.className = "chip" + (alarm ? " alarm" : " hold");
+        document.getElementById("feed").textContent = feedOf(verdict);
+        const fouledCoil = verdict === "fouled" || verdict === "jammed" || verdict === "choked";
+        const swelling = verdict === "overcoiled" || verdict === "swollen" || verdict === "twinned" || verdict === "globbed" || verdict === "cached";
+        document.getElementById("hemp-clew").className = "hemp-clew " + (fouledCoil ? "fouled-coil" : swelling ? "swelling" : "working");
+        document.getElementById("lignum-sheave").className = "lignum-sheave " + (alarm ? "jammed" : "free");
+        document.getElementById("loft-lantern").className = "loft-lantern " + (verdict === IDLE_WORD || verdict === "pruned" ? "live" : "dark");
+        document.getElementById("clew-host").textContent = fouledCoil
+          ? "ball past the load line · sheave will not pay"
+          : (verdict === IDLE_WORD ? "working-size coil · sheet reeved" : "coil growing toward 128KB");
+        document.getElementById("sheave-host").textContent = alarm
+          ? "jammed · no sheet pays"
+          : "free · sheet pays";
+        document.getElementById("lantern-host").textContent = verdict === IDLE_WORD || verdict === "pruned"
+          ? "line on · sheave free · spawn lives"
+          : "lantern down · spawn dead";
+        const tape = document.getElementById("coil-tape");
+        if (verdict === "fouled") {
+          tape.innerHTML = "<span class='coil-mark'>261 trees</span><span class='coil-mark'>130.7KB</span><span class='coil-mark gap'>E2BIG</span>";
+        } else if (verdict === "overcoiled") {
+          tape.innerHTML = "<span class='coil-mark'>2× trees</span><span class='coil-mark gap'>no bound</span>";
+        } else if (verdict === "choked") {
+          tape.innerHTML = "<span class='coil-mark gap'>sleep 5</span><span class='coil-mark gap'>echo</span><span class='coil-mark gap'>monitor</span>";
+        } else if (verdict === "pruned") {
+          tape.innerHTML = "<span class='coil-mark'>pruned</span><span class='coil-mark'>rebuilt</span><span class='coil-mark'>spawn lives</span>";
+        } else if (verdict === IDLE_WORD) {
+          tape.innerHTML = "<span class='coil-mark gap'>line on · sheave free</span>";
+        } else {
+          tape.innerHTML = "<span class='coil-mark gap'>" + verdict + "</span>";
+        }
+        const lines = [];
+        if (isIdle(clew) || verdict === "rove") {
+          lines.push("<li>line on · sheave free · working-size clew · idle word is rove<span class='dim'>hold</span></li>");
+        }
+        if (facts.fouledShape) lines.push("<li>261 worktrees · 524 worktree denies · 130.7KB · E2BIG · #90569<span class='dim'>fouled</span></li>");
+        if (facts.overcoiledShape && verdict === "overcoiled") lines.push("<li>two deny entries per worktree without bound<span class='dim'>overcoiled</span></li>");
+        if (facts.chokedShape && verdict === "choked") lines.push("<li>sleep 5 / echo hello / monitor all fail with E2BIG<span class='dim'>choked</span></li>");
+        if (facts.twinnedShape && verdict === "twinned") lines.push("<li>~2 deny entries per worktree<span class='dim'>twinned</span></li>");
+        if (facts.swollenShape && verdict === "swollen") lines.push("<li>deny count unbounded vs ~160 baseline + 2×trees<span class='dim'>swollen</span></li>");
+        if (facts.jammedShape && verdict === "jammed") lines.push("<li>single /bin/bash -c argument exceeds 128KB<span class='dim'>jammed</span></li>");
+        if (facts.prunedShape && verdict === "pruned") lines.push("<li>worktrees removed · profile rebuilt · spawn lives<span class='dim'>pruned</span></li>");
+        if (facts.cachedShape && verdict === "cached") lines.push("<li>profile cached · prune without restart still fouls · #82840<span class='dim'>cached</span></li>");
+        if (facts.globbedShape && verdict === "globbed") lines.push("<li>recursive deny globs expanded per-file · #74081<span class='dim'>globbed</span></li>");
+        document.getElementById("lines").innerHTML = lines.length ? lines.join("") : "<li>line on · sheave free · working-size clew · idle word is rove<span class='dim'>hold</span></li>";
+        document.getElementById("masked").textContent = "Masked view · trees " + (clew.worktreeCount || 0) + " · denies " + (clew.worktreeDenyCount || 0) + " · argv " + (clew.largestArgBytes || 0) + "B · e2big " + (clew.e2big ? "yes" : "no") + ". No secrets.";
+        document.getElementById("slack-ledger").textContent = alarm
+          ? "Would post to Slack: " + verdict + " coil alarm on the clew."
+          : "Would skip Slack. Clew is " + verdict + ".";
+        document.getElementById("linear-ledger").textContent = LINEAR.indexOf(verdict) >= 0
+          ? "Would open a Linear ticket: clew " + verdict + " · Clew · #" + (clew.issue || "90569") + "."
+          : "Would skip Linear. Verdict " + verdict + " is not fouled / choked / jammed.";
+        document.getElementById("github-ledger").textContent = "Would open a GitHub clew-ledger issue. Demo: no token. " + (clew.session || "session") + " · " + verdict + ".";
+        document.querySelectorAll(".yarn-bank button[data-seed]").forEach(function (btn) {
+          const seedName = btn.getAttribute("data-seed");
+          const pressed = seedName === "reset"
+            ? verdict === "rove" && isIdle(clew)
+            : seedName === "control"
+              ? verdict === "rove" && !isIdle(clew)
+              : classify(clew) === seedName;
+          btn.setAttribute("aria-pressed", pressed ? "true" : "false");
+        });
+      }
+
+      document.getElementById("btn-score").addEventListener("click", function () {
+        clew = Object.assign({}, clew, { scored: true });
+        render();
+      });
+      document.getElementById("btn-admit").addEventListener("click", function () {
+        clew = Object.assign({}, clew, { scored: true });
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", function () {
+        clew = seedOf("reset");
+        render();
+      });
+      document.getElementById("btn-restore").addEventListener("click", function () {
+        clew = seedOf("fouled");
+        render();
+      });
+      document.getElementById("btn-probe").addEventListener("click", function () {
+        const text = document.getElementById("paste").value || "";
+        clew = text.trim() ? parseTrace(text) : seedOf("fouled");
+        render();
+      });
+      document.querySelectorAll(".yarn-bank button[data-seed]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          clew = seedOf(btn.getAttribute("data-seed"));
+          render();
+        });
+      });
+      render();
+    </script>
+  </body>
+</html>

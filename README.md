@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Sounder](https://hermes-playground-green.vercel.app/sounder/)** — telegraph night desk. A completed waiter is not a hold. Score the sounder or admit keyed. Folder: `projects/sounder/`.
+**Featured: [Clew](https://hermes-playground-green.vercel.app/clew/)** — sail loft / rigger's bench. A working-size coil is not a hold. Score the clew or admit rove. Folder: `projects/clew/`.
+
+**Listed: [Sounder](https://hermes-playground-green.vercel.app/sounder/)** — telegraph night desk. A completed waiter is not a hold. Score the sounder or admit keyed. Folder: `projects/sounder/`. Still listed. Not featured.
 
 **Listed: [Binnacle](https://hermes-playground-green.vercel.app/binnacle/)** — ship's brass compass house. A named heading is not a hold. Score the binnacle or admit housed. Folder: `projects/binnacle/`. Still listed. Not featured.
 
@@ -102,10 +104,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                47 products: Sounder (featured), Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                48 products: Clew (featured), Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/sounder/           telegraph night desk for a completed background waiter whose notification never re-invokes the session (featured)
+projects/clew/              sail loft / rigger's bench for sandbox deny-list E2BIG at MAX_ARG_STRLEN (featured)
+projects/sounder/           telegraph night desk for a completed background waiter whose notification never re-invokes the session (kept, unfeatured)
 projects/binnacle/          ship's brass binnacle for TUI origin split after ANTHROPIC_BASE_URL is named (kept, unfeatured)
 projects/pirn/              weaver's pirn-winder bench for instruction-shaped idle_notification truncation (kept, unfeatured)
 projects/cotter/            machine-shop cotter-pin tray for poison-pill scheduled-task registry (kept, unfeatured)
@@ -152,8 +155,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-2250.md     Clew ship log (22:50 Sydney)
 runs/2026-08-29-2150.md     Sounder ship log (21:50 Sydney)
 runs/2026-08-29-2050.md     Binnacle ship log (20:50 Sydney)
 runs/2026-08-29-1850.md     Cotter ship log (18:50 Sydney)
@@ -202,6 +206,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Clew
+
+`projects/clew/` is a rigger's / sailmaker's clew desk for Claude Code Bash sandbox deny lists that wind two filesystem deny entries per registered git worktree onto a single `/bin/bash -c "<bwrap …>"` argument until Linux `MAX_ARG_STRLEN` (128 KB). Then every Bash spawn dies with E2BIG — including `sleep 5`. A working-size coil is not a hold. Score the clew or admit **rove**. Verdicts: **rove**, **fouled**, **overcoiled**, **choked**, **twinned**, **swollen**, **jammed**, **pruned**, **cached**, **globbed**. Slack alarm on fouled / overcoiled / choked / jammed / swollen / cached / globbed. Linear ticket on fouled / choked / jammed.
+
+Live path: https://hermes-playground-green.vercel.app/clew/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90569` fouled is already on the loft. Idle word is **rove**, not the product name, not empty. NOT Wicket (isolation leak — opposite pole). NOT Scant (PATH truncation). NOT Sump (literal /dev/null LFS). NOT Cinch (silent partial mounts). NOT Hasp (file lease). NOT Sounder (missed background wakeup). NOT leftover woodworking sliders. Different problem: deny list grows two entries per worktree → single bwrap argv crosses MAX_ARG_STRLEN → every Bash spawn dies with E2BIG. Different UI: sail loft. Hemp, tarred oak, brass thimble, lignum sheave, lantern, growing yarn ball toward a 128KB load line. Cinzel + Lora + Overpass Mono.
 
 ## Sounder
 
