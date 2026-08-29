@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Ullage](https://hermes-playground-green.vercel.app/ullage/)** — cooper's gauging desk. A missing compaction ticket is not a hold. Score the cask or admit gauged. Folder: `projects/ullage/`.
+**Featured: [Cinch](https://hermes-playground-green.vercel.app/cinch/)** — saddler's cinch desk. A trusted folder list is not a hold. Score the girth or admit cinched. Folder: `projects/cinch/`.
+
+**Listed: [Ullage](https://hermes-playground-green.vercel.app/ullage/)** — cooper's gauging desk. A missing compaction ticket is not a hold. Score the cask or admit gauged. Folder: `projects/ullage/`. Still listed. Not featured.
 
 **Listed: [Visa](https://hermes-playground-green.vercel.app/visa/)** — passport desk. A login without a destination is not a hold. Score the border or admit stamped. Folder: `projects/visa/`. Still listed. Not featured.
 
@@ -88,10 +90,12 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                39 products: Visa (featured), Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                41 products: Cinch (featured), Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/visa/              passport-control / visa-stamp desk for MCP OAuth missing resource (featured)
+projects/cinch/             saddler's / packer's cinch desk for silent partial mounts (featured)
+projects/ullage/            cooper's gauging desk for silent context ullage (kept, unfeatured)
+projects/visa/              passport-control / visa-stamp desk for MCP OAuth missing resource (kept, unfeatured)
 projects/sprag/             overrunning-clutch bench for boot-cached MCP attach failure (kept, unfeatured)
 projects/lazaret/           lazaretto / yellow-jack / pratique desk for unattended malware-reminder refusals (kept, unfeatured)
 projects/fusee/             clockmaker's fusee / conical-pulley desk for early schedule dispatch (kept, unfeatured)
@@ -130,8 +134,10 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-cinch.md    Cinch ship log (15:50 Sydney)
+runs/2026-08-29-ullage.md   Ullage ship log (14:50 Sydney)
 runs/2026-08-29-visa.md     Visa ship log (13:50 Sydney)
 runs/2026-08-29-sprag.md    Sprag ship log (12:50 Sydney)
 runs/2026-08-29-lazaret.md  Lazaret ship log (11:50 Sydney)
@@ -173,6 +179,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Cinch
+
+`projects/cinch/` is a saddler's / packer's cinch desk for Claude Code Cowork scheduled tasks that silently drop a subset of already-trusted folders. A written Trusted-folders list is not a hold. Score the girth or admit **cinched**. Verdicts: **cinched**, **slipped**, **dropped**, **phantom**, **omitted**, **partial**, **trusted**, **loose**, **delivered**, **halted**. Slack alarm on slipped / dropped / omitted / delivered / phantom / loose. Linear ticket when omitted or delivered.
+
+Live path: https://hermes-playground-green.vercel.app/cinch/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90506` omitted (incident 3) is already on the slate. Idle word is **cinched**, not the product name, not mount. NOT Fusee (early schedule dispatch). NOT Wicket (worktree isolation). NOT Larder (plugin-store freeze). NOT Hasp (file lease). NOT Sprag (boot-cached MCP). NOT Ullage / Visa / leftover woodworking sliders. Different problem: unstable mount set on an otherwise-fired run. A surviving leaf is not a hold. Different UI: night saddlery / tack room. Leather cinch, brass buckle, strap holes, oil-lamp amber, bridle hooks. Spectral + Nunito Sans.
 
 ## Visa
 
@@ -491,6 +505,8 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/cinch/` → `projects/cinch/`
+- `/ullage/` → `projects/ullage/`
 - `/visa/` → `projects/visa/`
 - `/sprag/` → `projects/sprag/`
 - `/lazaret/` → `projects/lazaret/`
