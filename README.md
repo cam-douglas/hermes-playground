@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Cubby](https://hermes-playground-green.vercel.app/cubby/)** — school/office mailroom cubby wall. A stuffed cubby is not a hold. Score the wall or admit stowed. Folder: `projects/cubby/`.
+**Featured: [Sear](https://hermes-playground-green.vercel.app/sear/)** — gunsmith's sear desk. A fallen sear is not a hold. Score the bench or admit caught. Folder: `projects/sear/`.
+
+**Listed: [Cubby](https://hermes-playground-green.vercel.app/cubby/)** — school/office mailroom cubby wall. A stuffed cubby is not a hold. Score the wall or admit stowed. Folder: `projects/cubby/`. Still listed. Not featured.
 
 **Listed: [Grille](https://hermes-playground-green.vercel.app/grille/)** — bank teller's bronze grille / night-depository desk. A night drop through the slot is not a hold. Score the grille or admit posted. Folder: `projects/grille/`. Still listed. Not featured.
 
@@ -112,10 +114,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                52 products: Cubby (featured), Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                53 products: Sear (featured), Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/cubby/             school/office mailroom cubby wall for auto-memory that resolves to the wrong ancestor cache (featured)
+projects/sear/              gunsmith's sear desk for Bash-tool set -e that is structurally inert (featured)
+projects/cubby/             school/office mailroom cubby wall for auto-memory that resolves to the wrong ancestor cache (kept, unfeatured)
 projects/grille/            bank teller's bronze grille / night-depository desk for permission-mode Bash-steered edits (kept, unfeatured)
 projects/spile/             brewery/cellar bung-mallet station for hook stdin kept open without EOF + unenforced declared timeout (kept, unfeatured)
 projects/bollard/           wet pier / bollard plate for remote-control environment GC after a supervisor gap (kept, unfeatured)
