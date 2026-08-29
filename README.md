@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Leat](https://hermes-playground-green.vercel.app/leat/)** — mill leat. A blocked sleep is not a hold. Score the race or admit stilled. Folder: `projects/leat/`.
+**Featured: [Iota](https://hermes-playground-green.vercel.app/iota/)** — typesetter's type-case. A second casing is not a plot. Score the keys or admit bound. Folder: `projects/iota/`.
+
+**Listed: [Leat](https://hermes-playground-green.vercel.app/leat/)** — mill leat. A blocked sleep is not a hold. Score the race or admit stilled. Folder: `projects/leat/`. Still listed. Not featured.
 
 **Listed: [Shunt](https://hermes-playground-green.vercel.app/shunt/)** — night railway yard. A first delivery is not a hold. Score the road or admit stabled. Folder: `projects/shunt/`. Still listed. Not featured.
 
@@ -76,10 +78,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                34 products: Leat (featured), Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                35 products: Iota (featured), Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/leat/              mill leat / sluice-gate desk for Bash-tool sleep-block unbounded until-loop (featured)
+projects/iota/              typesetter's upper/lower type-case desk for Windows project-path identity (featured)
+projects/leat/              mill leat / sluice-gate desk for Bash-tool sleep-block unbounded until-loop (kept, unfeatured)
 projects/shunt/             night railway shunting yard / signal-box desk for nested SendMessage follow-up misroute to root (kept, unfeatured)
 projects/sump/              basement catch-pit / wet-concrete desk for worktree LFS hooks written to a literal dev/null/ (kept, unfeatured)
 projects/pleat/             tailor's pressing board / accordion-pleat desk for desktop mid-turn fold collapse (kept, unfeatured)
@@ -113,8 +116,10 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-iota.md     Iota ship log (09:50 Sydney)
+runs/2026-08-29-leat.md     Leat ship log (08:50 Sydney)
 runs/2026-08-29-shunt.md    Shunt ship log (07:50 Sydney)
 runs/2026-08-29-sump.md     Sump ship log (06:50 Sydney)
 runs/2026-08-29-pleat.md    Pleat ship log (05:50 Sydney)
@@ -150,6 +155,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Iota
+
+`projects/iota/` is a typesetter's upper/lower type-case desk for Claude Code Windows project-path identity. Two JSON keys that differ only in case (or slash direction) address the same directory. PowerShell `ConvertFrom-Json` throws `DuplicateKeysInJsonString`. `claude mcp add -s local` keys by the launching shell's cwd string, so the server is silently absent. A second casing is not a plot. Score the keys or admit **bound**. Verdicts: **bound**, **split**, **twinned**, **hidden**, **unparseable**, **dropped**, **mixed**, **open**, **aliased**, **true**. Slack iota alarm on split / twinned / hidden / unparseable / dropped / mixed / aliased. Linear ticket on split / twinned / unparseable / dropped.
+
+Live path: https://hermes-playground-green.vercel.app/iota/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90438` split is already on the case. Idle word is **bound**, not the product name, not empty. NOT Reed (MCP contacts). NOT Gasket (strictAllowlist discard). NOT Larder (plugin-store freeze). NOT Leat (until-loop). NOT Husk (hollow success). NOT leftover woodworking sliders. Different problem: one physical directory, many case/slash spellings used as case-sensitive JSON keys. Different UI: typesetter's type-case, two drawers for one sort, composing stick, proof sheet, ink, lead, oak.
 
 ## How a project lives
 
@@ -428,6 +441,8 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/iota/` → `projects/iota/`
+- `/leat/` → `projects/leat/`
 - `/shunt/` → `projects/shunt/`
 - `/sump/` → `projects/sump/`
 - `/pleat/` → `projects/pleat/`

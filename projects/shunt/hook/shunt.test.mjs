@@ -790,12 +790,12 @@ test("49 adapters stay honest when env is empty — never a fake live HTTP 200",
   assert.ok(fired.events.every((row) => !/HTTP 200/.test(row.summary)));
 });
 
-test("50 catalog wiring: 34 products, Leat featured, Shunt and Sump listed", () => {
+test("50 catalog wiring: 35 products, Iota featured, Shunt and Sump listed", () => {
   const catalog = JSON.parse(readFileSync(fileURLToPath(new URL("../../../catalog.json", import.meta.url)), "utf8"));
-  assert.equal(catalog.products.length, 34);
+  assert.equal(catalog.products.length, 35);
   const featured = catalog.products.filter((row) => row.featured);
   assert.equal(featured.length, 1);
-  assert.equal(featured[0].name, "Leat");
+  assert.equal(featured[0].name, "Iota");
   const shunt = catalog.products.find((row) => row.slug === "shunt");
   assert.ok(shunt);
   assert.equal(shunt.featured, false);
@@ -813,8 +813,8 @@ test("50 catalog wiring: 34 products, Leat featured, Shunt and Sump listed", () 
   assert.ok(scant);
   assert.equal(scant.featured, false);
   const slugs = catalog.products.map((row) => row.slug);
-  assert.equal(slugs[0], "leat");
-  assert.equal(slugs[1], "shunt");
+  assert.equal(slugs[0], "iota");
+  assert.equal(slugs[1], "leat");
   assert.ok(slugs.includes("pleat"));
   assert.ok(slugs.includes("scant"));
   assert.ok(slugs.includes("wicket"));
@@ -827,21 +827,21 @@ test("50 catalog wiring: 34 products, Leat featured, Shunt and Sump listed", () 
 test("51 vercel rewrite order puts /shunt before /sump, /pleat and the slug fallback", () => {
   const vercel = JSON.parse(readFileSync(fileURLToPath(new URL("../../../vercel.json", import.meta.url)), "utf8"));
   const sources = vercel.rewrites.map((row) => row.source);
-  assert.equal(sources[0], "/leat");
-  assert.equal(sources[1], "/leat/");
-  assert.equal(sources[2], "/shunt");
-  assert.equal(sources[3], "/shunt/");
+  assert.equal(sources[0], "/iota");
+  assert.equal(sources[1], "/iota/");
+  assert.equal(sources[2], "/leat");
+  assert.equal(sources[3], "/leat/");
   assert.ok(sources.includes("/pleat"));
   assert.ok(sources.includes("/scant"));
   assert.ok(sources.includes("/:slug"));
-  assert.ok(sources.indexOf("/leat") < sources.indexOf("/shunt"));
+  assert.ok(sources.indexOf("/iota") < sources.indexOf("/leat"));
   assert.ok(sources.indexOf("/shunt") < sources.indexOf("/sump"));
   assert.ok(sources.indexOf("/shunt/") < sources.indexOf("/:slug"));
 });
 
-test("52 hours.json keeps the 07:50 Sydney Shunt ship after Leat", () => {
+test("52 hours.json keeps the 07:50 Sydney Shunt ship after Iota and Leat", () => {
   const hours = JSON.parse(readFileSync(fileURLToPath(new URL("../../../runs/hours.json", import.meta.url)), "utf8"));
-  assert.equal(hours[0].stem, "2026-08-29-leat");
+  assert.equal(hours[0].stem, "2026-08-29-iota");
   const shunt = hours.find((row) => row.stem === "2026-08-29-shunt");
   assert.ok(shunt);
   assert.equal(shunt.date, "2026-08-29");
@@ -852,7 +852,7 @@ test("52 hours.json keeps the 07:50 Sydney Shunt ship after Leat", () => {
   assert.match(shunt.note, /stabled/);
   assert.match(shunt.note, /Sump/);
   assert.match(shunt.note, /Pleat/);
-  assert.equal(hours[1].stem, "2026-08-29-shunt");
+  assert.equal(hours[2].stem, "2026-08-29-shunt");
 });
 
 test("53 clusterOf on #90463 includes rootbound typecast stalled sidetracked dropped orphaned", () => {
