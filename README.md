@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Visa](https://hermes-playground-green.vercel.app/visa/)** — passport desk. A login without a destination is not a hold. Score the border or admit stamped. Folder: `projects/visa/`.
+**Featured: [Ullage](https://hermes-playground-green.vercel.app/ullage/)** — cooper's gauging desk. A missing compaction ticket is not a hold. Score the cask or admit gauged. Folder: `projects/ullage/`.
+
+**Listed: [Visa](https://hermes-playground-green.vercel.app/visa/)** — passport desk. A login without a destination is not a hold. Score the border or admit stamped. Folder: `projects/visa/`. Still listed. Not featured.
 
 **Listed: [Sprag](https://hermes-playground-green.vercel.app/sprag/)** — overrunning clutch. A failed attach at boot is not a hold. Score the race or admit overrun. Folder: `projects/sprag/`. Still listed. Not featured.
 
