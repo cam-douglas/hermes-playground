@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Spile — cooper's bung-mallet station for Claude Code hook stdin kept open without EOF. An open spile is not a hold. Idle word is bunged."
+    />
+    <title>Spile — bung-mallet station</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Calistoga&family=Commissioner:ital,wght@0,400;0,600;1,400&family=Inconsolata:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --oak: #5a3a1c;
+        --oak-lit: #8a5a2a;
+        --stave: #3a2412;
+        --cellar: #120c08;
+        --amber: #e8a040;
+        --malt: #f0c878;
+        --brass: #c4a050;
+        --brass-lit: #e8c868;
+        --bung: #6a3a14;
+        --drip: #c45a28;
+        --copy: #f4e8d0;
+        --mute: #a89070;
+        --head: "Calistoga", "Palatino Linotype", Palatino, serif;
+        --body: "Commissioner", "Gill Sans", "Trebuchet MS", sans-serif;
+        --mono: "Inconsolata", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          radial-gradient(ellipse 28% 22% at 72% 8%, rgba(232, 160, 64, 0.22), transparent 64%),
+          radial-gradient(ellipse 36% 30% at 18% 92%, rgba(90, 40, 12, 0.28), transparent 62%),
+          linear-gradient(180deg, #1a1008 0%, var(--cellar) 46%, #0a0806 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--amber); }
+      .bung-station {
+        width: min(1140px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 18px 0 80px;
+      }
+      .cellar-rail {
+        height: 12px;
+        margin: 0 0 16px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #2a1a0c 0 18px,
+            #4a3018 18px 22px,
+            #1a1008 22px 40px
+          );
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--brass-lit);
+      }
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 22px;
+        margin: 8px 0 18px;
+      }
+      h1 {
+        margin: 0;
+        font-family: var(--head);
+        font-size: clamp(56px, 11vw, 104px);
+        font-weight: 400;
+        line-height: 0.84;
+        color: var(--malt);
+        text-shadow: 0 3px 0 #0a0604;
+      }
+      .lede {
+        max-width: 38ch;
+        margin: 0;
+        color: var(--copy);
+        font-size: 17px;
+        line-height: 1.5;
+      }
+      .barrel-head {
+        position: relative;
+        margin: 0 0 18px;
+        padding: 36px 16px 20px;
+        background:
+          radial-gradient(circle at 50% 46%, #6a4420 0 38%, #3a2412 62%, #1a1008 100%);
+        border: 12px solid #2a1c10;
+        box-shadow:
+          inset 0 0 0 4px #8a6a38,
+          inset 0 0 0 8px #4a3018,
+          0 28px 50px rgba(0, 0, 0, 0.55);
+      }
+      .barrel-head::before {
+        content: "SPILE · CELLAR TAP NO. 50 · BUNG STATION";
+        position: absolute;
+        top: 10px;
+        left: 16px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        color: rgba(244, 232, 208, 0.4);
+      }
+      .stave-hoop,
+      .hoop-band {
+        position: absolute;
+        left: 6%;
+        right: 6%;
+        height: 8px;
+        background: linear-gradient(90deg, #6a5020, var(--brass), #6a5020);
+        box-shadow: 0 2px 0 #1a1008;
+      }
+      .stave-hoop { top: 28px; }
+      .hoop-band { bottom: 14px; }
+      .bench-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+        align-items: stretch;
+        padding-top: 10px;
+      }
+      @media (max-width: 820px) {
+        .bench-row { grid-template-columns: 1fr; }
+        .mast { flex-direction: column; align-items: start; }
+      }
+      .wooden-bung, .brass-spile, .bung-mallet {
+        min-height: 248px;
+        padding: 14px;
+        border: 2px solid #8a6a38;
+        background: rgba(12, 8, 6, 0.78);
+        position: relative;
+      }
+      .card-kicker {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass-lit);
+      }
+      .plate {
+        margin: 8px 0 0;
+        font-family: var(--head);
+        font-size: 22px;
+        letter-spacing: 0.03em;
+      }
+      .host {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .bung-hole {
+        width: 78px;
+        height: 78px;
+        margin: 20px auto 0;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 40% 32%, #2a160c, #0a0604 62%);
+        box-shadow:
+          inset 0 0 0 8px var(--bung),
+          0 0 0 3px #1a1008;
+        position: relative;
+        transition: transform 0.35s ease, box-shadow 0.35s ease, opacity 0.35s ease;
+      }
+      .bung-hole::after {
+        content: "";
+        position: absolute;
+        inset: 22px;
+        border-radius: 50%;
+        background: #1a0c06;
+      }
+      .wooden-bung.seated .bung-hole {
+        box-shadow: inset 0 0 0 8px #8a5a28, 0 0 0 3px var(--brass);
+      }
+      .wooden-bung.seated .bung-hole::after {
+        background: linear-gradient(160deg, #a86a30, #5a3010);
+      }
+      .wooden-bung.drawn .bung-hole {
+        opacity: 0.95;
+        transform: scale(1.04);
+        box-shadow: inset 0 0 0 8px var(--drip), 0 0 16px rgba(196, 90, 40, 0.35);
+      }
+      .wooden-bung.wedged .bung-hole {
+        animation: weep 1.8s ease-in-out infinite;
+      }
+      @keyframes weep {
+        50% { box-shadow: inset 0 0 0 8px var(--drip), 0 0 22px rgba(196, 90, 40, 0.55); }
+      }
+      .spile-peg {
+        width: 16px;
+        height: 72px;
+        margin: 20px auto 0;
+        border-radius: 6px 6px 3px 3px;
+        background:
+          linear-gradient(90deg, #8a6a28, var(--brass-lit) 40%, #6a5018);
+        box-shadow: 2px 8px 0 #1a1008;
+        transform-origin: 50% 100%;
+        transition: transform 0.35s ease, filter 0.35s ease;
+      }
+      .brass-spile.seated .spile-peg { transform: none; }
+      .brass-spile.open .spile-peg { transform: rotate(-28deg) translateX(8px); filter: saturate(0.7); }
+      .brass-spile.draining .spile-peg {
+        transform: rotate(-48deg) translateX(14px);
+        filter: grayscale(0.2) saturate(0.8);
+      }
+      .mallet-head {
+        width: 64px;
+        height: 40px;
+        margin: 22px auto 0;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #8a5a28, #4a2a10);
+        box-shadow: inset 0 0 0 2px #2a1808, 0 8px 0 #1a1008;
+        position: relative;
+      }
+      .mallet-head::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 100%;
+        width: 10px;
+        height: 36px;
+        margin-left: -5px;
+        background: linear-gradient(90deg, #6a4a20, #c4a060);
+      }
+      .bung-mallet.ready .mallet-head { transform: none; }
+      .bung-mallet.raised .mallet-head { transform: rotate(-18deg); }
+      .bung-mallet.struck .mallet-head { transform: rotate(12deg) translateY(6px); }
+      .drip-tray {
+        width: 56px;
+        height: 10px;
+        margin: 18px auto 0;
+        border-radius: 0 0 10px 10px;
+        background: #2a1c10;
+        box-shadow: inset 0 -2px 0 #8a6a38;
+        position: relative;
+      }
+      .drip-tray.wet::after {
+        content: "";
+        position: absolute;
+        left: 46%;
+        top: -14px;
+        width: 5px;
+        height: 14px;
+        background: var(--drip);
+        border-radius: 40%;
+        animation: drip 1.2s ease-in infinite;
+      }
+      @keyframes drip {
+        70% { transform: translateY(4px); opacity: 1; }
+        100% { transform: translateY(10px); opacity: 0; }
+      }
+      .fuse-lamp {
+        width: 20px;
+        height: 34px;
+        margin: 16px auto 0;
+        border-radius: 50% 50% 36% 36%;
+        background: radial-gradient(circle at 40% 30%, #fff4c8, var(--malt) 40%, var(--amber));
+        box-shadow: 0 0 22px rgba(232, 160, 64, 0.55);
+      }
+      .bung-mallet.dark .fuse-lamp,
+      .timeout-dark .fuse-lamp {
+        background: #2a1c10;
+        box-shadow: none;
+      }
+      .malt-glow {
+        width: 40px;
+        height: 8px;
+        margin: 14px auto 0;
+        background: linear-gradient(90deg, transparent, rgba(240, 200, 120, 0.4), transparent);
+      }
+      .coil-tape {
+        margin-top: 14px;
+        min-height: 48px;
+        padding: 10px 12px;
+        background: linear-gradient(180deg, #e8d8b0, #c8b080);
+        color: #1a1008;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.03em;
+        border: 1px solid #8a6a38;
+      }
+      .coil-mark {
+        display: inline-block;
+        margin-right: 10px;
+        padding: 0 4px;
+        border-bottom: 2px solid #1a1008;
+      }
+      .coil-mark.gap { border-bottom-style: dashed; color: #5a4020; }
+      .board-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.95fr) minmax(0, 0.95fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) {
+        .board-row { grid-template-columns: 1fr; }
+      }
+      .tap-slate, .cellar-keys, .tap-intake {
+        border: 1px solid rgba(196, 160, 80, 0.28);
+        background: rgba(12, 8, 6, 0.84);
+        padding: 14px;
+      }
+      .tap-slate h2, .cellar-keys h2, .tap-intake h2 {
+        margin: 0 0 10px;
+        font-family: var(--head);
+        font-size: 20px;
+        letter-spacing: 0.03em;
+      }
+      .verdict-die .word {
+        font-family: var(--head);
+        font-size: clamp(36px, 7vw, 56px);
+        line-height: 0.9;
+      }
+      .verdict-die.fail .word { color: var(--drip); }
+      .chip {
+        display: inline-block;
+        margin: 8px 0;
+        padding: 4px 8px;
+        border: 1px solid #8a6a38;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .chip.alarm { color: #ffd2c8; border-color: var(--drip); }
+      .chip.hold { color: #e8f0c8; border-color: var(--brass); }
+      .feed { margin: 0 0 10px; color: var(--malt); }
+      .lines { margin: 0; padding-left: 18px; color: var(--copy); }
+      .lines .dim { float: right; color: var(--mute); font-family: var(--mono); font-size: 11px; }
+      .wind-keys, .yarn-bank {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .wind-keys button, .yarn-bank button, .tap-intake button {
+        border: 1px solid #8a6a38;
+        background: #1a1008;
+        color: var(--malt);
+        padding: 7px 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .wind-keys button.primary { background: #3a2810; border-color: var(--brass); }
+      .wind-keys button.warn { background: #4a1c10; border-color: var(--drip); }
+      .yarn-bank button[aria-pressed="true"] {
+        background: var(--amber);
+        color: #1a1008;
+      }
+      .paste {
+        width: 100%;
+        min-height: 110px;
+        resize: vertical;
+        border: 1px solid #8a6a38;
+        background: #0a0806;
+        color: var(--malt);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 8px;
+      }
+      .masked {
+        margin-top: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .integrations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 18px;
+      }
+      @media (max-width: 860px) {
+        .integrations { grid-template-columns: 1fr; }
+      }
+      .integrations article {
+        border: 1px solid rgba(196, 160, 80, 0.24);
+        padding: 10px;
+        font-size: 14px;
+        background: rgba(12, 8, 6, 0.72);
+      }
+      .integrations h3 {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass-lit);
+      }
+      .ledger-line {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--malt);
+      }
+      .brief, .why {
+        margin-top: 22px;
+        color: var(--copy);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      .brief h2, .why h2 {
+        margin: 0 0 8px;
+        font-family: var(--head);
+        font-size: 22px;
+        color: var(--malt);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bung-station">
+      <div class="cellar-rail" aria-hidden="true"></div>
+      <p class="mark">00:50 Sydney · spile</p>
+      <div class="mast">
+        <h1>Spile</h1>
+        <p class="lede">
+          An open spile is not a hold. Score the tap or admit
+          <b>bunged</b>. The cooper's bung reseats the barrel.
+          Leave it out and the cellar drains for hours.
+        </p>
+      </div>
+      <div class="barrel-head" id="barrel-head" aria-label="Cooper bung-mallet station">
+        <div class="stave-hoop" aria-hidden="true"></div>
+        <div class="hoop-band" aria-hidden="true"></div>
+        <div class="bench-row">
+          <section class="wooden-bung wedged" id="wooden-bung">
+            <div class="card-kicker">WOODEN BUNG</div>
+            <div class="plate">hole</div>
+            <p class="host" id="bung-host">drawn · pipe open no EOF</p>
+            <div class="bung-hole" aria-hidden="true"></div>
+            <div class="drip-tray wet" id="drip-tray" aria-hidden="true"></div>
+          </section>
+          <section class="brass-spile draining" id="brass-spile">
+            <div class="card-kicker">BRASS SPILE</div>
+            <div class="plate">tap</div>
+            <p class="host" id="spile-host">out · 8h drain</p>
+            <div class="spile-peg" aria-hidden="true"></div>
+            <div class="coil-tape" id="coil-tape" aria-label="Tap tape">
+              <span class="coil-mark">28800s</span>
+              <span class="coil-mark gap">timeout 5</span>
+            </div>
+          </section>
+          <section class="bung-mallet raised timeout-dark" id="bung-mallet">
+            <div class="card-kicker">MALLET + FUSE</div>
+            <div class="plate">timeout</div>
+            <p class="host" id="mallet-host">fuse dark · declared 5s ignored</p>
+            <div class="mallet-head" aria-hidden="true"></div>
+            <div class="fuse-lamp" aria-hidden="true"></div>
+            <div class="malt-glow" aria-hidden="true"></div>
+          </section>
+        </div>
+      </div>
+      <div class="board-row">
+        <section class="tap-slate">
+          <h2>Tap slate</h2>
+          <div id="verdict-die" class="verdict-die">
+            <div class="word" id="verdict-word">bunged</div>
+          </div>
+          <p id="chip" class="chip hold"><b>bunged</b> · idle</p>
+          <p id="feed" class="feed">● Bunged · spile seated · idle word is bunged</p>
+          <ol class="lines" id="lines"></ol>
+        </section>
+        <aside class="cellar-keys">
+          <h2>Cellar keys</h2>
+          <div class="wind-keys">
+            <button class="primary" type="button" id="btn-score">Score</button>
+            <button type="button" id="btn-admit">Admit bunged</button>
+            <button type="button" id="btn-reset">Reset · bunged</button>
+            <button class="warn" type="button" id="btn-restore">Restore · #90585</button>
+          </div>
+          <div class="yarn-bank">
+            <button type="button" data-seed="wedge" aria-pressed="true">Seed #90585 wedge</button>
+            <button type="button" data-seed="open-pipe">open-pipe</button>
+            <button type="button" data-seed="no-eof">no-eof</button>
+            <button type="button" data-seed="timeout-ignored">timeout-ignored</button>
+            <button type="button" data-seed="hours-held">hours-held</button>
+            <button type="button" data-seed="script-alive">script-alive</button>
+            <button type="button" data-seed="parent-blind">parent-blind</button>
+            <button type="button" data-seed="unretracted">unretracted</button>
+            <button type="button" data-seed="self-timeout">self-timeout</button>
+            <button type="button" data-seed="control">control bunged</button>
+            <button type="button" data-seed="reset">Reset · bunged</button>
+            <button type="button" data-seed="wedge">Restore · #90585</button>
+          </div>
+        </aside>
+        <aside class="tap-intake">
+          <h2>Tap intake</h2>
+          <label class="mark" for="paste" style="display:block;margin-bottom:8px;color:#a89070">Paste a hook-stdin probe. Score the tap, not the script.</label>
+          <textarea id="paste" class="paste" placeholder='{"pipeOpen":true,"eofDelivered":false,"declaredTimeoutSec":5,"observedBlockSec":28800}'></textarea>
+          <button type="button" id="btn-probe" class="primary">Score tap</button>
+          <p class="masked" id="masked">Masked view · pipe, eof, timeout. No secrets.</p>
+        </aside>
+      </div>
+      <div class="integrations">
+        <article>
+          <h3>Slack alarm</h3>
+          <p class="ledger-line" id="slack-ledger">Would post to Slack: wedge tap alarm on the spile.</p>
+        </article>
+        <article>
+          <h3>Linear ticket</h3>
+          <p class="ledger-line" id="linear-ledger">Would open a Linear ticket: spile wedge · Spile · #90585.</p>
+        </article>
+        <article>
+          <h3>GitHub spile-ledger</h3>
+          <p class="ledger-line" id="github-ledger">Would open a GitHub spile-ledger issue. Demo: no token.</p>
+        </article>
+      </div>
+      <section class="brief">
+        <h2>Thesis</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90585">anthropics/claude-code#90585</a>:
+          when Claude Code keeps a hook's stdin pipe open <b>without EOF</b>,
+          the hook's unbounded stdin read blocks for as long as the pipe
+          stays open (measured hours). Declared
+          <code>"timeout": 5</code> was not enforced (8h &gt;&gt; 5s).
+          Twice in one day: a turn ended while two Bash
+          <code>run_in_background</code> tasks were still running;
+          completion notifications never arrived; the session froze on a
+          hook <code>statusMessage</code>. Freezes lasted ~8h and ~1.5h
+          until interrupt/restart. Probe:
+          <code>time sh hook.sh &lt; &lt;(sleep 6)</code> → 6.003s;
+          with EOF → 0.052s. Mitigation:
+          <code>timeout 2 dd …</code> → 2.043s against a 30s-open pipe.
+          Same-class
+          <a href="https://github.com/anthropics/claude-code/issues/87289">#87289</a>
+          (timeout does not apply while blocked on stdin, ~300s),
+          <a href="https://github.com/anthropics/claude-code/issues/85250">#85250</a>
+          (timeout not enforced parent-side),
+          <a href="https://github.com/anthropics/claude-code/issues/78756">#78756</a>
+          (Windows client never closes hook stdin).
+          Nearby shape only
+          <a href="https://github.com/anthropics/claude-code/issues/48009">#48009</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/38162">#38162</a>
+          (empty stdin — different pole).
+          Cross-ecosystem
+          <a href="https://github.com/openai/codex/issues/27550">openai/codex#27550</a>
+          (hook stdin write happens outside the per-hook timeout).
+          The product scores the tap. An open spile is not a hold.
+        </p>
+      </section>
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Sounder (missed background Bash completion notification — Spile is hook stdin pipe kept open without EOF + unenforced declared timeout).
+          NOT Tappet (silent hook injection / valve-train spawn — Spile is stdin EOF / timeout enforcement on an already-declared hook).
+          NOT Quench (circuit breaker).
+          NOT Leat (sleep blocked unbounded until).
+          NOT Ullage (silent context drop / cooper cellar-gauge desk — Spile is cooper bung/tap; hero is the bung hole and mallet, not a cellar gauge).
+          NOT Bollard.
+          NOT Clew.
+          NOT Binnacle / Pirn / Cotter / Fob / leftover woodworking / millimetre-slider clones.
+          NOT Bung / Deadman / Petcock / Flume / Sluice / Lanyard / Dashpot / Watchdog. Product name is Spile only. Idle word is <b>bunged</b>.
+          Different problem: hook stdin pipe open (no EOF) + declared timeout not enforced parent-side → session wedge for hours.
+          Different UI: brewery/cellar bung-mallet station. Oak barrel head, brass spile, wooden bung, mallet, drip tray, timeout fuse lamp. Fonts: Calistoga + Commissioner + Inconsolata.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "bunged";
+      const SLACK = ["wedge", "hours-held", "timeout-ignored", "open-pipe", "no-eof", "script-alive", "parent-blind", "unretracted"];
+      const LINEAR = ["wedge", "hours-held", "timeout-ignored", "open-pipe"];
+
+      function emptySpile() {
+        return {
+          session: "", issue: null, source: "",
+          pipeOpen: false, eofDelivered: false,
+          declaredTimeoutSec: 0, observedBlockSec: 0,
+          hookStillAlive: false, parentEnforcedTimeout: true,
+          statusMessageStuck: false, notificationsHeld: false,
+          selfTimeoutWrapped: false, scored: false
+        };
+      }
+
+      function isIdle(row) {
+        return !row.pipeOpen && !row.eofDelivered && !(row.declaredTimeoutSec > 0) &&
+          !(row.observedBlockSec > 0) && !row.hookStillAlive &&
+          row.parentEnforcedTimeout !== false && !row.statusMessageStuck &&
+          !row.notificationsHeld && !row.selfTimeoutWrapped;
+      }
+
+      function analyze(row) {
+        const observed = Number(row.observedBlockSec) || 0;
+        const declared = Number(row.declaredTimeoutSec) || 0;
+        const hoursScale = observed >= 5400;
+        const timeoutExceeded = declared > 0 && observed > declared && row.parentEnforcedTimeout !== true;
+        const wedgeShape = row.pipeOpen && !row.eofDelivered && hoursScale && timeoutExceeded &&
+          (row.statusMessageStuck || row.notificationsHeld);
+        const hoursHeldShape = hoursScale && !wedgeShape;
+        const timeoutIgnoredShape = timeoutExceeded && !row.selfTimeoutWrapped && !wedgeShape && !hoursHeldShape;
+        const openPipeShape = row.pipeOpen && !row.eofDelivered && !row.selfTimeoutWrapped &&
+          !wedgeShape && !hoursHeldShape && !timeoutIgnoredShape;
+        const noEofShape = !row.eofDelivered && observed > 0 && !row.pipeOpen && !row.selfTimeoutWrapped &&
+          !wedgeShape && !hoursHeldShape && !timeoutIgnoredShape && !openPipeShape;
+        const scriptAliveShape = row.hookStillAlive && !row.selfTimeoutWrapped &&
+          !wedgeShape && !hoursHeldShape && !timeoutIgnoredShape && !openPipeShape && !noEofShape;
+        const parentBlindShape = row.parentEnforcedTimeout === false && declared > 0 && !row.selfTimeoutWrapped &&
+          !wedgeShape && !hoursHeldShape && !timeoutIgnoredShape && !openPipeShape && !noEofShape && !scriptAliveShape;
+        const unretractedShape = (row.statusMessageStuck || row.notificationsHeld) && !row.selfTimeoutWrapped &&
+          !wedgeShape && !hoursHeldShape && !timeoutIgnoredShape && !openPipeShape && !noEofShape &&
+          !scriptAliveShape && !parentBlindShape;
+        const selfTimeoutShape = row.selfTimeoutWrapped && !wedgeShape && !hoursHeldShape &&
+          !timeoutIgnoredShape && !openPipeShape && !noEofShape && !scriptAliveShape &&
+          !parentBlindShape && !unretractedShape;
+        return {
+          wedgeShape: wedgeShape,
+          hoursHeldShape: hoursHeldShape,
+          timeoutIgnoredShape: timeoutIgnoredShape,
+          openPipeShape: openPipeShape,
+          noEofShape: noEofShape,
+          scriptAliveShape: scriptAliveShape,
+          parentBlindShape: parentBlindShape,
+          unretractedShape: unretractedShape,
+          selfTimeoutShape: selfTimeoutShape
+        };
+      }
+
+      function classify(row) {
+        if (isIdle(row)) return IDLE_WORD;
+        const facts = analyze(row);
+        if (facts.wedgeShape) return "wedge";
+        if (facts.hoursHeldShape) return "hours-held";
+        if (facts.timeoutIgnoredShape) return "timeout-ignored";
+        if (facts.openPipeShape) return "open-pipe";
+        if (facts.noEofShape) return "no-eof";
+        if (facts.scriptAliveShape) return "script-alive";
+        if (facts.parentBlindShape) return "parent-blind";
+        if (facts.unretractedShape) return "unretracted";
+        if (facts.selfTimeoutShape) return "self-timeout";
+        return IDLE_WORD;
+      }
+
+      function feedOf(kind) {
+        if (kind === "wedge") return "● Wedge · pipe open no EOF for hours · declared timeout 5s ignored · session frozen on hook statusMessage · notifications held until interrupt · primary #90585";
+        if (kind === "hours-held") return "● Hours-held · ~8h first freeze / ~1.5h second · pipe stayed open without EOF";
+        if (kind === "timeout-ignored") return "● Timeout-ignored · settings.json declares timeout 5 · hook lives >> 5s · parent did not kill";
+        if (kind === "open-pipe") return "● Open-pipe · stdin pipe kept open · no EOF yet · short duration";
+        if (kind === "no-eof") return "● No-eof · measured probe blocks exactly as long as the pipe stays open · 6.003s against sleep 6";
+        if (kind === "script-alive") return "● Script-alive · hook process not terminated by parent";
+        if (kind === "parent-blind") return "● Parent-blind · parent does not enforce timeout while blocked on stdin";
+        if (kind === "unretracted") return "● Unretracted · statusMessage of hook stuck in spinner · notifications queued behind the wedge";
+        if (kind === "self-timeout") return "● Self-timeout · script wraps stdin read in timeout 2 · ends hang class · verified 2.043s against a 30s-open pipe · control / proof path";
+        return "● Bunged · spile seated · payload delivered with EOF · declared timeout armed and enforceable · idle word is bunged";
+      }
+
+      function seedOf(name) {
+        const base = emptySpile();
+        if (name === "wedge") {
+          return Object.assign({}, base, {
+            session: "90585-wedge", issue: 90585, source: "anthropics/claude-code#90585", scored: true,
+            pipeOpen: true, eofDelivered: false, declaredTimeoutSec: 5, observedBlockSec: 28800,
+            hookStillAlive: true, parentEnforcedTimeout: false, statusMessageStuck: true, notificationsHeld: true
+          });
+        }
+        if (name === "open-pipe") {
+          return Object.assign({}, base, {
+            session: "90585-open-pipe", issue: 90585, scored: true,
+            pipeOpen: true, eofDelivered: false, observedBlockSec: 3
+          });
+        }
+        if (name === "no-eof") {
+          return Object.assign({}, base, {
+            session: "90585-no-eof", issue: 90585, scored: true,
+            pipeOpen: false, eofDelivered: false, observedBlockSec: 6.003
+          });
+        }
+        if (name === "timeout-ignored") {
+          return Object.assign({}, base, {
+            session: "90585-timeout-ignored", issue: 87289, scored: true,
+            pipeOpen: true, eofDelivered: false, declaredTimeoutSec: 5, observedBlockSec: 300,
+            hookStillAlive: true, parentEnforcedTimeout: false
+          });
+        }
+        if (name === "hours-held") {
+          return Object.assign({}, base, {
+            session: "90585-hours-held", issue: 90585, scored: true,
+            pipeOpen: true, eofDelivered: false, declaredTimeoutSec: 5, observedBlockSec: 28800,
+            hookStillAlive: true, parentEnforcedTimeout: false
+          });
+        }
+        if (name === "script-alive") {
+          return Object.assign({}, base, {
+            session: "90585-script-alive", issue: 90585, scored: true, hookStillAlive: true
+          });
+        }
+        if (name === "parent-blind") {
+          return Object.assign({}, base, {
+            session: "90585-parent-blind", issue: 85250, scored: true,
+            declaredTimeoutSec: 5, parentEnforcedTimeout: false
+          });
+        }
+        if (name === "unretracted") {
+          return Object.assign({}, base, {
+            session: "90585-unretracted", issue: 90585, scored: true,
+            statusMessageStuck: true, notificationsHeld: true
+          });
+        }
+        if (name === "self-timeout") {
+          return Object.assign({}, base, {
+            session: "90585-self-timeout", issue: 90585, scored: true,
+            declaredTimeoutSec: 5, observedBlockSec: 2.043, parentEnforcedTimeout: false,
+            selfTimeoutWrapped: true
+          });
+        }
+        if (name === "control") {
+          return Object.assign({}, base, {
+            session: "90585-control", scored: true,
+            pipeOpen: false, eofDelivered: true, declaredTimeoutSec: 5, observedBlockSec: 0.052,
+            parentEnforcedTimeout: true
+          });
+        }
+        return Object.assign({}, base, { session: "bunged", scored: true });
+      }
+
+      function parseTrace(text) {
+        const raw = String(text || "");
+        if (/statusMessage|notifications held|8h|8 hours|#90585/i.test(raw) && /wedge|frozen|pipe open|no EOF|timeout 5/i.test(raw)) return seedOf("wedge");
+        if (/hours-held|~8h|1\.5h/i.test(raw) && !/wedge/i.test(raw)) return seedOf("hours-held");
+        if (/timeout-ignored|timeout 5 but|lives >> 5|303244ms|~300s/i.test(raw)) return seedOf("timeout-ignored");
+        if (/open-pipe|pipe kept open|pipe open, no EOF yet/i.test(raw)) return seedOf("open-pipe");
+        if (/no-eof|6\.003|blocks exactly as long/i.test(raw)) return seedOf("no-eof");
+        if (/script-alive|hook process not terminated|hook still alive/i.test(raw)) return seedOf("script-alive");
+        if (/parent-blind|parent does not enforce|parent-side/i.test(raw)) return seedOf("parent-blind");
+        if (/unretracted|statusMessage stuck|notifications queued/i.test(raw)) return seedOf("unretracted");
+        if (/self-timeout|timeout 2 dd|2\.043/i.test(raw)) return seedOf("self-timeout");
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object") return Object.assign(emptySpile(), parsed, { scored: true });
+        } catch (e) { /* prose */ }
+        return seedOf("reset");
+      }
+
+      let spile = seedOf("wedge");
+
+      function render() {
+        const verdict = classify(spile);
+        const facts = analyze(spile);
+        const alarm = SLACK.indexOf(verdict) >= 0;
+        const die = document.getElementById("verdict-die");
+        document.getElementById("verdict-word").textContent = verdict;
+        die.className = "verdict-die" + (alarm ? " fail" : "");
+        const chip = document.getElementById("chip");
+        chip.innerHTML = "<b>" + verdict + "</b> · " + (verdict === IDLE_WORD ? "idle" : "tap");
+        chip.className = "chip" + (alarm ? " alarm" : " hold");
+        document.getElementById("feed").textContent = feedOf(verdict);
+        const draining = verdict === "wedge" || verdict === "hours-held";
+        const open = verdict === "open-pipe" || verdict === "timeout-ignored" || verdict === "no-eof";
+        const seated = verdict === IDLE_WORD || verdict === "self-timeout";
+        document.getElementById("wooden-bung").className = "wooden-bung " + (draining ? "wedged" : open ? "drawn" : "seated");
+        document.getElementById("brass-spile").className = "brass-spile " + (draining ? "draining" : open ? "open" : "seated");
+        document.getElementById("bung-mallet").className = "bung-mallet " + (seated ? "struck" : draining ? "raised timeout-dark" : "ready") + (alarm && !seated ? " timeout-dark" : "");
+        document.getElementById("drip-tray").className = "drip-tray" + (draining || verdict === "open-pipe" ? " wet" : "");
+        document.getElementById("bung-host").textContent = draining
+          ? "drawn · pipe open no EOF"
+          : (verdict === IDLE_WORD ? "seated · payload delivered with EOF" : open ? "drawn · bung out" : "seated · barrel held");
+        document.getElementById("spile-host").textContent = draining
+          ? "out · hours drain"
+          : (alarm ? "loose · tap not reseated" : "seated · cellar held");
+        document.getElementById("mallet-host").textContent = verdict === IDLE_WORD || verdict === "self-timeout"
+          ? "fuse lit · timeout armed / self-timeout wrap"
+          : "fuse dark · declared timeout ignored";
+        const tape = document.getElementById("coil-tape");
+        if (verdict === "wedge") {
+          tape.innerHTML = "<span class='coil-mark'>28800s</span><span class='coil-mark'>timeout 5</span><span class='coil-mark gap'>statusMessage</span>";
+        } else if (verdict === "hours-held") {
+          tape.innerHTML = "<span class='coil-mark'>8h / 1.5h</span><span class='coil-mark gap'>held</span>";
+        } else if (verdict === "timeout-ignored") {
+          tape.innerHTML = "<span class='coil-mark gap'>5s declared</span><span class='coil-mark'>300s lived</span>";
+        } else if (verdict === "open-pipe") {
+          tape.innerHTML = "<span class='coil-mark'>pipe open</span><span class='coil-mark gap'>no EOF</span>";
+        } else if (verdict === "no-eof") {
+          tape.innerHTML = "<span class='coil-mark'>6.003s</span><span class='coil-mark'>sleep 6</span>";
+        } else if (verdict === "self-timeout") {
+          tape.innerHTML = "<span class='coil-mark'>2.043s</span><span class='coil-mark'>timeout 2</span>";
+        } else if (verdict === IDLE_WORD) {
+          tape.innerHTML = "<span class='coil-mark gap'>spile seated · bunged</span>";
+        } else {
+          tape.innerHTML = "<span class='coil-mark gap'>" + verdict + "</span>";
+        }
+        const lines = [];
+        if (isIdle(spile) || verdict === "bunged") {
+          lines.push("<li>spile seated · bung in the hole · payload delivered with EOF · idle word is bunged<span class='dim'>hold</span></li>");
+        }
+        if (facts.wedgeShape) lines.push("<li>pipe open no EOF for hours · timeout 5 ignored · statusMessage stuck · #90585<span class='dim'>wedge</span></li>");
+        if (facts.hoursHeldShape && verdict === "hours-held") lines.push("<li>~8h first freeze / ~1.5h second<span class='dim'>hours-held</span></li>");
+        if (facts.timeoutIgnoredShape && verdict === "timeout-ignored") lines.push("<li>declared 5s · observed ~300s · parent did not kill<span class='dim'>timeout-ignored</span></li>");
+        if (facts.openPipeShape && verdict === "open-pipe") lines.push("<li>stdin pipe kept open · no EOF yet · short duration<span class='dim'>open-pipe</span></li>");
+        if (facts.noEofShape && verdict === "no-eof") lines.push("<li>probe blocks exactly as long as the pipe stays open · 6.003s<span class='dim'>no-eof</span></li>");
+        if (facts.scriptAliveShape && verdict === "script-alive") lines.push("<li>hook process not terminated by parent<span class='dim'>script-alive</span></li>");
+        if (facts.parentBlindShape && verdict === "parent-blind") lines.push("<li>parent does not enforce timeout while blocked on stdin<span class='dim'>parent-blind</span></li>");
+        if (facts.unretractedShape && verdict === "unretracted") lines.push("<li>statusMessage stuck in spinner · notifications queued<span class='dim'>unretracted</span></li>");
+        if (facts.selfTimeoutShape && verdict === "self-timeout") lines.push("<li>timeout 2 wrap ended the hang · 2.043s against a 30s-open pipe<span class='dim'>self-timeout</span></li>");
+        document.getElementById("lines").innerHTML = lines.length ? lines.join("") : "<li>spile seated · bung in the hole · payload delivered with EOF · idle word is bunged<span class='dim'>hold</span></li>";
+        document.getElementById("masked").textContent = "Masked view · pipe " + (spile.pipeOpen ? "open" : "closed") + " · eof " + (spile.eofDelivered ? "yes" : "no") + " · declared " + (spile.declaredTimeoutSec || 0) + "s · observed " + (spile.observedBlockSec || 0) + "s. No secrets.";
+        document.getElementById("slack-ledger").textContent = alarm
+          ? "Would post to Slack: " + verdict + " tap alarm on the spile."
+          : "Would skip Slack. Spile is " + verdict + ".";
+        document.getElementById("linear-ledger").textContent = LINEAR.indexOf(verdict) >= 0
+          ? "Would open a Linear ticket: spile " + verdict + " · Spile · #" + (spile.issue || "90585") + "."
+          : "Would skip Linear. Verdict " + verdict + " is not wedge / hours-held / timeout-ignored / open-pipe.";
+        document.getElementById("github-ledger").textContent = "Would open a GitHub spile-ledger issue. Demo: no token. " + (spile.session || "session") + " · " + verdict + ".";
+        document.querySelectorAll(".yarn-bank button[data-seed]").forEach(function (btn) {
+          const seedName = btn.getAttribute("data-seed");
+          const pressed = seedName === "reset"
+            ? verdict === "bunged" && isIdle(spile)
+            : seedName === "control"
+              ? verdict === "bunged" && spile.eofDelivered === true
+              : classify(spile) === seedName;
+          btn.setAttribute("aria-pressed", pressed ? "true" : "false");
+        });
+      }
+
+      document.getElementById("btn-score").addEventListener("click", function () {
+        spile = Object.assign({}, spile, { scored: true });
+        render();
+      });
+      document.getElementById("btn-admit").addEventListener("click", function () {
+        spile = Object.assign({}, spile, { scored: true });
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", function () {
+        spile = seedOf("reset");
+        render();
+      });
+      document.getElementById("btn-restore").addEventListener("click", function () {
+        spile = seedOf("wedge");
+        render();
+      });
+      document.getElementById("btn-probe").addEventListener("click", function () {
+        const text = document.getElementById("paste").value || "";
+        spile = text.trim() ? parseTrace(text) : seedOf("wedge");
+        render();
+      });
+      document.querySelectorAll(".yarn-bank button[data-seed]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          spile = seedOf(btn.getAttribute("data-seed"));
+          render();
+        });
+      });
+      render();
+    </script>
+  </body>
+</html>

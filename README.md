@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Bollard](https://hermes-playground-green.vercel.app/bollard/)** — wet pier / bollard plate. A slack hawser is not a hold. Score the bollard or admit belayed. Folder: `projects/bollard/`.
+**Featured: [Spile](https://hermes-playground-green.vercel.app/spile/)** — brewery/cellar bung-mallet station. An open spile is not a hold. Score the tap or admit bunged. Folder: `projects/spile/`.
+
+**Listed: [Bollard](https://hermes-playground-green.vercel.app/bollard/)** — wet pier / bollard plate. A slack hawser is not a hold. Score the bollard or admit belayed. Folder: `projects/bollard/`. Still listed. Not featured.
 
 **Listed: [Clew](https://hermes-playground-green.vercel.app/clew/)** — sail loft / rigger's bench. A working-size coil is not a hold. Score the clew or admit rove. Folder: `projects/clew/`. Still listed. Not featured.
 
@@ -106,10 +108,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                49 products: Bollard (featured), Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                50 products: Spile (featured), Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/bollard/           wet pier / bollard plate for remote-control environment GC after a supervisor gap (featured)
+projects/spile/             brewery/cellar bung-mallet station for hook stdin kept open without EOF + unenforced declared timeout (featured)
+projects/bollard/           wet pier / bollard plate for remote-control environment GC after a supervisor gap (kept, unfeatured)
 projects/clew/              sail loft / rigger's bench for sandbox deny-list E2BIG at MAX_ARG_STRLEN (kept, unfeatured)
 projects/sounder/           telegraph night desk for a completed background waiter whose notification never re-invokes the session (kept, unfeatured)
 projects/binnacle/          ship's brass binnacle for TUI origin split after ANTHROPIC_BASE_URL is named (kept, unfeatured)
@@ -158,8 +161,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-30-spile.md    Spile ship log (00:50 Sydney)
 runs/2026-08-29-bollard.md  Bollard ship log (23:50 Sydney)
 runs/2026-08-29-2250.md     Clew ship log (22:50 Sydney)
 runs/2026-08-29-2150.md     Sounder ship log (21:50 Sydney)
@@ -210,6 +214,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Spile
+
+`projects/spile/` is a brewery/cellar bung-mallet station for a real Claude Code hook failure: when the client keeps a hook's stdin pipe open without EOF, the hook's unbounded stdin read blocks for as long as the pipe stays open (measured hours). The declared per-hook `timeout` is not enforced while the hook blocks on stdin. Primary [anthropics/claude-code#90585](https://github.com/anthropics/claude-code/issues/90585): twice in one day a turn ended while two Bash `run_in_background` tasks were still running; completion notifications never arrived; the session froze on a hook `statusMessage`; freezes lasted ~8h and ~1.5h until interrupt/restart. Probe: `time sh hook.sh < <(sleep 6)` → 6.003s; with EOF → 0.052s. Declared `"timeout": 5` was not enforced. Mitigation: `timeout 2 dd …` → 2.043s against a 30s-open pipe. An open spile is not a hold. Score the tap or admit **bunged**. Verdicts: **bunged**, **open-pipe**, **no-eof**, **timeout-ignored**, **wedge**, **hours-held**, **script-alive**, **parent-blind**, **self-timeout**, **unretracted**. Slack alarm on wedge / hours-held / timeout-ignored / open-pipe / no-eof / script-alive / parent-blind / unretracted. Linear ticket on wedge / hours-held / timeout-ignored / open-pipe.
+
+Live path: https://hermes-playground-green.vercel.app/spile/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90585` wedge is already on the bench. Idle word is **bunged**, not the product name, not empty. NOT Sounder (missed background wakeup). NOT Tappet (silent hook injection). NOT Quench (circuit breaker). NOT Leat (sleep blocked unbounded until). NOT Ullage (cooper gauging desk). NOT Bollard / Clew / leftover woodworking sliders. Different problem: hook stdin pipe open (no EOF) + declared timeout not enforced parent-side → session wedge for hours. Different UI: bung-mallet station. Oak barrel head, brass spile, wooden bung, mallet, drip tray, timeout fuse lamp. Calistoga + Commissioner + Inconsolata.
 
 ## Bollard
 
@@ -584,6 +596,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/spile/` → `projects/spile/`
 - `/bollard/` → `projects/bollard/`
 - `/clew/` → `projects/clew/`
 - `/sounder/` → `projects/sounder/`
