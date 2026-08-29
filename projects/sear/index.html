@@ -686,7 +686,15 @@
       }
 
       function parseTrace(text) {
-        const raw = String(text || "");
+        const raw = String(text || "").trim();
+        if (raw.startsWith("{") || raw.startsWith("[")) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+              return Object.assign(emptySear(), parsed, { scored: true });
+            }
+          } catch (e) { /* fall through to prose */ }
+        }
         if (/set -e is structurally inert|#90611|eval in a non-final/i.test(raw) && /set -e|errexit|eval/i.test(raw)) return seedOf("inert");
         if (/wiped|rm -rf|copy-then-cleanup|cp failed then/i.test(raw) && !/inert|structurally inert/i.test(raw)) return seedOf("wiped");
         if (/echo survived|false; echo survived|survived after false/i.test(raw) && !/inert/i.test(raw)) return seedOf("survived");
@@ -696,10 +704,6 @@
         if (/suppressed|POSIX|errexit suppression/i.test(raw) && !/inert/i.test(raw)) return seedOf("suppressed");
         if (/chained|&&-chain workaround/i.test(raw)) return seedOf("chained");
         if (/freshbash|bash -ec|fresh bash/i.test(raw) && !/control|would abort/i.test(raw)) return seedOf("freshbash");
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed === "object") return Object.assign(emptySear(), parsed, { scored: true });
-        } catch (e) { /* prose */ }
         return seedOf("reset");
       }
 

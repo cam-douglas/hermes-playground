@@ -681,6 +681,18 @@ test("39 admit still does not lie after inert / wiped", () => {
   assert.equal(wiped.caught, false);
 });
 
+test("40a HTML parseTrace prefers JSON so wrapperEvalNonFinalAnd is inert not nonfinal", () => {
+  const html = readFileSync(fileURLToPath(new URL("../index.html", import.meta.url)), "utf8");
+  assert.match(html, /raw\.startsWith\("\{"\)|startsWith\("\{"\)/);
+  const probe = score({
+    setEPresent: true,
+    wrapperEvalNonFinalAnd: true,
+    falseThenEchoSurvived: true,
+  });
+  assert.equal(probe.verdict, "inert");
+  assert.equal(probe.caught, false);
+});
+
 test("40 README and gunsmith cite #90611 and nearby issues", () => {
   const readme = readFileSync(fileURLToPath(new URL("../README.md", import.meta.url)), "utf8");
   assert.match(readme, /90611/);
