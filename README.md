@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Binnacle](https://hermes-playground-green.vercel.app/binnacle/)** — ship's brass compass house. A named heading is not a hold. Score the binnacle or admit housed. Folder: `projects/binnacle/`.
+**Featured: [Sounder](https://hermes-playground-green.vercel.app/sounder/)** — telegraph night desk. A completed waiter is not a hold. Score the sounder or admit keyed. Folder: `projects/sounder/`.
+
+**Listed: [Binnacle](https://hermes-playground-green.vercel.app/binnacle/)** — ship's brass compass house. A named heading is not a hold. Score the binnacle or admit housed. Folder: `projects/binnacle/`. Still listed. Not featured.
 
 **Listed: [Pirn](https://hermes-playground-green.vercel.app/pirn/)** — weaver's pirn-winder bench. A first delivery is not a hold. Score the pirn or admit beamed. Folder: `projects/pirn/`. Still listed. Not featured.
 
@@ -100,10 +102,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                46 products: Binnacle (featured), Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                47 products: Sounder (featured), Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/binnacle/          ship's brass binnacle for TUI origin split after ANTHROPIC_BASE_URL is named (featured)
+projects/sounder/           telegraph night desk for a completed background waiter whose notification never re-invokes the session (featured)
+projects/binnacle/          ship's brass binnacle for TUI origin split after ANTHROPIC_BASE_URL is named (kept, unfeatured)
 projects/pirn/              weaver's pirn-winder bench for instruction-shaped idle_notification truncation (kept, unfeatured)
 projects/cotter/            machine-shop cotter-pin tray for poison-pill scheduled-task registry (kept, unfeatured)
 projects/fob/               hotel key-rack for Keychain credential litter (kept, unfeatured)
@@ -149,8 +152,10 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-2150.md     Sounder ship log (21:50 Sydney)
+runs/2026-08-29-2050.md     Binnacle ship log (20:50 Sydney)
 runs/2026-08-29-1850.md     Cotter ship log (18:50 Sydney)
 runs/2026-08-29-1750.md     Fob ship log (17:50 Sydney)
 runs/2026-08-29-ordo.md     Ordo ship log (16:50 Sydney)
@@ -197,6 +202,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Sounder
+
+`projects/sounder/` is a telegraph sounder's night desk for Claude Code background Bash waiters that complete while their completion notification never re-invokes the session. A completed waiter is not a hold. Score the sounder or admit **keyed**. Verdicts: **keyed**, **muted**, **stalled**, **orphaned**, **relayed**, **deaf**, **armed**, **dropped**, **stranded**, **cut**. Slack alarm on muted / stalled / orphaned / deaf / dropped / stranded / cut / armed. Linear ticket on muted / stalled.
+
+Live path: https://hermes-playground-green.vercel.app/sounder/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90555` muted is already on the tape. Idle word is **keyed**, not the product name, not empty. NOT Leat (until-loop that never exits — inverse: here the waiter DID exit). NOT Fusee (early schedule). NOT Cotter (poison fireAt). NOT Reveille (living muster). NOT Shunt (nested SendMessage). NOT Husk (hollow SUCCESS). NOT Binnacle (TUI origin split). NOT Pirn (instruction-shaped truncation). NOT leftover woodworking sliders. Different problem: waiter exits cleanly → notification never re-invokes → session idles until human input. Different UI: telegraph night desk. Oak, brass sounder, straight key, ink tape, line lamp. Yeseva One + Cabin + Anonymous Pro.
 
 ## Cotter
 
