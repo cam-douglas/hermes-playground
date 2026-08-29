@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Cotter](https://hermes-playground-green.vercel.app/cotter/)** — machine-shop cotter-pin tray. A written fireAt is not a hold. Score the pin or admit snug. Folder: `projects/cotter/`.
+**Featured: [Pirn](https://hermes-playground-green.vercel.app/pirn/)** — weaver's pirn-winder bench. A first delivery is not a hold. Score the pirn or admit beamed. Folder: `projects/pirn/`.
+
+**Listed: [Cotter](https://hermes-playground-green.vercel.app/cotter/)** — machine-shop cotter-pin tray. A written fireAt is not a hold. Score the pin or admit snug. Folder: `projects/cotter/`. Still listed. Not featured.
 
 **Listed: [Fob](https://hermes-playground-green.vercel.app/fob/)** — hotel key-rack. A new stamp is not a hold. Score the rack or admit hung. Folder: `projects/fob/`. Still listed. Not featured.
 
@@ -96,10 +98,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                44 products: Cotter (featured), Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                45 products: Pirn (featured), Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/cotter/            machine-shop cotter-pin tray for poison-pill scheduled-task registry (featured)
+projects/pirn/              weaver's pirn-winder bench for instruction-shaped idle_notification truncation (featured)
+projects/cotter/            machine-shop cotter-pin tray for poison-pill scheduled-task registry (kept, unfeatured)
 projects/fob/               hotel key-rack for Keychain credential litter (kept, unfeatured)
 projects/ordo/              sacristy's missal desk for headless plugin-command resolution (kept, unfeatured)
 projects/cinch/             saddler's / packer's cinch desk for silent partial mounts (kept, unfeatured)
