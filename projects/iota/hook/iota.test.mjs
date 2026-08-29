@@ -815,60 +815,60 @@ test("49 adapters stay honest when env is empty — never a fake live HTTP 200",
   assert.ok(fired.events.every((row) => !/HTTP 200/.test(row.summary)));
 });
 
-test("50 catalog wiring: 35 products, Iota featured, Leat listed", () => {
+test("50 catalog wiring: 36 products, Fusee featured, Iota listed", () => {
   const catalog = JSON.parse(readFileSync(fileURLToPath(new URL("../../../catalog.json", import.meta.url)), "utf8"));
-  assert.equal(catalog.products.length, 35);
+  assert.equal(catalog.products.length, 36);
   const featured = catalog.products.filter((row) => row.featured);
   assert.equal(featured.length, 1);
-  assert.equal(featured[0].name, "Iota");
-  assert.equal(featured[0].slug, "iota");
-  assert.equal(featured[0].href, "/iota/");
-  assert.equal(featured[0].day, "2026-08-29");
-  assert.match(featured[0].summary, /09:50|second casing is not a plot|bound/);
+  assert.equal(featured[0].name, "Fusee");
+  const iota = catalog.products.find((row) => row.slug === "iota");
+  assert.ok(iota);
+  assert.equal(iota.featured, false);
+  assert.equal(iota.href, "/iota/");
+  assert.equal(iota.day, "2026-08-29");
+  assert.match(iota.summary, /09:50|second casing is not a plot|bound/);
   const leat = catalog.products.find((row) => row.slug === "leat");
   assert.ok(leat);
   assert.equal(leat.featured, false);
   assert.match(leat.summary, /08:50|blocked sleep is not a hold|stilled/);
-  const shunt = catalog.products.find((row) => row.slug === "shunt");
-  assert.ok(shunt);
-  assert.equal(shunt.featured, false);
   const slugs = catalog.products.map((row) => row.slug);
-  assert.equal(slugs[0], "iota");
-  assert.equal(slugs[1], "leat");
-  assert.ok(slugs.includes("shunt"));
+  assert.equal(slugs[0], "fusee");
+  assert.equal(slugs[1], "iota");
+  assert.ok(slugs.includes("leat"));
   assert.ok(slugs.includes("knock"));
   assert.ok(!slugs.includes("jot"));
   assert.ok(!slugs.includes("galley"));
   assert.ok(!slugs.includes("cadastre"));
 });
 
-test("51 vercel rewrite order puts /iota before /leat, /shunt and the slug fallback", () => {
+test("51 vercel rewrite order puts /fusee before /iota, /leat and the slug fallback", () => {
   const vercel = JSON.parse(readFileSync(fileURLToPath(new URL("../../../vercel.json", import.meta.url)), "utf8"));
   const sources = vercel.rewrites.map((row) => row.source);
-  assert.equal(sources[0], "/iota");
-  assert.equal(sources[1], "/iota/");
-  assert.equal(sources[2], "/leat");
-  assert.equal(sources[3], "/leat/");
+  assert.equal(sources[0], "/fusee");
+  assert.equal(sources[1], "/fusee/");
+  assert.equal(sources[2], "/iota");
+  assert.equal(sources[3], "/iota/");
   assert.ok(sources.includes("/leat"));
   assert.ok(sources.includes("/shunt"));
   assert.ok(sources.includes("/:slug"));
+  assert.ok(sources.indexOf("/fusee") < sources.indexOf("/iota"));
   assert.ok(sources.indexOf("/iota") < sources.indexOf("/leat"));
-  assert.ok(sources.indexOf("/leat") < sources.indexOf("/shunt"));
   assert.ok(sources.indexOf("/iota/") < sources.indexOf("/:slug"));
 });
 
-test("52 hours.json prepends the 09:50 Sydney Iota ship", () => {
+test("52 hours.json keeps the 09:50 Sydney Iota ship after Fusee", () => {
   const hours = JSON.parse(readFileSync(fileURLToPath(new URL("../../../runs/hours.json", import.meta.url)), "utf8"));
-  assert.equal(hours[0].stem, "2026-08-29-iota");
-  assert.equal(hours[0].date, "2026-08-29");
-  assert.equal(hours[0].time, "09:50");
-  assert.equal(hours[0].tz, "Australia/Sydney");
-  assert.equal(hours[0].title, "Iota");
-  assert.equal(hours[0].kind, "ship");
-  assert.match(hours[0].note, /bound/);
-  assert.match(hours[0].note, /Leat/);
-  assert.match(hours[0].note, /35/);
-  assert.equal(hours[1].stem, "2026-08-29-leat");
+  assert.equal(hours[0].stem, "2026-08-29-fusee");
+  const iota = hours.find((row) => row.stem === "2026-08-29-iota");
+  assert.ok(iota);
+  assert.equal(iota.date, "2026-08-29");
+  assert.equal(iota.time, "09:50");
+  assert.equal(iota.tz, "Australia/Sydney");
+  assert.equal(iota.title, "Iota");
+  assert.equal(iota.kind, "ship");
+  assert.match(iota.note, /bound/);
+  assert.match(iota.note, /Leat/);
+  assert.equal(hours[1].stem, "2026-08-29-iota");
 });
 
 test("53 clusterOf on #90438 includes twinned hidden unparseable", () => {

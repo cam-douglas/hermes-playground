@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Fusee — clockmaker's conical-pulley desk for Claude Code scheduled tasks that dispatch ahead of their configured fire time. A written cron is not a hold. Idle word is wound."
+    />
+    <title>Fusee — conical pulley</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Karla:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --midnight: #120e0c;
+        --caseoak: #2c1c12;
+        --gild: #d6b36a;
+        --enamel: #f2e6c9;
+        --lampoil: #e0a24a;
+        --arbor: #8a5a2b;
+        --chapter: #3a2a18;
+        --mainspring: #6b1f18;
+        --escapement: #2a4a3a;
+        --wound: #4d7a52;
+        --display: "Bodoni Moda", "Didot", "Times New Roman", serif;
+        --card: "Karla", "Gill Sans", ui-sans-serif, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--display);
+        color: var(--enamel);
+        background:
+          radial-gradient(ellipse 38% 26% at 12% 8%, rgba(224, 162, 74, 0.16), transparent 54%),
+          radial-gradient(ellipse 30% 20% at 90% 4%, rgba(107, 31, 24, 0.14), transparent 50%),
+          linear-gradient(180deg, #26180f 0%, var(--midnight) 62%, #0a0705 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--gild); }
+      .atelier {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 20px 0 96px;
+      }
+      .bevel {
+        height: 8px;
+        margin: 0 0 22px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            var(--gild) 0 14px,
+            #1a100a 14px 16px,
+            var(--arbor) 16px 30px
+          );
+        border: 1px solid rgba(214, 179, 106, 0.4);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+      }
+      .bench {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .bench { grid-template-columns: 1fr; }
+      }
+      .mark {
+        font-family: var(--card);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--gild);
+      }
+      h1 {
+        margin: 10px 0 8px;
+        font-size: clamp(44px, 8vw, 84px);
+        line-height: 0.84;
+        letter-spacing: 0.02em;
+        font-weight: 700;
+      }
+      .lede {
+        max-width: 48ch;
+        color: #e4d3b0;
+        line-height: 1.45;
+        font-family: var(--card);
+        font-size: 13px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid rgba(214, 179, 106, 0.35);
+        background: rgba(12, 8, 6, 0.8);
+        font-family: var(--card);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .chip b { color: var(--gild); font-weight: 600; }
+      .chip.alarm {
+        border-color: var(--mainspring);
+        color: #f0c4b4;
+        box-shadow: 0 0 0 1px rgba(107, 31, 24, 0.4);
+      }
+      .chip.hold { border-color: var(--wound); color: var(--wound); }
+      .keybench {
+        background:
+          linear-gradient(180deg, rgba(44, 28, 18, 0.96), rgba(12, 8, 6, 0.96));
+        border: 1px solid rgba(214, 179, 106, 0.28);
+        padding: 18px 18px 16px;
+        box-shadow: inset 0 1px 0 rgba(242, 230, 201, 0.06);
+      }
+      .keybench h2 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--gild);
+      }
+      .oils {
+        display: flex;
+        gap: 10px;
+        margin: 0 0 14px;
+      }
+      .oil {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #2a2010;
+        border: 2px solid #3a3220;
+        box-shadow: inset 0 0 6px #000;
+      }
+      .oil.red { background: var(--mainspring); box-shadow: 0 0 14px var(--mainspring); }
+      .oil.amber { background: var(--lampoil); box-shadow: 0 0 14px var(--lampoil); }
+      .oil.green { background: var(--wound); box-shadow: 0 0 14px var(--wound); }
+      .gauges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 14px;
+      }
+      .gauge {
+        border: 1px solid rgba(214, 179, 106, 0.22);
+        padding: 8px 10px;
+        font-family: var(--card);
+        font-size: 11px;
+        color: #c8b48c;
+      }
+      .gauge strong {
+        display: block;
+        color: var(--enamel);
+        font-size: 13px;
+        margin-top: 4px;
+        word-break: break-all;
+      }
+      .keys {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .keys button,
+      .gates button {
+        border: 1px solid rgba(214, 179, 106, 0.32);
+        background: #1a120c;
+        padding: 8px 12px;
+        font-size: 14px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .keys button:hover,
+      .gates button:hover { border-color: var(--gild); color: var(--gild); }
+      .keys button.primary {
+        background: var(--gild);
+        color: #1a1208;
+        border-color: var(--gild);
+        font-weight: 600;
+      }
+      .keys button.warn {
+        background: var(--mainspring);
+        border-color: #c45a3a;
+        color: #f2e6c9;
+        font-weight: 600;
+      }
+      .gates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .gates button {
+        font-family: var(--card);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+      }
+      .gates button[aria-pressed="true"] {
+        border-color: var(--gild);
+        color: var(--gild);
+      }
+      .oak-case {
+        margin-top: 18px;
+        border: 1px solid rgba(138, 90, 43, 0.7);
+        background:
+          linear-gradient(180deg, rgba(44, 28, 18, 0.7), #120e0c);
+        min-height: 260px;
+        position: relative;
+        overflow: hidden;
+        padding: 36px 16px 16px;
+      }
+      .oak-case .caption {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        font-family: var(--card);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gild);
+        z-index: 1;
+      }
+      .movement {
+        display: grid;
+        grid-template-columns: 140px 1fr 110px;
+        gap: 14px;
+        align-items: center;
+      }
+      @media (max-width: 720px) {
+        .movement { grid-template-columns: 1fr; }
+      }
+      .fusee-drum {
+        width: 110px;
+        height: 150px;
+        margin: 0 auto;
+        background:
+          linear-gradient(180deg, #d6b36a 0%, #8a5a2b 38%, #3a2414 100%);
+        clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+        box-shadow: inset 0 0 0 2px rgba(242, 230, 201, 0.2);
+        position: relative;
+      }
+      .fusee-drum::after {
+        content: "";
+        position: absolute;
+        inset: 12% 20%;
+        border-top: 2px solid rgba(18, 14, 12, 0.45);
+        border-bottom: 2px solid rgba(18, 14, 12, 0.45);
+      }
+      .enamel-face {
+        width: min(220px, 100%);
+        aspect-ratio: 1;
+        margin: 0 auto;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 50% 50%, #f7edd4 0 62%, #e6d3a4 63% 70%, #2c1c12 71% 100%);
+        border: 6px solid var(--gild);
+        position: relative;
+        box-shadow: 0 0 0 3px #1a100a, inset 0 0 20px rgba(44, 28, 18, 0.18);
+      }
+      .enamel-face .hand {
+        position: absolute;
+        left: 50%;
+        bottom: 50%;
+        width: 3px;
+        height: 38%;
+        background: #2c1c12;
+        transform-origin: bottom center;
+        border-radius: 2px;
+      }
+      .enamel-face .hand.dispatched {
+        background: var(--mainspring);
+        height: 32%;
+      }
+      .enamel-face .boss {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 12px;
+        height: 12px;
+        margin: -6px 0 0 -6px;
+        border-radius: 50%;
+        background: var(--gild);
+      }
+      .winding-arbor {
+        width: 88px;
+        height: 88px;
+        margin: 0 auto;
+        border-radius: 50%;
+        border: 8px solid var(--gild);
+        background: #1a120c;
+        position: relative;
+      }
+      .winding-arbor::before,
+      .winding-arbor::after {
+        content: "";
+        position: absolute;
+        background: var(--gild);
+      }
+      .winding-arbor::before {
+        width: 10px;
+        height: 54px;
+        left: 31px;
+        top: 9px;
+      }
+      .winding-arbor::after {
+        width: 54px;
+        height: 10px;
+        left: 9px;
+        top: 31px;
+      }
+      .slots {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      .slot {
+        border: 1px dashed rgba(214, 179, 106, 0.28);
+        padding: 10px;
+        font-family: var(--card);
+        font-size: 12px;
+      }
+      .slot .lbl {
+        color: #c8b48c;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .slot code {
+        display: block;
+        margin-top: 6px;
+        color: var(--gild);
+        word-break: break-all;
+      }
+      .ledger {
+        margin-top: 14px;
+        border-top: 3px solid var(--gild);
+        padding-top: 12px;
+      }
+      .ledger h3 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gild);
+      }
+      .ledger ol {
+        margin: 0;
+        padding-left: 18px;
+        color: #c8b48c;
+        font-family: var(--card);
+        font-size: 12px;
+      }
+      .feed {
+        font-family: var(--card);
+        font-size: 13px;
+        color: var(--gild);
+        margin: 12px 0 0;
+      }
+      .horn {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--mainspring);
+        background: rgba(107, 31, 24, 0.18);
+        font-family: var(--card);
+        font-size: 12px;
+        color: #f0c4b4;
+      }
+      .horn.on { display: block; }
+      .paste {
+        width: 100%;
+        min-height: 92px;
+        margin-top: 10px;
+        resize: vertical;
+        background: #120e0c;
+        color: var(--enamel);
+        border: 1px solid rgba(214, 179, 106, 0.22);
+        font-family: var(--card);
+        font-size: 12px;
+        padding: 10px;
+      }
+      .brief, .why {
+        margin-top: 22px;
+        color: #e4d3b0;
+        font-size: 15px;
+        line-height: 1.5;
+        font-family: var(--card);
+      }
+      .brief h2, .why h2 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gild);
+        font-family: var(--display);
+      }
+      .integrations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+      }
+      @media (max-width: 720px) {
+        .integrations { grid-template-columns: 1fr; }
+      }
+      .integrations article {
+        border: 1px solid rgba(214, 179, 106, 0.18);
+        padding: 10px;
+        font-size: 14px;
+        color: #c8b48c;
+      }
+      .integrations h3 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gild);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="atelier">
+      <div class="bevel" aria-hidden="true"></div>
+      <p class="mark">10:50 Sydney · fusee</p>
+      <div class="bench">
+        <section>
+          <h1>Fusee</h1>
+          <p class="lede">
+            A written cron is not a hold. The scheduler fires before
+            the configured <code>fireAt</code> / cron slot — ninety-five
+            days, twenty-seven days, three hours forty. Score the dial
+            or admit <b>wound</b>.
+          </p>
+          <p id="chip" class="chip hold"><b>wound</b> · idle</p>
+          <p id="feed" class="feed">● Wound · spring regulated · fire time honored · idle word is wound</p>
+          <div id="horn" class="horn">
+            Slack fusee alarm: early / sprung / raced / ahead / jumped / premature / voided. The cone equalizes the pull.
+          </div>
+          <div class="oak-case" id="oak-case">
+            <div class="caption">conical pulley · enamel dial · winding key</div>
+            <div class="movement">
+              <div class="fusee-drum" aria-hidden="true" title="fusee cone"></div>
+              <div class="enamel-face" id="enamel-face">
+                <div id="hand-configured" class="hand" style="transform: rotate(0deg)"></div>
+                <div id="hand-dispatched" class="hand dispatched" style="transform: rotate(-40deg)"></div>
+                <div class="boss"></div>
+              </div>
+              <div class="winding-arbor" aria-hidden="true" title="winding key"></div>
+            </div>
+          </div>
+          <div class="slots">
+            <div class="slot">
+              <div class="lbl">configured</div>
+              <code id="configured">—</code>
+            </div>
+            <div class="slot">
+              <div class="lbl">dispatched</div>
+              <code id="dispatched">—</code>
+            </div>
+          </div>
+          <div class="ledger">
+            <h3>Fusee proof</h3>
+            <ol id="tray"><li>spring regulated · fire time honored</li></ol>
+          </div>
+        </section>
+        <aside class="keybench">
+          <h2>Winding key · enamel dial</h2>
+          <div class="oils" aria-hidden="true">
+            <div id="oil-red" class="oil"></div>
+            <div id="oil-amber" class="oil"></div>
+            <div id="oil-green" class="oil"></div>
+          </div>
+          <div class="gauges">
+            <div class="gauge">kind<strong id="g-kind">none</strong></div>
+            <div class="gauge">earlyByMs<strong id="g-early">none</strong></div>
+            <div class="gauge">guard<strong id="g-guard">none</strong></div>
+            <div class="gauge">last / next<strong id="g-runs">none</strong></div>
+          </div>
+          <div class="keys">
+            <button class="primary" type="button" id="btn-score">Score</button>
+            <button type="button" id="btn-bail">Bail · wound</button>
+            <button class="warn" type="button" id="btn-dial">Dial</button>
+            <button type="button" id="btn-admit">Admit</button>
+          </div>
+          <div class="gates">
+            <button type="button" data-seed="wound" aria-pressed="false">Wound arbor</button>
+            <button type="button" data-seed="early" aria-pressed="true">Early #90485</button>
+            <button type="button" data-seed="sprung">Sprung</button>
+            <button type="button" data-seed="raced">Raced</button>
+            <button type="button" data-seed="ahead">Ahead</button>
+            <button type="button" data-seed="jumped">Jumped</button>
+            <button type="button" data-seed="premature">Premature</button>
+            <button type="button" data-seed="voided">Voided</button>
+            <button type="button" data-seed="held">Held</button>
+            <button type="button" data-seed="true">True</button>
+          </div>
+          <label class="mark" for="paste" style="display:block;margin-top:14px">Paste session trace</label>
+          <textarea id="paste" class="paste" placeholder="configuredAt / dispatchedAt / ~95 days early / cronExpression / fireAt / wall-clock guard — detect a raced spring"></textarea>
+          <button type="button" id="btn-probe" style="margin-top:8px;border:1px solid rgba(214,179,106,0.32);background:#1a120c;padding:8px 12px;font-size:14px;text-transform:uppercase">Probe paste</button>
+        </aside>
+      </div>
+      <div class="integrations">
+        <article>
+          <h3>Slack fusee alarm</h3>
+          Horn on early / sprung / raced / ahead / jumped / premature / voided. Demo posts nothing live without a webhook.
+        </article>
+        <article>
+          <h3>Linear ticket</h3>
+          Dial ticket on early / sprung / raced / ahead / premature. Honest demo row when the key is absent.
+        </article>
+        <article>
+          <h3>GitHub fusee-ledger</h3>
+          Every scored probe writes a dial event. Private gist when a token is present.
+        </article>
+      </div>
+      <section class="brief">
+        <h2>Thesis</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90485">anthropics/claude-code#90485</a>
+          (filed 2026-08-29, open): Scheduled tasks dispatch ahead of
+          their configured fire time. Three confirmed instances:
+          ~95 days early (DST fleet rewrite would have applied months
+          early), ~3h40m early (verification task before the slot),
+          ~27 days early (trial-cancellation evaluation). Tasks use
+          <code>create_scheduled_task</code> /
+          <code>list_scheduled_tasks</code> /
+          <code>update_scheduled_task</code>; both recurring
+          <code>cronExpression</code> (5-field local) and one-off
+          <code>fireAt</code> (ISO 8601 with offset). Authors now
+          hand-write wall-clock guards into every task prompt (41+)
+          because nothing in the scheduler prevents early dispatch.
+        </p>
+        <p>
+          Related-but-distinct (shape, not a new primary):
+          <a href="https://github.com/anthropics/claude-code/issues/77657">#77657</a>
+          — lastRunAt/nextRunAt inconsistent with actual execution.
+          <a href="https://github.com/anthropics/claude-code/issues/89942">#89942</a>
+          — Scheduled task never records lastRunAt despite normal recurring cron.
+          <a href="https://github.com/anthropics/claude-code/issues/89936">#89936</a>
+          — lastRunAt never updates while nextRunAt keeps advancing.
+          <a href="https://github.com/anthropics/claude-code/issues/89811">#89811</a>
+          — Scheduled tasks report success but silently perform zero work.
+          <a href="https://github.com/anthropics/claude-code/issues/85565">#85565</a>
+          — Desktop update wiped scheduledTasks: [] with zero notification.
+        </p>
+      </section>
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Iota (typesetter's type-case / path-key identity). NOT Leat
+          (mill leat / sleep-block unbounded until-loop). NOT Shunt
+          (night railway / nested SendMessage misroute). NOT Sump / Pleat /
+          Scant / Chad / Kist / Wraith / Gasket / Damper / Cote / Larder /
+          Tappet / Aside / Chute / Tain / Husk / Snib / Veto / Assay /
+          Wicket / Sigil / Stencil / Suture / Blot / Coda / Reed / Fathom /
+          Hasp / Parity / Reveille / Quench / Scrim / Knock. NOT leftover
+          woodworking / millimetre-slider clones. Different problem:
+          scheduler fires before configured fireAt/cron slot; no
+          early-dispatch guard in the platform. Different UI: clockmaker's
+          fusee / conical pulley / escapement / enamel dial / mainspring /
+          arbor / winding key. Brass, lamp oil, oak case. Different idle:
+          <b>wound</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "wound";
+      const SLACK = ["early", "sprung", "raced", "ahead", "jumped", "premature", "voided"];
+      const MS_DAY = 86400000;
+      const MS_HOUR = 3600000;
+      const MS_MINUTE = 60000;
+      const EARLY_95_DAYS_MS = 95 * MS_DAY;
+      const EARLY_27_DAYS_MS = 27 * MS_DAY;
+      const EARLY_3H40M_MS = 3 * MS_HOUR + 40 * MS_MINUTE;
+
+      function emptyProbe() {
+        return {
+          configuredAt: "",
+          dispatchedAt: "",
+          kind: "",
+          cronExpression: "",
+          fireAt: "",
+          earlyByMs: 0,
+          guardCaught: false,
+          lastRunAt: "",
+          nextRunAt: "",
+          reportedSuccess: false,
+          workDone: false,
+          observed: false,
+          session: "",
+          source: "",
+          issue: null,
+          scored: false,
+        };
+      }
+
+      function classify(probe) {
+        const next = { ...emptyProbe(), ...probe };
+        const idle =
+          !next.configuredAt &&
+          !next.dispatchedAt &&
+          !next.kind &&
+          !next.cronExpression &&
+          !next.fireAt &&
+          next.earlyByMs <= 0 &&
+          !next.guardCaught &&
+          !next.lastRunAt &&
+          !next.nextRunAt &&
+          !next.reportedSuccess &&
+          !next.workDone &&
+          !next.observed;
+        if (idle) return "wound";
+        const earlyByMs = Number(next.earlyByMs) || 0;
+        const isEarly = earlyByMs > 0;
+        const isDaysPlus = earlyByMs >= MS_DAY;
+        const is95Day = earlyByMs >= 90 * MS_DAY;
+        const isFireAt = next.kind === "fireAt" || Boolean(next.fireAt);
+        const isCron = next.kind === "cron" || Boolean(next.cronExpression);
+        const premature = /evaluation|trial-cancellation|decision task/i.test([next.session, next.source].join(" "));
+        const held = (!next.lastRunAt && next.nextRunAt && (next.dispatchedAt || next.reportedSuccess)) ||
+          (next.lastRunAt && next.dispatchedAt && next.lastRunAt !== next.dispatchedAt);
+        if (next.guardCaught) return "voided";
+        if (held && !isEarly) return "held";
+        if (premature && isEarly) return "premature";
+        if (is95Day) return "early";
+        if (isDaysPlus) return "raced";
+        if (isFireAt && isEarly) return "ahead";
+        if (isCron && isEarly) return "jumped";
+        if (isEarly) return "sprung";
+        if ((next.configuredAt || next.fireAt) && next.dispatchedAt && earlyByMs <= 0) return "true";
+        return "wound";
+      }
+
+      function feedOf(kind) {
+        if (kind === "early") return "● Early · dispatched ~95 days before the DST fleet rewrite slot · primary #90485";
+        if (kind === "sprung") return "● Sprung · spring released before the dial says so";
+        if (kind === "raced") return "● Raced · dispatch raced ahead of the configured slot by a large margin (days+)";
+        if (kind === "ahead") return "● Ahead · fireAt one-off ran early";
+        if (kind === "jumped") return "● Jumped · cron slot jumped early";
+        if (kind === "premature") return "● Premature · evaluation/decision task ran before its window";
+        if (kind === "voided") return "● Voided · early dispatch caught only by a hand-written wall-clock guard";
+        if (kind === "held") return "● Held · nextRunAt/lastRunAt inconsistent with actual execution";
+        if (kind === "true") return "● True · configured time matches actual dispatch wall clock";
+        return "● Wound · spring regulated · fire time honored · idle word is wound";
+      }
+
+      function clusterOf(probe, kind) {
+        const cluster = [];
+        const add = (word) => { if (word && word !== kind && !cluster.includes(word)) cluster.push(word); };
+        const earlyByMs = Number(probe.earlyByMs) || 0;
+        const isEarly = earlyByMs > 0;
+        if (probe.guardCaught) add("voided");
+        if (!probe.lastRunAt && probe.nextRunAt && (probe.dispatchedAt || probe.reportedSuccess)) add("held");
+        if (/evaluation|trial-cancellation/i.test([probe.session, probe.source].join(" ")) && isEarly) add("premature");
+        if (earlyByMs >= 90 * MS_DAY) add("early");
+        if (earlyByMs >= MS_DAY) add("raced");
+        if ((probe.kind === "fireAt" || probe.fireAt) && isEarly) add("ahead");
+        if ((probe.kind === "cron" || probe.cronExpression) && isEarly) add("jumped");
+        if (isEarly) add("sprung");
+        return cluster;
+      }
+
+      function seedOf(name) {
+        const base = emptyProbe();
+        if (name === "early") {
+          return {
+            ...base,
+            configuredAt: "2026-11-01T02:00:00.000+11:00",
+            dispatchedAt: "2026-07-29T02:00:00.000+10:00",
+            kind: "cron",
+            cronExpression: "0 2 1 11 *",
+            earlyByMs: EARLY_95_DAYS_MS,
+            lastRunAt: "2026-07-29T02:00:00.000+10:00",
+            nextRunAt: "2027-11-01T02:00:00.000+11:00",
+            reportedSuccess: true,
+            workDone: true,
+            session: "90485-early",
+            source: "anthropics/claude-code#90485",
+            issue: 90485,
+            scored: true,
+          };
+        }
+        if (name === "sprung") {
+          return { ...base, configuredAt: "2026-08-29T12:00:00.000+10:00", dispatchedAt: "2026-08-29T11:40:00.000+10:00", earlyByMs: 20 * MS_MINUTE, session: "90485-sprung", issue: 90485, scored: true };
+        }
+        if (name === "raced") {
+          return { ...base, configuredAt: "2026-09-25T09:00:00.000+10:00", dispatchedAt: "2026-08-29T09:00:00.000+10:00", kind: "cron", cronExpression: "0 9 25 9 *", earlyByMs: EARLY_27_DAYS_MS, reportedSuccess: true, workDone: true, session: "90485-raced", issue: 90485, scored: true };
+        }
+        if (name === "ahead") {
+          return { ...base, configuredAt: "2026-08-29T12:00:00.000+10:00", dispatchedAt: "2026-08-29T08:20:00.000+10:00", kind: "fireAt", fireAt: "2026-08-29T12:00:00.000+10:00", earlyByMs: EARLY_3H40M_MS, reportedSuccess: true, workDone: true, session: "90485-ahead", issue: 90485, scored: true };
+        }
+        if (name === "jumped") {
+          return { ...base, configuredAt: "2026-08-29T14:00:00.000+10:00", dispatchedAt: "2026-08-29T12:00:00.000+10:00", kind: "cron", cronExpression: "0 14 * * *", earlyByMs: 2 * MS_HOUR, reportedSuccess: true, workDone: true, session: "90485-jumped", issue: 90485, scored: true };
+        }
+        if (name === "premature") {
+          return { ...base, configuredAt: "2026-09-25T09:00:00.000+10:00", dispatchedAt: "2026-08-29T09:00:00.000+10:00", kind: "cron", cronExpression: "0 9 25 9 *", earlyByMs: EARLY_27_DAYS_MS, reportedSuccess: true, workDone: true, session: "90485-premature-evaluation", source: "anthropics/claude-code#90485 trial-cancellation evaluation", issue: 90485, scored: true };
+        }
+        if (name === "voided") {
+          return { ...base, configuredAt: "2026-08-29T18:00:00.000+10:00", dispatchedAt: "2026-08-29T16:00:00.000+10:00", kind: "cron", cronExpression: "0 18 * * *", earlyByMs: 2 * MS_HOUR, guardCaught: true, session: "90485-voided", issue: 90485, scored: true };
+        }
+        if (name === "held") {
+          return { ...base, configuredAt: "2026-08-29T10:00:00.000+10:00", dispatchedAt: "2026-08-29T10:00:00.000+10:00", kind: "cron", cronExpression: "0 10 * * *", lastRunAt: "", nextRunAt: "2026-08-30T10:00:00.000+10:00", reportedSuccess: true, session: "77657-held", issue: 77657, scored: true };
+        }
+        if (name === "true") {
+          return { ...base, configuredAt: "2026-08-29T10:50:00.000+10:00", dispatchedAt: "2026-08-29T10:50:00.000+10:00", kind: "cron", cronExpression: "50 10 * * *", lastRunAt: "2026-08-29T10:50:00.000+10:00", nextRunAt: "2026-08-30T10:50:00.000+10:00", reportedSuccess: true, workDone: true, session: "true", scored: true };
+        }
+        return { ...base, session: "wound", scored: true };
+      }
+
+      function parseTrace(text) {
+        const iso = text.match(/\d{4}-\d{2}-\d{2}T[^\s"'`]+/g) || [];
+        const days = /~?\s*(\d+)\s*days?\s+early/i.exec(text);
+        const hours = /~?\s*(\d+)h(?:(\d+)m)?\s+early/i.exec(text);
+        let earlyByMs = 0;
+        if (days) earlyByMs = Number(days[1]) * MS_DAY;
+        else if (hours) {
+          earlyByMs = Number(hours[1] || 0) * MS_HOUR;
+          if (hours[2]) earlyByMs += Number(hours[2]) * MS_MINUTE;
+        }
+        return {
+          ...emptyProbe(),
+          configuredAt: /configured(?:At)?[:\s]+(\S+)/i.exec(text)?.[1] || iso[0] || "",
+          dispatchedAt: /dispatched(?:At)?[:\s]+(\S+)/i.exec(text)?.[1] || iso[1] || "",
+          kind: /fireAt/i.test(text) && !/cron/i.test(text) ? "fireAt" : /cron/i.test(text) ? "cron" : "",
+          cronExpression: /cron(?:Expression)?[:\s]+([0-9*,/\- ]+)/i.exec(text)?.[1]?.trim() || "",
+          fireAt: /fireAt[:\s]+(\S+)/i.exec(text)?.[1] || "",
+          earlyByMs,
+          guardCaught: /wall-clock guard|hand-written guard|guard caught/i.test(text),
+          lastRunAt: /lastRunAt[:\s]+(\S+)/i.exec(text)?.[1] || "",
+          nextRunAt: /nextRunAt[:\s]+(\S+)/i.exec(text)?.[1] || "",
+          reportedSuccess: /report(?:ed)? success/i.test(text),
+          session: /evaluation|trial-cancellation/i.test(text) ? "paste-evaluation" : "paste",
+          source: /#90485/.test(text) ? "anthropics/claude-code#90485" : "paste",
+          issue: /#90485/.test(text) ? 90485 : null,
+          scored: true,
+        };
+      }
+
+      let probe = seedOf("early");
+
+      function render() {
+        const verdict = classify(probe);
+        const cluster = clusterOf(probe, verdict);
+        const alarm = SLACK.includes(verdict);
+        const chip = document.getElementById("chip");
+        chip.innerHTML = "<b>" + verdict + "</b> · " + (cluster.length ? cluster.join(" · ") : IDLE_WORD);
+        chip.className = "chip" + (alarm ? " alarm" : verdict === "wound" || verdict === "true" ? " hold" : "");
+        document.getElementById("feed").textContent = feedOf(verdict);
+        document.getElementById("horn").className = "horn" + (alarm ? " on" : "");
+        document.getElementById("oil-red").className = "oil" + (alarm ? " red" : "");
+        document.getElementById("oil-amber").className = "oil" + (verdict !== "wound" && verdict !== "true" && !alarm ? " amber" : "");
+        document.getElementById("oil-green").className = "oil" + (verdict === "wound" || verdict === "true" ? " green" : "");
+        const earlyHours = (Number(probe.earlyByMs) || 0) / MS_HOUR;
+        const configuredDeg = 0;
+        const dispatchedDeg = Math.max(-170, Math.min(0, -Math.min(earlyHours * 3, 160)));
+        document.getElementById("hand-configured").style.transform = "rotate(" + configuredDeg + "deg)";
+        document.getElementById("hand-dispatched").style.transform = "rotate(" + dispatchedDeg + "deg)";
+        document.getElementById("configured").textContent = probe.configuredAt || probe.fireAt || "—";
+        document.getElementById("dispatched").textContent = probe.dispatchedAt || "—";
+        const tray = document.getElementById("tray");
+        const lines = [];
+        if (probe.kind) lines.push("<li>kind " + probe.kind + "</li>");
+        if (probe.earlyByMs) lines.push("<li>early by " + probe.earlyByMs + "ms</li>");
+        if (probe.cronExpression) lines.push("<li>cron " + probe.cronExpression + "</li>");
+        if (probe.fireAt) lines.push("<li>fireAt " + probe.fireAt + "</li>");
+        if (probe.guardCaught) lines.push("<li>wall-clock guard caught the fire</li>");
+        if (!probe.lastRunAt && probe.nextRunAt) lines.push("<li>lastRunAt missing · nextRunAt " + probe.nextRunAt + "</li>");
+        tray.innerHTML = lines.length ? lines.join("") : "<li>spring regulated · fire time honored</li>";
+        document.getElementById("g-kind").textContent = probe.kind || "none";
+        document.getElementById("g-early").textContent = probe.earlyByMs ? String(probe.earlyByMs) : "none";
+        document.getElementById("g-guard").textContent = probe.guardCaught ? "caught" : "none";
+        document.getElementById("g-runs").textContent = (probe.lastRunAt || "—") + " / " + (probe.nextRunAt || "—");
+        document.querySelectorAll(".gates button[data-seed]").forEach((btn) => {
+          btn.setAttribute("aria-pressed", classify(probe) === btn.getAttribute("data-seed") ? "true" : "false");
+        });
+      }
+
+      document.getElementById("btn-score").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-bail").addEventListener("click", () => {
+        probe = seedOf("wound");
+        render();
+      });
+      document.getElementById("btn-dial").addEventListener("click", () => {
+        probe = seedOf("early");
+        render();
+      });
+      document.getElementById("btn-admit").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-probe").addEventListener("click", () => {
+        const text = document.getElementById("paste").value || "";
+        probe = text.trim() ? parseTrace(text) : seedOf("early");
+        render();
+      });
+      document.querySelectorAll(".gates button[data-seed]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          probe = seedOf(btn.getAttribute("data-seed"));
+          render();
+        });
+      });
+      render();
+    </script>
+  </body>
+</html>
