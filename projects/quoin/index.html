@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Quoin — letterpress quoin for Claude Code Bash tool unescaping inside a quoted heredoc. A shifted form is not a hold. Idle word is locked."
+    />
+    <title>Quoin — letterpress quoin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,700&family=Roboto+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #14110e;
+        --paper: #f4ead4;
+        --brass: #c4a35a;
+        --brass-lit: #e0c57a;
+        --metal: #8a8d86;
+        --oak: #6b4a2b;
+        --oak-deep: #4a3018;
+        --slab: #1c1914;
+        --mute: #6e6556;
+        --lie: #8b2e1a;
+        --hold: #3d5a3a;
+        --head: "Bodoni Moda", "Times New Roman", serif;
+        --mono: "Roboto Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--mono);
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 70% 40% at 50% 0%, rgba(196, 163, 90, 0.14), transparent 55%),
+          repeating-linear-gradient(
+            90deg,
+            #e8d9b8 0 2px,
+            #f4ead4 2px 18px
+          );
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--oak); }
+      .composing-room {
+        width: min(1180px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 20px 0 80px;
+      }
+      .nameplate {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        padding: 6px 2px 16px;
+        border-bottom: 3px double var(--ink);
+      }
+      .mark {
+        font-family: var(--head);
+        font-size: 13px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--oak);
+      }
+      h1 {
+        margin: 4px 0 0;
+        font-family: var(--head);
+        font-size: clamp(56px, 11vw, 104px);
+        font-weight: 700;
+        line-height: 0.82;
+        letter-spacing: -0.03em;
+        color: var(--ink);
+      }
+      .lede {
+        max-width: 30em;
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--mute);
+      }
+      .chase-bed {
+        margin-top: 20px;
+        padding: 18px;
+        background:
+          linear-gradient(180deg, #8a5a32 0%, var(--oak) 40%, var(--oak-deep) 100%);
+        box-shadow:
+          inset 0 0 0 10px #5a3a1c,
+          inset 0 0 0 14px #2a1a0c,
+          0 18px 40px rgba(20, 17, 14, 0.28);
+      }
+      .oak-chase {
+        display: grid;
+        grid-template-columns: 1fr 92px;
+        gap: 10px;
+        min-height: 280px;
+        padding: 14px;
+        border: 8px solid var(--metal);
+        background:
+          repeating-linear-gradient(
+            0deg,
+            #d8cbb0 0 22px,
+            #cfc2a6 22px 23px
+          );
+        box-shadow: inset 0 0 0 3px #5c5f58;
+      }
+      .type-form {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px 18px;
+        background: #cfc8b6;
+        border: 1px solid #9a9484;
+        overflow: hidden;
+      }
+      .type-form.form-shifted .type-slug:nth-child(2) {
+        transform: translateX(18px) rotate(-1.2deg);
+        color: var(--lie);
+      }
+      .type-form.form-locked .type-slug {
+        transform: none;
+      }
+      .type-slug {
+        font-family: var(--mono);
+        font-size: 15px;
+        letter-spacing: 0.04em;
+        background: #b7b3a6;
+        color: var(--ink);
+        padding: 8px 10px;
+        border: 1px solid #8a8678;
+        box-shadow: 2px 2px 0 #8a8678;
+        transition: transform 240ms ease;
+      }
+      .brass-quoin {
+        position: relative;
+        align-self: stretch;
+        background:
+          linear-gradient(180deg, var(--brass-lit) 0%, var(--brass) 55%, #8a6e2e 100%);
+        border: 2px solid #6a5418;
+        clip-path: polygon(18% 0, 100% 0, 82% 100%, 0 100%);
+        box-shadow: inset 0 0 12px rgba(80, 50, 10, 0.35);
+        transition: transform 240ms ease, clip-path 240ms ease;
+      }
+      .oak-chase.form-locked .brass-quoin {
+        transform: scaleX(1.08);
+      }
+      .oak-chase.form-shifted .brass-quoin {
+        transform: translateY(8px) scaleX(0.92);
+        opacity: 0.85;
+      }
+      .quoin-key {
+        position: absolute;
+        top: 18px;
+        right: -6px;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 35% 30%, #f0d88a, var(--brass) 60%, #7a5e22);
+        border: 3px solid #4a3a10;
+        box-shadow: 0 4px 0 #3a2a08;
+        transition: transform 280ms ease;
+      }
+      .quoin-key::before {
+        content: "";
+        position: absolute;
+        inset: 18px 6px;
+        background: #3a2a08;
+      }
+      .quoin-key.key-turned {
+        transform: rotate(90deg);
+      }
+      .quoin-key.key-loose {
+        transform: rotate(18deg);
+      }
+      .proof-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 760px) {
+        .oak-chase, .proof-row, .desk-grid { grid-template-columns: 1fr; }
+      }
+      .proof-sheet {
+        background: var(--paper);
+        border: 1px solid #c8b896;
+        padding: 14px 16px 16px;
+        box-shadow: 3px 4px 0 rgba(20, 17, 14, 0.08);
+      }
+      .proof-sheet h2 {
+        margin: 0 0 8px;
+        font-family: var(--head);
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+      .proof-sheet pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-size: 12px;
+        line-height: 1.45;
+        color: var(--ink);
+      }
+      .ink-slab {
+        margin-top: 16px;
+        padding: 16px;
+        background: var(--slab);
+        color: var(--paper);
+      }
+      .ink-slab h2 {
+        margin: 0 0 10px;
+        font-family: var(--head);
+        font-size: 26px;
+      }
+      .seeds, .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .seeds button, .acts button {
+        background: transparent;
+        border: 1px solid rgba(244, 234, 212, 0.35);
+        padding: 6px 10px;
+        color: var(--paper);
+      }
+      .seeds button[aria-pressed="true"],
+      .acts button.primary {
+        background: var(--brass);
+        color: var(--ink);
+        border-color: var(--brass);
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        resize: vertical;
+        background: #2a241c;
+        color: var(--paper);
+        border: 1px solid #4a4034;
+        padding: 10px;
+        font: inherit;
+        font-size: 12px;
+      }
+      .desk-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      .verdict-card, .ledger-card {
+        background: var(--paper);
+        border: 1px solid #c8b896;
+        padding: 16px;
+      }
+      .verdict-card h2, .ledger-card h2 {
+        margin: 0 0 8px;
+        font-family: var(--head);
+        font-size: 24px;
+      }
+      .chip {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        padding: 4px 10px;
+        border: 1px solid var(--ink);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .chip.hold { background: #d7e4d4; color: var(--hold); }
+      .chip.lie { background: #f0d4cc; color: var(--lie); }
+      #verdict-word {
+        font-family: var(--head);
+        font-size: 42px;
+        margin: 8px 0 4px;
+      }
+      #feed { color: var(--mute); font-size: 13px; }
+      #lines { margin: 10px 0 0; padding-left: 18px; }
+      .ledger-card p {
+        margin: 0 0 8px;
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .why {
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(20, 17, 14, 0.16);
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      .why h2 {
+        margin: 0 0 8px;
+        font-family: var(--head);
+        color: var(--ink);
+        font-size: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="composing-room">
+      <header class="nameplate">
+        <div>
+          <div class="mark">05:50 Sydney · quoin</div>
+          <h1>Quoin</h1>
+        </div>
+        <p class="lede">
+          A shifted form is not a hold. Score the chase or admit locked.
+          Quoted <code>&lt;&lt;'EOF'</code> promised a verbatim body. The Bash
+          tool applied one unescape pass anyway. Idle word is <b>locked</b>.
+        </p>
+      </header>
+
+      <section class="chase-bed" aria-label="Wooden chase">
+        <div class="oak-chase form-shifted" id="oak-chase">
+          <div class="type-form form-shifted" id="type-form">
+            <div class="type-slug" id="slug-one">one:  C:\Users</div>
+            <div class="type-slug" id="slug-two">two:  C:\\Users → C:\Users</div>
+            <div class="type-slug" id="slug-lock">&lt;&lt;'EOF' · quoted delimiter</div>
+          </div>
+          <div class="brass-quoin" id="brass-quoin" title="Brass expanding quoin">
+            <div class="quoin-key key-loose" id="quoin-key" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="proof-row">
+          <article class="proof-sheet">
+            <h2>Composed</h2>
+            <pre id="composed-proof"></pre>
+          </article>
+          <article class="proof-sheet">
+            <h2>Received</h2>
+            <pre id="received-proof"></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="ink-slab">
+        <h2>Ink slab</h2>
+        <div class="seeds">
+          <button type="button" data-seed="shifted" aria-pressed="true">#90630 shifted</button>
+          <button type="button" data-seed="collapsed">#88561 collapsed</button>
+          <button type="button" data-seed="path-broke">#89392 strip</button>
+          <button type="button" data-seed="halve">#85856 halve</button>
+          <button type="button" data-seed="control">honest locked</button>
+          <button type="button" data-seed="powershell">PowerShell @'…'@</button>
+          <button type="button" data-seed="misattributed">misattributed</button>
+          <button type="button" data-seed="regex-broke">regex-broke</button>
+          <button type="button" data-seed="double-slash">double-slash</button>
+          <button type="button" data-seed="unescaped">unescaped</button>
+          <button type="button" data-seed="sealed-open">sealed-open</button>
+        </div>
+        <textarea id="paste" spellcheck="false"></textarea>
+        <div class="acts">
+          <button type="button" class="primary" id="btn-score">Score</button>
+          <button type="button" id="btn-probe">Score paste</button>
+          <button type="button" id="btn-admit">Admit locked</button>
+          <button type="button" id="btn-reset">Reset · locked</button>
+          <button type="button" id="btn-restore">Restore · #90630</button>
+        </div>
+        <p id="masked" style="margin:0;font-size:12px;color:#c8b896;"></p>
+      </section>
+
+      <div class="desk-grid">
+        <article class="verdict-card">
+          <h2>Chase score</h2>
+          <div class="chip lie" id="chip"><b>shifted</b> · lie</div>
+          <div id="verdict-word">shifted</div>
+          <p id="feed"></p>
+          <ul id="lines"></ul>
+        </article>
+        <article class="ledger-card">
+          <h2>Quoin ledger</h2>
+          <p id="slack-ledger"></p>
+          <p id="github-ledger"></p>
+          <p id="linear-ledger"></p>
+        </article>
+      </div>
+
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Scant (PATH truncation / working-size coil adjacent. Quoin is unescape of a quoted heredoc body).
+          NOT Sear (set -e structurally inert in eval/non-final &amp;&amp;. Quoin is not about errexit).
+          NOT Grille (permission-mode steers edits to Bash sed/heredocs so diffs vanish. Quoin is the body arriving mutated <i>inside</i> an already-quoted heredoc).
+          NOT Assay (tool-arg wire-format. Quoin is Bash transport unescaping).
+          NOT Stencil (plan-mode fence).
+          NOT Gaff (timeout-kill false complete. Quoin is not about exit receipts).
+          NOT Spile / Sounder / Leat (stdin wedge / missed wakeup / until-loop).
+          NOT leftover woodworking / millimetre-slider clones.
+          NOT Bodkin / Chase / Galley / Slug / Wafer / Cachet / Escaper / Heredoc / Quote. Product name is Quoin only. Idle word is <b>locked</b>.
+          Nearby pole (different tool): #72957 Write/Edit silently decode \uXXXX. Nearby (not this): #90597 platform heredoc prescription.
+          Cross-ecosystem: openai/codex#41534 nested-quote corruption in pwsh -Command.
+          Different problem: Bash tool applies one unescape pass to a quoted heredoc body.
+          Different UI: letterpress composing room. Oak chase, type metal, brass expanding quoin + quoin key, ink slab, cream proof sheet. Fonts: Bodoni Moda + Roboto Mono.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "locked";
+      const SLACK = ["shifted", "collapsed", "misattributed", "path-broke", "regex-broke"];
+      const LINEAR = ["shifted", "misattributed"];
+      const DEMO_COMPOSED = "one:  C:\\Users\ntwo:  C:\\\\Users";
+      const DEMO_RECEIVED = "one:  C:\\Users\ntwo:  C:\\Users";
+      const DEMO_PROBE = [
+        "cat <<'EOF'",
+        DEMO_COMPOSED,
+        "EOF",
+        "",
+        "Expected:",
+        DEMO_COMPOSED,
+        "",
+        "Actual:",
+        DEMO_RECEIVED
+      ].join("\n");
+      const DEMO_PYTHON = [
+        "python - <<'EOF'",
+        's = "C:\\\\Users\\\\Scott"',
+        "print(s)",
+        "EOF",
+        "",
+        "SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes in position 2-3: truncated \\UXXXXXXXX escape"
+      ].join("\n");
+
+      function emptyQuoin() {
+        return {
+          session: "", issue: null, source: "",
+          composedBody: "", receivedBody: "",
+          delimiterQuoted: false, tool: "", platform: "",
+          traceback: "", commandTextCollapse: false,
+          windowsStrip: false, windowsHalve: false,
+          regexChanged: false, unescapeApplied: false,
+          sealedLook: false, powershellHereString: false,
+          scored: false
+        };
+      }
+
+      function isIdle(row) {
+        return !row.composedBody && !row.receivedBody && !row.delimiterQuoted &&
+          !row.traceback && !row.commandTextCollapse && !row.windowsStrip &&
+          !row.windowsHalve && !row.regexChanged && !row.unescapeApplied &&
+          !row.sealedLook && !row.powershellHereString;
+      }
+
+      function oneUnescapePass(composed, received) {
+        if (!composed || received === "" || composed === received) return false;
+        return String(composed).replace(/\\\\/g, "\\") === received;
+      }
+
+      function analyze(row) {
+        const collapse = oneUnescapePass(row.composedBody, row.receivedBody);
+        const differ = row.composedBody !== row.receivedBody && (row.composedBody || row.receivedBody);
+        const c = (String(row.composedBody).match(/\\/g) || []).length;
+        const r = (String(row.receivedBody).match(/\\/g) || []).length;
+        const twoVsOne = c >= 2 && r === c - 1;
+        const quotedBash = row.delimiterQuoted === true && !row.powershellHereString;
+        const shiftedShape = quotedBash && (collapse || (differ && twoVsOne && row.unescapeApplied));
+        const misattributedShape = !shiftedShape && /unicodeescape|truncated \\U|SyntaxError/i.test(row.traceback || "");
+        const pathBrokeShape = !shiftedShape && !misattributedShape && (row.windowsStrip || row.windowsHalve);
+        const regexBrokeShape = !shiftedShape && !misattributedShape && !pathBrokeShape && row.regexChanged;
+        const collapsedShape = !shiftedShape && !misattributedShape && !pathBrokeShape && !regexBrokeShape &&
+          row.commandTextCollapse && !row.delimiterQuoted;
+        const doubleSlashShape = !shiftedShape && !misattributedShape && !pathBrokeShape && !regexBrokeShape &&
+          !collapsedShape && differ && twoVsOne && !row.delimiterQuoted;
+        const unescapedShape = !shiftedShape && !misattributedShape && !pathBrokeShape && !regexBrokeShape &&
+          !collapsedShape && !doubleSlashShape && row.unescapeApplied && row.delimiterQuoted;
+        const sealedOpenShape = !shiftedShape && !misattributedShape && !pathBrokeShape && !regexBrokeShape &&
+          !collapsedShape && !doubleSlashShape && !unescapedShape && row.delimiterQuoted && row.sealedLook && differ;
+        const lockedHold = (row.powershellHereString && row.composedBody === row.receivedBody && !row.unescapeApplied) ||
+          (row.delimiterQuoted && row.composedBody && row.composedBody === row.receivedBody && !row.unescapeApplied &&
+            !row.commandTextCollapse && !row.windowsStrip && !row.windowsHalve && !row.regexChanged && !row.traceback);
+        return {
+          shiftedShape: shiftedShape, misattributedShape: misattributedShape,
+          pathBrokeShape: pathBrokeShape, regexBrokeShape: regexBrokeShape,
+          collapsedShape: collapsedShape, doubleSlashShape: doubleSlashShape,
+          unescapedShape: unescapedShape, sealedOpenShape: sealedOpenShape,
+          lockedHold: lockedHold
+        };
+      }
+
+      function classify(row) {
+        if (isIdle(row)) return "locked";
+        const facts = analyze(row);
+        if (facts.shiftedShape) return "shifted";
+        if (facts.misattributedShape) return "misattributed";
+        if (facts.pathBrokeShape) return "path-broke";
+        if (facts.regexBrokeShape) return "regex-broke";
+        if (facts.collapsedShape) return "collapsed";
+        if (facts.doubleSlashShape) return "double-slash";
+        if (facts.unescapedShape) return "unescaped";
+        if (facts.sealedOpenShape) return "sealed-open";
+        if (facts.lockedHold) return "locked";
+        return "locked";
+      }
+
+      function feedOf(kind) {
+        if (kind === "shifted") return "● Shifted · one unescape pass · \\\\ collapsed to \\ inside <<'EOF' · primary #90630";
+        if (kind === "collapsed") return "● Collapsed · double slash became single in command text · #88561";
+        if (kind === "unescaped") return "● Unescaped · transport applied escape processing despite quoted delimiter";
+        if (kind === "misattributed") return "● Misattributed · SyntaxError / traceback points at a line the model never wrote · #90630";
+        if (kind === "path-broke") return "● Path-broke · Windows absolute path backslashes corrupted · #89392 / #85856";
+        if (kind === "regex-broke") return "● Regex-broke · \\\\d / \\\\\\\\ patterns silently changed · #88561";
+        if (kind === "double-slash") return "● Double-slash · probe shows two composed, one arrived";
+        if (kind === "sealed-open") return "● Sealed-open · quoted heredoc promise broken · look sealed, body steamed";
+        return "● Locked · quoted delimiter held · composed === shell body · no unescape pass · form did not shift · idle word is locked";
+      }
+
+      function reasonsOf(row, kind) {
+        const reasons = [];
+        reasons.push("a shifted form is not a hold");
+        if (kind === "shifted") reasons.push("PRIMARY #90630: Bash tool unescapes backslashes inside a quoted heredoc.");
+        if (kind === "collapsed") reasons.push("command-text collapse. #88561.");
+        if (kind === "misattributed") reasons.push("traceback points at a line the model never wrote.");
+        if (kind === "path-broke") reasons.push("Windows path backslashes corrupted. #89392 / #85856.");
+        if (kind === "locked") reasons.push("quoted delimiter held; composed === shell body; no unescape pass; idle word is locked");
+        reasons.push("NOT Scant / Sear / Grille / Assay / Stencil / Gaff / leftover woodworking / millimetre-slider.");
+        return reasons;
+      }
+
+      function seedOf(name) {
+        const row = emptyQuoin();
+        row.scored = true;
+        if (name === "shifted" || name === "90630") {
+          row.session = "90630-shifted"; row.issue = 90630; row.source = "anthropics/claude-code#90630";
+          row.composedBody = DEMO_COMPOSED; row.receivedBody = DEMO_RECEIVED;
+          row.delimiterQuoted = true; row.tool = "Bash"; row.platform = "windows"; row.unescapeApplied = true;
+          return row;
+        }
+        if (name === "collapsed" || name === "88561") {
+          row.session = "88561-collapsed"; row.issue = 88561;
+          row.composedBody = "a\\\\b"; row.receivedBody = "a\\b";
+          row.tool = "Bash"; row.commandTextCollapse = true;
+          return row;
+        }
+        if (name === "path-broke" || name === "89392") {
+          row.session = "89392-path-broke"; row.issue = 89392;
+          row.composedBody = "M\\\\N"; row.receivedBody = "M\\N";
+          row.tool = "Bash"; row.platform = "windows"; row.windowsStrip = true;
+          return row;
+        }
+        if (name === "halve" || name === "85856") {
+          row.session = "85856-halve"; row.issue = 85856;
+          row.composedBody = "a\\\\b"; row.receivedBody = "a\\b";
+          row.tool = "Bash"; row.platform = "windows"; row.windowsHalve = true;
+          return row;
+        }
+        if (name === "control" || name === "healthy") {
+          row.session = "90630-control";
+          row.composedBody = DEMO_COMPOSED; row.receivedBody = DEMO_COMPOSED;
+          row.delimiterQuoted = true; row.tool = "Bash";
+          return row;
+        }
+        if (name === "powershell") {
+          row.session = "90630-powershell";
+          row.composedBody = DEMO_COMPOSED; row.receivedBody = DEMO_COMPOSED;
+          row.tool = "PowerShell"; row.powershellHereString = true;
+          return row;
+        }
+        if (name === "misattributed") {
+          row.session = "90630-misattributed"; row.issue = 90630;
+          row.composedBody = 's = "C:\\\\Users\\\\Scott"';
+          row.receivedBody = 's = "C:\\Users\\Scott"';
+          row.traceback = DEMO_PYTHON;
+          return row;
+        }
+        if (name === "regex-broke") {
+          row.session = "88561-regex-broke"; row.issue = 88561;
+          row.composedBody = "s/a\\\\b/[HIT]/"; row.receivedBody = "s/a\\b/[HIT]/";
+          row.regexChanged = true;
+          return row;
+        }
+        if (name === "double-slash") {
+          row.session = "90630-double-slash";
+          row.composedBody = "C:\\\\Users"; row.receivedBody = "C:\\Users";
+          row.tool = "Bash";
+          return row;
+        }
+        if (name === "unescaped") {
+          row.session = "90630-unescaped";
+          row.delimiterQuoted = true; row.unescapeApplied = true; row.tool = "Bash";
+          return row;
+        }
+        if (name === "sealed-open") {
+          row.session = "90630-sealed-open";
+          row.composedBody = "form locked"; row.receivedBody = "form steamed";
+          row.delimiterQuoted = true; row.sealedLook = true; row.tool = "Bash";
+          return row;
+        }
+        return row;
+      }
+
+      function parseTrace(raw) {
+        const text = String(raw || "").trim();
+        if (!text) return emptyQuoin();
+        if (text.startsWith("{") || text.startsWith("[")) {
+          try {
+            const parsed = JSON.parse(text);
+            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+              return Object.assign(emptyQuoin(), parsed, { scored: true });
+            }
+          } catch (e) { /* fall through to prose */ }
+        }
+        if (/unicodeescape|truncated \\U|SyntaxError/i.test(text)) return seedOf("misattributed");
+        if (/#90630|<<'EOF'|one:\s+C:\\Users/i.test(text)) return seedOf("shifted");
+        if (/@'|powershell here-string/i.test(text)) return seedOf("powershell");
+        if (/#88561|printf '%s\\n' 'a\\\\b'|command text/i.test(text)) return seedOf("collapsed");
+        if (/#85856|MSVCRT|MSYS2|halve/i.test(text)) return seedOf("halve");
+        if (/#89392|strips backslashes|M\\\\N/i.test(text)) return seedOf("path-broke");
+        if (/admit locked|verbatim|no unescape/i.test(text)) return seedOf("control");
+        return emptyQuoin();
+      }
+
+      let current = seedOf("shifted");
+
+      function paint(row) {
+        const kind = classify(row);
+        const locked = kind === "locked";
+        document.getElementById("verdict-word").textContent = kind;
+        const chip = document.getElementById("chip");
+        chip.className = "chip " + (locked ? "hold" : "lie");
+        chip.innerHTML = "<b>" + kind + "</b> · " + (locked ? "hold" : "lie");
+        document.getElementById("feed").textContent = feedOf(kind);
+        document.getElementById("lines").innerHTML = reasonsOf(row, kind).map(function (line) {
+          return "<li>" + line + "</li>";
+        }).join("");
+        document.getElementById("composed-proof").textContent = row.composedBody || "(empty form)";
+        document.getElementById("received-proof").textContent = row.receivedBody || "(empty proof)";
+        const form = document.getElementById("type-form");
+        const chase = document.getElementById("oak-chase");
+        const key = document.getElementById("quoin-key");
+        form.className = "type-form " + (locked ? "form-locked" : "form-shifted");
+        chase.className = "oak-chase " + (locked ? "form-locked" : "form-shifted");
+        key.className = "quoin-key " + (locked ? "key-turned" : "key-loose");
+        document.getElementById("slug-one").textContent = (row.composedBody || "one:  —").split("\n")[0];
+        document.getElementById("slug-two").textContent = locked
+          ? "form held · composed === received"
+          : ((row.receivedBody || "two:  —").split("\n")[1] || row.receivedBody || kind);
+        document.getElementById("slug-lock").textContent = row.delimiterQuoted
+          ? "<<'EOF' · quoted " + (locked ? "held" : "unescaped")
+          : (row.powershellHereString ? "@'…'@ · PowerShell held" : "no quoted delimiter");
+        const slack = SLACK.includes(kind);
+        const linear = LINEAR.includes(kind);
+        document.getElementById("slack-ledger").textContent = slack
+          ? "Would post to Slack: " + kind + " chase alarm on the quoin."
+          : "Would skip Slack. Quoin is " + kind + ".";
+        document.getElementById("linear-ledger").textContent = linear
+          ? "Would open a Linear ticket: quoin " + kind + " · Quoin · #" + (row.issue || "90630") + "."
+          : "Would skip Linear. Verdict " + kind + " is not shifted / misattributed.";
+        document.getElementById("github-ledger").textContent = "Would open a GitHub quoin-ledger issue. Demo: no token.";
+        document.getElementById("masked").textContent =
+          "Masked view · quoted " + (row.delimiterQuoted ? "yes" : "no") +
+          " · tool " + (row.tool || "unset") +
+          " · unescape " + (row.unescapeApplied ? "yes" : "no") + ". No secrets.";
+        document.querySelectorAll("[data-seed]").forEach(function (btn) {
+          const seed = btn.getAttribute("data-seed");
+          btn.setAttribute("aria-pressed", row.session && row.session.indexOf(seed) >= 0 ? "true" : "false");
+        });
+      }
+
+      document.getElementById("paste").value = DEMO_PROBE + "\n\n" + DEMO_PYTHON;
+
+      document.getElementById("btn-score").addEventListener("click", function () {
+        current.scored = true;
+        paint(current);
+      });
+      document.getElementById("btn-admit").addEventListener("click", function () {
+        paint(current);
+      });
+      document.getElementById("btn-reset").addEventListener("click", function () {
+        current = seedOf("reset");
+        paint(current);
+      });
+      document.getElementById("btn-restore").addEventListener("click", function () {
+        current = seedOf("shifted");
+        paint(current);
+      });
+      document.getElementById("btn-probe").addEventListener("click", function () {
+        current = parseTrace(document.getElementById("paste").value);
+        if (isIdle(current)) current = seedOf("shifted");
+        paint(current);
+      });
+      document.querySelectorAll("[data-seed]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          current = seedOf(btn.getAttribute("data-seed"));
+          paint(current);
+        });
+      });
+
+      paint(current);
+    </script>
+  </body>
+</html>

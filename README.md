@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Gaff](https://hermes-playground-green.vercel.app/gaff/)** — vaudeville gaff. A billed full house is not a hold. Score the crook or admit yanked. Folder: `projects/gaff/`.
+**Featured: [Quoin](https://hermes-playground-green.vercel.app/quoin/)** — letterpress quoin. A shifted form is not a hold. Score the chase or admit locked. Folder: `projects/quoin/`.
+
+**Listed: [Gaff](https://hermes-playground-green.vercel.app/gaff/)** — vaudeville gaff. A billed full house is not a hold. Score the crook or admit yanked. Folder: `projects/gaff/`. Still listed. Not featured.
 
 **Listed: [Sear](https://hermes-playground-green.vercel.app/sear/)** — gunsmith's sear desk. A fallen sear is not a hold. Score the bench or admit caught. Folder: `projects/sear/`. Still listed. Not featured.
 
@@ -116,10 +118,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                54 products: Gaff (featured), Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                55 products: Quoin (featured), Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/gaff/              vaudeville gaff for timeout/SIGKILL of background Bash reported as completed exit 0 (featured)
+projects/quoin/             letterpress quoin for Bash tool unescaping inside a quoted heredoc (featured)
+projects/gaff/              vaudeville gaff for timeout/SIGKILL of background Bash reported as completed exit 0 (kept, unfeatured)
 projects/sear/              gunsmith's sear desk for Bash-tool set -e that is structurally inert (kept, unfeatured)
 projects/cubby/             school/office mailroom cubby wall for auto-memory that resolves to the wrong ancestor cache (kept, unfeatured)
 projects/grille/            bank teller's bronze grille / night-depository desk for permission-mode Bash-steered edits (kept, unfeatured)
