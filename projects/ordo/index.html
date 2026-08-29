@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Ordo — sacristan's missal desk for headless plugin commands that fail silent in -p. A written plugin command is not a hold. Idle word is appointed."
+    />
+    <title>Ordo — sacristy missal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --choir: #2b2218;
+        --stall: #3a2e22;
+        --parchment: #f4ead4;
+        --leaf: #efe3c4;
+        --rule: #9b1c2c;
+        --ink: #1c1410;
+        --faded: #6a5848;
+        --gilt: #c4a25a;
+        --alarm: #9b1c2c;
+        --display: "Cormorant Garamond", "Palatino Linotype", Palatino, serif;
+        --body: "Crimson Pro", "Iowan Old Style", Georgia, serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 40% 30% at 50% 0%, rgba(196, 162, 90, 0.12), transparent 70%),
+          repeating-linear-gradient(
+            90deg,
+            #241c14 0 18px,
+            #2e241a 18px 20px,
+            #1e1812 20px 38px
+          ),
+          #241c14;
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--rule); }
+      .sacristy {
+        width: min(1180px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 22px 0 96px;
+      }
+      .orphrey {
+        height: 14px;
+        margin: 0 0 20px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            var(--rule) 0 18px,
+            var(--gilt) 18px 22px,
+            #1c1410 22px 26px,
+            var(--gilt) 26px 30px
+          );
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+      }
+      .nave {
+        display: grid;
+        grid-template-columns: minmax(0, 1.12fr) minmax(300px, 0.88fr);
+        gap: 22px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .nave { grid-template-columns: 1fr; }
+      }
+      .mark {
+        font-family: var(--display);
+        font-size: 13px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--gilt);
+      }
+      h1 {
+        margin: 6px 0 8px;
+        font-family: var(--display);
+        font-size: clamp(64px, 12vw, 120px);
+        line-height: 0.8;
+        letter-spacing: -0.02em;
+        font-weight: 600;
+        color: var(--parchment);
+      }
+      .lede {
+        max-width: 44ch;
+        color: #d8c8a8;
+        line-height: 1.5;
+        font-size: 17px;
+      }
+      .verdict-word {
+        margin: 16px 0 6px;
+        font-family: var(--display);
+        font-size: clamp(40px, 7vw, 72px);
+        line-height: 0.9;
+        letter-spacing: -0.02em;
+        color: var(--parchment);
+      }
+      .verdict-word.fail { color: #f0b4b0; }
+      .verdict-word.hold { color: var(--gilt); }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 12px;
+        border: 1px solid rgba(196, 162, 90, 0.4);
+        background: rgba(28, 20, 16, 0.55);
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--parchment);
+      }
+      .chip b { color: var(--gilt); }
+      .chip.alarm { border-color: var(--rule); color: #f0c4b8; }
+      .chip.hold { border-color: rgba(196, 162, 90, 0.55); }
+      .feed {
+        font-family: var(--display);
+        font-size: 18px;
+        color: var(--gilt);
+        margin: 10px 0 0;
+      }
+      .bell {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule);
+        background: rgba(155, 28, 44, 0.22);
+        font-size: 15px;
+        color: #f4d0c8;
+      }
+      .bell.on { display: block; }
+      .parchment-leaf {
+        position: relative;
+        margin-top: 16px;
+        min-height: 460px;
+        background:
+          linear-gradient(90deg, rgba(155, 28, 44, 0.06) 0 28px, transparent 28px),
+          linear-gradient(180deg, #f7eedc 0%, var(--leaf) 100%);
+        color: var(--ink);
+        padding: 28px 28px 36px 42px;
+        box-shadow:
+          12px 16px 0 rgba(0, 0, 0, 0.18),
+          inset 0 0 0 1px rgba(155, 28, 44, 0.18);
+        overflow: hidden;
+      }
+      .parchment-leaf::before {
+        content: "";
+        position: absolute;
+        inset: 10px;
+        border: 1px solid rgba(155, 28, 44, 0.28);
+        pointer-events: none;
+      }
+      .parchment-leaf::after {
+        content: "ORDO · NO. 42";
+        position: absolute;
+        right: 18px;
+        bottom: 12px;
+        font-family: var(--display);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        color: rgba(28, 20, 16, 0.28);
+      }
+      .missal-gutter {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 22px;
+        background:
+          linear-gradient(90deg, #c9b48a, #efe3c4 70%);
+        border-right: 2px solid rgba(155, 28, 44, 0.35);
+      }
+      .rubric-rule {
+        height: 2px;
+        margin: 0 0 14px;
+        background: var(--rule);
+      }
+      .drop-cap {
+        float: left;
+        font-family: var(--display);
+        font-size: 72px;
+        line-height: 0.72;
+        padding: 6px 10px 0 0;
+        color: var(--rule);
+      }
+      .appointed-office {
+        font-family: var(--display);
+        font-size: 22px;
+        margin: 0 0 10px;
+      }
+      .appointed-office .red-letter {
+        color: var(--rule);
+        font-style: italic;
+      }
+      .kalendar-hours {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 16px;
+        margin-top: 16px;
+        font-size: 14px;
+      }
+      .kalendar-hours li {
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        border-bottom: 1px dotted rgba(155, 28, 44, 0.28);
+        padding: 4px 0;
+      }
+      .kalendar-hours .hour {
+        color: var(--rule);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 11px;
+        font-family: var(--display);
+      }
+      .kalendar-hours .office {
+        font-family: var(--display);
+        font-size: 15px;
+      }
+      .kalendar-hours li.lit .office { color: var(--rule); font-weight: 600; }
+      .kalendar-hours li.dim .office { color: var(--faded); }
+      .sacristy-desk {
+        background: #f7eedc;
+        color: var(--ink);
+        border: 1px solid rgba(155, 28, 44, 0.35);
+        padding: 16px 16px 14px;
+        box-shadow: 10px 14px 0 rgba(0, 0, 0, 0.2);
+      }
+      .sacristy-desk h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 22px;
+        color: var(--rule);
+      }
+      .hours-gauges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .hour-gauge {
+        border: 1px solid rgba(155, 28, 44, 0.2);
+        padding: 8px 10px;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--faded);
+      }
+      .hour-gauge strong {
+        display: block;
+        color: var(--ink);
+        font-size: 15px;
+        margin-top: 4px;
+        letter-spacing: 0;
+        text-transform: none;
+        font-family: var(--display);
+      }
+      .keys, .gates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .keys button,
+      .gates button {
+        border: 1px solid rgba(155, 28, 44, 0.35);
+        background: #efe3c4;
+        padding: 8px 12px;
+        font-size: 14px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .keys button:hover,
+      .gates button:hover { border-color: var(--rule); color: var(--rule); }
+      .keys button.primary {
+        background: var(--rule);
+        color: #f7eedc;
+        border-color: var(--rule);
+        font-weight: 700;
+      }
+      .keys button.warn {
+        background: #1c1410;
+        border-color: var(--rule);
+        color: #f7eedc;
+        font-weight: 700;
+      }
+      .gates button[aria-pressed="true"] {
+        border-color: var(--rule);
+        color: var(--rule);
+        background: #f4d8d4;
+      }
+      .office-blotter {
+        margin-top: 8px;
+        border: 1px solid rgba(28, 20, 16, 0.12);
+        padding: 10px;
+        font-size: 14px;
+        color: var(--faded);
+      }
+      .office-blotter b { color: var(--ink); }
+      .paste {
+        width: 100%;
+        min-height: 92px;
+        margin-top: 10px;
+        resize: vertical;
+        background: #f4ead4;
+        color: var(--ink);
+        border: 1px solid rgba(155, 28, 44, 0.25);
+        font-family: var(--body);
+        font-size: 14px;
+        padding: 10px;
+      }
+      .marginalia {
+        margin-top: 14px;
+        font-size: 14px;
+        color: var(--faded);
+      }
+      .marginalia h3 {
+        margin: 0 0 6px;
+        font-family: var(--display);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: var(--rule);
+      }
+      .marginalia ol {
+        margin: 0;
+        padding-left: 18px;
+      }
+      .brief, .why {
+        margin-top: 22px;
+        color: #d8c8a8;
+        font-size: 16px;
+        line-height: 1.55;
+      }
+      .brief h2, .why h2 {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 16px;
+        color: var(--gilt);
+      }
+      .integrations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 16px;
+      }
+      @media (max-width: 720px) {
+        .integrations { grid-template-columns: 1fr; }
+      }
+      .integrations article {
+        border: 1px solid rgba(196, 162, 90, 0.28);
+        padding: 10px;
+        font-size: 14px;
+        color: #d8c8a8;
+      }
+      .integrations h3 {
+        margin: 0 0 6px;
+        font-family: var(--display);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: var(--gilt);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sacristy">
+      <div class="orphrey" aria-hidden="true"></div>
+      <p class="mark">16:50 Sydney · ordo</p>
+      <div class="nave">
+        <section>
+          <h1>Ordo</h1>
+          <p class="lede">
+            A written plugin command is not a hold. If <code>-p</code>
+            returns Unknown command with <code>is_error: false</code> and
+            exit 0, the wrapper stores the miss as a result. Score the
+            missal or admit <b>appointed</b>.
+          </p>
+          <p id="verdict-word" class="verdict-word hold">appointed</p>
+          <p id="chip" class="chip hold"><b>appointed</b> · idle</p>
+          <p id="feed" class="feed">● Appointed · plugin command resolved and ran · idle word is appointed</p>
+          <div id="bell" class="bell">
+            Slack missal alarm: silent / hollow / unknown. The office was never said.
+          </div>
+          <div class="parchment-leaf" id="parchment-leaf">
+            <div class="missal-gutter" aria-hidden="true"></div>
+            <div class="rubric-rule" aria-hidden="true"></div>
+            <p class="appointed-office">
+              <span class="drop-cap">R</span>
+              <span class="red-letter">ubric.</span>
+              The sacristan scores the headless missal. Did
+              <code>-p</code> resolve the plugin office? Did the wrapper
+              notice the failure? A written <code>enabledPlugins</code>
+              plus a cache file is not a hold.
+            </p>
+            <ol class="kalendar-hours" id="kalendar-hours">
+              <li data-hour="matins"><span class="hour">Matins</span><span class="office" id="h-matins">office</span></li>
+              <li data-hour="lauds"><span class="hour">Lauds</span><span class="office" id="h-lauds">result</span></li>
+              <li data-hour="prime"><span class="hour">Prime</span><span class="office" id="h-prime">turns</span></li>
+              <li data-hour="terce"><span class="hour">Terce</span><span class="office" id="h-terce">is_error</span></li>
+              <li data-hour="sext"><span class="hour">Sext</span><span class="office" id="h-sext">exit</span></li>
+              <li data-hour="none"><span class="hour">None</span><span class="office" id="h-none">enabled</span></li>
+              <li data-hour="vespers"><span class="hour">Vespers</span><span class="office" id="h-vespers">cache</span></li>
+              <li data-hour="compline"><span class="hour">Compline</span><span class="office" id="h-compline">resolver</span></li>
+            </ol>
+            <div class="marginalia">
+              <h3>Marginalia · hours</h3>
+              <ol id="tray"><li>plugin command resolved and ran · idle word is appointed</li></ol>
+            </div>
+          </div>
+        </section>
+        <aside class="sacristy-desk">
+          <h2>Sacristan's desk · missal</h2>
+          <div class="hours-gauges">
+            <div class="hour-gauge">office<strong id="g-cmd">none</strong></div>
+            <div class="hour-gauge">turns<strong id="g-turns">—</strong></div>
+            <div class="hour-gauge">is_error<strong id="g-err">—</strong></div>
+            <div class="hour-gauge">exit<strong id="g-exit">—</strong></div>
+          </div>
+          <div class="keys">
+            <button class="primary" type="button" id="btn-score">Score</button>
+            <button type="button" id="btn-admit">Admit appointed</button>
+            <button type="button" id="btn-reset">Reset · appointed</button>
+            <button class="warn" type="button" id="btn-restore">Restore · silent</button>
+          </div>
+          <div class="gates">
+            <button type="button" data-seed="appointed" aria-pressed="false">Reset · appointed</button>
+            <button type="button" data-seed="silent" aria-pressed="true">Silent #90515</button>
+            <button type="button" data-seed="hollow">Hollow</button>
+            <button type="button" data-seed="unknown">Unknown</button>
+            <button type="button" data-seed="loud">Loud</button>
+            <button type="button" data-seed="missing">Missing</button>
+            <button type="button" data-seed="stale">Stale</button>
+            <button type="button" data-seed="builtin">Builtin</button>
+            <button type="button" data-seed="resolved">Resolved</button>
+            <button type="button" data-seed="cache-ok">Cache-ok</button>
+            <button type="button" data-seed="control">Control appointed</button>
+          </div>
+          <div class="office-blotter" id="office-blotter">
+            Office blotter · <b id="office-line">no office on the missal</b>
+          </div>
+          <label class="mark" for="paste" style="display:block;margin-top:14px;color:#6a5848">Paste a missal</label>
+          <textarea id="paste" class="paste" placeholder='{"result":"Unknown command: /ppp:analyze-incident","num_turns":0,"is_error":false}'></textarea>
+          <button type="button" id="btn-probe" style="margin-top:8px;border:1px solid rgba(155,28,44,0.35);background:#efe3c4;padding:8px 12px;text-transform:uppercase">Score paste</button>
+        </aside>
+      </div>
+      <div class="integrations">
+        <article>
+          <h3>Slack missal alarm</h3>
+          Bell on silent / hollow / unknown. Missing webhook is an honest demo row, never a fake live 200.
+        </article>
+        <article>
+          <h3>Linear missal ticket</h3>
+          Opens on silent — the unattended missal miss. Honest demo row when the key is absent.
+        </article>
+        <article>
+          <h3>GitHub ordo-ledger</h3>
+          Session, office, turns, is_error, exit. Every scored missal.
+        </article>
+      </div>
+      <section class="brief">
+        <h2>Thesis</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90515">anthropics/claude-code#90515</a>
+          (filed 2026-08-29): every plugin-provided slash command fails
+          to resolve in headless <code>-p</code> on 2.1.251, returning
+          <code>Unknown command: /&lt;plugin&gt;:&lt;cmd&gt;</code> with
+          <code>num_turns: 0</code>. Built-ins still work. Process exits
+          0 with <code>is_error: false</code>, so unattended wrappers
+          treat it as success and store the error string as the analysis
+          result. Same plugins, same config, same cwd work on 2.1.250.
+          Bisect isolated the version. Node 20 and 24 both fail on 2.1.251.
+        </p>
+        <p>
+          Shape, not a new primary — two-index / silent-unknown family:
+          <a href="https://github.com/anthropics/claude-code/issues/37862">#37862</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/41842">#41842</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/17271">#17271</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/64669">#64669</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/8430">#8430</a>,
+          <a href="https://github.com/openai/codex/issues/14459">openai/codex#14459</a>,
+          <a href="https://github.com/openai/codex/issues/15980">openai/codex#15980</a>.
+          The desk scores the headless missal. It does not name the parser-index root cause.
+        </p>
+      </section>
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Larder (plugin-store freeze: sync stamp advances, on-disk
+          plugin folders stand still).
+          NOT Tappet (fired hook is not a seated injection).
+          NOT Reed (MCP connected vs registered).
+          NOT Assay (parsed call vs delivered arguments).
+          NOT Cinch (silent partial folder mounts).
+          NOT Sprag (boot-cached MCP attach failure).
+          NOT Visa (OAuth missing resource).
+          NOT leftover woodworking / millimetre-slider clones.
+          Different problem: the headless missal. Did <code>-p</code>
+          resolve the plugin office, and did the wrapper notice the
+          failure, vs a written enabledPlugins + cache file that looks
+          healthy. Different UI: liturgical parchment. Cream page, red
+          rubrics, black appointed offices, kalendar of the day's hours.
+          Different idle: <b>appointed</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "appointed";
+      const SLACK = ["silent", "hollow", "unknown"];
+      const LINEAR = ["silent"];
+
+      function emptyOffice() {
+        return {
+          session: "", source: "", issue: null, scored: false,
+          command: "", result: "", numTurns: null, isError: null, exitCode: null,
+          enabled: null, installed: null, cached: null, commandFile: "",
+          resolved: null, storedAsResult: false, isBuiltin: false, builtinWorks: false,
+          version: ""
+        };
+      }
+
+      function unknownOf(result) {
+        return /Unknown command\s*:/i.test(String(result || ""));
+      }
+
+      function analyze(office) {
+        const unknown = unknownOf(office.result);
+        const numTurns = office.numTurns;
+        const exit0 = office.exitCode === 0;
+        const isErrorFalse = office.isError === false;
+        const isErrorTrue = office.isError === true;
+        const filesHealthy = office.enabled === true && office.installed === true && (office.cached === true || Boolean(office.commandFile));
+        const pluginAbsent = Boolean(office.command) && !office.isBuiltin && office.enabled !== true && office.installed !== true && office.cached !== true && !office.commandFile;
+        const ran = typeof numTurns === "number" && numTurns > 0 && !unknown;
+        return {
+          unknown: unknown,
+          numTurns: numTurns,
+          exit0: exit0,
+          isErrorFalse: isErrorFalse,
+          isErrorTrue: isErrorTrue,
+          filesHealthy: filesHealthy,
+          pluginAbsent: pluginAbsent,
+          ran: ran,
+          silentTrio: unknown && isErrorFalse && exit0
+        };
+      }
+
+      function classify(office) {
+        const idle = !office.command && !office.result && office.numTurns == null && office.isError == null && office.exitCode == null && office.enabled == null && office.installed == null && office.cached == null && !office.commandFile && office.resolved == null && !office.storedAsResult && !office.isBuiltin && !office.builtinWorks && !office.version;
+        if (idle) return IDLE_WORD;
+        const f = analyze(office);
+        if (f.silentTrio && !office.storedAsResult) return "silent";
+        if (office.storedAsResult && office.numTurns === 0) return "hollow";
+        if (f.unknown && f.isErrorTrue) return "loud";
+        if (f.unknown) return "unknown";
+        if (f.pluginAbsent) return "missing";
+        if ((office.cached === true || office.commandFile) && office.resolved === false && !f.unknown) return "stale";
+        if (office.isBuiltin && (f.ran || office.builtinWorks)) return "builtin";
+        if (f.filesHealthy && office.resolved !== true && !office.result && office.numTurns == null) return "cache-ok";
+        if (office.resolved === true && !f.ran) return "resolved";
+        if (f.ran) return IDLE_WORD;
+        return IDLE_WORD;
+      }
+
+      function feedOf(kind) {
+        if (kind === "silent") return "● Silent · Unknown command · is_error false · exit 0 · primary #90515";
+        if (kind === "hollow") return "● Hollow · num_turns 0 · error string stored as the analysis result";
+        if (kind === "loud") return "● Loud · Unknown command · is_error true · the honest fail";
+        if (kind === "unknown") return "● Unknown · plugin office did not resolve in the headless missal";
+        if (kind === "missing") return "● Missing · plugin not actually enabled or cached";
+        if (kind === "stale") return "● Stale · cache file exists · headless resolver does not see the office";
+        if (kind === "builtin") return "● Builtin · a built-in still works, proving -p is alive";
+        if (kind === "cache-ok") return "● Cache-ok · files on disk look healthy · a written cache is not a hold";
+        if (kind === "resolved") return "● Resolved · the parser has the office";
+        return "● Appointed · plugin command resolved and ran · idle word is appointed";
+      }
+
+      function seedOf(name) {
+        const base = emptyOffice();
+        const cache = "~/.claude/plugins/cache/sssss-plugins/ppp/0.13.0/commands/analyze-incident.md";
+        const cmd = "/ppp:analyze-incident";
+        const unknown = "Unknown command: /ppp:analyze-incident";
+        if (name === "silent") {
+          return Object.assign({}, base, {
+            session: "90515-silent", issue: 90515, source: "anthropics/claude-code#90515", scored: true,
+            command: cmd, result: unknown, numTurns: 0, isError: false, exitCode: 0,
+            enabled: true, installed: true, cached: true, commandFile: cache, resolved: false,
+            version: "2.1.251", builtinWorks: true
+          });
+        }
+        if (name === "hollow") {
+          return Object.assign({}, base, {
+            session: "90515-hollow", issue: 90515, scored: true,
+            command: cmd, result: unknown, numTurns: 0, isError: false, storedAsResult: true,
+            enabled: true, installed: true, cached: true, commandFile: cache, resolved: false,
+            version: "2.1.251"
+          });
+        }
+        if (name === "unknown") {
+          return Object.assign({}, base, {
+            session: "64669-unknown", issue: 64669, scored: true,
+            command: "/pr-review-toolkit:review-pr", result: "Unknown command: /pr-review-toolkit:review-pr",
+            numTurns: 0, enabled: true, installed: true, cached: true
+          });
+        }
+        if (name === "loud") {
+          return Object.assign({}, base, {
+            session: "90515-loud", scored: true,
+            command: cmd, result: unknown, numTurns: 0, isError: true, exitCode: 1,
+            enabled: true, installed: true, cached: true, commandFile: cache, resolved: false
+          });
+        }
+        if (name === "missing") {
+          return Object.assign({}, base, {
+            session: "90515-missing", scored: true,
+            command: cmd, enabled: false, installed: false, cached: false
+          });
+        }
+        if (name === "stale") {
+          return Object.assign({}, base, {
+            session: "37862-stale", issue: 37862, scored: true,
+            command: cmd, enabled: true, installed: true, cached: true, commandFile: cache, resolved: false
+          });
+        }
+        if (name === "builtin") {
+          return Object.assign({}, base, {
+            session: "90515-builtin", scored: true,
+            command: "/context", result: "Context window and loaded skills.", numTurns: 1,
+            isError: false, exitCode: 0, isBuiltin: true, builtinWorks: true, version: "2.1.251"
+          });
+        }
+        if (name === "resolved") {
+          return Object.assign({}, base, {
+            session: "90515-resolved", scored: true,
+            command: cmd, enabled: true, installed: true, cached: true, commandFile: cache, resolved: true
+          });
+        }
+        if (name === "cache-ok") {
+          return Object.assign({}, base, {
+            session: "90515-cache-ok", scored: true,
+            command: cmd, enabled: true, installed: true, cached: true, commandFile: cache
+          });
+        }
+        if (name === "control") {
+          return Object.assign({}, base, {
+            session: "90515-control", scored: true,
+            command: cmd, result: "Incident analysis complete. Timeline, causal graph, and next office.",
+            numTurns: 4, isError: false, exitCode: 0,
+            enabled: true, installed: true, cached: true, commandFile: cache, resolved: true,
+            version: "2.1.250"
+          });
+        }
+        return Object.assign({}, base, { session: "appointed", scored: true });
+      }
+
+      function parseTrace(text) {
+        const trimmed = String(text || "").trim();
+        if (trimmed.charAt(0) === "{") {
+          try {
+            const parsed = JSON.parse(trimmed);
+            const office = Object.assign(emptyOffice(), {
+              result: parsed.result || "",
+              numTurns: parsed.num_turns != null ? Number(parsed.num_turns) : parsed.numTurns != null ? Number(parsed.numTurns) : null,
+              isError: parsed.is_error != null ? parsed.is_error : parsed.isError,
+              exitCode: parsed.exitCode != null ? Number(parsed.exitCode) : parsed.exit_code != null ? Number(parsed.exit_code) : null,
+              command: parsed.command || "",
+              scored: true
+            });
+            return office;
+          } catch (err) { /* prose */ }
+        }
+        const silent = /Unknown command/i.test(text) && /is_error["'\s:]*false/i.test(text);
+        const hollow = /stored (the )?(error|string) as (the )?(analysis )?result|recorded the step as successful/i.test(text);
+        const loud = /is_error["'\s:]*true/i.test(text) && /Unknown command/i.test(text);
+        const unknown = /Unknown command/i.test(text);
+        const missing = /not actually enabled|not cached|plugin not/i.test(text);
+        const stale = /resolver does not see|two-index|reload-plugins|not slash-registered/i.test(text);
+        const builtin = /\/context still works|built-in still works|proving -p is alive/i.test(text);
+        const cacheOk = /files on disk look healthy|cache-ok|commands\/\*\.md/i.test(text);
+        const resolved = /parser has the office/i.test(text) && !stale;
+        if (silent && !hollow) return seedOf("silent");
+        if (hollow) return seedOf("hollow");
+        if (loud) return seedOf("loud");
+        if (unknown) return seedOf("unknown");
+        if (missing) return seedOf("missing");
+        if (stale) return seedOf("stale");
+        if (builtin) return seedOf("builtin");
+        if (cacheOk) return seedOf("cache-ok");
+        if (resolved) return seedOf("resolved");
+        return seedOf("appointed");
+      }
+
+      let office = seedOf("silent");
+
+      function lit(el, on) {
+        el.parentElement.className = on ? "lit" : "dim";
+      }
+
+      function render() {
+        const verdict = classify(office);
+        const facts = analyze(office);
+        const alarm = SLACK.indexOf(verdict) >= 0;
+        const word = document.getElementById("verdict-word");
+        word.textContent = verdict;
+        word.className = "verdict-word" + (alarm ? " fail" : " hold");
+        const chip = document.getElementById("chip");
+        chip.innerHTML = "<b>" + verdict + "</b> · " + (facts.silentTrio ? "silent trio" : IDLE_WORD);
+        chip.className = "chip" + (alarm ? " alarm" : " hold");
+        document.getElementById("feed").textContent = feedOf(verdict);
+        document.getElementById("bell").className = "bell" + (alarm ? " on" : "");
+        document.getElementById("h-matins").textContent = office.command || "—";
+        document.getElementById("h-lauds").textContent = facts.unknown ? "Unknown command" : (office.result ? "result" : "—");
+        document.getElementById("h-prime").textContent = facts.numTurns == null ? "—" : String(facts.numTurns);
+        document.getElementById("h-terce").textContent = office.isError == null ? "—" : String(office.isError);
+        document.getElementById("h-sext").textContent = office.exitCode == null ? "—" : String(office.exitCode);
+        document.getElementById("h-none").textContent = office.enabled == null ? "—" : office.enabled ? "enabled" : "off";
+        document.getElementById("h-vespers").textContent = office.cached || office.commandFile ? "cache" : "—";
+        document.getElementById("h-compline").textContent = office.resolved == null ? "—" : office.resolved ? "resolved" : "unseen";
+        lit(document.getElementById("h-matins"), Boolean(office.command));
+        lit(document.getElementById("h-lauds"), facts.unknown || Boolean(office.result));
+        lit(document.getElementById("h-prime"), facts.numTurns === 0 || facts.ran);
+        lit(document.getElementById("h-terce"), office.isError === false || office.isError === true);
+        lit(document.getElementById("h-sext"), office.exitCode != null);
+        lit(document.getElementById("h-none"), office.enabled === true);
+        lit(document.getElementById("h-vespers"), Boolean(office.cached || office.commandFile));
+        lit(document.getElementById("h-compline"), office.resolved === true);
+        const tray = document.getElementById("tray");
+        const lines = [];
+        if (facts.silentTrio) lines.push("<li>silent trio · Unknown command + is_error false + exit 0 · primary #90515</li>");
+        if (office.storedAsResult) lines.push("<li>storedAsResult · wrapper stored the error string as the analysis</li>");
+        if (facts.filesHealthy) lines.push("<li>enabled + installed + cache · a written cache is not a hold</li>");
+        if (facts.pluginAbsent) lines.push("<li>plugin not actually enabled or cached</li>");
+        if (office.resolved === false) lines.push("<li>headless resolver does not see the office</li>");
+        if (office.isBuiltin) lines.push("<li>built-in control · /context still works</li>");
+        tray.innerHTML = lines.length ? lines.join("") : "<li>plugin command resolved and ran · idle word is appointed</li>";
+        document.getElementById("g-cmd").textContent = office.command || "none";
+        document.getElementById("g-turns").textContent = facts.numTurns == null ? "—" : String(facts.numTurns);
+        document.getElementById("g-err").textContent = office.isError == null ? "—" : String(office.isError);
+        document.getElementById("g-exit").textContent = office.exitCode == null ? "—" : String(office.exitCode);
+        document.getElementById("office-line").textContent = office.command
+          ? office.command + (facts.unknown ? " · unknown" : " · said")
+          : "no office on the missal";
+        document.querySelectorAll(".gates button[data-seed]").forEach(function (btn) {
+          const seedName = btn.getAttribute("data-seed");
+          const pressed = seedName === "appointed"
+            ? verdict === "appointed" && !office.command
+            : seedName === "control"
+              ? verdict === "appointed" && Boolean(office.command)
+              : classify(office) === seedName;
+          btn.setAttribute("aria-pressed", pressed ? "true" : "false");
+        });
+      }
+
+      document.getElementById("btn-score").addEventListener("click", function () {
+        office = Object.assign({}, office, { scored: true });
+        render();
+      });
+      document.getElementById("btn-admit").addEventListener("click", function () {
+        office = Object.assign({}, office, { scored: true });
+        render();
+      });
+      document.getElementById("btn-reset").addEventListener("click", function () {
+        office = seedOf("appointed");
+        render();
+      });
+      document.getElementById("btn-restore").addEventListener("click", function () {
+        office = seedOf("silent");
+        render();
+      });
+      document.getElementById("btn-probe").addEventListener("click", function () {
+        const text = document.getElementById("paste").value || "";
+        office = text.trim() ? parseTrace(text) : seedOf("silent");
+        render();
+      });
+      document.querySelectorAll(".gates button[data-seed]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          office = seedOf(btn.getAttribute("data-seed"));
+          render();
+        });
+      });
+      render();
+    </script>
+  </body>
+</html>
