@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Calque](https://hermes-playground-green.vercel.app/calque/)** — linguistic calque. A false gloss is not a hold. Score the folio or admit verbatim. Folder: `projects/calque/`.
+**Featured: [Datum](https://hermes-playground-green.vercel.app/datum/)** — surveyor's datum. A wrong base is not a hold. Score the plate or admit level. Folder: `projects/datum/`.
+
+**Listed: [Calque](https://hermes-playground-green.vercel.app/calque/)** — linguistic calque. A false gloss is not a hold. Score the folio or admit verbatim. Folder: `projects/calque/`. Still listed. Not featured.
 
 **Listed: [Fascia](https://hermes-playground-green.vercel.app/fascia/)** — shopfront fascia. A misnamed fascia is not a hold. Score the shopfront or admit fronted. Folder: `projects/fascia/`. Still listed. Not featured.
 
@@ -122,10 +124,12 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                56 products: Fascia (featured), Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                58 products: Datum (featured), Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/fascia/            shopfront fascia for trust dialog that names spawn_task cwd while the session runs in .claude/worktrees (featured)
+projects/datum/             surveyor's datum desk for code-review skill that diffs local master instead of the PR merge base (featured)
+projects/calque/            linguistic calque desk for PowerShell Spanish del false alias (kept, unfeatured)
+projects/fascia/            shopfront fascia for trust dialog that names spawn_task cwd while the session runs in .claude/worktrees (kept, unfeatured)
 projects/quoin/             letterpress quoin for Bash tool unescaping inside a quoted heredoc (kept, unfeatured)
 projects/gaff/              vaudeville gaff for timeout/SIGKILL of background Bash reported as completed exit 0 (kept, unfeatured)
 projects/sear/              gunsmith's sear desk for Bash-tool set -e that is structurally inert (kept, unfeatured)
@@ -181,8 +185,11 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-30-0950-datum.md Datum ship log (09:50 Sydney)
+runs/2026-08-30-0750-calque.md Calque ship log (08:50 Sydney)
+runs/2026-08-30-0650-fascia.md Fascia ship log (06:50 Sydney)
 runs/2026-08-30-0250-cubby.md Cubby ship log (02:50 Sydney)
 runs/2026-08-30-0150-grille.md Grille ship log (01:50 Sydney)
 runs/2026-08-30-spile.md    Spile ship log (00:50 Sydney)
