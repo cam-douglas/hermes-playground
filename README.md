@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Sprag](https://hermes-playground-green.vercel.app/sprag/)** — overrunning clutch. A failed attach at boot is not a hold. Score the race or admit overrun. Folder: `projects/sprag/`.
+**Featured: [Visa](https://hermes-playground-green.vercel.app/visa/)** — passport desk. A login without a destination is not a hold. Score the border or admit stamped. Folder: `projects/visa/`.
+
+**Listed: [Sprag](https://hermes-playground-green.vercel.app/sprag/)** — overrunning clutch. A failed attach at boot is not a hold. Score the race or admit overrun. Folder: `projects/sprag/`. Still listed. Not featured.
 
 **Listed: [Lazaret](https://hermes-playground-green.vercel.app/lazaret/)** — lazaretto / yellow jack. A written reminder is not a hold. Score the desk or admit pratique. Folder: `projects/lazaret/`. Still listed. Not featured.
 
@@ -84,10 +86,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                38 products: Sprag (featured), Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                39 products: Visa (featured), Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/sprag/             overrunning-clutch bench for boot-cached MCP attach failure (featured)
+projects/visa/              passport-control / visa-stamp desk for MCP OAuth missing resource (featured)
+projects/sprag/             overrunning-clutch bench for boot-cached MCP attach failure (kept, unfeatured)
 projects/lazaret/           lazaretto / yellow-jack / pratique desk for unattended malware-reminder refusals (kept, unfeatured)
 projects/fusee/             clockmaker's fusee / conical-pulley desk for early schedule dispatch (kept, unfeatured)
 projects/iota/              typesetter's upper/lower type-case desk for Windows project-path identity (kept, unfeatured)
@@ -125,8 +128,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-29-visa.md     Visa ship log (13:50 Sydney)
 runs/2026-08-29-sprag.md    Sprag ship log (12:50 Sydney)
 runs/2026-08-29-lazaret.md  Lazaret ship log (11:50 Sydney)
 runs/2026-08-29-fusee.md    Fusee ship log (10:50 Sydney)
@@ -167,6 +171,14 @@ runs/2026-08-27-scrim.md    Scrim ship log (23:50 Sydney)
 runs/2026-08-27-knock.md    Knock ship log
 runs/2026-08-27-reset.md    leftover era closed
 ```
+
+## Visa
+
+`projects/visa/` is a passport-control / visa-stamp desk for Claude Code MCP OAuth that omits the RFC 8707 `resource` parameter. A login without a destination is not a hold. Score the border or admit **stamped**. Verdicts: **stamped**, **omitted**, **audless**, **clientid**, **refused**, **strict**, **slashy**, **mismatched**, **granted**, **held**. Slack visa alarm on omitted / audless / clientid / refused / slashy / mismatched. Linear ticket on omitted / clientid / refused.
+
+Live path: https://hermes-playground-green.vercel.app/visa/
+
+Demo mode needs no Slack / GitHub / Linear secrets and no npm. Seed `#90497` omitted is already on the blotter. Idle word is **stamped**, not the product name, not empty. NOT Sprag (boot-cached MCP attach). NOT Reed (four-contact registry). NOT Husk (hollow success). NOT #90477 session-id hollow registration. NOT leftover woodworking sliders. Different problem: OAuth token issued without naming the destination resource, so strict houses 401 even after a "successful" login. Different UI: navy leather blotter, brass circular stamp, watermark paper, departure-hall amber lamps, ink-pad crimson, immigration teal stripe, paper cream.
 
 ## Sprag
 
@@ -477,6 +489,10 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/visa/` → `projects/visa/`
+- `/sprag/` → `projects/sprag/`
+- `/lazaret/` → `projects/lazaret/`
+- `/fusee/` → `projects/fusee/`
 - `/iota/` → `projects/iota/`
 - `/leat/` → `projects/leat/`
 - `/shunt/` → `projects/shunt/`

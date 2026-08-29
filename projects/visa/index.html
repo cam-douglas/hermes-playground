@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Visa — passport-control desk for Claude Code MCP OAuth that omits RFC 8707 resource. A login without a destination is not a hold. Idle word is stamped."
+    />
+    <title>Visa — passport desk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --navy: #152033;
+        --leather: #1a2740;
+        --blotter: #121c2e;
+        --cream: #f3ead6;
+        --paper: #efe4cc;
+        --amber: #e0a24a;
+        --lamp: #f0c46a;
+        --crimson: #9c2438;
+        --ink: #7a1c2c;
+        --teal: #1f6b6b;
+        --teal-bright: #2a8a86;
+        --brass: #c9a24a;
+        --brass-dark: #8a6a28;
+        --muted: #b8b09c;
+        --display: "Libre Baskerville", "Palatino Linotype", Palatino, serif;
+        --card: "Source Sans 3", "Source Sans Pro", "Helvetica Neue", ui-sans-serif, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--card);
+        color: var(--cream);
+        background:
+          radial-gradient(ellipse 28% 18% at 12% 8%, rgba(224, 162, 74, 0.16), transparent 55%),
+          radial-gradient(ellipse 40% 30% at 92% 88%, rgba(31, 107, 107, 0.22), transparent 60%),
+          linear-gradient(180deg, #1c2a42 0%, var(--navy) 46%, #0c1422 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--amber); }
+      .hall {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 18px 0 96px;
+      }
+      .teal-stripe {
+        height: 14px;
+        margin: 0 0 22px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            var(--teal) 0 28px,
+            var(--cream) 28px 40px,
+            var(--teal-bright) 40px 68px,
+            var(--navy) 68px 72px
+          );
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+        border-top: 2px solid var(--brass);
+        border-bottom: 2px solid #0a1220;
+      }
+      .bay {
+        display: grid;
+        grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+        gap: 18px;
+        align-items: start;
+      }
+      @media (max-width: 860px) {
+        .bay { grid-template-columns: 1fr; }
+      }
+      .mark {
+        font-family: var(--display);
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      h1 {
+        margin: 10px 0 10px;
+        font-family: var(--display);
+        font-size: clamp(52px, 9vw, 96px);
+        line-height: 0.92;
+        letter-spacing: -0.02em;
+        font-weight: 700;
+      }
+      .lede {
+        max-width: 48ch;
+        color: var(--muted);
+        line-height: 1.5;
+        font-size: 15px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid rgba(201, 162, 74, 0.4);
+        background: rgba(12, 20, 34, 0.82);
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .chip b { color: var(--amber); font-weight: 700; }
+      .chip.alarm {
+        border-color: var(--crimson);
+        color: #f0b4b0;
+        box-shadow: 0 0 0 1px rgba(156, 36, 56, 0.4);
+      }
+      .chip.hold { border-color: var(--teal-bright); color: #b8dcd8; }
+      .passport-folio {
+        margin-top: 18px;
+        border: 1px solid rgba(201, 162, 74, 0.35);
+        background:
+          radial-gradient(ellipse at 70% 20%, rgba(255, 255, 255, 0.08), transparent 42%),
+          repeating-linear-gradient(
+            0deg,
+            transparent 0 22px,
+            rgba(31, 107, 107, 0.04) 22px 23px
+          ),
+          linear-gradient(180deg, var(--paper) 0%, var(--cream) 100%);
+        color: #2a2418;
+        min-height: 340px;
+        position: relative;
+        overflow: hidden;
+        padding: 28px 22px 64px;
+        box-shadow: inset 0 0 0 8px rgba(21, 32, 51, 0.06);
+      }
+      .passport-folio::before {
+        content: "IMMIGRATION";
+        position: absolute;
+        inset: 18% 8%;
+        font-family: var(--display);
+        font-size: clamp(42px, 8vw, 72px);
+        letter-spacing: 0.18em;
+        color: rgba(31, 107, 107, 0.09);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: rotate(-12deg);
+        pointer-events: none;
+      }
+      .watermark-paper {
+        position: relative;
+        z-index: 1;
+      }
+      .watermark-paper .caption {
+        font-family: var(--display);
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--teal);
+      }
+      .stamp-well {
+        width: 168px;
+        height: 168px;
+        margin: 18px auto 8px;
+        border-radius: 50%;
+        border: 3px dashed rgba(138, 106, 40, 0.45);
+        position: relative;
+        background: rgba(255, 255, 255, 0.18);
+      }
+      .brass-stamp {
+        position: absolute;
+        inset: 12px;
+        border-radius: 50%;
+        border: 8px solid var(--brass);
+        background:
+          radial-gradient(circle at 36% 30%, #f0d88a, var(--brass) 46%, var(--brass-dark) 100%);
+        box-shadow:
+          inset 0 0 0 3px #6a4e18,
+          0 8px 16px rgba(42, 28, 8, 0.28);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-family: var(--display);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #3a2a10;
+        padding: 12px;
+        line-height: 1.25;
+      }
+      .brass-stamp::after {
+        content: "";
+        position: absolute;
+        inset: 18%;
+        border-radius: 50%;
+        border: 1px solid rgba(58, 42, 16, 0.35);
+      }
+      .passport-folio.omitted .brass-stamp,
+      .passport-folio.refused .brass-stamp,
+      .passport-folio.clientid .brass-stamp {
+        border-color: var(--crimson);
+        background: radial-gradient(circle at 36% 30%, #e8a090, var(--crimson) 60%, #4a1018 100%);
+        color: #f8e8e4;
+        box-shadow: 0 0 16px rgba(156, 36, 56, 0.35);
+      }
+      .passport-folio.stamped .brass-stamp,
+      .passport-folio.strict .brass-stamp {
+        border-color: var(--teal-bright);
+        color: #142828;
+      }
+      .passport-folio.granted .brass-stamp {
+        border-color: var(--amber);
+        color: #3a2410;
+      }
+      .ink-pad {
+        position: absolute;
+        right: 18px;
+        bottom: 16px;
+        width: 64px;
+        height: 36px;
+        border-radius: 40% 40% 30% 30%;
+        background:
+          radial-gradient(circle at 40% 40%, #c43a4e, var(--ink) 70%);
+        box-shadow: inset 0 -4px 8px rgba(0, 0, 0, 0.35), 0 4px 0 #3a1018;
+        z-index: 2;
+      }
+      .amber-lamps {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        display: flex;
+        gap: 8px;
+        z-index: 2;
+      }
+      .amber-lamp {
+        width: 16px;
+        height: 28px;
+        border-radius: 8px 8px 3px 3px;
+        background: #2a2418;
+        border: 2px solid #6a5a38;
+        box-shadow: inset 0 0 6px #000;
+      }
+      .amber-lamp.on {
+        background: radial-gradient(circle at 50% 40%, var(--lamp), var(--amber) 70%);
+        box-shadow: 0 0 16px rgba(240, 196, 106, 0.45);
+      }
+      .amber-lamp.jam {
+        background: radial-gradient(circle at 50% 40%, #f0a0a0, var(--crimson) 70%);
+        box-shadow: 0 0 16px rgba(156, 36, 56, 0.45);
+      }
+      .slots {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+      .slot {
+        border: 1px dashed rgba(201, 162, 74, 0.28);
+        padding: 10px;
+        font-size: 12px;
+      }
+      .slot .lbl {
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .slot code {
+        display: block;
+        margin-top: 6px;
+        color: var(--amber);
+        word-break: break-all;
+      }
+      .landing-card {
+        margin-top: 14px;
+        border-top: 3px solid var(--teal);
+        padding-top: 12px;
+      }
+      .landing-card h3 {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: 16px;
+        color: var(--amber);
+      }
+      .landing-card ol {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .feed {
+        font-size: 15px;
+        color: var(--amber);
+        margin: 12px 0 0;
+      }
+      .horn {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--crimson);
+        background: rgba(156, 36, 56, 0.16);
+        font-size: 13px;
+        color: #f0b4b0;
+      }
+      .horn.on { display: block; }
+      .blotter {
+        background:
+          linear-gradient(180deg, rgba(26, 39, 64, 0.96), rgba(12, 20, 34, 0.96));
+        border: 1px solid rgba(201, 162, 74, 0.28);
+        padding: 18px 18px 16px;
+        box-shadow:
+          inset 0 1px 0 rgba(243, 234, 214, 0.06),
+          0 18px 40px rgba(0, 0, 0, 0.28);
+        position: relative;
+      }
+      .blotter::before {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        border: 1px solid rgba(31, 107, 107, 0.22);
+        pointer-events: none;
+      }
+      .blotter h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 18px;
+        color: var(--amber);
+      }
+      .gauges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 14px;
+      }
+      .gauge {
+        border: 1px solid rgba(201, 162, 74, 0.18);
+        padding: 8px 10px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .gauge strong {
+        display: block;
+        color: var(--cream);
+        font-size: 13px;
+        margin-top: 4px;
+        word-break: break-all;
+      }
+      .keys, .gates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .keys button,
+      .gates button {
+        border: 1px solid rgba(201, 162, 74, 0.32);
+        background: #101828;
+        padding: 8px 12px;
+        font-family: var(--card);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+      .keys button:hover,
+      .gates button:hover { border-color: var(--amber); color: var(--amber); }
+      .keys button.primary {
+        background: var(--amber);
+        color: #1a1208;
+        border-color: var(--amber);
+        font-weight: 700;
+      }
+      .keys button.warn {
+        background: var(--crimson);
+        border-color: #c44a58;
+        color: #f4e8d8;
+        font-weight: 700;
+      }
+      .gates button[aria-pressed="true"] {
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+      .paste {
+        width: 100%;
+        min-height: 92px;
+        margin-top: 10px;
+        resize: vertical;
+        background: #0c1422;
+        color: var(--cream);
+        border: 1px solid rgba(201, 162, 74, 0.22);
+        font-family: var(--card);
+        font-size: 12px;
+        padding: 10px;
+      }
+      .brief, .why {
+        margin-top: 22px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+      .brief h2, .why h2 {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: 18px;
+        color: var(--amber);
+      }
+      .integrations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+      }
+      @media (max-width: 720px) {
+        .integrations { grid-template-columns: 1fr; }
+      }
+      .integrations article {
+        border: 1px solid rgba(201, 162, 74, 0.18);
+        padding: 10px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .integrations h3 {
+        margin: 0 0 6px;
+        font-family: var(--display);
+        font-size: 15px;
+        color: var(--amber);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hall">
+      <div class="teal-stripe" aria-hidden="true"></div>
+      <p class="mark">13:50 Sydney · visa</p>
+      <div class="bay">
+        <section>
+          <h1>Visa</h1>
+          <p class="lede">
+            A login without a destination is not a hold. A visa names the
+            house you are entering. RFC 8707 <code>resource</code> is that
+            name. On 2.1.251 the client omits it from
+            <code>/authorize</code> and <code>/token</code>. The token is
+            addressed to the client_id. Strict houses 401. Score the
+            border or admit <b>stamped</b>.
+          </p>
+          <p id="chip" class="chip hold"><b>stamped</b> · idle</p>
+          <p id="feed" class="feed">● Stamped · resource sent, aud matches canonical MCP resource URI, server accepts · idle word is stamped</p>
+          <div id="horn" class="horn">
+            Slack visa alarm: omitted / audless / clientid / refused / slashy / mismatched. The stamp never named the house.
+          </div>
+          <div class="passport-folio omitted" id="passport-folio">
+            <div class="amber-lamps" aria-hidden="true">
+              <div id="lamp-a" class="amber-lamp on"></div>
+              <div id="lamp-b" class="amber-lamp"></div>
+              <div id="lamp-c" class="amber-lamp"></div>
+            </div>
+            <div class="watermark-paper">
+              <div class="caption">landing card · brass stamp · blotter</div>
+              <div class="stamp-well" title="stamp well">
+                <div class="brass-stamp" id="brass-stamp">omitted<br />#90497</div>
+              </div>
+            </div>
+            <div class="ink-pad" title="ink pad" aria-hidden="true"></div>
+          </div>
+          <div class="slots">
+            <div class="slot">
+              <div class="lbl">resource /authorize · /token</div>
+              <code id="resource-sent">—</code>
+            </div>
+            <div class="slot">
+              <div class="lbl">aud · canonical</div>
+              <code id="aud-line">—</code>
+            </div>
+          </div>
+          <div class="landing-card">
+            <h3>Landing card</h3>
+            <ol id="tray"><li>login not a hold · idle word is stamped</li></ol>
+          </div>
+        </section>
+        <aside class="blotter">
+          <h2>Blotter · departure hall</h2>
+          <div class="gauges">
+            <div class="gauge">resource<strong id="g-resource">none</strong></div>
+            <div class="gauge">aud<strong id="g-aud">none</strong></div>
+            <div class="gauge">house<strong id="g-house">none</strong></div>
+            <div class="gauge">HTTP<strong id="g-http">none</strong></div>
+          </div>
+          <div class="keys">
+            <button class="primary" type="button" id="btn-score">Score</button>
+            <button type="button" id="btn-admit">Admit stamped</button>
+            <button type="button" id="btn-bail">Bail · stamped</button>
+            <button class="warn" type="button" id="btn-restore">Clear / restore seed</button>
+          </div>
+          <div class="gates">
+            <button type="button" data-seed="stamped" aria-pressed="false">Bail · stamped</button>
+            <button type="button" data-seed="omitted" aria-pressed="true">Omitted #90497</button>
+            <button type="button" data-seed="audless">Audless</button>
+            <button type="button" data-seed="clientid">Clientid</button>
+            <button type="button" data-seed="refused">Refused</button>
+            <button type="button" data-seed="strict">Strict</button>
+            <button type="button" data-seed="slashy">Slashy</button>
+            <button type="button" data-seed="mismatched">Mismatched</button>
+            <button type="button" data-seed="granted">Granted</button>
+            <button type="button" data-seed="held">Held</button>
+            <button type="button" data-seed="healthy">Healthy stamped</button>
+          </div>
+          <label class="mark" for="paste" style="display:block;margin-top:14px">Paste OAuth trace</label>
+          <textarea id="paste" class="paste" placeholder="resource not sent / aud=mcp-client / 401 claim check failed / trailing slash / AADSTS9010010 / #90497 — detect an omitted visa"></textarea>
+          <button type="button" id="btn-probe" style="margin-top:8px;border:1px solid rgba(201,162,74,0.32);background:#101828;padding:8px 12px;font-family:Source Sans 3,sans-serif;font-size:13px">Probe paste</button>
+        </aside>
+      </div>
+      <div class="integrations">
+        <article>
+          <h3>Slack visa alarm</h3>
+          Horn on omitted / audless / clientid / refused / slashy / mismatched. Demo posts nothing live without a webhook.
+        </article>
+        <article>
+          <h3>Linear ticket</h3>
+          Border ticket on omitted / clientid / refused. Honest demo row when the key is absent.
+        </article>
+        <article>
+          <h3>GitHub visa-ledger</h3>
+          Every scored probe writes a border event. Private gist when a token is present.
+        </article>
+      </div>
+      <section class="brief">
+        <h2>Thesis</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90497">anthropics/claude-code#90497</a>
+          (filed 2026-08-29, open): MCP OAuth client does not send RFC 8707
+          <code>resource</code> (2.1.251) — strict MCP servers reject the
+          token (401). HTTP MCP whose RFC 9728 metadata declares
+          <code>resource: http://localhost:8130/mcp</code>, Keycloak 26.7.2
+          with <code>resource-indicators</code>.
+          <code>claude mcp add --transport http mcp-a http://localhost:8130/mcp</code>.
+          <code>/mcp</code> completes browser login + consent. Issued token:
+          <code>aud=mcp-client</code> (client_id default), no
+          <code>resource</code> claim. Server 401
+          <code>claim check failed: aud actual="mcp-client"</code>.
+          AS-side control tests: <code>resource</code> was absent from
+          <strong>both</strong> <code>/authorize</code> and
+          <code>/token</code>. Distinct from #52871 (sent but trailing-slash
+          corrupted).
+        </p>
+        <p>
+          Related-but-distinct (shape, not a new primary):
+          <a href="https://github.com/anthropics/claude-code/issues/52871">#52871</a>
+          — 2.1.119 sends <code>resource</code> but appends a trailing slash
+          to host-only URLs. Entra AADSTS9010010.
+          <a href="https://github.com/anthropics/claude-code/issues/73460">#73460</a>
+          — override or omit <code>resource</code> for Entra App ID URI vs
+          server URL.
+          <a href="https://github.com/anthropics/claude-code/issues/76096">#76096</a>
+          — Entra <code>resource</code> must be App ID URI; RFC 9728 check
+          wants the server URL.
+          <a href="https://github.com/anthropics/claude-code/issues/55495">#55495</a>
+          — HTTP transport strips path; OAuth resource indicator becomes
+          origin + trailing slash.
+        </p>
+        <p>
+          Cross-ecosystem shape:
+          <a href="https://github.com/openai/codex/issues/13891">openai/codex#13891</a>
+          — <code>codex mcp login</code> omits <code>resource</code> from
+          the authorize URL.
+          <a href="https://github.com/openai/codex/issues/33403">openai/codex#33403</a>
+          — refresh omits <code>resource</code>; AS returns
+          <code>invalid_target</code> after expiry.
+        </p>
+      </section>
+      <section class="why">
+        <h2>Why not a clone</h2>
+        <p>
+          NOT Sprag (boot-cached MCP attach / overrunning clutch —
+          connect-at-boot race). NOT Reed (four-contact MCP registry:
+          connected vs registered vs one served call). NOT Husk (hollow
+          headless success envelopes). NOT the Connected-with-zero-tools /
+          missing Mcp-Session-Id class (#90477) — that is session-id hollow
+          registration, not OAuth audience. NOT Lazaret, Fusee, Iota, Leat,
+          Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper,
+          Cote, Larder, Tappet, Aside, Chute, Tain, Snib, Veto, Assay,
+          Wicket, Sigil, Stencil, Suture, Blot, Coda, Fathom, Hasp, Parity,
+          Reveille, Quench, Scrim, Knock. NOT leftover woodworking /
+          millimetre-slider clones. Different problem: OAuth token issued
+          without naming the destination resource, so strict houses 401
+          even after a “successful” login. Different UI: passport control /
+          visa desk. Navy leather blotter, brass circular stamp, watermark
+          paper, departure-hall amber lamps, ink-pad crimson, immigration
+          teal stripe, paper cream. Different idle: <b>stamped</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "stamped";
+      const SLACK = ["omitted", "audless", "clientid", "refused", "slashy", "mismatched"];
+      const CANONICAL = "http://localhost:8130/mcp";
+      const CLIENT = "mcp-client";
+
+      function emptyProbe() {
+        return {
+          resourceSentAuthorize: false,
+          resourceSentToken: false,
+          resourceValue: "",
+          audClaim: "",
+          clientId: "",
+          canonicalResourceUri: "",
+          serverStrict: false,
+          httpStatus: 0,
+          trailingSlashCorruption: false,
+          oauthCompleted: false,
+          session: "",
+          source: "",
+          issue: null,
+          scored: false,
+        };
+      }
+
+      function usefulAud(probe) {
+        const aud = String(probe.audClaim || "").trim();
+        return Boolean(aud) && aud !== "*" && aud !== "none" && aud !== "-";
+      }
+
+      function classify(probe) {
+        const next = { ...emptyProbe(), ...probe };
+        const idle =
+          !next.resourceSentAuthorize &&
+          !next.resourceSentToken &&
+          !next.resourceValue &&
+          !next.audClaim &&
+          !next.clientId &&
+          !next.canonicalResourceUri &&
+          !next.serverStrict &&
+          !next.httpStatus &&
+          !next.trailingSlashCorruption &&
+          !next.oauthCompleted;
+        if (idle) return "stamped";
+        if (!next.oauthCompleted) return "held";
+        if (!next.resourceSentAuthorize || !next.resourceSentToken) return "omitted";
+        const slashy =
+          next.trailingSlashCorruption ||
+          (next.resourceValue &&
+            next.canonicalResourceUri &&
+            next.resourceValue === next.canonicalResourceUri + "/");
+        if (slashy) return "slashy";
+        const audUseful = usefulAud(next);
+        const audIsClient = audUseful && next.clientId && next.audClaim === next.clientId && next.audClaim !== next.canonicalResourceUri;
+        const audMatches = audUseful && next.canonicalResourceUri && next.audClaim === next.canonicalResourceUri;
+        const accepted = next.httpStatus >= 200 && next.httpStatus < 300;
+        const wrongOrMissing = !audUseful || !audMatches || audIsClient;
+        if (!next.serverStrict && accepted && wrongOrMissing) return "granted";
+        if (audIsClient) return "clientid";
+        if (!audUseful) return "audless";
+        if (next.serverStrict && next.httpStatus === 401) return "refused";
+        if (audUseful && next.canonicalResourceUri && !audMatches) return "mismatched";
+        if (next.resourceSentAuthorize && next.resourceSentToken && audMatches && accepted) return "stamped";
+        if (next.serverStrict && next.resourceSentAuthorize && next.resourceSentToken) return "strict";
+        return "stamped";
+      }
+
+      function feedOf(kind) {
+        if (kind === "omitted") return "● Omitted · resource absent from /authorize and/or /token · primary #90497";
+        if (kind === "audless") return "● Audless · token has no useful audience claim for the MCP resource";
+        if (kind === "clientid") return "● Clientid · aud equals OAuth client_id (default audience) instead of the resource URI";
+        if (kind === "refused") return "● Refused · strict MCP server returns 401 on the token";
+        if (kind === "strict") return "● Strict · server enforces RFC 8707 / MCP auth · the house that rejects";
+        if (kind === "slashy") return "● Slashy · resource was sent but trailing-slash corrupted · shape #52871";
+        if (kind === "mismatched") return "● Mismatched · aud / resource URI does not match Protected Resource Metadata";
+        if (kind === "granted") return "● Granted · soft/legacy server accepted a wrong-audience token · false green";
+        if (kind === "held") return "● Held · probe incomplete / waiting on OAuth dance";
+        return "● Stamped · resource sent, aud matches canonical MCP resource URI, server accepts · idle word is stamped";
+      }
+
+      function clusterOf(probe, kind) {
+        const cluster = [];
+        const add = (word) => { if (word && word !== kind && !cluster.includes(word)) cluster.push(word); };
+        if (probe.oauthCompleted && (!probe.resourceSentAuthorize || !probe.resourceSentToken)) add("omitted");
+        if (probe.trailingSlashCorruption) add("slashy");
+        if (usefulAud(probe) && probe.clientId && probe.audClaim === probe.clientId && probe.audClaim !== probe.canonicalResourceUri) add("clientid");
+        if (!usefulAud(probe) && probe.oauthCompleted) add("audless");
+        if (probe.serverStrict && probe.httpStatus === 401) add("refused");
+        if (probe.serverStrict && probe.resourceSentAuthorize && probe.resourceSentToken) add("strict");
+        if (usefulAud(probe) && probe.canonicalResourceUri && probe.audClaim !== probe.canonicalResourceUri) add("mismatched");
+        if (!probe.serverStrict && probe.httpStatus >= 200 && probe.httpStatus < 300) add("granted");
+        if (!probe.oauthCompleted && (probe.clientId || probe.canonicalResourceUri)) add("held");
+        return cluster;
+      }
+
+      function seedOf(name) {
+        const base = emptyProbe();
+        if (name === "omitted") {
+          return {
+            ...base,
+            oauthCompleted: true,
+            audClaim: CLIENT,
+            clientId: CLIENT,
+            canonicalResourceUri: CANONICAL,
+            serverStrict: true,
+            httpStatus: 401,
+            session: "90497-omitted",
+            source: "anthropics/claude-code#90497",
+            issue: 90497,
+            scored: true,
+          };
+        }
+        if (name === "audless") {
+          return {
+            ...base,
+            resourceSentAuthorize: true,
+            resourceSentToken: true,
+            resourceValue: CANONICAL,
+            clientId: CLIENT,
+            canonicalResourceUri: CANONICAL,
+            oauthCompleted: true,
+            session: "90497-audless",
+            issue: 90497,
+            scored: true,
+          };
+        }
+        if (name === "clientid") {
+          return {
+            ...base,
+            resourceSentAuthorize: true,
+            resourceSentToken: true,
+            resourceValue: CANONICAL,
+            audClaim: CLIENT,
+            clientId: CLIENT,
+            canonicalResourceUri: CANONICAL,
+            serverStrict: true,
+            oauthCompleted: true,
+            session: "90497-clientid",
+            issue: 90497,
+            scored: true,
+          };
+        }
+        if (name === "refused") {
+          return {
+            ...base,
+            resourceSentAuthorize: true,
+            resourceSentToken: true,
+            resourceValue: CANONICAL,
+            audClaim: CANONICAL,
+            clientId: CLIENT,
+            canonicalResourceUri: CANONICAL,
+            serverStrict: true,
+            httpStatus: 401,
+            oauthCompleted: true,
+            session: "90497-refused",
+            issue: 90497,
+            scored: true,
+          };
+        }
+        if (name === "strict") {
+          return {
+            ...base,
+            resourceSentAuthorize: true,
+            resourceSentToken: true,
+            resourceValue: CANONICAL,
+            audClaim: CANONICAL,
+            clientId: CLIENT,
+            canonicalResourceUri: CANONICAL,
+            serverStrict: true,
+            oauthCompleted: true,
+            session: "90497-strict",
+            issue: 90497,
+            scored: true,
+          };
+        }
+        if (name === "slashy") {
+          return {
+            ...base,
+            resourceSentAuthorize: true,
+            resourceSentToken: true,
+            resourceValue: "https://mcp.businesscentral.dynamics.com/",
+            clientId: "bc-mcp",
+            canonicalResourceUri: "https://mcp.businesscentral.dynamics.com",
+            serverStrict: true,
+            trailingSlashCorruption: true,
+            oauthCompleted: true,
+            session: "52871-slashy",
+            source: "anthropics/claude-code#52871",
+            issue: 52871,
+            scored: true,
+          };
+        }
+        if (name === "mismatched") {
+          return {
+            ...base,
+            resourceSentAuthorize: true,
+            resourceSentToken: true,
+            resourceValue: "https://host.example/mcp",
+            audClaim: "api://tenant-app",
+            clientId: CLIENT,
+            canonicalResourceUri: "https://host.example/mcp",
+            serverStrict: true,
+            oauthCompleted: true,
+            session: "76096-mismatched",
+            issue: 76096,
+            scored: true,
+          };
+        }
+        if (name === "granted") {
+          return {
+            ...base,
+            resourceSentAuthorize: true,
+            resourceSentToken: true,
+            resourceValue: CANONICAL,
+            audClaim: CLIENT,
+            clientId: CLIENT,
+            canonicalResourceUri: CANONICAL,
+            serverStrict: false,
+            httpStatus: 200,
+            oauthCompleted: true,
+            session: "90497-granted",
+            issue: 90497,
+            scored: true,
+          };
+        }
+        if (name === "held") {
+          return {
+            ...base,
+            clientId: CLIENT,
+            canonicalResourceUri: CANONICAL,
+            session: "90497-held",
+            issue: 90497,
+            scored: true,
+          };
+        }
+        if (name === "healthy") {
+          return {
+            ...base,
+            resourceSentAuthorize: true,
+            resourceSentToken: true,
+            resourceValue: CANONICAL,
+            audClaim: CANONICAL,
+            clientId: CLIENT,
+            canonicalResourceUri: CANONICAL,
+            serverStrict: true,
+            httpStatus: 200,
+            oauthCompleted: true,
+            session: "stamped-healthy",
+            scored: true,
+          };
+        }
+        return { ...base, session: "stamped", scored: true };
+      }
+
+      function parseTrace(text) {
+        const omitted = /does not send|resource (is )?(not sent|absent|omitted|missing)|no `?resource`?/i.test(text) && !/trailing[- ]slash/i.test(text);
+        const slashy = /trailing[- ]slash|AADSTS9010010/i.test(text);
+        const clientAud = /aud\s*=\s*mcp-client|aud actual="mcp-client"|client_id default/i.test(text);
+        const refused = /401|claim check failed/i.test(text);
+        const completed = /oauth|login \+ consent|issued access token|#90497|#52871/i.test(text);
+        return {
+          ...emptyProbe(),
+          resourceSentAuthorize: slashy,
+          resourceSentToken: slashy,
+          resourceValue: slashy ? "https://mcp.businesscentral.dynamics.com/" : /localhost:8130/.test(text) ? CANONICAL : "",
+          audClaim: clientAud ? CLIENT : "",
+          clientId: /mcp-client|client_id/i.test(text) ? CLIENT : "",
+          canonicalResourceUri: slashy ? "https://mcp.businesscentral.dynamics.com" : /localhost:8130/.test(text) ? CANONICAL : "",
+          serverStrict: /strict|claim check failed|401/i.test(text),
+          httpStatus: refused ? 401 : 0,
+          trailingSlashCorruption: slashy,
+          oauthCompleted: Boolean(completed || omitted || slashy || clientAud || refused),
+          session: /#90497|90497/.test(text) ? "paste-omitted" : "paste",
+          source: /#90497/.test(text) ? "anthropics/claude-code#90497" : "paste",
+          issue: /#90497/.test(text) ? 90497 : /#52871/.test(text) ? 52871 : null,
+          scored: true,
+        };
+      }
+
+      let probe = seedOf("omitted");
+
+      function stampLabel(kind) {
+        if (kind === "omitted") return "omitted · #90497";
+        if (kind === "stamped") return "stamped";
+        return kind;
+      }
+
+      function render() {
+        const verdict = classify(probe);
+        const cluster = clusterOf(probe, verdict);
+        const alarm = SLACK.includes(verdict);
+        const chip = document.getElementById("chip");
+        chip.innerHTML = "<b>" + verdict + "</b> · " + (cluster.length ? cluster.join(" · ") : IDLE_WORD);
+        chip.className = "chip" + (alarm ? " alarm" : verdict === "stamped" || verdict === "strict" || verdict === "granted" ? " hold" : "");
+        document.getElementById("feed").textContent = feedOf(verdict);
+        document.getElementById("horn").className = "horn" + (alarm ? " on" : "");
+        document.getElementById("lamp-a").className = "amber-lamp" + (alarm ? " jam" : " on");
+        document.getElementById("lamp-b").className = "amber-lamp" + (verdict === "stamped" || verdict === "strict" ? " on" : "");
+        document.getElementById("lamp-c").className = "amber-lamp" + (verdict === "granted" || verdict === "held" ? " on" : "");
+        const folio = document.getElementById("passport-folio");
+        folio.className = "passport-folio " + verdict;
+        document.getElementById("brass-stamp").innerHTML = stampLabel(verdict).replace(" · ", "<br />");
+        document.getElementById("resource-sent").textContent =
+          (probe.resourceSentAuthorize ? "sent" : "absent") + " / " + (probe.resourceSentToken ? "sent" : "absent");
+        document.getElementById("aud-line").textContent =
+          (probe.audClaim || "—") + " → " + (probe.canonicalResourceUri || "—");
+        const tray = document.getElementById("tray");
+        const lines = [];
+        if (probe.oauthCompleted && (!probe.resourceSentAuthorize || !probe.resourceSentToken)) {
+          lines.push("<li>resource omitted from authorize and/or token</li>");
+        }
+        if (probe.audClaim === probe.clientId && probe.clientId) lines.push("<li>aud equals client_id " + probe.clientId + "</li>");
+        if (probe.httpStatus === 401) lines.push("<li>strict house 401</li>");
+        if (probe.trailingSlashCorruption) lines.push("<li>trailing-slash corruption</li>");
+        if (probe.serverStrict) lines.push("<li>server enforces RFC 8707</li>");
+        if (!probe.oauthCompleted && verdict !== "stamped") lines.push("<li>waiting on OAuth dance</li>");
+        tray.innerHTML = lines.length ? lines.join("") : "<li>login not a hold · idle word is stamped</li>";
+        document.getElementById("g-resource").textContent = probe.resourceValue || (probe.resourceSentAuthorize || probe.resourceSentToken ? "named" : "none");
+        document.getElementById("g-aud").textContent = probe.audClaim || "none";
+        document.getElementById("g-house").textContent = probe.serverStrict ? "strict" : "soft";
+        document.getElementById("g-http").textContent = probe.httpStatus || "none";
+        document.querySelectorAll(".gates button[data-seed]").forEach((btn) => {
+          const seedName = btn.getAttribute("data-seed");
+          const pressed = seedName === "stamped"
+            ? verdict === "stamped" && !probe.oauthCompleted
+            : seedName === "healthy"
+              ? verdict === "stamped" && probe.oauthCompleted
+              : classify(probe) === seedName;
+          btn.setAttribute("aria-pressed", pressed ? "true" : "false");
+        });
+      }
+
+      document.getElementById("btn-score").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-admit").addEventListener("click", () => {
+        probe = { ...probe, scored: true };
+        render();
+      });
+      document.getElementById("btn-bail").addEventListener("click", () => {
+        probe = seedOf("stamped");
+        render();
+      });
+      document.getElementById("btn-restore").addEventListener("click", () => {
+        probe = seedOf("omitted");
+        render();
+      });
+      document.getElementById("btn-probe").addEventListener("click", () => {
+        const text = document.getElementById("paste").value || "";
+        probe = text.trim() ? parseTrace(text) : seedOf("omitted");
+        render();
+      });
+      document.querySelectorAll(".gates button[data-seed]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          probe = seedOf(btn.getAttribute("data-seed"));
+          render();
+        });
+      });
+      render();
+    </script>
+  </body>
+</html>
