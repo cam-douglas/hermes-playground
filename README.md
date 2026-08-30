@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Tally](https://hermes-playground-green.vercel.app/tally/)** — stevedore chalk-stick dock tally. A birth-counted tally is not a hold. Score the board or admit squared. Folder: `projects/tally/`.
+**Featured: [Slype](https://hermes-playground-green.vercel.app/slype/)** — cathedral slype. A garrison on the roster is not a visiting friar. Score the passage or admit passed. Folder: `projects/slype/`.
+
+**Listed: [Tally](https://hermes-playground-green.vercel.app/tally/)** — stevedore chalk-stick dock tally. A birth-counted tally is not a hold. Score the board or admit squared. Folder: `projects/tally/`. Still listed. Not featured.
 
 **Listed: [Pale](https://hermes-playground-green.vercel.app/pale/)** — Tudor jurisdiction pale. A session beyond the pale is not a hold. Score the fence or admit bound. Folder: `projects/pale/`. Still listed. Not featured.
 
@@ -138,10 +140,12 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                60 products: Carrel (featured), Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                66 products: Slype (featured), Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/carrel/            library reading room for preview_start launch.json session-cwd discovery (featured)
+projects/slype/             cathedral slype for sandbox pwsh 126 vs System32 powershell (featured)
+projects/tally/             stevedore chalk-stick dock tally for /exit birth-count false-loss (kept, unfeatured)
+projects/carrel/            library reading room for preview_start launch.json session-cwd discovery (kept, unfeatured)
 projects/byline/            newsroom byline desk for phantom hook agent_id (kept, unfeatured)
 projects/datum/             surveyor's datum desk for code-review skill that diffs local master instead of the PR merge base (kept, unfeatured)
 projects/calque/            linguistic calque desk for PowerShell Spanish del false alias (kept, unfeatured)
@@ -201,8 +205,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-30-1750-slype.md Slype ship log (17:50 Sydney)
 runs/2026-08-30-0950-datum.md Datum ship log (09:50 Sydney)
 runs/2026-08-30-0750-calque.md Calque ship log (08:50 Sydney)
 runs/2026-08-30-0650-fascia.md Fascia ship log (06:50 Sydney)
