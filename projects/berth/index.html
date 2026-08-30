@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Berth — harbour berth for Claude Code spawn_task chip that shares the parent's working tree. A shared berth is not a hold. Idle word is alongside."
+    />
+    <title>Berth — harbour berth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:ital,wght@0,400;0,600;1,400&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --harbour: #07141a;
+        --quay: #0e2430;
+        --tide: #163a42;
+        --foam: #8ec8c0;
+        --chalk: #efe6d4;
+        --hemp: #c9a66b;
+        --rust: #b54a28;
+        --fender: #c43b32;
+        --lantern: #e8a04a;
+        --hold: #6fa87a;
+        --mute: #7e908c;
+        --rule: rgba(142, 200, 192, 0.22);
+        --display: "Bebas Neue", "Impact", sans-serif;
+        --body: "Lora", "Georgia", serif;
+        --mono: "Space Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--chalk);
+        background:
+          radial-gradient(ellipse 80% 28% at 50% 100%, rgba(22, 58, 66, 0.7), transparent 60%),
+          repeating-linear-gradient(
+            90deg,
+            rgba(201, 166, 107, 0.04) 0 3px,
+            transparent 3px 42px
+          ),
+          linear-gradient(180deg, #0a1c24 0%, var(--harbour) 48%, #041015 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--foam); }
+      .harbour-quay {
+        width: min(1240px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 80px;
+      }
+      .quay-name {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: end;
+        gap: 12px;
+        padding: 10px 4px 16px;
+        border-bottom: 4px double var(--hemp);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: var(--hemp);
+      }
+      h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(52px, 10vw, 92px);
+        font-weight: 400;
+        letter-spacing: 0.08em;
+        text-align: center;
+        line-height: 0.82;
+        color: var(--chalk);
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-align: right;
+      }
+      .thesis {
+        margin: 16px 0 0;
+        font-size: 19px;
+        font-style: italic;
+        color: var(--chalk);
+      }
+      .stacks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        font-family: var(--mono);
+        font-size: 11px;
+        margin-top: 10px;
+      }
+      .wharf {
+        display: grid;
+        grid-template-columns: 270px 1fr 300px;
+        gap: 16px;
+        margin-top: 20px;
+      }
+      @media (max-width: 980px) {
+        .wharf { grid-template-columns: 1fr; }
+        .quay-name { grid-template-columns: 1fr; }
+        .hours { text-align: left; }
+      }
+      .tide-board,
+      .berth-chalkboard,
+      .fender-posts {
+        background: var(--quay);
+        border: 1px solid var(--rule);
+        padding: 14px;
+      }
+      .tide-board {
+        background:
+          linear-gradient(180deg, rgba(142, 200, 192, 0.08), transparent 40%),
+          var(--tide);
+      }
+      .hed {
+        font-family: var(--display);
+        font-size: 18px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--hemp);
+        margin: 0 0 10px;
+      }
+      .chip-vessel,
+      .parent-hold {
+        position: relative;
+        margin-bottom: 10px;
+        padding: 10px 10px 10px 14px;
+        border: 1px solid var(--foam);
+        background: #0a1e26;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .chip-vessel.cohabited,
+      .parent-hold.cohabited {
+        border-style: dashed;
+        border-color: var(--fender);
+        background: rgba(196, 59, 50, 0.12);
+      }
+      .chip-vessel.hold,
+      .parent-hold.hold {
+        border-color: var(--hold);
+      }
+      .lantern {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        width: 12px;
+        height: 16px;
+        background: #2a2214;
+        clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+      }
+      .chip-vessel.lit .lantern,
+      .parent-hold.lit .lantern {
+        background: var(--lantern);
+        box-shadow: 0 0 12px var(--lantern);
+      }
+      .tide-mark {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        background: #122830;
+        color: var(--chalk);
+        font-family: var(--mono);
+        font-size: 12px;
+        border-left: 6px solid var(--foam);
+      }
+      .tide-mark.high {
+        border-left-color: var(--fender);
+        background: #2a1814;
+      }
+      .tide-mark.ebb {
+        border-left-color: var(--hold);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid var(--rule);
+        padding: 4px 8px;
+        background: transparent;
+      }
+      .chip.on { border-color: var(--hemp); color: var(--hemp); }
+      .chip.alarm { border-color: var(--fender); color: var(--fender); }
+      .chip.hold { border-color: var(--hold); color: var(--hold); }
+      .actions, .seeds {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .actions button, .seeds button {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        background: var(--tide);
+        border: 1px solid var(--hemp);
+        padding: 7px 10px;
+      }
+      .actions button.primary {
+        background: var(--lantern);
+        color: var(--harbour);
+        border-color: var(--lantern);
+      }
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        resize: vertical;
+        background: #061016;
+        color: var(--chalk);
+        border: 1px solid var(--rule);
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 8px;
+      }
+      .verdict-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        border-top: 1px solid var(--rule);
+        padding-top: 10px;
+        margin-top: 10px;
+      }
+      .verdict-word {
+        font-family: var(--display);
+        font-size: 36px;
+        letter-spacing: 0.06em;
+      }
+      .verdict-word.alarm { color: var(--fender); }
+      .verdict-word.hold { color: var(--hold); }
+      .copy {
+        margin-top: 10px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .sinks, .slip-line {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .adapter {
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px dashed var(--rule);
+      }
+      .hours-board {
+        margin-top: 16px;
+        padding: 8px 12px;
+        background: #10262c;
+        border: 1px solid rgba(142, 200, 192, 0.28);
+        font-family: var(--mono);
+        font-size: 11px;
+        color: #cfe8e2;
+      }
+      .why {
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 4px double var(--hemp);
+        font-size: 14px;
+        color: var(--mute);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="harbour-quay">
+      <header class="quay-name">
+        <p class="mark">Harbour quay · allotted slips</p>
+        <h1>Berth</h1>
+        <p class="hours">Vol. 90668<br />12:50 Sydney · berth</p>
+      </header>
+      <p class="thesis">
+        A shared berth is not a hold. Score the quay or admit <b>alongside</b>.
+        The chip was promised a fresh worktree; it docked in the parent's tree.
+      </p>
+      <p class="stacks">
+        <a href="https://github.com/anthropics/claude-code/issues/90668">#90668 primary</a>
+        <a href="https://github.com/anthropics/claude-code/issues/77263">#77263 cwd-ignored</a>
+        <a href="https://github.com/anthropics/claude-code/issues/79234">#79234 phantom-tree</a>
+        <a href="https://github.com/anthropics/claude-code/issues/90638">#90638 related</a>
+        <a href="https://github.com/openai/codex/issues/31572">codex#31572</a>
+        <span>bug / platform:macos / area:agents / area:desktop</span>
+      </p>
+      <div class="wharf">
+        <aside class="tide-board" aria-label="Tide board">
+          <p class="hed">Tide board</p>
+          <div id="aisle"></div>
+        </aside>
+        <section class="berth-chalkboard" aria-label="Berth chalkboard">
+          <p class="hed">Berth chalkboard</p>
+          <div id="drawers"></div>
+          <p class="hed">Verdict chips</p>
+          <div class="chips" id="chips"></div>
+          <div class="seeds" id="seeds"></div>
+          <div class="actions">
+            <button class="primary" id="score">Score the quay</button>
+            <button id="admit">Admit alongside</button>
+            <button id="restore">Restore · #90668</button>
+          </div>
+          <label class="hed" for="raw">spawn_task + cwd probe</label>
+          <textarea id="raw" spellcheck="false" placeholder='{"parentCwd":"…","chipCwd":"…","spawn_task":{"promisedFresh":true}}'></textarea>
+          <div class="verdict-row">
+            <span id="verdictWord" class="verdict-word hold">alongside</span>
+            <span id="idleMark" class="mark">idle word alongside</span>
+          </div>
+          <p class="copy" id="feed"></p>
+          <div class="sinks" id="sinks"></div>
+        </section>
+        <aside class="fender-posts" aria-label="Fender posts">
+          <p class="hed">Fender posts</p>
+          <div id="slip"></div>
+          <p class="hed">Native adapters</p>
+          <div id="adapters"></div>
+        </aside>
+      </div>
+      <div class="hours-board" id="ticker">
+        TIDE · #90668 wolverine shared tree · promised fresh worktree · no git worktree · parent still editing · #77263 cwd-ignored · #79234 phantom-tree · #90638 is a different quay
+      </div>
+      <section class="why">
+        <p>
+          Primary:
+          <a href="https://github.com/anthropics/claude-code/issues/90668">anthropics/claude-code#90668</a>
+          (OPEN, filed 2026-08-30, labels bug / platform:macos / area:agents / area:desktop).
+          Title: spawn_task chip runs in the spawning session's working tree, not an isolated worktree —
+          while that session is still editing it.
+          Same-class nearby:
+          <a href="https://github.com/anthropics/claude-code/issues/77263">#77263</a>
+          cwd param ignored;
+          <a href="https://github.com/anthropics/claude-code/issues/79234">#79234</a>
+          phantom .claude/worktrees dir.
+          Related, different:
+          <a href="https://github.com/anthropics/claude-code/issues/90638">#90638</a>
+          Fascia trust-path (worktree exists);
+          <a href="https://github.com/anthropics/claude-code/issues/90661">#90661</a>
+          Carrel launch.json.
+          Cross-ecosystem:
+          <a href="https://github.com/openai/codex/issues/31572">openai/codex#31572</a>,
+          <a href="https://github.com/openai/codex/issues/33144">#33144</a>,
+          <a href="https://github.com/openai/codex/issues/18969">#18969</a>.
+        </p>
+        <p>
+          NOT Carrel (launch.json session-cwd #90661).
+          NOT Fascia (trust-dialog names spawn_task cwd #90638).
+          NOT Byline (phantom hook agent_id #90662).
+          NOT Datum (wrong-base code-review #90620).
+          NOT Wicket (absolute Edit/Write isolation escape).
+          NOT leftover woodworking / millimetre-slider clones.
+          Different problem: spawn_task chip docks in the parent's working tree.
+          Different UI: harbour quay / tide board / berth chalkboard / fender posts.
+          Fonts: Bebas Neue + Lora + Space Mono. Idle word is <b>alongside</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "alongside";
+      const SLACK = ["cohabited", "promised-fresh", "same-floor", "branch-stolen", "interleaved", "chip-lied", "primary-dock", "cwd-ignored", "phantom-tree"];
+      const LINEAR = SLACK.slice();
+      const VERDICTS = ["alongside", "cohabited", "promised-fresh", "same-floor", "branch-stolen", "interleaved", "chip-lied", "primary-dock", "cwd-ignored", "phantom-tree", "off-quay"];
+      const PARENT = "/Users/ada/code/wolverine";
+      const CHIP = "/Users/ada/code/wolverine/.claude/worktrees/task_2abc4d00";
+      const HAND = "/private/tmp/wolv-4191";
+      const CWD77263 = "/Users/ada/dev/app";
+      const PARENT77263 = "/Users/ada/dev";
+      const PHANTOM = "/Users/ada/src/harbour/.claude/worktrees/cool-williamson-7441df";
+      const PARENT79234 = "/Users/ada/src/harbour";
+
+      function emptyQuay() {
+        return {
+          session: "", issue: null, source: "",
+          parentCwd: "", chipCwd: "", worktreeCreated: null, worktreeIsGit: null,
+          branchBefore: "", branchAfter: "", promisedFresh: false,
+          parentStillEditing: false, interleavedPaths: [], cwdParam: "",
+          cwdIsGitRepo: null, toldSeparateSession: false,
+          worktreeListBefore: [], worktreeListAfter: [], phantomPath: "",
+          gitDir: "", gitCommonDir: "", gitToplevel: "",
+          startedOnPrimary: false, parentUntouched: null, nearby: "",
+          fasciaTrust: false, carrelLaunch: false, bylineGhost: false, scored: false
+        };
+      }
+      function norm(p) { return String(p || "").replace(/\\/g, "/").replace(/\/+$/, ""); }
+      function isOffQuay(row) {
+        var n = String(row.nearby || "").toLowerCase();
+        return n === "fascia" || n === "carrel" || n === "byline" || n === "90638" || n === "90661" ||
+          row.fasciaTrust || row.carrelLaunch || row.bylineGhost;
+      }
+      function isIdle(row) {
+        return !(row.parentCwd || row.chipCwd || row.worktreeCreated != null || row.worktreeIsGit != null ||
+          row.branchBefore || row.branchAfter || row.promisedFresh || row.parentStillEditing ||
+          (row.interleavedPaths && row.interleavedPaths.length) || row.cwdParam ||
+          row.toldSeparateSession || row.phantomPath || row.gitDir || row.startedOnPrimary ||
+          row.nearby || isOffQuay(row));
+      }
+      function worktreeOk(row, chipCwd) {
+        if (row.worktreeIsGit === false) return false;
+        if (row.worktreeIsGit === true && row.worktreeCreated === true) return true;
+        var gitDir = norm(row.gitDir), common = norm(row.gitCommonDir), top = norm(row.gitToplevel);
+        return Boolean(gitDir && common && gitDir !== common && top && chipCwd && top === chipCwd);
+      }
+      function analyze(row) {
+        var parentCwd = norm(row.parentCwd);
+        var chipCwd = norm(row.chipCwd);
+        var sameFloor = Boolean(parentCwd && chipCwd && parentCwd === chipCwd);
+        var ok = worktreeOk(row, chipCwd);
+        var missing = row.worktreeCreated === false || (!row.worktreeCreated && !ok);
+        var branchMoved = Boolean(row.branchBefore && row.branchAfter && row.branchBefore !== row.branchAfter);
+        var interleaved = (row.interleavedPaths || []).length > 0 && row.parentStillEditing;
+        var parentUntouched = row.parentUntouched === true || (!interleaved && !branchMoved && ok && chipCwd && parentCwd && chipCwd !== parentCwd);
+        return {
+          parentCwd: parentCwd, chipCwd: chipCwd, sameFloor: sameFloor, worktreeOk: ok,
+          worktreeMissing: missing, branchStolen: Boolean(branchMoved && !ok),
+          interleavedHold: Boolean(interleaved && (sameFloor || !ok)),
+          cohabited: Boolean(sameFloor && row.parentStillEditing && !ok),
+          phantomTree: Boolean((row.phantomPath || /\.claude\/worktrees\//.test(chipCwd)) && row.worktreeIsGit === false),
+          cwdIgnored: Boolean(norm(row.cwdParam) && row.cwdIsGitRepo !== false && missing && !ok),
+          primaryDock: Boolean(row.startedOnPrimary && missing && !ok),
+          chipLied: Boolean((row.toldSeparateSession || row.promisedFresh) && !ok && sameFloor && !row.startedOnPrimary),
+          promisedFresh: Boolean(row.promisedFresh && missing && !ok),
+          alongsideHold: Boolean(ok && chipCwd && parentCwd && chipCwd !== parentCwd && parentUntouched && !isOffQuay(row)),
+          offQuay: isOffQuay(row)
+        };
+      }
+      function classify(row) {
+        if (isOffQuay(row)) return "off-quay";
+        if (isIdle(row)) return "alongside";
+        var f = analyze(row);
+        if (f.branchStolen) return "branch-stolen";
+        if (f.interleavedHold) return "interleaved";
+        if (f.cohabited) return "cohabited";
+        if (f.phantomTree) return "phantom-tree";
+        if (f.cwdIgnored) return "cwd-ignored";
+        if (f.primaryDock) return "primary-dock";
+        if (f.chipLied) return "chip-lied";
+        if (f.promisedFresh) return "promised-fresh";
+        if (f.sameFloor) return "same-floor";
+        return "alongside";
+      }
+      function feedOf(kind) {
+        if (kind === "cohabited") return "● Cohabited · chip session shares the spawning session's working tree while that session is still editing it · primary #90668";
+        if (kind === "promised-fresh") return "● Promised-fresh · tool schema/ack/UI promised a fresh worktree but none was created";
+        if (kind === "same-floor") return "● Same-floor · chip cwd is the same absolute filesystem path as the spawning session";
+        if (kind === "branch-stolen") return "● Branch-stolen · chip created or checked out a branch that moved the shared tree under the parent";
+        if (kind === "interleaved") return "● Interleaved · chip's uncommitted files appear in the parent's git status mid-task";
+        if (kind === "chip-lied") return "● Chip-lied · user/model told a separate local session / fresh worktree while cwd is the parent's";
+        if (kind === "primary-dock") return "● Primary-dock · started on the primary checkout / project root with no worktree";
+        if (kind === "cwd-ignored") return "● Cwd-ignored · #77263 cwd param set to a git repo but still no worktree";
+        if (kind === "phantom-tree") return "● Phantom-tree · #79234 .claude/worktrees/<name> exists but is not a real git worktree; git resolves to parent";
+        if (kind === "off-quay") return "● Off-quay · related slip, not #90668 shared spawn_task tree · label, do not treat as this berth";
+        return "● Alongside · chip session has its own real git worktree; parent tree untouched · hold is quiet · idle word is alongside";
+      }
+      function seedOf(name) {
+        var row = emptyQuay();
+        row.scored = true;
+        if (name === "alongside" || name === "control") {
+          row.session = "alongside-hold"; row.issue = 90668;
+          row.parentCwd = PARENT; row.chipCwd = CHIP;
+          row.worktreeCreated = true; row.worktreeIsGit = true;
+          row.branchBefore = "gh-4188-feature"; row.branchAfter = "gh-4188-feature";
+          row.promisedFresh = true; row.parentStillEditing = true;
+          row.toldSeparateSession = true; row.parentUntouched = true;
+          row.gitDir = CHIP + "/.git"; row.gitCommonDir = PARENT + "/.git"; row.gitToplevel = CHIP;
+          return row;
+        }
+        if (name === "cwd-ignored") {
+          row.session = "77263-cwd-ignored"; row.issue = 77263;
+          row.parentCwd = PARENT77263; row.chipCwd = CWD77263; row.cwdParam = CWD77263;
+          row.cwdIsGitRepo = true; row.worktreeCreated = false; row.worktreeIsGit = false;
+          row.promisedFresh = true; row.toldSeparateSession = true; row.startedOnPrimary = true;
+          row.gitDir = CWD77263 + "/.git"; row.gitCommonDir = CWD77263 + "/.git"; row.gitToplevel = CWD77263;
+          return row;
+        }
+        if (name === "phantom-tree") {
+          row.session = "79234-phantom-tree"; row.issue = 79234;
+          row.parentCwd = PARENT79234; row.chipCwd = PHANTOM; row.phantomPath = PHANTOM;
+          row.worktreeCreated = true; row.worktreeIsGit = false;
+          row.promisedFresh = true; row.toldSeparateSession = true;
+          row.gitDir = PARENT79234 + "/.git"; row.gitCommonDir = PARENT79234 + "/.git"; row.gitToplevel = PARENT79234;
+          row.branchBefore = "main"; row.branchAfter = "main";
+          return row;
+        }
+        if (name === "branch-stolen") {
+          row.session = "90668-branch-stolen"; row.issue = 90668;
+          row.parentCwd = PARENT; row.chipCwd = PARENT;
+          row.worktreeCreated = false; row.worktreeIsGit = false;
+          row.branchBefore = "gh-4188-feature"; row.branchAfter = "claude/task_2abc4d00";
+          row.promisedFresh = true; row.parentStillEditing = true;
+          row.toldSeparateSession = true; row.startedOnPrimary = true;
+          return row;
+        }
+        if (name === "interleaved") {
+          row.session = "90668-interleaved"; row.issue = 90668;
+          row.parentCwd = PARENT; row.chipCwd = PARENT;
+          row.worktreeCreated = false; row.worktreeIsGit = false;
+          row.branchBefore = "gh-4188-feature"; row.branchAfter = "gh-4188-feature";
+          row.promisedFresh = true; row.parentStillEditing = true;
+          row.interleavedPaths = ["src/ChipTouchedA.cs", "src/ChipTouchedB.cs", "src/ChipTouchedC.cs"];
+          row.toldSeparateSession = true; row.startedOnPrimary = true;
+          return row;
+        }
+        if (name === "promised-fresh") {
+          row.session = "promised-fresh"; row.issue = 90668;
+          row.promisedFresh = true; row.worktreeCreated = false; row.worktreeIsGit = false;
+          return row;
+        }
+        if (name === "same-floor") {
+          row.session = "same-floor"; row.issue = 90668;
+          row.parentCwd = PARENT; row.chipCwd = PARENT;
+          row.worktreeCreated = false; row.worktreeIsGit = false;
+          return row;
+        }
+        if (name === "chip-lied") {
+          row.session = "chip-lied"; row.issue = 90668;
+          row.parentCwd = PARENT; row.chipCwd = PARENT;
+          row.worktreeCreated = false; row.worktreeIsGit = false;
+          row.toldSeparateSession = true; row.promisedFresh = true;
+          return row;
+        }
+        if (name === "primary-dock") {
+          row.session = "primary-dock"; row.issue = 90668;
+          row.parentCwd = PARENT; row.chipCwd = PARENT;
+          row.worktreeCreated = false; row.worktreeIsGit = false; row.startedOnPrimary = true;
+          return row;
+        }
+        if (name === "off-quay") {
+          row.session = "fascia-trust"; row.issue = 90638;
+          row.nearby = "fascia"; row.fasciaTrust = true;
+          row.parentCwd = PARENT; row.chipCwd = CHIP;
+          row.worktreeCreated = true; row.worktreeIsGit = true;
+          return row;
+        }
+        row.session = "90668-cohabited"; row.issue = 90668;
+        row.parentCwd = PARENT; row.chipCwd = PARENT;
+        row.worktreeCreated = false; row.worktreeIsGit = false;
+        row.branchBefore = "gh-4188-feature"; row.branchAfter = "gh-4188-feature";
+        row.promisedFresh = true; row.parentStillEditing = true;
+        row.toldSeparateSession = true; row.startedOnPrimary = true;
+        row.worktreeListBefore = [PARENT, HAND]; row.worktreeListAfter = [PARENT, HAND];
+        row.gitDir = PARENT + "/.git"; row.gitCommonDir = PARENT + "/.git"; row.gitToplevel = PARENT;
+        return row;
+      }
+      function demoSinks(kind) {
+        var slack = SLACK.indexOf(kind) !== -1;
+        var linear = LINEAR.indexOf(kind) !== -1;
+        return [
+          { adapter: "slack", mode: "demo", summary: slack ? "Would post to Slack: " + kind + " quay alarm." : "Would skip Slack. Berth is " + kind + "." },
+          { adapter: "github", mode: "demo", summary: "Would open a GitHub berth-ledger issue. Demo: no token." },
+          { adapter: "linear", mode: "demo", summary: linear ? "Would open a Linear ticket: berth " + kind : "Would skip Linear. Verdict " + kind + " is not a shared-tree quay alarm." }
+        ];
+      }
+      function scoreQuay(row) {
+        var kind = classify(row);
+        var f = analyze(row);
+        return { verdict: kind, alongside: kind === "alongside", facts: f, feed: feedOf(kind), sinks: demoSinks(kind), quay: row };
+      }
+      function parseRaw(text) {
+        var raw = String(text || "").trim();
+        if (!raw) return seedOf("cohabited");
+        if (raw.startsWith("{")) {
+          try {
+            var parsed = JSON.parse(raw);
+            var row = emptyQuay();
+            Object.keys(parsed).forEach(function (k) { row[k] = parsed[k]; });
+            if (parsed.spawn_task) {
+              if (parsed.spawn_task.cwd) row.chipCwd = row.chipCwd || parsed.spawn_task.cwd;
+              if (parsed.spawn_task.promisedFresh) row.promisedFresh = true;
+            }
+            row.scored = true;
+            return row;
+          } catch (e) { /* fall through */ }
+        }
+        return seedOf("cohabited");
+      }
+
+      var quay = seedOf("cohabited");
+      function render() {
+        var out = scoreQuay(quay);
+        var f = out.facts;
+        var aisle = document.getElementById("aisle");
+        aisle.innerHTML = [
+          { id: "parent", cls: "parent-hold", title: "Parent hold", path: quay.parentCwd || PARENT, note: "still editing" },
+          { id: "chip", cls: "chip-vessel", title: "Chip vessel", path: quay.chipCwd || PARENT, note: "promised fresh" },
+          { id: "hand", cls: "parent-hold", title: "Hand worktree", path: HAND, note: "made by hand" }
+        ].map(function (desk) {
+          var shared = out.verdict !== "alongside" && out.verdict !== "off-quay" && desk.id !== "hand";
+          var hold = out.verdict === "alongside" && desk.id === "chip";
+          var lit = desk.id === "chip" || (desk.id === "parent" && (f.sameFloor || out.verdict === "cohabited"));
+          return '<div class="' + desk.cls + (shared ? " cohabited" : "") + (hold ? " hold" : "") + (lit ? " lit" : "") + '"><span class="lantern" aria-hidden="true"></span><strong>' + desk.title + '</strong><div>' + desk.path + '</div><div>' + desk.note + '</div></div>';
+        }).join("");
+        document.getElementById("drawers").innerHTML =
+          '<div class="tide-mark' + (f.sameFloor || out.verdict === "cohabited" ? " high" : "") + '"><span>Parent cwd</span><span>' + (quay.parentCwd || PARENT) + '</span></div>' +
+          '<div class="tide-mark' + (f.worktreeOk ? " ebb" : "") + '"><span>Chip cwd</span><span>' + (quay.chipCwd || "—") + '</span></div>';
+        document.getElementById("chips").innerHTML = VERDICTS.map(function (v) {
+          var on = v === out.verdict ? " on" : "";
+          var tone = v === "alongside" ? " hold" : (v === "off-quay" ? "" : " alarm");
+          return '<span class="chip' + on + (v === out.verdict ? tone : "") + '">' + v + "</span>";
+        }).join("");
+        var word = document.getElementById("verdictWord");
+        word.textContent = out.verdict;
+        word.className = "verdict-word " + (out.alongside ? "hold" : "alarm");
+        document.getElementById("feed").textContent = out.feed;
+        document.getElementById("slip").innerHTML =
+          '<div class="slip-line">task <b>task_2abc4d00</b></div>' +
+          '<div class="slip-line">promised fresh <b>' + (quay.promisedFresh ? "yes" : "no") + "</b></div>" +
+          '<div class="slip-line">worktree created ' + (quay.worktreeCreated == null ? "—" : quay.worktreeCreated) + "</div>" +
+          '<div class="slip-line">worktree is git ' + (quay.worktreeIsGit == null ? "—" : quay.worktreeIsGit) + "</div>" +
+          '<div class="slip-line">parent still editing ' + (quay.parentStillEditing ? "yes" : "no") + "</div>" +
+          '<div class="slip-line">issue #' + (quay.issue || 90668) + "</div>";
+        document.getElementById("adapters").innerHTML = out.sinks.map(function (s) {
+          return '<div class="adapter"><strong>' + s.adapter + '</strong> · ' + s.mode + '<div>' + s.summary + "</div></div>";
+        }).join("");
+        document.getElementById("sinks").textContent = out.sinks.map(function (s) { return s.adapter + ": " + s.summary; }).join(" · ");
+        if (document.getElementById("raw").value.trim() === "") {
+          document.getElementById("raw").value = JSON.stringify({
+            parentCwd: quay.parentCwd,
+            chipCwd: quay.chipCwd,
+            worktreeCreated: quay.worktreeCreated,
+            worktreeIsGit: quay.worktreeIsGit,
+            spawn_task: { cwd: quay.cwdParam || quay.chipCwd, promisedFresh: quay.promisedFresh },
+            parentStillEditing: quay.parentStillEditing,
+            interleavedPaths: quay.interleavedPaths,
+            cwdParam: quay.cwdParam,
+            toldSeparateSession: quay.toldSeparateSession,
+            startedOnPrimary: quay.startedOnPrimary,
+            phantomPath: quay.phantomPath,
+            nearby: quay.nearby
+          }, null, 2);
+        }
+      }
+      document.getElementById("seeds").innerHTML = ["cohabited", "cwd-ignored", "phantom-tree", "branch-stolen", "interleaved", "promised-fresh", "same-floor", "chip-lied", "primary-dock", "alongside", "off-quay"].map(function (name) {
+        return '<button data-seed="' + name + '">' + name + "</button>";
+      }).join("");
+      document.getElementById("seeds").addEventListener("click", function (ev) {
+        var name = ev.target.getAttribute("data-seed");
+        if (!name) return;
+        quay = seedOf(name);
+        document.getElementById("raw").value = "";
+        render();
+      });
+      document.getElementById("score").addEventListener("click", function () {
+        quay = parseRaw(document.getElementById("raw").value);
+        render();
+      });
+      document.getElementById("admit").addEventListener("click", function () {
+        quay = parseRaw(document.getElementById("raw").value);
+        render();
+      });
+      document.getElementById("restore").addEventListener("click", function () {
+        quay = seedOf("cohabited");
+        document.getElementById("raw").value = "";
+        render();
+      });
+      render();
+    </script>
+  </body>
+</html>
