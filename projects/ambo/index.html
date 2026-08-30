@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Ambo — raised reading desk for Claude Code #90685: PermissionRequest systemMessage accepted and logged as success but never rendered at the ExitPlanMode approval prompt. The pulpit spoke; the nave never heard. Idle word is unheard."
+    />
+    <title>Ambo — raised reading desk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Fira+Code:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --night: #080b12;
+        --indigo: #12182a;
+        --ashlar: #3a3632;
+        --stone: #7a7268;
+        --beeswax: #e0b35a;
+        --wax-deep: #9a7428;
+        --claret: #9a3d4d;
+        --claret-lit: #c45a6a;
+        --parchment: #f3ead4;
+        --ink: #1c1610;
+        --moss: #3d8a6a;
+        --moss-lit: #6ec49a;
+        --dust: #c8bba0;
+        --mute: #8a8070;
+        --display: "Cinzel", "Palatino Linotype", Palatino, serif;
+        --body: "Libre Baskerville", "Iowan Old Style", Georgia, serif;
+        --mono: "Fira Code", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--parchment);
+        background:
+          radial-gradient(ellipse 42% 30% at 50% 18%, rgba(224, 179, 90, 0.16), transparent 58%),
+          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(18, 24, 42, 0.95), transparent 70%),
+          linear-gradient(180deg, #1a2034 0%, var(--night) 42%, #05060a 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--beeswax); }
+      .sanctuary {
+        width: min(1160px, calc(100% - 22px));
+        margin: 0 auto;
+        padding: 20px 0 88px;
+      }
+      .lintel {
+        padding: 18px 22px 16px;
+        background:
+          linear-gradient(180deg, rgba(28, 24, 20, 0.96), #161410 90%);
+        border: 1px solid var(--wax-deep);
+        box-shadow: inset 0 0 0 1px rgba(224, 179, 90, 0.14), 0 10px 0 #1a140c;
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--beeswax);
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-family: var(--display);
+        font-size: clamp(44px, 8vw, 76px);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        line-height: 0.92;
+        color: var(--beeswax);
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin: 4px 0 0;
+      }
+      .thesis {
+        margin: 12px 0 0;
+        font-family: var(--body);
+        font-size: clamp(17px, 2.4vw, 22px);
+        font-style: italic;
+        color: var(--parchment);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        padding: 5px 10px;
+        border: 1px solid var(--ashlar);
+        background: #161410;
+        color: var(--dust);
+      }
+      .chip.fail { border-color: var(--claret); color: #f0b4bc; background: rgba(154, 61, 77, 0.16); }
+      .chip.hold { border-color: var(--moss); color: var(--moss-lit); background: rgba(61, 138, 106, 0.16); }
+      .chip.contrast { border-color: var(--beeswax); color: var(--beeswax); }
+      .chip[aria-current="true"] { outline: 2px solid var(--beeswax); }
+
+      .scene {
+        position: relative;
+        margin-top: 18px;
+        min-height: 420px;
+        overflow: hidden;
+        border: 1px solid #2a261e;
+        background:
+          linear-gradient(180deg, rgba(18, 24, 42, 0.2) 0%, transparent 28%),
+          repeating-linear-gradient(
+            90deg,
+            #2a261e 0 14px,
+            #1c1a16 14px 16px
+          );
+      }
+      .nave {
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 46%;
+        background:
+          linear-gradient(180deg, transparent, rgba(5, 6, 10, 0.88) 70%),
+          repeating-linear-gradient(
+            0deg,
+            #1a1612 0 10px,
+            #12100c 10px 22px
+          );
+        mask-image: linear-gradient(180deg, transparent, #000 28%);
+      }
+      .pew {
+        position: absolute;
+        left: 8%;
+        right: 8%;
+        height: 10px;
+        background: linear-gradient(90deg, transparent, #3a3228 8%, #2a241c 92%, transparent);
+        box-shadow: 0 3px 0 #0c0a08;
+      }
+      .steps {
+        position: absolute;
+        left: 50%;
+        bottom: 38%;
+        width: min(280px, 46%);
+        transform: translateX(-50%);
+      }
+      .step {
+        height: 14px;
+        margin: 0 auto 4px;
+        background: linear-gradient(180deg, #5a5248, #3a3630);
+        border: 1px solid #2a261e;
+        box-shadow: 0 3px 0 #16120e;
+      }
+      .step:nth-child(1) { width: 46%; }
+      .step:nth-child(2) { width: 62%; }
+      .step:nth-child(3) { width: 78%; }
+      .step:nth-child(4) { width: 94%; }
+      .ambo-desk {
+        position: absolute;
+        left: 50%;
+        top: 28px;
+        width: min(340px, 58%);
+        transform: translateX(-50%);
+        z-index: 2;
+      }
+      .platform {
+        background:
+          linear-gradient(180deg, #4a443c 0%, #2e2a24 100%);
+        border: 3px solid #1c1812;
+        padding: 14px 16px 18px;
+        box-shadow: 0 16px 0 #16120c, inset 0 0 0 1px rgba(224, 179, 90, 0.12);
+      }
+      .candle {
+        width: 14px;
+        height: 36px;
+        margin: 0 auto 8px;
+        background: linear-gradient(180deg, #f6ecd0, #d8c48a);
+        border-radius: 2px 2px 0 0;
+        position: relative;
+      }
+      .flame {
+        position: absolute;
+        left: 50%;
+        top: -14px;
+        width: 10px;
+        height: 16px;
+        transform: translateX(-50%);
+        background: radial-gradient(circle at 40% 40%, #fff4c8, #e0b35a 55%, #9a3d4d 100%);
+        border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        box-shadow: 0 0 18px rgba(224, 179, 90, 0.7);
+        animation: flicker 1.8s ease-in-out infinite;
+      }
+      @keyframes flicker {
+        0%, 100% { transform: translateX(-50%) scaleY(1); opacity: 0.92; }
+        50% { transform: translateX(-46%) scaleY(1.08); opacity: 1; }
+      }
+      .lectern {
+        height: 72px;
+        background: linear-gradient(165deg, #6a5a3a 0%, #3a3224 70%);
+        clip-path: polygon(8% 100%, 0 18%, 100% 0, 92% 100%);
+        border: 1px solid #2a2214;
+        position: relative;
+      }
+      .book {
+        position: absolute;
+        left: 16%;
+        right: 12%;
+        top: 10px;
+        height: 42px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3px;
+        transform: perspective(180px) rotateX(18deg);
+      }
+      .leaf {
+        background: var(--parchment);
+        box-shadow: inset 0 0 0 1px #c8bba0;
+      }
+      .leaf.left { transform: skewY(-6deg); }
+      .leaf.right { transform: skewY(6deg); }
+      .desk-cap {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        text-align: center;
+        color: var(--beeswax);
+        margin-top: 8px;
+      }
+
+      .approval {
+        position: absolute;
+        right: 18px;
+        top: 22px;
+        width: min(340px, 42%);
+        z-index: 4;
+        background: var(--parchment);
+        color: var(--ink);
+        border: 1px solid #c8bba0;
+        box-shadow: 0 18px 0 #1a140c, 0 0 0 1px #2a2218;
+        padding: 14px 14px 12px;
+      }
+      @media (max-width: 860px) {
+        .approval {
+          position: relative;
+          right: auto;
+          top: auto;
+          width: calc(100% - 24px);
+          margin: 220px 12px 16px;
+        }
+        .scene { min-height: 640px; }
+      }
+      .approval h2 {
+        margin: 0 0 6px;
+        font-family: var(--display);
+        font-size: 20px;
+        letter-spacing: 0.04em;
+        font-weight: 700;
+      }
+      .hook-log {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.02em;
+        background: #1c1610;
+        color: #d8c48a;
+        padding: 6px 8px;
+        margin-bottom: 8px;
+      }
+      .hook-log.ok { color: #8fd4b0; }
+      .message-pane {
+        min-height: 72px;
+        border: 1px dashed #9a8e78;
+        background: rgba(255, 255, 255, 0.35);
+        padding: 8px;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .message-pane.blank {
+        color: #8a8070;
+        font-style: italic;
+      }
+      .message-pane.heard {
+        border-style: solid;
+        border-color: var(--moss);
+        background: #e8f4ea;
+      }
+      .card-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #5a5044;
+      }
+      .card-actions span {
+        padding: 5px 8px;
+        border: 1px solid #c8bba0;
+      }
+
+      .desk {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 16px;
+        margin-top: 18px;
+      }
+      @media (max-width: 860px) {
+        .desk { grid-template-columns: 1fr; }
+      }
+      .panel {
+        background: var(--indigo);
+        border: 1px solid #2a261e;
+        padding: 14px;
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--beeswax);
+        margin: 0 0 10px;
+      }
+      .seed-row,
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .seed-row button,
+      .act button {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 7px 9px;
+        border: 1px solid var(--wax-deep);
+        background: #2a220e;
+        color: var(--beeswax);
+      }
+      .seed-row button[aria-pressed="true"] {
+        background: var(--beeswax);
+        color: #1a1406;
+      }
+      .act .restore {
+        border-color: var(--claret);
+        color: #f0b4bc;
+      }
+      .act .admit {
+        border-color: var(--moss);
+        color: var(--moss-lit);
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        font-family: var(--mono);
+        font-size: 11px;
+        border: 1px solid rgba(224, 179, 90, 0.22);
+        background: #0a0c12;
+        color: var(--dust);
+        padding: 8px;
+      }
+      label { display: block; font-size: 13px; color: var(--mute); margin: 8px 0 4px; }
+      .verdict-face {
+        font-family: var(--display);
+        font-size: clamp(32px, 5.4vw, 50px);
+        line-height: 1;
+        margin: 0 0 8px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      .verdict-face.fail { color: var(--claret-lit); }
+      .verdict-face.hold { color: var(--moss-lit); }
+      .verdict-face.contrast { color: var(--beeswax); }
+      .feed {
+        font-family: var(--body);
+        font-style: italic;
+        font-size: 17px;
+        margin: 0 0 12px;
+      }
+      .reasons {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--dust);
+        font-size: 14px;
+      }
+      .ledger {
+        margin-top: 14px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--mute);
+        max-height: 160px;
+        overflow: auto;
+        border-top: 1px solid rgba(224, 179, 90, 0.16);
+        padding-top: 8px;
+      }
+      .sinks {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--dust);
+      }
+      footer {
+        margin-top: 22px;
+        color: var(--mute);
+        font-size: 14px;
+        max-width: 46em;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="sanctuary">
+      <header class="lintel">
+        <p class="mark">18:50 Sydney · ambo</p>
+        <h1>Ambo</h1>
+        <p class="hours">#90685 · raised reading desk</p>
+        <p class="thesis">The pulpit spoke; the nave never heard. Score the card or admit unheard.</p>
+        <div class="chips" id="chips"></div>
+      </header>
+
+      <section class="scene" aria-label="Raised ambo overlooking a nave">
+        <div class="nave" aria-hidden="true">
+          <div class="pew" style="bottom: 12%"></div>
+          <div class="pew" style="bottom: 24%"></div>
+          <div class="pew" style="bottom: 36%"></div>
+          <div class="pew" style="bottom: 48%"></div>
+          <div class="pew" style="bottom: 60%"></div>
+        </div>
+        <div class="steps" aria-hidden="true">
+          <div class="step"></div>
+          <div class="step"></div>
+          <div class="step"></div>
+          <div class="step"></div>
+        </div>
+        <div class="ambo-desk">
+          <div class="platform">
+            <div class="candle"><div class="flame"></div></div>
+            <div class="lectern">
+              <div class="book">
+                <div class="leaf left"></div>
+                <div class="leaf right"></div>
+              </div>
+            </div>
+            <p class="desk-cap" id="desk-cap">PermissionRequest · ExitPlanMode</p>
+          </div>
+        </div>
+        <aside class="approval" id="approval">
+          <h2>Ready to code?</h2>
+          <div class="hook-log" id="hook-log">PermissionRequest · success · systemMessage validated</div>
+          <div class="message-pane blank" id="message-pane">the nave is empty — systemMessage never arrived</div>
+          <div class="card-actions">
+            <span>Yes, implement</span>
+            <span>No, keep planning</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">Score the card</p>
+          <div class="seed-row" id="seeds"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score</button>
+            <button type="button" class="admit" id="admit-btn">Admit</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90685</button>
+          </div>
+          <label for="probe">Probe</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Card score</p>
+          <p class="verdict-face fail" id="verdict">logged-success</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <div class="sinks" id="sinks"></div>
+          <div class="ledger" id="ledger" aria-live="polite"></div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90685">anthropics/claude-code#90685</a>.
+        Contrast, not this:
+        <a href="https://github.com/anthropics/claude-code/issues/80693">#80693</a>,
+        <a href="https://github.com/anthropics/claude-code/issues/78266">#78266</a>,
+        <a href="https://github.com/anthropics/claude-code/issues/86168">#86168</a>,
+        <a href="https://github.com/openai/codex/issues/17745">codex#17745</a>.
+        NOT Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Cotter.
+        Suggested consumer fix: render systemMessage from PermissionRequest hooks above the approval prompt, as happens for other hook events.
+      </footer>
+    </main>
+    <script>
+      const DEMO_HOOK = "PermissionRequest";
+      const DEMO_TOOL = "ExitPlanMode";
+      const DEMO_MESSAGE = "HELLO FROM THE HOOK";
+      const DEMO_PROMPT = "Ready to code?";
+      const IDLE_WORD = "unheard";
+      const SLACK_VERDICTS = [
+        "logged-success",
+        "plan-card",
+        "silent-surface",
+        "tui-blank",
+        "vscode-blank",
+        "decision-free",
+        "terminal-sequence-ok",
+        "docs-all-hooks",
+        "deferred-path",
+      ];
+      const ledger = [];
+
+      function emptyProbe() {
+        return {
+          session: "",
+          issue: null,
+          source: "",
+          hookEvent: "",
+          tool: "",
+          systemMessage: "",
+          hookLogSuccess: null,
+          parsedValidated: null,
+          rendered: null,
+          tuiRendered: null,
+          vscodeRendered: null,
+          permissionDecision: "",
+          terminalSequence: null,
+          docsClaimAllHooks: null,
+          deferredPath: null,
+          prompt: "",
+          version: "",
+          nearby: "",
+          nearbyLoggedSuccess: false,
+          nearbyPlanCard: false,
+          nearbySilentSurface: false,
+          nearbyTuiBlank: false,
+          nearbyVscodeBlank: false,
+          nearbyDecisionFree: false,
+          nearbyTerminalSequenceOk: false,
+          nearbyDocsAllHooks: false,
+          nearbyDeferredPath: false,
+          scored: false,
+        };
+      }
+
+      function asText(value) {
+        return value == null ? "" : String(value);
+      }
+
+      function asNullableBool(value) {
+        if (value === true || value === false) return value;
+        if (value == null || value === "") return null;
+        if (typeof value === "string") {
+          const low = value.toLowerCase();
+          if (low === "true" || low === "yes" || low === "1") return true;
+          if (low === "false" || low === "no" || low === "0") return false;
+        }
+        return Boolean(value);
+      }
+
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.ambo && typeof src.ambo === "object" ? src.ambo : src;
+        const base = emptyProbe();
+        return {
+          ...base,
+          ...nested,
+          hookEvent: asText(nested.hookEvent || ""),
+          tool: asText(nested.tool || ""),
+          systemMessage: asText(nested.systemMessage || ""),
+          hookLogSuccess: asNullableBool(nested.hookLogSuccess),
+          parsedValidated: asNullableBool(nested.parsedValidated),
+          rendered: asNullableBool(nested.rendered),
+          tuiRendered: asNullableBool(nested.tuiRendered),
+          vscodeRendered: asNullableBool(nested.vscodeRendered),
+          permissionDecision: asText(nested.permissionDecision || ""),
+          terminalSequence: asNullableBool(nested.terminalSequence),
+          docsClaimAllHooks: asNullableBool(nested.docsClaimAllHooks),
+          deferredPath: asNullableBool(nested.deferredPath),
+          prompt: asText(nested.prompt || ""),
+          version: asText(nested.version || ""),
+          nearby: asText(nested.nearby || ""),
+          nearbyLoggedSuccess: Boolean(nested.nearbyLoggedSuccess),
+          nearbyPlanCard: Boolean(nested.nearbyPlanCard),
+          nearbySilentSurface: Boolean(nested.nearbySilentSurface),
+          nearbyTuiBlank: Boolean(nested.nearbyTuiBlank),
+          nearbyVscodeBlank: Boolean(nested.nearbyVscodeBlank),
+          nearbyDecisionFree: Boolean(nested.nearbyDecisionFree),
+          nearbyTerminalSequenceOk: Boolean(nested.nearbyTerminalSequenceOk),
+          nearbyDocsAllHooks: Boolean(nested.nearbyDocsAllHooks),
+          nearbyDeferredPath: Boolean(nested.nearbyDeferredPath),
+        };
+      }
+
+      function isOffAmbo(row) {
+        const nearby = asText(row.nearby).toLowerCase();
+        return (
+          nearby === "78266" ||
+          nearby === "80693" ||
+          nearby === "86168" ||
+          nearby === "80882" ||
+          nearby === "76736" ||
+          nearby === "17745" ||
+          nearby === "35906" ||
+          nearby === "33020"
+        );
+      }
+
+      function isIdle(row) {
+        return !(
+          row.hookEvent ||
+          row.tool ||
+          row.systemMessage ||
+          row.hookLogSuccess != null ||
+          row.parsedValidated != null ||
+          row.rendered != null ||
+          row.tuiRendered != null ||
+          row.vscodeRendered != null ||
+          row.permissionDecision ||
+          row.terminalSequence != null ||
+          row.docsClaimAllHooks != null ||
+          row.deferredPath != null ||
+          row.prompt ||
+          row.version ||
+          row.nearbyLoggedSuccess ||
+          row.nearbyPlanCard ||
+          row.nearbySilentSurface ||
+          row.nearbyTuiBlank ||
+          row.nearbyVscodeBlank ||
+          row.nearbyDecisionFree ||
+          row.nearbyTerminalSequenceOk ||
+          row.nearbyDocsAllHooks ||
+          row.nearbyDeferredPath ||
+          isOffAmbo(row)
+        );
+      }
+
+      function classify(input) {
+        const row = cloneProbe(input);
+        if (isIdle(row)) return "unheard";
+        const uniqueNearby = Boolean(
+          row.nearbyLoggedSuccess ||
+            row.nearbyPlanCard ||
+            row.nearbySilentSurface ||
+            row.nearbyTuiBlank ||
+            row.nearbyVscodeBlank ||
+            row.nearbyDecisionFree ||
+            row.nearbyTerminalSequenceOk ||
+            row.nearbyDocsAllHooks ||
+            row.nearbyDeferredPath ||
+            isOffAmbo(row),
+        );
+        const permissionRequest = /permissionrequest/i.test(row.hookEvent);
+        const exitPlanMode = /exitplanmode/i.test(row.tool);
+        const validated = row.hookLogSuccess === true && row.parsedValidated === true && Boolean(row.systemMessage);
+        const triad = permissionRequest && exitPlanMode && validated && row.rendered === false && !uniqueNearby;
+        if (!triad) {
+          if (row.nearbySilentSurface) return "silent-surface";
+          if (row.nearbyPlanCard) return "plan-card";
+          if (row.nearbyTuiBlank) return "tui-blank";
+          if (row.nearbyVscodeBlank) return "vscode-blank";
+          if (row.nearbyDecisionFree) return "decision-free";
+          if (row.nearbyTerminalSequenceOk) return "terminal-sequence-ok";
+          if (row.nearbyDocsAllHooks) return "docs-all-hooks";
+          if (row.nearbyDeferredPath) return "deferred-path";
+          if (row.nearbyLoggedSuccess) return "logged-success";
+          if (isOffAmbo(row)) {
+            const n = asText(row.nearby).toLowerCase();
+            if (n === "80693") return "decision-free";
+            if (n === "78266" || n === "86168" || n === "80882" || n === "76736") return "vscode-blank";
+            return "deferred-path";
+          }
+        }
+        if (triad) return "logged-success";
+        if (row.tuiRendered === false && row.vscodeRendered === false && validated) return "silent-surface";
+        if (exitPlanMode && /ready to code/i.test(row.prompt) && row.rendered === false) return "plan-card";
+        if (row.tuiRendered === false && row.vscodeRendered === true) return "tui-blank";
+        if (row.vscodeRendered === false && row.tuiRendered === true) return "vscode-blank";
+        if (row.systemMessage && !row.permissionDecision && row.rendered === false) return "decision-free";
+        if (row.terminalSequence === true && row.rendered === false) return "terminal-sequence-ok";
+        if (row.docsClaimAllHooks === true && row.rendered === false) return "docs-all-hooks";
+        if (row.deferredPath === true || (validated && row.rendered === false)) return "deferred-path";
+        if (row.rendered === true) return "unheard";
+        return "unheard";
+      }
+
+      function feedOf(kind) {
+        if (kind === "logged-success") {
+          return "● Logged-success · PermissionRequest systemMessage accepted, validated, and logged as success · ExitPlanMode Ready-to-code card stays blank · primary #90685";
+        }
+        if (kind === "plan-card") {
+          return "● Plan-card · ExitPlanMode Ready-to-code approval card is the surface that never shows the pulpit";
+        }
+        if (kind === "silent-surface") {
+          return "● Silent-surface · no surface (TUI and VS Code) renders the systemMessage · the inverse of per-surface drops";
+        }
+        if (kind === "tui-blank") {
+          return "● Tui-blank · terminal TUI approval card stays blank · this product, not a VS Code-only drop";
+        }
+        if (kind === "vscode-blank") {
+          return "● Vscode-blank · VS Code approval card stays blank · when this is #90685 both surfaces are blank";
+        }
+        if (kind === "decision-free") {
+          return "● Decision-free · inform-only systemMessage with no allow/deny decision · native flow should pass through";
+        }
+        if (kind === "terminal-sequence-ok") {
+          return "● Terminal-sequence-ok · OSC 9 / OSC 777 / BEL workaround reaches the user · plumbing intact, display path missing";
+        }
+        if (kind === "docs-all-hooks") {
+          return "● Docs-all-hooks · in-product docs claim systemMessage displays for all hooks · the plan-approval prompt is the exception";
+        }
+        if (kind === "deferred-path") {
+          return "● Deferred-path · hook result never reaches the renderer other hook events use · labeled contrast stays labeled";
+        }
+        return "● Unheard · systemMessage actually rendered on the approval card · idle word is unheard";
+      }
+
+      function reasonsOf(row, kind) {
+        const reasons = [`verdict ${kind}`];
+        if (kind === "logged-success") {
+          reasons.push("#90685 PermissionRequest systemMessage is accepted and logged as success but never rendered at the ExitPlanMode approval prompt");
+        }
+        if (row.hookEvent) reasons.push("hook event " + row.hookEvent);
+        if (row.tool) reasons.push("tool " + row.tool);
+        if (row.systemMessage) reasons.push("systemMessage " + row.systemMessage);
+        if (row.hookLogSuccess === true) reasons.push("debug log writes success");
+        if (row.parsedValidated === true) reasons.push("Successfully parsed and validated hook JSON output");
+        if (row.rendered === false) reasons.push("Ready-to-code approval card never shows the systemMessage");
+        if (kind === "unheard") {
+          reasons.push("systemMessage actually rendered on the approval card, or the idle board; idle word is unheard");
+        }
+        if (isOffAmbo(row)) {
+          reasons.push("labeled contrast, not this defect: per-surface drops where terminal sometimes works");
+        }
+        return reasons;
+      }
+
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        const off = isOffAmbo(row);
+        const alarm = SLACK_VERDICTS.includes(kind) && !off;
+        return {
+          verdict: kind,
+          state: kind,
+          idleWord: IDLE_WORD,
+          unheard: kind === "unheard",
+          alarm,
+          slack: alarm,
+          linear: alarm,
+          github: true,
+          offAmbo: off,
+          facts: {
+            hookEvent: row.hookEvent,
+            tool: row.tool,
+            systemMessage: row.systemMessage,
+            hookLogSuccess: row.hookLogSuccess,
+            parsedValidated: row.parsedValidated,
+            rendered: row.rendered,
+            tuiRendered: row.tuiRendered,
+            vscodeRendered: row.vscodeRendered,
+            prompt: row.prompt,
+          },
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          probe: row,
+        };
+      }
+
+      const triadBase = () => ({
+        hookEvent: DEMO_HOOK,
+        tool: DEMO_TOOL,
+        systemMessage: DEMO_MESSAGE,
+        hookLogSuccess: true,
+        parsedValidated: true,
+        rendered: false,
+        tuiRendered: false,
+        vscodeRendered: false,
+        permissionDecision: "",
+        terminalSequence: false,
+        docsClaimAllHooks: true,
+        deferredPath: false,
+        prompt: DEMO_PROMPT,
+        version: "2.1.251",
+      });
+
+      const SEEDS = {
+        "logged-success": () => ({
+          ...triadBase(),
+          session: "90685-logged-success",
+          issue: 90685,
+          source: "primary #90685 PermissionRequest systemMessage accepted and logged as success; ExitPlanMode card stays blank",
+        }),
+        "plan-card": () => ({ ...SEEDS["logged-success"](), nearbyPlanCard: true, session: "90685-plan-card" }),
+        "silent-surface": () => ({ ...SEEDS["logged-success"](), nearbySilentSurface: true, session: "90685-silent-surface" }),
+        "tui-blank": () => ({ ...SEEDS["logged-success"](), nearbyTuiBlank: true, session: "90685-tui-blank" }),
+        "vscode-blank": () => ({ ...SEEDS["logged-success"](), nearbyVscodeBlank: true, session: "90685-vscode-blank" }),
+        "decision-free": () => ({ ...SEEDS["logged-success"](), nearbyDecisionFree: true, session: "90685-decision-free" }),
+        "terminal-sequence-ok": () => ({
+          ...SEEDS["logged-success"](),
+          nearbyTerminalSequenceOk: true,
+          terminalSequence: true,
+          session: "90685-terminal-sequence-ok",
+        }),
+        "docs-all-hooks": () => ({ ...SEEDS["logged-success"](), nearbyDocsAllHooks: true, session: "90685-docs-all-hooks" }),
+        "deferred-path": () => ({
+          ...SEEDS["logged-success"](),
+          nearbyDeferredPath: true,
+          deferredPath: true,
+          session: "90685-deferred-path",
+        }),
+        contrast: () => ({
+          session: "contrast-78266",
+          issue: 78266,
+          source: "NOT this: #78266 UserPromptSubmit systemMessage dropped in Desktop/VS Code",
+          nearby: "78266",
+          hookEvent: "UserPromptSubmit",
+          tool: "",
+          systemMessage: DEMO_MESSAGE,
+          hookLogSuccess: true,
+          parsedValidated: true,
+          rendered: false,
+          tuiRendered: true,
+          vscodeRendered: false,
+          permissionDecision: "",
+          prompt: "",
+          version: "2.1.251",
+        }),
+        unheard: () => ({
+          ...triadBase(),
+          session: "unheard-hold",
+          issue: 90685,
+          source: "honest control: systemMessage actually rendered on the approval card",
+          rendered: true,
+          tuiRendered: true,
+          vscodeRendered: true,
+        }),
+      };
+
+      const seedOrder = [
+        ["logged-success", "logged-success"],
+        ["plan-card", "plan-card"],
+        ["silent-surface", "silent-surface"],
+        ["tui-blank", "tui-blank"],
+        ["vscode-blank", "vscode-blank"],
+        ["decision-free", "decision-free"],
+        ["terminal-sequence-ok", "terminal-sequence-ok"],
+        ["docs-all-hooks", "docs-all-hooks"],
+        ["deferred-path", "deferred-path"],
+        ["contrast", "contrast #78266"],
+        ["unheard", "honest unheard"],
+      ];
+
+      const probeEl = document.getElementById("probe");
+      const seedsEl = document.getElementById("seeds");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const sinksEl = document.getElementById("sinks");
+      const ledgerEl = document.getElementById("ledger");
+      const chipsEl = document.getElementById("chips");
+      const hookLogEl = document.getElementById("hook-log");
+      const messagePaneEl = document.getElementById("message-pane");
+      const deskCapEl = document.getElementById("desk-cap");
+
+      function writeProbe(probe) {
+        probeEl.value = JSON.stringify(probe, null, 2);
+      }
+
+      function readProbe() {
+        try {
+          return cloneProbe(JSON.parse(probeEl.value || "{}"));
+        } catch {
+          return cloneProbe(SEEDS["logged-success"]());
+        }
+      }
+
+      function paintCard(result) {
+        const kind = result.verdict;
+        const facts = result.facts || {};
+        const heard = kind === "unheard";
+        hookLogEl.textContent = heard
+          ? "PermissionRequest · success · systemMessage rendered"
+          : "PermissionRequest · success · systemMessage validated";
+        hookLogEl.className = "hook-log" + (heard ? " ok" : "");
+        if (heard) {
+          messagePaneEl.className = "message-pane heard";
+          messagePaneEl.textContent = facts.systemMessage || DEMO_MESSAGE;
+        } else if (kind === "contrast" || result.offAmbo) {
+          messagePaneEl.className = "message-pane";
+          messagePaneEl.textContent = "contrast surface · terminal sometimes hears; this is not #90685";
+        } else {
+          messagePaneEl.className = "message-pane blank";
+          messagePaneEl.textContent = "the nave is empty — systemMessage never arrived";
+        }
+        deskCapEl.textContent = (facts.hookEvent || DEMO_HOOK) + " · " + (facts.tool || DEMO_TOOL);
+      }
+
+      function render(result) {
+        const fail = result.alarm;
+        const hold = result.unheard;
+        verdictEl.textContent = result.verdict;
+        verdictEl.className = "verdict-face " + (hold ? "hold" : result.offAmbo ? "contrast" : "fail");
+        feedEl.textContent = result.feed;
+        reasonsEl.innerHTML = result.reasons.map((row) => `<li>${row}</li>`).join("");
+        const slackLine = result.slack
+          ? "Would post to Slack: " + (result.verdict === "logged-success"
+            ? "Ambo logged-success · PermissionRequest · ExitPlanMode · validated · card blank · #90685"
+            : "Ambo " + result.verdict)
+          : "Would skip Slack. Ambo is " + result.verdict + ".";
+        const linearLine = result.linear
+          ? "Would open a Linear ticket: ambo " + result.verdict
+          : "Would skip Linear. Verdict " + result.verdict + " is not an ambo-card alarm.";
+        sinksEl.innerHTML = [
+          slackLine,
+          "Would append a GitHub ambo-ledger row. Demo: no token.",
+          linearLine,
+          "unheard=" + String(result.unheard) + " · idleWord=" + result.idleWord,
+        ].map((line) => `<div>${line}</div>`).join("");
+        ledger.unshift({ at: new Date().toISOString(), verdict: result.verdict, unheard: result.unheard });
+        ledgerEl.innerHTML = ledger.slice(0, 8).map((row) =>
+          `${row.at} · ${row.verdict} · unheard=${row.unheard}`
+        ).join("<br>");
+        const chipKind = fail ? "fail" : hold ? "hold" : "contrast";
+        chipsEl.innerHTML = [
+          ["#90685", fail ? "fail" : hold ? "hold" : "contrast"],
+          [result.verdict, chipKind],
+          [hold ? "rendered on card" : "card blank", hold ? "hold" : "fail"],
+          ["idle " + IDLE_WORD, "hold"],
+        ].map(([label, klass]) => {
+          const current = klass === "fail" && label === result.verdict;
+          return `<span class="chip ${klass}"${current ? ' aria-current="true"' : ""}>${label}</span>`;
+        }).join("");
+        paintCard(result);
+        document.querySelectorAll("#seeds button").forEach((btn) => {
+          btn.setAttribute("aria-pressed", String(btn.dataset.seed === result.verdict || (result.unheard && btn.dataset.seed === "unheard") || (result.offAmbo && btn.dataset.seed === "contrast")));
+        });
+      }
+
+      function applySeed(name) {
+        const probe = SEEDS[name]();
+        writeProbe(probe);
+        render(score(probe));
+      }
+
+      seedOrder.forEach(([key, label]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.seed = key;
+        btn.textContent = label;
+        btn.addEventListener("click", () => applySeed(key));
+        seedsEl.appendChild(btn);
+      });
+
+      document.getElementById("score-btn").addEventListener("click", () => {
+        render(score(readProbe()));
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        applySeed("unheard");
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        applySeed("logged-success");
+      });
+
+      applySeed("logged-success");
+    </script>
+  </body>
+</html>
