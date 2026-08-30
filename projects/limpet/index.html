@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Limpet — tide-pool pry desk for Claude Code #89275: scheduled-task sessions finish with end_turn, the UI marks them done, and the OS process never exits. Pry the shell or admit shed."
+    />
+    <title>Limpet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --basalt: #0b1216;
+        --slate: #141c22;
+        --wet: #1a2830;
+        --pool: #0e2428;
+        --seaglass: #6eb8b0;
+        --foam: #d4ebe6;
+        --biolum: #c8ff4a;
+        --kelp: #1c3d34;
+        --barnacle: #9a8b78;
+        --lantern: #e8c56a;
+        --iron: #c4c8cc;
+        --hold: #8fd4c8;
+        --fail: #ff8a6a;
+        --text: #e6efe9;
+        --quiet: #8aa09a;
+        --display: "Cormorant Garamond", "Palatino Linotype", Palatino, Georgia, serif;
+        --body: "Source Sans 3", "Gill Sans", "Segoe UI", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--text);
+        background:
+          radial-gradient(ellipse at 12% 8%, rgba(232, 197, 106, 0.12), transparent 38%),
+          radial-gradient(ellipse at 88% 92%, rgba(200, 255, 74, 0.06), transparent 36%),
+          repeating-linear-gradient(118deg, transparent 0 13px, rgba(154, 139, 120, 0.05) 13px 14px),
+          linear-gradient(180deg, #0e181c 0%, var(--basalt) 42%, #071014 100%);
+      }
+      button, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: var(--biolum); }
+      .pool {
+        width: min(1180px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 72px;
+      }
+      .ledge {
+        position: relative;
+        padding: 22px 24px 18px;
+        background:
+          linear-gradient(180deg, #243038 0%, var(--wet) 55%, #10181c 100%);
+        border: 2px solid #3a4a50;
+        box-shadow:
+          inset 0 1px 0 rgba(212, 235, 230, 0.1),
+          0 18px 40px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+      }
+      .ledge::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 10px;
+        background:
+          linear-gradient(90deg, transparent, rgba(110, 184, 176, 0.45), transparent);
+        animation: tide 5.5s ease-in-out infinite;
+      }
+      @keyframes tide {
+        0%, 100% { transform: translateX(-8%); opacity: 0.45; }
+        50% { transform: translateX(8%); opacity: 0.9; }
+      }
+      .lantern {
+        position: absolute;
+        right: 28px;
+        top: 16px;
+        width: 22px;
+        height: 36px;
+        border-radius: 5px 5px 9px 9px;
+        background: linear-gradient(180deg, var(--lantern), #c48a2a);
+        box-shadow: 0 0 26px 8px rgba(232, 197, 106, 0.28);
+        animation: flicker 2.6s ease-in-out infinite;
+      }
+      .lantern::after {
+        content: "";
+        position: absolute;
+        left: 5px;
+        right: 5px;
+        top: -9px;
+        height: 9px;
+        border: 2px solid #8a7040;
+        border-bottom: 0;
+      }
+      @keyframes flicker {
+        0%, 100% { filter: brightness(1); }
+        40% { filter: brightness(1.16); }
+        70% { filter: brightness(0.9); }
+      }
+      .pry {
+        position: absolute;
+        right: 64px;
+        top: 28px;
+        width: 54px;
+        height: 6px;
+        background: linear-gradient(90deg, #8a9096, var(--iron));
+        border-radius: 99px;
+        transform: rotate(-28deg);
+        box-shadow: 2px 2px 0 #2a3034;
+      }
+      .pry::before {
+        content: "";
+        position: absolute;
+        left: -8px;
+        top: -5px;
+        width: 14px;
+        height: 16px;
+        border: 2px solid var(--iron);
+        border-radius: 40% 10% 40% 10%;
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--biolum);
+      }
+      h1 {
+        margin: 8px 0 6px;
+        font-family: var(--display);
+        font-size: clamp(46px, 8vw, 84px);
+        line-height: 0.84;
+        letter-spacing: -0.03em;
+        font-weight: 700;
+      }
+      .phrase {
+        max-width: 36em;
+        margin: 0;
+        color: var(--foam);
+        font-size: 18px;
+      }
+      .idle {
+        margin: 10px 0 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) {
+        .grid, .rocks { grid-template-columns: 1fr; }
+        .lantern, .pry { display: none; }
+      }
+      .panel {
+        background: rgba(20, 40, 44, 0.72);
+        border: 1px solid rgba(212, 235, 230, 0.1);
+        padding: 16px 16px 14px;
+      }
+      .panel h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 28px;
+        letter-spacing: -0.02em;
+      }
+      .rocks {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .rock {
+        background:
+          radial-gradient(circle at 20% 10%, rgba(154, 139, 120, 0.16), transparent 40%),
+          linear-gradient(180deg, #1c262c, #10161a);
+        border: 1px solid rgba(110, 184, 176, 0.16);
+        padding: 14px;
+        min-height: 300px;
+      }
+      .rock.clamped { box-shadow: inset 0 0 0 1px rgba(255, 138, 106, 0.28); }
+      .rock.shed { box-shadow: inset 0 0 0 1px rgba(143, 212, 200, 0.28); }
+      .shells {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-end;
+        gap: 3px;
+        min-height: 120px;
+        margin: 10px 0 12px;
+        padding: 8px;
+        background: rgba(7, 16, 18, 0.5);
+        border: 1px dashed rgba(154, 139, 120, 0.25);
+      }
+      .shell {
+        width: 10px;
+        height: 8px;
+        border-radius: 60% 60% 40% 40%;
+        background: radial-gradient(circle at 30% 30%, #d8c4a0, #6a5340);
+        box-shadow: 0 1px 0 #2a2018;
+      }
+      .shell.empty {
+        background: transparent;
+        box-shadow: none;
+        border: 1px dashed rgba(138, 160, 154, 0.25);
+      }
+      .meta {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+        line-height: 1.55;
+      }
+      .meta strong { color: var(--foam); font-weight: 600; }
+      .banner {
+        margin-top: 10px;
+        padding: 8px 10px;
+        background: rgba(200, 255, 74, 0.06);
+        border-left: 3px solid var(--biolum);
+        font-size: 13px;
+        color: var(--biolum);
+      }
+      .actions, .seeds, .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .actions button, .seeds button, .tools button {
+        border: 1px solid rgba(212, 235, 230, 0.22);
+        background: #121a1e;
+        padding: 8px 12px;
+        border-radius: 2px;
+      }
+      .actions button:hover, .seeds button:hover, .tools button:hover {
+        border-color: var(--seaglass);
+        color: var(--biolum);
+      }
+      .seeds button[aria-pressed="true"] {
+        background: #1a3330;
+        border-color: var(--seaglass);
+        color: var(--biolum);
+      }
+      .verdict {
+        margin-top: 12px;
+        padding: 12px 14px;
+        background: #0c1214;
+        border: 1px solid rgba(212, 235, 230, 0.12);
+      }
+      .verdict .word {
+        font-family: var(--display);
+        font-size: 36px;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+      }
+      .verdict.fail .word { color: var(--fail); }
+      .verdict.hold .word { color: var(--hold); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 3px 8px;
+        border: 1px solid rgba(212, 235, 230, 0.18);
+        border-radius: 999px;
+        color: var(--barnacle);
+      }
+      .chip.on {
+        border-color: var(--biolum);
+        color: var(--biolum);
+        background: rgba(200, 255, 74, 0.08);
+      }
+      textarea {
+        width: 100%;
+        min-height: 220px;
+        margin-top: 8px;
+        padding: 10px;
+        resize: vertical;
+        background: #070c0e;
+        border: 1px solid rgba(212, 235, 230, 0.14);
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .issue {
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .issue .state {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--seaglass);
+        color: var(--seaglass);
+        text-transform: uppercase;
+        font-size: 11px;
+      }
+      .issue .state.closed { border-color: var(--fail); color: var(--fail); }
+      .reasons { margin: 8px 0 0; padding-left: 18px; color: var(--quiet); font-size: 14px; }
+      .cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) { .cards { grid-template-columns: 1fr; } }
+      .card {
+        background: #10181c;
+        border: 1px solid rgba(212, 235, 230, 0.12);
+        padding: 14px;
+      }
+      .card h3 {
+        margin: 6px 0 8px;
+        font-family: var(--display);
+        font-size: 22px;
+      }
+      .card p { margin: 0 0 8px; color: var(--quiet); font-size: 14px; }
+      .adapters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) { .adapters { grid-template-columns: 1fr; } }
+      .sources { margin-top: 16px; }
+      .sources ul { margin: 0; padding-left: 18px; color: var(--quiet); }
+      .sources li { margin: 6px 0; }
+      footer {
+        margin-top: 18px;
+        color: var(--quiet);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="pool">
+      <header class="ledge">
+        <span class="lantern" aria-hidden="true"></span>
+        <span class="pry" aria-hidden="true"></span>
+        <p class="mark">07:50 Sydney · limpet</p>
+        <h1>Limpet</h1>
+        <p class="phrase">A session marked done that still clamps the rock is not a hold. Pry the shell or admit shed.</p>
+        <p class="idle">Idle word: shed. Tide-pool pry desk / wet basalt / barnacle grit. Seeded clamped.</p>
+      </header>
+
+      <div class="grid">
+        <section class="panel" aria-label="Tide pool">
+          <h2>Tide pool</h2>
+          <div class="rocks">
+            <article class="rock" id="done-rock">
+              <p class="mark">session ledge</p>
+              <div class="meta">
+                <div>stop_reason <strong id="stop-reason">end_turn</strong></div>
+                <div>UI / list_sessions <strong id="ui-done">done</strong></div>
+                <div>isRunning <strong id="is-running">false</strong></div>
+                <div>cron <strong id="cron">*/15 * * * *</strong></div>
+                <div>hours <strong id="hours">10</strong></div>
+              </div>
+              <p class="banner" id="done-banner">Session finished. Result delivered. The rock still holds the shells.</p>
+            </article>
+            <article class="rock clamped" id="worker-rock">
+              <p class="mark">worker rock</p>
+              <div class="shells" id="shell-stack" aria-hidden="true"></div>
+              <div class="meta">
+                <div><strong id="pair-count">41</strong> pairs</div>
+                <div><strong id="proc-count">82</strong> processes</div>
+                <div><strong id="rss">3.08</strong> GB RSS</div>
+                <div>load <strong id="load">82</strong></div>
+                <div>platform <strong id="platform">macos</strong></div>
+              </div>
+            </article>
+          </div>
+          <div class="actions">
+            <button type="button" id="pry-btn">Pry the shell</button>
+            <button type="button" id="clear-btn">Wait for low tide</button>
+            <button type="button" id="score-btn">Score the pool</button>
+          </div>
+          <div class="verdict fail" id="verdict-box">
+            <div class="word" id="verdict-word">clamped</div>
+            <p id="verdict-feed">● Clamped · end_turn / session done + process still resident · leak</p>
+            <div class="chips" id="chip-row"></div>
+          </div>
+        </section>
+
+        <aside class="panel" aria-label="Issue and ticket">
+          <h2>Live tide</h2>
+          <p class="issue" id="issue-card">Fetching anthropics/claude-code#89275…</p>
+          <p class="issue" id="pair-card">Fetching pair leak #88918…</p>
+          <p class="issue" id="win-card">Fetching windows-resume #68626…</p>
+          <p class="meta" id="local-seeds">Local seeds: 41 pairs · 82 procs · 3.08 GB · load 82</p>
+          <h2>Leak ticket</h2>
+          <div class="seeds" role="group" aria-label="Seed switches">
+            <button type="button" id="seed-clamped" aria-pressed="true">clamped</button>
+            <button type="button" id="seed-shed" aria-pressed="false">shed</button>
+            <button type="button" id="seed-reaped" aria-pressed="false">reaped</button>
+            <button type="button" id="seed-windows" aria-pressed="false">windows-resume</button>
+            <button type="button" id="seed-mcp" aria-pressed="false">mcp-child</button>
+          </div>
+          <textarea id="ticket" spellcheck="false" aria-label="Leak ticket JSON"></textarea>
+          <div class="tools">
+            <button type="button" id="apply-ticket">Score pasted ticket</button>
+            <button type="button" id="export-ticket">Export leak ticket</button>
+          </div>
+          <ol class="reasons" id="reasons"></ol>
+        </aside>
+      </div>
+
+      <section class="panel cards" aria-label="Primary sources">
+        <article class="card">
+          <p class="mark">primary · #89275</p>
+          <h3>Clamped after done</h3>
+          <p>OPEN, has-repro, macOS, area:routines. Scheduled-task sessions complete; the OS process never exits. ~10h @ 15min → 41 leaked pairs (82 procs, 3.08 GB RSS, load 6→82 on 16 GB Mac).</p>
+        </article>
+        <article class="card">
+          <p class="mark">primary · #88918</p>
+          <h3>Pair after end_turn</h3>
+          <p>OPEN, has-repro, macOS, perf:memory, area:desktop+routines. Process pair leak after clean <code>stop_reason: end_turn</code>. ~16 GB/day.</p>
+        </article>
+        <article class="card">
+          <p class="mark">primary · #68626</p>
+          <h3>Windows --resume</h3>
+          <p>OPEN, Windows+macOS, area:routines. Headless <code>claude.exe --resume … stream-json</code> finishes and never exits. Comments: 65 stale workers / 5.8 GB / commit 54 GB of 63.7 GB. Reaper fingerprint <code>--disallowedTools AskUserQuestion</code>.</p>
+        </article>
+      </section>
+
+      <section class="panel adapters" aria-label="Native adapters">
+        <article class="card">
+          <p class="mark">adapter · slack</p>
+          <h3>Slack</h3>
+          <p id="slack-row">Would post to Slack: clamped · 41 pairs still on the rock after end_turn. No webhook in this demo.</p>
+        </article>
+        <article class="card">
+          <p class="mark">adapter · linear</p>
+          <h3>Linear</h3>
+          <p id="linear-row">Would open a Linear ticket: Limpet clamped · #89275 OS process leak. No API key in this demo.</p>
+        </article>
+      </section>
+
+      <section class="panel sources">
+        <h2>Sources</h2>
+        <ul>
+          <li><a href="https://github.com/anthropics/claude-code/issues/89275">#89275</a> OPEN — Scheduled-task sessions complete successfully but their OS process never exits. Author andaroo2025. 2026-08-24T16:48:02Z. Claude.app 1.34493.1, bundled 2.1.237. 41 pairs / 82 procs / 3.08 GB / load 82.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/88918">#88918</a> OPEN — Scheduled tasks leak their process pair after clean <code>end_turn</code> (~16 GB/day). Author rolptech. 2026-08-23T01:39:34Z. disclaimer parent + claude child.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/68626">#68626</a> OPEN — Headless <code>claude.exe --resume</code> never exits; accumulate until OOM. Still on 2.1.170+. Comments: 65 stale / 5.8 GB / commit 54 of 63.7 GB; <code>--disallowedTools AskUserQuestion</code> reaper fingerprint.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/89881">#89881</a> OPEN — same class: ~92 GB / 2 days, MCP children too. Cite only.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/88982">#88982</a> OPEN — Desktop local-agent scheduled sessions never exit. Cite only.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/72308">#72308</a> OPEN — 151 claude + 151 disclaimer + ~160 MCP children. Cite only.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/74633">#74633</a> OPEN — ~48 headless/day. Cite only.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/89499">#89499</a> OPEN — MCP stdio children survive scheduled end. Cite only.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/71424">#71424</a> OPEN — Cowork local-agent node leak + MCP port exhaustion. Cite only.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/89639">#89639</a> OPEN — wedge mid tool-call pins concurrency (related, not the completes-then-leaks path). Cite only.</li>
+        </ul>
+        <p>NOT Almanac, NOT Kindling, NOT Reveille, NOT Fusee, NOT Sprag, NOT Reed, NOT Scion / Voucher / Deadband / Pawl / Cinch / Bollard / Cote / Ullage.</p>
+      </section>
+      <footer>
+        Catalog path <code>/limpet/</code>. Score engine lives in this page and in
+        <code>projects/limpet/hook/limpet.mjs</code>. No build step. No secrets.
+      </footer>
+    </main>
+    <script>
+      const CHIP_NAMES = [
+        "clamped",
+        "paired",
+        "stacked",
+        "bloated",
+        "idle-after-end",
+        "end-turn-held",
+        "resume-stuck",
+        "mcp-child",
+        "reaped",
+        "windows-resume",
+        "macos-pair",
+      ];
+      const HOLD = ["shed", "reaped"];
+      const ALARM = CHIP_NAMES.filter((name) => name !== "reaped");
+
+      const SEEDS = {
+        clamped: {
+          seed: "clamped",
+          issue: 89275,
+          stopReason: "end_turn",
+          sessionDone: true,
+          uiDone: true,
+          isRunning: false,
+          processResident: true,
+          pair: true,
+          parentResident: true,
+          pairCount: 41,
+          processCount: 82,
+          rssGb: 3.08,
+          rssGrowth: true,
+          load: 82,
+          cronCadence: "*/15 * * * *",
+          hours: 10,
+          platform: "macos",
+          version: "2.1.237",
+        },
+        shed: {
+          seed: "shed",
+          issue: 89275,
+          stopReason: "end_turn",
+          sessionDone: true,
+          uiDone: true,
+          isRunning: false,
+          processResident: false,
+          pair: false,
+          pairCount: 0,
+          processCount: 0,
+          rssGb: 0,
+          load: 1,
+          cronCadence: "*/15 * * * *",
+          platform: "macos",
+        },
+        reaped: {
+          seed: "reaped",
+          issue: 68626,
+          stopReason: "end_turn",
+          sessionDone: true,
+          processResident: false,
+          pairCount: 0,
+          processCount: 0,
+          rssGb: 0,
+          reaped: true,
+          platform: "windows",
+          argv: "claude.exe --resume --output-format stream-json --disallowedTools AskUserQuestion",
+        },
+        "windows-resume": {
+          seed: "windows-resume",
+          issue: 68626,
+          stopReason: "end_turn",
+          sessionDone: true,
+          processResident: true,
+          resume: true,
+          argv: "claude.exe --resume --output-format stream-json --disallowedTools AskUserQuestion",
+          pairCount: 65,
+          processCount: 65,
+          rssGb: 5.8,
+          platform: "windows",
+          version: "2.1.170",
+        },
+        "mcp-child": {
+          seed: "mcp-child",
+          issue: 89499,
+          stopReason: "end_turn",
+          sessionDone: true,
+          processResident: true,
+          mcpChildren: 54,
+          pairCount: 1,
+          platform: "windows",
+        },
+      };
+
+      function ended(t) {
+        return (
+          t.sessionDone === true ||
+          t.uiDone === true ||
+          t.isRunning === false ||
+          /end[_-]?turn/i.test(t.stopReason || "")
+        );
+      }
+      function resident(t) {
+        if (t.reaped === true) return false;
+        if (t.processResident === true) return true;
+        if (t.parentResident === true) return true;
+        if (t.pairCount > 0 && t.processResident !== false) return true;
+        return false;
+      }
+
+      function scoreTicket(raw) {
+        const t = raw && typeof raw === "object" ? raw : SEEDS.clamped;
+        const leak = ended(t) && resident(t);
+        const pair = t.pair === true || t.parentResident === true || t.pairCount > 0;
+        const resume = t.resume === true || /--resume/i.test(t.argv || "");
+        const endTurn = /end[_-]?turn/i.test(t.stopReason || "");
+        const stacked = t.pairCount >= 10 || t.processCount >= 20;
+        const bloated = t.rssGrowth === true || t.rssGb >= 1 || t.load >= 20;
+        const mcp = (t.mcpChildren || 0) > 0;
+        const windows = /win/i.test(t.platform || "");
+        const macos = /mac/i.test(t.platform || "");
+        let verdict = "shed";
+        if (t.reaped === true && !resident(t)) verdict = "reaped";
+        else if (!resident(t)) verdict = "shed";
+        else if (ALARM.includes(t.seed)) verdict = t.seed;
+        else if (t.issue === 89275 && t.pairCount === 41) verdict = "clamped";
+        else if (windows && resume && leak) verdict = "windows-resume";
+        else if (mcp && leak) verdict = "mcp-child";
+        else if (macos && pair && leak && !stacked) verdict = "macos-pair";
+        else if (resume && leak) verdict = "resume-stuck";
+        else if (leak) verdict = "clamped";
+        const chips = [];
+        if (leak) chips.push("clamped", "idle-after-end");
+        if (endTurn && resident(t)) chips.push("end-turn-held");
+        if (pair && resident(t)) chips.push("paired");
+        if (stacked && resident(t)) chips.push("stacked");
+        if (bloated && resident(t)) chips.push("bloated");
+        if (resume && resident(t)) chips.push("resume-stuck");
+        if (mcp) chips.push("mcp-child");
+        if (t.reaped === true && !resident(t)) chips.push("reaped");
+        if (windows && resume && resident(t)) chips.push("windows-resume");
+        if (macos && pair && resident(t)) chips.push("macos-pair");
+        const hold = HOLD.includes(verdict);
+        const feeds = {
+          shed: "● Shed · pool clear; no clamped shells · hold",
+          reaped: "● Reaped · a reaper already pried the workers off the rock · hold",
+          "windows-resume": "● Windows-resume · headless claude.exe --resume still resident after the turn · leak",
+          "mcp-child": "● MCP-child · stdio children survived the scheduled end · leak",
+          clamped: "● Clamped · end_turn / session done + process still resident · leak",
+        };
+        const reasons = ["verdict " + verdict];
+        if (leak) reasons.push("#89275 scheduled-task session completed; OS process never exits");
+        if (endTurn) reasons.push("stop_reason: end_turn");
+        if (ended(t)) reasons.push("session marked done / idle in the UI");
+        if (resident(t)) reasons.push("headless claude / claude.exe worker still resident");
+        if (t.pairCount != null) reasons.push(t.pairCount + " leaked pairs");
+        if (t.rssGb != null) reasons.push(t.rssGb + " GB RSS");
+        if (t.load != null) reasons.push("load " + t.load);
+        return {
+          ticket: t,
+          verdict,
+          hold,
+          chips: [...new Set(chips)],
+          feed: feeds[verdict] || ("● " + verdict + " · leak"),
+          reasons,
+        };
+      }
+
+      const ticketEl = document.getElementById("ticket");
+      const verdictWord = document.getElementById("verdict-word");
+      const verdictFeed = document.getElementById("verdict-feed");
+      const verdictBox = document.getElementById("verdict-box");
+      const chipRow = document.getElementById("chip-row");
+      const reasonsEl = document.getElementById("reasons");
+      const workerRock = document.getElementById("worker-rock");
+      const shellStack = document.getElementById("shell-stack");
+
+      function render(result) {
+        const t = result.ticket;
+        ticketEl.value = JSON.stringify(t, null, 2);
+        verdictWord.textContent = result.verdict;
+        verdictFeed.textContent = result.feed;
+        verdictBox.className = "verdict " + (result.hold ? "hold" : "fail");
+        document.getElementById("stop-reason").textContent = t.stopReason || "—";
+        document.getElementById("ui-done").textContent = t.sessionDone || t.uiDone ? "done" : "open";
+        document.getElementById("is-running").textContent = String(t.isRunning ?? "—");
+        document.getElementById("cron").textContent = t.cronCadence || "—";
+        document.getElementById("hours").textContent = t.hours != null ? t.hours : "—";
+        document.getElementById("pair-count").textContent = t.pairCount != null ? t.pairCount : "—";
+        document.getElementById("proc-count").textContent = t.processCount != null ? t.processCount : "—";
+        document.getElementById("rss").textContent = t.rssGb != null ? t.rssGb : "—";
+        document.getElementById("load").textContent = t.load != null ? t.load : "—";
+        document.getElementById("platform").textContent = t.platform || "—";
+        workerRock.className = "rock " + (result.hold ? "shed" : "clamped");
+        const n = result.hold ? 0 : Math.min(Number(t.pairCount) || 12, 48);
+        shellStack.replaceChildren(
+          ...Array.from({ length: n || (result.hold ? 6 : 12) }, (_, i) => {
+            const span = document.createElement("span");
+            span.className = "shell" + (result.hold ? " empty" : "");
+            span.title = result.hold ? "shed" : "clamped pair " + (i + 1);
+            return span;
+          }),
+        );
+        chipRow.replaceChildren(
+          ...CHIP_NAMES.map((name) => {
+            const span = document.createElement("span");
+            span.className = "chip" + (result.chips.includes(name) ? " on" : "");
+            span.textContent = name;
+            return span;
+          }),
+        );
+        reasonsEl.replaceChildren(
+          ...result.reasons.map((reason) => {
+            const li = document.createElement("li");
+            li.textContent = reason;
+            return li;
+          }),
+        );
+        const pressed = t.seed || result.verdict;
+        document.getElementById("seed-clamped").setAttribute("aria-pressed", String(pressed === "clamped"));
+        document.getElementById("seed-shed").setAttribute("aria-pressed", String(pressed === "shed"));
+        document.getElementById("seed-reaped").setAttribute("aria-pressed", String(pressed === "reaped"));
+        document.getElementById("seed-windows").setAttribute("aria-pressed", String(pressed === "windows-resume"));
+        document.getElementById("seed-mcp").setAttribute("aria-pressed", String(pressed === "mcp-child"));
+        const slack = document.getElementById("slack-row");
+        const linear = document.getElementById("linear-row");
+        if (result.hold) {
+          slack.textContent = "Would skip Slack. Pool is " + result.verdict + ". No webhook in this demo.";
+          linear.textContent = "Would skip Linear. Verdict " + result.verdict + " is not a leak. No API key in this demo.";
+        } else {
+          slack.textContent =
+            "Would post to Slack: " + result.verdict + " · " + (t.pairCount || "?") + " pairs still on the rock after end_turn. No webhook in this demo.";
+          linear.textContent =
+            "Would open a Linear ticket: Limpet " + result.verdict + " · #" + (t.issue || 89275) + " OS process leak. No API key in this demo.";
+        }
+      }
+
+      function applySeed(name) {
+        render(scoreTicket(SEEDS[name] || SEEDS.clamped));
+      }
+      function applyEditor() {
+        try {
+          render(scoreTicket(JSON.parse(ticketEl.value)));
+        } catch {
+          verdictWord.textContent = "clamped";
+          verdictFeed.textContent = "Ticket JSON did not parse. Pry the shell or admit shed.";
+          verdictBox.className = "verdict fail";
+        }
+      }
+
+      document.getElementById("pry-btn").addEventListener("click", applyEditor);
+      document.getElementById("clear-btn").addEventListener("click", () => applySeed("shed"));
+      document.getElementById("score-btn").addEventListener("click", applyEditor);
+      document.getElementById("apply-ticket").addEventListener("click", applyEditor);
+      document.getElementById("seed-clamped").addEventListener("click", () => applySeed("clamped"));
+      document.getElementById("seed-shed").addEventListener("click", () => applySeed("shed"));
+      document.getElementById("seed-reaped").addEventListener("click", () => applySeed("reaped"));
+      document.getElementById("seed-windows").addEventListener("click", () => applySeed("windows-resume"));
+      document.getElementById("seed-mcp").addEventListener("click", () => applySeed("mcp-child"));
+      document.getElementById("export-ticket").addEventListener("click", () => {
+        const blob = new Blob([ticketEl.value], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "limpet-leak-ticket.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      applySeed("clamped");
+
+      function liveIssue(id, el, prefix) {
+        fetch("https://api.github.com/repos/anthropics/claude-code/issues/" + id)
+          .then((res) => {
+            if (!res.ok) throw new Error("GitHub " + res.status);
+            return res.json();
+          })
+          .then((issue) => {
+            const state = document.createElement("span");
+            state.className = "state" + (issue.state === "closed" ? " closed" : "");
+            state.textContent = issue.state || "unknown";
+            const link = document.createElement("a");
+            link.href = issue.html_url || ("https://github.com/anthropics/claude-code/issues/" + id);
+            link.textContent = (prefix || "#") + issue.number + " " + (issue.title || "");
+            el.replaceChildren(state, link);
+          })
+          .catch(() => {
+            el.textContent =
+              "GitHub unauthenticated fetch did not land. #" + id + " remains OPEN in the local seed. See .env.example.";
+          });
+      }
+      liveIssue(89275, document.getElementById("issue-card"));
+      liveIssue(88918, document.getElementById("pair-card"), "pair #");
+      liveIssue(68626, document.getElementById("win-card"), "win #");
+
+      fetch("./data/fingerprints.json")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((prints) => {
+          if (!prints || !prints.primary || !prints.primary[0]) return;
+          const row = prints.primary[0];
+          document.getElementById("local-seeds").textContent =
+            "Local seeds loaded: " + row.pairs + " pairs · " + row.processes + " procs · " + row.rssGb + " GB · load " + row.load;
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>

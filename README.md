@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Scion](https://hermes-playground-green.vercel.app/scion/)** — orchard grafting bench. A healthy graft with no rings is not a hold. Score the cambium or admit hollow. Folder: `projects/scion/`.
+**Featured: [Limpet](https://hermes-playground-green.vercel.app/limpet/)** — tide-pool limpet pry desk. A session marked done that still clamps the rock is not a hold. Pry the shell or admit shed. Folder: `projects/limpet/`.
+
+**Listed: [Scion](https://hermes-playground-green.vercel.app/scion/)** — orchard grafting bench. A healthy graft with no rings is not a hold. Score the cambium or admit hollow. Folder: `projects/scion/`. Still listed. Not featured.
 
 **Listed: [Almanac](https://hermes-playground-green.vercel.app/almanac/)** — stationer's almanac / feast-day desk. A fired one-shot is not next year's Loop. Score the feast page or admit dated. Folder: `projects/almanac/`. Still listed. Not featured.
 
@@ -168,10 +170,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                80 products: Scion (featured), Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                81 products: Limpet (featured), Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/scion/             orchard grafting bench for empty bridged fork (featured)
+projects/limpet/            tide-pool limpet pry desk for scheduled-task OS process leak (featured)
+projects/scion/             orchard grafting bench for empty bridged fork (kept, unfeatured)
 projects/almanac/           stationer's almanac / feast-day desk for one-shot Loop ghost (kept, unfeatured)
 projects/voucher/           cashier / tally-clerk voucher desk for nested subagent fabrication (kept, unfeatured)
 projects/kindling/          hearth / firebox / kindling rack for WarmLifecycle throwaway CLI sessions (kept, unfeatured)
