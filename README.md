@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Escutcheon](https://hermes-playground-green.vercel.app/escutcheon/)** — locksmith's keyhole plate. An empty plate is not a keyhole. Score the door or admit plated. Folder: `projects/escutcheon/`.
+**Featured: [Palimpsest](https://hermes-playground-green.vercel.app/palimpsest/)** — scriptorium parchment desk. A scraped page is not a holding. Score the undertext or admit underwrit. Folder: `projects/palimpsest/`.
+
+**Listed: [Escutcheon](https://hermes-playground-green.vercel.app/escutcheon/)** — locksmith's keyhole plate. An empty plate is not a keyhole. Score the door or admit plated. Folder: `projects/escutcheon/`. Still listed. Not featured.
 
 **Listed: [Lacuna](https://hermes-playground-green.vercel.app/lacuna/)** — collation desk. A watermark is not a gathering. Score the desk or admit collated. Folder: `projects/lacuna/`. Still listed. Not featured.
 
