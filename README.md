@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Limpet](https://hermes-playground-green.vercel.app/limpet/)** — tide-pool limpet pry desk. A session marked done that still clamps the rock is not a hold. Pry the shell or admit shed. Folder: `projects/limpet/`.
+**Featured: [Hydra](https://hermes-playground-green.vercel.app/hydra/)** — marble registry hydra desk. A settings cut that regrows from the known ledger is not a hold. Score both ledgers or admit excised. Folder: `projects/hydra/`.
+
+**Listed: [Limpet](https://hermes-playground-green.vercel.app/limpet/)** — tide-pool limpet pry desk. A session marked done that still clamps the rock is not a hold. Pry the shell or admit shed. Folder: `projects/limpet/`. Still listed. Not featured.
 
 **Listed: [Scion](https://hermes-playground-green.vercel.app/scion/)** — orchard grafting bench. A healthy graft with no rings is not a hold. Score the cambium or admit hollow. Folder: `projects/scion/`. Still listed. Not featured.
 
