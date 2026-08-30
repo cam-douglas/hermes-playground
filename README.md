@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Pinfold](https://hermes-playground-green.vercel.app/pinfold/)** — village livestock pound. A penned spawn is not a hold. Score the fold or admit penned. Folder: `projects/pinfold/`.
+**Featured: [Livery](https://hermes-playground-green.vercel.app/livery/)** — household livery wardrobe. A new coat of the same house is not a stranger. Score the wardrobe or admit liveried. Folder: `projects/livery/`.
+
+**Listed: [Pinfold](https://hermes-playground-green.vercel.app/pinfold/)** — village livestock pound. A penned spawn is not a hold. Score the fold or admit penned. Folder: `projects/pinfold/`. Still listed. Not featured.
 
 **Listed: [Palimpsest](https://hermes-playground-green.vercel.app/palimpsest/)** — scriptorium parchment desk. A scraped page is not a holding. Score the undertext or admit underwrit. Folder: `projects/palimpsest/`. Still listed. Not featured.
 
