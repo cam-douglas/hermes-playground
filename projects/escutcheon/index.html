@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Escutcheon — locksmith's keyhole plate for Claude Code #90717: Linux sandbox empty tmpfs over /run/user kills D-Bus and the keyring; gh blames the token. An empty plate is not a keyhole. Idle word is plated."
+    />
+    <title>Escutcheon — locksmith plate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Figtree:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --oil: #0a0907;
+        --felt: #161310;
+        --gun: #2a3036;
+        --gun-lit: #3d454c;
+        --steel: #9aa3ab;
+        --brass: #c4a04a;
+        --brass-hot: #e8c86a;
+        --brass-deep: #8a6e28;
+        --lamp: #f0c36a;
+        --copy: #efe6d4;
+        --mute: #a89a82;
+        --rust: #c44a32;
+        --rust-lit: #e06a4a;
+        --ghost: rgba(154, 163, 171, 0.28);
+        --hold: #d4b45a;
+        --stamp: "Bebas Neue", "Impact", sans-serif;
+        --body: "Figtree", "Avenir Next", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          radial-gradient(ellipse 36% 22% at 72% 8%, rgba(240, 195, 106, 0.14), transparent 58%),
+          radial-gradient(ellipse 28% 30% at 8% 88%, rgba(42, 48, 54, 0.55), transparent 60%),
+          repeating-linear-gradient(
+            0deg,
+            rgba(196, 160, 74, 0.03) 0 1px,
+            transparent 1px 13px
+          ),
+          linear-gradient(180deg, #1a1612 0%, var(--oil) 42%, #050403 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--brass-hot); }
+      .shop {
+        width: min(1220px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 16px 0 88px;
+      }
+      .sign {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: end;
+        padding: 14px 18px 12px;
+        background:
+          linear-gradient(180deg, #d8b65a 0%, #c4a04a 38%, #8a6e28 100%);
+        color: #1a1208;
+        border: 3px solid #3a2c12;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 236, 180, 0.55),
+          inset 0 -8px 16px rgba(60, 40, 10, 0.35),
+          0 10px 0 #0e0c08;
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #3a2c12;
+      }
+      h1 {
+        margin: 2px 0 0;
+        font-family: var(--stamp);
+        font-size: clamp(56px, 10vw, 96px);
+        font-weight: 400;
+        letter-spacing: 0.06em;
+        line-height: 0.82;
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 4px 0 0;
+      }
+      .thesis {
+        margin: 8px 0 0;
+        font-size: clamp(16px, 2.2vw, 20px);
+        font-style: italic;
+        max-width: 34em;
+      }
+      .screws {
+        display: grid;
+        gap: 10px;
+        padding: 8px 4px;
+      }
+      .screw {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 35% 30%, #efe4c4, #8a6e28 62%, #3a2c12);
+        box-shadow: inset 0 0 0 2px rgba(26, 18, 8, 0.35);
+      }
+      .screw::after {
+        content: "";
+        display: block;
+        width: 12px;
+        height: 2px;
+        margin: 8px auto 0;
+        background: #1a1208;
+        transform: rotate(28deg);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        padding: 4px 9px;
+        border: 1px solid var(--gun-lit);
+        background: var(--felt);
+        color: var(--steel);
+      }
+      .chip.fail { border-color: var(--rust); color: var(--rust-lit); background: rgba(196, 74, 50, 0.1); }
+      .chip.hold { border-color: var(--brass); color: var(--brass-hot); background: rgba(196, 160, 74, 0.12); }
+      .chip.contrast { border-color: var(--steel); color: var(--steel); }
+      .chip[aria-current="true"] { outline: 2px solid var(--lamp); }
+
+      .bench {
+        position: relative;
+        margin-top: 16px;
+        padding: 20px 16px 24px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #1c1814 0 11px,
+            #14110d 11px 12px
+          );
+        border: 8px solid #2a2420;
+        box-shadow:
+          inset 0 0 0 1px rgba(196, 160, 74, 0.12),
+          0 16px 0 #080706;
+      }
+      .work {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(200px, 24%) 1fr minmax(220px, 26%);
+        gap: 16px;
+        align-items: start;
+        z-index: 1;
+      }
+      @media (max-width: 860px) {
+        .work { grid-template-columns: 1fr; }
+        .sign { grid-template-columns: 1fr; }
+        .screws { grid-template-columns: repeat(4, 18px); }
+      }
+      .tumblers {
+        display: grid;
+        gap: 8px;
+      }
+      .pin {
+        padding: 8px 10px;
+        background: var(--gun);
+        border: 1px solid #4a545c;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--steel);
+      }
+      .pin.on { border-color: var(--brass); color: var(--brass-hot); }
+      .pin.miss { border-color: var(--rust); color: var(--rust-lit); }
+      .pin .k {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .plate-wrap {
+        display: grid;
+        place-items: center;
+        min-height: 320px;
+      }
+      .escutcheon {
+        position: relative;
+        width: min(340px, 100%);
+        aspect-ratio: 3 / 4;
+        background:
+          linear-gradient(160deg, #e8d08a 0%, #c4a04a 28%, #8a6e28 62%, #c4a04a 88%);
+        border-radius: 46% 46% 18% 18% / 18% 18% 12% 12%;
+        box-shadow:
+          inset 0 2px 0 rgba(255, 236, 180, 0.55),
+          inset 0 -18px 28px rgba(60, 40, 10, 0.4),
+          0 18px 0 #0e0c08;
+      }
+      .escutcheon.ghost {
+        background:
+          linear-gradient(160deg, rgba(154, 163, 171, 0.18), rgba(42, 48, 54, 0.2));
+        box-shadow: inset 0 0 0 2px var(--ghost);
+      }
+      .keyhole {
+        position: absolute;
+        left: 50%;
+        top: 38%;
+        width: 42px;
+        height: 42px;
+        margin-left: -21px;
+        border-radius: 50%;
+        background: #0a0907;
+        box-shadow: inset 0 6px 10px rgba(0, 0, 0, 0.7);
+      }
+      .keyhole::after {
+        content: "";
+        position: absolute;
+        left: 13px;
+        top: 34px;
+        width: 16px;
+        height: 46px;
+        background: #0a0907;
+        clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+      }
+      .escutcheon.ghost .keyhole {
+        background: transparent;
+        border: 2px dashed var(--ghost);
+        box-shadow: none;
+      }
+      .escutcheon.ghost .keyhole::after {
+        background: transparent;
+        border: 2px dashed var(--ghost);
+        border-top: 0;
+      }
+      .socket-ghost {
+        position: absolute;
+        left: 50%;
+        top: 22%;
+        width: 72px;
+        margin-left: -36px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-align: center;
+        color: #3a2c12;
+      }
+      .escutcheon.ghost .socket-ghost { color: var(--ghost); }
+      .bolt {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #d8dde2, #5a6268);
+      }
+      .bolt.tl { top: 18px; left: 22px; }
+      .bolt.tr { top: 18px; right: 22px; }
+      .bolt.bl { bottom: 22px; left: 28px; }
+      .bolt.br { bottom: 22px; right: 28px; }
+      .readout {
+        display: grid;
+        gap: 10px;
+      }
+      .ticket {
+        padding: 10px 12px;
+        background: #0e0c0a;
+        border: 1px solid var(--gun-lit);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--steel);
+        white-space: pre-wrap;
+      }
+      .ticket.fail { border-color: var(--rust); color: var(--rust-lit); }
+      .ticket.hold { border-color: var(--brass); color: var(--brass-hot); }
+      .ticket .hed {
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 6px;
+      }
+
+      .desk {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+      .panel {
+        padding: 14px 14px 16px;
+        background: var(--felt);
+        border: 1px solid #2e2822;
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin: 0 0 10px;
+      }
+      .blanks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .blank {
+        min-width: 88px;
+        padding: 10px 8px 8px;
+        background:
+          linear-gradient(180deg, #c8cdd2 0%, #8b9298 48%, #6a7076 100%);
+        color: #1a1c1e;
+        border: 0;
+        box-shadow: 0 3px 0 #3a3e42;
+        font-family: var(--stamp);
+        font-size: 16px;
+        letter-spacing: 0.06em;
+        text-align: center;
+      }
+      .blank small {
+        display: block;
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .blank[aria-pressed="true"] { outline: 2px solid var(--lamp); }
+      .blank.filed {
+        background: linear-gradient(180deg, #e8c86a, #c4a04a);
+        box-shadow: 0 3px 0 var(--brass-deep);
+      }
+      .stamps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .stamp {
+        padding: 8px 10px;
+        background: var(--gun);
+        border: 1px solid var(--brass-deep);
+        font-family: var(--stamp);
+        font-size: 18px;
+        letter-spacing: 0.08em;
+        color: var(--brass-hot);
+      }
+      .stamp:hover { background: var(--gun-lit); }
+      .stamp.wrong { border-color: var(--rust); color: var(--rust-lit); }
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .act button {
+        padding: 8px 12px;
+        background: var(--brass);
+        color: #1a1208;
+        border: 0;
+        font-family: var(--stamp);
+        font-size: 20px;
+        letter-spacing: 0.08em;
+      }
+      .act button.admit { background: var(--lamp); }
+      .act button.restore { background: var(--rust); color: #fff8f2; }
+      label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin: 8px 0 6px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        resize: vertical;
+        background: #0e0c0a;
+        color: var(--copy);
+        border: 1px solid var(--gun-lit);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 10px;
+      }
+      .verdict-face {
+        margin: 0;
+        font-family: var(--stamp);
+        font-size: clamp(42px, 7vw, 72px);
+        letter-spacing: 0.06em;
+        line-height: 0.86;
+      }
+      .verdict-face.fail { color: var(--rust-lit); }
+      .verdict-face.hold { color: var(--brass-hot); }
+      .verdict-face.contrast { color: var(--steel); }
+      .feed { color: var(--copy); line-height: 1.45; }
+      .reasons {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        color: var(--mute);
+        font-size: 14px;
+      }
+      .ledger {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--steel);
+        line-height: 1.55;
+      }
+      .path {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .path strong { color: var(--brass-hot); }
+      footer {
+        margin-top: 20px;
+        color: var(--mute);
+        font-size: 14px;
+        max-width: 54em;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shop">
+      <header class="sign">
+        <div>
+          <p class="mark">20:50 Sydney · escutcheon</p>
+          <h1>Escutcheon</h1>
+          <p class="hours">#90717 · locksmith's keyhole plate</p>
+          <p class="thesis">An empty plate is not a keyhole. Score the door or admit plated.</p>
+        </div>
+        <div class="screws" aria-hidden="true">
+          <span class="screw"></span>
+          <span class="screw"></span>
+          <span class="screw"></span>
+          <span class="screw"></span>
+        </div>
+      </header>
+      <div class="chips" id="chips"></div>
+
+      <section class="bench" aria-label="Locksmith bench">
+        <div class="work">
+          <div class="tumblers" id="tumblers">
+            <div class="pin miss"><span class="k">mount</span>/run/user ← empty tmpfs</div>
+            <div class="pin miss"><span class="k">xdg</span>/run/user/1000 gone</div>
+            <div class="pin miss"><span class="k">dbus</span>unix:path=/run/user/1000/bus</div>
+            <div class="pin miss"><span class="k">gh</span>token in default is invalid</div>
+          </div>
+          <div class="plate-wrap">
+            <div class="escutcheon ghost" id="plate" aria-label="Keyhole plate">
+              <span class="bolt tl"></span>
+              <span class="bolt tr"></span>
+              <span class="bolt bl"></span>
+              <span class="bolt br"></span>
+              <div class="socket-ghost" id="socket-ghost">D-Bus socket ghost</div>
+              <div class="keyhole" aria-hidden="true"></div>
+            </div>
+          </div>
+          <div class="readout">
+            <div class="ticket fail" id="mount-ticket">
+              <div class="hed">mountinfo · /proc/self</div>
+              <span id="mount-body">1174 1154 0:69 / /run/user rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1000,gid=1000,inode64</span>
+            </div>
+            <div class="ticket fail" id="gh-ticket">
+              <div class="hed">gh auth status</div>
+              <span id="gh-body">The token in default is invalid.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">File the blanks</p>
+          <div class="blanks" id="blanks"></div>
+          <p class="hed" style="margin-top:14px">Stamp the class</p>
+          <p class="path">Wrong stamp binds the key. Correct stamps file the blank. The idle word unlocks only on the honest plate.</p>
+          <div class="stamps" id="stamps"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score</button>
+            <button type="button" class="admit" id="admit-btn">Admit plated</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90717</button>
+          </div>
+          <label for="probe">Probe transcript</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Plate note</p>
+          <p class="verdict-face fail" id="verdict">blamed</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <p class="path" id="path"></p>
+          <div class="ledger" id="ledger" aria-live="polite"></div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90717">anthropics/claude-code#90717</a>.
+        Same-class macOS
+        <a href="https://github.com/anthropics/claude-code/issues/87008">#87008</a>.
+        Linux levers:
+        <a href="https://github.com/anthropics/claude-code/issues/44180">#44180</a>
+        allowUnixSockets,
+        <a href="https://github.com/anthropics/claude-code/issues/89931">#89931</a>
+        excludedCommands.
+        Native stack: Claude Code Linux bubblewrap sandbox, D-Bus session bus, libsecret/gnome-keyring,
+        <code>gh</code> secure storage,
+        <code>allowUnixSockets</code>,
+        <code>excludedCommands</code>,
+        <code>dangerouslyDisableSandbox</code>,
+        <code>permissions.deny</code> propagation.
+        NOT Slype #90676, Gasket #90355, Clew #90569, Fob #90527, Chatelaine #90647, Lacuna, Ambo, Tally.
+        Suggested consumer fix: bind the real <code>$XDG_RUNTIME_DIR</code> (or the D-Bus socket) into the sandbox, or ship a working Linux <code>allowUnixSockets</code>. Do not force plaintext <code>hosts.yml</code>.
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "plated";
+      const DEMO_MOUNTINFO = "1174 1154 0:69 / /run/user rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1000,gid=1000,inode64";
+      const DEMO_DBUS = "unix:path=/run/user/1000/bus";
+      const DEMO_GH_BLAME = "github.com\n  X Failed to log in to github.com account  (default)\n  - Active account: true\n  - The token in default is invalid.";
+      const DEMO_GH_HOLD = "github.com\n  ✓ Logged in to github.com account  (keyring)\n  - Active account: true\n  - Token scopes: 'gist', 'read:org', 'repo'";
+      const ALARM = ["blamed","masked","lying-address","sockets-inert","excluded-inert","still-masks","plaintext-forced","deny-breaks"];
+      const FAIL_PATH = ALARM.slice();
+      const ledger = [];
+      const filed = new Set();
+
+      function emptyProbe() {
+        return {
+          session: "", issue: null, source: "",
+          mountinfo: "", dbusAddress: "", xdgRuntimeDir: "",
+          runtimeExists: null, busExists: null, ghStatus: "",
+          allowUnixSockets: "", socketsTried: null, socketsHelped: null,
+          excludedCommands: "", excludedTried: null, excludedHelped: null,
+          dangerouslyDisableSandbox: null, disableHelped: null,
+          insecureStorage: null, hostsYmlDeny: null, hostsYmlReadable: null,
+          ghWorks: null, keyringReachable: null, version: "", nearby: "",
+          nearbyBlamed: false, nearbyMasked: false, nearbyLyingAddress: false,
+          nearbySocketsInert: false, nearbyExcludedInert: false,
+          nearbyStillMasks: false, nearbyPlaintextForced: false, nearbyDenyBreaks: false,
+        };
+      }
+
+      function asText(v) { return v == null ? "" : String(v); }
+      function asNBool(v) {
+        if (v === true || v === false) return v;
+        return null;
+      }
+
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.escutcheon && typeof src.escutcheon === "object" ? src.escutcheon : src;
+        return { ...emptyProbe(), ...nested,
+          mountinfo: asText(nested.mountinfo || ""),
+          dbusAddress: asText(nested.dbusAddress || ""),
+          ghStatus: asText(nested.ghStatus || ""),
+          nearby: asText(nested.nearby || ""),
+          runtimeExists: asNBool(nested.runtimeExists),
+          busExists: asNBool(nested.busExists),
+          socketsTried: asNBool(nested.socketsTried),
+          socketsHelped: asNBool(nested.socketsHelped),
+          excludedTried: asNBool(nested.excludedTried),
+          excludedHelped: asNBool(nested.excludedHelped),
+          dangerouslyDisableSandbox: asNBool(nested.dangerouslyDisableSandbox),
+          disableHelped: asNBool(nested.disableHelped),
+          insecureStorage: asNBool(nested.insecureStorage),
+          hostsYmlDeny: asNBool(nested.hostsYmlDeny),
+          hostsYmlReadable: asNBool(nested.hostsYmlReadable),
+          ghWorks: asNBool(nested.ghWorks),
+          keyringReachable: asNBool(nested.keyringReachable),
+          nearbyBlamed: Boolean(nested.nearbyBlamed),
+          nearbyMasked: Boolean(nested.nearbyMasked),
+          nearbyLyingAddress: Boolean(nested.nearbyLyingAddress),
+          nearbySocketsInert: Boolean(nested.nearbySocketsInert),
+          nearbyExcludedInert: Boolean(nested.nearbyExcludedInert),
+          nearbyStillMasks: Boolean(nested.nearbyStillMasks),
+          nearbyPlaintextForced: Boolean(nested.nearbyPlaintextForced),
+          nearbyDenyBreaks: Boolean(nested.nearbyDenyBreaks),
+        };
+      }
+
+      function looksEmptyTmpfs(m) { return / \/run\/user[\s,]/.test(m) && /tmpfs/.test(m); }
+      function looksTokenBlame(s) { return /token in default is invalid|token in keyring is invalid/i.test(s); }
+      function looksKeyringHold(s) { return /logged in to github\.com account\s+\(keyring\)/i.test(s); }
+      function isOff(row) {
+        const n = asText(row.nearby).toLowerCase();
+        return n === "slype" || n === "90676" || n === "gasket" || n === "clew" || n === "fob" || n === "chatelaine";
+      }
+      function uniqueNearby(row) {
+        return Boolean(row.nearbyBlamed || row.nearbyMasked || row.nearbyLyingAddress ||
+          row.nearbySocketsInert || row.nearbyExcludedInert || row.nearbyStillMasks ||
+          row.nearbyPlaintextForced || row.nearbyDenyBreaks || isOff(row));
+      }
+
+      function analyze(input) {
+        const row = cloneProbe(input);
+        const emptyTmpfs = looksEmptyTmpfs(row.mountinfo);
+        const tokenBlame = looksTokenBlame(row.ghStatus);
+        const keyringHold = looksKeyringHold(row.ghStatus);
+        const dbusLie = Boolean(row.dbusAddress && /unix:path=\/run\/user\//.test(row.dbusAddress) &&
+          (row.runtimeExists === false || row.busExists === false));
+        const triad = Boolean(emptyTmpfs && dbusLie && tokenBlame && !uniqueNearby(row));
+        const honest = Boolean(row.runtimeExists === true && row.busExists === true &&
+          row.keyringReachable === true && (keyringHold || row.ghWorks === true) &&
+          !emptyTmpfs && !tokenBlame && !uniqueNearby(row));
+        return { emptyTmpfs, tokenBlame, keyringHold, dbusLie, triad, honest, off: isOff(row), row };
+      }
+
+      function classify(input) {
+        const row = cloneProbe(input);
+        const idle = !(row.mountinfo || row.dbusAddress || row.ghStatus || row.runtimeExists != null ||
+          row.busExists != null || row.socketsTried != null || row.excludedTried != null ||
+          row.dangerouslyDisableSandbox != null || row.insecureStorage != null ||
+          row.hostsYmlDeny != null || row.ghWorks != null || row.keyringReachable != null ||
+          uniqueNearby(row));
+        if (idle) return "plated";
+        const f = analyze(row);
+        if (!f.triad) {
+          if (row.nearbyDenyBreaks) return "deny-breaks";
+          if (row.nearbyPlaintextForced) return "plaintext-forced";
+          if (row.nearbyStillMasks) return "still-masks";
+          if (row.nearbyExcludedInert) return "excluded-inert";
+          if (row.nearbySocketsInert) return "sockets-inert";
+          if (row.nearbyLyingAddress) return "lying-address";
+          if (row.nearbyMasked) return "masked";
+          if (row.nearbyBlamed) return "blamed";
+          if (f.off) return "blamed";
+        }
+        if (f.triad) return "blamed";
+        if (row.hostsYmlDeny === true && row.hostsYmlReadable === false) return "deny-breaks";
+        if (row.insecureStorage === true && row.keyringReachable === false) return "plaintext-forced";
+        if (row.dangerouslyDisableSandbox === true && f.emptyTmpfs && row.disableHelped === false) return "still-masks";
+        if (row.excludedTried === true && row.excludedHelped === false) return "excluded-inert";
+        if (row.socketsTried === true && row.socketsHelped === false) return "sockets-inert";
+        if (f.tokenBlame && (f.emptyTmpfs || row.runtimeExists === false)) return "blamed";
+        if (f.dbusLie) return "lying-address";
+        if (f.emptyTmpfs) return "masked";
+        if (f.honest) return "plated";
+        return "plated";
+      }
+
+      function feedOf(kind) {
+        if (kind === "blamed") return "● Blamed · gh says The token in default is invalid · the credential is fine · the plate is empty · primary #90717";
+        if (kind === "masked") return "● Masked · empty tmpfs mounted over /run/user · $XDG_RUNTIME_DIR and the D-Bus socket vanish";
+        if (kind === "lying-address") return "● Lying-address · DBUS_SESSION_BUS_ADDRESS still points at unix:path=/run/user/1000/bus · the path is gone";
+        if (kind === "sockets-inert") return "● Sockets-inert · allowUnixSockets names the bus · Linux never implements it · #44180";
+        if (kind === "excluded-inert") return "● Excluded-inert · excludedCommands lists gh * · gh still runs sandboxed · #89931";
+        if (kind === "still-masks") return "● Still-masks · dangerouslyDisableSandbox is true · the empty tmpfs stays";
+        if (kind === "plaintext-forced") return "● Plaintext-forced · only gh auth login --insecure-storage works · keyring traded for hosts.yml";
+        if (kind === "deny-breaks") return "● Deny-breaks · Read(~/.config/gh/hosts.yml) in permissions.deny breaks gh itself";
+        return "● Plated · real $XDG_RUNTIME_DIR bound · D-Bus socket present · keyring reachable · idle word is plated";
+      }
+
+      function reasonsOf(input, kind) {
+        const f = analyze(input);
+        const row = f.row;
+        const reasons = ["verdict " + kind];
+        if (kind === "blamed" || f.triad) reasons.push("#90717 Linux sandbox replaces /run/user with an empty tmpfs; gh blames the token");
+        if (f.emptyTmpfs) reasons.push("mountinfo shows tmpfs over /run/user");
+        if (row.dbusAddress) reasons.push("DBUS_SESSION_BUS_ADDRESS " + row.dbusAddress);
+        if (f.dbusLie) reasons.push("exported bus address points at a missing path");
+        if (row.runtimeExists === false) reasons.push("ls: cannot access '/run/user/1000': No such file or directory");
+        if (f.tokenBlame) reasons.push("gh: The token in default is invalid");
+        if (f.keyringHold) reasons.push("control gh talks to the keyring");
+        if (row.socketsTried === true && row.socketsHelped === false) reasons.push("allowUnixSockets inert on Linux (#44180)");
+        if (row.excludedTried === true && row.excludedHelped === false) reasons.push("excludedCommands inert (#89931)");
+        if (row.dangerouslyDisableSandbox === true && row.disableHelped === false) reasons.push("dangerouslyDisableSandbox still leaves the filesystem masks");
+        if (row.insecureStorage === true) reasons.push("gh auth login --insecure-storage writes plaintext hosts.yml");
+        if (row.hostsYmlDeny === true && row.hostsYmlReadable === false) reasons.push("permissions.deny Read(~/.config/gh/hosts.yml) breaks gh itself");
+        if (f.off) reasons.push("labeled contrast, not this defect: Slype / Gasket / Clew / Fob / Chatelaine");
+        if (kind === "plated") reasons.push("real runtime dir bound and keyring reachable, or the idle bench; idle word is plated");
+        return reasons;
+      }
+
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        const f = analyze(row);
+        const off = f.off;
+        return {
+          verdict: kind,
+          plated: kind === "plated",
+          alarm: ALARM.includes(kind) && !off,
+          offEscutcheon: off,
+          idleWord: IDLE_WORD,
+          facts: {
+            emptyTmpfs: f.emptyTmpfs,
+            tokenBlame: f.tokenBlame,
+            keyringHold: f.keyringHold,
+            dbusLie: f.dbusLie,
+            triad: f.triad,
+            honest: f.honest,
+            mountinfo: row.mountinfo,
+            dbusAddress: row.dbusAddress,
+            ghStatus: row.ghStatus,
+            runtimeExists: row.runtimeExists,
+            busExists: row.busExists,
+          },
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          probe: row,
+        };
+      }
+
+      const SEEDS = {
+        blamed: () => ({
+          session: "90717-blamed", issue: 90717,
+          source: "primary #90717 empty tmpfs; DBUS address still exported; gh blames the token",
+          mountinfo: DEMO_MOUNTINFO, dbusAddress: DEMO_DBUS, xdgRuntimeDir: "/run/user/1000",
+          runtimeExists: false, busExists: false, ghStatus: DEMO_GH_BLAME,
+          keyringReachable: false, ghWorks: false, version: "2.1.236",
+        }),
+        masked: () => ({
+          session: "90717-masked", issue: 90717, mountinfo: DEMO_MOUNTINFO,
+          dbusAddress: DEMO_DBUS, runtimeExists: false, busExists: false, nearbyMasked: true,
+        }),
+        "lying-address": () => ({
+          session: "90717-lying-address", issue: 90717, mountinfo: DEMO_MOUNTINFO,
+          dbusAddress: DEMO_DBUS, runtimeExists: false, busExists: false, nearbyLyingAddress: true,
+        }),
+        "sockets-inert": () => ({
+          session: "44180-sockets-inert", issue: 44180, mountinfo: DEMO_MOUNTINFO,
+          dbusAddress: DEMO_DBUS, runtimeExists: false, busExists: false,
+          allowUnixSockets: "/run/user/1000/bus", socketsTried: true, socketsHelped: false,
+          nearbySocketsInert: true,
+        }),
+        "excluded-inert": () => ({
+          session: "89931-excluded-inert", issue: 89931, mountinfo: DEMO_MOUNTINFO,
+          dbusAddress: DEMO_DBUS, runtimeExists: false, busExists: false,
+          excludedCommands: "gh *", excludedTried: true, excludedHelped: false,
+          ghStatus: DEMO_GH_BLAME, nearbyExcludedInert: true,
+        }),
+        "still-masks": () => ({
+          session: "90717-still-masks", issue: 90717, mountinfo: DEMO_MOUNTINFO,
+          dbusAddress: DEMO_DBUS, runtimeExists: false, busExists: false,
+          dangerouslyDisableSandbox: true, disableHelped: false, nearbyStillMasks: true,
+        }),
+        "plaintext-forced": () => ({
+          session: "90717-plaintext-forced", issue: 90717, mountinfo: DEMO_MOUNTINFO,
+          dbusAddress: DEMO_DBUS, runtimeExists: false, busExists: false,
+          insecureStorage: true, keyringReachable: false, ghWorks: true, nearbyPlaintextForced: true,
+        }),
+        "deny-breaks": () => ({
+          session: "90717-deny-breaks", issue: 90717, mountinfo: DEMO_MOUNTINFO,
+          insecureStorage: true, hostsYmlDeny: true, hostsYmlReadable: false, ghWorks: false,
+          ghStatus: "warning: failed to load config: open /home//.config/gh/hosts.yml: permission denied",
+          nearbyDenyBreaks: true,
+        }),
+        slype: () => ({
+          session: "contrast-slype", issue: 90676, nearby: "slype",
+          source: "NOT this: #90676 sandbox pwsh 126",
+        }),
+        plated: () => ({
+          session: "plated-hold", issue: 90717,
+          source: "honest control: real /run/user bound, D-Bus socket present, gh talks to the keyring",
+          mountinfo: "1154 1153 0:26 / /run/user/1000 rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=700,uid=1000",
+          dbusAddress: DEMO_DBUS, xdgRuntimeDir: "/run/user/1000",
+          runtimeExists: true, busExists: true, ghStatus: DEMO_GH_HOLD,
+          keyringReachable: true, ghWorks: true, version: "2.1.236",
+        }),
+      };
+
+      const seedOrder = [
+        ["blamed", "blamed"],
+        ["masked", "masked"],
+        ["lying-address", "lying-address"],
+        ["sockets-inert", "sockets-inert"],
+        ["excluded-inert", "excluded-inert"],
+        ["still-masks", "still-masks"],
+        ["plaintext-forced", "plaintext-forced"],
+        ["deny-breaks", "deny-breaks"],
+        ["slype", "not slype"],
+        ["plated", "honest plated"],
+      ];
+
+      const stampOrder = [
+        "blamed", "masked", "lying-address", "sockets-inert", "excluded-inert",
+        "still-masks", "plaintext-forced", "deny-breaks", "plated",
+        "slype", "gasket", "clew", "fob", "chatelaine",
+      ];
+
+      const probeEl = document.getElementById("probe");
+      const blanksEl = document.getElementById("blanks");
+      const stampsEl = document.getElementById("stamps");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const ledgerEl = document.getElementById("ledger");
+      const chipsEl = document.getElementById("chips");
+      const pathEl = document.getElementById("path");
+      const plateEl = document.getElementById("plate");
+      const socketEl = document.getElementById("socket-ghost");
+      const mountBody = document.getElementById("mount-body");
+      const ghBody = document.getElementById("gh-body");
+      const mountTicket = document.getElementById("mount-ticket");
+      const ghTicket = document.getElementById("gh-ticket");
+      const tumblersEl = document.getElementById("tumblers");
+
+      function writeProbe(probe) {
+        probeEl.value = JSON.stringify(probe, null, 2);
+      }
+      function readProbe() {
+        try { return cloneProbe(JSON.parse(probeEl.value || "{}")); }
+        catch { return cloneProbe(SEEDS.blamed()); }
+      }
+
+      function paintBench(result) {
+        const hold = result.plated;
+        const facts = result.facts || {};
+        plateEl.classList.toggle("ghost", !hold);
+        socketEl.textContent = hold ? "bus socket seated" : "D-Bus socket ghost";
+        mountBody.textContent = facts.mountinfo || (hold ? "real /run/user/1000 bound" : DEMO_MOUNTINFO);
+        ghBody.textContent = facts.ghStatus
+          ? (facts.tokenBlame ? "The token in default is invalid." : facts.keyringHold ? "Logged in (keyring)" : facts.ghStatus.split("\n")[0])
+          : (hold ? "Logged in (keyring)" : "The token in default is invalid.");
+        mountTicket.className = "ticket " + (hold ? "hold" : "fail");
+        ghTicket.className = "ticket " + (hold ? "hold" : "fail");
+        const pins = [
+          ["mount", hold ? "real runtime dir" : "/run/user ← empty tmpfs", hold],
+          ["xdg", hold ? "/run/user/1000 present" : "/run/user/1000 gone", hold],
+          ["dbus", facts.dbusAddress || DEMO_DBUS, hold && !facts.dbusLie],
+          ["gh", hold ? "keyring reachable" : "token in default is invalid", hold],
+        ];
+        tumblersEl.innerHTML = pins.map(([k, v, ok]) =>
+          `<div class="pin ${ok ? "on" : "miss"}"><span class="k">${k}</span>${v}</div>`
+        ).join("");
+      }
+
+      function pathCopy() {
+        const n = FAIL_PATH.filter((k) => filed.has(k)).length;
+        const unlocked = filed.has("plated");
+        return n + "/8 blanks filed" + (unlocked
+          ? " · idle word <strong>plated</strong> unlocked"
+          : " · idle word locked until the honest plate is stamped");
+      }
+
+      function render(result, stampOk) {
+        const hold = result.plated;
+        const fail = result.alarm;
+        verdictEl.textContent = stampOk === false ? "binds" : result.verdict;
+        verdictEl.className = "verdict-face " + (stampOk === false ? "fail" : hold ? "hold" : result.offEscutcheon ? "contrast" : "fail");
+        feedEl.textContent = stampOk === false
+          ? "● Wrong stamp. The key binds. An empty plate is not a keyhole. Score the door."
+          : result.feed;
+        reasonsEl.innerHTML = (stampOk === false
+          ? ["wrong stamp", "the blank does not turn", "idle word stays locked"]
+          : result.reasons
+        ).map((row) => `<li>${row}</li>`).join("");
+        ledger.unshift({
+          at: new Date().toISOString(),
+          verdict: stampOk === false ? "binds" : result.verdict,
+          plated: result.plated,
+        });
+        ledgerEl.innerHTML = ledger.slice(0, 8).map((row) =>
+          `${row.at} · ${row.verdict} · plated=${row.plated}`
+        ).join("<br>");
+        const chipKind = stampOk === false || fail ? "fail" : hold ? "hold" : "contrast";
+        chipsEl.innerHTML = [
+          ["#90717", fail || stampOk === false ? "fail" : hold ? "hold" : "contrast"],
+          [stampOk === false ? "binds" : result.verdict, chipKind],
+          [hold ? "plate seated" : "empty plate", hold ? "hold" : "fail"],
+          ["idle " + IDLE_WORD, filed.has("plated") ? "hold" : "contrast"],
+        ].map(([label, klass]) => {
+          const current = (klass === "fail" || klass === "hold") && label === (stampOk === false ? "binds" : result.verdict);
+          return `<span class="chip ${klass}"${current ? ' aria-current="true"' : ""}>${label}</span>`;
+        }).join("");
+        pathEl.innerHTML = pathCopy();
+        paintBench(result);
+        document.querySelectorAll("#blanks button").forEach((btn) => {
+          btn.classList.toggle("filed", filed.has(btn.dataset.seed));
+          btn.setAttribute("aria-pressed", String(btn.dataset.seed === result.verdict || (result.plated && btn.dataset.seed === "plated")));
+        });
+      }
+
+      function applySeed(name) {
+        const probe = SEEDS[name]();
+        writeProbe(probe);
+        render(score(probe));
+      }
+
+      function stamp(kind) {
+        const probe = readProbe();
+        const result = score(probe);
+        if (kind !== result.verdict) {
+          render(result, false);
+          return;
+        }
+        if (kind === "plated") {
+          if (!result.plated) {
+            render(result, false);
+            return;
+          }
+          filed.add("plated");
+        } else if (FAIL_PATH.includes(kind) && !result.offEscutcheon) {
+          filed.add(kind);
+        }
+        render(result, true);
+      }
+
+      seedOrder.forEach(([key, label]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "blank";
+        btn.dataset.seed = key;
+        btn.innerHTML = `${label}<small>blank</small>`;
+        btn.addEventListener("click", () => applySeed(key));
+        blanksEl.appendChild(btn);
+      });
+
+      stampOrder.forEach((key) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "stamp";
+        btn.textContent = key;
+        btn.addEventListener("click", () => stamp(key));
+        stampsEl.appendChild(btn);
+      });
+
+      document.getElementById("score-btn").addEventListener("click", () => {
+        render(score(readProbe()));
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        const current = score(readProbe());
+        if (current.plated) {
+          filed.add("plated");
+          render(current, true);
+          return;
+        }
+        render(current, false);
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        applySeed("blamed");
+      });
+
+      applySeed("blamed");
+    </script>
+  </body>
+</html>

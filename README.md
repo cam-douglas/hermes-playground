@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Lacuna](https://hermes-playground-green.vercel.app/lacuna/)** — collation desk. A watermark is not a gathering. Score the desk or admit collated. Folder: `projects/lacuna/`.
+**Featured: [Escutcheon](https://hermes-playground-green.vercel.app/escutcheon/)** — locksmith's keyhole plate. An empty plate is not a keyhole. Score the door or admit plated. Folder: `projects/escutcheon/`.
+
+**Listed: [Lacuna](https://hermes-playground-green.vercel.app/lacuna/)** — collation desk. A watermark is not a gathering. Score the desk or admit collated. Folder: `projects/lacuna/`. Still listed. Not featured.
 
 **Listed: [Ambo](https://hermes-playground-green.vercel.app/ambo/)** — raised reading desk. The pulpit spoke; the nave never heard. Score the card or admit unheard. Folder: `projects/ambo/`. Still listed. Not featured.
 
@@ -144,10 +146,13 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                66 products: Slype (featured), Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                69 products: Escutcheon (featured), Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/slype/             cathedral slype for sandbox pwsh 126 vs System32 powershell (featured)
+projects/escutcheon/        locksmith's keyhole plate for Linux sandbox empty tmpfs over /run/user (featured)
+projects/lacuna/            collation desk for silent mid-session task-store scrape (kept, unfeatured)
+projects/ambo/              raised reading desk for unheard PermissionRequest systemMessage (kept, unfeatured)
+projects/slype/             cathedral slype for sandbox pwsh 126 vs System32 powershell (kept, unfeatured)
 projects/tally/             stevedore chalk-stick dock tally for /exit birth-count false-loss (kept, unfeatured)
 projects/carrel/            library reading room for preview_start launch.json session-cwd discovery (kept, unfeatured)
 projects/byline/            newsroom byline desk for phantom hook agent_id (kept, unfeatured)
