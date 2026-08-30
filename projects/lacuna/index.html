@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Lacuna — collation desk for Claude Code #90709: task store silently scraped mid-session; .highwatermark remains; TaskList says No tasks found. A watermark is not a gathering. Idle word is collated."
+    />
+    <title>Lacuna — collation desk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --oak: #5a3a24;
+        --oak-deep: #3a2416;
+        --oak-lit: #7a5340;
+        --vellum: #f4e6c4;
+        --vellum-raw: #efe0b8;
+        --gall: #1c1a14;
+        --lampblack: #0e0d0a;
+        --verdigris: #2f6b58;
+        --verdigris-lit: #4a9a7e;
+        --brass: #c4a046;
+        --brass-deep: #8a6e28;
+        --iron: #3a3830;
+        --dust: #8a7a5c;
+        --ghost: rgba(244, 230, 196, 0.18);
+        --fail: #8a2e2e;
+        --fail-lit: #c45a4a;
+        --display: "EB Garamond", "Palatino Linotype", Palatino, serif;
+        --body: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--gall);
+        background:
+          radial-gradient(ellipse 50% 36% at 18% 8%, rgba(196, 160, 70, 0.18), transparent 58%),
+          radial-gradient(ellipse 70% 50% at 80% 100%, rgba(47, 107, 88, 0.12), transparent 62%),
+          linear-gradient(180deg, #d8c49a 0%, #c4ae82 38%, #8a6e4e 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--verdigris); }
+      .atelier {
+        width: min(1180px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 80px;
+      }
+      .mast {
+        padding: 16px 20px 14px;
+        background: var(--vellum);
+        border: 1px solid var(--oak-deep);
+        box-shadow: 6px 8px 0 var(--oak-deep);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--brass-deep);
+      }
+      h1 {
+        margin: 4px 0 0;
+        font-family: var(--display);
+        font-size: clamp(48px, 9vw, 84px);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        line-height: 0.86;
+        color: var(--gall);
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--dust);
+        margin: 4px 0 0;
+      }
+      .thesis {
+        margin: 10px 0 0;
+        font-family: var(--display);
+        font-size: clamp(18px, 2.6vw, 24px);
+        font-style: italic;
+        color: var(--oak-deep);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        padding: 4px 9px;
+        border: 1px solid var(--oak);
+        background: var(--vellum-raw);
+        color: var(--iron);
+      }
+      .chip.fail { border-color: var(--fail); color: var(--fail); background: rgba(138, 46, 46, 0.08); }
+      .chip.hold { border-color: var(--verdigris); color: var(--verdigris); background: rgba(47, 107, 88, 0.1); }
+      .chip.contrast { border-color: var(--brass-deep); color: var(--brass-deep); }
+      .chip[aria-current="true"] { outline: 2px solid var(--brass-deep); }
+
+      .table {
+        position: relative;
+        margin-top: 16px;
+        min-height: 440px;
+        padding: 22px 18px 28px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #6a442c 0 3px,
+            #5a3a24 3px 14px,
+            #4a2e1c 14px 16px
+          );
+        border: 10px solid var(--oak-deep);
+        box-shadow:
+          inset 0 0 0 2px rgba(196, 160, 70, 0.18),
+          0 18px 0 #2a1810;
+        overflow: hidden;
+      }
+      .table::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 40% 30% at 70% 20%, rgba(244, 230, 196, 0.12), transparent 60%),
+          repeating-linear-gradient(
+            0deg,
+            transparent 0 11px,
+            rgba(14, 13, 10, 0.05) 11px 12px
+          );
+        pointer-events: none;
+      }
+      .bench {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(180px, 22%) 1fr minmax(200px, 26%);
+        gap: 16px;
+        align-items: start;
+        z-index: 1;
+      }
+      @media (max-width: 860px) {
+        .bench { grid-template-columns: 1fr; }
+        .table { min-height: auto; }
+      }
+      .quires {
+        display: grid;
+        gap: 10px;
+      }
+      .quire {
+        position: relative;
+        min-height: 88px;
+        padding: 10px 12px 14px;
+        background: var(--vellum);
+        border: 1px solid #c8b48a;
+        box-shadow: 3px 4px 0 #2a1810, 6px 8px 0 #3a2416;
+        transform: rotate(-1.2deg);
+      }
+      .quire:nth-child(2) { transform: rotate(1.1deg); margin-left: 10px; }
+      .quire:nth-child(3) { transform: rotate(-0.4deg); }
+      .quire.ghost {
+        background: transparent;
+        border: 1px dashed rgba(244, 230, 196, 0.45);
+        box-shadow: none;
+        color: rgba(244, 230, 196, 0.55);
+      }
+      .sig {
+        font-family: var(--display);
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+      .catch {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--dust);
+      }
+      .quire.ghost .catch { color: rgba(244, 230, 196, 0.5); }
+      .leaves {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding-top: 6px;
+      }
+      .leaf {
+        width: 36px;
+        height: 48px;
+        background:
+          linear-gradient(180deg, #f8edd0, #e8d4a4);
+        border: 1px solid #c8b48a;
+        font-family: var(--mono);
+        font-size: 10px;
+        display: grid;
+        place-items: center;
+        color: var(--gall);
+        box-shadow: 1px 2px 0 #2a1810;
+      }
+      .leaf.wanting {
+        background: transparent;
+        border: 1px dashed rgba(244, 230, 196, 0.5);
+        color: rgba(244, 230, 196, 0.55);
+        box-shadow: none;
+      }
+      .rule-col {
+        display: grid;
+        gap: 12px;
+        align-content: start;
+      }
+      .brass {
+        min-height: 72px;
+        padding: 10px 14px 12px;
+        background:
+          linear-gradient(180deg, #e0c46a 0%, #c4a046 48%, #8a6e28 100%);
+        border: 2px solid #5a4414;
+        box-shadow: 0 6px 0 #2a1810, inset 0 1px 0 rgba(255, 236, 180, 0.6);
+        color: #2a1c06;
+        font-family: var(--mono);
+      }
+      .brass.stowed {
+        opacity: 0.28;
+        filter: grayscale(0.4);
+      }
+      .brass .hed {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      .hwm {
+        font-family: var(--display);
+        font-size: clamp(42px, 7vw, 68px);
+        line-height: 0.9;
+        letter-spacing: 0.04em;
+      }
+      .gathering {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+        gap: 6px;
+      }
+      .slip {
+        background: #f7edd0;
+        border: 1px solid #c8b48a;
+        padding: 12px 12px 14px;
+        box-shadow: 4px 6px 0 #2a1810;
+        transform: rotate(1.6deg);
+        min-height: 168px;
+      }
+      .pin {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #eee, #8a6e28 70%);
+        margin: -4px auto 8px;
+        box-shadow: 0 2px 0 #2a1810;
+      }
+      .slip h2 {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .slip-body {
+        font-family: var(--mono);
+        font-size: 12px;
+        min-height: 72px;
+        padding: 8px;
+        border: 1px dashed #b8a078;
+        background: rgba(255, 255, 255, 0.35);
+        line-height: 1.45;
+      }
+      .slip-body.lie {
+        color: var(--fail);
+        font-style: italic;
+        border-color: var(--fail);
+      }
+      .slip-body.true {
+        color: var(--verdigris);
+        border-style: solid;
+        border-color: var(--verdigris);
+      }
+      .times {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--dust);
+        letter-spacing: 0.04em;
+      }
+      .desk {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) {
+        .desk { grid-template-columns: 1fr; }
+      }
+      .panel {
+        background: var(--vellum);
+        border: 1px solid var(--oak-deep);
+        padding: 14px;
+        box-shadow: 4px 5px 0 var(--oak-deep);
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass-deep);
+        margin: 0 0 10px;
+      }
+      .seed-row,
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .seed-row button,
+      .act button {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 7px 9px;
+        border: 1px solid var(--oak);
+        background: #efe0b8;
+        color: var(--gall);
+      }
+      .seed-row button[aria-pressed="true"] {
+        background: var(--gall);
+        color: var(--vellum);
+      }
+      .act .restore {
+        border-color: var(--fail);
+        color: var(--fail);
+      }
+      .act .admit {
+        border-color: var(--verdigris);
+        color: var(--verdigris);
+      }
+      textarea {
+        width: 100%;
+        min-height: 148px;
+        font-family: var(--mono);
+        font-size: 11px;
+        border: 1px solid rgba(90, 58, 36, 0.35);
+        background: #f8f0d8;
+        color: var(--iron);
+        padding: 8px;
+      }
+      label { display: block; font-size: 13px; color: var(--dust); margin: 8px 0 4px; }
+      .verdict-face {
+        font-family: var(--display);
+        font-size: clamp(34px, 5.6vw, 56px);
+        line-height: 0.92;
+        margin: 0 0 8px;
+        letter-spacing: 0.01em;
+      }
+      .verdict-face.fail { color: var(--fail-lit); }
+      .verdict-face.hold { color: var(--verdigris); }
+      .verdict-face.contrast { color: var(--brass-deep); }
+      .feed {
+        font-family: var(--display);
+        font-style: italic;
+        font-size: 18px;
+        margin: 0 0 12px;
+      }
+      .reasons {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--iron);
+        font-size: 14px;
+      }
+      .ledger {
+        margin-top: 14px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--dust);
+        max-height: 160px;
+        overflow: auto;
+        border-top: 1px solid rgba(90, 58, 36, 0.2);
+        padding-top: 8px;
+      }
+      .sinks {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--iron);
+      }
+      footer {
+        margin-top: 20px;
+        color: var(--oak-deep);
+        font-size: 14px;
+        max-width: 48em;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="atelier">
+      <header class="mast">
+        <p class="mark">19:50 Sydney · lacuna</p>
+        <h1>Lacuna</h1>
+        <p class="hours">#90709 · collation desk</p>
+        <p class="thesis">A watermark is not a gathering. Score the desk or admit collated.</p>
+        <div class="chips" id="chips"></div>
+      </header>
+
+      <section class="table" aria-label="Scriptorium collation table">
+        <div class="bench">
+          <div class="quires" id="quires">
+            <article class="quire" data-sig="A">
+              <div class="sig">A</div>
+              <div class="catch">catchword · 1.json</div>
+            </article>
+            <article class="quire" data-sig="B">
+              <div class="sig">B</div>
+              <div class="catch">gathering 11–20</div>
+            </article>
+            <article class="quire" data-sig="C">
+              <div class="sig">C</div>
+              <div class="catch">gathering 21–</div>
+            </article>
+          </div>
+          <div class="rule-col">
+            <div class="brass" id="brass">
+              <div class="hed">type-high watermark rule</div>
+              <div class="hwm" id="hwm">22</div>
+              <div class="hed" id="brass-cap">last issued id · .highwatermark</div>
+            </div>
+            <div class="gathering" id="gathering" aria-label="Leaf tiles"></div>
+          </div>
+          <aside class="slip" id="slip">
+            <div class="pin" aria-hidden="true"></div>
+            <h2>TaskList</h2>
+            <div class="slip-body lie" id="slip-body">No tasks found</div>
+            <div class="times" id="times">
+              01:46:39Z id=22 completed<br />
+              01:46:44Z .highwatermark = 22<br />
+              07:58:34Z No tasks found
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">Score the desk</p>
+          <div class="seed-row" id="seeds"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score</button>
+            <button type="button" class="admit" id="admit-btn">Admit</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90709</button>
+          </div>
+          <label for="probe">Store fingerprint</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Collation note</p>
+          <p class="verdict-face fail" id="verdict">scraped</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <div class="sinks" id="sinks"></div>
+          <div class="ledger" id="ledger" aria-live="polite"></div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90709">anthropics/claude-code#90709</a>.
+        Same-class
+        <a href="https://github.com/anthropics/claude-code/issues/88346">#88346</a>.
+        Contrast, not this:
+        <a href="https://github.com/anthropics/claude-code/issues/84284">#84284</a>
+        (enumeration lie; files still there).
+        Cross-ecosystem
+        <a href="https://github.com/openai/codex/issues/32697">codex#32697</a>.
+        NOT Ambo, Slype, Tally, Pale, Chatelaine, Byline, Cubby, Ullage, Veto, Husk, Quoin.
+        Suggested consumer fix: do not scrape the store mid-session, or make the clear observable — TaskList should not look like never-created.
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "collated";
+      const DEMO_HWM = 22;
+      const DEMO_TASKLIST_EMPTY = "No tasks found";
+      const SLACK_VERDICTS = [
+        "scraped",
+        "gapped",
+        "watermarked",
+        "resumed-past",
+        "vanished",
+        "counterfeit-empty",
+        "skipped",
+        "delayed-wipe",
+      ];
+      const ledger = [];
+
+      function emptyProbe() {
+        return {
+          session: "",
+          issue: null,
+          source: "",
+          files: [],
+          highwatermark: null,
+          taskList: "",
+          nextCreateId: null,
+          deleteEvent: null,
+          wipeDelayMs: null,
+          teammateCompletedHighest: null,
+          addressableById: null,
+          nearby: "",
+          nearbyScraped: false,
+          nearbyGapped: false,
+          nearbyWatermarked: false,
+          nearbyResumedPast: false,
+          nearbyVanished: false,
+          nearbyIntact: false,
+          nearbyCounterfeitEmpty: false,
+          nearbySkipped: false,
+          nearbyDelayedWipe: false,
+        };
+      }
+
+      function asText(value) {
+        return value == null ? "" : String(value);
+      }
+
+      function asNullableNumber(value) {
+        if (value == null || value === "") return null;
+        const n = Number(value);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function asIdList(value) {
+        if (Array.isArray(value)) {
+          return value.map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+        }
+        return [];
+      }
+
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.lacuna && typeof src.lacuna === "object" ? src.lacuna : src;
+        const base = emptyProbe();
+        return {
+          ...base,
+          ...nested,
+          files: asIdList(nested.files),
+          highwatermark: asNullableNumber(nested.highwatermark),
+          taskList: asText(nested.taskList || ""),
+          nextCreateId: asNullableNumber(nested.nextCreateId),
+          nearby: asText(nested.nearby || ""),
+          nearbyScraped: Boolean(nested.nearbyScraped),
+          nearbyGapped: Boolean(nested.nearbyGapped),
+          nearbyWatermarked: Boolean(nested.nearbyWatermarked),
+          nearbyResumedPast: Boolean(nested.nearbyResumedPast),
+          nearbyVanished: Boolean(nested.nearbyVanished),
+          nearbyIntact: Boolean(nested.nearbyIntact),
+          nearbyCounterfeitEmpty: Boolean(nested.nearbyCounterfeitEmpty),
+          nearbySkipped: Boolean(nested.nearbySkipped),
+          nearbyDelayedWipe: Boolean(nested.nearbyDelayedWipe),
+        };
+      }
+
+      function isOffLacuna(row) {
+        const nearby = asText(row.nearby).toLowerCase();
+        return nearby === "84284" || nearby === "32697" || nearby === "codex" || nearby === "compact";
+      }
+
+      function isIdle(row) {
+        return !(
+          row.files.length ||
+          row.highwatermark != null ||
+          row.taskList ||
+          row.nextCreateId != null ||
+          row.deleteEvent != null ||
+          row.wipeDelayMs != null ||
+          row.nearbyScraped ||
+          row.nearbyGapped ||
+          row.nearbyWatermarked ||
+          row.nearbyResumedPast ||
+          row.nearbyVanished ||
+          row.nearbyIntact ||
+          row.nearbyCounterfeitEmpty ||
+          row.nearbySkipped ||
+          row.nearbyDelayedWipe ||
+          isOffLacuna(row)
+        );
+      }
+
+      function classify(input) {
+        const row = cloneProbe(input);
+        if (isIdle(row)) return "collated";
+        const uniqueNearby = Boolean(
+          row.nearbyScraped ||
+            row.nearbyGapped ||
+            row.nearbyWatermarked ||
+            row.nearbyResumedPast ||
+            row.nearbyVanished ||
+            row.nearbyIntact ||
+            row.nearbyCounterfeitEmpty ||
+            row.nearbySkipped ||
+            row.nearbyDelayedWipe ||
+            isOffLacuna(row),
+        );
+        const emptyFiles = row.files.length === 0;
+        const hasHwm = row.highwatermark != null;
+        const listEmpty = /no tasks found/i.test(row.taskList);
+        const triad = emptyFiles && hasHwm && listEmpty && row.deleteEvent !== true && !uniqueNearby;
+        if (!triad) {
+          if (row.nearbyScraped) return "scraped";
+          if (row.nearbyGapped) return "gapped";
+          if (row.nearbyWatermarked) return "watermarked";
+          if (row.nearbyResumedPast) return "resumed-past";
+          if (row.nearbyVanished) return "vanished";
+          if (row.nearbyCounterfeitEmpty) return "counterfeit-empty";
+          if (row.nearbySkipped) return "skipped";
+          if (row.nearbyDelayedWipe) return "delayed-wipe";
+          if (row.nearbyIntact) return "intact";
+          if (isOffLacuna(row)) {
+            const n = asText(row.nearby).toLowerCase();
+            if (n === "84284" || n === "compact") return "counterfeit-empty";
+            return "vanished";
+          }
+        }
+        if (triad) return "scraped";
+        const lowest = row.files.length ? row.files[0] : null;
+        if (hasHwm && row.files.length && lowest === row.highwatermark + 1) return "gapped";
+        if (hasHwm && emptyFiles && !listEmpty) return "watermarked";
+        if (hasHwm && row.nextCreateId === row.highwatermark + 1 && (emptyFiles || lowest >= row.nextCreateId)) {
+          return "resumed-past";
+        }
+        if (row.deleteEvent === false && emptyFiles) return "vanished";
+        if (listEmpty && row.addressableById === true) return "counterfeit-empty";
+        if (listEmpty && hasHwm) return "counterfeit-empty";
+        if (row.files.some((id, i) => i > 0 && id !== row.files[i - 1] + 1)) return "skipped";
+        if (row.wipeDelayMs != null && row.wipeDelayMs >= 4800 && row.wipeDelayMs <= 5400 && row.teammateCompletedHighest === true) {
+          return "delayed-wipe";
+        }
+        if (row.files.includes(1) && !hasHwm && !/present/i.test(row.taskList)) return "intact";
+        return "collated";
+      }
+
+      function feedOf(kind) {
+        if (kind === "scraped") return "● Scraped · every <id>.json unlinked · .highwatermark written · TaskList \"No tasks found\" · primary #90709";
+        if (kind === "gapped") return "● Gapped · surviving ids start at highwatermark+1 · 7/7 truncated dirs match · the catchword points past the lacuna";
+        if (kind === "watermarked") return "● Watermarked · .highwatermark present · intact sessions lack the counter file · fingerprint of the wipe";
+        if (kind === "resumed-past") return "● Resumed-past · TaskCreate allocates from .highwatermark + 1 · new ids resume after the vanished range";
+        if (kind === "vanished") return "● Vanished · prior phases gone with no delete event · no error is emitted";
+        if (kind === "counterfeit-empty") return "● Counterfeit-empty · TaskList \"No tasks found\" after a wipe · indistinguishable from never-created";
+        if (kind === "skipped") return "● Skipped · ids jump the lacuna · the gathering is no longer consecutive";
+        if (kind === "delayed-wipe") return "● Delayed-wipe · ~5.1s after a teammate completes the highest id · #88346 corroboration";
+        if (kind === "intact") return "● Intact · 1.json present · no .highwatermark · labeled control, not the idle admit";
+        return "● Collated · store complete · TaskList truthful · no orphan .highwatermark · idle word is collated";
+      }
+
+      function reasonsOf(row, kind) {
+        const reasons = ["verdict " + kind];
+        if (kind === "scraped") reasons.push("#90709 Task store silently cleared mid-session; new ids resume past the gap");
+        if (row.files.length) reasons.push("surviving ids " + row.files.join(","));
+        else reasons.push("no <id>.json leaves on the desk");
+        if (row.highwatermark != null) reasons.push(".highwatermark " + row.highwatermark);
+        else reasons.push("no .highwatermark (intact sessions lack the counter)");
+        if (row.taskList) reasons.push("TaskList " + row.taskList);
+        if (row.nextCreateId != null) reasons.push("TaskCreate would issue " + row.nextCreateId);
+        if (kind === "collated") reasons.push("store complete and TaskList truthful, or the idle desk; idle word is collated");
+        if (isOffLacuna(row)) reasons.push("labeled contrast, not this defect: #84284 compact enumeration lie or Codex index-loss");
+        return reasons;
+      }
+
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        const off = isOffLacuna(row);
+        const alarm = SLACK_VERDICTS.includes(kind) && !off;
+        return {
+          verdict: kind,
+          state: kind,
+          idleWord: IDLE_WORD,
+          collated: kind === "collated",
+          alarm,
+          slack: alarm,
+          linear: alarm,
+          github: true,
+          offLacuna: off,
+          facts: {
+            files: row.files,
+            highwatermark: row.highwatermark,
+            taskList: row.taskList,
+            nextCreateId: row.nextCreateId,
+          },
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          probe: row,
+        };
+      }
+
+      const SEEDS = {
+        scraped: () => ({
+          session: "90709-scraped",
+          issue: 90709,
+          source: "primary #90709 files unlinked, .highwatermark written, TaskList No tasks found",
+          files: [],
+          highwatermark: 22,
+          taskList: DEMO_TASKLIST_EMPTY,
+          nextCreateId: 23,
+          deleteEvent: false,
+        }),
+        gapped: () => ({
+          session: "90709-gapped",
+          issue: 90709,
+          files: [23, 24, 25, 26, 27, 28, 29, 30, 31],
+          highwatermark: 22,
+          taskList: DEMO_TASKLIST_EMPTY,
+          nextCreateId: 32,
+          deleteEvent: false,
+          nearbyGapped: true,
+        }),
+        watermarked: () => ({
+          session: "90709-watermarked",
+          issue: 90709,
+          files: [],
+          highwatermark: 22,
+          taskList: "",
+          nextCreateId: 23,
+          nearbyWatermarked: true,
+        }),
+        "resumed-past": () => ({
+          session: "90709-resumed-past",
+          issue: 90709,
+          files: [],
+          highwatermark: 22,
+          taskList: DEMO_TASKLIST_EMPTY,
+          nextCreateId: 23,
+          nearbyResumedPast: true,
+        }),
+        vanished: () => ({
+          session: "90709-vanished",
+          issue: 90709,
+          files: [],
+          highwatermark: 22,
+          taskList: DEMO_TASKLIST_EMPTY,
+          nextCreateId: 23,
+          deleteEvent: false,
+          nearbyVanished: true,
+        }),
+        "counterfeit-empty": () => ({
+          session: "90709-counterfeit-empty",
+          issue: 90709,
+          files: [],
+          highwatermark: 22,
+          taskList: DEMO_TASKLIST_EMPTY,
+          nearbyCounterfeitEmpty: true,
+        }),
+        skipped: () => ({
+          session: "90709-skipped",
+          issue: 90709,
+          files: [23, 24, 31],
+          highwatermark: 22,
+          taskList: DEMO_TASKLIST_EMPTY,
+          nearbySkipped: true,
+        }),
+        "delayed-wipe": () => ({
+          session: "88346-delayed-wipe",
+          issue: 88346,
+          files: [],
+          highwatermark: 12,
+          taskList: DEMO_TASKLIST_EMPTY,
+          wipeDelayMs: 5100,
+          teammateCompletedHighest: true,
+          nearbyDelayedWipe: true,
+        }),
+        contrast: () => ({
+          session: "contrast-84284",
+          issue: 84284,
+          source: "NOT this: #84284 TaskList empty after /compact; files still addressable",
+          nearby: "84284",
+          files: [1, 2, 3],
+          highwatermark: null,
+          taskList: DEMO_TASKLIST_EMPTY,
+          addressableById: true,
+        }),
+        intact: () => ({
+          session: "90709-intact",
+          issue: 90709,
+          files: [1, 2, 3],
+          highwatermark: null,
+          taskList: "",
+          nearbyIntact: true,
+        }),
+        collated: () => ({
+          session: "collated-hold",
+          issue: 90709,
+          source: "honest control: store complete, TaskList truthful, no orphan .highwatermark",
+          files: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          highwatermark: null,
+          taskList: "1..10 present",
+          nextCreateId: 11,
+          deleteEvent: false,
+        }),
+      };
+
+      const seedOrder = [
+        ["scraped", "scraped"],
+        ["gapped", "gapped"],
+        ["watermarked", "watermarked"],
+        ["resumed-past", "resumed-past"],
+        ["vanished", "vanished"],
+        ["counterfeit-empty", "counterfeit-empty"],
+        ["skipped", "skipped"],
+        ["delayed-wipe", "delayed-wipe"],
+        ["contrast", "contrast #84284"],
+        ["intact", "intact"],
+        ["collated", "honest collated"],
+      ];
+
+      const probeEl = document.getElementById("probe");
+      const seedsEl = document.getElementById("seeds");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const sinksEl = document.getElementById("sinks");
+      const ledgerEl = document.getElementById("ledger");
+      const chipsEl = document.getElementById("chips");
+      const brassEl = document.getElementById("brass");
+      const hwmEl = document.getElementById("hwm");
+      const brassCapEl = document.getElementById("brass-cap");
+      const slipBodyEl = document.getElementById("slip-body");
+      const timesEl = document.getElementById("times");
+      const gatheringEl = document.getElementById("gathering");
+      const quiresEl = document.getElementById("quires");
+
+      function writeProbe(probe) {
+        probeEl.value = JSON.stringify(probe, null, 2);
+      }
+
+      function readProbe() {
+        try {
+          return cloneProbe(JSON.parse(probeEl.value || "{}"));
+        } catch {
+          return cloneProbe(SEEDS.scraped());
+        }
+      }
+
+      function paintDesk(result) {
+        const kind = result.verdict;
+        const facts = result.facts || {};
+        const hold = kind === "collated";
+        const intact = kind === "intact";
+        const contrast = result.offLacuna;
+        const files = facts.files || [];
+        const hwm = facts.highwatermark;
+        brassEl.className = "brass" + (hwm == null ? " stowed" : "");
+        hwmEl.textContent = hwm == null ? "—" : String(hwm);
+        brassCapEl.textContent = hwm == null
+          ? "no counter file · intact sessions lack it"
+          : "last issued id · .highwatermark";
+        const lie = /no tasks found/i.test(facts.taskList || "");
+        slipBodyEl.className = "slip-body" + (hold ? " true" : lie ? " lie" : "");
+        slipBodyEl.textContent = facts.taskList || (hold ? "1..10 present" : DEMO_TASKLIST_EMPTY);
+        timesEl.innerHTML = kind === "delayed-wipe"
+          ? "teammate completes highest id<br />+5.1s · files unlinked · #88346"
+          : contrast
+            ? "after /compact · files still addressable<br />enumeration lie · not a scrape"
+            : "01:46:39Z id=22 completed<br />01:46:44Z .highwatermark = 22<br />07:58:34Z No tasks found";
+        const tiles = [];
+        if (hold || intact) {
+          const n = files.length || 10;
+          for (let i = 1; i <= n; i += 1) tiles.push([i, false]);
+        } else if (files.length) {
+          for (let i = 1; i < files[0]; i += 1) tiles.push([i, true]);
+          files.forEach((id) => tiles.push([id, false]));
+        } else {
+          for (let i = 1; i <= 10; i += 1) tiles.push([i, true]);
+        }
+        gatheringEl.innerHTML = tiles.slice(0, 16).map(([id, wanting]) =>
+          `<span class="leaf${wanting ? " wanting" : ""}">${id}</span>`
+        ).join("");
+        const ghostAll = !hold && !intact && !contrast && files.length === 0;
+        const ghostEarly = kind === "gapped" || kind === "skipped";
+        quiresEl.querySelectorAll(".quire").forEach((node, index) => {
+          const ghost = ghostAll || (ghostEarly && index < 2) || (contrast ? false : false);
+          node.classList.toggle("ghost", ghost);
+        });
+        if (contrast) {
+          quiresEl.querySelectorAll(".quire").forEach((node) => node.classList.remove("ghost"));
+        }
+      }
+
+      function render(result) {
+        const fail = result.alarm;
+        const hold = result.collated;
+        verdictEl.textContent = result.verdict;
+        verdictEl.className = "verdict-face " + (hold ? "hold" : result.offLacuna || result.verdict === "intact" ? "contrast" : "fail");
+        feedEl.textContent = result.feed;
+        reasonsEl.innerHTML = result.reasons.map((row) => `<li>${row}</li>`).join("");
+        const slackLine = result.slack
+          ? "Would post to Slack: " + (result.verdict === "scraped"
+            ? "Lacuna scraped · ~/.claude/tasks/<session-id>/ · hwm 22 · TaskList empty · #90709"
+            : "Lacuna " + result.verdict)
+          : "Would skip Slack. Lacuna is " + result.verdict + ".";
+        const linearLine = result.linear
+          ? "Would open a Linear ticket: lacuna " + result.verdict
+          : "Would skip Linear. Verdict " + result.verdict + " is not a lacuna-desk alarm.";
+        sinksEl.innerHTML = [
+          slackLine,
+          "Would append a GitHub lacuna-ledger row. Demo: no token.",
+          linearLine,
+          "collated=" + String(result.collated) + " · idleWord=" + result.idleWord,
+        ].map((line) => `<div>${line}</div>`).join("");
+        ledger.unshift({ at: new Date().toISOString(), verdict: result.verdict, collated: result.collated });
+        ledgerEl.innerHTML = ledger.slice(0, 8).map((row) =>
+          `${row.at} · ${row.verdict} · collated=${row.collated}`
+        ).join("<br>");
+        const chipKind = fail ? "fail" : hold ? "hold" : "contrast";
+        chipsEl.innerHTML = [
+          ["#90709", fail ? "fail" : hold ? "hold" : "contrast"],
+          [result.verdict, chipKind],
+          [hold ? "gathering complete" : "leaves wanting", hold ? "hold" : "fail"],
+          ["idle " + IDLE_WORD, "hold"],
+        ].map(([label, klass]) => {
+          const current = klass === "fail" && label === result.verdict;
+          return `<span class="chip ${klass}"${current ? ' aria-current="true"' : ""}>${label}</span>`;
+        }).join("");
+        paintDesk(result);
+        document.querySelectorAll("#seeds button").forEach((btn) => {
+          btn.setAttribute(
+            "aria-pressed",
+            String(
+              btn.dataset.seed === result.verdict ||
+                (result.collated && btn.dataset.seed === "collated") ||
+                (result.offLacuna && btn.dataset.seed === "contrast"),
+            ),
+          );
+        });
+      }
+
+      function applySeed(name) {
+        const probe = SEEDS[name]();
+        writeProbe(probe);
+        render(score(probe));
+      }
+
+      seedOrder.forEach(([key, label]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.seed = key;
+        btn.textContent = label;
+        btn.addEventListener("click", () => applySeed(key));
+        seedsEl.appendChild(btn);
+      });
+
+      document.getElementById("score-btn").addEventListener("click", () => {
+        render(score(readProbe()));
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        applySeed("collated");
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        applySeed("scraped");
+      });
+
+      applySeed("scraped");
+    </script>
+  </body>
+</html>
