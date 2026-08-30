@@ -537,15 +537,18 @@ test("29 assertScoreShape on every family verdict", () => {
   assert.ok(SLACK_VERDICTS.includes("nested"));
 });
 
-test("30 catalog indexes Chatelaine featured, 63 products, Waif unfeatured", () => {
+test("30 catalog indexes Pale featured, 64 products, Chatelaine unfeatured", () => {
   const catalog = JSON.parse(
     readFileSync(fileURLToPath(new URL("../../../catalog.json", import.meta.url)), "utf8"),
   );
-  assert.equal(catalog.products.length, 63);
-  assert.equal(catalog.products[0].slug, "chatelaine");
+  assert.equal(catalog.products.length, 64);
+  assert.equal(catalog.products[0].slug, "pale");
   assert.equal(catalog.products[0].featured, true);
+  const chatelaine = catalog.products.find((row) => row.slug === "chatelaine");
+  assert.ok(chatelaine);
+  assert.equal(chatelaine.featured, false);
   assert.equal(
-    catalog.products[0].summary,
+    chatelaine.summary,
     "14:50 chatelaine: a nested ring is not a hold. Score the chain or admit girt.",
   );
   const waif = catalog.products.find((row) => row.slug === "waif");
