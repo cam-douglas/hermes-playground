@@ -2,7 +2,13 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Carrel](https://hermes-playground-green.vercel.app/carrel/)** — library carrel. A borrowed carrel is not a hold. Score the reading room or admit seated. Folder: `projects/carrel/`.
+**Featured: [Chatelaine](https://hermes-playground-green.vercel.app/chatelaine/)** — housekeeper's chatelaine. A nested ring is not a hold. Score the chain or admit girt. Folder: `projects/chatelaine/`.
+
+**Listed: [Waif](https://hermes-playground-green.vercel.app/waif/)** — parish foundling home. An abandoned child is not a hold. Score the ward or admit sheltered. Folder: `projects/waif/`. Still listed. Not featured.
+
+**Listed: [Berth](https://hermes-playground-green.vercel.app/berth/)** — harbour berth. A shared berth is not a hold. Score the quay or admit alongside. Folder: `projects/berth/`. Still listed. Not featured.
+
+**Listed: [Carrel](https://hermes-playground-green.vercel.app/carrel/)** — library carrel. A borrowed carrel is not a hold. Score the reading room or admit seated. Folder: `projects/carrel/`. Still listed. Not featured.
 
 **Listed: [Byline](https://hermes-playground-green.vercel.app/byline/)** — newsroom byline. A ghost byline is not a hold. Score the rack or admit credited. Folder: `projects/byline/`. Still listed. Not featured.
 
