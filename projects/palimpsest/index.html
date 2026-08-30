@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Palimpsest — scriptorium parchment desk for Claude Code #90725: PreToolUse updatedInput whole-replaces the tool input and silently drops timeout / run_in_background. A scraped page is not a holding. Idle word is underwrit."
+    />
+    <title>Palimpsest — scriptorium desk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --vellum: #f4e6c8;
+        --page: #efe0b8;
+        --desk: #3a2a1c;
+        --gall: #1c1611;
+        --ink: #2a2118;
+        --oxblood: #6b1d22;
+        --oxblood-hot: #9a2e2c;
+        --amber: #c9892b;
+        --candle: #e8b44a;
+        --ghost: #8a7a5e;
+        --hold: #3d5a3a;
+        --hold-lit: #5a7a4a;
+        --rule: rgba(42, 33, 24, 0.14);
+        --display: "Cormorant Garamond", "Palatino Linotype", Palatino, serif;
+        --body: "Source Serif 4", "Source Serif Pro", Georgia, serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 28% 22% at 88% 6%, rgba(232, 180, 74, 0.22), transparent 58%),
+          radial-gradient(ellipse 36% 28% at 8% 92%, rgba(107, 29, 34, 0.12), transparent 62%),
+          repeating-linear-gradient(
+            0deg,
+            rgba(42, 33, 24, 0.035) 0 1px,
+            transparent 1px 28px
+          ),
+          linear-gradient(180deg, #2a1e14 0%, var(--desk) 28%, #241810 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--oxblood); }
+      .scriptorium {
+        width: min(1180px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 80px;
+      }
+      .mast {
+        padding: 18px 22px 16px;
+        background:
+          linear-gradient(180deg, #f7ead0 0%, var(--page) 48%, #e4d2a8 100%);
+        border: 1px solid #c8b48a;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 248, 230, 0.8),
+          0 12px 0 #1a120c;
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--oxblood);
+      }
+      h1 {
+        margin: 4px 0 0;
+        font-family: var(--display);
+        font-size: clamp(52px, 9vw, 88px);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 0.84;
+        color: var(--gall);
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 8px 0 0;
+        color: var(--ghost);
+      }
+      .thesis {
+        margin: 10px 0 0;
+        font-family: var(--display);
+        font-size: clamp(18px, 2.4vw, 24px);
+        font-style: italic;
+        max-width: 36em;
+        color: var(--ink);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        padding: 4px 9px;
+        border: 1px solid #c8b48a;
+        background: rgba(255, 248, 230, 0.55);
+        color: var(--ghost);
+      }
+      .chip.fail { border-color: var(--oxblood); color: var(--oxblood-hot); background: rgba(107, 29, 34, 0.08); }
+      .chip.hold { border-color: var(--hold); color: var(--hold-lit); background: rgba(61, 90, 58, 0.1); }
+      .chip.contrast { border-color: var(--amber); color: var(--amber); }
+      .chip[aria-current="true"] { outline: 2px solid var(--candle); }
+
+      .folio-stage {
+        margin-top: 16px;
+        padding: 18px 16px 20px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #2a1e14 0 14px,
+            #221810 14px 15px
+          );
+        border: 10px solid #1a120c;
+        box-shadow: 0 16px 0 #100c08;
+      }
+      .work {
+        display: grid;
+        grid-template-columns: minmax(200px, 22%) 1fr minmax(210px, 24%);
+        gap: 16px;
+        align-items: stretch;
+      }
+      @media (max-width: 860px) {
+        .work { grid-template-columns: 1fr; }
+      }
+      .quills {
+        display: grid;
+        gap: 8px;
+        align-content: start;
+      }
+      .quill {
+        padding: 8px 10px;
+        background: #f3e4c0;
+        border: 1px solid #c8b48a;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--ink);
+      }
+      .quill.on { border-color: var(--hold); color: var(--hold); }
+      .quill.miss { border-color: var(--oxblood); color: var(--oxblood-hot); }
+      .quill .k {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ghost);
+      }
+      .folio-wrap {
+        display: grid;
+        place-items: center;
+        min-height: 340px;
+      }
+      .folio {
+        position: relative;
+        width: min(420px, 100%);
+        min-height: 320px;
+        padding: 28px 26px 24px;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            transparent 0 27px,
+            var(--rule) 27px 28px
+          ),
+          linear-gradient(180deg, #f8ecd4, var(--page));
+        box-shadow:
+          8px 0 0 #d8c49a,
+          16px 0 0 #c8b48a,
+          0 18px 0 #1a120c;
+        transform: rotate(-0.6deg);
+      }
+      .folio.scraped {
+        background:
+          repeating-linear-gradient(
+            180deg,
+            transparent 0 27px,
+            rgba(107, 29, 34, 0.08) 27px 28px
+          ),
+          linear-gradient(180deg, #f2d8b0, #e8c898);
+      }
+      .folio.hold {
+        box-shadow:
+          8px 0 0 #c5d0b8,
+          16px 0 0 #a8b89a,
+          0 18px 0 #1a120c;
+      }
+      .undertext, .overtext {
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+      }
+      .undertext {
+        color: var(--ghost);
+        opacity: 0.72;
+        text-decoration: line-through;
+        text-decoration-color: rgba(107, 29, 34, 0.35);
+      }
+      .folio.hold .undertext {
+        opacity: 1;
+        text-decoration: none;
+        color: var(--hold);
+      }
+      .overtext {
+        margin-top: 14px;
+        color: var(--gall);
+        font-weight: 500;
+      }
+      .folio.scraped .overtext { color: var(--oxblood); }
+      .stylus {
+        position: absolute;
+        right: -18px;
+        bottom: 36px;
+        width: 10px;
+        height: 92px;
+        background: linear-gradient(180deg, #c9892b, #6b1d22 70%, #1c1611);
+        transform: rotate(18deg);
+        box-shadow: 2px 2px 0 #1a120c;
+      }
+      .candle {
+        position: relative;
+        padding: 12px 12px 14px;
+        background: #1c1611;
+        color: var(--vellum);
+        border: 1px solid #4a3828;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+      .candle .hed {
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--candle);
+        margin-bottom: 8px;
+      }
+      .wick {
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+        background: var(--candle);
+        box-shadow: 0 0 14px var(--amber);
+        margin-bottom: 10px;
+      }
+      .candle.snuffed .wick {
+        background: #4a3828;
+        box-shadow: none;
+      }
+      .wax {
+        height: 72px;
+        background: linear-gradient(180deg, var(--candle), #8a5a18);
+        clip-path: polygon(28% 0, 72% 0, 86% 100%, 14% 100%);
+        margin: 0 auto 10px;
+        width: 48px;
+      }
+      .candle.snuffed .wax {
+        height: 28px;
+        background: linear-gradient(180deg, #6a4a20, #3a2814);
+      }
+      .lies {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px dashed #4a3828;
+        color: #e8c8b0;
+      }
+      .desk {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+      .panel {
+        padding: 16px 16px 18px;
+        background: var(--vellum);
+        border: 1px solid #c8b48a;
+        box-shadow: 0 8px 0 #1a120c;
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--oxblood);
+        margin: 0 0 10px;
+      }
+      .scraps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .scrap {
+        min-width: 92px;
+        padding: 10px 8px 8px;
+        background: #f8ecd4;
+        color: var(--gall);
+        border: 1px solid #c8b48a;
+        box-shadow: 2px 2px 0 #1a120c;
+        font-family: var(--display);
+        font-size: 18px;
+        letter-spacing: 0.02em;
+        text-align: center;
+      }
+      .scrap small {
+        display: block;
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ghost);
+      }
+      .scrap[aria-pressed="true"] { outline: 2px solid var(--candle); }
+      .scrap.filed {
+        background: #e8d8a8;
+        border-color: var(--amber);
+      }
+      .stamps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .stamp {
+        padding: 8px 10px;
+        background: var(--oxblood);
+        border: 0;
+        font-family: var(--display);
+        font-size: 18px;
+        letter-spacing: 0.04em;
+        color: #f8ecd4;
+      }
+      .stamp:hover { background: var(--oxblood-hot); }
+      .stamp.wrong { background: #3a2a1c; color: var(--candle); }
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .act button {
+        padding: 8px 12px;
+        background: var(--gall);
+        color: var(--vellum);
+        border: 0;
+        font-family: var(--display);
+        font-size: 20px;
+        letter-spacing: 0.04em;
+      }
+      .act button.admit { background: var(--hold); }
+      .act button.restore { background: var(--oxblood); color: #fff8f2; }
+      label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ghost);
+        margin: 8px 0 6px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        resize: vertical;
+        background: #f8ecd4;
+        color: var(--ink);
+        border: 1px solid #c8b48a;
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 10px;
+      }
+      .verdict-face {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(40px, 6.5vw, 68px);
+        letter-spacing: -0.02em;
+        line-height: 0.88;
+        color: var(--oxblood);
+      }
+      .verdict-face.fail { color: var(--oxblood-hot); }
+      .verdict-face.hold { color: var(--hold); }
+      .verdict-face.contrast { color: var(--amber); }
+      .feed { color: var(--ink); line-height: 1.45; }
+      .reasons {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        color: var(--ghost);
+        font-size: 14px;
+      }
+      .ledger {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--ghost);
+        line-height: 1.55;
+      }
+      .path {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--ghost);
+      }
+      .path strong { color: var(--oxblood); }
+      footer {
+        margin-top: 20px;
+        color: #c8b48a;
+        font-size: 14px;
+        max-width: 54em;
+        line-height: 1.5;
+      }
+      footer a { color: var(--candle); }
+      footer code { font-family: var(--mono); font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <main class="scriptorium">
+      <header class="mast">
+        <p class="mark">20:50 Sydney · palimpsest</p>
+        <h1>Palimpsest</h1>
+        <p class="hours">#90725 · scriptorium / parchment scraper's desk</p>
+        <p class="thesis">A scraped page is not a holding. Score the undertext or admit underwrit.</p>
+      </header>
+      <div class="chips" id="chips"></div>
+
+      <section class="folio-stage" aria-label="Scriptorium folio">
+        <div class="work">
+          <div class="quills" id="quills">
+            <div class="quill miss"><span class="k">overtext</span>command-only rewrite</div>
+            <div class="quill miss"><span class="k">undertext</span>timeout 600000 scraped</div>
+            <div class="quill miss"><span class="k">sibling</span>run_in_background gone</div>
+            <div class="quill miss"><span class="k">runtime</span>2m default · exit 143</div>
+          </div>
+          <div class="folio-wrap">
+            <div class="folio scraped" id="folio" aria-label="Scraped folio">
+              <div class="undertext" id="undertext">timeout: 600000
+run_in_background: false
+description: long parchment scrape</div>
+              <div class="overtext" id="overtext">command: sleep 600 && echo scraped</div>
+              <span class="stylus" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div>
+            <div class="candle snuffed" id="candle">
+              <div class="hed">timeout candle</div>
+              <div class="wick" aria-hidden="true"></div>
+              <div class="wax" aria-hidden="true"></div>
+              <div id="candle-body">snuffed at 2m default
+model asked 10m
+exit 143</div>
+              <div class="lies" id="lies">transcript-lies · tool_use still shows timeout: 600000</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">File the scraps</p>
+          <div class="scraps" id="scraps"></div>
+          <p class="hed" style="margin-top:14px">Stamp the class</p>
+          <p class="path">Wrong stamp binds the quill. Correct stamps file the scrap. The idle word unlocks only on the honest folio.</p>
+          <div class="stamps" id="stamps"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score</button>
+            <button type="button" class="admit" id="admit-btn">Admit underwrit</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90725</button>
+          </div>
+          <label for="probe">Probe transcript</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Folio note</p>
+          <p class="verdict-face fail" id="verdict">scraped</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <p class="path" id="path"></p>
+          <div class="ledger" id="ledger" aria-live="polite"></div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90725">anthropics/claude-code#90725</a>.
+        Same-class
+        <a href="https://github.com/anthropics/claude-code/issues/90726">#90726</a>
+        post-rewrite auto-background cliff.
+        Nearby:
+        <a href="https://github.com/anthropics/claude-code/issues/77851">#77851</a>
+        PostToolUse cannot recover original tool_input,
+        <a href="https://github.com/anthropics/claude-code/issues/83353">#83353</a>
+        multi-hook race,
+        <a href="https://github.com/anthropics/claude-code/issues/79321">#79321</a>
+        updatedInput ignored for Bash (opposite pole).
+        Cross-ecosystem:
+        <a href="https://github.com/openai/codex/issues/35713">codex#35713</a>,
+        <a href="https://github.com/openai/codex/issues/33986">codex#33986</a>.
+        NOT Spile #90585, Tappet #90296, Ambo #90685, Quoin #90630, Gaff #90616, Escutcheon #90717, Lacuna #90709.
+        Suggested consumer fix: treat <code>updatedInput</code> as merge-over-original unless the hook explicitly nulls a field; warn on partial <code>{command}</code> writes.
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "underwrit";
+      const DEFAULT_TIMEOUT_MS = 120000;
+      const MODEL_TIMEOUT_MS = 600000;
+      const SIGTERM_EXIT = 143;
+      const DEMO_COMMAND = "sleep 600";
+      const DEMO_REWRITTEN = "sleep 600 && echo scraped";
+      const DEMO_MERGED = "sleep 600 && echo underwrit";
+      const DEMO_PIPESTATUS = 'sleep 600 | tee /tmp/folio.log; exit "${PIPESTATUS[0]}"';
+      const DEMO_DESCRIPTION = "long parchment scrape";
+      const ALARM = ["scraped","sibling-lost","timeout-killed","bg-dropped","partial-write","transcript-lies","post-rewrite-cliff"];
+      const FAIL_PATH = ALARM.slice();
+      const ledger = [];
+      const filed = new Set();
+
+      function modelInput(extra) {
+        return {
+          command: DEMO_COMMAND,
+          timeout: MODEL_TIMEOUT_MS,
+          run_in_background: false,
+          description: DEMO_DESCRIPTION,
+          ...(extra || {}),
+        };
+      }
+      function emptyProbe() {
+        return {
+          session: "", issue: null, source: "",
+          originalInput: {}, updatedInput: {},
+          observedTimeoutMs: null, exitCode: null,
+          autoBackgrounded: null, transcriptShowsTimeout: null,
+          canAutoBackgroundPostRewrite: null, hookAuthoredKeys: [],
+          nearby: "",
+          nearbyScraped: false, nearbySiblingLost: false, nearbyTimeoutKilled: false,
+          nearbyBgDropped: false, nearbyPartialWrite: false, nearbyTranscriptLies: false,
+          nearbyPostRewriteCliff: false, nearbyMergedKeeps: false,
+        };
+      }
+      function asText(v) { return v == null ? "" : String(v); }
+      function asNBool(v) {
+        if (v === true || v === false) return v;
+        return null;
+      }
+      function asNNum(v) {
+        if (v == null || v === "") return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function asObj(v) {
+        if (v && typeof v === "object" && !Array.isArray(v)) return v;
+        return {};
+      }
+      function keysOf(v) { return Object.keys(asObj(v)); }
+
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.palimpsest && typeof src.palimpsest === "object" ? src.palimpsest : src;
+        return {
+          ...emptyProbe(), ...nested,
+          originalInput: asObj(nested.originalInput || src.originalInput),
+          updatedInput: asObj(nested.updatedInput || src.updatedInput),
+          observedTimeoutMs: asNNum(nested.observedTimeoutMs),
+          exitCode: asNNum(nested.exitCode),
+          autoBackgrounded: asNBool(nested.autoBackgrounded),
+          transcriptShowsTimeout: asNBool(nested.transcriptShowsTimeout),
+          canAutoBackgroundPostRewrite: asNBool(nested.canAutoBackgroundPostRewrite),
+          hookAuthoredKeys: Array.isArray(nested.hookAuthoredKeys) ? nested.hookAuthoredKeys : [],
+          nearby: asText(nested.nearby || ""),
+          nearbyScraped: Boolean(nested.nearbyScraped),
+          nearbySiblingLost: Boolean(nested.nearbySiblingLost),
+          nearbyTimeoutKilled: Boolean(nested.nearbyTimeoutKilled),
+          nearbyBgDropped: Boolean(nested.nearbyBgDropped),
+          nearbyPartialWrite: Boolean(nested.nearbyPartialWrite),
+          nearbyTranscriptLies: Boolean(nested.nearbyTranscriptLies),
+          nearbyPostRewriteCliff: Boolean(nested.nearbyPostRewriteCliff),
+          nearbyMergedKeeps: Boolean(nested.nearbyMergedKeeps),
+        };
+      }
+
+      function siblingsOf(input) {
+        const obj = asObj(input);
+        return {
+          command: obj.command == null ? null : asText(obj.command),
+          timeout: asNNum(obj.timeout),
+          run_in_background: asNBool(obj.run_in_background),
+          description: obj.description == null ? null : asText(obj.description),
+        };
+      }
+      function isCommandOnly(updated) {
+        const keys = keysOf(updated);
+        return keys.length > 0 && keys.every((k) => k === "command");
+      }
+      function lostOf(original, updated) {
+        const orig = siblingsOf(original);
+        const next = siblingsOf(updated);
+        const lost = [];
+        if (orig.timeout != null && next.timeout == null) lost.push("timeout");
+        if (orig.run_in_background != null && next.run_in_background == null) lost.push("run_in_background");
+        if (orig.description != null && next.description == null) lost.push("description");
+        return lost;
+      }
+      function uniqueNearby(row) {
+        return Boolean(row.nearbyScraped || row.nearbySiblingLost || row.nearbyTimeoutKilled ||
+          row.nearbyBgDropped || row.nearbyPartialWrite || row.nearbyTranscriptLies ||
+          row.nearbyPostRewriteCliff || row.nearbyMergedKeeps);
+      }
+
+      function analyze(input) {
+        const row = cloneProbe(input);
+        const original = siblingsOf(row.originalInput);
+        const updated = siblingsOf(row.updatedInput);
+        const lost = lostOf(row.originalInput, row.updatedInput);
+        const commandOnly = isCommandOnly(row.updatedInput);
+        const authored = row.hookAuthoredKeys.length ? row.hookAuthoredKeys : keysOf(row.updatedInput);
+        const partialWrite = Boolean(authored.length > 0 && authored.every((k) => k === "command"));
+        const timeoutKilled = Boolean(row.exitCode === SIGTERM_EXIT && row.observedTimeoutMs === DEFAULT_TIMEOUT_MS);
+        const transcriptLies = Boolean(row.transcriptShowsTimeout === true && row.observedTimeoutMs === DEFAULT_TIMEOUT_MS && original.timeout != null && original.timeout !== DEFAULT_TIMEOUT_MS);
+        const bgDropped = Boolean(original.run_in_background === true && updated.run_in_background == null && row.autoBackgrounded !== true);
+        const pipeStatus = /PIPESTATUS/i.test(updated.command || "");
+        const postRewriteCliff = Boolean(pipeStatus && row.canAutoBackgroundPostRewrite === false && timeoutKilled && row.autoBackgrounded !== true);
+        const siblingsPreserved = Boolean(
+          (original.timeout == null || updated.timeout === original.timeout) &&
+          (original.run_in_background == null || updated.run_in_background === original.run_in_background) &&
+          (original.description == null || updated.description === original.description) &&
+          updated.command != null && !commandOnly
+        );
+        const timeoutHonored = Boolean(
+          (original.timeout != null && row.observedTimeoutMs === original.timeout) ||
+          (row.autoBackgrounded === true && original.run_in_background === true) ||
+          (row.exitCode === 0 && row.observedTimeoutMs != null && row.observedTimeoutMs !== DEFAULT_TIMEOUT_MS)
+        );
+        const mergedKeeps = Boolean(siblingsPreserved && timeoutHonored);
+        const scrapedTriad = Boolean(commandOnly && lost.length >= 1 && (timeoutKilled || transcriptLies) && !uniqueNearby(row));
+        const honest = Boolean(siblingsPreserved && timeoutHonored && !timeoutKilled && !transcriptLies && !bgDropped && !postRewriteCliff && !uniqueNearby(row));
+        return { original, updated, lost, commandOnly, partialWrite, timeoutKilled, transcriptLies, bgDropped, pipeStatus, postRewriteCliff, siblingsPreserved, timeoutHonored, mergedKeeps, scrapedTriad, honest, row };
+      }
+
+      function classify(input) {
+        const row = cloneProbe(input);
+        const idle = !(keysOf(row.originalInput).length || keysOf(row.updatedInput).length ||
+          row.observedTimeoutMs != null || row.exitCode != null || row.autoBackgrounded != null ||
+          row.transcriptShowsTimeout != null || row.canAutoBackgroundPostRewrite != null ||
+          row.hookAuthoredKeys.length || uniqueNearby(row));
+        if (idle) return "underwrit";
+        const f = analyze(row);
+        if (!f.scrapedTriad) {
+          if (row.nearbyPostRewriteCliff) return "post-rewrite-cliff";
+          if (row.nearbyTranscriptLies) return "transcript-lies";
+          if (row.nearbyTimeoutKilled) return "timeout-killed";
+          if (row.nearbyBgDropped) return "bg-dropped";
+          if (row.nearbySiblingLost) return "sibling-lost";
+          if (row.nearbyPartialWrite) return "partial-write";
+          if (row.nearbyScraped) return "scraped";
+          if (row.nearbyMergedKeeps) return "merged-keeps";
+        }
+        if (f.scrapedTriad) return "scraped";
+        if (f.postRewriteCliff) return "post-rewrite-cliff";
+        if (f.transcriptLies) return "transcript-lies";
+        if (f.timeoutKilled) return "timeout-killed";
+        if (f.bgDropped) return "bg-dropped";
+        if (f.lost.length > 0) return "sibling-lost";
+        if (f.partialWrite) return "partial-write";
+        if (f.mergedKeeps && !f.honest) return "merged-keeps";
+        if (f.honest) return "underwrit";
+        return "underwrit";
+      }
+
+      function feedOf(kind) {
+        if (kind === "scraped") return "● Scraped · command-only updatedInput replaced the whole tool input · siblings gone · primary #90725";
+        if (kind === "sibling-lost") return "● Sibling-lost · timeout / run_in_background / description absent after the rewrite";
+        if (kind === "timeout-killed") return "● Timeout-killed · SIGTERM at the 2m default · exit 143 · the model's timeout still sits in the transcript";
+        if (kind === "bg-dropped") return "● Bg-dropped · run_in_background silently lost on the whole-replace";
+        if (kind === "partial-write") return "● Partial-write · the hook authored only {command} · the runtime treated it as the whole input";
+        if (kind === "transcript-lies") return "● Transcript-lies · assistant tool_use still shows timeout · runtime used the 120s default";
+        if (kind === "post-rewrite-cliff") return "● Post-rewrite-cliff · canAutoBackground scored the rewritten shape · PIPESTATUS rewrite stripped eligibility · killed at 2m · #90726";
+        if (kind === "merged-keeps") return "● Merged-keeps · hook copied full tool_input and overrode only command · timeout honored · contrast that proves merge would fix";
+        return "● Underwrit · full merge or full copy+override command only · timeout and run_in_background preserved · idle word is underwrit";
+      }
+
+      function reasonsOf(input, kind) {
+        const f = analyze(input);
+        const reasons = ["verdict " + kind];
+        if (kind === "scraped" || f.scrapedTriad) reasons.push("#90725 PreToolUse updatedInput replaces the whole tool input; sibling fields silently dropped");
+        if (f.commandOnly) reasons.push("updatedInput is command-only — whole replace, not a merge");
+        if (f.lost.length) reasons.push("siblings lost after rewrite: " + f.lost.join(", "));
+        if (f.original.timeout != null) reasons.push("model timeout " + f.original.timeout + "ms");
+        if (f.timeoutKilled) reasons.push("Command timed out after 2m 0s, exit 143");
+        if (f.transcriptLies) reasons.push("transcript still shows the model's timeout while runtime used 120000ms");
+        if (f.bgDropped) reasons.push("run_in_background was true on the model input and absent after rewrite");
+        if (f.partialWrite) reasons.push("hook authored only {command}");
+        if (f.postRewriteCliff) reasons.push("#90726 canAutoBackground evaluated on post-rewrite shape; eligibility stripped");
+        if (f.siblingsPreserved) reasons.push("updatedInput kept timeout + run_in_background + description");
+        if (f.timeoutHonored) reasons.push("observed timeout matches the model (or auto-backgrounded as intended)");
+        if (kind === "underwrit") reasons.push("full merge or full copy+override command only; siblings preserved; idle word is underwrit");
+        if (kind === "merged-keeps") reasons.push("contrast seed: merge-over-original honors timeout — the fix that #90725 needs");
+        return reasons;
+      }
+
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        const f = analyze(row);
+        return {
+          verdict: kind,
+          underwrit: kind === "underwrit",
+          alarm: ALARM.includes(kind),
+          idleWord: IDLE_WORD,
+          facts: {
+            original: f.original, updated: f.updated, lost: f.lost,
+            commandOnly: f.commandOnly, timeoutKilled: f.timeoutKilled,
+            transcriptLies: f.transcriptLies, bgDropped: f.bgDropped,
+            postRewriteCliff: f.postRewriteCliff, siblingsPreserved: f.siblingsPreserved,
+            timeoutHonored: f.timeoutHonored, scrapedTriad: f.scrapedTriad, honest: f.honest,
+            observedTimeoutMs: row.observedTimeoutMs, exitCode: row.exitCode,
+            transcriptShowsTimeout: row.transcriptShowsTimeout,
+          },
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          probe: row,
+        };
+      }
+
+      const SEEDS = {
+        scraped: () => ({
+          session: "90725-scraped", issue: 90725,
+          source: "primary #90725 command-only updatedInput whole-replaced the tool input",
+          originalInput: modelInput(), updatedInput: { command: DEMO_REWRITTEN },
+          observedTimeoutMs: DEFAULT_TIMEOUT_MS, exitCode: SIGTERM_EXIT,
+          autoBackgrounded: false, transcriptShowsTimeout: true, hookAuthoredKeys: ["command"],
+        }),
+        "sibling-lost": () => ({
+          session: "90725-sibling-lost", issue: 90725,
+          originalInput: modelInput(), updatedInput: { command: DEMO_REWRITTEN },
+          nearbySiblingLost: true,
+        }),
+        "timeout-killed": () => ({
+          session: "90725-timeout-killed", issue: 90725,
+          originalInput: modelInput(), updatedInput: { command: DEMO_REWRITTEN },
+          observedTimeoutMs: DEFAULT_TIMEOUT_MS, exitCode: SIGTERM_EXIT,
+          transcriptShowsTimeout: true, nearbyTimeoutKilled: true,
+        }),
+        "bg-dropped": () => ({
+          session: "90725-bg-dropped", issue: 90725,
+          originalInput: modelInput({ run_in_background: true }),
+          updatedInput: { command: DEMO_REWRITTEN },
+          observedTimeoutMs: DEFAULT_TIMEOUT_MS, exitCode: SIGTERM_EXIT,
+          autoBackgrounded: false, nearbyBgDropped: true,
+        }),
+        "partial-write": () => ({
+          session: "90725-partial-write", issue: 90725,
+          originalInput: modelInput(), updatedInput: { command: DEMO_REWRITTEN },
+          hookAuthoredKeys: ["command"], nearbyPartialWrite: true,
+        }),
+        "transcript-lies": () => ({
+          session: "90725-transcript-lies", issue: 90725,
+          originalInput: modelInput(), updatedInput: { command: DEMO_REWRITTEN },
+          observedTimeoutMs: DEFAULT_TIMEOUT_MS, exitCode: SIGTERM_EXIT,
+          transcriptShowsTimeout: true, nearbyTranscriptLies: true,
+        }),
+        "post-rewrite-cliff": () => ({
+          session: "90726-post-rewrite-cliff", issue: 90726,
+          originalInput: modelInput({ command: "sleep 600 | tee /tmp/folio.log" }),
+          updatedInput: { command: DEMO_PIPESTATUS },
+          observedTimeoutMs: DEFAULT_TIMEOUT_MS, exitCode: SIGTERM_EXIT,
+          autoBackgrounded: false, canAutoBackgroundPostRewrite: false,
+          nearbyPostRewriteCliff: true,
+        }),
+        "merged-keeps": () => ({
+          session: "90725-merged-keeps", issue: 90725,
+          originalInput: modelInput(), updatedInput: modelInput({ command: DEMO_MERGED }),
+          observedTimeoutMs: MODEL_TIMEOUT_MS, exitCode: 0,
+          transcriptShowsTimeout: true, nearbyMergedKeeps: true,
+        }),
+        underwrit: () => ({
+          session: "underwrit-hold", issue: 90725,
+          source: "honest control: merged/full tool_input, siblings preserved, timeout honored",
+          originalInput: modelInput(), updatedInput: modelInput({ command: DEMO_MERGED }),
+          observedTimeoutMs: MODEL_TIMEOUT_MS, exitCode: 0,
+          autoBackgrounded: false, transcriptShowsTimeout: true,
+        }),
+      };
+
+      const seedOrder = [
+        ["scraped", "scraped"],
+        ["sibling-lost", "sibling-lost"],
+        ["timeout-killed", "timeout-killed"],
+        ["bg-dropped", "bg-dropped"],
+        ["partial-write", "partial-write"],
+        ["transcript-lies", "transcript-lies"],
+        ["post-rewrite-cliff", "post-rewrite-cliff"],
+        ["merged-keeps", "merged-keeps"],
+        ["underwrit", "honest underwrit"],
+      ];
+      const stampOrder = [
+        "scraped", "sibling-lost", "timeout-killed", "bg-dropped", "partial-write",
+        "transcript-lies", "post-rewrite-cliff", "merged-keeps", "underwrit",
+      ];
+
+      const probeEl = document.getElementById("probe");
+      const scrapsEl = document.getElementById("scraps");
+      const stampsEl = document.getElementById("stamps");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const ledgerEl = document.getElementById("ledger");
+      const chipsEl = document.getElementById("chips");
+      const pathEl = document.getElementById("path");
+      const folioEl = document.getElementById("folio");
+      const underEl = document.getElementById("undertext");
+      const overEl = document.getElementById("overtext");
+      const candleEl = document.getElementById("candle");
+      const candleBody = document.getElementById("candle-body");
+      const liesEl = document.getElementById("lies");
+      const quillsEl = document.getElementById("quills");
+
+      function writeProbe(probe) { probeEl.value = JSON.stringify(probe, null, 2); }
+      function readProbe() {
+        try { return cloneProbe(JSON.parse(probeEl.value || "{}")); }
+        catch { return cloneProbe(SEEDS.scraped()); }
+      }
+
+      function paintFolio(result) {
+        const hold = result.underwrit || result.verdict === "merged-keeps";
+        const facts = result.facts || {};
+        folioEl.classList.toggle("scraped", !hold);
+        folioEl.classList.toggle("hold", hold);
+        const orig = facts.original || {};
+        const upd = facts.updated || {};
+        underEl.textContent = hold
+          ? "timeout: " + (orig.timeout || MODEL_TIMEOUT_MS) + "\nrun_in_background: " + String(orig.run_in_background ?? false) + "\ndescription: " + (orig.description || DEMO_DESCRIPTION)
+          : "timeout: " + (orig.timeout || MODEL_TIMEOUT_MS) + "  ← scraped\nrun_in_background: " + String(orig.run_in_background ?? false) + "  ← scraped\ndescription: " + (orig.description || DEMO_DESCRIPTION) + "  ← scraped";
+        overEl.textContent = "command: " + (upd.command || DEMO_REWRITTEN);
+        candleEl.classList.toggle("snuffed", !hold);
+        candleBody.textContent = hold
+          ? "burns the full " + ((orig.timeout || MODEL_TIMEOUT_MS) / 60000) + "m\nsiblings kept\nexit " + (facts.exitCode == null ? 0 : facts.exitCode)
+          : "snuffed at 2m default\nmodel asked " + ((orig.timeout || MODEL_TIMEOUT_MS) / 60000) + "m\nexit " + (facts.exitCode == null ? 143 : facts.exitCode);
+        liesEl.textContent = facts.transcriptLies
+          ? "transcript-lies · tool_use still shows timeout: " + (orig.timeout || MODEL_TIMEOUT_MS)
+          : hold
+            ? "transcript matches runtime · timeout honored"
+            : "transcript still names the model's timeout";
+        const pins = [
+          ["overtext", hold ? "command override on a full copy" : "command-only rewrite", hold],
+          ["undertext", hold ? "timeout kept" : "timeout " + (orig.timeout || MODEL_TIMEOUT_MS) + " scraped", hold],
+          ["sibling", hold ? "run_in_background kept" : (facts.bgDropped ? "run_in_background gone" : "siblings scraped"), hold && !facts.bgDropped],
+          ["runtime", hold ? "timeout honored" : "2m default · exit 143", hold],
+        ];
+        quillsEl.innerHTML = pins.map(([k, v, ok]) =>
+          `<div class="quill ${ok ? "on" : "miss"}"><span class="k">${k}</span>${v}</div>`
+        ).join("");
+      }
+
+      function pathCopy() {
+        const n = FAIL_PATH.filter((k) => filed.has(k)).length;
+        const unlocked = filed.has("underwrit");
+        return n + "/7 scraps filed" + (unlocked
+          ? " · idle word <strong>underwrit</strong> unlocked"
+          : " · idle word locked until the honest folio is stamped");
+      }
+
+      function render(result, stampOk) {
+        const hold = result.underwrit;
+        const fail = result.alarm;
+        const contrast = result.verdict === "merged-keeps";
+        verdictEl.textContent = stampOk === false ? "binds" : result.verdict;
+        verdictEl.className = "verdict-face " + (stampOk === false ? "fail" : hold ? "hold" : contrast ? "contrast" : "fail");
+        feedEl.textContent = stampOk === false
+          ? "● Wrong stamp. The quill binds. A scraped page is not a holding. Score the undertext."
+          : result.feed;
+        reasonsEl.innerHTML = (stampOk === false
+          ? ["wrong stamp", "the scrap does not turn", "idle word stays locked"]
+          : result.reasons
+        ).map((row) => `<li>${row}</li>`).join("");
+        ledger.unshift({
+          at: new Date().toISOString(),
+          verdict: stampOk === false ? "binds" : result.verdict,
+          underwrit: result.underwrit,
+        });
+        ledgerEl.innerHTML = ledger.slice(0, 8).map((row) =>
+          `${row.at} · ${row.verdict} · underwrit=${row.underwrit}`
+        ).join("<br>");
+        const chipKind = stampOk === false || fail ? "fail" : hold ? "hold" : "contrast";
+        chipsEl.innerHTML = [
+          ["#90725", fail || stampOk === false ? "fail" : hold ? "hold" : "contrast"],
+          [stampOk === false ? "binds" : result.verdict, chipKind],
+          [hold ? "folio underwrit" : "page scraped", hold ? "hold" : "fail"],
+          ["idle " + IDLE_WORD, filed.has("underwrit") ? "hold" : "contrast"],
+        ].map(([label, klass]) => {
+          const current = (klass === "fail" || klass === "hold") && label === (stampOk === false ? "binds" : result.verdict);
+          return `<span class="chip ${klass}"${current ? ' aria-current="true"' : ""}>${label}</span>`;
+        }).join("");
+        pathEl.innerHTML = pathCopy();
+        paintFolio(result);
+        document.querySelectorAll("#scraps button").forEach((btn) => {
+          btn.classList.toggle("filed", filed.has(btn.dataset.seed));
+          btn.setAttribute("aria-pressed", String(btn.dataset.seed === result.verdict || (result.underwrit && btn.dataset.seed === "underwrit")));
+        });
+      }
+
+      function applySeed(name) {
+        const probe = SEEDS[name]();
+        writeProbe(probe);
+        render(score(probe));
+      }
+
+      function stamp(kind) {
+        const probe = readProbe();
+        const result = score(probe);
+        if (kind !== result.verdict) {
+          render(result, false);
+          return;
+        }
+        if (kind === "underwrit") {
+          if (!result.underwrit) {
+            render(result, false);
+            return;
+          }
+          filed.add("underwrit");
+        } else if (FAIL_PATH.includes(kind) || kind === "merged-keeps") {
+          filed.add(kind);
+        }
+        render(result, true);
+      }
+
+      seedOrder.forEach(([key, label]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "scrap";
+        btn.dataset.seed = key;
+        btn.innerHTML = `${label}<small>scrap</small>`;
+        btn.addEventListener("click", () => applySeed(key));
+        scrapsEl.appendChild(btn);
+      });
+
+      stampOrder.forEach((key) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "stamp";
+        btn.textContent = key;
+        btn.addEventListener("click", () => stamp(key));
+        stampsEl.appendChild(btn);
+      });
+
+      document.getElementById("score-btn").addEventListener("click", () => {
+        render(score(readProbe()));
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        const current = score(readProbe());
+        if (current.underwrit) {
+          filed.add("underwrit");
+          render(current, true);
+          return;
+        }
+        render(current, false);
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        applySeed("scraped");
+      });
+
+      applySeed("scraped");
+    </script>
+  </body>
+</html>
