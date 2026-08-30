@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Waif — parish foundling-home intake board for Claude Code Bash timeout that abandons the child process tree. An abandoned child is not a hold. Idle word is sheltered."
+    />
+    <title>Waif — foundling-home intake</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --parchment: #f3ead4;
+        --vellum: #e6d7b8;
+        --ink: #1c1612;
+        --gall: #2a2218;
+        --soot: #3a3530;
+        --brass: #b08d4a;
+        --brass-deep: #8a6d32;
+        --oxblood: #6e2e2e;
+        --ward: #4e6a4a;
+        --rule: rgba(42, 34, 24, 0.18);
+        --mute: #6a5c4a;
+        --display: "Fraunces", "Palatino Linotype", serif;
+        --body: "Source Serif 4", "Georgia", serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 70% 40% at 50% 0%, rgba(176, 141, 74, 0.12), transparent 55%),
+          repeating-linear-gradient(
+            0deg,
+            rgba(28, 22, 18, 0.035) 0 1px,
+            transparent 1px 28px
+          ),
+          linear-gradient(180deg, #f7f0de 0%, var(--parchment) 42%, #d9c9a6 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--oxblood); }
+      .foundling-home {
+        width: min(1220px, calc(100% - 22px));
+        margin: 0 auto;
+        padding: 20px 0 84px;
+      }
+      .parish-gate {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: end;
+        gap: 12px;
+        padding: 8px 4px 16px;
+        border-bottom: 3px double var(--brass-deep);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brass-deep);
+      }
+      h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(56px, 11vw, 96px);
+        font-weight: 400;
+        letter-spacing: -0.03em;
+        text-align: center;
+        line-height: 0.8;
+        color: var(--gall);
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-align: right;
+      }
+      .thesis {
+        margin: 16px 0 0;
+        font-size: 19px;
+        font-style: italic;
+        color: var(--gall);
+      }
+      .stacks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        font-family: var(--mono);
+        font-size: 11px;
+        margin-top: 10px;
+      }
+      .parish-ward {
+        display: grid;
+        grid-template-columns: 270px 1fr 300px;
+        gap: 16px;
+        margin-top: 20px;
+      }
+      @media (max-width: 980px) {
+        .parish-ward { grid-template-columns: 1fr; }
+        .parish-gate { grid-template-columns: 1fr; }
+        .hours { text-align: left; }
+      }
+      .intake-board,
+      .intake-ledger,
+      .brass-plate {
+        background: var(--vellum);
+        border: 1px solid var(--rule);
+        padding: 14px;
+        box-shadow: inset 0 0 0 1px rgba(176, 141, 74, 0.18);
+      }
+      .intake-board {
+        background:
+          linear-gradient(180deg, rgba(176, 141, 74, 0.12), transparent 38%),
+          #efe3c4;
+      }
+      .hed {
+        font-family: var(--display);
+        font-size: 17px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--brass-deep);
+        margin: 0 0 10px;
+      }
+      .cradle-row,
+      .soot-lamp {
+        position: relative;
+        margin-bottom: 10px;
+        padding: 10px 10px 10px 14px;
+        border: 1px solid var(--brass);
+        background: #f7efd8;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .cradle-row.abandoned,
+      .soot-lamp.abandoned {
+        border-style: dashed;
+        border-color: var(--oxblood);
+        background: rgba(110, 46, 46, 0.08);
+      }
+      .cradle-row.hold,
+      .soot-lamp.hold {
+        border-color: var(--ward);
+      }
+      .wick {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--soot);
+      }
+      .cradle-row.lit .wick,
+      .soot-lamp.lit .wick {
+        background: var(--brass);
+        box-shadow: 0 0 10px var(--brass);
+      }
+      .register-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        background: #f8f0dc;
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 12px;
+        border-left: 6px solid var(--brass);
+      }
+      .register-line.high {
+        border-left-color: var(--oxblood);
+        background: #ead4c4;
+      }
+      .register-line.ebb {
+        border-left-color: var(--ward);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid var(--rule);
+        padding: 4px 8px;
+        background: transparent;
+      }
+      .chip.on { border-color: var(--brass-deep); color: var(--brass-deep); }
+      .chip.alarm { border-color: var(--oxblood); color: var(--oxblood); }
+      .chip.hold { border-color: var(--ward); color: var(--ward); }
+      .actions, .seeds {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .actions button, .seeds button {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        background: #efe3c4;
+        border: 1px solid var(--brass-deep);
+        padding: 7px 10px;
+      }
+      .actions button.primary {
+        background: var(--brass);
+        color: var(--ink);
+        border-color: var(--brass-deep);
+      }
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        resize: vertical;
+        background: #f8f1de;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 8px;
+      }
+      .verdict-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        border-top: 1px solid var(--rule);
+        padding-top: 10px;
+        margin-top: 10px;
+      }
+      .verdict-word {
+        font-family: var(--display);
+        font-size: 36px;
+        letter-spacing: -0.02em;
+      }
+      .verdict-word.alarm { color: var(--oxblood); }
+      .verdict-word.hold { color: var(--ward); }
+      .copy {
+        margin-top: 10px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .sinks, .slip-line {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .adapter {
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px dashed var(--rule);
+      }
+      .ward-slate {
+        margin-top: 16px;
+        padding: 8px 12px;
+        background: #efe0c0;
+        border: 1px solid rgba(138, 109, 50, 0.35);
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--soot);
+      }
+      .why {
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 3px double var(--brass-deep);
+        font-size: 14px;
+        color: var(--mute);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="foundling-home">
+      <header class="parish-gate">
+        <p class="mark">Parish ward · intake ledger</p>
+        <h1>Waif</h1>
+        <p class="hours">Vol. 90672<br />13:50 Sydney · waif</p>
+      </header>
+      <p class="thesis">
+        An abandoned child is not a hold. Score the ward or admit <b>sheltered</b>.
+        The Bash parent timed out and walked away; the children kept crawling.
+      </p>
+      <p class="stacks">
+        <a href="https://github.com/anthropics/claude-code/issues/90672">#90672 primary</a>
+        <a href="https://github.com/anthropics/claude-code/issues/78030">#78030 taskkill</a>
+        <a href="https://github.com/anthropics/claude-code/issues/76353">#76353 job object</a>
+        <a href="https://github.com/anthropics/claude-code/issues/90616">#90616 related</a>
+        <a href="https://github.com/openai/codex/issues/35393">codex#35393</a>
+        <span>OPEN · filed 2026-08-30 · bash timeout orphans</span>
+      </p>
+      <div class="parish-ward">
+        <aside class="intake-board" aria-label="Intake board">
+          <p class="hed">Intake board</p>
+          <div id="aisle"></div>
+        </aside>
+        <section class="intake-ledger" aria-label="Intake ledger">
+          <p class="hed">Foundling register</p>
+          <div id="drawers"></div>
+          <p class="hed">Verdict chips</p>
+          <div class="chips" id="chips"></div>
+          <div class="seeds" id="seeds"></div>
+          <div class="actions">
+            <button class="primary" id="score">Score the ward</button>
+            <button id="admit">Admit sheltered</button>
+            <button id="restore">Restore · #90672</button>
+          </div>
+          <label class="hed" for="raw">timeout + process-tree probe</label>
+          <textarea id="raw" spellcheck="false" placeholder='{"timedOut":true,"parentAlive":false,"childCount":21,"modelSaw":"timeout"}'></textarea>
+          <div class="verdict-row">
+            <span id="verdictWord" class="verdict-word hold">sheltered</span>
+            <span id="idleMark" class="mark">idle word sheltered</span>
+          </div>
+          <p class="copy" id="feed"></p>
+          <div class="sinks" id="sinks"></div>
+        </section>
+        <aside class="brass-plate" aria-label="Brass plate">
+          <p class="hed">Brass plate</p>
+          <div id="slip"></div>
+          <p class="hed">Native adapters</p>
+          <div id="adapters"></div>
+        </aside>
+      </div>
+      <div class="ward-slate" id="ticker">
+        WARD · #90672 21 find.exe/grep.exe orphans · parent PID dead · model saw timeout · Defender ~50% · #78030 taskkill-skipped · #76353 job-missing · #90616 is a different ward
+      </div>
+      <section class="why">
+        <p>
+          Primary:
+          <a href="https://github.com/anthropics/claude-code/issues/90672">anthropics/claude-code#90672</a>
+          (OPEN, filed 2026-08-30).
+          Title: Bash tool timeout does not terminate the child process tree —
+          orphaned processes keep running indefinitely.
+          Same-class nearby:
+          <a href="https://github.com/anthropics/claude-code/issues/78030">#78030</a>
+          taskkill-skipped;
+          <a href="https://github.com/anthropics/claude-code/issues/76353">#76353</a>
+          job-missing;
+          <a href="https://github.com/anthropics/claude-code/issues/85200">#85200</a>
+          tree-alive;
+          <a href="https://github.com/anthropics/claude-code/issues/84464">#84464</a>
+          timeout-seen;
+          <a href="https://github.com/anthropics/claude-code/issues/82433">#82433</a>
+          group-unkilled;
+          <a href="https://github.com/anthropics/claude-code/issues/76056">#76056</a>
+          orphaned;
+          <a href="https://github.com/anthropics/claude-code/issues/84647">#84647</a>
+          defender-load;
+          <a href="https://github.com/anthropics/claude-code/issues/79727">#79727</a>
+          parent-dead.
+          Related, different:
+          <a href="https://github.com/anthropics/claude-code/issues/90616">#90616</a>
+          Gaff false-complete.
+          Cross-ecosystem:
+          <a href="https://github.com/openai/codex/issues/35393">openai/codex#35393</a>,
+          <a href="https://github.com/openai/codex/issues/30802">#30802</a>,
+          <a href="https://github.com/openai/codex/issues/37770">#37770</a>,
+          <a href="https://github.com/openai/codex/issues/25388">#25388</a>.
+        </p>
+        <p>
+          NOT Gaff (timeout-kill DID happen; receipt said completed exit 0 · #90616).
+          NOT Berth (shared spawn_task tree #90668).
+          NOT Carrel (launch.json session-cwd #90661).
+          NOT Byline (phantom hook agent_id #90662).
+          NOT leftover woodworking / millimetre-slider clones.
+          Different problem: Bash timeout returns an error to the model but does not kill the child tree.
+          Different UI: foundling-home / parish-ward / intake-board / intake-ledger.
+          Fonts: Fraunces + Source Serif + IBM Plex Mono. Idle word is <b>sheltered</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "sheltered";
+      const SLACK = ["abandoned", "orphaned", "tree-alive", "parent-dead", "timeout-seen", "group-unkilled", "job-missing", "taskkill-skipped", "defender-load"];
+      const LINEAR = SLACK.slice();
+      const VERDICTS = ["sheltered", "abandoned", "orphaned", "tree-alive", "parent-dead", "timeout-seen", "group-unkilled", "job-missing", "taskkill-skipped", "defender-load", "off-ward"];
+      const CMD = 'find / -name "*.js" | grep -i cache';
+
+      function emptyWard() {
+        return {
+          session: "", issue: null, source: "",
+          timedOut: null, parentAlive: null, childCount: 0, childrenWithDeadParent: 0,
+          processGroupKilled: null, jobObjectAttached: null, taskkillTreeUsed: null,
+          platform: "", rssMb: 0, cpuPct: 0, modelSaw: "",
+          parentPid: null, orphanPids: [], command: "",
+          reportedExit: null, reportedStatus: "", nearby: "",
+          gaffBilled: false, berthCohabited: false, scored: false
+        };
+      }
+      function isWin(p) {
+        p = String(p || "").toLowerCase();
+        return p === "win32" || p === "windows" || p === "win" || p === "msys";
+      }
+      function isPosix(p) {
+        p = String(p || "").toLowerCase();
+        return p === "linux" || p === "darwin" || p === "posix" || p === "unix";
+      }
+      function sawTimeout(v) {
+        v = String(v || "").toLowerCase().replace(/[\s-]+/g, "_");
+        return v === "timeout" || v === "timeout_error" || v === "timed_out" || v === "timedout";
+      }
+      function isOffWard(row) {
+        var n = String(row.nearby || "").toLowerCase();
+        return n === "gaff" || n === "berth" || n === "carrel" || n === "byline" || n === "90616" || n === "90668" ||
+          row.gaffBilled || row.berthCohabited;
+      }
+      function isIdle(row) {
+        return !(row.timedOut != null || row.parentAlive != null || row.childCount || row.childrenWithDeadParent ||
+          row.processGroupKilled != null || row.jobObjectAttached != null || row.taskkillTreeUsed != null ||
+          row.platform || row.rssMb || row.cpuPct || row.modelSaw || row.command || row.nearby || isOffWard(row));
+      }
+      function treeKilled(row) {
+        return Boolean((row.processGroupKilled === true || row.jobObjectAttached === true || row.taskkillTreeUsed === true) &&
+          row.childCount === 0 && row.childrenWithDeadParent === 0);
+      }
+      function analyze(row) {
+        var timeout = row.timedOut === true;
+        var parentDead = row.parentAlive === false;
+        var childrenAlive = row.childCount > 0;
+        var deadKids = row.childrenWithDeadParent > 0;
+        var saw = sawTimeout(row.modelSaw);
+        var killed = treeKilled(row);
+        var off = isOffWard(row);
+        var abandoned = Boolean(timeout && parentDead && deadKids && saw && !killed && !off);
+        return {
+          timeout: timeout, parentDead: parentDead, parentAlive: row.parentAlive === true,
+          childrenAlive: childrenAlive, deadParentKids: deadKids, sawTimeout: saw, killed: killed,
+          offWard: off, abandoned: abandoned,
+          defenderLoad: Boolean(!killed && !off && !abandoned && childrenAlive && (row.cpuPct >= 40 || row.rssMb >= 1024)),
+          taskkillSkipped: Boolean(isWin(row.platform) && timeout && childrenAlive && row.taskkillTreeUsed === false && !killed && !off && !abandoned),
+          jobMissing: Boolean(isWin(row.platform) && timeout && childrenAlive && row.jobObjectAttached === false && !killed && !off && !abandoned),
+          groupUnkilled: Boolean(isPosix(row.platform) && timeout && childrenAlive && row.processGroupKilled === false && !killed && !off && !abandoned),
+          parentDeadHold: Boolean(parentDead && childrenAlive && !deadKids && !killed && !off && !abandoned),
+          treeAlive: Boolean(childrenAlive && row.parentAlive === true && !timeout && !killed && !off && !abandoned),
+          orphaned: Boolean(deadKids && !killed && !off && !abandoned),
+          timeoutSeen: Boolean(timeout && saw && childrenAlive && !killed && !off && !abandoned),
+          shelteredHold: Boolean(killed && !off),
+          childCount: row.childCount, childrenWithDeadParent: row.childrenWithDeadParent,
+          cpuPct: row.cpuPct, rssMb: row.rssMb, platform: row.platform, modelSaw: row.modelSaw, command: row.command
+        };
+      }
+      function classify(row) {
+        if (isOffWard(row)) return "off-ward";
+        if (isIdle(row)) return "sheltered";
+        var f = analyze(row);
+        if (f.abandoned) return "abandoned";
+        if (f.defenderLoad) return "defender-load";
+        if (f.taskkillSkipped) return "taskkill-skipped";
+        if (f.jobMissing) return "job-missing";
+        if (f.groupUnkilled) return "group-unkilled";
+        if (f.parentDeadHold) return "parent-dead";
+        if (f.treeAlive) return "tree-alive";
+        if (f.orphaned) return "orphaned";
+        if (f.timeoutSeen) return "timeout-seen";
+        return "sheltered";
+      }
+      function feedOf(kind) {
+        if (kind === "abandoned") return "● Abandoned · Bash timed out; model saw the timeout; child tree still crawling with a dead parent · primary #90672";
+        if (kind === "orphaned") return "● Orphaned · children still running after the parent PID died";
+        if (kind === "tree-alive") return "● Tree-alive · descendant find/grep/pipeline processes still running after the Bash parent left";
+        if (kind === "parent-dead") return "● Parent-dead · tracked shell is gone; the child tree was never reaped";
+        if (kind === "timeout-seen") return "● Timeout-seen · model already received the timeout error while children still run";
+        if (kind === "group-unkilled") return "● Group-unkilled · POSIX process group was not killed on Bash-tool timeout";
+        if (kind === "job-missing") return "● Job-missing · Windows Job Object was never attached to the Bash spawn";
+        if (kind === "taskkill-skipped") return "● Taskkill-skipped · Windows taskkill /T never used; descendants survive";
+        if (kind === "defender-load") return "● Defender-load · orphan find.exe/grep.exe holding machine-wide CPU/AV load";
+        if (kind === "off-ward") return "● Off-ward · Gaff false-complete or other catalog problem · labeled, not this foundling case";
+        return "● Sheltered · timeout killed the whole tree via Job Object / process group · hold is quiet · idle word is sheltered";
+      }
+      function seedOf(name) {
+        var row = emptyWard();
+        row.scored = true;
+        if (name === "sheltered" || name === "control") {
+          row.session = "sheltered-hold"; row.issue = 90672;
+          row.timedOut = true; row.parentAlive = false; row.childCount = 0; row.childrenWithDeadParent = 0;
+          row.processGroupKilled = true; row.jobObjectAttached = true; row.taskkillTreeUsed = true;
+          row.platform = "win32"; row.modelSaw = "timeout"; row.command = CMD;
+          return row;
+        }
+        if (name === "taskkill-skipped") {
+          row.session = "78030-taskkill-skipped"; row.issue = 78030;
+          row.timedOut = true; row.parentAlive = true; row.childCount = 4;
+          row.taskkillTreeUsed = false; row.jobObjectAttached = false; row.processGroupKilled = false;
+          row.platform = "win32"; row.modelSaw = "timeout"; row.cpuPct = 12; row.rssMb = 80;
+          row.command = "find . -name '*.exe'";
+          return row;
+        }
+        if (name === "job-missing") {
+          row.session = "76353-job-missing"; row.issue = 76353;
+          row.timedOut = true; row.parentAlive = true; row.childCount = 6;
+          row.jobObjectAttached = false; row.taskkillTreeUsed = true;
+          row.platform = "win32"; row.modelSaw = "timeout"; row.cpuPct = 8; row.rssMb = 64;
+          row.command = "grep -R TODO .";
+          return row;
+        }
+        if (name === "group-unkilled") {
+          row.session = "82433-group-unkilled"; row.issue = 82433;
+          row.timedOut = true; row.parentAlive = true; row.childCount = 3;
+          row.processGroupKilled = false; row.platform = "linux"; row.modelSaw = "timeout";
+          row.cpuPct = 18; row.rssMb = 48; row.command = "find / -name cache &";
+          return row;
+        }
+        if (name === "parent-dead") {
+          row.session = "79727-parent-dead"; row.issue = 79727;
+          row.timedOut = false; row.parentAlive = false; row.childCount = 5; row.childrenWithDeadParent = 0;
+          row.processGroupKilled = false; row.platform = "linux"; row.cpuPct = 22; row.rssMb = 96;
+          row.command = "rg --hidden .";
+          return row;
+        }
+        if (name === "tree-alive") {
+          row.session = "85200-tree-alive"; row.issue = 85200;
+          row.timedOut = false; row.parentAlive = true; row.childCount = 2;
+          row.processGroupKilled = false; row.platform = "linux"; row.modelSaw = "stopped";
+          row.cpuPct = 9; row.rssMb = 32; row.command = "rm -rf /tmp/scratch";
+          return row;
+        }
+        if (name === "defender-load") {
+          row.session = "84647-defender-load"; row.issue = 84647;
+          row.timedOut = true; row.parentAlive = true; row.childCount = 8;
+          row.taskkillTreeUsed = true; row.jobObjectAttached = false; row.processGroupKilled = false;
+          row.platform = "win32"; row.modelSaw = "timeout"; row.cpuPct = 50; row.rssMb = 20480;
+          row.command = "grep -R cache C:\\";
+          return row;
+        }
+        if (name === "timeout-seen") {
+          row.session = "84464-timeout-seen"; row.issue = 84464;
+          row.timedOut = true; row.parentAlive = true; row.childCount = 3;
+          row.modelSaw = "timeout"; row.cpuPct = 5; row.rssMb = 24; row.command = CMD;
+          return row;
+        }
+        if (name === "orphaned") {
+          row.session = "76056-orphaned"; row.issue = 76056;
+          row.timedOut = false; row.parentAlive = false; row.childCount = 2; row.childrenWithDeadParent = 2;
+          row.processGroupKilled = false; row.platform = "linux"; row.cpuPct = 6; row.rssMb = 40;
+          row.command = "grep -R pattern .";
+          return row;
+        }
+        if (name === "off-ward") {
+          row.session = "gaff-billed"; row.issue = 90616;
+          row.nearby = "gaff"; row.gaffBilled = true;
+          row.timedOut = true; row.parentAlive = false; row.childCount = 0;
+          row.processGroupKilled = true; row.jobObjectAttached = true; row.taskkillTreeUsed = true;
+          row.platform = "darwin"; row.modelSaw = "completed"; row.reportedExit = 0; row.reportedStatus = "completed";
+          return row;
+        }
+        row.session = "90672-abandoned"; row.issue = 90672;
+        row.timedOut = true; row.parentAlive = false; row.childCount = 21; row.childrenWithDeadParent = 21;
+        row.processGroupKilled = false; row.jobObjectAttached = false; row.taskkillTreeUsed = false;
+        row.platform = "win32"; row.rssMb = 420; row.cpuPct = 50; row.modelSaw = "timeout";
+        row.parentPid = 18432; row.orphanPids = [19001, 19002, 19003]; row.command = CMD;
+        row.reportedStatus = "timeout";
+        return row;
+      }
+      function demoSinks(kind) {
+        var slack = SLACK.indexOf(kind) !== -1;
+        var linear = LINEAR.indexOf(kind) !== -1;
+        return [
+          { adapter: "slack", mode: "demo", summary: slack ? "Would post to Slack: " + kind + " ward alarm." : "Would skip Slack. Waif is " + kind + "." },
+          { adapter: "github", mode: "demo", summary: "Would open a GitHub waif-ledger issue. Demo: no token." },
+          { adapter: "linear", mode: "demo", summary: linear ? "Would open a Linear ticket: waif " + kind : "Would skip Linear. Verdict " + kind + " is not an abandoned-tree ward alarm." }
+        ];
+      }
+      function scoreWard(row) {
+        var kind = classify(row);
+        var f = analyze(row);
+        return { verdict: kind, sheltered: kind === "sheltered", facts: f, feed: feedOf(kind), sinks: demoSinks(kind), ward: row };
+      }
+      function parseRaw(text) {
+        var raw = String(text || "").trim();
+        if (!raw) return seedOf("abandoned");
+        if (raw.startsWith("{")) {
+          try {
+            var parsed = JSON.parse(raw);
+            var row = emptyWard();
+            Object.keys(parsed).forEach(function (k) { row[k] = parsed[k]; });
+            if (parsed.bash) {
+              if (parsed.bash.modelSaw) row.modelSaw = row.modelSaw || parsed.bash.modelSaw;
+              if (parsed.bash.childCount != null) row.childCount = row.childCount || parsed.bash.childCount;
+              if (parsed.bash.parentAlive != null && row.parentAlive == null) row.parentAlive = parsed.bash.parentAlive;
+              if (parsed.bash.timedOut != null && row.timedOut == null) row.timedOut = parsed.bash.timedOut;
+            }
+            row.scored = true;
+            return row;
+          } catch (e) { /* fall through */ }
+        }
+        return seedOf("abandoned");
+      }
+
+      var ward = seedOf("abandoned");
+      function render() {
+        var out = scoreWard(ward);
+        var f = out.facts;
+        var aisle = document.getElementById("aisle");
+        aisle.innerHTML = [
+          { id: "parent", cls: "soot-lamp", title: "Parent shell", path: "PID " + (ward.parentPid || 18432), note: ward.parentAlive === false ? "dead / walked away" : "still listed" },
+          { id: "child", cls: "cradle-row", title: "Child tree", path: (ward.childCount || 0) + " foundlings", note: "find.exe / grep.exe" },
+          { id: "model", cls: "soot-lamp", title: "Model saw", path: ward.modelSaw || "—", note: "timeout receipt" }
+        ].map(function (desk) {
+          var shared = out.verdict !== "sheltered" && out.verdict !== "off-ward" && desk.id !== "model";
+          var hold = out.verdict === "sheltered" && desk.id === "child";
+          var lit = desk.id === "child" || (desk.id === "parent" && f.parentDead);
+          return '<div class="' + desk.cls + (shared ? " abandoned" : "") + (hold ? " hold" : "") + (lit ? " lit" : "") + '"><span class="wick" aria-hidden="true"></span><strong>' + desk.title + '</strong><div>' + desk.path + '</div><div>' + desk.note + '</div></div>';
+        }).join("");
+        document.getElementById("drawers").innerHTML =
+          '<div class="register-line' + (f.abandoned || f.parentDead ? " high" : "") + '"><span>Parent alive</span><span>' + (ward.parentAlive == null ? "—" : ward.parentAlive) + '</span></div>' +
+          '<div class="register-line' + (f.killed ? " ebb" : "") + '"><span>Children</span><span>' + (ward.childCount || 0) + " · dead-parent " + (ward.childrenWithDeadParent || 0) + '</span></div>';
+        document.getElementById("chips").innerHTML = VERDICTS.map(function (v) {
+          var on = v === out.verdict ? " on" : "";
+          var tone = v === "sheltered" ? " hold" : (v === "off-ward" ? "" : " alarm");
+          return '<span class="chip' + on + (v === out.verdict ? tone : "") + '">' + v + "</span>";
+        }).join("");
+        var word = document.getElementById("verdictWord");
+        word.textContent = out.verdict;
+        word.className = "verdict-word " + (out.sheltered ? "hold" : "alarm");
+        document.getElementById("feed").textContent = out.feed;
+        document.getElementById("slip").innerHTML =
+          '<div class="slip-line">command <b>' + (ward.command || CMD) + "</b></div>" +
+          '<div class="slip-line">timed out <b>' + (ward.timedOut ? "yes" : "no") + "</b></div>" +
+          '<div class="slip-line">model saw ' + (ward.modelSaw || "—") + "</div>" +
+          '<div class="slip-line">platform ' + (ward.platform || "—") + "</div>" +
+          '<div class="slip-line">cpu ' + (ward.cpuPct || 0) + "% · rss " + (ward.rssMb || 0) + " MB</div>" +
+          '<div class="slip-line">issue #' + (ward.issue || 90672) + "</div>";
+        document.getElementById("adapters").innerHTML = out.sinks.map(function (s) {
+          return '<div class="adapter"><strong>' + s.adapter + '</strong> · ' + s.mode + '<div>' + s.summary + "</div></div>";
+        }).join("");
+        document.getElementById("sinks").textContent = out.sinks.map(function (s) { return s.adapter + ": " + s.summary; }).join(" · ");
+        if (document.getElementById("raw").value.trim() === "") {
+          document.getElementById("raw").value = JSON.stringify({
+            timedOut: ward.timedOut,
+            parentAlive: ward.parentAlive,
+            childCount: ward.childCount,
+            childrenWithDeadParent: ward.childrenWithDeadParent,
+            processGroupKilled: ward.processGroupKilled,
+            jobObjectAttached: ward.jobObjectAttached,
+            taskkillTreeUsed: ward.taskkillTreeUsed,
+            platform: ward.platform,
+            rssMb: ward.rssMb,
+            cpuPct: ward.cpuPct,
+            modelSaw: ward.modelSaw,
+            command: ward.command,
+            nearby: ward.nearby
+          }, null, 2);
+        }
+      }
+      document.getElementById("seeds").innerHTML = ["abandoned", "taskkill-skipped", "job-missing", "group-unkilled", "parent-dead", "tree-alive", "defender-load", "timeout-seen", "orphaned", "sheltered", "off-ward"].map(function (name) {
+        return '<button data-seed="' + name + '">' + name + "</button>";
+      }).join("");
+      document.getElementById("seeds").addEventListener("click", function (ev) {
+        var name = ev.target.getAttribute("data-seed");
+        if (!name) return;
+        ward = seedOf(name);
+        document.getElementById("raw").value = "";
+        render();
+      });
+      document.getElementById("score").addEventListener("click", function () {
+        ward = parseRaw(document.getElementById("raw").value);
+        render();
+      });
+      document.getElementById("admit").addEventListener("click", function () {
+        ward = parseRaw(document.getElementById("raw").value);
+        render();
+      });
+      document.getElementById("restore").addEventListener("click", function () {
+        ward = seedOf("abandoned");
+        document.getElementById("raw").value = "";
+        render();
+      });
+      render();
+    </script>
+  </body>
+</html>
