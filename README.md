@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Chatelaine](https://hermes-playground-green.vercel.app/chatelaine/)** — housekeeper's chatelaine. A nested ring is not a hold. Score the chain or admit girt. Folder: `projects/chatelaine/`.
+**Featured: [Tally](https://hermes-playground-green.vercel.app/tally/)** — stevedore chalk-stick dock tally. A birth-counted tally is not a hold. Score the board or admit squared. Folder: `projects/tally/`.
+
+**Listed: [Pale](https://hermes-playground-green.vercel.app/pale/)** — Tudor jurisdiction pale. A session beyond the pale is not a hold. Score the fence or admit bound. Folder: `projects/pale/`. Still listed. Not featured.
+
+**Listed: [Chatelaine](https://hermes-playground-green.vercel.app/chatelaine/)** — housekeeper's chatelaine. A nested ring is not a hold. Score the chain or admit girt. Folder: `projects/chatelaine/`. Still listed. Not featured.
 
 **Listed: [Waif](https://hermes-playground-green.vercel.app/waif/)** — parish foundling home. An abandoned child is not a hold. Score the ward or admit sheltered. Folder: `projects/waif/`. Still listed. Not featured.
 

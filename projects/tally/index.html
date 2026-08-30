@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Tally — stevedore chalk-stick dock desk for Claude Code /exit that counts commits since worktree birth (CLAUDE_BASE), not unmerged work. A birth-counted tally is not a hold. Idle word is squared."
+    />
+    <title>Tally — dock tally board</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;600&family=Patrick+Hand&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --warehouse: #0b0c10;
+        --slate: #141820;
+        --steel: #2a3340;
+        --chalk: #f4efe2;
+        --dust: #c9c0a8;
+        --crate: #e0a01a;
+        --crate-deep: #b57a10;
+        --rust: #c44a28;
+        --sodium: #f2c14b;
+        --hold: #3d9b74;
+        --mute: #8a8474;
+        --rule: rgba(244, 239, 226, 0.12);
+        --display: "Black Ops One", "Impact", sans-serif;
+        --chalk-hand: "Patrick Hand", "Comic Sans MS", cursive;
+        --body: "DM Sans", "Helvetica Neue", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--chalk);
+        background:
+          radial-gradient(ellipse 70% 40% at 80% 0%, rgba(242, 193, 75, 0.14), transparent 55%),
+          repeating-linear-gradient(
+            90deg,
+            rgba(42, 51, 64, 0.55) 0 14px,
+            rgba(20, 24, 32, 0.9) 14px 16px
+          ),
+          linear-gradient(180deg, #12151c 0%, var(--warehouse) 42%, #07080b 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--sodium); }
+      .dock {
+        width: min(1220px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 20px 0 88px;
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: end;
+        gap: 12px;
+        padding: 16px 18px 18px;
+        background:
+          linear-gradient(180deg, rgba(20, 24, 32, 0.95), #1a1f28 80%),
+          var(--slate);
+        border: 3px solid var(--crate);
+        box-shadow:
+          inset 0 0 0 1px rgba(224, 160, 26, 0.25),
+          0 10px 0 #3a2a0c;
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--crate);
+      }
+      h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(48px, 9vw, 86px);
+        font-weight: 400;
+        letter-spacing: 0.06em;
+        text-align: center;
+        line-height: 0.88;
+        color: var(--sodium);
+        text-shadow: 0 2px 0 #3a2a0c;
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-align: right;
+      }
+      .thesis {
+        margin: 16px 0 0;
+        font-family: var(--chalk-hand);
+        font-size: clamp(22px, 3.4vw, 30px);
+        color: var(--chalk);
+        text-shadow: 0 1px 0 #000;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        padding: 5px 10px;
+        border: 1px solid var(--steel);
+        background: #1c222c;
+        color: var(--dust);
+      }
+      .chip.fail { border-color: var(--rust); color: #f0b4a0; background: rgba(196, 74, 40, 0.14); }
+      .chip.hold { border-color: var(--hold); color: #9ee0c4; background: rgba(61, 155, 116, 0.14); }
+      .chip[aria-current="true"] { outline: 2px solid var(--sodium); }
+      .yard {
+        display: grid;
+        grid-template-columns: 280px 1fr 300px;
+        gap: 16px;
+        margin-top: 18px;
+      }
+      @media (max-width: 980px) {
+        .yard { grid-template-columns: 1fr; }
+        .mast { grid-template-columns: 1fr; }
+        .hours { text-align: left; }
+      }
+      .crate-bay,
+      .slate-board,
+      .gate-bay {
+        background: var(--slate);
+        border: 2px solid var(--steel);
+        padding: 14px;
+      }
+      .slate-board {
+        background:
+          radial-gradient(ellipse at 20% 10%, rgba(244, 239, 226, 0.06), transparent 40%),
+          #161b22;
+        border-color: var(--crate);
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--crate);
+        margin: 0 0 10px;
+      }
+      .seed-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .seed-row button,
+      .act button,
+      .sim button {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 6px 8px;
+        border: 1px solid var(--crate-deep);
+        background: #2a220e;
+        color: var(--sodium);
+      }
+      .seed-row button[aria-pressed="true"] {
+        background: var(--crate);
+        color: #1a1406;
+      }
+      .act, .sim { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+      textarea {
+        width: 100%;
+        min-height: 110px;
+        font-family: var(--mono);
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        background: #0e1116;
+        color: var(--dust);
+        padding: 8px;
+      }
+      label { display: block; font-size: 12px; color: var(--mute); margin: 8px 0 4px; }
+      .verdict-face {
+        font-family: var(--display);
+        font-size: clamp(36px, 6vw, 52px);
+        line-height: 1;
+        margin: 0 0 8px;
+        letter-spacing: 0.04em;
+      }
+      .verdict-face.fail { color: var(--rust); }
+      .verdict-face.hold { color: var(--hold); }
+      .feed {
+        font-family: var(--chalk-hand);
+        font-size: 22px;
+        margin: 0 0 12px;
+        color: var(--chalk);
+      }
+      .reasons {
+        margin: 0;
+        padding-left: 18px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--dust);
+      }
+      .tally-pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 12px 0;
+      }
+      @media (max-width: 560px) { .tally-pair { grid-template-columns: 1fr; } }
+      .notch-card {
+        border: 1px dashed var(--dust);
+        padding: 10px;
+        min-height: 88px;
+      }
+      .notch-card h3 {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .notches {
+        font-family: var(--chalk-hand);
+        font-size: 28px;
+        letter-spacing: 0.08em;
+        color: var(--chalk);
+        min-height: 36px;
+      }
+      .notch-card.origin .notches { color: var(--hold); }
+      .notch-card.birth .notches { color: var(--rust); }
+      .count-num {
+        font-family: var(--display);
+        font-size: 28px;
+        color: var(--sodium);
+      }
+      .gate {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .gate .door {
+        padding: 12px 8px;
+        text-align: center;
+        border: 2px solid var(--steel);
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .gate .door.keep { border-color: var(--hold); color: #9ee0c4; }
+      .gate .door.lose { border-color: var(--rust); color: #f0b4a0; }
+      .gate .door.on { box-shadow: inset 0 0 0 2px var(--sodium); }
+      .sinks {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .sink {
+        padding: 8px 10px;
+        font-family: var(--mono);
+        font-size: 12px;
+        border: 1px dashed var(--rust);
+        color: #f0b4a0;
+        background: rgba(196, 74, 40, 0.1);
+      }
+      .sink.quiet {
+        border-color: var(--hold);
+        color: #9ee0c4;
+        background: rgba(61, 155, 116, 0.1);
+      }
+      .dump, .ledger, .compare {
+        font-family: var(--mono);
+        font-size: 11px;
+        white-space: pre-wrap;
+        background: #0e1116;
+        border: 1px solid var(--rule);
+        padding: 8px;
+        margin: 0 0 10px;
+        color: var(--dust);
+      }
+      .why { margin: 0; padding-left: 18px; color: var(--dust); font-size: 13px; }
+      .why li { margin: 0 0 6px; }
+      footer {
+        margin-top: 22px;
+        padding: 14px 16px;
+        background: var(--slate);
+        border: 2px solid var(--steel);
+        font-size: 14px;
+        color: var(--mute);
+      }
+      .evidence { display: flex; flex-wrap: wrap; gap: 10px 16px; font-family: var(--mono); font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <main class="dock">
+      <header class="mast">
+        <p class="mark">16:50 Sydney · tally</p>
+        <h1>Tally</h1>
+        <p class="hours">Dock · chalk · crate</p>
+      </header>
+      <p class="thesis">A birth-counted tally is not a hold. Score the board or admit squared.</p>
+      <div class="chips" id="chips" aria-label="Verdict chips"></div>
+      <section class="yard">
+        <aside class="crate-bay">
+          <p class="hed">Intake crates</p>
+          <div class="seed-row" id="seeds"></div>
+          <label for="raw">Pasted probe</label>
+          <textarea id="raw" spellcheck="false" placeholder='{"birthCount":3,"originCount":0}'></textarea>
+          <div class="act">
+            <button type="button" id="score">Score</button>
+            <button type="button" id="admit">Admit squared</button>
+            <button type="button" id="restore">Restore · #90692</button>
+          </div>
+          <p class="hed">Simulate the dock</p>
+          <div class="sim">
+            <button type="button" id="commit">Commit</button>
+            <button type="button" id="push">Push</button>
+            <button type="button" id="merge">Merge on remote</button>
+            <button type="button" id="remount">Remount ff</button>
+            <button type="button" id="resetBirth">Reset to birth</button>
+          </div>
+          <p class="hed">Why not a clone</p>
+          <ul class="why">
+            <li>NOT Wicket — worktree isolation.</li>
+            <li>NOT Fascia — trust dialog names spawn cwd (#90638).</li>
+            <li>NOT Berth — shared spawn_task tree (#90668).</li>
+            <li>NOT Pale — silent-absent hooks when project root ≠ repo root (#90683).</li>
+            <li>NOT #84856 squash-ancestry ExitWorktree <em>tool</em>. This is the interactive /exit dialog. Baseline = worktree birth. No squash needed.</li>
+          </ul>
+        </aside>
+        <article class="slate-board">
+          <p class="hed">Chalk slate</p>
+          <p class="verdict-face" id="face">squared</p>
+          <p class="feed" id="feed"></p>
+          <div class="tally-pair">
+            <div class="notch-card birth">
+              <h3>CLAUDE_BASE..HEAD</h3>
+              <div class="notches" id="birthNotches"></div>
+              <div class="count-num" id="birthNum">0</div>
+            </div>
+            <div class="notch-card origin">
+              <h3>origin/main..HEAD</h3>
+              <div class="notches" id="originNotches"></div>
+              <div class="count-num" id="originNum">0</div>
+            </div>
+          </div>
+          <div class="gate" aria-label="Keep or remove gate">
+            <div class="door keep" id="keepDoor">1 · Keep worktree</div>
+            <div class="door lose" id="loseDoor">2 · Remove — will be lost</div>
+          </div>
+          <ul class="reasons" id="reasons"></ul>
+          <div class="sinks">
+            <div class="sink" id="slack" title="Slack false-loss chip is a fail, never a hold"></div>
+            <div class="sink" id="linear"></div>
+            <div class="sink quiet" id="github"></div>
+          </div>
+          <p class="hed">Tally-ledger</p>
+          <pre class="ledger" id="ledger"></pre>
+        </article>
+        <aside class="gate-bay">
+          <p class="hed">Birth vs origin</p>
+          <pre class="dump" id="dump"></pre>
+          <p class="hed">What the dialog measures</p>
+          <pre class="compare" id="compare"></pre>
+          <p class="hed">Trust model</p>
+          <p>The /exit dialog notches <code>git rev-list --count CLAUDE_BASE..HEAD</code>. <code>CLAUDE_BASE</code> is frozen in <code>.git/worktrees/&lt;name&gt;/CLAUDE_BASE</code> at worktree birth. It says nothing about push or merge. After a regular or fast-forward merge, N can stay or grow while <code>origin/main..HEAD</code> is already 0.</p>
+        </aside>
+      </section>
+      <footer>
+        <p class="hed">Evidence</p>
+        <div class="evidence">
+          <a href="https://github.com/anthropics/claude-code/issues/90692">#90692 primary</a>
+          <a href="https://github.com/anthropics/claude-code/issues/84856">#84856 squash tool (not this)</a>
+          <a href="https://github.com/anthropics/claude-code/issues/78355">#78355 tool</a>
+          <a href="https://github.com/anthropics/claude-code/issues/40137">#40137 tool</a>
+          <a href="https://github.com/anthropics/claude-code/issues/71135">#71135 tool</a>
+          <a href="https://github.com/openai/codex/issues/35383">codex#35383</a>
+          <a href="https://github.com/openai/codex/issues/34352">codex#34352</a>
+          <a href="https://github.com/anthropics/claude-code/issues/90683">#90683 Pale (not this)</a>
+          <a href="https://github.com/anthropics/claude-code/issues/90668">#90668 Berth (not this)</a>
+          <a href="https://github.com/anthropics/claude-code/issues/90638">#90638 Fascia (not this)</a>
+        </div>
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "squared";
+      const VERDICTS = ["squared", "birth-counted", "false-loss", "merged-still-n", "push-blind", "base-frozen", "remount-grew", "origin-zero", "chalked", "keep-or-lose"];
+      const SLACK = ["false-loss", "remount-grew", "merged-still-n", "push-blind", "origin-zero", "base-frozen", "chalked", "birth-counted"];
+      const ledger = [];
+      const DEMO_BIRTH = "abc1234";
+
+      function emptyProbe() {
+        return {
+          session: "", issue: null, source: "",
+          birthCount: null, originCount: null, dialogClaimsLoss: null,
+          pushed: null, merged: null, squash: null, remountGrew: null,
+          birthBeforeRemount: null, baseFrozen: null, chalked: null,
+          baseline: "", claudeBase: "", head: "", worktree: "", nearby: "",
+          nearbyMergedStillN: false, nearbyPushBlind: false, nearbyOriginZero: false,
+          nearbyBaseFrozen: false, nearbyChalked: false, nearbyBirthCounted: false,
+          nearbySquashTool: false, scored: false
+        };
+      }
+      function isOff(row) {
+        var n = String(row.nearby || "").toLowerCase();
+        return n === "84856" || n === "78355" || n === "40137" || n === "71135" ||
+          n === "squash" || n === "wicket" || n === "fascia" || n === "90638" ||
+          n === "berth" || n === "90668" || n === "pale" || n === "90683" ||
+          n === "chatelaine" || n === "90647" || n === "waif" || n === "90672" ||
+          row.nearbySquashTool === true;
+      }
+      function seedOf(name) {
+        var row = emptyProbe();
+        row.scored = true;
+        row.baseline = "CLAUDE_BASE";
+        row.claudeBase = DEMO_BIRTH;
+        row.worktree = ".claude/worktrees/test";
+        if (name === "squared" || name === "control") {
+          row.session = "squared-hold"; row.issue = 90692;
+          row.birthCount = 0; row.originCount = 0; row.dialogClaimsLoss = false;
+          row.pushed = false; row.merged = false; row.squash = false;
+          row.remountGrew = false; row.baseFrozen = true; row.chalked = false;
+          row.head = DEMO_BIRTH;
+          return row;
+        }
+        if (name === "remount-grew") {
+          row.session = "90692-remount-grew"; row.issue = 90692;
+          row.birthCount = 4; row.originCount = 0; row.dialogClaimsLoss = true;
+          row.pushed = true; row.merged = true; row.squash = false;
+          row.remountGrew = true; row.birthBeforeRemount = 3;
+          row.baseFrozen = true; row.chalked = true; row.head = "fff9999";
+          return row;
+        }
+        if (name === "merged-still-n") {
+          row.session = "90692-merged-still-n"; row.issue = 90692;
+          row.birthCount = 2; row.originCount = 0; row.dialogClaimsLoss = true;
+          row.pushed = true; row.merged = true; row.squash = false;
+          row.nearbyMergedStillN = true; row.baseFrozen = true; row.chalked = true;
+          row.head = "cafebabe";
+          return row;
+        }
+        if (name === "push-blind") {
+          row.session = "90692-push-blind"; row.issue = 90692;
+          row.birthCount = 1; row.originCount = 0; row.dialogClaimsLoss = true;
+          row.pushed = true; row.merged = false; row.squash = false;
+          row.nearbyPushBlind = true; row.baseFrozen = true; row.chalked = true;
+          row.head = "push0001";
+          return row;
+        }
+        if (name === "origin-zero") {
+          row.session = "90692-origin-zero"; row.issue = 90692;
+          row.birthCount = 1; row.originCount = 0; row.dialogClaimsLoss = true;
+          row.pushed = true; row.merged = true; row.squash = false;
+          row.nearbyOriginZero = true; row.baseFrozen = true; row.chalked = true;
+          row.head = "zero0001";
+          return row;
+        }
+        if (name === "base-frozen") {
+          row.session = "90692-base-frozen"; row.issue = 90692;
+          row.birthCount = 2; row.originCount = 0; row.dialogClaimsLoss = true;
+          row.pushed = true; row.merged = true; row.squash = false;
+          row.nearbyBaseFrozen = true; row.baseFrozen = true; row.chalked = true;
+          row.head = "froz0001";
+          return row;
+        }
+        if (name === "chalked") {
+          row.session = "90692-chalked"; row.issue = 90692;
+          row.birthCount = 5; row.originCount = 0; row.dialogClaimsLoss = true;
+          row.pushed = true; row.merged = true; row.squash = false;
+          row.nearbyChalked = true; row.baseFrozen = true; row.chalked = true;
+          row.head = "chalk001";
+          return row;
+        }
+        if (name === "birth-counted") {
+          row.session = "90692-birth-counted"; row.issue = 90692;
+          row.birthCount = 2; row.originCount = 1; row.dialogClaimsLoss = true;
+          row.pushed = false; row.merged = false; row.squash = false;
+          row.nearbyBirthCounted = true; row.baseFrozen = true; row.chalked = true;
+          row.head = "birth001";
+          return row;
+        }
+        if (name === "keep-or-lose") {
+          row.session = "keep-or-lose-84856"; row.issue = 84856; row.nearby = "84856";
+          row.nearbySquashTool = true; row.squash = true;
+          row.birthCount = 0; row.originCount = 0; row.dialogClaimsLoss = false;
+          row.pushed = true; row.merged = true; row.baseline = "default-branch";
+          return row;
+        }
+        row.session = "90692-false-loss"; row.issue = 90692;
+        row.birthCount = 3; row.originCount = 0; row.dialogClaimsLoss = true;
+        row.pushed = true; row.merged = true; row.squash = false;
+        row.remountGrew = false; row.baseFrozen = true; row.chalked = true;
+        row.head = "def5678";
+        return row;
+      }
+      function isIdle(row) {
+        return !(row.birthCount != null || row.originCount != null ||
+          row.dialogClaimsLoss != null || row.pushed != null || row.merged != null ||
+          row.squash != null || row.remountGrew != null || row.birthBeforeRemount != null ||
+          row.baseFrozen != null || row.chalked != null || row.baseline ||
+          row.claudeBase || row.head || row.worktree ||
+          row.nearbyMergedStillN || row.nearbyPushBlind || row.nearbyOriginZero ||
+          row.nearbyBaseFrozen || row.nearbyChalked || row.nearbyBirthCounted ||
+          row.nearbySquashTool || isOff(row));
+      }
+      function classify(row) {
+        if (isIdle(row)) return IDLE_WORD;
+        var birth = row.birthCount == null ? 0 : row.birthCount;
+        var origin = row.originCount == null ? 0 : row.originCount;
+        var unique = Boolean(row.nearbyMergedStillN || row.nearbyPushBlind ||
+          row.nearbyOriginZero || row.nearbyBaseFrozen || row.nearbyChalked ||
+          row.nearbyBirthCounted || row.nearbySquashTool || row.remountGrew === true ||
+          isOff(row));
+        var triad = Boolean(birth > 0 && origin === 0 && row.dialogClaimsLoss === true &&
+          row.pushed === true && row.merged === true && row.squash !== true && !unique);
+        if (!triad) {
+          if (isOff(row)) return "keep-or-lose";
+          if (row.remountGrew === true) return "remount-grew";
+          if (row.nearbyMergedStillN) return "merged-still-n";
+          if (row.nearbyPushBlind) return "push-blind";
+          if (row.nearbyOriginZero) return "origin-zero";
+          if (row.nearbyBaseFrozen) return "base-frozen";
+          if (row.nearbyChalked) return "chalked";
+          if (row.nearbyBirthCounted) return "birth-counted";
+        }
+        if (triad) return "false-loss";
+        if (row.remountGrew === true) return "remount-grew";
+        if (row.merged === true && birth > 0 && origin === 0) return "merged-still-n";
+        if (row.pushed === true && row.merged !== true && birth > 0 && origin === 0) return "push-blind";
+        if (origin === 0 && birth > 0 && row.originCount != null) return "origin-zero";
+        if (row.baseFrozen === true && birth > 0) return "base-frozen";
+        if (row.chalked === true && birth > 0) return "chalked";
+        if ((row.baseline === "CLAUDE_BASE" || row.claudeBase) && birth > 0) return "birth-counted";
+        return IDLE_WORD;
+      }
+      function feedOf(kind) {
+        if (kind === "false-loss") return "● False-loss · birth tally N>0 · origin/main..HEAD is 0 · dialog claims all commits will be lost · primary #90692";
+        if (kind === "remount-grew") return "● Remount-grew · git merge --ff-only origin/main inside the worktree · birth count grew while risk shrank";
+        if (kind === "merged-still-n") return "● Merged-still-n · regular or fast-forward merge on the remote · CLAUDE_BASE..HEAD still N>0";
+        if (kind === "push-blind") return "● Push-blind · commits already on the remote · dialog still chalks birth notches as loss";
+        if (kind === "origin-zero") return "● Origin-zero · git rev-list --count origin/main..HEAD prints 0 · everything contained in the remote default branch";
+        if (kind === "base-frozen") return "● Base-frozen · CLAUDE_BASE is the creation-time ref · only a reset to birth returns N to 0";
+        if (kind === "chalked") return "● Chalked · the /exit slate notched N since worktree birth · the number measures age, not risk";
+        if (kind === "birth-counted") return "● Birth-counted · N is git rev-list --count CLAUDE_BASE..HEAD · baseline is worktree creation, not unmerged work";
+        if (kind === "keep-or-lose") return "● Keep-or-lose · #84856 / #78355 squash-ancestry ExitWorktree *tool* · labeled contrast, not this dialog";
+        return "● Squared · HEAD == CLAUDE_BASE · birth count 0 · nothing the dock would lose · idle word is squared";
+      }
+      function reasonsOf(row, kind) {
+        var birth = row.birthCount == null ? 0 : row.birthCount;
+        var origin = row.originCount == null ? 0 : row.originCount;
+        var reasons = ["verdict " + kind];
+        if (kind === "false-loss") reasons.push("#90692 birth count CLAUDE_BASE..HEAD > 0 + origin/main..HEAD = 0 + dialog claims loss after push and regular merge");
+        if (row.birthCount != null) reasons.push("git rev-list --count CLAUDE_BASE..HEAD = " + birth);
+        if (row.originCount != null) reasons.push("git rev-list --count origin/main..HEAD = " + origin);
+        if (row.dialogClaimsLoss) reasons.push('dialog warns "You have N commits… All changes and commits will be lost"');
+        if (row.pushed) reasons.push("commits already pushed to the remote");
+        if (row.merged && row.squash !== true) reasons.push("regular or fast-forward merge on the remote — no squash needed");
+        if (row.remountGrew) reasons.push("after git merge --ff-only origin/main the birth count grew from " + (row.birthBeforeRemount ?? "N") + " to " + birth);
+        if (row.baseFrozen) reasons.push("CLAUDE_BASE frozen at " + (row.claudeBase || DEMO_BIRTH));
+        if (row.chalked) reasons.push("chalk notches on the /exit slate measure commits since birth");
+        if (row.baseline === "CLAUDE_BASE" || kind === "birth-counted") reasons.push("baseline is worktree birth (CLAUDE_BASE), not the default branch");
+        if (isOff(row) || kind === "keep-or-lose") reasons.push("keep-or-lose nearby: #84856 / #78355 / #40137 / #71135 squash-ancestry ExitWorktree tool — labeled, not this dialog");
+        if (kind === "squared") reasons.push("HEAD == CLAUDE_BASE; birth count 0; dock accounts squared; idle word is squared");
+        return reasons;
+      }
+      function slackCopy(kind, birth, origin) {
+        if (kind === "false-loss") return "Tally false-loss · birth " + birth + " · origin " + origin + " · claims will be lost · #90692";
+        if (kind === "remount-grew") return "Tally remount-grew · ff-only origin/main · N grew while risk shrank";
+        if (kind === "merged-still-n") return "Tally merged-still-n · regular merge · CLAUDE_BASE..HEAD still N>0";
+        if (kind === "push-blind") return "Tally push-blind · already on the remote · dialog still chalks birth";
+        if (kind === "origin-zero") return "Tally origin-zero · origin/main..HEAD is 0 · dialog still warns loss";
+        if (kind === "base-frozen") return "Tally base-frozen · CLAUDE_BASE stuck at worktree birth";
+        if (kind === "chalked") return "Tally chalked · /exit slate notched age, not risk";
+        if (kind === "birth-counted") return "Tally birth-counted · N is CLAUDE_BASE..HEAD, not unmerged work";
+        return "";
+      }
+      function notchMarks(n) {
+        var count = Math.max(0, Number(n) || 0);
+        if (count === 0) return "—";
+        var groups = [];
+        var left = count;
+        while (left >= 5) { groups.push("||||/"); left -= 5; }
+        if (left) groups.push("|".repeat(left));
+        return groups.join("  ");
+      }
+      function dumpText(row) {
+        return [
+          "birth    CLAUDE_BASE..HEAD  " + (row.birthCount == null ? "—" : row.birthCount),
+          "origin   origin/main..HEAD  " + (row.originCount == null ? "—" : row.originCount),
+          "dialog   " + (row.dialogClaimsLoss ? "will be lost" : "quiet"),
+          "pushed   " + (row.pushed == null ? "—" : row.pushed ? "yes" : "no"),
+          "merged   " + (row.merged == null ? "—" : row.merged ? (row.squash ? "squash" : "regular/ff") : "no"),
+          "base     " + (row.claudeBase || "—"),
+          "head     " + (row.head || "—")
+        ].join("\n");
+      }
+      function compareText(row) {
+        return [
+          "dialog measures  CLAUDE_BASE..HEAD",
+          "risk measures    origin/main..HEAD",
+          "birth            " + (row.birthCount == null ? "—" : row.birthCount),
+          "origin           " + (row.originCount == null ? "—" : row.originCount),
+          "",
+          "This desk cares about the birth tally.",
+          "A squash-tool refusal is #84856.",
+          "A shared spawn tree is Berth."
+        ].join("\n");
+      }
+      function scoreBoard(row) {
+        var kind = classify(row);
+        var birth = row.birthCount == null ? 0 : row.birthCount;
+        var origin = row.originCount == null ? 0 : row.originCount;
+        var copy = slackCopy(kind, birth, origin);
+        var sinks = [
+          { adapter: "slack", mode: "demo", summary: copy ? "Would post to Slack: " + copy : "Would skip Slack. Tally is " + kind + "." },
+          { adapter: "github", mode: "demo", summary: "Would append a GitHub tally-ledger row. Demo: no token." },
+          { adapter: "linear", mode: "demo", summary: SLACK.indexOf(kind) !== -1 ? "Would open a Linear ticket: tally " + kind : "Would skip Linear. Verdict " + kind + " is not a tally-board alarm." }
+        ];
+        ledger.push({ at: new Date().toISOString(), verdict: kind, session: row.session, issue: row.issue, squared: kind === IDLE_WORD });
+        return { verdict: kind, squared: kind === IDLE_WORD, reasons: reasonsOf(row, kind), feed: feedOf(kind), slackCopy: copy, sinks: sinks, probe: row };
+      }
+      function parseRaw(text) {
+        var raw = String(text || "").trim();
+        if (!raw) return seedOf("false-loss");
+        if (raw.startsWith("{")) {
+          try {
+            var parsed = JSON.parse(raw);
+            var row = emptyProbe();
+            Object.keys(parsed).forEach(function (k) { row[k] = parsed[k]; });
+            if (parsed.tally) Object.keys(parsed.tally).forEach(function (k) { row[k] = parsed.tally[k]; });
+            if (parsed.probe) Object.keys(parsed.probe).forEach(function (k) { row[k] = parsed.probe[k]; });
+            row.scored = true;
+            return row;
+          } catch (e) { /* fall through */ }
+        }
+        return seedOf("false-loss");
+      }
+      var current = "false-loss";
+      function paint(result) {
+        var fail = result.verdict !== IDLE_WORD;
+        document.getElementById("face").textContent = result.verdict;
+        document.getElementById("face").className = "verdict-face " + (fail ? "fail" : "hold");
+        document.getElementById("feed").textContent = result.feed;
+        document.getElementById("reasons").innerHTML = result.reasons.map(function (r) { return "<li>" + r.replace(/</g, "&lt;") + "</li>"; }).join("");
+        var birth = result.probe.birthCount == null ? 0 : result.probe.birthCount;
+        var origin = result.probe.originCount == null ? 0 : result.probe.originCount;
+        document.getElementById("birthNotches").textContent = notchMarks(birth);
+        document.getElementById("originNotches").textContent = notchMarks(origin);
+        document.getElementById("birthNum").textContent = String(birth);
+        document.getElementById("originNum").textContent = String(origin);
+        document.getElementById("keepDoor").className = "door keep" + (result.verdict === IDLE_WORD || result.verdict === "keep-or-lose" ? " on" : "");
+        document.getElementById("loseDoor").className = "door lose" + (result.probe.dialogClaimsLoss ? " on" : "");
+        var slack = document.getElementById("slack");
+        if (result.slackCopy) {
+          slack.textContent = "Slack · " + result.slackCopy + " · fail, never a hold";
+          slack.className = "sink";
+        } else {
+          slack.textContent = "Slack quiet. Board is " + result.verdict + ". Idle word is squared.";
+          slack.className = "sink quiet";
+        }
+        var linear = document.getElementById("linear");
+        if (SLACK.indexOf(result.verdict) !== -1) {
+          linear.textContent = "Linear · Would open a ticket: tally " + result.verdict;
+          linear.className = "sink";
+        } else {
+          linear.textContent = "Linear quiet. Verdict " + result.verdict + " is not a tally-board alarm.";
+          linear.className = "sink quiet";
+        }
+        document.getElementById("github").textContent = "GitHub · Would append a tally-ledger row. Demo: no token.";
+        document.getElementById("ledger").textContent = ledger.map(function (row) {
+          return row.at + "  " + row.verdict + "  " + (row.session || "") + (row.issue ? "  #" + row.issue : "");
+        }).join("\n") || "(empty)";
+        document.getElementById("dump").textContent = dumpText(result.probe);
+        document.getElementById("compare").textContent = compareText(result.probe);
+        document.getElementById("chips").innerHTML = VERDICTS.map(function (v) {
+          var on = v === result.verdict;
+          return '<span class="chip ' + (v === IDLE_WORD ? "hold" : "fail") + '"' + (on ? ' aria-current="true"' : "") + ">" + v + "</span>";
+        }).join("");
+        Array.prototype.forEach.call(document.querySelectorAll("#seeds button"), function (btn) {
+          btn.setAttribute("aria-pressed", btn.getAttribute("data-seed") === current ? "true" : "false");
+        });
+      }
+      function run(row) {
+        paint(scoreBoard(row));
+      }
+      var seedNames = [
+        ["false-loss", "#90692 false-loss"],
+        ["remount-grew", "remount-grew"],
+        ["merged-still-n", "merged-still-n"],
+        ["push-blind", "push-blind"],
+        ["origin-zero", "origin-zero"],
+        ["base-frozen", "base-frozen"],
+        ["chalked", "chalked"],
+        ["birth-counted", "birth-counted"],
+        ["keep-or-lose", "keep-or-lose"],
+        ["squared", "honest squared"]
+      ];
+      var seedsEl = document.getElementById("seeds");
+      seedNames.forEach(function (pair) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.setAttribute("data-seed", pair[0]);
+        btn.textContent = pair[1];
+        btn.addEventListener("click", function () {
+          current = pair[0];
+          var row = seedOf(pair[0]);
+          document.getElementById("raw").value = JSON.stringify(row, null, 2);
+          run(row);
+        });
+        seedsEl.appendChild(btn);
+      });
+      function liveFromRaw() {
+        return parseRaw(document.getElementById("raw").value);
+      }
+      document.getElementById("score").addEventListener("click", function () {
+        run(parseRaw(document.getElementById("raw").value));
+      });
+      document.getElementById("admit").addEventListener("click", function () {
+        run(parseRaw(document.getElementById("raw").value));
+      });
+      document.getElementById("restore").addEventListener("click", function () {
+        current = "false-loss";
+        var row = seedOf("false-loss");
+        document.getElementById("raw").value = JSON.stringify(row, null, 2);
+        run(row);
+      });
+      document.getElementById("commit").addEventListener("click", function () {
+        var row = liveFromRaw();
+        row.birthCount = (row.birthCount || 0) + 1;
+        if (row.originCount == null) row.originCount = 0;
+        row.originCount = (row.originCount || 0) + (row.merged ? 0 : 1);
+        row.dialogClaimsLoss = row.birthCount > 0;
+        row.baseline = "CLAUDE_BASE";
+        row.claudeBase = row.claudeBase || DEMO_BIRTH;
+        row.chalked = true;
+        row.baseFrozen = true;
+        row.nearbyMergedStillN = false;
+        row.nearbyPushBlind = false;
+        row.nearbyOriginZero = false;
+        row.nearbyBaseFrozen = false;
+        row.nearbyChalked = false;
+        row.nearbyBirthCounted = false;
+        row.remountGrew = false;
+        current = "";
+        document.getElementById("raw").value = JSON.stringify(row, null, 2);
+        run(row);
+      });
+      document.getElementById("push").addEventListener("click", function () {
+        var row = liveFromRaw();
+        row.pushed = true;
+        row.nearbyPushBlind = true;
+        row.nearbyMergedStillN = false;
+        row.nearbyOriginZero = false;
+        current = "push-blind";
+        document.getElementById("raw").value = JSON.stringify(row, null, 2);
+        run(row);
+      });
+      document.getElementById("merge").addEventListener("click", function () {
+        var row = liveFromRaw();
+        row.merged = true;
+        row.squash = false;
+        row.pushed = true;
+        row.originCount = 0;
+        row.dialogClaimsLoss = (row.birthCount || 0) > 0;
+        row.nearbyMergedStillN = true;
+        row.nearbyPushBlind = false;
+        row.nearbyOriginZero = false;
+        current = "merged-still-n";
+        document.getElementById("raw").value = JSON.stringify(row, null, 2);
+        run(row);
+      });
+      document.getElementById("remount").addEventListener("click", function () {
+        var row = liveFromRaw();
+        row.birthBeforeRemount = row.birthCount || 0;
+        row.birthCount = (row.birthCount || 0) + 1;
+        row.originCount = 0;
+        row.merged = true;
+        row.pushed = true;
+        row.remountGrew = true;
+        row.dialogClaimsLoss = true;
+        row.nearbyMergedStillN = false;
+        current = "remount-grew";
+        document.getElementById("raw").value = JSON.stringify(row, null, 2);
+        run(row);
+      });
+      document.getElementById("resetBirth").addEventListener("click", function () {
+        var row = seedOf("squared");
+        current = "squared";
+        document.getElementById("raw").value = JSON.stringify(row, null, 2);
+        run(row);
+      });
+      (function boot() {
+        var row = seedOf("false-loss");
+        document.getElementById("raw").value = JSON.stringify(row, null, 2);
+        run(row);
+      })();
+    </script>
+  </body>
+</html>
