@@ -6,11 +6,11 @@ Primary:
 
 - [anthropics/claude-code#90856](https://github.com/anthropics/claude-code/issues/90856) (OPEN, filed 2026-08-30T22:50:05Z). Title: Removing a marketplace from settings.json is silently reverted by known_marketplaces.json. Labels: bug, has repro, platform:macos, area:plugins. Author adamjsimon. Claude Code **2.1.247** inside Claude Desktop, **macOS 26.4.1**. Observed three removals in one session (A/B ~18:02→18:03; C 18:12→18:17, clone recreated **18:17:36**). What works: delete from `known_marketplaces.json` AND remove the clone.
 
-A settings cut that regrows from the known ledger is not a hold. Score both ledgers or admit **excised**.
+A settings cut that regrows from the known ledger is not a hold. Score both ledgers or admit **cauterized**.
 
-Idle word: **excised**. Seeded state: **regrown** / #90856 — removed from settings, known_marketplaces brought it back ~1 min later with clone recreated. Never idle as "hydra".
+Idle word: **cauterized**. Seeded state: **regrown** / #90856 — removed from settings, known_marketplaces brought it back ~1 min later with clone recreated. Never idle as "hydra".
 
-- **excised** = hold: gone from settings AND known AND clone absent
+- **cauterized** = hold: gone from settings AND known AND clone absent
 - **regrown** = #90856 primary failure
 - **re-cloned / clone-back** = clone directory recreated
 - **dual-ledger** = two stores disagree
@@ -20,7 +20,9 @@ Idle word: **excised**. Seeded state: **regrown** / #90856 — removed from sett
 - **already-added** = re-add reports already present
 - **minute-later** = ~1 minute resurrection window
 
-Verdicts: excised, regrown, re-cloned, dual-ledger, settings-only, known-authoritative, silent-return, already-added, minute-later, clone-back.
+Verdicts: cauterized, regrown, re-cloned, dual-ledger, settings-only, known-authoritative, silent-return, already-added, minute-later, clone-back.
+
+Seed-chip aliases: lopped → settings-only; dual → dual-ledger; recloned → re-cloned; shadowed → known-authoritative.
 
 ## Why not a clone
 
@@ -42,8 +44,8 @@ Different UI: marble registry hall / bronze hydra fountain / twin ledgers / seal
 `/hydra/` is this static registry desk. Demo works with no secrets and no npm. Mark: `08:50 Sydney · hydra`.
 
 1. Seeded demo loads **regrown** (#90856 — removed from settings, known_marketplaces brought it back ~1 min later with clone recreated).
-2. Seal both ledgers → **excised** (gone from settings AND known AND clone absent).
-3. Chip-switch seeds: excised / regrown / re-cloned / dual-ledger / settings-only / known-authoritative / silent-return / already-added / minute-later / clone-back.
+2. Seal both ledgers → **cauterized** (gone from settings AND known AND clone absent).
+3. Chip-switch seeds: regrown / cauterized / lopped / dual / recloned / shadowed / silent-return / already-added / minute-later / clone-back.
 4. Paste or edit a registry ticket JSON and score the hall.
 5. Export a registry ticket.
 
@@ -53,15 +55,15 @@ Open `projects/hydra/index.html` in a browser, or serve the repo root and visit 
 
 ```bash
 node projects/hydra/hook/hydra.mjs < projects/hydra/data/90856.json
-node projects/hydra/hook/hydra.mjs projects/hydra/data/excised.json
+node projects/hydra/hook/hydra.mjs projects/hydra/data/cauterized.json
 node --test projects/hydra/hook/hydra.test.mjs
 ```
 
-Regrown seed → regrown/alarm. Excised seed → excised/hold.
+Regrown seed → regrown/alarm. Cauterized seed → cauterized/hold.
 
-`projects/hydra/hook/hydra.mjs` scores a registry ticket `{ removedFromSettings, presentInKnown, cloneExists, minutesSinceRemoval, reAddReportsAlreadyAdded, knownLastUpdated, settingsHadEntry }` and returns `{ verdict, chips[], reasons[], excised, regrown, hold, alarm, idleWord }`. See `hook/README.md`.
+`projects/hydra/hook/hydra.mjs` scores a registry ticket `{ removedFromSettings, presentInKnown, cloneExists, minutesSinceRemoval, reAddReportsAlreadyAdded, knownLastUpdated, settingsHadEntry }` and returns `{ verdict, chips[], reasons[], cauterized, regrown, hold, alarm, idleWord }`. See `hook/README.md`.
 
-Local fingerprints: `data/90856.json`, `data/excised.json`, `data/fingerprints.json`, `data/chips.json`. Numbers from the issue only.
+Local fingerprints: `data/90856.json`, `data/cauterized.json`, `data/fingerprints.json`, `data/chips.json`. Numbers from the issue only.
 
 ## Native integrations
 
@@ -73,4 +75,5 @@ Local fingerprints: `data/90856.json`, `data/excised.json`, `data/fingerprints.j
 ## Sources
 
 - [anthropics/claude-code#90856](https://github.com/anthropics/claude-code/issues/90856) OPEN
-- Same-class corroborators (cite on the desk, not as primary): [#82064](https://github.com/anthropics/claude-code/issues/82064), [#77937](https://github.com/anthropics/claude-code/issues/77937), [#87778](https://github.com/anthropics/claude-code/issues/87778), [#86428](https://github.com/anthropics/claude-code/issues/86428), [#87651](https://github.com/anthropics/claude-code/issues/87651)
+- Same-class corroborators (cite on the desk, not as primary): [#83704](https://github.com/anthropics/claude-code/issues/83704), [#87206](https://github.com/anthropics/claude-code/issues/87206), [#82064](https://github.com/anthropics/claude-code/issues/82064), [#77937](https://github.com/anthropics/claude-code/issues/77937), [#87778](https://github.com/anthropics/claude-code/issues/87778), [#86428](https://github.com/anthropics/claude-code/issues/86428), [#87651](https://github.com/anthropics/claude-code/issues/87651)
+- Same-class Codex registry/disk dual-state (cite only): [openai/codex#39332](https://github.com/openai/codex/issues/39332), [#39421](https://github.com/openai/codex/issues/39421), [#32058](https://github.com/openai/codex/issues/32058)

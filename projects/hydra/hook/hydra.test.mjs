@@ -25,7 +25,10 @@ import {
   decideSeed,
   handle,
   score,
+  CODEX_CORROBORATORS,
+  SEED_ALIASES,
   seedAlreadyAdded,
+  seedCauterized,
   seedCloneBack,
   seedDualLedger,
   seedExcised,
@@ -53,8 +56,9 @@ test("90856 seed is regrown/alarm — settings cut, known ledger returned, clone
   assert.equal(result.alarm, true);
   assert.equal(result.hold, false);
   assert.equal(result.excised, false);
-  assert.equal(result.idleWord, "excised");
-  assert.equal(IDLE_WORD, "excised");
+  assert.equal(result.cauterized, false);
+  assert.equal(result.idleWord, "cauterized");
+  assert.equal(IDLE_WORD, "cauterized");
   assert.doesNotMatch(result.idleWord, /hydra/i);
   assert.equal(result.issue, FEATURED_ISSUE);
   assert.equal(seed.removedFromSettings, true);
@@ -75,30 +79,36 @@ test("90856 seed is regrown/alarm — settings cut, known ledger returned, clone
   assert.ok(result.chips.includes("silent-return"));
   assert.ok(result.chips.includes("already-added"));
   assert.ok(result.chips.includes("minute-later"));
-  assert.ok(!result.chips.includes("excised"));
+  assert.ok(!result.chips.includes("cauterized"));
 });
 
-test("excised seed is excised/hold — both ledgers and clone gone", () => {
-  const result = score(seedExcised());
-  assert.equal(result.verdict, "excised");
+test("cauterized seed is cauterized/hold — both ledgers and clone gone", () => {
+  const result = score(seedCauterized());
+  assert.equal(result.verdict, "cauterized");
+  assert.equal(result.cauterized, true);
   assert.equal(result.excised, true);
   assert.equal(result.hold, true);
   assert.equal(result.alarm, false);
-  assert.equal(result.idleWord, "excised");
+  assert.equal(result.idleWord, "cauterized");
   assert.equal(analyze(seedExcised()).excised, true);
-  assert.ok(result.chips.includes("excised"));
+  assert.ok(result.chips.includes("cauterized"));
 });
 
 test("decideSeed covers every named verdict", () => {
   for (const name of VERDICTS) {
     const result = decideSeed(name);
     assert.equal(result.verdict, name, name);
-    assert.equal(result.idleWord, "excised");
+    assert.equal(result.idleWord, "cauterized");
     assert.doesNotMatch(result.idleWord, /hydra/i);
   }
   assert.equal(decide({ action: "90856" }).verdict, "regrown");
   assert.equal(decide({ action: "regrown" }).verdict, "regrown");
-  assert.equal(decide({ action: "excised" }).verdict, "excised");
+  assert.equal(decide({ action: "cauterized" }).verdict, "cauterized");
+  assert.equal(decide({ action: "excised" }).verdict, "cauterized");
+  assert.equal(decide({ action: "lopped" }).verdict, SEED_ALIASES.lopped);
+  assert.equal(decide({ action: "dual" }).verdict, SEED_ALIASES.dual);
+  assert.equal(decide({ action: "recloned" }).verdict, SEED_ALIASES.recloned);
+  assert.equal(decide({ action: "shadowed" }).verdict, SEED_ALIASES.shadowed);
 });
 
 test("rule: settings gone + known back + clone back is alarm", () => {
@@ -116,14 +126,14 @@ test("rule: settings gone + known back + clone back is alarm", () => {
   assert.equal(analyze(ticket).regrownPattern, true);
 });
 
-test("rule: gone from settings AND known AND clone is excised", () => {
+test("rule: gone from settings AND known AND clone is cauterized", () => {
   const ticket = {
     removedFromSettings: true,
     presentInKnown: false,
     cloneExists: false,
     settingsHadEntry: true,
   };
-  assert.equal(classify(ticket), "excised");
+  assert.equal(classify(ticket), "cauterized");
   assert.equal(score(ticket).hold, true);
 });
 
@@ -145,6 +155,7 @@ test("specific alarm classes", () => {
 test("local fingerprint files keep issue numbers and #90856 facts only", () => {
   const primary = readData("90856.json");
   const excised = readData("excised.json");
+  const cauterized = readData("cauterized.json");
   const prints = readData("fingerprints.json");
   const chips = readData("chips.json");
   assert.equal(primary.issue, 90856);
@@ -157,9 +168,11 @@ test("local fingerprint files keep issue numbers and #90856 facts only", () => {
   assert.equal(primary.os, "macOS 26.4.1");
   assert.equal(score(primary).verdict, "regrown");
   assert.equal(excised.issue, 90856);
-  assert.equal(score(excised).verdict, "excised");
+  assert.equal(score(excised).verdict, "cauterized");
+  assert.equal(cauterized.issue, 90856);
+  assert.equal(score(cauterized).verdict, "cauterized");
   assert.equal(prints.primary[0].issue, 90856);
-  assert.equal(prints.idleWord, "excised");
+  assert.equal(prints.idleWord, "cauterized");
   assert.deepEqual(
     prints.primary.map((row) => row.issue),
     [...PRIMARY_ISSUES],
@@ -167,6 +180,10 @@ test("local fingerprint files keep issue numbers and #90856 facts only", () => {
   assert.deepEqual(
     prints.corroborators.map((row) => row.issue),
     [...CORROBORATORS],
+  );
+  assert.deepEqual(
+    prints.codex.map((row) => row.issue),
+    [...CODEX_CORROBORATORS],
   );
   assert.equal(prints.primary[0].observations.length, 3);
   assert.equal(prints.primary[0].observations[2].cloneRecreated, "18:17:36");
@@ -183,19 +200,19 @@ test("local fingerprint files keep issue numbers and #90856 facts only", () => {
   }
 });
 
-test("handle alarms on regrown and allows excised", async () => {
+test("handle alarms on regrown and allows cauterized", async () => {
   const fail = await handle(seedRegrown());
   assert.equal(fail.hook_event_name, "Stop");
   assert.match(fail.hookSpecificOutput.additionalContext, /#90856/);
   assert.equal(fail.alarm, true);
-  const hold = await handle(seedExcised());
-  assert.equal(hold.excised, true);
-  assert.match(hold.hookSpecificOutput.additionalContext, /excised/i);
+  const hold = await handle(seedCauterized());
+  assert.equal(hold.cauterized, true);
+  assert.match(hold.hookSpecificOutput.additionalContext, /cauterized/i);
 });
 
 test("verdict and chip lists; idle is never hydra", () => {
   assert.deepEqual(VERDICTS, [
-    "excised",
+    "cauterized",
     "regrown",
     "re-cloned",
     "dual-ledger",
@@ -207,21 +224,31 @@ test("verdict and chip lists; idle is never hydra", () => {
     "clone-back",
   ]);
   assert.deepEqual(CHIPS, [...VERDICTS]);
-  assert.ok(HOLD_VERDICTS.includes("excised"));
+  assert.ok(HOLD_VERDICTS.includes("cauterized"));
   assert.ok(!HOLD_VERDICTS.includes("hydra"));
   assert.doesNotMatch(IDLE_WORD, /hydra/i);
+  assert.equal(SEED_ALIASES.lopped, "settings-only");
+  assert.equal(SEED_ALIASES.dual, "dual-ledger");
+  assert.equal(SEED_ALIASES.recloned, "re-cloned");
+  assert.equal(SEED_ALIASES.shadowed, "known-authoritative");
   assert.deepEqual(
     OBSERVATIONS.map((row) => row.marketplace),
     ["A", "B", "C"],
   );
 });
 
-test("living page seeds regrown and names excised idle", () => {
+test("living page seeds regrown and names cauterized idle", () => {
   const html = readPage();
   assert.match(html, /regrown/);
-  assert.match(html, /excised/);
-  assert.match(html, /Idle word:\s*excised/);
+  assert.match(html, /cauterized/);
+  assert.match(html, /Idle word:\s*cauterized/);
+  assert.match(html, /lopped/);
+  assert.match(html, /recloned/);
+  assert.match(html, /shadowed/);
   assert.match(html, /#90856/);
+  assert.match(html, /#83704/);
+  assert.match(html, /#87206/);
+  assert.match(html, /codex\/issues\/39332/);
   assert.match(html, /08:50 Sydney · hydra/);
   assert.match(html, /Libre Baskerville/);
   assert.match(html, /DM Sans/);
@@ -230,6 +257,7 @@ test("living page seeds regrown and names excised idle", () => {
   assert.match(html, /18:17:36/);
   assert.match(html, /already added/i);
   assert.doesNotMatch(html, /Idle word:\s*hydra/i);
+  assert.doesNotMatch(html, /Idle word:\s*excised/);
   assert.doesNotMatch(html, /family=Fraunces/);
   assert.doesNotMatch(html, /Figtree/);
   assert.doesNotMatch(html, /Cormorant Garamond/);

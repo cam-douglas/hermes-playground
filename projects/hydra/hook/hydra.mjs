@@ -3,12 +3,12 @@
  * Hydra — marble registry-hall scorer.
  * A settings cut that regrows from the
  * known ledger is not a hold.
- * Score both ledgers or admit excised.
+ * Score both ledgers or admit cauterized.
  *
  *   echo '{"removedFromSettings":true,"presentInKnown":true,"cloneExists":true}' | node hydra.mjs
  *   node hydra.mjs ticket.json
  *
- * Idle word is excised.
+ * Idle word is cauterized.
  * Seeded state is regrown / #90856.
  * NEVER idle as "hydra".
  *
@@ -22,7 +22,7 @@
  * clone. No error. No log. Re-add
  * then says "already added".
  *
- * EXCISED if gone from settings AND
+ * CAUTERIZED if gone from settings AND
  * known AND clone absent.
  * REGROWN if settings removal is
  * undone by the known ledger.
@@ -37,7 +37,7 @@ import { stdin } from "node:process";
 import { pathToFileURL } from "node:url";
 
 export const VERDICTS = Object.freeze([
-  "excised",
+  "cauterized",
   "regrown",
   "re-cloned",
   "dual-ledger",
@@ -48,7 +48,14 @@ export const VERDICTS = Object.freeze([
   "minute-later",
   "clone-back",
 ]);
-export const IDLE_WORD = "excised";
+export const IDLE_WORD = "cauterized";
+export const SEED_ALIASES = Object.freeze({
+  excised: "cauterized",
+  lopped: "settings-only",
+  dual: "dual-ledger",
+  recloned: "re-cloned",
+  shadowed: "known-authoritative",
+});
 export const ALARM_VERDICTS = Object.freeze([
   "regrown",
   "re-cloned",
@@ -60,11 +67,12 @@ export const ALARM_VERDICTS = Object.freeze([
   "minute-later",
   "clone-back",
 ]);
-export const HOLD_VERDICTS = Object.freeze(["excised"]);
+export const HOLD_VERDICTS = Object.freeze(["cauterized"]);
 export const CHIPS = Object.freeze([...VERDICTS]);
 export const FEATURED_ISSUE = 90856;
 export const PRIMARY_ISSUES = Object.freeze([90856]);
-export const CORROBORATORS = Object.freeze([82064, 77937, 87778, 86428, 87651]);
+export const CORROBORATORS = Object.freeze([83704, 87206, 82064, 77937, 87778, 86428, 87651]);
+export const CODEX_CORROBORATORS = Object.freeze([39332, 39421, 32058]);
 export const VERSION = "2.1.247";
 export const PLATFORM = "macos";
 export const OS = "macOS 26.4.1";
@@ -202,7 +210,7 @@ export function analyze(input) {
   const featured = row.issue === FEATURED_ISSUE && isRegrownPattern(row);
   const excised = isExcised(row);
   const chips = [];
-  if (excised) chips.push("excised");
+  if (excised) chips.push("cauterized");
   if (isRegrownPattern(row)) chips.push("regrown");
   if (recloned) chips.push("re-cloned", "clone-back");
   if (dualLedger && !excised) chips.push("dual-ledger");
@@ -234,8 +242,9 @@ export function analyze(input) {
 
 export function classify(input) {
   const facts = analyze(input);
-  const seed = String(facts.row.seed || "").toLowerCase();
-  if (facts.excised) return "excised";
+  const rawSeed = String(facts.row.seed || "").toLowerCase();
+  const seed = SEED_ALIASES[rawSeed] || rawSeed;
+  if (facts.excised) return "cauterized";
   if (ALARM_VERDICTS.includes(seed)) return seed;
   if (facts.featured) return "regrown";
   if (facts.alreadyAdded && facts.inKnown) return "already-added";
@@ -248,7 +257,7 @@ export function classify(input) {
   if (facts.settingsOnly && facts.removed && facts.inKnown && !facts.clone) return "settings-only";
   if (facts.dualLedger) return "dual-ledger";
   if (facts.regrownPattern) return "regrown";
-  return "excised";
+  return "cauterized";
 }
 
 export function chipsOf(input) {
@@ -262,7 +271,8 @@ export function score(input) {
   return {
     verdict,
     state: verdict,
-    excised: verdict === "excised",
+    cauterized: verdict === "cauterized",
+    excised: verdict === "cauterized",
     regrown: verdict === "regrown" || facts.regrownPattern,
     hold,
     alarm: !hold,
@@ -289,8 +299,8 @@ export function score(input) {
 }
 
 export function feedOf(kind) {
-  if (kind === "excised") {
-    return "● Excised · gone from settings AND known AND clone absent · hold";
+  if (kind === "cauterized") {
+    return "● Cauterized · gone from settings AND known AND clone absent · hold";
   }
   if (kind === "re-cloned") {
     return "● Re-cloned · clone directory recreated after the settings cut · alarm";
@@ -321,7 +331,7 @@ export function feedOf(kind) {
 
 export function reasonsOf(facts, kind) {
   const reasons = [`verdict ${kind}`];
-  if (kind === "excised") {
+  if (kind === "cauterized") {
     reasons.push("gone from settings AND known AND clone absent");
     reasons.push("what works: delete from known_marketplaces.json AND remove the clone");
   }
@@ -385,7 +395,7 @@ export function seedRegrown() {
 
 export function seedExcised() {
   return {
-    seed: "excised",
+    seed: "cauterized",
     issue: FEATURED_ISSUE,
     removedFromSettings: true,
     presentInKnown: false,
@@ -542,22 +552,32 @@ export function seedMinuteLater() {
   };
 }
 
+export function seedCauterized() {
+  return seedExcised();
+}
+
 export function decideSeed(name) {
   const key = String(name || "").toLowerCase();
+  const mapped = SEED_ALIASES[key] || key;
   const seeds = {
-    excised: seedExcised,
+    cauterized: seedCauterized,
+    excised: seedCauterized,
     regrown: seedRegrown,
     "re-cloned": seedReCloned,
+    recloned: seedReCloned,
     "dual-ledger": seedDualLedger,
+    dual: seedDualLedger,
     "settings-only": seedSettingsOnly,
+    lopped: seedSettingsOnly,
     "known-authoritative": seedKnownAuthoritative,
+    shadowed: seedKnownAuthoritative,
     "silent-return": seedSilentReturn,
     "already-added": seedAlreadyAdded,
     "minute-later": seedMinuteLater,
     "clone-back": seedCloneBack,
     90856: seedRegrown,
   };
-  const fn = seeds[key];
+  const fn = seeds[key] || seeds[mapped];
   return score(fn ? fn() : seedRegrown());
 }
 
@@ -582,7 +602,7 @@ export async function handle(payload = {}) {
       hookEventName: "Stop",
       additionalContext: deny
         ? "Hydra regrown. A settings cut that regrows from the known ledger is not a hold. #90856 known_marketplaces.json silently re-registers the marketplace."
-        : "Hydra excised. Gone from settings AND known AND clone absent.",
+        : "Hydra cauterized. Gone from settings AND known AND clone absent.",
     },
     ...result,
   };
