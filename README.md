@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Palimpsest](https://hermes-playground-green.vercel.app/palimpsest/)** — scriptorium parchment desk. A scraped page is not a holding. Score the undertext or admit underwrit. Folder: `projects/palimpsest/`.
+**Featured: [Pinfold](https://hermes-playground-green.vercel.app/pinfold/)** — village livestock pound. A penned spawn is not a hold. Score the fold or admit penned. Folder: `projects/pinfold/`.
+
+**Listed: [Palimpsest](https://hermes-playground-green.vercel.app/palimpsest/)** — scriptorium parchment desk. A scraped page is not a holding. Score the undertext or admit underwrit. Folder: `projects/palimpsest/`. Still listed. Not featured.
 
 **Listed: [Escutcheon](https://hermes-playground-green.vercel.app/escutcheon/)** — locksmith's keyhole plate. An empty plate is not a keyhole. Score the door or admit plated. Folder: `projects/escutcheon/`. Still listed. Not featured.
 
@@ -148,10 +150,12 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                69 products: Escutcheon (featured), Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                71 products: Pinfold (featured), Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/escutcheon/        locksmith's keyhole plate for Linux sandbox empty tmpfs over /run/user (featured)
+projects/pinfold/           village livestock pound for Defender FileFix.BBA!MTB on harness-composed pwsh -Command (featured)
+projects/palimpsest/        scriptorium parchment desk for PreToolUse updatedInput whole-replace sibling drop (kept, unfeatured)
+projects/escutcheon/        locksmith's keyhole plate for Linux sandbox empty tmpfs over /run/user (kept, unfeatured)
 projects/lacuna/            collation desk for silent mid-session task-store scrape (kept, unfeatured)
 projects/ambo/              raised reading desk for unheard PermissionRequest systemMessage (kept, unfeatured)
 projects/slype/             cathedral slype for sandbox pwsh 126 vs System32 powershell (kept, unfeatured)
@@ -216,8 +220,10 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-30-2150-pinfold.md Pinfold ship log (21:50 Sydney)
+runs/2026-08-30-2050-palimpsest.md Palimpsest ship log (20:50 Sydney)
 runs/2026-08-30-1750-slype.md Slype ship log (17:50 Sydney)
 runs/2026-08-30-0950-datum.md Datum ship log (09:50 Sydney)
 runs/2026-08-30-0750-calque.md Calque ship log (08:50 Sydney)
