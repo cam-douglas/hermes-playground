@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Scion — orchard grafting bench for Claude Code #90815: a VS Code fork while Remote Control is on produces a child with empty history. A healthy graft with no rings is not a hold. Score the cambium or admit hollow."
+    />
+    <title>Scion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,560;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Spline+Sans+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --night: #07140e;
+        --moss: #122418;
+        --bark: #2b1a12;
+        --wet: #3d2618;
+        --cambium: #5db87a;
+        --sap: #8ee0a4;
+        --tape: #e6d5b0;
+        --wax: #d4892a;
+        --lantern: #ffc857;
+        --flame: #f4a261;
+        --pith: #0a0e0c;
+        --text: #e8e0d0;
+        --quiet: #9aa892;
+        --fail: #e07a5f;
+        --hold: #7dce8a;
+        --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+        --body: "Figtree", "Avenir Next", "Segoe UI", sans-serif;
+        --mono: "Spline Sans Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--text);
+        background:
+          radial-gradient(ellipse at 18% 0%, rgba(255, 200, 87, 0.14), transparent 42%),
+          radial-gradient(ellipse at 80% 100%, rgba(93, 184, 122, 0.08), transparent 40%),
+          repeating-linear-gradient(90deg, transparent 0 51px, rgba(43, 26, 18, 0.35) 51px 52px),
+          linear-gradient(180deg, #0a1810 0%, var(--night) 38%, #0c100c 100%);
+      }
+      button, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: var(--lantern); }
+      .shed {
+        width: min(1180px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 72px;
+      }
+      .lintel {
+        position: relative;
+        padding: 20px 22px 16px;
+        background:
+          linear-gradient(180deg, #24160f 0%, var(--bark) 60%, #1a100c 100%);
+        border: 2px solid #5a3a24;
+        box-shadow:
+          inset 0 1px 0 rgba(230, 213, 176, 0.12),
+          0 18px 40px rgba(0, 0, 0, 0.35);
+      }
+      .lantern {
+        position: absolute;
+        right: 22px;
+        top: 14px;
+        width: 28px;
+        height: 42px;
+        border-radius: 6px 6px 10px 10px;
+        background: linear-gradient(180deg, var(--lantern), var(--flame));
+        box-shadow: 0 0 28px 8px rgba(255, 200, 87, 0.35);
+        animation: flicker 2.8s ease-in-out infinite;
+      }
+      .lantern::after {
+        content: "";
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        top: -10px;
+        height: 10px;
+        border: 2px solid #8a6230;
+        border-bottom: 0;
+      }
+      @keyframes flicker {
+        0%, 100% { filter: brightness(1); }
+        40% { filter: brightness(1.18); }
+        70% { filter: brightness(0.92); }
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--lantern);
+      }
+      h1 {
+        margin: 8px 0 6px;
+        font-family: var(--display);
+        font-size: clamp(42px, 8vw, 78px);
+        line-height: 0.88;
+        letter-spacing: -0.03em;
+        font-weight: 700;
+      }
+      .phrase {
+        max-width: 34em;
+        margin: 0;
+        color: var(--tape);
+        font-size: 18px;
+      }
+      .idle {
+        margin: 10px 0 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 16px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) {
+        .grid, .stocks { grid-template-columns: 1fr; }
+        .lantern { display: none; }
+      }
+      .panel {
+        background: rgba(18, 36, 24, 0.72);
+        border: 1px solid rgba(230, 213, 176, 0.12);
+        padding: 16px 16px 14px;
+      }
+      .panel h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 26px;
+        letter-spacing: -0.02em;
+      }
+      .stocks {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .stock {
+        background: linear-gradient(180deg, #1c140f, #120c09);
+        border: 1px solid rgba(93, 184, 122, 0.18);
+        padding: 14px;
+        min-height: 280px;
+      }
+      .stock.rc { box-shadow: inset 0 0 0 1px rgba(142, 224, 164, 0.18); }
+      .stock.hollow { box-shadow: inset 0 0 0 1px rgba(224, 122, 95, 0.25); }
+      .stock.taken { box-shadow: inset 0 0 0 1px rgba(125, 206, 138, 0.3); }
+      .cookie {
+        width: min(180px, 100%);
+        aspect-ratio: 1;
+        margin: 8px auto 12px;
+        border-radius: 50%;
+        position: relative;
+        background:
+          repeating-radial-gradient(circle at 50% 50%,
+            #5a3a24 0 3px,
+            #3d2618 3px 7px,
+            #2b1a12 7px 10px);
+        box-shadow:
+          inset 0 0 0 10px #1a100c,
+          0 10px 20px rgba(0, 0, 0, 0.35);
+      }
+      .cookie.hollow-cookie {
+        background:
+          radial-gradient(circle at 50% 50%, var(--pith) 0 42%, #2b1a12 42% 58%, #5a3a24 58% 100%);
+      }
+      .cookie.lined-cookie {
+        background:
+          repeating-radial-gradient(circle at 50% 50%,
+            #6a4a2c 0 2px,
+            #c9a87a 2px 4px,
+            #3d2618 4px 7px);
+      }
+      .sap {
+        position: absolute;
+        left: 50%;
+        top: -8px;
+        width: 6px;
+        height: 28px;
+        margin-left: -3px;
+        background: linear-gradient(180deg, var(--sap), transparent);
+        border-radius: 99px;
+        animation: drip 1.6s ease-in infinite;
+        display: none;
+      }
+      .stock.rc .sap { display: block; }
+      @keyframes drip {
+        0% { transform: translateY(-6px); opacity: 0; }
+        40% { opacity: 1; }
+        100% { transform: translateY(18px); opacity: 0; }
+      }
+      .meta {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+        line-height: 1.55;
+      }
+      .meta strong { color: var(--tape); font-weight: 600; }
+      .banner {
+        margin-top: 10px;
+        padding: 8px 10px;
+        background: rgba(255, 200, 87, 0.08);
+        border-left: 3px solid var(--lantern);
+        font-size: 13px;
+        color: var(--lantern);
+      }
+      .actions, .seeds {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .actions button, .seeds button, .tools button {
+        border: 1px solid rgba(230, 213, 176, 0.22);
+        background: #1a140f;
+        padding: 8px 12px;
+        border-radius: 2px;
+      }
+      .actions button:hover, .seeds button:hover, .tools button:hover {
+        border-color: var(--cambium);
+        color: var(--sap);
+      }
+      .seeds button[aria-pressed="true"] {
+        background: #243820;
+        border-color: var(--cambium);
+        color: var(--sap);
+      }
+      .verdict {
+        margin-top: 12px;
+        padding: 12px 14px;
+        background: #120e0b;
+        border: 1px solid rgba(230, 213, 176, 0.14);
+      }
+      .verdict .word {
+        font-family: var(--display);
+        font-size: 34px;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+      }
+      .verdict.fail .word { color: var(--fail); }
+      .verdict.hold .word { color: var(--hold); }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 3px 8px;
+        border: 1px solid rgba(230, 213, 176, 0.2);
+        border-radius: 999px;
+        color: var(--tape);
+      }
+      .chip.on {
+        border-color: var(--cambium);
+        color: var(--sap);
+        background: rgba(93, 184, 122, 0.1);
+      }
+      textarea {
+        width: 100%;
+        min-height: 220px;
+        margin-top: 8px;
+        padding: 10px;
+        resize: vertical;
+        background: var(--pith);
+        border: 1px solid rgba(230, 213, 176, 0.16);
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .issue {
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .issue .state {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--cambium);
+        color: var(--sap);
+        text-transform: uppercase;
+        font-size: 11px;
+      }
+      .issue .state.closed { border-color: var(--fail); color: var(--fail); }
+      .reasons { margin: 8px 0 0; padding-left: 18px; color: var(--quiet); font-size: 14px; }
+      .sources { margin-top: 16px; }
+      .sources ul { margin: 0; padding-left: 18px; color: var(--quiet); }
+      .sources li { margin: 6px 0; }
+      footer {
+        margin-top: 18px;
+        color: var(--quiet);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shed">
+      <header class="lintel">
+        <span class="lantern" aria-hidden="true"></span>
+        <p class="mark">06:50 Sydney · scion</p>
+        <h1>Scion</h1>
+        <p class="phrase">A healthy graft with no rings is not a hold. Score the cambium or admit hollow.</p>
+        <p class="idle">Idle word: hollow. Orchard grafting bench / scion bank. Seeded empty-fork.</p>
+      </header>
+
+      <div class="grid">
+        <section class="panel" aria-label="Grafting bench">
+          <h2>Grafting bench</h2>
+          <div class="stocks">
+            <article class="stock rc" id="rootstock">
+              <p class="mark">rootstock</p>
+              <div class="cookie" aria-hidden="true"><span class="sap"></span></div>
+              <div class="meta">
+                <div><strong id="parent-rings">3942</strong> rings</div>
+                <div><strong id="parent-bytes">9,363,037</strong> bytes</div>
+                <div>last write 12:17:24 · RC sap flowing</div>
+                <div>parent <span id="parent-id">cfde1c9b</span></div>
+              </div>
+            </article>
+            <article class="stock hollow" id="scion-stock">
+              <p class="mark">scion wood</p>
+              <div class="cookie hollow-cookie" id="scion-cookie" aria-hidden="true"></div>
+              <div class="meta">
+                <div><strong id="child-rings">38</strong> rings</div>
+                <div><strong id="child-bytes">40,676</strong> bytes</div>
+                <div>lastSequenceNum <strong id="child-seq">0</strong></div>
+                <div>forkedFrom <strong id="child-fork">none</strong></div>
+                <div>kind <strong id="child-kind">interactive</strong></div>
+                <div>startedAt +2s after parent quiesced</div>
+              </div>
+              <p class="banner" id="child-banner">Remote Control is active · Continue here, on your phone, or at claude.ai/code</p>
+            </article>
+          </div>
+          <div class="actions">
+            <button type="button" id="graft-rc">Take graft from RC sap</button>
+            <button type="button" id="graft-unbridged">Take graft from unbridged stock</button>
+            <button type="button" id="score-btn">Score the cambium</button>
+          </div>
+          <div class="verdict fail" id="verdict-box">
+            <div class="word" id="verdict-word">hollow</div>
+            <p id="verdict-feed">● Hollow · lastSequenceNum 0, no forkedFromSessionId, healthy banner / kind interactive · empty-fork</p>
+            <div class="chips" id="chip-row"></div>
+          </div>
+        </section>
+
+        <aside class="panel" aria-label="Issue and ticket">
+          <h2>Live cambium</h2>
+          <p class="issue" id="issue-card">Fetching anthropics/claude-code#90815…</p>
+          <p class="meta" id="local-seeds">Local seeds: parent 9363037/3942 · child 40676/38 · lastSequenceNum 0 · +2s</p>
+          <h2>Graft ticket</h2>
+          <div class="seeds" role="group" aria-label="Seed switches">
+            <button type="button" id="seed-hollow" aria-pressed="true">hollow</button>
+            <button type="button" id="seed-lined" aria-pressed="false">lined</button>
+            <button type="button" id="seed-unbridged" aria-pressed="false">unbridged-success</button>
+          </div>
+          <textarea id="ticket" spellcheck="false" aria-label="Graft ticket JSON"></textarea>
+          <div class="tools">
+            <button type="button" id="apply-ticket">Score pasted ticket</button>
+            <button type="button" id="export-ticket">Export graft ticket</button>
+          </div>
+          <ol class="reasons" id="reasons"></ol>
+        </aside>
+      </div>
+
+      <section class="panel sources">
+        <h2>Sources</h2>
+        <ul>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90815">#90815</a> OPEN — VS Code extension: forking while Remote Control is on produces a child with empty history. Author alonsorobots. 2026-08-30T19:34:40Z. Extension 2.1.251. Child jsonl first record type bridge-session lastSequenceNum 0; 38 recs / 40 KB vs parent 3942 recs / 9.3 MB.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/78563">#78563</a> OPEN — Desktop forks never enable Remote Control. Mirror: fork wins, bridge never called; here bridge wins, fork never seeds. Cross-tab: 0 of 4 forks had bridgeSessionIds; 97 of ~100 non-forks did.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90791">#90791</a> OPEN — VS Code opening a remote session from another machine: “Couldn't load earlier messages”; each send silently creates a NEW local session whose jsonl begins with its own bridge-session lastSequenceNum 0.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/85875">#85875</a> OPEN — after the first successful fork, subsequent forks silently create empty sessions (jsonl only ai-title/agent-name) while state.json still has forkParentSessionId. Spawn without --resume when sessionFile is null.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/84468">#84468</a> OPEN — RC daemon respawns hosts without --resume, model starts blank (“this chat is empty”) while the app still renders API history.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/85435">#85435</a> OPEN (stale) — RC registration once at creation; warm/restart never re-registers; Fork also does not register RC for the copy.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/87006">#87006</a> CLOSED — Windows Desktop RC disconnects after reinstall; forks initially keep context then later disconnect. Nearby, not the empty-bridged-child race.</li>
+          <li><a href="https://github.com/openai/codex/issues/41713">openai/codex#41713</a> OPEN enhancement — fork lineage (forked_from_id) cannot be re-rooted; deleting ancestors cascades. Opposite pole: too much lineage vs none.</li>
+        </ul>
+        <p>NOT Kindling, NOT Bollard, NOT Cote, NOT Ullage, NOT Voucher, NOT Almanac.</p>
+      </section>
+      <footer>
+        Catalog path <code>/scion/</code>. Score engine lives in this page and in
+        <code>projects/scion/hook/index.mjs</code>. No build step. No secrets.
+      </footer>
+    </main>
+    <script>
+      const PARENT_BYTES = 9363037;
+      const PARENT_RECORDS = 3942;
+      const CHILD_BYTES = 40676;
+      const CHILD_RECORDS = 38;
+      const HEALTHY_BANNER =
+        "Remote Control is active · Continue here, on your phone, or at claude.ai/code";
+      const CHIP_NAMES = [
+        "empty-fork",
+        "bridge-won",
+        "unlineaged",
+        "lastSequenceNum-0",
+        "no-forkedFrom",
+        "silent-drop",
+        "vscode-rc",
+        "race",
+        "healthy-banner",
+        "seedless",
+      ];
+
+      const SEEDS = {
+        hollow: {
+          seed: "hollow",
+          issue: 90815,
+          lastSequenceNum: 0,
+          forkedFromSessionId: null,
+          kind: "interactive",
+          banner: HEALTHY_BANNER,
+          bytes: CHILD_BYTES,
+          records: CHILD_RECORDS,
+          parentBytes: PARENT_BYTES,
+          parentRecords: PARENT_RECORDS,
+          bridged: true,
+          silent: true,
+          entrypoint: "claude-vscode",
+          parentOffsetMs: 2000,
+          startedAt: 1788117446827,
+          type: "bridge-session",
+          bridgeSessionId: "cse_01RsY",
+          sessionId: "319b94c3",
+          parentSessionId: "cfde1c9b",
+          version: "2.1.251",
+        },
+        lined: {
+          seed: "lined",
+          issue: 90815,
+          lastSequenceNum: 3942,
+          forkedFromSessionId: "cfde1c9b",
+          kind: "interactive",
+          banner: "",
+          bytes: PARENT_BYTES,
+          records: PARENT_RECORDS,
+          parentBytes: PARENT_BYTES,
+          parentRecords: PARENT_RECORDS,
+          bridged: false,
+          silent: false,
+          entrypoint: "claude-vscode",
+          parentOffsetMs: 2000,
+          sessionId: "1ef5d896",
+          parentSessionId: "cfde1c9b",
+          version: "2.1.251",
+        },
+        "unbridged-success": {
+          seed: "unbridged-success",
+          issue: 90815,
+          lastSequenceNum: 3942,
+          forkedFromSessionId: "cfde1c9b",
+          kind: "interactive",
+          banner: "",
+          bytes: PARENT_BYTES,
+          records: PARENT_RECORDS,
+          parentBytes: PARENT_BYTES,
+          parentRecords: PARENT_RECORDS,
+          bridged: false,
+          silent: false,
+          uuidSwap: true,
+          entrypoint: "claude-vscode",
+          parentOffsetMs: 2000,
+          sessionId: "1ef5d896",
+          parentSessionId: "cfde1c9b",
+          version: "2.1.251",
+        },
+      };
+
+      function bannerHealthy(ticket) {
+        return /Remote Control is active/.test(ticket.banner || "") || ticket.bannerHealthy === true;
+      }
+
+      function scoreTicket(raw) {
+        const ticket = raw && typeof raw === "object" ? raw : SEEDS.hollow;
+        const child = ticket.child && typeof ticket.child === "object" ? ticket.child : {};
+        const parent = ticket.parent && typeof ticket.parent === "object" ? ticket.parent : {};
+        const lastSequenceNum =
+          ticket.lastSequenceNum != null ? Number(ticket.lastSequenceNum) : Number(child.lastSequenceNum);
+        const forkedFromSessionId =
+          ticket.forkedFromSessionId || child.forkedFromSessionId || "";
+        const kind = ticket.kind || child.kind || "";
+        const banner = ticket.banner || child.banner || "";
+        const bytes = ticket.bytes != null ? Number(ticket.bytes) : Number(child.bytes);
+        const records = ticket.records != null ? Number(ticket.records) : Number(child.records);
+        const parentBytes = ticket.parentBytes != null ? Number(ticket.parentBytes) : Number(parent.bytes) || PARENT_BYTES;
+        const parentRecords =
+          ticket.parentRecords != null ? Number(ticket.parentRecords) : Number(parent.records) || PARENT_RECORDS;
+        const seqZero = lastSequenceNum === 0;
+        const noFork = !forkedFromSessionId;
+        const healthy = bannerHealthy({ banner, bannerHealthy: ticket.bannerHealthy });
+        const interactive = kind === "interactive";
+        const bytesMatch = bytes === parentBytes && (Number.isNaN(records) || records === parentRecords);
+        const hollow = seqZero && noFork && (healthy || interactive);
+        const linedTaken = Boolean(forkedFromSessionId) && bytesMatch;
+        const verdict = linedTaken ? (ticket.seed === "lined" ? "lined" : "taken") : "hollow";
+        const chips = [];
+        if (hollow) chips.push("empty-fork");
+        if ((ticket.bridged === true || ticket.bridgeSessionId || ticket.type === "bridge-session") && hollow) {
+          chips.push("bridge-won");
+        }
+        if (noFork) chips.push("unlineaged", "no-forkedFrom");
+        if (seqZero) chips.push("lastSequenceNum-0");
+        if (hollow && ticket.silent !== false) chips.push("silent-drop");
+        if (/claude-vscode|vscode/i.test(ticket.entrypoint || "") || ticket.version === "2.1.251") {
+          chips.push("vscode-rc");
+        }
+        if (ticket.parentOffsetMs === 2000 || (hollow && !linedTaken && seqZero)) chips.push("race");
+        if (healthy) chips.push("healthy-banner");
+        if (seqZero || (records < parentRecords)) chips.push("seedless");
+        const hold = verdict === "lined" || verdict === "taken";
+        const feed =
+          verdict === "lined"
+            ? "● Lined · child byte-count matches parent and forkedFromSessionId is present · hold"
+            : verdict === "taken"
+              ? "● Taken · unbridged or UUID-swap graft kept the rings · hold"
+              : "● Hollow · lastSequenceNum 0, no forkedFromSessionId, healthy banner / kind interactive · empty-fork";
+        const reasons = [`verdict ${verdict}`];
+        if (verdict === "hollow") {
+          reasons.push("#90815 empty bridged fork: child registered as a fresh interactive session");
+        }
+        if (seqZero) reasons.push("transcript opens as bridge-session with lastSequenceNum: 0");
+        if (noFork) reasons.push("Desktop session record has no forkedFromSessionId");
+        if (interactive) reasons.push("kind: interactive");
+        if (healthy) reasons.push("healthy RC banner");
+        if (linedTaken) {
+          reasons.push(`parent rings ${parentRecords} / ${parentBytes} match child ${records} / ${bytes}`);
+          reasons.push(`forkedFromSessionId present: ${forkedFromSessionId}`);
+        }
+        return {
+          ticket: {
+            ...ticket,
+            lastSequenceNum,
+            forkedFromSessionId: forkedFromSessionId || null,
+            kind,
+            banner,
+            bytes,
+            records,
+            parentBytes,
+            parentRecords,
+          },
+          verdict,
+          hold,
+          chips: [...new Set(chips)],
+          feed,
+          reasons,
+        };
+      }
+
+      const ticketEl = document.getElementById("ticket");
+      const verdictWord = document.getElementById("verdict-word");
+      const verdictFeed = document.getElementById("verdict-feed");
+      const verdictBox = document.getElementById("verdict-box");
+      const chipRow = document.getElementById("chip-row");
+      const reasonsEl = document.getElementById("reasons");
+      const scionStock = document.getElementById("scion-stock");
+      const scionCookie = document.getElementById("scion-cookie");
+      const rootstock = document.getElementById("rootstock");
+
+      function fmt(n) {
+        return Number(n).toLocaleString("en-US");
+      }
+
+      function render(result) {
+        const t = result.ticket;
+        ticketEl.value = JSON.stringify(t, null, 2);
+        verdictWord.textContent = result.verdict;
+        verdictFeed.textContent = result.feed;
+        verdictBox.className = "verdict " + (result.hold ? "hold" : "fail");
+        document.getElementById("child-rings").textContent = Number.isFinite(t.records) ? t.records : "—";
+        document.getElementById("child-bytes").textContent = Number.isFinite(t.bytes) ? fmt(t.bytes) : "—";
+        document.getElementById("child-seq").textContent =
+          t.lastSequenceNum == null ? "—" : String(t.lastSequenceNum);
+        document.getElementById("child-fork").textContent = t.forkedFromSessionId || "none";
+        document.getElementById("child-kind").textContent = t.kind || "—";
+        document.getElementById("child-banner").textContent = t.banner || "(no RC banner)";
+        document.getElementById("parent-rings").textContent = t.parentRecords;
+        document.getElementById("parent-bytes").textContent = fmt(t.parentBytes);
+        document.getElementById("parent-id").textContent = t.parentSessionId || "cfde1c9b";
+        scionStock.className = "stock " + (result.hold ? "taken" : "hollow");
+        scionCookie.className = "cookie " + (result.hold ? "lined-cookie" : "hollow-cookie");
+        rootstock.className = "stock" + (t.bridged ? " rc" : "");
+        chipRow.replaceChildren(
+          ...CHIP_NAMES.map((name) => {
+            const span = document.createElement("span");
+            span.className = "chip" + (result.chips.includes(name) ? " on" : "");
+            span.textContent = name;
+            return span;
+          }),
+        );
+        reasonsEl.replaceChildren(
+          ...result.reasons.map((reason) => {
+            const li = document.createElement("li");
+            li.textContent = reason;
+            return li;
+          }),
+        );
+        const pressed = t.seed || (result.hold ? "lined" : "hollow");
+        document.getElementById("seed-hollow").setAttribute("aria-pressed", String(pressed === "hollow"));
+        document.getElementById("seed-lined").setAttribute("aria-pressed", String(pressed === "lined"));
+        document.getElementById("seed-unbridged").setAttribute(
+          "aria-pressed",
+          String(pressed === "unbridged-success"),
+        );
+      }
+
+      function applySeed(name) {
+        render(scoreTicket(SEEDS[name] || SEEDS.hollow));
+      }
+
+      function applyEditor() {
+        try {
+          render(scoreTicket(JSON.parse(ticketEl.value)));
+        } catch (err) {
+          verdictWord.textContent = "hollow";
+          verdictFeed.textContent = "Ticket JSON did not parse. Score the cambium or admit hollow.";
+          verdictBox.className = "verdict fail";
+        }
+      }
+
+      document.getElementById("graft-rc").addEventListener("click", () => applySeed("hollow"));
+      document.getElementById("graft-unbridged").addEventListener("click", () => applySeed("unbridged-success"));
+      document.getElementById("score-btn").addEventListener("click", applyEditor);
+      document.getElementById("apply-ticket").addEventListener("click", applyEditor);
+      document.getElementById("seed-hollow").addEventListener("click", () => applySeed("hollow"));
+      document.getElementById("seed-lined").addEventListener("click", () => applySeed("lined"));
+      document.getElementById("seed-unbridged").addEventListener("click", () => applySeed("unbridged-success"));
+      document.getElementById("export-ticket").addEventListener("click", () => {
+        const blob = new Blob([ticketEl.value], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "scion-graft-ticket.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      applySeed("hollow");
+
+      fetch("https://api.github.com/repos/anthropics/claude-code/issues/90815")
+        .then((res) => {
+          if (!res.ok) throw new Error("GitHub " + res.status);
+          return res.json();
+        })
+        .then((issue) => {
+          const card = document.getElementById("issue-card");
+          const state = document.createElement("span");
+          state.className = "state" + (issue.state === "closed" ? " closed" : "");
+          state.textContent = issue.state || "unknown";
+          const link = document.createElement("a");
+          link.href = issue.html_url || "https://github.com/anthropics/claude-code/issues/90815";
+          link.textContent = "#" + issue.number + " " + (issue.title || "");
+          card.replaceChildren(state, link);
+        })
+        .catch(() => {
+          document.getElementById("issue-card").textContent =
+            "GitHub unauthenticated fetch did not land. #90815 remains OPEN in the local seed. See .env.example.";
+        });
+
+      Promise.all([
+        fetch("./data/parent.json").then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        fetch("./data/child.json").then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      ]).then(([parent, child]) => {
+        if (!parent || !child) return;
+        document.getElementById("local-seeds").textContent =
+          "Local seeds loaded: parent " +
+          parent.bytes +
+          "/" +
+          parent.records +
+          " · child " +
+          child.bytes +
+          "/" +
+          child.records +
+          " · lastSequenceNum " +
+          child.lastSequenceNum +
+          " · +" +
+          child.parentOffsetMs / 1000 +
+          "s";
+      });
+    </script>
+  </body>
+</html>
