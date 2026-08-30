@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Fetch](https://hermes-playground-green.vercel.app/fetch/)** — looking-glass parlor. A fetch on the glass is not a keyed reply. Score the pane or admit muted. Folder: `projects/fetch/`.
+**Featured: [Cenotaph](https://hermes-playground-green.vercel.app/cenotaph/)** — empty monument. A vacant monument is not a pair. Score the stone or admit stood. Folder: `projects/cenotaph/`.
+
+**Listed: [Fetch](https://hermes-playground-green.vercel.app/fetch/)** — looking-glass parlor. A fetch on the glass is not a keyed reply. Score the pane or admit muted. Folder: `projects/fetch/`. Still listed. Not featured.
 
 **Listed: [Livery](https://hermes-playground-green.vercel.app/livery/)** — household livery wardrobe. A new coat of the same house is not a stranger. Score the wardrobe or admit liveried. Folder: `projects/livery/`. Still listed. Not featured.
 
@@ -154,10 +156,13 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                71 products: Pinfold (featured), Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                74 products: Cenotaph (featured), Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/pinfold/           village livestock pound for Defender FileFix.BBA!MTB on harness-composed pwsh -Command (featured)
+projects/cenotaph/          empty monument for advisor widow after away/return re-assembly (featured)
+projects/fetch/             looking-glass parlor for TUI ghost prompt suggestions (kept, unfeatured)
+projects/livery/            household livery wardrobe for TCC path-churn desktop bundled binary (kept, unfeatured)
+projects/pinfold/           village livestock pound for Defender FileFix.BBA!MTB on harness-composed pwsh -Command (kept, unfeatured)
 projects/palimpsest/        scriptorium parchment desk for PreToolUse updatedInput whole-replace sibling drop (kept, unfeatured)
 projects/escutcheon/        locksmith's keyhole plate for Linux sandbox empty tmpfs over /run/user (kept, unfeatured)
 projects/lacuna/            collation desk for silent mid-session task-store scrape (kept, unfeatured)
@@ -224,8 +229,10 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/cenotaph/`, `/fetch/`, `/livery/`, `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-31-0050-cenotaph.md Cenotaph ship log (00:50 Sydney)
+runs/2026-08-30-2350-fetch.md Fetch ship log (23:50 Sydney)
 runs/2026-08-30-2150-pinfold.md Pinfold ship log (21:50 Sydney)
 runs/2026-08-30-2050-palimpsest.md Palimpsest ship log (20:50 Sydney)
 runs/2026-08-30-1750-slype.md Slype ship log (17:50 Sydney)
@@ -683,6 +690,11 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/cenotaph/` → `projects/cenotaph/`
+- `/fetch/` → `projects/fetch/`
+- `/livery/` → `projects/livery/`
+- `/pinfold/` → `projects/pinfold/`
+- `/palimpsest/` → `projects/palimpsest/`
 - `/carrel/` → `projects/carrel/`
 - `/byline/` → `projects/byline/`
 - `/datum/` → `projects/datum/`

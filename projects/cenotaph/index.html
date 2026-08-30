@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Cenotaph — empty monument for Claude Code #90771: away/return re-assembly keeps advisor_tool_result and drops server_tool_use. Disk pair intact. A vacant monument is not a pair. Idle word is stood."
+    />
+    <title>Cenotaph — empty monument</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --granite: #121416;
+        --plaza: #1a1c1e;
+        --stone: #cfc6b4;
+        --stone-deep: #8a8070;
+        --bronze: #b08a4a;
+        --bronze-deep: #6a4e28;
+        --poppy: #c23b4a;
+        --poppy-deep: #6e1824;
+        --rain: rgba(186, 196, 204, 0.12);
+        --copy: #e6dfd2;
+        --quiet: #9a9286;
+        --hold: #c8b48a;
+        --hold-deep: #3a3426;
+        --tomb: #0a0b0c;
+        --display: "Cinzel", "Times New Roman", serif;
+        --body: "Fraunces", Georgia, serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          repeating-linear-gradient(
+            185deg,
+            transparent 0 11px,
+            rgba(180, 190, 200, 0.03) 11px 12px
+          ),
+          radial-gradient(ellipse 50% 28% at 50% 0%, rgba(194, 59, 74, 0.08), transparent 58%),
+          radial-gradient(ellipse 40% 36% at 88% 88%, rgba(176, 138, 74, 0.08), transparent 60%),
+          linear-gradient(180deg, #1c1e20 0%, var(--granite) 42%, #0c0d0e 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--bronze); }
+      .memorial {
+        width: min(1220px, calc(100% - 22px));
+        margin: 0 auto;
+        padding: 18px 0 88px;
+      }
+      .plinth {
+        padding: 20px 24px 18px;
+        background:
+          linear-gradient(180deg, #2a2c2e 0%, var(--plaza) 54%, #101214 100%);
+        border: 1px solid rgba(207, 198, 180, 0.18);
+        box-shadow:
+          inset 0 1px 0 rgba(207, 198, 180, 0.12),
+          0 18px 40px rgba(0, 0, 0, 0.4);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--bronze);
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-family: var(--display);
+        font-size: clamp(48px, 8vw, 86px);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        line-height: 0.88;
+        color: var(--stone);
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 8px 0 0;
+        color: var(--quiet);
+      }
+      .thesis {
+        margin: 10px 0 0;
+        font-family: var(--body);
+        font-size: clamp(18px, 2.3vw, 24px);
+        font-style: italic;
+        max-width: 38em;
+        color: var(--stone);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        padding: 4px 9px;
+        border: 1px solid rgba(207, 198, 180, 0.22);
+        background: rgba(18, 20, 22, 0.72);
+        color: var(--quiet);
+      }
+      .chip.fail { border-color: var(--poppy); color: #f0b4b8; background: rgba(194, 59, 74, 0.12); }
+      .chip.hold { border-color: var(--bronze-deep); color: var(--hold); background: rgba(58, 52, 38, 0.4); }
+      .chip.contrast { border-color: var(--stone-deep); color: var(--stone); }
+      .chip[aria-current="true"] { outline: 2px solid var(--stone); }
+
+      .plaza {
+        position: relative;
+        margin-top: 16px;
+        min-height: 560px;
+        overflow: hidden;
+        border: 1px solid rgba(207, 198, 180, 0.16);
+        background:
+          linear-gradient(180deg, rgba(18, 20, 22, 0.2), transparent 30%),
+          repeating-linear-gradient(90deg, #17191b 0 28px, #141618 28px 56px);
+      }
+      .plaza::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          188deg,
+          transparent 0 9px,
+          var(--rain) 9px 10px
+        );
+        opacity: 0.55;
+      }
+      .plaza.hold-plaza .pylon {
+        box-shadow:
+          inset 0 0 0 1px rgba(200, 180, 138, 0.4),
+          0 28px 40px rgba(0, 0, 0, 0.45);
+      }
+      .pylon {
+        position: absolute;
+        left: 50%;
+        top: 28px;
+        width: min(420px, 86%);
+        transform: translateX(-50%);
+        z-index: 2;
+        padding: 28px 22px 36px;
+        background:
+          linear-gradient(180deg, #ddd4c4 0%, #b8ae9c 42%, #8e8574 100%);
+        color: #2a2620;
+        clip-path: polygon(8% 0, 92% 0, 100% 10%, 100% 100%, 0 100%, 0 10%);
+        box-shadow:
+          inset 0 0 0 1px rgba(90, 80, 64, 0.35),
+          0 28px 40px rgba(0, 0, 0, 0.45);
+      }
+      .pylon h2 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(22px, 3vw, 30px);
+        letter-spacing: 0.18em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+      .names {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .name {
+        min-height: 92px;
+        border: 0;
+        padding: 10px 8px;
+        background: rgba(42, 38, 32, 0.12);
+        text-align: left;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.4;
+        color: #2c2822;
+      }
+      .name b {
+        display: block;
+        font-family: var(--display);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        margin-bottom: 4px;
+      }
+      .name.fallen {
+        background: rgba(14, 12, 10, 0.28);
+        color: #4a443a;
+        text-decoration: line-through;
+        transform: rotate(-1.4deg) translateY(8px);
+      }
+      .name.vacant-cut {
+        outline: 1px dashed var(--poppy-deep);
+        background: rgba(110, 24, 36, 0.12);
+      }
+      .name.paired {
+        outline: 1px solid var(--bronze-deep);
+        text-decoration: none;
+        transform: none;
+        background: rgba(176, 138, 74, 0.14);
+      }
+      .sarcophagus {
+        position: absolute;
+        left: 50%;
+        bottom: 72px;
+        width: min(280px, 54%);
+        height: 54px;
+        transform: translateX(-50%);
+        z-index: 1;
+        border: 0;
+        background:
+          radial-gradient(ellipse 70% 80% at 50% 0%, rgba(10, 11, 12, 0.85), transparent 70%),
+          linear-gradient(180deg, #3a3c3e, #16181a);
+        box-shadow: 0 18px 30px rgba(0, 0, 0, 0.5);
+      }
+      .wreath {
+        position: absolute;
+        right: 8%;
+        top: 18%;
+        z-index: 4;
+        width: 88px;
+        height: 88px;
+        border: 0;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 50% 50%, transparent 34%, var(--bronze) 36% 48%, var(--bronze-deep) 50% 62%, transparent 64%),
+          radial-gradient(circle at 50% 18%, var(--poppy) 0 8%, transparent 9%);
+        box-shadow: inset 0 0 0 2px rgba(176, 138, 74, 0.4);
+      }
+      .lamp {
+        position: absolute;
+        left: 7%;
+        top: 16%;
+        z-index: 4;
+        border: 0;
+        padding: 8px 10px;
+        background: #1c1610;
+        color: var(--bronze);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-align: left;
+        box-shadow: 2px 4px 0 #050607;
+      }
+      .lamp b { display: block; color: var(--stone); margin-bottom: 2px; }
+      .brick {
+        position: absolute;
+        left: 7%;
+        bottom: 18%;
+        z-index: 5;
+        border: 0;
+        padding: 8px 10px;
+        background: var(--poppy-deep);
+        color: #f4d6d8;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        box-shadow: 3px 5px 0 #050607;
+      }
+      .lantern {
+        position: absolute;
+        right: 7%;
+        bottom: 18%;
+        z-index: 5;
+        border: 0;
+        padding: 8px 10px;
+        background: #2a2418;
+        color: var(--hold);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-align: left;
+        box-shadow: 2px 4px 0 #050607;
+      }
+      .walk {
+        position: absolute;
+        inset: auto 8% 4% 8%;
+        z-index: 7;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: center;
+      }
+      .stone {
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 5px 8px;
+        background: #2a2620;
+        color: var(--stone);
+        border: 1px solid #5a5448;
+      }
+      .stone.filed { background: var(--hold-deep); color: var(--hold); }
+      .stone[aria-pressed="true"] { outline: 2px solid var(--stone); }
+
+      .desk {
+        display: grid;
+        grid-template-columns: minmax(280px, 1.05fr) minmax(280px, 0.95fr);
+        gap: 14px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) {
+        .desk { grid-template-columns: 1fr; }
+        .plaza { min-height: 640px; }
+        .pylon { top: 18px; }
+        .names { grid-template-columns: 1fr; }
+      }
+      .panel {
+        padding: 14px 16px 16px;
+        background: rgba(12, 13, 14, 0.88);
+        border: 1px solid rgba(207, 198, 180, 0.14);
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--bronze);
+        margin: 0 0 8px;
+      }
+      .strays, .stamps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .stray, .stamp {
+        padding: 6px 8px;
+        border: 1px solid rgba(207, 198, 180, 0.2);
+        background: #1a1c1e;
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+      .stray small { display: block; color: var(--quiet); font-size: 9px; }
+      .stray.filed { border-color: var(--bronze); color: var(--hold); }
+      .stamp { background: #2a2620; color: var(--stone); }
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .act button {
+        padding: 8px 12px;
+        background: #1c1e20;
+        color: var(--copy);
+        border: 1px solid #5a5448;
+        font-family: var(--display);
+        font-size: 16px;
+        letter-spacing: 0.06em;
+      }
+      .act button.admit { background: var(--hold-deep); color: #f4efe4; border-color: var(--bronze); }
+      .act button.restore { background: var(--poppy-deep); color: #f4d6d8; border-color: var(--poppy); }
+      label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--quiet);
+        margin: 8px 0 6px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        resize: vertical;
+        background: var(--tomb);
+        color: var(--copy);
+        border: 1px solid rgba(207, 198, 180, 0.18);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 10px;
+      }
+      .verdict-face {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(38px, 6vw, 64px);
+        letter-spacing: 0.02em;
+        line-height: 0.9;
+        color: #f0b4b8;
+      }
+      .verdict-face.fail { color: #f0b4b8; }
+      .verdict-face.hold { color: var(--hold); }
+      .verdict-face.contrast { color: var(--stone); }
+      .feed { color: var(--copy); line-height: 1.45; }
+      .reasons {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+      }
+      .ledgers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .ledger-card {
+        padding: 8px 10px;
+        border: 1px solid rgba(207, 198, 180, 0.16);
+        background: #141618;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--quiet);
+      }
+      .ledger-card strong { display: block; color: var(--stone); margin-bottom: 4px; }
+      .ledger-card.widow { border-color: var(--poppy); color: #f0b4b8; }
+      .ledger-card.hold-card { border-color: var(--bronze); color: var(--hold); }
+      .path {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        line-height: 1.55;
+      }
+      .path strong { color: var(--stone); }
+      .book { margin-top: 10px; font-family: var(--mono); font-size: 11px; color: var(--quiet); line-height: 1.55; }
+      footer {
+        margin-top: 20px;
+        color: var(--quiet);
+        font-size: 14px;
+        max-width: 64em;
+        line-height: 1.5;
+      }
+      footer a { color: var(--bronze); }
+      footer code { font-family: var(--mono); font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <main class="memorial">
+      <header class="plinth">
+        <p class="mark">00:50 Sydney · cenotaph</p>
+        <h1>Cenotaph</h1>
+        <p class="hours">#90771 · empty monument / vacant sarcophagus</p>
+        <p class="thesis">A vacant monument is not a pair. Score the stone or admit stood.</p>
+      </header>
+      <div class="chips" id="chips"></div>
+
+      <section class="plaza" id="plaza" aria-label="Portland-stone cenotaph">
+        <button type="button" class="lamp" id="lamp" title="File away-summary">
+          <b>condensation lamp</b>
+          away / return<br />
+          no compaction record
+        </button>
+        <button type="button" class="wreath" id="wreath" title="Seed widowed #90771" aria-label="Bronze wreath"></button>
+        <div class="pylon" id="pylon">
+          <h2>The absent pair</h2>
+          <div class="names">
+            <button type="button" class="name fallen" id="use-cut" title="File use-dropped">
+              <b>server_tool_use</b>
+              name=advisor<br />
+              fallen from the wall
+            </button>
+            <button type="button" class="name vacant-cut" id="result-cut" title="File vacant / advisor-kept">
+              <b>advisor_tool_result</b>
+              message index 3<br />
+              vacant monument
+            </button>
+          </div>
+        </div>
+        <button type="button" class="sarcophagus" id="tomb" title="Empty tomb" aria-label="Vacant sarcophagus"></button>
+        <button type="button" class="brick" id="brick" title="File bricked">400 · bricked</button>
+        <button type="button" class="lantern" id="lantern" title="File recovered">
+          cold-resume lantern<br />
+          claude --resume
+        </button>
+        <div class="walk" id="walk" aria-label="Walk the memorial"></div>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">Walk the memorial</p>
+          <div class="strays" id="strays"></div>
+          <p class="hed" style="margin-top:14px">Stamp the class</p>
+          <p class="path">Wrong stamps bind the stone. Correct stamps file the monument. The idle word unlocks only on the honest pair.</p>
+          <div class="stamps" id="stamps"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score the stone</button>
+            <button type="button" class="admit" id="admit-btn">Admit stood</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90771</button>
+          </div>
+          <label for="probe">Probe · disk pair / assembled request / away / teammate</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Mason's note</p>
+          <p class="verdict-face fail" id="verdict">widowed</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <p class="path" id="path"></p>
+          <div class="ledgers" aria-live="polite">
+            <div class="ledger-card" id="disk-ledger"></div>
+            <div class="ledger-card widow" id="assembled-ledger"></div>
+          </div>
+          <div class="book" id="ledger"></div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90771">anthropics/claude-code#90771</a>
+        (OPEN, 2026-08-30) — orphaned <code>advisor_tool_result</code> after away/return re-assembly bricks the session with a 400 (4 specimens, Claude Code 2.1.251). Disk pair intact; the widow lives only in the assembled request.
+        Contrast (on-disk interleave; not this product):
+        <a href="https://github.com/anthropics/claude-code/issues/50527">#50527</a>
+        <code>/color</code>,
+        <a href="https://github.com/anthropics/claude-code/issues/63375">#63375</a>
+        <code>/usage</code>,
+        <a href="https://github.com/anthropics/claude-code/issues/65938">#65938</a>
+        <code>/goal</code>,
+        <a href="https://github.com/anthropics/claude-code/issues/86198">#86198</a>
+        <code>/effort</code>,
+        <a href="https://github.com/anthropics/claude-code/issues/63553">#63553</a>
+        pair split on resume.
+        NOT Sigil, Suture, Coda, Husk, Palimpsest, Waif, Fetch, Livery, Pinfold, Assay, Blot.
+        Ask: drop the result with its use, or keep both.
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "stood";
+      const DEMO_DISK_USE = 119;
+      const DEMO_DISK_RESULT = 119;
+      const DEMO_DISK_DANGLING = 0;
+      const DEMO_ASSEMBLED_INDEX = 3;
+      const DEMO_SPECIMENS = 4;
+      const DEMO_VERSION = "2.1.251";
+      const ALARM = [
+        "widowed", "bricked", "vacant", "use-dropped", "pair-split",
+        "away-summary", "teammate-injected",
+      ];
+      const FAIL_PATH = [
+        "widowed", "bricked", "away-summary", "teammate-injected",
+        "on-disk-ok", "recovered", "vacant", "advisor-kept",
+        "use-dropped", "pair-split", "disabled-clears",
+      ];
+      const ledger = [];
+      const filed = new Set();
+
+      function asText(v) { return v == null ? "" : String(v); }
+      function asNBool(v) {
+        if (v === true || v === false) return v;
+        return null;
+      }
+      function asNNum(v) {
+        if (v == null || v === "") return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function emptyProbe() {
+        return {
+          session: "", issue: null, source: "",
+          diskUseCount: null, diskResultCount: null, diskDangling: null,
+          assembledHasServerToolUse: null, assembledHasAdvisorResult: null,
+          assembledResultAtMessageIndex: null, assembledPairCoLocated: null,
+          awaySummaryBetweenOkAnd400: null, teammateInjection: null,
+          compactionRecord: null, subsequentTurn400: null,
+          coldResumeRecovers: null, advisorDisabled: null, specimens: null,
+          version: "", nearby: "",
+          nearbyWidowed: false, nearbyBricked: false, nearbyAwaySummary: false,
+          nearbyTeammateInjected: false, nearbyOnDiskOk: false, nearbyRecovered: false,
+          nearbyVacant: false, nearbyAdvisorKept: false, nearbyUseDropped: false,
+          nearbyPairSplit: false, nearbyDisabledClears: false,
+        };
+      }
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.cenotaph && typeof src.cenotaph === "object" ? src.cenotaph
+          : src.probe && typeof src.probe === "object" ? src.probe
+          : src;
+        return {
+          ...emptyProbe(), ...nested,
+          diskUseCount: asNNum(nested.diskUseCount),
+          diskResultCount: asNNum(nested.diskResultCount),
+          diskDangling: asNNum(nested.diskDangling),
+          assembledHasServerToolUse: asNBool(nested.assembledHasServerToolUse),
+          assembledHasAdvisorResult: asNBool(nested.assembledHasAdvisorResult),
+          assembledResultAtMessageIndex: asNNum(nested.assembledResultAtMessageIndex),
+          assembledPairCoLocated: asNBool(nested.assembledPairCoLocated),
+          awaySummaryBetweenOkAnd400: asNBool(nested.awaySummaryBetweenOkAnd400),
+          teammateInjection: asNBool(nested.teammateInjection),
+          compactionRecord: asNBool(nested.compactionRecord),
+          subsequentTurn400: asNBool(nested.subsequentTurn400),
+          coldResumeRecovers: asNBool(nested.coldResumeRecovers),
+          advisorDisabled: asNBool(nested.advisorDisabled),
+          specimens: asNNum(nested.specimens),
+          version: asText(nested.version || ""),
+          nearby: asText(nested.nearby || ""),
+          nearbyWidowed: Boolean(nested.nearbyWidowed),
+          nearbyBricked: Boolean(nested.nearbyBricked),
+          nearbyAwaySummary: Boolean(nested.nearbyAwaySummary),
+          nearbyTeammateInjected: Boolean(nested.nearbyTeammateInjected),
+          nearbyOnDiskOk: Boolean(nested.nearbyOnDiskOk),
+          nearbyRecovered: Boolean(nested.nearbyRecovered),
+          nearbyVacant: Boolean(nested.nearbyVacant),
+          nearbyAdvisorKept: Boolean(nested.nearbyAdvisorKept),
+          nearbyUseDropped: Boolean(nested.nearbyUseDropped),
+          nearbyPairSplit: Boolean(nested.nearbyPairSplit),
+          nearbyDisabledClears: Boolean(nested.nearbyDisabledClears),
+        };
+      }
+      function uniqueNearby(row) {
+        return Boolean(row.nearbyWidowed || row.nearbyBricked || row.nearbyAwaySummary ||
+          row.nearbyTeammateInjected || row.nearbyOnDiskOk || row.nearbyRecovered ||
+          row.nearbyVacant || row.nearbyAdvisorKept || row.nearbyUseDropped ||
+          row.nearbyPairSplit || row.nearbyDisabledClears);
+      }
+      function analyze(input) {
+        const row = cloneProbe(input);
+        const diskOk = row.diskUseCount != null && row.diskResultCount != null &&
+          row.diskUseCount === row.diskResultCount &&
+          (row.diskDangling == null || row.diskDangling === 0);
+        const useDropped = row.assembledHasServerToolUse === false;
+        const advisorKept = row.assembledHasAdvisorResult === true;
+        const vacant = advisorKept && useDropped && row.assembledResultAtMessageIndex === DEMO_ASSEMBLED_INDEX;
+        const pairSplit = row.assembledPairCoLocated === false;
+        const awaySummary = row.awaySummaryBetweenOkAnd400 === true && row.compactionRecord !== true;
+        const teammate = row.teammateInjection === true;
+        const bricked = row.subsequentTurn400 === true;
+        const recovered = row.coldResumeRecovers === true;
+        const disabled = row.advisorDisabled === true;
+        const widowedTriad = Boolean(diskOk && advisorKept && useDropped && !uniqueNearby(row) && !disabled);
+        const honest = Boolean(
+          row.assembledHasServerToolUse === true &&
+          row.assembledHasAdvisorResult === true &&
+          row.assembledPairCoLocated !== false &&
+          row.subsequentTurn400 !== true &&
+          !uniqueNearby(row) && !disabled
+        );
+        return {
+          row, diskOk, useDropped, advisorKept, vacant, pairSplit,
+          awaySummary, teammate, bricked, recovered, disabled, widowedTriad, honest,
+        };
+      }
+      function classify(input) {
+        const row = cloneProbe(input);
+        const idle = !(row.diskUseCount != null || row.diskResultCount != null ||
+          row.diskDangling != null || row.assembledHasServerToolUse != null ||
+          row.assembledHasAdvisorResult != null || row.assembledResultAtMessageIndex != null ||
+          row.assembledPairCoLocated != null || row.awaySummaryBetweenOkAnd400 != null ||
+          row.teammateInjection != null || row.compactionRecord != null ||
+          row.subsequentTurn400 != null || row.coldResumeRecovers != null ||
+          row.advisorDisabled != null || row.specimens != null || row.version ||
+          uniqueNearby(row));
+        if (idle) return "stood";
+        if (!analyze(row).widowedTriad) {
+          if (row.nearbyDisabledClears) return "disabled-clears";
+          if (row.nearbyPairSplit) return "pair-split";
+          if (row.nearbyUseDropped) return "use-dropped";
+          if (row.nearbyAdvisorKept) return "advisor-kept";
+          if (row.nearbyVacant) return "vacant";
+          if (row.nearbyRecovered) return "recovered";
+          if (row.nearbyOnDiskOk) return "on-disk-ok";
+          if (row.nearbyTeammateInjected) return "teammate-injected";
+          if (row.nearbyAwaySummary) return "away-summary";
+          if (row.nearbyBricked) return "bricked";
+          if (row.nearbyWidowed) return "widowed";
+        }
+        const f = analyze(row);
+        if (f.widowedTriad) return "widowed";
+        if (f.honest) return "stood";
+        if (f.disabled && !f.widowedTriad) return "disabled-clears";
+        if (f.pairSplit && f.advisorKept && row.assembledHasServerToolUse === true) return "pair-split";
+        if (f.vacant) return "vacant";
+        if (f.useDropped && f.advisorKept) return "use-dropped";
+        if (f.awaySummary && f.bricked) return "away-summary";
+        if (f.teammate && f.bricked) return "teammate-injected";
+        if (f.bricked) return "bricked";
+        if (f.advisorKept && f.useDropped) return "advisor-kept";
+        if (f.diskOk && f.useDropped) return "on-disk-ok";
+        if (f.recovered && f.useDropped) return "recovered";
+        return "stood";
+      }
+      function feedOf(kind) {
+        if (kind === "widowed") return "● Widowed · assembled condensed history kept advisor_tool_result and dropped server_tool_use · primary #90771";
+        if (kind === "bricked") return "● Bricked · every subsequent turn 400s · session unusable from the UI";
+        if (kind === "away-summary") return "● Away-summary · away_summary (+ stop_hook_summary / turn_duration) sits between last OK turn and first 400; no compaction record";
+        if (kind === "teammate-injected") return "● Teammate-injected · teammate-message injection re-assembly path";
+        if (kind === "on-disk-ok") return "● On-disk-ok · JSONL on disk consistent (use/result counts match; dangling 0); orphan exists only in assembled request";
+        if (kind === "recovered") return "● Recovered · cold `claude --resume` recovers the session";
+        if (kind === "vacant") return "● Vacant · result sits at condensed message index 3 with no preceding server_tool_use";
+        if (kind === "advisor-kept") return "● Advisor-kept · advisor_tool_result survived condensation";
+        if (kind === "use-dropped") return "● Use-dropped · server_tool_use missing from assembled prefix";
+        if (kind === "pair-split") return "● Pair-split · the two blocks are not co-located in one assistant content array";
+        if (kind === "disabled-clears") return "● Disabled-clears · disabling the advisor tool removes the class";
+        return "● Stood · honest pair in assembled request · server_tool_use and advisor_tool_result co-located · idle word is stood";
+      }
+      function reasonsOf(input, kind) {
+        const f = analyze(input);
+        const reasons = ["verdict " + kind];
+        if (kind === "widowed" || f.widowedTriad) {
+          reasons.push("#90771 orphaned advisor_tool_result after away/return re-assembly bricks the session with a 400");
+        }
+        if (f.diskOk) {
+          reasons.push("on-disk pair intact: " + (f.row.diskUseCount ?? DEMO_DISK_USE) + " / " +
+            (f.row.diskResultCount ?? DEMO_DISK_RESULT) + " / dangling " + (f.row.diskDangling ?? DEMO_DISK_DANGLING));
+        }
+        if (f.advisorKept) reasons.push("advisor_tool_result survived condensation");
+        if (f.useDropped) reasons.push("server_tool_use missing from assembled prefix");
+        if (f.vacant) reasons.push("vacant monument at assembled message index " + (f.row.assembledResultAtMessageIndex ?? DEMO_ASSEMBLED_INDEX));
+        if (f.awaySummary) reasons.push("away_summary between last OK turn and first 400; no compaction");
+        if (f.teammate) reasons.push("teammate-message injection re-assembly path");
+        if (f.bricked) reasons.push("every subsequent turn 400s — session bricked");
+        if (f.recovered) reasons.push("cold claude --resume recovers the session");
+        if (f.pairSplit) reasons.push("blocks not co-located in one assistant content array");
+        if (f.disabled) reasons.push("disabling the advisor tool removes the class");
+        if (kind === "stood") reasons.push("assembled pair co-located; condensed prefix never carries a result without its use; idle word is stood");
+        return reasons;
+      }
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        const f = analyze(row);
+        return {
+          verdict: kind,
+          stood: kind === "stood",
+          alarm: ALARM.includes(kind),
+          idleWord: IDLE_WORD,
+          facts: {
+            widowedTriad: f.widowedTriad, honest: f.honest, diskOk: f.diskOk,
+            useDropped: f.useDropped, advisorKept: f.advisorKept, vacant: f.vacant,
+            bricked: f.bricked, pairSplit: f.pairSplit,
+          },
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          probe: row,
+        };
+      }
+
+      const SEEDS = {
+        widowed: () => ({
+          session: "90771-widowed", issue: 90771,
+          source: "primary #90771 assembled condensed history kept advisor_tool_result and dropped server_tool_use",
+          diskUseCount: DEMO_DISK_USE, diskResultCount: DEMO_DISK_RESULT, diskDangling: DEMO_DISK_DANGLING,
+          assembledHasServerToolUse: false, assembledHasAdvisorResult: true,
+          assembledResultAtMessageIndex: DEMO_ASSEMBLED_INDEX, assembledPairCoLocated: false,
+          awaySummaryBetweenOkAnd400: true, teammateInjection: false, compactionRecord: false,
+          subsequentTurn400: true, coldResumeRecovers: true, advisorDisabled: false,
+          specimens: DEMO_SPECIMENS, version: DEMO_VERSION,
+        }),
+        bricked: () => ({
+          session: "90771-bricked", issue: 90771, subsequentTurn400: true,
+          nearbyBricked: true, version: DEMO_VERSION,
+        }),
+        "away-summary": () => ({
+          session: "90771-away-summary", issue: 90771,
+          awaySummaryBetweenOkAnd400: true, compactionRecord: false,
+          nearbyAwaySummary: true, version: DEMO_VERSION,
+        }),
+        "teammate-injected": () => ({
+          session: "90771-teammate-injected", issue: 90771, teammateInjection: true,
+          nearbyTeammateInjected: true, version: DEMO_VERSION,
+        }),
+        "on-disk-ok": () => ({
+          session: "90771-on-disk-ok", issue: 90771,
+          diskUseCount: DEMO_DISK_USE, diskResultCount: DEMO_DISK_RESULT, diskDangling: DEMO_DISK_DANGLING,
+          nearbyOnDiskOk: true, version: DEMO_VERSION,
+        }),
+        recovered: () => ({
+          session: "90771-recovered", issue: 90771, coldResumeRecovers: true,
+          nearbyRecovered: true, version: DEMO_VERSION,
+        }),
+        vacant: () => ({
+          session: "90771-vacant", issue: 90771,
+          assembledHasAdvisorResult: true, assembledHasServerToolUse: false,
+          assembledResultAtMessageIndex: DEMO_ASSEMBLED_INDEX,
+          nearbyVacant: true, version: DEMO_VERSION,
+        }),
+        "advisor-kept": () => ({
+          session: "90771-advisor-kept", issue: 90771,
+          assembledHasAdvisorResult: true, nearbyAdvisorKept: true, version: DEMO_VERSION,
+        }),
+        "use-dropped": () => ({
+          session: "90771-use-dropped", issue: 90771,
+          assembledHasServerToolUse: false, assembledHasAdvisorResult: true,
+          nearbyUseDropped: true, version: DEMO_VERSION,
+        }),
+        "pair-split": () => ({
+          session: "90771-pair-split", issue: 90771,
+          assembledHasServerToolUse: true, assembledHasAdvisorResult: true,
+          assembledPairCoLocated: false, nearbyPairSplit: true, version: DEMO_VERSION,
+        }),
+        "disabled-clears": () => ({
+          session: "90771-disabled-clears", issue: 90771,
+          advisorDisabled: true, nearbyDisabledClears: true, version: DEMO_VERSION,
+        }),
+        stood: () => ({
+          session: "stood-hold", issue: 90771,
+          source: "honest control: assembled request keeps server_tool_use and advisor_tool_result co-located",
+          diskUseCount: DEMO_DISK_USE, diskResultCount: DEMO_DISK_RESULT, diskDangling: DEMO_DISK_DANGLING,
+          assembledHasServerToolUse: true, assembledHasAdvisorResult: true,
+          assembledResultAtMessageIndex: 4, assembledPairCoLocated: true,
+          awaySummaryBetweenOkAnd400: false, teammateInjection: false, compactionRecord: false,
+          subsequentTurn400: false, coldResumeRecovers: false, advisorDisabled: false,
+          specimens: DEMO_SPECIMENS, version: DEMO_VERSION,
+        }),
+      };
+
+      const seedOrder = [
+        ["widowed", "widowed #90771"],
+        ["bricked", "bricked"],
+        ["away-summary", "away-summary"],
+        ["teammate-injected", "teammate-injected"],
+        ["on-disk-ok", "on-disk-ok"],
+        ["recovered", "recovered"],
+        ["vacant", "vacant"],
+        ["advisor-kept", "advisor-kept"],
+        ["use-dropped", "use-dropped"],
+        ["pair-split", "pair-split"],
+        ["disabled-clears", "disabled-clears"],
+        ["stood", "honest stood"],
+      ];
+      const stampOrder = seedOrder.map(([key]) => key);
+
+      const probeEl = document.getElementById("probe");
+      const straysEl = document.getElementById("strays");
+      const stampsEl = document.getElementById("stamps");
+      const walkEl = document.getElementById("walk");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const ledgerEl = document.getElementById("ledger");
+      const chipsEl = document.getElementById("chips");
+      const pathEl = document.getElementById("path");
+      const plazaEl = document.getElementById("plaza");
+      const useCutEl = document.getElementById("use-cut");
+      const resultCutEl = document.getElementById("result-cut");
+      const diskLedgerEl = document.getElementById("disk-ledger");
+      const assembledLedgerEl = document.getElementById("assembled-ledger");
+
+      function writeProbe(probe) { probeEl.value = JSON.stringify(probe, null, 2); }
+      function readProbe() {
+        try { return cloneProbe(JSON.parse(probeEl.value || "{}")); }
+        catch { return cloneProbe(SEEDS.widowed()); }
+      }
+
+      function paintStone(result) {
+        const hold = result.stood;
+        plazaEl.classList.toggle("hold-plaza", hold);
+        useCutEl.classList.toggle("fallen", !hold && result.facts.useDropped !== false);
+        useCutEl.classList.toggle("paired", hold);
+        resultCutEl.classList.toggle("vacant-cut", !hold);
+        resultCutEl.classList.toggle("paired", hold);
+        useCutEl.innerHTML = hold
+          ? "<b>server_tool_use</b>name=advisor<br />stood with its pair"
+          : "<b>server_tool_use</b>name=advisor<br />fallen from the wall";
+        resultCutEl.innerHTML = hold
+          ? "<b>advisor_tool_result</b>co-located<br />honest pair"
+          : "<b>advisor_tool_result</b>message index 3<br />vacant monument";
+        const diskOk = result.facts.diskOk || result.probe.diskUseCount != null;
+        diskLedgerEl.className = "ledger-card" + (hold ? " hold-card" : "");
+        diskLedgerEl.innerHTML = "<strong>on disk</strong>" +
+          (result.probe.diskUseCount ?? DEMO_DISK_USE) + " tool_use / " +
+          (result.probe.diskResultCount ?? DEMO_DISK_RESULT) + " tool_result<br />dangling " +
+          (result.probe.diskDangling ?? DEMO_DISK_DANGLING) +
+          (diskOk || hold ? " · pair intact" : "");
+        assembledLedgerEl.className = "ledger-card" + (hold ? " hold-card" : " widow");
+        assembledLedgerEl.innerHTML = hold
+          ? "<strong>assembled request</strong>server_tool_use present<br />advisor_tool_result co-located"
+          : "<strong>assembled request</strong>server_tool_use dropped<br />advisor_tool_result at index " +
+            (result.probe.assembledResultAtMessageIndex ?? DEMO_ASSEMBLED_INDEX);
+      }
+
+      function pathCopy() {
+        const n = FAIL_PATH.filter((k) => filed.has(k)).length;
+        const unlocked = filed.has("stood");
+        return n + "/11 monuments filed" + (unlocked
+          ? " · idle word <strong>stood</strong> unlocked"
+          : " · idle word locked until the honest pair is stamped");
+      }
+
+      function render(result, stampOk) {
+        const hold = result.stood;
+        const fail = result.alarm;
+        verdictEl.textContent = stampOk === false ? "binds" : result.verdict;
+        verdictEl.className = "verdict-face " + (stampOk === false ? "fail" : hold ? "hold" : "fail");
+        feedEl.textContent = stampOk === false
+          ? "● Wrong stamp. The stone binds. A vacant monument is not a pair. Score the stone."
+          : result.feed;
+        reasonsEl.innerHTML = (stampOk === false
+          ? ["wrong stamp", "the wreath does not turn", "idle word stays locked"]
+          : result.reasons
+        ).map((row) => `<li>${row}</li>`).join("");
+        ledger.unshift({
+          at: new Date().toISOString(),
+          verdict: stampOk === false ? "binds" : result.verdict,
+          stood: result.stood,
+        });
+        ledgerEl.innerHTML = ledger.slice(0, 8).map((row) =>
+          `${row.at} · ${row.verdict} · stood=${row.stood}`
+        ).join("<br>");
+        const chipKind = stampOk === false || fail ? "fail" : hold ? "hold" : "contrast";
+        chipsEl.innerHTML = [
+          ["#90771", fail || stampOk === false ? "fail" : hold ? "hold" : "contrast"],
+          [stampOk === false ? "binds" : result.verdict, chipKind],
+          [hold ? "pair stood" : "vacant monument", hold ? "hold" : "fail"],
+          ["idle " + IDLE_WORD, filed.has("stood") ? "hold" : "contrast"],
+        ].map(([label, klass]) => {
+          const current = (klass === "fail" || klass === "hold") && label === (stampOk === false ? "binds" : result.verdict);
+          return `<span class="chip ${klass}"${current ? ' aria-current="true"' : ""}>${label}</span>`;
+        }).join("");
+        pathEl.innerHTML = pathCopy();
+        paintStone(result);
+        document.querySelectorAll("#strays button, #walk button").forEach((btn) => {
+          btn.classList.toggle("filed", filed.has(btn.dataset.seed));
+          btn.setAttribute("aria-pressed", String(btn.dataset.seed === result.verdict || (result.stood && btn.dataset.seed === "stood")));
+        });
+      }
+
+      function applySeed(name) {
+        const probe = SEEDS[name]();
+        writeProbe(probe);
+        render(score(probe));
+      }
+
+      function stamp(kind) {
+        const probe = readProbe();
+        const result = score(probe);
+        if (kind !== result.verdict) {
+          render(result, false);
+          return;
+        }
+        if (kind === "stood") {
+          if (!result.stood) {
+            render(result, false);
+            return;
+          }
+          filed.add("stood");
+        } else if (FAIL_PATH.includes(kind)) {
+          filed.add(kind);
+        }
+        render(result, true);
+      }
+
+      seedOrder.forEach(([key, label]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "stray";
+        btn.dataset.seed = key;
+        btn.innerHTML = `${label}<small>walk</small>`;
+        btn.addEventListener("click", () => applySeed(key));
+        straysEl.appendChild(btn);
+        const stone = document.createElement("button");
+        stone.type = "button";
+        stone.className = "stone";
+        stone.dataset.seed = key;
+        stone.textContent = key;
+        stone.addEventListener("click", () => applySeed(key));
+        walkEl.appendChild(stone);
+      });
+
+      stampOrder.forEach((key) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "stamp";
+        btn.textContent = key;
+        btn.addEventListener("click", () => stamp(key));
+        stampsEl.appendChild(btn);
+      });
+
+      document.getElementById("score-btn").addEventListener("click", () => {
+        render(score(readProbe()));
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        const current = score(readProbe());
+        if (current.stood) {
+          filed.add("stood");
+          render(current, true);
+          return;
+        }
+        render(current, false);
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        applySeed("widowed");
+      });
+      document.getElementById("wreath").addEventListener("click", () => applySeed("widowed"));
+      document.getElementById("tomb").addEventListener("click", () => applySeed("widowed"));
+      document.getElementById("use-cut").addEventListener("click", () => applySeed("use-dropped"));
+      document.getElementById("result-cut").addEventListener("click", () => applySeed("vacant"));
+      document.getElementById("lamp").addEventListener("click", () => applySeed("away-summary"));
+      document.getElementById("brick").addEventListener("click", () => applySeed("bricked"));
+      document.getElementById("lantern").addEventListener("click", () => applySeed("recovered"));
+
+      applySeed("widowed");
+    </script>
+  </body>
+</html>
