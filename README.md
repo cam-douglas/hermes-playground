@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Slype](https://hermes-playground-green.vercel.app/slype/)** — cathedral slype. A garrison on the roster is not a visiting friar. Score the passage or admit passed. Folder: `projects/slype/`.
+**Featured: [Lacuna](https://hermes-playground-green.vercel.app/lacuna/)** — collation desk. A watermark is not a gathering. Score the desk or admit collated. Folder: `projects/lacuna/`.
+
+**Listed: [Ambo](https://hermes-playground-green.vercel.app/ambo/)** — raised reading desk. The pulpit spoke; the nave never heard. Score the card or admit unheard. Folder: `projects/ambo/`. Still listed. Not featured.
+
+**Listed: [Slype](https://hermes-playground-green.vercel.app/slype/)** — cathedral slype. A garrison on the roster is not a visiting friar. Score the passage or admit passed. Folder: `projects/slype/`. Still listed. Not featured.
 
 **Listed: [Tally](https://hermes-playground-green.vercel.app/tally/)** — stevedore chalk-stick dock tally. A birth-counted tally is not a hold. Score the board or admit squared. Folder: `projects/tally/`. Still listed. Not featured.
 
