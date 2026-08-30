@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Kindling — hearth / firebox / kindling-rack desk for Claude Code Desktop #90798: WarmLifecycle throwaway CLI sessions. A preview spark that never takes is not a hold. Idle word is cued."
+    />
+    <title>Kindling</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --char: #100c09;
+        --soot: #1a1410;
+        --iron: #2b2118;
+        --grate: #3a2c22;
+        --ember: #e85d04;
+        --flame: #ff8a3d;
+        --coal: #9b2226;
+        --banked: #c1121f;
+        --ash: #9a9288;
+        --cinder: #d8cfc4;
+        --hold: #c9b48a;
+        --copy: #efe6da;
+        --quiet: #8a8176;
+        --display: "Fraunces", "Iowan Old Style", serif;
+        --body: "DM Sans", "Avenir Next", sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          radial-gradient(ellipse 48% 36% at 50% 18%, rgba(232, 93, 4, 0.16), transparent 62%),
+          radial-gradient(ellipse 28% 22% at 8% 88%, rgba(155, 34, 38, 0.14), transparent 60%),
+          repeating-linear-gradient(90deg, transparent 0 13px, rgba(26, 18, 12, 0.45) 13px 14px),
+          linear-gradient(180deg, #1c130e 0%, var(--char) 46%, #080604 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--flame); }
+      .hearth {
+        width: min(1180px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 72px;
+      }
+      .lintel {
+        padding: 20px 24px 16px;
+        background:
+          linear-gradient(180deg, #3a2a1e 0%, var(--iron) 52%, #16100c 100%);
+        border: 2px solid #4a3828;
+        box-shadow:
+          inset 0 1px 0 rgba(216, 207, 196, 0.12),
+          0 18px 40px rgba(0, 0, 0, 0.45);
+        position: relative;
+        border-radius: 2px 2px 0 0;
+      }
+      .lintel::before,
+      .lintel::after {
+        content: "";
+        position: absolute;
+        top: 14px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #c4b8a4, #5a4634 70%);
+        box-shadow: inset 0 -1px 0 #2a1c12;
+      }
+      .lintel::before { left: 12px; }
+      .lintel::after { right: 12px; }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ember);
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-family: var(--display);
+        font-size: clamp(52px, 10vw, 96px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 0.86;
+        color: var(--cinder);
+        font-optical-sizing: auto;
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 10px 0 0;
+        color: var(--quiet);
+      }
+      .thesis {
+        margin: 10px 0 0;
+        font-size: clamp(17px, 2.2vw, 22px);
+        max-width: 38em;
+        font-family: var(--display);
+        font-style: italic;
+        color: var(--copy);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border: 1px solid rgba(154, 146, 136, 0.28);
+        background: rgba(16, 12, 9, 0.72);
+        color: var(--quiet);
+        border-radius: 999px;
+      }
+      .chip.fail { border-color: var(--ember); color: #ffc19a; background: rgba(232, 93, 4, 0.12); }
+      .chip.hold { border-color: var(--hold); color: var(--hold); background: rgba(201, 180, 138, 0.1); }
+      .chip.contrast { border-color: var(--grate); color: var(--cinder); }
+      .chip[aria-current="true"] { outline: 2px solid var(--flame); }
+
+      .forge {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 200px 1fr 220px;
+        gap: 10px;
+        min-height: 440px;
+      }
+      .rack, .dial {
+        background: var(--soot);
+        border: 1px solid #4a3828;
+        padding: 12px;
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--ember);
+        margin: 0 0 8px;
+      }
+      .sticks {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 5px;
+        height: 280px;
+        align-items: end;
+      }
+      .stick {
+        border: 0;
+        padding: 0;
+        border-radius: 2px 2px 0 0;
+        background: linear-gradient(180deg, #6a5340 0%, #3a2a1e 100%);
+        min-height: 40%;
+        position: relative;
+      }
+      .stick.ash {
+        background: linear-gradient(180deg, #8a8074 0%, #4a443c 100%);
+        opacity: 0.72;
+      }
+      .stick.live {
+        background: linear-gradient(180deg, var(--flame) 0%, var(--coal) 100%);
+        box-shadow: 0 0 12px rgba(232, 93, 4, 0.45);
+      }
+      .stick.hold-stick {
+        background: linear-gradient(180deg, var(--hold) 0%, #6a5840 100%);
+        box-shadow: 0 0 10px rgba(201, 180, 138, 0.3);
+      }
+      .rack .note {
+        font-family: var(--mono);
+        font-size: 10px;
+        line-height: 1.45;
+        color: var(--quiet);
+        margin-top: 10px;
+      }
+      .firebox {
+        position: relative;
+        overflow: hidden;
+        border: 3px solid #5a4030;
+        background:
+          radial-gradient(ellipse 60% 50% at 50% 72%, rgba(232, 93, 4, 0.22), transparent 70%),
+          linear-gradient(180deg, #1a100c 0%, #0c0806 100%);
+        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.55);
+      }
+      .firebox.hold-box {
+        background:
+          radial-gradient(ellipse 60% 50% at 50% 72%, rgba(201, 180, 138, 0.18), transparent 70%),
+          linear-gradient(180deg, #1a1410 0%, #0c0806 100%);
+      }
+      .firebox svg { display: block; width: 100%; height: 100%; min-height: 440px; }
+      .hit { fill: transparent; cursor: pointer; }
+      .gage {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--quiet);
+        padding: 7px 9px;
+        border: 1px solid rgba(232, 93, 4, 0.28);
+        background: rgba(16, 12, 9, 0.82);
+      }
+      .gage strong { color: var(--flame); display: block; }
+      .gage.fail { border-color: var(--ember); color: #ffc19a; }
+      .gage.hold { border-color: var(--hold); color: var(--hold); }
+      .dial .face {
+        width: 180px;
+        height: 180px;
+        margin: 8px auto 0;
+        border-radius: 50%;
+        border: 8px solid #4a3828;
+        background:
+          conic-gradient(from 220deg, var(--ash) 0 40%, var(--ember) 40% 78%, var(--coal) 78% 100%);
+        position: relative;
+        box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.5);
+        cursor: pointer;
+      }
+      .dial .needle {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 3px;
+        height: 62px;
+        background: var(--cinder);
+        transform-origin: 50% 100%;
+        transform: translate(-50%, -100%) rotate(48deg);
+      }
+      .dial .hub {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--ember);
+        transform: translate(-50%, -50%);
+      }
+      .dial .face.hold-dial {
+        background: conic-gradient(from 220deg, var(--hold) 0 70%, var(--ash) 70% 100%);
+      }
+      .dial .face.hold-dial .needle { transform: translate(-50%, -100%) rotate(-28deg); }
+      .dial .mode {
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--quiet);
+        margin: 12px 0 0;
+        text-align: center;
+      }
+      .dial button {
+        display: block;
+        width: 100%;
+        margin-top: 8px;
+        font-family: var(--display);
+        font-size: 16px;
+        padding: 8px;
+        border: 1px solid var(--grate);
+        background: var(--iron);
+        color: var(--quiet);
+      }
+      .dial button[aria-pressed="true"] {
+        border-color: var(--ember);
+        color: var(--flame);
+      }
+
+      .drawer {
+        margin-top: 10px;
+        padding: 12px 14px;
+        background: #16110d;
+        border: 1px solid #4a3828;
+        box-shadow: inset 0 8px 16px rgba(0, 0, 0, 0.35);
+      }
+      .stubs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .stubs button {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.02em;
+        padding: 5px 8px;
+        border: 1px dashed rgba(154, 146, 136, 0.35);
+        background: #221a14;
+        color: var(--ash);
+      }
+      .stubs button.on { border-style: solid; border-color: var(--ember); color: #ffc19a; }
+
+      .desk {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .panel {
+        padding: 14px 16px 16px;
+        background: var(--soot);
+        border: 1px solid #4a3828;
+      }
+      .stamps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .stamps button {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 5px 8px;
+        border: 1px solid rgba(154, 146, 136, 0.28);
+        background: var(--char);
+        color: var(--quiet);
+      }
+      .stamps button[aria-pressed="true"] {
+        border-color: var(--flame);
+        color: var(--flame);
+      }
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .act button {
+        font-family: var(--display);
+        font-size: 16px;
+        letter-spacing: 0.02em;
+        padding: 8px 12px;
+        border: 1px solid var(--ember);
+        background: var(--iron);
+        color: var(--flame);
+      }
+      .act .admit { border-color: var(--hold); color: var(--hold); }
+      .act .restore { border-color: var(--coal); color: #f3b4bc; }
+      label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        margin-bottom: 6px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        resize: vertical;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--copy);
+        background: var(--char);
+        border: 1px solid #4a3828;
+        padding: 8px;
+      }
+      .verdict-face {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: clamp(28px, 4vw, 44px);
+        letter-spacing: -0.02em;
+        line-height: 0.9;
+      }
+      .verdict-face.fail { color: var(--ember); }
+      .verdict-face.hold { color: var(--hold); }
+      .feed {
+        font-size: 15px;
+        margin: 0 0 10px;
+        color: var(--copy);
+      }
+      .reasons {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+      }
+      .ledgers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .ledger-card {
+        padding: 8px 10px;
+        border: 1px solid #4a3828;
+        background: var(--char);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--quiet);
+      }
+      .ledger-card strong { display: block; color: var(--flame); margin-bottom: 4px; }
+      .ledger-card.jam { border-color: var(--ember); color: #ffc19a; }
+      .ledger-card.hold-card { border-color: var(--hold); color: var(--hold); }
+      .path {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        line-height: 1.55;
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+        max-width: 68em;
+        line-height: 1.5;
+      }
+      footer a { color: var(--flame); }
+      footer code { font-family: var(--mono); font-size: 12px; }
+      @media (max-width: 860px) {
+        .forge, .desk, .ledgers { grid-template-columns: 1fr; }
+        .sticks { height: 160px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="hearth">
+      <header class="lintel">
+        <p class="mark">04:50 Sydney · kindling</p>
+        <h1>Kindling</h1>
+        <p class="hours">#90798 · hearth / firebox / throwaway warm</p>
+        <p class="thesis">A preview spark that never takes is not a hold. Score the rack or admit cued.</p>
+      </header>
+      <div class="chips" id="chips"></div>
+
+      <section class="forge" aria-label="Kindling hearth bench">
+        <aside class="rack">
+          <p class="hed">Kindling rack</p>
+          <div class="sticks" id="sticks" aria-label="Unused vs conversation sticks"></div>
+          <p class="note" id="rack-note">113 ash sticks never took. 4 live. 950 unused in four weeks.</p>
+        </aside>
+        <div class="firebox" id="firebox">
+          <div class="gage fail" id="gage">
+            <strong>warm spawn</strong>
+            switches <span id="switch-n">137</span><br />
+            unused <span id="unused-n">113</span>
+          </div>
+          <svg id="box" viewBox="0 0 640 440" role="img" aria-label="Firebox with bellows, warm spark, and ash grate">
+            <rect x="40" y="36" width="560" height="360" fill="none" stroke="#5a4030" stroke-width="6" />
+            <rect class="hit" id="bellows-hit" x="48" y="150" width="110" height="160"></rect>
+            <path id="bellows" d="M70 200 L140 170 L140 290 L70 260 Z" fill="#3a2a1e" stroke="#c4b8a4" stroke-width="2" />
+            <text x="95" y="232" text-anchor="middle" fill="#9a9288" font-family="JetBrains Mono, monospace" font-size="10">BELLOWS</text>
+            <ellipse id="flame" cx="320" cy="250" rx="70" ry="92" fill="url(#emberGlow)" />
+            <path id="spark" d="M320 150 L328 210 L320 200 L312 210 Z" fill="#ff8a3d" />
+            <rect class="hit" id="flame-hit" x="250" y="150" width="140" height="180"></rect>
+            <rect class="hit" id="spark-hit" x="290" y="120" width="60" height="50"></rect>
+            <g id="grate" fill="none" stroke="#6a5340" stroke-width="3">
+              <path d="M80 330 H560" />
+              <path d="M120 310 V360 M200 310 V360 M280 310 V360 M360 310 V360 M440 310 V360 M520 310 V360" />
+            </g>
+            <rect class="hit" id="grate-hit" x="80" y="300" width="480" height="70"></rect>
+            <text x="320" y="400" text-anchor="middle" fill="#8a8176" font-family="JetBrains Mono, monospace" font-size="11">FOCUS-SWITCH BELLOWS · WARM SPARK · ASH GRATE</text>
+            <defs>
+              <radialGradient id="emberGlow" cx="50%" cy="70%" r="70%">
+                <stop offset="0%" stop-color="#ff8a3d" stop-opacity="0.95" />
+                <stop offset="55%" stop-color="#e85d04" stop-opacity="0.55" />
+                <stop offset="100%" stop-color="#9b2226" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+        <aside class="dial">
+          <p class="hed">OTel dial</p>
+          <div class="face" id="otel-face" role="button" tabindex="0" aria-label="OTel session.count dial">
+            <div class="needle" id="needle"></div>
+            <div class="hub"></div>
+          </div>
+          <p class="mode" id="dial-mode">session.count ↑ · tokens flat</p>
+          <button type="button" id="inflated-btn" aria-pressed="true">Inflated</button>
+          <button type="button" id="skew-btn" aria-pressed="false">OTel skew</button>
+        </aside>
+      </section>
+
+      <section class="drawer" aria-label="Ash drawer of uuid stubs">
+        <p class="hed">Ash drawer · uuid stubs</p>
+        <div class="stubs" id="stubs">
+          <button type="button" id="stub-env" class="on">session-env/&lt;uuid&gt;</button>
+          <button type="button" id="stub-proj" class="on">projects/&lt;project&gt;/&lt;uuid&gt;</button>
+          <button type="button" id="stub-hook" class="on">hook--stdout.txt</button>
+          <button type="button" id="stub-remap">local_* → preexisting</button>
+          <button type="button" id="stub-start">SessionStart</button>
+        </div>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">Stamp the class</p>
+          <p class="path">Wrong stamps bind the spark. Correct stamps file the rack. The idle word unlocks only on the honest hearth.</p>
+          <div class="stamps" id="stamps"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score the rack</button>
+            <button type="button" class="admit" id="admit-btn">Admit cued</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90798</button>
+          </div>
+          <label for="probe">Probe · warm / switch / unused / remap</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Hearth note</p>
+          <p class="verdict-face fail" id="verdict">discarded</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <p class="path" id="path"></p>
+          <div class="ledgers" aria-live="polite">
+            <div class="ledger-card jam" id="warm-ledger"></div>
+            <div class="ledger-card" id="otel-ledger"></div>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90798">anthropics/claude-code#90798</a>
+        (OPEN, 2026-08-30) — Desktop: every session switch spawns a throwaway Claude Code session.
+        950 unused vs 57 conversation in 4 weeks. Desktop 1.40609.0 / bundled CLI 2.1.247.
+        Nearby (memory/process, not identity):
+        <a href="https://github.com/anthropics/claude-code/issues/76268">#76268</a> idle trees,
+        <a href="https://github.com/anthropics/claude-code/issues/85104">#85104</a> no backpressure,
+        <a href="https://github.com/anthropics/claude-code/issues/82023">#82023</a> idle timeout,
+        <a href="https://github.com/anthropics/claude-code/issues/73512">#73512</a> SIGKILL.
+        NOT Deadband, Pawl, Cenotaph, Fetch, Livery, Fob, Lacuna, Fusee, Damper, Reveille, Husk, Wraith.
+        Ask: reuse the warmed session on attach, or defer the spawn until attach.
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "cued";
+      const BUSY_DAY_SWITCHES = 137;
+      const BUSY_DAY_PTY = 137;
+      const BUSY_DAY_ON_DISK = 116;
+      const BUSY_DAY_MAPPED = 4;
+      const BUSY_DAY_UNUSED = 113;
+      const WEEK_UNUSED = 950;
+      const WEEK_CONVERSATION = 57;
+      const WASTE_PCT = 94;
+      const DEMO_VERSION = "2.1.247";
+      const DEMO_ENTRYPOINT = "claude-desktop";
+      const ALARM = ["discarded", "littered", "inflated", "otel-skew"];
+      const VERDICTS = [
+        "cued", "warmed", "discarded", "session-start", "littered",
+        "inflated", "remapped", "switch-focus", "hook-ash", "otel-skew",
+      ];
+      const FAIL = new Set(ALARM);
+      const CONTRAST = new Set(["warmed", "session-start", "remapped", "switch-focus", "hook-ash"]);
+      const filed = new Set();
+
+      function asText(v) { return v == null ? "" : String(v); }
+      function asNBool(v) {
+        if (v === true || v === false) return v;
+        return null;
+      }
+      function asNNum(v) {
+        if (v == null || v === "") return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function emptyProbe() {
+        return {
+          session: "", issue: null, source: "",
+          warmLifecyclePreview: null, warmingUp: null, startShellPty: null,
+          cliSpawned: null, throwawaySpawn: null, focusSwitch: null,
+          setFocusedSession: null, focusSwitches: null, startShellPtyCount: null,
+          cliSessionsOnDisk: null, mappedCount: null, unusedCount: null,
+          neverUsed: null, messageReceived: null, mappedToConversation: null,
+          remappedToPreexisting: null, sessionStartFired: null,
+          sessionEnvCreated: null, projectDirCreated: null, pruned: null,
+          sessionCountIncremented: null, tokensFlat: null, costFlat: null,
+          activeTimeFlat: null, hookStdoutCaptured: null,
+          warmReusesExisting: null, warmDeferredUntilAttach: null, attachedToWarm: null,
+          unusedWeek: null, conversationWeek: null, version: "", entrypoint: "",
+          nearbyWarmed: false, nearbyDiscarded: false, nearbySessionStart: false,
+          nearbyLittered: false, nearbyInflated: false, nearbyRemapped: false,
+          nearbySwitchFocus: false, nearbyHookAsh: false, nearbyOtelSkew: false,
+        };
+      }
+      function uniqueNearby(row) {
+        return Boolean(
+          row.nearbyWarmed || row.nearbyDiscarded || row.nearbySessionStart ||
+          row.nearbyLittered || row.nearbyInflated || row.nearbyRemapped ||
+          row.nearbySwitchFocus || row.nearbyHookAsh || row.nearbyOtelSkew
+        );
+      }
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.kindling && typeof src.kindling === "object" ? src.kindling
+          : src.probe && typeof src.probe === "object" ? src.probe
+          : src.hearth && typeof src.hearth === "object" ? src.hearth
+          : src;
+        return {
+          ...emptyProbe(), ...nested,
+          warmLifecyclePreview: asNBool(nested.warmLifecyclePreview),
+          warmingUp: asNBool(nested.warmingUp),
+          startShellPty: asNBool(nested.startShellPty),
+          cliSpawned: asNBool(nested.cliSpawned),
+          throwawaySpawn: asNBool(nested.throwawaySpawn),
+          focusSwitch: asNBool(nested.focusSwitch),
+          setFocusedSession: asNBool(nested.setFocusedSession),
+          focusSwitches: asNNum(nested.focusSwitches),
+          startShellPtyCount: asNNum(nested.startShellPtyCount),
+          cliSessionsOnDisk: asNNum(nested.cliSessionsOnDisk),
+          mappedCount: asNNum(nested.mappedCount),
+          unusedCount: asNNum(nested.unusedCount),
+          neverUsed: asNBool(nested.neverUsed),
+          messageReceived: asNBool(nested.messageReceived),
+          mappedToConversation: asNBool(nested.mappedToConversation),
+          remappedToPreexisting: asNBool(nested.remappedToPreexisting),
+          sessionStartFired: asNBool(nested.sessionStartFired),
+          sessionEnvCreated: asNBool(nested.sessionEnvCreated),
+          projectDirCreated: asNBool(nested.projectDirCreated),
+          pruned: asNBool(nested.pruned),
+          sessionCountIncremented: asNBool(nested.sessionCountIncremented),
+          tokensFlat: asNBool(nested.tokensFlat),
+          costFlat: asNBool(nested.costFlat),
+          activeTimeFlat: asNBool(nested.activeTimeFlat),
+          hookStdoutCaptured: asNBool(nested.hookStdoutCaptured),
+          warmReusesExisting: asNBool(nested.warmReusesExisting),
+          warmDeferredUntilAttach: asNBool(nested.warmDeferredUntilAttach),
+          attachedToWarm: asNBool(nested.attachedToWarm),
+          unusedWeek: asNNum(nested.unusedWeek),
+          conversationWeek: asNNum(nested.conversationWeek),
+          version: asText(nested.version || ""),
+          entrypoint: asText(nested.entrypoint || ""),
+        };
+      }
+      function isIdle(row) {
+        return !(
+          row.warmLifecyclePreview != null || row.warmingUp != null ||
+          row.startShellPty != null || row.cliSpawned != null ||
+          row.throwawaySpawn != null || row.focusSwitch != null ||
+          row.setFocusedSession != null || row.focusSwitches != null ||
+          row.startShellPtyCount != null || row.cliSessionsOnDisk != null ||
+          row.mappedCount != null || row.unusedCount != null ||
+          row.neverUsed != null || row.messageReceived != null ||
+          row.mappedToConversation != null || row.remappedToPreexisting != null ||
+          row.sessionStartFired != null || row.sessionEnvCreated != null ||
+          row.projectDirCreated != null || row.pruned != null ||
+          row.sessionCountIncremented != null || row.tokensFlat != null ||
+          row.costFlat != null || row.activeTimeFlat != null ||
+          row.hookStdoutCaptured != null || row.warmReusesExisting != null ||
+          row.warmDeferredUntilAttach != null || row.attachedToWarm != null ||
+          row.unusedWeek != null || row.conversationWeek != null ||
+          row.version || row.session || row.source || row.entrypoint || uniqueNearby(row)
+        );
+      }
+      function analyze(input) {
+        const row = cloneProbe(input);
+        const warmPreview = row.warmLifecyclePreview === true || row.warmingUp === true;
+        const spawned = row.cliSpawned === true || row.startShellPty === true || row.throwawaySpawn === true;
+        const unused = row.neverUsed === true || row.messageReceived === false || row.mappedToConversation === false ||
+          (row.unusedCount != null && row.unusedCount > 0 && (row.mappedCount == null || row.mappedCount < row.unusedCount));
+        const remapped = row.remappedToPreexisting === true;
+        const focusDriver = row.focusSwitch === true || row.setFocusedSession === true || (row.focusSwitches != null && row.focusSwitches > 0);
+        const sessionStart = row.sessionStartFired === true;
+        const litter = row.sessionEnvCreated === true || row.projectDirCreated === true;
+        const unpruned = row.pruned === false;
+        const inflated = row.sessionCountIncremented === true;
+        const otelSkew = inflated && (row.tokensFlat === true || row.costFlat === true || row.activeTimeFlat === true);
+        const hookAsh = row.hookStdoutCaptured === true && unused;
+        const reuse = row.warmReusesExisting === true || row.warmDeferredUntilAttach === true || row.attachedToWarm === true;
+        const primaryTriad = Boolean(warmPreview && spawned && unused && remapped && focusDriver && !uniqueNearby(row) && !reuse);
+        const honest = Boolean(reuse && row.throwawaySpawn !== true && row.neverUsed !== true && row.sessionCountIncremented !== true && !primaryTriad);
+        return { row, warmPreview, spawned, unused, remapped, focusDriver, sessionStart, litter, unpruned, inflated, otelSkew, hookAsh, reuse, primaryTriad, honest };
+      }
+      function classify(input) {
+        const row = cloneProbe(input);
+        if (isIdle(row)) return "cued";
+        if (!analyze(row).primaryTriad) {
+          if (row.nearbyOtelSkew) return "otel-skew";
+          if (row.nearbyHookAsh) return "hook-ash";
+          if (row.nearbySwitchFocus) return "switch-focus";
+          if (row.nearbyRemapped) return "remapped";
+          if (row.nearbyInflated) return "inflated";
+          if (row.nearbyLittered) return "littered";
+          if (row.nearbySessionStart) return "session-start";
+          if (row.nearbyDiscarded) return "discarded";
+          if (row.nearbyWarmed) return "warmed";
+        }
+        const f = analyze(row);
+        if (f.primaryTriad) return "discarded";
+        if (f.honest) return "cued";
+        if (f.otelSkew && f.unused && !f.reuse) return "otel-skew";
+        if (f.inflated && f.unused && !f.reuse) return "inflated";
+        if (f.hookAsh && !f.reuse) return "hook-ash";
+        if (f.litter && f.unpruned && f.unused && !f.reuse) return "littered";
+        if (f.remapped && f.unused && !f.reuse) return "remapped";
+        if (f.sessionStart && f.unused && !f.reuse) return "session-start";
+        if (f.focusDriver && f.warmPreview && !f.reuse) return "switch-focus";
+        if (f.warmPreview && f.spawned && !f.reuse) return "warmed";
+        if (f.unused && f.spawned && !f.reuse) return "discarded";
+        if (f.honest || f.reuse) return "cued";
+        return "cued";
+      }
+      function feedOf(kind) {
+        const map = {
+          warmed: "● Warmed · WarmLifecycle:preview / Warming up session fired on a focus switch",
+          discarded: "● Discarded · spawned CLI session never receives a message / never mapped to a conversation · primary #90798",
+          "session-start": "● Session-start · SessionStart fires on the throwaway spawn",
+          littered: "● Littered · ~/.claude/session-env/<uuid>/ and ~/.claude/projects/<project>/<uuid>/ created and never pruned",
+          inflated: "● Inflated · claude_code.session.count incremented for unused sessions",
+          remapped: "● Remapped · resume maps local_* to a pre-existing CLI uuid, not the warm spawn",
+          "switch-focus": "● Switch-focus · setFocusedSession / focus switch is the driver, not message volume",
+          "hook-ash": "● Hook-ash · SessionStart hook stdout written into discarded uuid tool-results",
+          "otel-skew": "● Otel-skew · session.count climbs while tokens / cost / active_time stay flat",
+        };
+        return map[kind] || "● Cued · honest hearth · warm attaches or reuses the pre-existing CLI session; no discarded spawn · idle word is cued";
+      }
+      function reasonsOf(input, kind) {
+        const f = analyze(input);
+        const reasons = [`verdict ${kind}`];
+        if (kind === "discarded" || f.primaryTriad) {
+          reasons.push("#90798 Desktop: every session switch spawns a throwaway Claude Code session — WarmLifecycle preview warm is discarded without a message");
+        }
+        if (f.warmPreview) reasons.push("WarmLifecycle:preview Warming up session fired");
+        if (f.focusDriver) reasons.push(`focus switch is the driver (${f.row.focusSwitches ?? BUSY_DAY_SWITCHES} switches → ${f.row.startShellPtyCount ?? BUSY_DAY_PTY} startShellPty)`);
+        if (f.spawned) reasons.push("startShellPty spawned a fresh CLI session identity");
+        if (f.unused) reasons.push(`${f.row.unusedCount ?? BUSY_DAY_UNUSED} unused vs ${f.row.mappedCount ?? BUSY_DAY_MAPPED} mapped on the busy day; never received a message`);
+        if (f.remapped) reasons.push("resume mapped local_* to a pre-existing CLI uuid, not the warm spawn");
+        if (f.sessionStart) reasons.push("SessionStart fired on the throwaway");
+        if (f.litter) reasons.push("~/.claude/session-env/<uuid>/ and ~/.claude/projects/<project>/<uuid>/ created");
+        if (f.unpruned) reasons.push("nothing prunes these dirs; cleanupPeriodDays targets transcripts; these have none");
+        if (f.inflated) reasons.push("claude_code.session.count incremented for the unused spawn");
+        if (f.otelSkew) reasons.push("session.count climbs while tokens / cost / active_time stay flat");
+        if (f.hookAsh) reasons.push("SessionStart hook stdout captured into discarded uuid tool-results");
+        if (kind === "cued") reasons.push("warm attaches or reuses the pre-existing CLI session, or warm is deferred until attach; idle word is cued");
+        return reasons;
+      }
+      function seedDiscarded() {
+        return {
+          session: "90798-throwaway-warm", issue: 90798,
+          source: "primary #90798: 137 focus switches → 137 startShellPty → 116 CLI sessions on disk → 4 mapped → 113 never used; resume remaps local_* to a pre-existing CLI uuid",
+          warmLifecyclePreview: true, warmingUp: true, startShellPty: true,
+          cliSpawned: true, throwawaySpawn: true, focusSwitch: true, setFocusedSession: true,
+          focusSwitches: BUSY_DAY_SWITCHES, startShellPtyCount: BUSY_DAY_PTY,
+          cliSessionsOnDisk: BUSY_DAY_ON_DISK, mappedCount: BUSY_DAY_MAPPED, unusedCount: BUSY_DAY_UNUSED,
+          neverUsed: true, messageReceived: false, mappedToConversation: false,
+          remappedToPreexisting: true, sessionStartFired: true,
+          sessionEnvCreated: true, projectDirCreated: true, pruned: false,
+          sessionCountIncremented: true, tokensFlat: true, costFlat: true, activeTimeFlat: true,
+          hookStdoutCaptured: true, warmReusesExisting: false, warmDeferredUntilAttach: false,
+          attachedToWarm: false, unusedWeek: WEEK_UNUSED, conversationWeek: WEEK_CONVERSATION,
+          version: DEMO_VERSION, entrypoint: DEMO_ENTRYPOINT,
+        };
+      }
+      function seedCued() {
+        return {
+          session: "cued-reuse", issue: 90798,
+          source: "honest control: WarmLifecycle attaches or reuses the pre-existing CLI session; no throwaway spawn",
+          warmLifecyclePreview: true, warmingUp: true, startShellPty: false,
+          cliSpawned: false, throwawaySpawn: false, focusSwitch: true, setFocusedSession: true,
+          neverUsed: false, messageReceived: true, mappedToConversation: true,
+          remappedToPreexisting: false, sessionStartFired: false,
+          sessionEnvCreated: false, projectDirCreated: false, pruned: true,
+          sessionCountIncremented: false, tokensFlat: false, costFlat: false, activeTimeFlat: false,
+          hookStdoutCaptured: false, warmReusesExisting: true, warmDeferredUntilAttach: false,
+          attachedToWarm: true, version: DEMO_VERSION, entrypoint: DEMO_ENTRYPOINT,
+        };
+      }
+      const NEARBY_FLAG = {
+        warmed: "nearbyWarmed", discarded: "nearbyDiscarded", "session-start": "nearbySessionStart",
+        littered: "nearbyLittered", inflated: "nearbyInflated", remapped: "nearbyRemapped",
+        "switch-focus": "nearbySwitchFocus", "hook-ash": "nearbyHookAsh", "otel-skew": "nearbyOtelSkew",
+      };
+      function seedNearby(kind) {
+        const flag = NEARBY_FLAG[kind];
+        const row = emptyProbe();
+        row.session = "90798-" + kind;
+        row.issue = 90798;
+        row.version = DEMO_VERSION;
+        if (flag) row[flag] = true;
+        return row;
+      }
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        return {
+          verdict: kind,
+          cued: kind === IDLE_WORD,
+          fresh: kind === IDLE_WORD,
+          alarm: ALARM.includes(kind),
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          facts: analyze(row),
+          probe: row,
+        };
+      }
+
+      const chipsEl = document.getElementById("chips");
+      const stampsEl = document.getElementById("stamps");
+      const probeEl = document.getElementById("probe");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const pathEl = document.getElementById("path");
+      const warmLedger = document.getElementById("warm-ledger");
+      const otelLedger = document.getElementById("otel-ledger");
+      const firebox = document.getElementById("firebox");
+      const gage = document.getElementById("gage");
+      const switchN = document.getElementById("switch-n");
+      const unusedN = document.getElementById("unused-n");
+      const sticksEl = document.getElementById("sticks");
+      const rackNote = document.getElementById("rack-note");
+      const otelFace = document.getElementById("otel-face");
+      const dialMode = document.getElementById("dial-mode");
+
+      function chipClass(kind) {
+        if (kind === IDLE_WORD) return "chip hold";
+        if (FAIL.has(kind)) return "chip fail";
+        if (CONTRAST.has(kind)) return "chip contrast";
+        return "chip";
+      }
+      function renderChips(current) {
+        chipsEl.innerHTML = VERDICTS.map((kind) =>
+          `<button type="button" class="${chipClass(kind)}" data-kind="${kind}" aria-current="${kind === current}">${kind}</button>`
+        ).join("");
+        stampsEl.innerHTML = VERDICTS.filter((k) => k !== IDLE_WORD).map((kind) =>
+          `<button type="button" data-kind="${kind}" aria-pressed="${filed.has(kind)}">${kind}</button>`
+        ).join("");
+      }
+      function renderSticks(hold) {
+        const bits = [];
+        for (let i = 0; i < 10; i++) {
+          const live = i === 2 || i === 7;
+          const cls = hold ? "stick hold-stick" : live ? "stick live" : "stick ash";
+          bits.push(`<button type="button" class="${cls}" data-kind="${hold ? "cued" : live ? "remapped" : "discarded"}" aria-label="${hold ? "cued stick" : live ? "conversation" : "unused"}"></button>`);
+        }
+        sticksEl.innerHTML = bits.join("");
+      }
+      function paint(result, note) {
+        const kind = result.verdict;
+        const row = result.probe;
+        const hold = kind === IDLE_WORD;
+        verdictEl.textContent = kind;
+        verdictEl.className = "verdict-face " + (hold ? "hold" : "fail");
+        feedEl.textContent = result.feed;
+        reasonsEl.innerHTML = result.reasons.map((r) => `<li>${r}</li>`).join("");
+        pathEl.textContent = note || (result.cued
+          ? "Honest hearth. Warm attached or reused the real CLI session. Idle word is cued."
+          : "Discarded spark. The warm spawn never took.");
+        switchN.textContent = row.focusSwitches == null ? "—" : String(row.focusSwitches);
+        unusedN.textContent = row.unusedCount == null ? (hold ? "0" : "—") : String(row.unusedCount);
+        gage.className = "gage " + (hold ? "hold" : "fail");
+        firebox.classList.toggle("hold-box", hold);
+        otelFace.classList.toggle("hold-dial", hold);
+        dialMode.textContent = hold ? "session.count held · tokens move" : "session.count ↑ · tokens flat";
+        document.getElementById("inflated-btn").setAttribute("aria-pressed", String(!hold && (kind === "inflated" || result.facts.inflated)));
+        document.getElementById("skew-btn").setAttribute("aria-pressed", String(kind === "otel-skew"));
+        document.getElementById("stub-env").className = result.facts.litter && !hold ? "on" : "";
+        document.getElementById("stub-proj").className = result.facts.litter && !hold ? "on" : "";
+        document.getElementById("stub-hook").className = result.facts.hookAsh && !hold ? "on" : "";
+        document.getElementById("stub-remap").className = result.facts.remapped && !hold ? "on" : "";
+        document.getElementById("stub-start").className = result.facts.sessionStart && !hold ? "on" : "";
+        warmLedger.className = "ledger-card " + (result.facts.unused && !hold ? "jam" : "hold-card");
+        warmLedger.innerHTML = `<strong>warm / attach</strong>preview ${result.facts.warmPreview ? "yes" : "no"}<br />spawn ${result.facts.spawned ? "yes" : "no"}<br />unused ${result.facts.unused ? "yes" : "no"}<br />remap ${result.facts.remapped ? "preexisting" : hold ? "attached" : "—"}`;
+        otelLedger.className = "ledger-card " + (result.facts.inflated && !hold ? "jam" : "hold-card");
+        otelLedger.innerHTML = `<strong>count / ash</strong>session.count ${result.facts.inflated ? "↑" : "held"}<br />litter ${result.facts.litter ? "yes" : "no"}<br />hook-ash ${result.facts.hookAsh ? "yes" : "no"}<br />waste ${row.unusedWeek ?? WEEK_UNUSED}/${row.conversationWeek ?? WEEK_CONVERSATION}`;
+        rackNote.textContent = hold
+          ? "Honest rack. Warm reused the live stick. No ash uuid."
+          : `${row.unusedCount ?? BUSY_DAY_UNUSED} ash sticks never took. ${row.mappedCount ?? BUSY_DAY_MAPPED} live. ${row.unusedWeek ?? WEEK_UNUSED} unused in four weeks.`;
+        renderSticks(hold);
+        renderChips(kind);
+        probeEl.value = JSON.stringify(row, null, 2);
+      }
+      function apply(probe, note) {
+        paint(score(probe), note);
+      }
+      function fileKind(kind) {
+        if (kind === IDLE_WORD) {
+          apply(seedCued(), "Honest control filed. Admit cued unlocks here.");
+          return;
+        }
+        filed.add(kind);
+        apply(seedNearby(kind), `Filed ${kind}. Nearby unique flags win their own seed.`);
+      }
+      function readProbe() {
+        try {
+          return cloneProbe(JSON.parse(probeEl.value));
+        } catch {
+          return cloneProbe(seedDiscarded());
+        }
+      }
+
+      renderChips("discarded");
+      apply(seedDiscarded(), "Seeded #90798 already on the rack. Score the hearth or admit cued.");
+
+      chipsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      stampsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      sticksEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      document.getElementById("score-btn").addEventListener("click", () => {
+        apply(readProbe(), "Scored from the probe on the hearth.");
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        const result = score(readProbe());
+        if (result.cued) {
+          apply(result.probe, "Admitted cued. Warm attached or reused the real CLI session.");
+        } else {
+          paint(result, "Admit does not lie. A discarded spark stays discarded. Idle word is cued.");
+        }
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        filed.clear();
+        apply(seedDiscarded(), "Restored #90798. The warm spawn is still discarded.");
+      });
+      document.getElementById("bellows-hit").addEventListener("click", () => fileKind("switch-focus"));
+      document.getElementById("flame-hit").addEventListener("click", () => fileKind("warmed"));
+      document.getElementById("spark-hit").addEventListener("click", () => fileKind("discarded"));
+      document.getElementById("grate-hit").addEventListener("click", () => fileKind("littered"));
+      document.getElementById("otel-face").addEventListener("click", () => fileKind("otel-skew"));
+      document.getElementById("inflated-btn").addEventListener("click", () => fileKind("inflated"));
+      document.getElementById("skew-btn").addEventListener("click", () => fileKind("otel-skew"));
+      document.getElementById("stub-env").addEventListener("click", () => fileKind("littered"));
+      document.getElementById("stub-proj").addEventListener("click", () => fileKind("littered"));
+      document.getElementById("stub-hook").addEventListener("click", () => fileKind("hook-ash"));
+      document.getElementById("stub-remap").addEventListener("click", () => fileKind("remapped"));
+      document.getElementById("stub-start").addEventListener("click", () => fileKind("session-start"));
+    </script>
+  </body>
+</html>

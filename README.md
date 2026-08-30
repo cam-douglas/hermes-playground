@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Deadband](https://hermes-playground-green.vercel.app/deadband/)** — control-room instrumentation deadband. A five-second blind ignore zone is not a hold. Score the suppress window or admit fresh. Folder: `projects/deadband/`.
+**Featured: [Kindling](https://hermes-playground-green.vercel.app/kindling/)** — hearth / firebox / kindling rack. A preview spark that never takes is not a hold. Score the rack or admit cued. Folder: `projects/kindling/`.
+
+**Listed: [Deadband](https://hermes-playground-green.vercel.app/deadband/)** — control-room instrumentation deadband. A five-second blind ignore zone is not a hold. Score the suppress window or admit fresh. Folder: `projects/deadband/`. Still listed. Not featured.
 
 **Listed: [Pawl](https://hermes-playground-green.vercel.app/pawl/)** — machine-shop ratchet. A tooth that caught the wrong stroke is not a hold. Score the ratchet or admit engaged. Folder: `projects/pawl/`. Still listed. Not featured.
 
