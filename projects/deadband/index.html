@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Deadband — control-room instrumentation desk for Claude Code #90789: silent ~/.claude/settings.json data loss from a 5000 ms time-only echo suppress. A five-second blind ignore zone is not a hold. Idle word is fresh."
+    />
+    <title>Deadband</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #061014;
+        --slate: #0c181e;
+        --panel: #12242c;
+        --rail: #18323c;
+        --grid: #214854;
+        --teal: #2ec4b6;
+        --cyan: #8aefe4;
+        --phosphor: #3ee0b0;
+        --warn: #e09040;
+        --drop: #e85a6a;
+        --hold: #5ad4a8;
+        --copy: #d2e6ea;
+        --quiet: #6d8a94;
+        --display: "Chakra Petch", "Eurostile", sans-serif;
+        --body: "Sora", "Avenir Next", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          radial-gradient(ellipse 50% 32% at 80% 0%, rgba(46, 196, 182, 0.08), transparent 58%),
+          repeating-linear-gradient(
+            0deg,
+            transparent 0 3px,
+            rgba(8, 20, 26, 0.35) 3px 4px
+          ),
+          linear-gradient(180deg, #0a161c 0%, var(--void) 48%, #04090c 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--teal); }
+      .rack {
+        width: min(1180px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 16px 0 72px;
+      }
+      .nameplate {
+        padding: 16px 20px 14px;
+        background:
+          linear-gradient(180deg, #1a3640 0%, var(--panel) 54%, #0a161c 100%);
+        border: 1px solid rgba(46, 196, 182, 0.28);
+        box-shadow:
+          inset 0 1px 0 rgba(138, 239, 228, 0.12),
+          0 14px 32px rgba(0, 0, 0, 0.4);
+        position: relative;
+      }
+      .nameplate::before,
+      .nameplate::after {
+        content: "";
+        position: absolute;
+        top: 12px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, var(--cyan), var(--teal) 70%);
+        box-shadow: 0 0 8px rgba(46, 196, 182, 0.55);
+      }
+      .nameplate::before { left: 10px; }
+      .nameplate::after { right: 10px; }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--teal);
+      }
+      h1 {
+        margin: 4px 0 0;
+        font-family: var(--display);
+        font-size: clamp(48px, 9vw, 88px);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        line-height: 0.88;
+        color: var(--cyan);
+        text-transform: uppercase;
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 8px 0 0;
+        color: var(--quiet);
+      }
+      .thesis {
+        margin: 10px 0 0;
+        font-size: clamp(16px, 2.1vw, 21px);
+        max-width: 40em;
+        color: var(--copy);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border: 1px solid rgba(46, 196, 182, 0.22);
+        background: rgba(6, 16, 20, 0.72);
+        color: var(--quiet);
+      }
+      .chip.fail { border-color: var(--drop); color: #f3b4bc; background: rgba(232, 90, 106, 0.12); }
+      .chip.hold { border-color: var(--phosphor); color: var(--hold); background: rgba(62, 224, 176, 0.1); }
+      .chip.contrast { border-color: var(--grid); color: var(--teal); }
+      .chip[aria-current="true"] { outline: 2px solid var(--cyan); }
+
+      .scope-wrap {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 88px 1fr 200px;
+        gap: 10px;
+        min-height: 420px;
+      }
+      .phases, .cmp {
+        background: var(--panel);
+        border: 1px solid rgba(46, 196, 182, 0.18);
+        padding: 10px;
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--teal);
+        margin: 0 0 8px;
+      }
+      .phases button, .cmp button {
+        display: block;
+        width: 100%;
+        margin-bottom: 8px;
+        font-family: var(--display);
+        font-size: 18px;
+        letter-spacing: 0.04em;
+        padding: 10px 8px;
+        border: 1px solid var(--grid);
+        background: var(--slate);
+        color: var(--quiet);
+      }
+      .phases button[aria-pressed="true"] {
+        border-color: var(--teal);
+        color: var(--cyan);
+        box-shadow: inset 0 0 12px rgba(46, 196, 182, 0.18);
+      }
+      .phases .note {
+        font-family: var(--mono);
+        font-size: 10px;
+        line-height: 1.45;
+        color: var(--quiet);
+      }
+      .scope {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(46, 196, 182, 0.28);
+        background:
+          radial-gradient(ellipse 70% 60% at 50% 45%, rgba(46, 196, 182, 0.08), transparent 70%),
+          repeating-linear-gradient(0deg, transparent 0 31px, rgba(33, 72, 84, 0.35) 31px 32px),
+          repeating-linear-gradient(90deg, transparent 0 31px, rgba(33, 72, 84, 0.35) 31px 32px),
+          #07141a;
+      }
+      .scope.blind { box-shadow: inset 0 0 40px rgba(232, 90, 106, 0.12); }
+      .scope.hold-scope { box-shadow: inset 0 0 40px rgba(62, 224, 176, 0.12); }
+      .scope svg { display: block; width: 100%; height: 100%; min-height: 420px; }
+      .zone { fill: rgba(232, 90, 106, 0.14); cursor: pointer; }
+      .zone.hold-zone { fill: rgba(62, 224, 176, 0.1); }
+      .axis { fill: var(--quiet); font-family: var(--mono); font-size: 11px; }
+      .trace { fill: none; stroke: var(--phosphor); stroke-width: 2.2; filter: drop-shadow(0 0 4px rgba(62, 224, 176, 0.55)); }
+      .trace.fail { stroke: var(--drop); filter: drop-shadow(0 0 4px rgba(232, 90, 106, 0.5)); }
+      .spike-hit, .write-hit {
+        fill: transparent;
+        cursor: pointer;
+      }
+      .gage {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--quiet);
+        padding: 7px 9px;
+        border: 1px solid rgba(46, 196, 182, 0.22);
+        background: rgba(6, 16, 20, 0.78);
+      }
+      .gage strong { color: var(--cyan); display: block; }
+      .gage.fail { border-color: var(--drop); color: #f3b4bc; }
+      .gage.hold { border-color: var(--hold); color: var(--hold); }
+      .cmp .mode {
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--quiet);
+        margin: 0 0 10px;
+      }
+      .cmp button[aria-pressed="true"] {
+        border-color: var(--cyan);
+        color: var(--cyan);
+      }
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .timeline button {
+        text-align: left;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.4;
+        padding: 9px 10px;
+        border: 1px solid rgba(46, 196, 182, 0.16);
+        background: var(--panel);
+        color: var(--quiet);
+      }
+      .timeline button b {
+        display: block;
+        color: var(--cyan);
+        font-family: var(--display);
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+      .timeline button.on { border-color: var(--drop); color: #f3b4bc; }
+      .timeline button.ok { border-color: var(--hold); color: var(--hold); }
+      .desk {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .panel {
+        padding: 14px 16px 16px;
+        background: var(--panel);
+        border: 1px solid rgba(46, 196, 182, 0.16);
+      }
+      .stamps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .stamps button {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 5px 8px;
+        border: 1px solid rgba(46, 196, 182, 0.22);
+        background: var(--void);
+        color: var(--quiet);
+      }
+      .stamps button[aria-pressed="true"] {
+        border-color: var(--cyan);
+        color: var(--cyan);
+      }
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .act button {
+        font-family: var(--display);
+        font-size: 15px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 8px 12px;
+        border: 1px solid var(--teal);
+        background: var(--slate);
+        color: var(--cyan);
+      }
+      .act .admit { border-color: var(--hold); color: var(--hold); }
+      .act .restore { border-color: var(--drop); color: #f3b4bc; }
+      label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        margin-bottom: 6px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        resize: vertical;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--copy);
+        background: var(--void);
+        border: 1px solid rgba(46, 196, 182, 0.2);
+        padding: 8px;
+      }
+      .verdict-face {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: clamp(26px, 4vw, 40px);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        line-height: 0.9;
+      }
+      .verdict-face.fail { color: var(--drop); }
+      .verdict-face.hold { color: var(--hold); }
+      .feed {
+        font-size: 15px;
+        margin: 0 0 10px;
+        color: var(--copy);
+      }
+      .reasons {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+      }
+      .ledgers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .ledger-card {
+        padding: 8px 10px;
+        border: 1px solid rgba(46, 196, 182, 0.16);
+        background: var(--void);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--quiet);
+      }
+      .ledger-card strong { display: block; color: var(--cyan); margin-bottom: 4px; }
+      .ledger-card.jam { border-color: var(--drop); color: #f3b4bc; }
+      .ledger-card.hold-card { border-color: var(--hold); color: var(--hold); }
+      .path {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        line-height: 1.55;
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+        max-width: 68em;
+        line-height: 1.5;
+      }
+      footer a { color: var(--teal); }
+      footer code { font-family: var(--mono); font-size: 12px; }
+      @media (max-width: 860px) {
+        .scope-wrap, .desk, .ledgers, .timeline { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="rack">
+      <header class="nameplate">
+        <p class="mark">02:50 Sydney · deadband</p>
+        <h1>Deadband</h1>
+        <p class="hours">#90789 · instrumentation / 0–5s ignore zone</p>
+        <p class="thesis">A five-second blind ignore zone is not a hold. Score the suppress window or admit fresh.</p>
+      </header>
+      <div class="chips" id="chips"></div>
+
+      <section class="scope-wrap" aria-label="Deadband oscilloscope bench">
+        <aside class="phases">
+          <p class="hed">Phase bench</p>
+          <button type="button" id="phase-1" aria-pressed="false">1</button>
+          <button type="button" id="phase-2" aria-pressed="false">2</button>
+          <button type="button" id="phase-3" aria-pressed="true">3</button>
+          <p class="note" id="phase-note">Phase 3 · edit inside the window is dropped on next save.</p>
+        </aside>
+        <div class="scope blind" id="scope">
+          <div class="gage fail" id="gage">
+            <strong>suppress window</strong>
+            Δ <span id="delta-n">2500</span> ms<br />
+            band 0–5000 ms
+          </div>
+          <svg id="plot" viewBox="0 0 640 420" role="img" aria-label="Oscilloscope time axis 0 to 5 seconds">
+            <rect class="zone" id="zone" x="80" y="36" width="480" height="300"></rect>
+            <g fill="none" stroke="rgba(33,72,84,0.7)" stroke-width="1">
+              <path d="M80 36 H560 V336 H80 Z" />
+              <path d="M176 36 V336 M272 36 V336 M368 36 V336 M464 36 V336" />
+              <path d="M80 96 H560 M80 156 H560 M80 216 H560 M80 276 H560" />
+            </g>
+            <text class="axis" x="76" y="354" text-anchor="end">0s</text>
+            <text class="axis" x="176" y="354" text-anchor="middle">1s</text>
+            <text class="axis" x="272" y="354" text-anchor="middle">2s</text>
+            <text class="axis" x="368" y="354" text-anchor="middle">3s</text>
+            <text class="axis" x="464" y="354" text-anchor="middle">4s</text>
+            <text class="axis" x="560" y="354" text-anchor="middle">5s</text>
+            <text class="axis" x="320" y="392" text-anchor="middle">TIME AXIS · DEADBAND 0–5s · CONTENT-BLIND</text>
+            <path class="trace fail" id="trace" d="" />
+            <rect class="write-hit" id="write-hit" x="68" y="150" width="40" height="80"></rect>
+            <rect class="spike-hit" id="spike-hit" x="300" y="70" width="50" height="180"></rect>
+          </svg>
+        </div>
+        <aside class="cmp">
+          <p class="hed">Suppress logic</p>
+          <p class="mode" id="cmp-mode">TIME-ONLY · no content hash</p>
+          <button type="button" id="time-only" aria-pressed="true">Time-blind</button>
+          <button type="button" id="content-hash" aria-pressed="false">Content-aware</button>
+          <p class="mode">Own-write → external-rename → suppress/reload → next-save clobber.</p>
+        </aside>
+      </section>
+
+      <section class="timeline" aria-label="Write timeline">
+        <button type="button" id="tl-write"><b>01 own-write</b>Claude stringify + rename</button>
+        <button type="button" id="tl-ext"><b>02 external-rename</b>polite temp → settings.json</button>
+        <button type="button" id="tl-sup"><b>03 suppress / reload</b>timestamp echo, no bytes</button>
+        <button type="button" id="tl-clob"><b>04 next-save clobber</b>/model from stale cache</button>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">Stamp the class</p>
+          <p class="path">Wrong stamps bind the sweep. Correct stamps file the window. The idle word unlocks only on the honest scope.</p>
+          <div class="stamps" id="stamps"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score the window</button>
+            <button type="button" class="admit" id="admit-btn">Admit fresh</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90789</button>
+          </div>
+          <label for="probe">Probe · phase / Δms / time-only / clobber</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Instrument note</p>
+          <p class="verdict-face fail" id="verdict">time-blind</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <p class="path" id="path"></p>
+          <div class="ledgers" aria-live="polite">
+            <div class="ledger-card jam" id="window-ledger"></div>
+            <div class="ledger-card" id="cache-ledger"></div>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90789">anthropics/claude-code#90789</a>
+        (OPEN, 2026-08-30) — Silent <code>~/.claude/settings.json</code> data loss: 5s time-only echo suppression
+        masks external writes; stale per-process cache clobbers on next save. CLI 2.1.240 / desktop 2.1.247.
+        Nearby:
+        <a href="https://github.com/anthropics/claude-code/issues/78321">#78321</a> RMW race,
+        <a href="https://github.com/anthropics/claude-code/issues/84867">#84867</a> plugin uninstall,
+        <a href="https://github.com/anthropics/claude-code/issues/88113">#88113</a> strip unknown hooks,
+        <a href="https://github.com/anthropics/claude-code/issues/80770">#80770</a> enabledPlugins,
+        <a href="https://github.com/anthropics/claude-code/issues/86935">#86935</a> watcher parents.
+        Cross-ecosystem:
+        <a href="https://github.com/openai/codex/issues/36465">openai/codex#36465</a>,
+        <a href="https://github.com/openai/codex/issues/24515">#24515</a>.
+        NOT Palimpsest, Ullage, Damper, Quench, Hasp, Larder, Pawl, Cenotaph, Fetch, Livery, Pinfold.
+        Ask: decide echo by content hash, or re-read and merge from disk at save time.
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "fresh";
+      const ECHO_WINDOW_MS = 5000;
+      const PHASE3_DELTA_MS = 2500;
+      const PHASE2_DELTA_MS = 20000;
+      const DEMO_SPECIMENS = 3;
+      const DEMO_VERSION = "2.1.240";
+      const ALARM = ["time-blind", "cache-stale", "foreign-dropped", "key-resurrected"];
+      const VERDICTS = [
+        "fresh", "time-blind", "content-aware", "window-5s", "cache-stale",
+        "foreign-dropped", "key-resurrected", "debounce-merge", "full-stringify", "atomic-rename",
+      ];
+      const FAIL = new Set(ALARM);
+      const CONTRAST = new Set(["content-aware", "window-5s", "debounce-merge", "full-stringify", "atomic-rename"]);
+      const filed = new Set();
+
+      function asText(v) { return v == null ? "" : String(v); }
+      function asNBool(v) {
+        if (v === true || v === false) return v;
+        return null;
+      }
+      function asNNum(v) {
+        if (v == null || v === "") return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function emptyProbe() {
+        return {
+          session: "", issue: null, source: "", phase: null,
+          timeOnlySuppress: null, contentCompare: null, echoWindowMs: null,
+          externalEditDeltaMs: null, suppressed: null, reloaded: null,
+          nextSaveClobber: null, cacheFresh: null, cacheStale: null,
+          foreignKeysDropped: null, deletedKeysResurrected: null,
+          fullStringify: null, atomicRename: null, debounceCoalesce: null,
+          probeKeyPreserved: null, modelReverted: null, ownWrite: null,
+          specimens: null, version: "", entrypoint: "",
+          nearbyTimeBlind: false, nearbyContentAware: false, nearbyWindow5s: false,
+          nearbyCacheStale: false, nearbyForeignDropped: false, nearbyKeyResurrected: false,
+          nearbyDebounceMerge: false, nearbyFullStringify: false, nearbyAtomicRename: false,
+        };
+      }
+      function uniqueNearby(row) {
+        return Boolean(
+          row.nearbyTimeBlind || row.nearbyContentAware || row.nearbyWindow5s ||
+          row.nearbyCacheStale || row.nearbyForeignDropped || row.nearbyKeyResurrected ||
+          row.nearbyDebounceMerge || row.nearbyFullStringify || row.nearbyAtomicRename
+        );
+      }
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.deadband && typeof src.deadband === "object" ? src.deadband
+          : src.probe && typeof src.probe === "object" ? src.probe
+          : src;
+        return {
+          ...emptyProbe(), ...nested,
+          phase: asNNum(nested.phase),
+          timeOnlySuppress: asNBool(nested.timeOnlySuppress),
+          contentCompare: asNBool(nested.contentCompare),
+          echoWindowMs: asNNum(nested.echoWindowMs),
+          externalEditDeltaMs: asNNum(nested.externalEditDeltaMs),
+          suppressed: asNBool(nested.suppressed),
+          reloaded: asNBool(nested.reloaded),
+          nextSaveClobber: asNBool(nested.nextSaveClobber),
+          cacheFresh: asNBool(nested.cacheFresh),
+          cacheStale: asNBool(nested.cacheStale),
+          foreignKeysDropped: asNBool(nested.foreignKeysDropped),
+          deletedKeysResurrected: asNBool(nested.deletedKeysResurrected),
+          fullStringify: asNBool(nested.fullStringify),
+          atomicRename: asNBool(nested.atomicRename),
+          debounceCoalesce: asNBool(nested.debounceCoalesce),
+          probeKeyPreserved: asNBool(nested.probeKeyPreserved),
+          modelReverted: asNBool(nested.modelReverted),
+          ownWrite: asNBool(nested.ownWrite),
+          specimens: asNNum(nested.specimens),
+          version: asText(nested.version || ""),
+          entrypoint: asText(nested.entrypoint || ""),
+        };
+      }
+      function isIdle(row) {
+        return !(
+          row.phase != null || row.timeOnlySuppress != null || row.contentCompare != null ||
+          row.echoWindowMs != null || row.externalEditDeltaMs != null ||
+          row.suppressed != null || row.reloaded != null || row.nextSaveClobber != null ||
+          row.cacheFresh != null || row.cacheStale != null ||
+          row.foreignKeysDropped != null || row.deletedKeysResurrected != null ||
+          row.fullStringify != null || row.atomicRename != null || row.debounceCoalesce != null ||
+          row.probeKeyPreserved != null || row.modelReverted != null || row.ownWrite != null ||
+          row.specimens != null || row.version || row.session || row.source ||
+          row.entrypoint || uniqueNearby(row)
+        );
+      }
+      function analyze(input) {
+        const row = cloneProbe(input);
+        const windowMs = row.echoWindowMs != null ? row.echoWindowMs : ECHO_WINDOW_MS;
+        const inWindow = row.externalEditDeltaMs == null ? null
+          : row.externalEditDeltaMs >= 0 && row.externalEditDeltaMs < windowMs;
+        const timeBlind = row.timeOnlySuppress === true || row.contentCompare === false;
+        const contentAware = row.contentCompare === true && row.timeOnlySuppress !== true;
+        const phase3 = row.phase === 3;
+        const phase2 = row.phase === 2;
+        const phase1 = row.phase === 1;
+        const clobber = row.nextSaveClobber === true;
+        const dropped = row.foreignKeysDropped === true;
+        const resurrected = row.deletedKeysResurrected === true;
+        const stale = row.cacheStale === true;
+        const suppressed = row.suppressed === true;
+        const survived = row.probeKeyPreserved === true && row.nextSaveClobber !== true && row.foreignKeysDropped !== true;
+        const primaryTriad = Boolean(
+          (phase3 || (timeBlind && inWindow === true && suppressed && clobber)) &&
+          timeBlind && inWindow === true && suppressed && clobber && !uniqueNearby(row) && !contentAware
+        );
+        const honest = Boolean(
+          (phase1 && survived && row.cacheFresh === true) ||
+          (phase2 && survived && inWindow === false) ||
+          (contentAware && row.reloaded === true && !clobber) ||
+          (row.cacheFresh === true && survived && !timeBlind && !phase3)
+        );
+        return { row, windowMs, inWindow, timeBlind, contentAware, phase1, phase2, phase3,
+          clobber, dropped, resurrected, stale, suppressed, survived, primaryTriad, honest };
+      }
+      function classify(input) {
+        const row = cloneProbe(input);
+        if (isIdle(row)) return "fresh";
+        if (!analyze(row).primaryTriad) {
+          if (row.nearbyAtomicRename) return "atomic-rename";
+          if (row.nearbyFullStringify) return "full-stringify";
+          if (row.nearbyDebounceMerge) return "debounce-merge";
+          if (row.nearbyKeyResurrected) return "key-resurrected";
+          if (row.nearbyForeignDropped) return "foreign-dropped";
+          if (row.nearbyCacheStale) return "cache-stale";
+          if (row.nearbyWindow5s) return "window-5s";
+          if (row.nearbyContentAware) return "content-aware";
+          if (row.nearbyTimeBlind) return "time-blind";
+        }
+        const f = analyze(row);
+        if (f.primaryTriad) return "time-blind";
+        if (f.honest) return "fresh";
+        if (f.contentAware && !f.clobber) return "content-aware";
+        if (f.resurrected && f.stale) return "key-resurrected";
+        if (f.dropped && f.clobber) return "foreign-dropped";
+        if (f.stale) return "cache-stale";
+        if (row.debounceCoalesce === true && f.suppressed) return "debounce-merge";
+        if (row.fullStringify === true && f.clobber) return "full-stringify";
+        if (row.atomicRename === true && f.suppressed && !f.clobber) return "atomic-rename";
+        if (row.echoWindowMs === ECHO_WINDOW_MS && f.timeBlind && f.inWindow !== true) return "window-5s";
+        if (f.timeBlind && f.inWindow === true && f.suppressed) return "time-blind";
+        if (f.phase1 || f.phase2) return "fresh";
+        return "fresh";
+      }
+      function feedOf(kind) {
+        const map = {
+          "time-blind": "● Time-blind · watcher discards any change within 5000 ms of own write by timestamp only, no content compare · primary #90789",
+          "content-aware": "● Content-aware · hash the bytes just written; a different payload is not an echo",
+          "window-5s": "● Window-5s · echo suppression is a five-second ignore zone on the time axis",
+          "cache-stale": "● Cache-stale · per-process settings cache diverges from disk for the rest of a long-lived session",
+          "foreign-dropped": "● Foreign-dropped · next /model or /effort save clobbers disk from the stale cache and drops foreign keys",
+          "key-resurrected": "● Key-resurrected · a later older cache rewrites the file and restores deleted keys / reverts /model",
+          "debounce-merge": "● Debounce-merge · multiple change events coalesce into a single (suppressed) event",
+          "full-stringify": "● Full-stringify · save merges into the cached object and writes JSON.stringify(obj, null, 2)",
+          "atomic-rename": "● Atomic-rename · external writer used write-temp + rename; still masked inside the window",
+        };
+        return map[kind] || "● Fresh · honest scope · Phase 1 cache preserves; Phase 2 edit 20s before write survives · idle word is fresh";
+      }
+      function reasonsOf(input, kind) {
+        const f = analyze(input);
+        const reasons = [`verdict ${kind}`];
+        if (kind === "time-blind" || f.primaryTriad) {
+          reasons.push("#90789 silent ~/.claude/settings.json data loss: time-only echo suppress plus stale per-process cache clobber");
+        }
+        if (f.phase3) reasons.push("Phase 3: identical external edit ~2–3s after Claude write is dropped on next save");
+        if (f.phase2) reasons.push("Phase 2: external edit 20s before write survives — watcher works outside the window");
+        if (f.phase1) reasons.push("Phase 1: fresh cache preserves unknown probe keys and unmanaged fields");
+        if (f.timeBlind) reasons.push(`time-only echo suppress: discard any change within ${f.windowMs} ms of own write; no content comparison`);
+        if (f.inWindow === true) reasons.push(`external edit Δ ${f.row.externalEditDeltaMs ?? PHASE3_DELTA_MS} ms is inside the ${f.windowMs} ms deadband`);
+        if (f.suppressed) reasons.push("change event suppressed as an echo");
+        if (f.clobber) reasons.push("next settings save rewrote the file from the stale cache");
+        if (f.dropped) reasons.push("foreign keys dropped: outputStyle, minimumVersion, editorMode, inputNeededNotifEnabled");
+        if (f.resurrected) reasons.push("later older cache resurrected deleted keys and reverted /model");
+        if (kind === "fresh") {
+          reasons.push("Phase 1 fresh cache preserves; Phase 2 edit outside the window survives; idle word is fresh");
+        }
+        return reasons;
+      }
+      function seedTimeBlind() {
+        return {
+          session: "90789-phase3-time-blind", issue: 90789,
+          source: "primary #90789 Phase 3: identical atomic-rename edit ~2–3s after Claude write; time-only 5000 ms suppress; next save drops the key",
+          phase: 3, timeOnlySuppress: true, contentCompare: false, echoWindowMs: ECHO_WINDOW_MS,
+          externalEditDeltaMs: PHASE3_DELTA_MS, suppressed: true, reloaded: false,
+          nextSaveClobber: true, cacheFresh: false, cacheStale: true,
+          foreignKeysDropped: true, deletedKeysResurrected: false,
+          fullStringify: true, atomicRename: true, debounceCoalesce: true,
+          probeKeyPreserved: false, modelReverted: false, ownWrite: true,
+          specimens: DEMO_SPECIMENS, version: DEMO_VERSION, entrypoint: "claude-cli",
+        };
+      }
+      function seedFresh() {
+        return {
+          session: "fresh-phase1", issue: 90789,
+          source: "honest control Phase 1: fresh cache; /effort save preserves unknown probe key and unmanaged fields",
+          phase: 1, timeOnlySuppress: false, contentCompare: true, echoWindowMs: ECHO_WINDOW_MS,
+          externalEditDeltaMs: null, suppressed: false, reloaded: false,
+          nextSaveClobber: false, cacheFresh: true, cacheStale: false,
+          foreignKeysDropped: false, deletedKeysResurrected: false,
+          fullStringify: true, atomicRename: false, debounceCoalesce: false,
+          probeKeyPreserved: true, modelReverted: false, ownWrite: true,
+          specimens: DEMO_SPECIMENS, version: DEMO_VERSION, entrypoint: "claude-cli",
+        };
+      }
+      function seedPhase2() {
+        return {
+          session: "90789-phase2-survive", issue: 90789,
+          source: "Phase 2: atomic-rename add 20s before Claude write; watcher reloads; key survives",
+          phase: 2, timeOnlySuppress: true, contentCompare: false, echoWindowMs: ECHO_WINDOW_MS,
+          externalEditDeltaMs: PHASE2_DELTA_MS, suppressed: false, reloaded: true,
+          nextSaveClobber: false, cacheFresh: false, cacheStale: false,
+          foreignKeysDropped: false, deletedKeysResurrected: false,
+          fullStringify: true, atomicRename: true, debounceCoalesce: false,
+          probeKeyPreserved: true, modelReverted: false, ownWrite: true,
+          specimens: DEMO_SPECIMENS, version: DEMO_VERSION, entrypoint: "claude-cli",
+        };
+      }
+      const NEARBY_FLAG = {
+        "time-blind": "nearbyTimeBlind",
+        "content-aware": "nearbyContentAware",
+        "window-5s": "nearbyWindow5s",
+        "cache-stale": "nearbyCacheStale",
+        "foreign-dropped": "nearbyForeignDropped",
+        "key-resurrected": "nearbyKeyResurrected",
+        "debounce-merge": "nearbyDebounceMerge",
+        "full-stringify": "nearbyFullStringify",
+        "atomic-rename": "nearbyAtomicRename",
+      };
+      function seedNearby(kind) {
+        const flag = NEARBY_FLAG[kind];
+        const row = emptyProbe();
+        row.session = "90789-" + kind;
+        row.issue = 90789;
+        row.version = DEMO_VERSION;
+        if (flag) row[flag] = true;
+        return row;
+      }
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        return {
+          verdict: kind,
+          fresh: kind === IDLE_WORD,
+          alarm: ALARM.includes(kind),
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          facts: analyze(row),
+          probe: row,
+        };
+      }
+
+      const chipsEl = document.getElementById("chips");
+      const stampsEl = document.getElementById("stamps");
+      const probeEl = document.getElementById("probe");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const pathEl = document.getElementById("path");
+      const windowLedger = document.getElementById("window-ledger");
+      const cacheLedger = document.getElementById("cache-ledger");
+      const scope = document.getElementById("scope");
+      const gage = document.getElementById("gage");
+      const deltaN = document.getElementById("delta-n");
+      const trace = document.getElementById("trace");
+      const zone = document.getElementById("zone");
+      const phaseNote = document.getElementById("phase-note");
+      const cmpMode = document.getElementById("cmp-mode");
+
+      function chipClass(kind) {
+        if (kind === IDLE_WORD) return "chip hold";
+        if (FAIL.has(kind)) return "chip fail";
+        if (CONTRAST.has(kind)) return "chip contrast";
+        return "chip";
+      }
+      function renderChips(current) {
+        chipsEl.innerHTML = VERDICTS.map((kind) =>
+          `<button type="button" class="${chipClass(kind)}" data-kind="${kind}" aria-current="${kind === current}">${kind}</button>`
+        ).join("");
+        stampsEl.innerHTML = VERDICTS.filter((k) => k !== IDLE_WORD).map((kind) =>
+          `<button type="button" data-kind="${kind}" aria-pressed="${filed.has(kind)}">${kind}</button>`
+        ).join("");
+      }
+      function tracePath(row, kind) {
+        const hold = kind === IDLE_WORD;
+        if (row.phase === 1 || (hold && row.phase !== 3 && row.phase !== 2)) {
+          return "M80 240 H560";
+        }
+        if (row.phase === 2) {
+          return "M80 240 H200 L220 90 L240 240 H560";
+        }
+        return "M80 240 L92 110 L110 240 H300 L320 80 L338 240 H560";
+      }
+      function paint(result, note) {
+        const kind = result.verdict;
+        const row = result.probe;
+        const hold = kind === IDLE_WORD;
+        verdictEl.textContent = kind;
+        verdictEl.className = "verdict-face " + (hold ? "hold" : "fail");
+        feedEl.textContent = result.feed;
+        reasonsEl.innerHTML = result.reasons.map((r) => `<li>${r}</li>`).join("");
+        pathEl.textContent = note || (result.fresh
+          ? "Honest sweep. The window compared content, or the edit sat outside 5s. Idle word is fresh."
+          : "Blind window. The sweep is still time-only.");
+        deltaN.textContent = row.externalEditDeltaMs == null ? "—" : String(row.externalEditDeltaMs);
+        gage.className = "gage " + (hold ? "hold" : "fail");
+        scope.classList.toggle("blind", !hold);
+        scope.classList.toggle("hold-scope", hold);
+        zone.classList.toggle("hold-zone", hold);
+        trace.setAttribute("d", tracePath(row, kind));
+        trace.setAttribute("class", "trace" + (hold ? "" : " fail"));
+        windowLedger.className = "ledger-card " + (result.facts.inWindow ? "jam" : "hold-card");
+        windowLedger.innerHTML = `<strong>deadband</strong>window ${result.facts.windowMs} ms<br />Δ ${row.externalEditDeltaMs ?? "—"} ms<br />in-band ${result.facts.inWindow ? "yes" : "no"}<br />time-only ${result.facts.timeBlind ? "yes" : "no"}`;
+        cacheLedger.className = "ledger-card " + (result.facts.clobber || result.facts.stale ? "jam" : "hold-card");
+        cacheLedger.innerHTML = `<strong>cache / disk</strong>phase ${row.phase ?? "—"}<br />suppress ${result.facts.suppressed ? "yes" : "no"}<br />clobber ${result.facts.clobber ? "yes" : "no"}<br />foreign ${result.facts.dropped ? "dropped" : hold ? "held" : "—"}`;
+        document.getElementById("phase-1").setAttribute("aria-pressed", String(row.phase === 1));
+        document.getElementById("phase-2").setAttribute("aria-pressed", String(row.phase === 2));
+        document.getElementById("phase-3").setAttribute("aria-pressed", String(row.phase === 3 || (!row.phase && kind === "time-blind")));
+        phaseNote.textContent = row.phase === 1
+          ? "Phase 1 · fresh cache preserves unknown keys."
+          : row.phase === 2
+            ? "Phase 2 · edit 20s before write survives."
+            : "Phase 3 · edit inside the window is dropped on next save.";
+        const aware = row.contentCompare === true && row.timeOnlySuppress !== true;
+        document.getElementById("time-only").setAttribute("aria-pressed", String(!aware));
+        document.getElementById("content-hash").setAttribute("aria-pressed", String(aware));
+        cmpMode.textContent = aware ? "CONTENT-HASH · bytes compared" : "TIME-ONLY · no content hash";
+        document.getElementById("tl-write").className = row.ownWrite ? "on" : "";
+        document.getElementById("tl-ext").className = row.atomicRename ? (hold ? "ok" : "on") : "";
+        document.getElementById("tl-sup").className = result.facts.suppressed ? "on" : (row.reloaded ? "ok" : "");
+        document.getElementById("tl-clob").className = result.facts.clobber ? "on" : (hold ? "ok" : "");
+        renderChips(kind);
+        probeEl.value = JSON.stringify(row, null, 2);
+      }
+      function apply(probe, note) {
+        paint(score(probe), note);
+      }
+      function fileKind(kind) {
+        if (kind === IDLE_WORD) {
+          apply(seedFresh(), "Honest control filed. Admit fresh unlocks here.");
+          return;
+        }
+        filed.add(kind);
+        apply(seedNearby(kind), `Filed ${kind}. Nearby unique flags win their own seed.`);
+      }
+      function readProbe() {
+        try {
+          return cloneProbe(JSON.parse(probeEl.value));
+        } catch {
+          return cloneProbe(seedTimeBlind());
+        }
+      }
+
+      renderChips("time-blind");
+      apply(seedTimeBlind(), "Seeded #90789 already on the scope. Score the suppress window or admit fresh.");
+
+      chipsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      stampsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      document.getElementById("score-btn").addEventListener("click", () => {
+        apply(readProbe(), "Scored from the probe on the rack.");
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        const result = score(readProbe());
+        if (result.fresh) {
+          apply(result.probe, "Admitted fresh. The window compared content, or the edit sat outside 5s.");
+        } else {
+          paint(result, "Admit does not lie. A blind window stays blind. Idle word is fresh.");
+        }
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        filed.clear();
+        apply(seedTimeBlind(), "Restored #90789. Phase 3 still inside the deadband.");
+      });
+      document.getElementById("phase-1").addEventListener("click", () => {
+        apply(seedFresh(), "Phase 1 filed. Fresh cache preserves.");
+      });
+      document.getElementById("phase-2").addEventListener("click", () => {
+        apply(seedPhase2(), "Phase 2 filed. Edit 20s before write survives.");
+      });
+      document.getElementById("phase-3").addEventListener("click", () => {
+        apply(seedTimeBlind(), "Phase 3 filed. Edit inside the window is dropped.");
+      });
+      document.getElementById("time-only").addEventListener("click", () => fileKind("time-blind"));
+      document.getElementById("content-hash").addEventListener("click", () => fileKind("content-aware"));
+      document.getElementById("zone").addEventListener("click", () => fileKind("window-5s"));
+      document.getElementById("write-hit").addEventListener("click", () => fileKind("full-stringify"));
+      document.getElementById("spike-hit").addEventListener("click", () => fileKind("time-blind"));
+      document.getElementById("tl-write").addEventListener("click", () => fileKind("full-stringify"));
+      document.getElementById("tl-ext").addEventListener("click", () => fileKind("atomic-rename"));
+      document.getElementById("tl-sup").addEventListener("click", () => fileKind("debounce-merge"));
+      document.getElementById("tl-clob").addEventListener("click", () => fileKind("foreign-dropped"));
+    </script>
+  </body>
+</html>
