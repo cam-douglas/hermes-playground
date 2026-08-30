@@ -37,6 +37,14 @@ NOT **Voucher** ([#90807](https://github.com/anthropics/claude-code/issues/90807
 
 Same-class corroborator (cite, not primary): [anthropics/claude-code#67293](https://github.com/anthropics/claude-code/issues/67293) — Background tasks panel shows long-dead Bash tasks as "Running"; survives app restart and manual stop.
 
+Cross-ecosystem, same class (ghost/deleted schedule UI — cite, not primary):
+
+- [openai/codex#39361](https://github.com/openai/codex/issues/39361) — deleted 15-minute automation reappears, creates repeated threads, consumes tokens
+- [openai/codex#35378](https://github.com/openai/codex/issues/35378) — viewing a deleted automation renders an untitled scheduled-task card instead of not found
+- [openai/codex#37140](https://github.com/openai/codex/issues/37140) — persistent Dock badge from orphaned scheduled-task unread IDs after Scheduled is empty
+- [github/copilot-cli#3412](https://github.com/github/copilot-cli/issues/3412) — UI shows background agents as running after they have completed (`list_agents` empty)
+- [github/copilot-cli#3514](https://github.com/github/copilot-cli/issues/3514) — `list_agents` empty while background agents still visibly running
+
 Nearby / opposite poles (cite; do NOT build those products):
 
 - [anthropics/claude-code#85838](https://github.com/anthropics/claude-code/issues/85838) — /loop silently runs once unless the model infers CronCreate (under-fire, not ghost Loop)
@@ -84,7 +92,7 @@ Primary:
 
 - [anthropics/claude-code#90804](https://github.com/anthropics/claude-code/issues/90804) — OPEN, filed 2026-08-30T18:09:30Z. Labels: bug / platform:macos / area:agent-view. Claude Code 2.1.236 (Homebrew Cask), macOS Darwin 25.6.0 arm64. CronCreate with cron `40 10 30 8 *`, `recurring: false`, created 2026-08-30 10:38 local, before the 10:40 match. Job fired correctly at 10:40; output appeared in the conversation. CronList immediately after: "No scheduled jobs" (documented one-shot: fire once at next match, then auto-delete). Background Tasks panel (`/tasks`) still showed the same job labeled **Loop**, same cron, **Next 364d 23h**, **Ends 3d**. Happened for two separate one-shot jobs in the same session. Follow-up: CronDelete(id) on both ids after fire+empty list — `1a6f1a3f` and `92d0877f` — each returned "No scheduled job with id". Third independent signal (lookup-by-id, not a list enumeration) agreeing CronList is empty and disagreeing with the panel still showing at least one as an active recurring Loop.
 
-Same-class: [#67293](https://github.com/anthropics/claude-code/issues/67293). Opposite poles: [#85838](https://github.com/anthropics/claude-code/issues/85838), [#80679](https://github.com/anthropics/claude-code/issues/80679), [#74736](https://github.com/anthropics/claude-code/issues/74736), [#86015](https://github.com/anthropics/claude-code/issues/86015), [#89248](https://github.com/anthropics/claude-code/issues/89248).
+Same-class: [#67293](https://github.com/anthropics/claude-code/issues/67293). Cross-ecosystem same class: [openai/codex#39361](https://github.com/openai/codex/issues/39361), [openai/codex#35378](https://github.com/openai/codex/issues/35378), [openai/codex#37140](https://github.com/openai/codex/issues/37140), [github/copilot-cli#3412](https://github.com/github/copilot-cli/issues/3412), [github/copilot-cli#3514](https://github.com/github/copilot-cli/issues/3514). Opposite poles: [#85838](https://github.com/anthropics/claude-code/issues/85838), [#80679](https://github.com/anthropics/claude-code/issues/80679), [#74736](https://github.com/anthropics/claude-code/issues/74736), [#86015](https://github.com/anthropics/claude-code/issues/86015), [#89248](https://github.com/anthropics/claude-code/issues/89248).
 
 Ask: after a one-shot (`recurring: false`) fires and CronList confirms it is gone, the Background Tasks panel should also show it as complete/removed, not as an active recurring Loop with a far-future next-fire time.
 
