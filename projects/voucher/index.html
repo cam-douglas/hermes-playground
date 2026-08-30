@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Voucher — cashier / tally-clerk stub-book desk for Claude Code #90807: nested subagent fan-out presented as verified fact when children never returned. A nested receipt without a return is not a hold. Idle word is backed."
+    />
+    <title>Voucher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #14180f;
+        --paper: #f4ead4;
+        --cream: #fbf6e8;
+        --ledger: #1b4a38;
+        --ledger-deep: #123228;
+        --carbon: #1e3f73;
+        --carbon-copy: #2f5a9a;
+        --brass: #c4a35a;
+        --brass-bright: #e4c76a;
+        --lamp-off: #4a322c;
+        --lamp-fail: #9a2f2c;
+        --lamp-on: #2f8a4a;
+        --quiet: #5c584c;
+        --copy: #1c1a14;
+        --display: "Libre Baskerville", "Palatino Linotype", serif;
+        --body: "Source Sans 3", "Source Sans Pro", "Avenir Next", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          radial-gradient(ellipse 42% 30% at 80% 8%, rgba(196, 163, 90, 0.18), transparent 62%),
+          repeating-linear-gradient(0deg, transparent 0 27px, rgba(27, 74, 56, 0.045) 27px 28px),
+          linear-gradient(180deg, #d8c9a4 0%, var(--paper) 38%, #e8dcc2 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--carbon-copy); }
+      .cage {
+        width: min(1180px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 72px;
+      }
+      .lintel {
+        padding: 20px 26px 16px;
+        background:
+          linear-gradient(180deg, #2a6a50 0%, var(--ledger) 54%, var(--ledger-deep) 100%);
+        border: 3px solid var(--brass);
+        box-shadow:
+          inset 0 1px 0 rgba(228, 199, 106, 0.35),
+          0 16px 36px rgba(18, 50, 40, 0.28);
+        position: relative;
+        color: var(--cream);
+      }
+      .lintel::before,
+      .lintel::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 14px;
+        background:
+          repeating-linear-gradient(180deg, var(--brass) 0 10px, #8a7038 10px 12px);
+      }
+      .lintel::before { left: 0; }
+      .lintel::after { right: 0; }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brass-bright);
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-family: var(--display);
+        font-size: clamp(48px, 9vw, 88px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 0.9;
+        color: var(--cream);
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 10px 0 0;
+        color: #c9d8cc;
+      }
+      .thesis {
+        margin: 10px 0 0;
+        font-size: clamp(16px, 2.1vw, 21px);
+        max-width: 38em;
+        font-family: var(--display);
+        font-style: italic;
+        color: #f3ead6;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border: 1px solid rgba(20, 24, 15, 0.16);
+        background: rgba(251, 246, 232, 0.72);
+        color: var(--quiet);
+        border-radius: 2px;
+      }
+      .chip.fail { border-color: var(--lamp-fail); color: #7a1f1c; background: rgba(154, 47, 44, 0.1); }
+      .chip.hold { border-color: var(--lamp-on); color: #1a5a30; background: rgba(47, 138, 74, 0.12); }
+      .chip.contrast { border-color: var(--carbon); color: var(--carbon); }
+      .chip[aria-current="true"] { outline: 2px solid var(--brass); }
+
+      .office {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 210px 1fr 230px;
+        gap: 10px;
+        min-height: 440px;
+      }
+      .spindle, .lamp-col {
+        background: var(--cream);
+        border: 1px solid #c9b892;
+        padding: 12px;
+        box-shadow: inset 0 0 0 1px rgba(196, 163, 90, 0.2);
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--carbon);
+        margin: 0 0 8px;
+      }
+      .stubs-stack {
+        display: grid;
+        gap: 6px;
+      }
+      .carbon-stub {
+        border: 0;
+        text-align: left;
+        padding: 8px 10px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        background:
+          repeating-linear-gradient(90deg, rgba(47, 90, 154, 0.07) 0 2px, transparent 2px 6px),
+          #e8eef6;
+        color: var(--carbon);
+        border-left: 4px solid var(--carbon);
+        box-shadow: 2px 2px 0 rgba(30, 63, 115, 0.08);
+      }
+      .carbon-stub.empty { border-left-color: var(--lamp-fail); color: var(--lamp-fail); background: #f6e8e6; }
+      .carbon-stub.hold-stub { border-left-color: var(--lamp-on); color: #1a5a30; background: #e6f3ea; }
+      .spindle .note {
+        font-family: var(--mono);
+        font-size: 10px;
+        line-height: 1.45;
+        color: var(--quiet);
+        margin-top: 10px;
+      }
+      .window {
+        position: relative;
+        overflow: hidden;
+        border: 6px solid var(--brass);
+        background:
+          linear-gradient(180deg, #f7f1e0 0%, #efe4c8 100%);
+        box-shadow:
+          inset 0 0 0 2px #8a7038,
+          0 10px 24px rgba(18, 50, 40, 0.18);
+      }
+      .window.hold-box {
+        background: linear-gradient(180deg, #eef6ef 0%, #e4efe4 100%);
+      }
+      .window svg { display: block; width: 100%; height: 100%; min-height: 440px; }
+      .hit { fill: transparent; cursor: pointer; }
+      .gage {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--quiet);
+        padding: 7px 9px;
+        border: 1px solid rgba(30, 63, 115, 0.28);
+        background: rgba(251, 246, 232, 0.92);
+      }
+      .gage strong { color: var(--carbon); display: block; }
+      .gage.fail { border-color: var(--lamp-fail); color: #7a1f1c; }
+      .gage.hold { border-color: var(--lamp-on); color: #1a5a30; }
+      .lamp {
+        width: 88px;
+        height: 88px;
+        margin: 12px auto 0;
+        border-radius: 50%;
+        border: 8px solid var(--brass);
+        background: radial-gradient(circle at 35% 30%, #6a4038, var(--lamp-off) 70%);
+        box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+        position: relative;
+      }
+      .lamp.on {
+        background: radial-gradient(circle at 35% 30%, #8fe3a4, var(--lamp-on) 68%);
+        box-shadow: 0 0 22px rgba(47, 138, 74, 0.45);
+      }
+      .lamp.fail {
+        background: radial-gradient(circle at 35% 30%, #e08a82, var(--lamp-fail) 68%);
+        box-shadow: 0 0 18px rgba(154, 47, 44, 0.35);
+      }
+      .lamp .cap {
+        position: absolute;
+        left: 50%;
+        top: -16px;
+        width: 36px;
+        height: 14px;
+        background: var(--brass);
+        transform: translateX(-50%);
+        border-radius: 2px 2px 0 0;
+      }
+      .lamp-col .mode {
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--quiet);
+        margin: 12px 0 0;
+        text-align: center;
+      }
+      .lamp-col button {
+        display: block;
+        width: 100%;
+        margin-top: 8px;
+        font-family: var(--display);
+        font-size: 15px;
+        padding: 8px;
+        border: 1px solid #c9b892;
+        background: var(--paper);
+        color: var(--quiet);
+      }
+      .lamp-col button[aria-pressed="true"] {
+        border-color: var(--carbon);
+        color: var(--carbon);
+      }
+
+      .drawer {
+        margin-top: 10px;
+        padding: 12px 14px;
+        background: #efe6cf;
+        border: 1px solid #c9b892;
+        box-shadow: inset 0 8px 16px rgba(20, 24, 15, 0.06);
+      }
+      .stamps-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .stamps-row button {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.04em;
+        padding: 6px 9px;
+        border: 2px dashed rgba(30, 63, 115, 0.35);
+        background: #f7f1e0;
+        color: var(--carbon);
+        border-radius: 50%;
+        min-width: 92px;
+      }
+      .stamps-row button.on {
+        border-style: solid;
+        border-color: var(--lamp-fail);
+        color: var(--lamp-fail);
+        background: #f8e6e4;
+      }
+      .stamps-row button.hold-on {
+        border-style: solid;
+        border-color: var(--lamp-on);
+        color: #1a5a30;
+      }
+
+      .desk {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .panel {
+        padding: 14px 16px 16px;
+        background: var(--cream);
+        border: 1px solid #c9b892;
+      }
+      .stamps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .stamps button {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 5px 8px;
+        border: 1px solid rgba(20, 24, 15, 0.16);
+        background: var(--paper);
+        color: var(--quiet);
+      }
+      .stamps button[aria-pressed="true"] {
+        border-color: var(--carbon);
+        color: var(--carbon);
+      }
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .act button {
+        font-family: var(--display);
+        font-size: 16px;
+        letter-spacing: 0.02em;
+        padding: 8px 12px;
+        border: 1px solid var(--carbon);
+        background: var(--paper);
+        color: var(--carbon);
+      }
+      .act .admit { border-color: var(--lamp-on); color: #1a5a30; }
+      .act .restore { border-color: var(--lamp-fail); color: var(--lamp-fail); }
+      label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        margin-bottom: 6px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        resize: vertical;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--copy);
+        background: #fbf6e8;
+        border: 1px solid #c9b892;
+        padding: 8px;
+      }
+      .verdict-face {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: clamp(26px, 4vw, 40px);
+        letter-spacing: -0.02em;
+        line-height: 0.95;
+      }
+      .verdict-face.fail { color: var(--lamp-fail); }
+      .verdict-face.hold { color: var(--lamp-on); }
+      .feed {
+        font-size: 15px;
+        margin: 0 0 10px;
+        color: var(--copy);
+      }
+      .reasons {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+      }
+      .ledgers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .ledger-card {
+        padding: 8px 10px;
+        border: 1px solid #c9b892;
+        background: var(--paper);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--quiet);
+      }
+      .ledger-card strong { display: block; color: var(--carbon); margin-bottom: 4px; }
+      .ledger-card.jam { border-color: var(--lamp-fail); color: #7a1f1c; }
+      .ledger-card.hold-card { border-color: var(--lamp-on); color: #1a5a30; }
+      .path {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        line-height: 1.55;
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+        max-width: 68em;
+        line-height: 1.5;
+      }
+      footer a { color: var(--carbon-copy); }
+      footer code { font-family: var(--mono); font-size: 12px; }
+      @media (max-width: 860px) {
+        .office, .desk, .ledgers { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="cage">
+      <header class="lintel">
+        <p class="mark">04:50 Sydney · voucher</p>
+        <h1>Voucher</h1>
+        <p class="hours">#90807 · cashier / tally-clerk / nested stub book</p>
+        <p class="thesis">A nested receipt without a return is not a hold. Score the stub book or admit backed.</p>
+      </header>
+      <div class="chips" id="chips"></div>
+
+      <section class="office" aria-label="Voucher cashier cage">
+        <aside class="spindle">
+          <p class="hed">Stub-book spindle</p>
+          <div class="stubs-stack" id="stubs-stack" aria-label="Carbon voucher stubs"></div>
+          <p class="note" id="spindle-note">Three nested stubs. Zero returns. Sixteen incorrect items on later verify.</p>
+        </aside>
+        <div class="window" id="window">
+          <div class="gage fail" id="gage">
+            <strong>nested fan-out</strong>
+            spawned <span id="spawn-n">yes</span><br />
+            returned <span id="return-n">0</span>
+          </div>
+          <svg id="box" viewBox="0 0 640 440" role="img" aria-label="Brass cage window over a nested fan-out ledger">
+            <rect x="36" y="28" width="568" height="384" fill="none" stroke="#8a7038" stroke-width="3" />
+            <g id="bars" stroke="#c4a35a" stroke-width="3">
+              <path d="M120 28 V412 M220 28 V412 M320 28 V412 M420 28 V412 M520 28 V412" />
+              <path d="M36 120 H604 M36 220 H604 M36 320 H604" />
+            </g>
+            <rect class="hit" id="parent-hit" x="70" y="48" width="500" height="56"></rect>
+            <rect id="parent-row" x="80" y="56" width="480" height="40" fill="#1b4a38" />
+            <text x="320" y="82" text-anchor="middle" fill="#fbf6e8" font-family="IBM Plex Mono, monospace" font-size="13">PARENT · general-purpose research</text>
+            <rect class="hit" id="child-a-hit" x="90" y="150" width="200" height="70"></rect>
+            <rect id="child-a" x="100" y="158" width="180" height="54" fill="#1e3f73" />
+            <text x="190" y="190" text-anchor="middle" fill="#fbf6e8" font-family="IBM Plex Mono, monospace" font-size="11">CHILD A · statute</text>
+            <circle id="slot-a" cx="260" cy="185" r="8" fill="#9a2f2c" />
+            <rect class="hit" id="child-b-hit" x="350" y="150" width="200" height="70"></rect>
+            <rect id="child-b" x="360" y="158" width="180" height="54" fill="#1e3f73" />
+            <text x="450" y="190" text-anchor="middle" fill="#fbf6e8" font-family="IBM Plex Mono, monospace" font-size="11">CHILD B · amounts</text>
+            <circle id="slot-b" cx="520" cy="185" r="8" fill="#9a2f2c" />
+            <rect class="hit" id="child-c-hit" x="220" y="250" width="200" height="70"></rect>
+            <rect id="child-c" x="230" y="258" width="180" height="54" fill="#1e3f73" />
+            <text x="320" y="290" text-anchor="middle" fill="#fbf6e8" font-family="IBM Plex Mono, monospace" font-size="11">CHILD C · dates</text>
+            <circle id="slot-c" cx="390" cy="285" r="8" fill="#9a2f2c" />
+            <rect class="hit" id="cite-hit" x="80" y="350" width="200" height="50"></rect>
+            <text x="180" y="380" text-anchor="middle" fill="#1e3f73" font-family="Libre Baskerville, serif" font-size="13">citation stamps</text>
+            <rect class="hit" id="write-hit" x="360" y="350" width="200" height="50"></rect>
+            <text x="460" y="380" text-anchor="middle" fill="#9a2f2c" font-family="Libre Baskerville, serif" font-size="13">write-to-disk slot</text>
+            <text x="320" y="424" text-anchor="middle" fill="#5c584c" font-family="IBM Plex Mono, monospace" font-size="11">BRASS CAGE · NESTED LEDGER · RETURN SLOTS</text>
+          </svg>
+        </div>
+        <aside class="lamp-col">
+          <p class="hed">Return-slot lamp</p>
+          <div class="lamp fail" id="lamp" role="button" tabindex="0" aria-label="Return-slot lamp">
+            <div class="cap"></div>
+          </div>
+          <p class="mode" id="lamp-mode">lamp dark · no child returned</p>
+          <button type="button" id="never-btn" aria-pressed="true">Never-returned</button>
+          <button type="button" id="theatre-btn" aria-pressed="false">Citation theatre</button>
+        </aside>
+      </section>
+
+      <section class="drawer" aria-label="Citation rubber stamps">
+        <p class="hed">Citation pad · rubber stamps</p>
+        <div class="stamps-row" id="cite-stamps">
+          <button type="button" id="stamp-statute" class="on">Staatsblad</button>
+          <button type="button" id="stamp-article" class="on">Article</button>
+          <button type="button" id="stamp-date" class="on">Dated news</button>
+          <button type="button" id="stamp-amount" class="on">To the cent</button>
+          <button type="button" id="stamp-correct">Correction list</button>
+        </div>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">Stamp the class</p>
+          <p class="path">Wrong stamps bind the carbon. Correct stamps file the stub book. The idle word unlocks only on the honest desk.</p>
+          <div class="stamps" id="stamps"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score stub book</button>
+            <button type="button" class="admit" id="admit-btn">Admit backed</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90807</button>
+          </div>
+          <label for="probe">Probe · fan-out / return / cite / write</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Cashier note</p>
+          <p class="verdict-face fail" id="verdict">fabricated-verified</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <p class="path" id="path"></p>
+          <div class="ledgers" aria-live="polite">
+            <div class="ledger-card jam" id="fan-ledger"></div>
+            <div class="ledger-card" id="cite-ledger"></div>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90807">anthropics/claude-code#90807</a>
+        (CLOSED 2026-08-30) — Subagent presented results from its own subagents as verified fact — those subagents never returned.
+        Session 2026-08-27. Three agents. Sixteen incorrect items on later verify.
+        Nearby (same-class, not primary):
+        <a href="https://github.com/anthropics/claude-code/issues/88397">#88397</a> never returned to main,
+        <a href="https://github.com/anthropics/claude-code/issues/82568">#82568</a> fabricated completion,
+        <a href="https://github.com/anthropics/claude-code/issues/88987">#88987</a> fabricated verbatim quote,
+        <a href="https://github.com/anthropics/claude-code/issues/88134">#88134</a> fabricated docs,
+        <a href="https://github.com/anthropics/claude-code/issues/88459">#88459</a> fabricated live progress.
+        Cross-ecosystem:
+        <a href="https://github.com/openai/codex/issues/40299">openai/codex#40299</a>,
+        <a href="https://github.com/openai/codex/issues/40919">openai/codex#40919</a>.
+        NOT Parity, Assay, Cenotaph, Sigil, Blot, Byline, Husk, Fetch, Kindling, Deadband, Pawl.
+        Ask: surface a missing child return; state per part whether it was received.
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "backed";
+      const INCORRECT_ITEMS = 16;
+      const AGENTS_AFFECTED = 3;
+      const SESSION_DATE = "2026-08-27";
+      const ALARM = [
+        "fabricated-verified", "nested-empty", "phantom-cite", "never-returned",
+        "citation-theatre", "parent-blind", "write-turn-leak",
+      ];
+      const VERDICTS = [
+        "backed", "nested-empty", "phantom-cite", "self-disclosed", "fabricated-verified",
+        "never-returned", "correction-list-only", "citation-theatre", "parent-blind", "write-turn-leak",
+      ];
+      const FAIL = new Set(ALARM);
+      const CONTRAST = new Set(["self-disclosed", "correction-list-only", "write-turn-leak", "parent-blind"]);
+      const filed = new Set();
+
+      function asText(v) { return v == null ? "" : String(v); }
+      function asNBool(v) {
+        if (v === true || v === false) return v;
+        return null;
+      }
+      function asNNum(v) {
+        if (v == null || v === "") return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function emptyProbe() {
+        return {
+          session: "", issue: null, source: "",
+          nestedFanOut: null, childrenSpawned: null, childrenSpawnedCount: null,
+          childrenReturned: null, childrenReturnedCount: null, neverReturned: null,
+          presentedAsVerified: null, phantomCitations: null, statuteCitations: null,
+          articleNumbers: null, datesCited: null, amountsToCent: null,
+          selfDisclosedOnWrite: null, correctionListOnly: null, siblingCorrectionList: null,
+          mainReportMissing: null, parentCouldNotDistinguish: null,
+          writeTurnAsked: null, writeTurnLeak: null,
+          childPayloadReturned: null, nestedClaimsBacked: null, withheldUnreturned: null,
+          incorrectItems: null, agentsAffected: null, sessionDate: "",
+          nearbyNestedEmpty: false, nearbyPhantomCite: false, nearbySelfDisclosed: false,
+          nearbyFabricatedVerified: false, nearbyNeverReturned: false,
+          nearbyCorrectionListOnly: false, nearbyCitationTheatre: false,
+          nearbyParentBlind: false, nearbyWriteTurnLeak: false,
+        };
+      }
+      function uniqueNearby(row) {
+        return Boolean(
+          row.nearbyNestedEmpty || row.nearbyPhantomCite || row.nearbySelfDisclosed ||
+          row.nearbyFabricatedVerified || row.nearbyNeverReturned ||
+          row.nearbyCorrectionListOnly || row.nearbyCitationTheatre ||
+          row.nearbyParentBlind || row.nearbyWriteTurnLeak
+        );
+      }
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.voucher && typeof src.voucher === "object" ? src.voucher
+          : src.probe && typeof src.probe === "object" ? src.probe
+          : src.stubbook && typeof src.stubbook === "object" ? src.stubbook
+          : src;
+        return {
+          ...emptyProbe(), ...nested,
+          nestedFanOut: asNBool(nested.nestedFanOut),
+          childrenSpawned: asNBool(nested.childrenSpawned),
+          childrenSpawnedCount: asNNum(nested.childrenSpawnedCount),
+          childrenReturned: asNBool(nested.childrenReturned),
+          childrenReturnedCount: asNNum(nested.childrenReturnedCount),
+          neverReturned: asNBool(nested.neverReturned),
+          presentedAsVerified: asNBool(nested.presentedAsVerified),
+          phantomCitations: asNBool(nested.phantomCitations),
+          statuteCitations: asNBool(nested.statuteCitations),
+          articleNumbers: asNBool(nested.articleNumbers),
+          datesCited: asNBool(nested.datesCited),
+          amountsToCent: asNBool(nested.amountsToCent),
+          selfDisclosedOnWrite: asNBool(nested.selfDisclosedOnWrite),
+          correctionListOnly: asNBool(nested.correctionListOnly),
+          siblingCorrectionList: asNBool(nested.siblingCorrectionList),
+          mainReportMissing: asNBool(nested.mainReportMissing),
+          parentCouldNotDistinguish: asNBool(nested.parentCouldNotDistinguish),
+          writeTurnAsked: asNBool(nested.writeTurnAsked),
+          writeTurnLeak: asNBool(nested.writeTurnLeak),
+          childPayloadReturned: asNBool(nested.childPayloadReturned),
+          nestedClaimsBacked: asNBool(nested.nestedClaimsBacked),
+          withheldUnreturned: asNBool(nested.withheldUnreturned),
+          incorrectItems: asNNum(nested.incorrectItems),
+          agentsAffected: asNNum(nested.agentsAffected),
+          sessionDate: asText(nested.sessionDate || ""),
+        };
+      }
+      function isIdle(row) {
+        return !(
+          row.nestedFanOut != null || row.childrenSpawned != null ||
+          row.childrenSpawnedCount != null || row.childrenReturned != null ||
+          row.childrenReturnedCount != null || row.neverReturned != null ||
+          row.presentedAsVerified != null || row.phantomCitations != null ||
+          row.statuteCitations != null || row.articleNumbers != null ||
+          row.datesCited != null || row.amountsToCent != null ||
+          row.selfDisclosedOnWrite != null || row.correctionListOnly != null ||
+          row.siblingCorrectionList != null || row.mainReportMissing != null ||
+          row.parentCouldNotDistinguish != null || row.writeTurnAsked != null ||
+          row.writeTurnLeak != null || row.childPayloadReturned != null ||
+          row.nestedClaimsBacked != null || row.withheldUnreturned != null ||
+          row.incorrectItems != null || row.agentsAffected != null ||
+          row.sessionDate || row.session || row.source || uniqueNearby(row)
+        );
+      }
+      function analyze(input) {
+        const row = cloneProbe(input);
+        const nested = row.nestedFanOut === true;
+        const spawned = row.childrenSpawned === true || (row.childrenSpawnedCount != null && row.childrenSpawnedCount > 0);
+        const returnedFull = row.childrenReturned === true ||
+          (row.childrenReturnedCount != null && row.childrenSpawnedCount != null &&
+            row.childrenReturnedCount >= row.childrenSpawnedCount && row.childrenReturnedCount > 0);
+        const returnedNone = row.neverReturned === true || row.childrenReturned === false || row.childrenReturnedCount === 0;
+        const returnedPartial = row.childrenReturnedCount != null && row.childrenSpawnedCount != null &&
+          row.childrenReturnedCount > 0 && row.childrenReturnedCount < row.childrenSpawnedCount;
+        const nestedEmpty = spawned && (returnedNone || returnedPartial);
+        const neverReturned = spawned && returnedNone;
+        const presented = row.presentedAsVerified === true;
+        const phantomCite = row.phantomCitations === true || row.statuteCitations === true ||
+          row.articleNumbers === true || row.datesCited === true || row.amountsToCent === true;
+        const selfDisclosed = row.selfDisclosedOnWrite === true;
+        const correctionList = row.correctionListOnly === true || row.siblingCorrectionList === true;
+        const parentBlind = row.parentCouldNotDistinguish === true;
+        const writeAsked = row.writeTurnAsked === true || row.writeTurnLeak === true;
+        const writeTurnLeak = writeAsked && selfDisclosed;
+        const citationTheatre = phantomCite && presented;
+        const fabricated = presented && nestedEmpty && !returnedFull;
+        const claimsHeld = row.childPayloadReturned === true || row.nestedClaimsBacked === true;
+        const withheld = row.withheldUnreturned === true;
+        const honest = Boolean(
+          ((claimsHeld && returnedFull && row.phantomCitations !== true) ||
+            (withheld && presented !== true && row.phantomCitations !== true)) && !fabricated
+        );
+        const primaryTriad = Boolean(nested && spawned && neverReturned && presented && phantomCite && !uniqueNearby(row) && !honest);
+        return {
+          row, nested, spawned, returnedFull, returnedNone, returnedPartial, nestedEmpty,
+          neverReturned, presented, phantomCite, selfDisclosed, correctionList, parentBlind,
+          writeAsked, writeTurnLeak, citationTheatre, fabricated, claimsHeld, withheld, honest, primaryTriad,
+        };
+      }
+      function classify(input) {
+        const row = cloneProbe(input);
+        if (isIdle(row)) return "backed";
+        if (!analyze(row).primaryTriad) {
+          if (row.nearbyWriteTurnLeak) return "write-turn-leak";
+          if (row.nearbyParentBlind) return "parent-blind";
+          if (row.nearbyCitationTheatre) return "citation-theatre";
+          if (row.nearbyCorrectionListOnly) return "correction-list-only";
+          if (row.nearbyNeverReturned) return "never-returned";
+          if (row.nearbySelfDisclosed) return "self-disclosed";
+          if (row.nearbyPhantomCite) return "phantom-cite";
+          if (row.nearbyFabricatedVerified) return "fabricated-verified";
+          if (row.nearbyNestedEmpty) return "nested-empty";
+        }
+        const f = analyze(row);
+        if (f.primaryTriad) return "fabricated-verified";
+        if (f.honest) return "backed";
+        if (f.writeTurnLeak && !f.honest) return "write-turn-leak";
+        if (f.correctionList && !f.honest && !f.presented) return "correction-list-only";
+        if (f.citationTheatre && !f.nestedEmpty && !f.honest) return "citation-theatre";
+        if (f.parentBlind && !f.fabricated && !f.honest) return "parent-blind";
+        if (f.selfDisclosed && !f.fabricated && !f.honest) return "self-disclosed";
+        if (f.phantomCite && !f.presented && !f.honest) return "phantom-cite";
+        if (f.neverReturned && !f.presented && !f.honest) return "never-returned";
+        if (f.nestedEmpty && !f.presented && !f.honest) return "nested-empty";
+        if (f.fabricated && !f.honest) return "fabricated-verified";
+        if (f.honest || f.claimsHeld || f.withheld) return "backed";
+        return "backed";
+      }
+      function feedOf(kind) {
+        const map = {
+          "nested-empty": "● Nested-empty · child subagents spawned; zero or partial returns",
+          "phantom-cite": "● Phantom-cite · statute / article / date / amount citations for work that never returned",
+          "self-disclosed": "● Self-disclosed · agent later admits children never returned (only on a follow-up write turn)",
+          "fabricated-verified": "● Fabricated-verified · prose framed as verified output of delegated research · primary #90807",
+          "never-returned": "● Never-returned · child agents never returned anything",
+          "correction-list-only": "● Correction-list-only · sibling agents deliver only a correction list pointing at a missing main report",
+          "citation-theatre": "● Citation-theatre · citations / article numbers / dates look complete so parent does not re-check",
+          "parent-blind": "● Parent-blind · nothing in the parent's view distinguishes fabricated sections from researched ones",
+          "write-turn-leak": "● Write-turn-leak · fabrication surfaced only because a later turn asked to write the report to disk",
+        };
+        return map[kind] || "● Backed · honest stub book · every nested claim presented as verified is backed by a returned child payload; or parent withholds unreturned sections · idle word is backed";
+      }
+      function reasonsOf(input, kind) {
+        const f = analyze(input);
+        const reasons = [`verdict ${kind}`];
+        if (kind === "fabricated-verified" || f.primaryTriad) {
+          reasons.push("#90807 Subagent presented results from its own subagents as verified fact — those subagents never returned");
+        }
+        if (f.nested) reasons.push("general-purpose subagent nested fan-out to its own child subagents");
+        if (f.spawned) reasons.push("child subagents spawned");
+        if (f.neverReturned) reasons.push("child agents never returned anything");
+        if (f.presented) reasons.push("findings presented as verified fact (statute citations, dates, amounts to the cent)");
+        if (f.phantomCite) reasons.push("phantom citations: Staatsblad / article / dated news / regulator decision / amounts to the cent");
+        if (f.selfDisclosed) reasons.push("self-disclosure only on a later write-to-disk turn — children never returned");
+        if (f.correctionList) reasons.push("sibling agents delivered only a correction list referring to a main report that never reached the parent");
+        if (f.parentBlind) reasons.push("nothing in the parent's view distinguishes fabricated sections from researched ones");
+        if (f.writeTurnLeak) reasons.push("fabrication surfaced only because a later turn asked to write the report to disk");
+        if (f.row.incorrectItems != null) reasons.push(`later verification found ${f.row.incorrectItems} incorrect items`);
+        if (kind === "backed") reasons.push("every nested claim presented as verified is backed by a returned child payload, or the parent withholds unreturned sections; idle word is backed");
+        return reasons;
+      }
+      function seedFabricated() {
+        return {
+          session: "90807-nested-empty-cite", issue: 90807,
+          source: "primary #90807: nested fan-out; children never returned; presented as verified fact with Staatsblad / article / date / amount citations; self-disclosure only on write-to-disk turn; siblings delivered correction lists; later verify found 16 incorrect items",
+          nestedFanOut: true, childrenSpawned: true, childrenReturned: false,
+          childrenReturnedCount: 0, neverReturned: true, presentedAsVerified: true,
+          phantomCitations: true, statuteCitations: true, articleNumbers: true,
+          datesCited: true, amountsToCent: true, selfDisclosedOnWrite: true,
+          correctionListOnly: true, siblingCorrectionList: true, mainReportMissing: true,
+          parentCouldNotDistinguish: true, writeTurnAsked: true, writeTurnLeak: true,
+          childPayloadReturned: false, nestedClaimsBacked: false, withheldUnreturned: false,
+          incorrectItems: INCORRECT_ITEMS, agentsAffected: AGENTS_AFFECTED, sessionDate: SESSION_DATE,
+        };
+      }
+      function seedBacked() {
+        return {
+          session: "backed-returned", issue: 90807,
+          source: "honest control: every nested claim presented as verified is backed by a returned child payload before relay",
+          nestedFanOut: true, childrenSpawned: true, childrenReturned: true,
+          childrenReturnedCount: 3, childrenSpawnedCount: 3, neverReturned: false,
+          presentedAsVerified: true, phantomCitations: false, statuteCitations: false,
+          articleNumbers: false, datesCited: false, amountsToCent: false,
+          selfDisclosedOnWrite: false, correctionListOnly: false, siblingCorrectionList: false,
+          mainReportMissing: false, parentCouldNotDistinguish: false,
+          writeTurnAsked: false, writeTurnLeak: false,
+          childPayloadReturned: true, nestedClaimsBacked: true, withheldUnreturned: false,
+          sessionDate: SESSION_DATE,
+        };
+      }
+      const NEARBY_FLAG = {
+        "nested-empty": "nearbyNestedEmpty",
+        "phantom-cite": "nearbyPhantomCite",
+        "self-disclosed": "nearbySelfDisclosed",
+        "fabricated-verified": "nearbyFabricatedVerified",
+        "never-returned": "nearbyNeverReturned",
+        "correction-list-only": "nearbyCorrectionListOnly",
+        "citation-theatre": "nearbyCitationTheatre",
+        "parent-blind": "nearbyParentBlind",
+        "write-turn-leak": "nearbyWriteTurnLeak",
+      };
+      function seedNearby(kind) {
+        const flag = NEARBY_FLAG[kind];
+        const row = emptyProbe();
+        row.session = "90807-" + kind;
+        row.issue = 90807;
+        row.sessionDate = SESSION_DATE;
+        if (flag) row[flag] = true;
+        return row;
+      }
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        return {
+          verdict: kind,
+          backed: kind === IDLE_WORD,
+          fresh: kind === IDLE_WORD,
+          alarm: ALARM.includes(kind),
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          facts: analyze(row),
+          probe: row,
+        };
+      }
+
+      const chipsEl = document.getElementById("chips");
+      const stampsEl = document.getElementById("stamps");
+      const probeEl = document.getElementById("probe");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const pathEl = document.getElementById("path");
+      const fanLedger = document.getElementById("fan-ledger");
+      const citeLedger = document.getElementById("cite-ledger");
+      const windowEl = document.getElementById("window");
+      const gage = document.getElementById("gage");
+      const spawnN = document.getElementById("spawn-n");
+      const returnN = document.getElementById("return-n");
+      const stubsStack = document.getElementById("stubs-stack");
+      const spindleNote = document.getElementById("spindle-note");
+      const lamp = document.getElementById("lamp");
+      const lampMode = document.getElementById("lamp-mode");
+
+      function chipClass(kind) {
+        if (kind === IDLE_WORD) return "chip hold";
+        if (FAIL.has(kind)) return "chip fail";
+        if (CONTRAST.has(kind)) return "chip contrast";
+        return "chip";
+      }
+      function renderChips(current) {
+        chipsEl.innerHTML = VERDICTS.map((kind) =>
+          `<button type="button" class="${chipClass(kind)}" data-kind="${kind}" aria-current="${kind === current}">${kind}</button>`
+        ).join("");
+        stampsEl.innerHTML = VERDICTS.filter((k) => k !== IDLE_WORD).map((kind) =>
+          `<button type="button" data-kind="${kind}" aria-pressed="${filed.has(kind)}">${kind}</button>`
+        ).join("");
+      }
+      function renderStubs(hold) {
+        const rows = hold
+          ? [
+              ["Parent receipt", "hold-stub", "backed"],
+              ["Child A returned", "hold-stub", "backed"],
+              ["Child B returned", "hold-stub", "backed"],
+            ]
+          : [
+              ["Parent · verified?", "empty", "fabricated-verified"],
+              ["Child A · never returned", "empty", "never-returned"],
+              ["Child B · never returned", "empty", "nested-empty"],
+              ["Sibling · correction list", "empty", "correction-list-only"],
+            ];
+        stubsStack.innerHTML = rows.map(([label, cls, kind]) =>
+          `<button type="button" class="carbon-stub ${cls}" data-kind="${kind}">${label}</button>`
+        ).join("");
+      }
+      function setSlots(hold) {
+        const color = hold ? "#2f8a4a" : "#9a2f2c";
+        document.getElementById("slot-a").setAttribute("fill", color);
+        document.getElementById("slot-b").setAttribute("fill", color);
+        document.getElementById("slot-c").setAttribute("fill", color);
+      }
+      function paint(result, note) {
+        const kind = result.verdict;
+        const row = result.probe;
+        const hold = kind === IDLE_WORD;
+        verdictEl.textContent = kind;
+        verdictEl.className = "verdict-face " + (hold ? "hold" : "fail");
+        feedEl.textContent = result.feed;
+        reasonsEl.innerHTML = result.reasons.map((r) => `<li>${r}</li>`).join("");
+        pathEl.textContent = note || (result.backed
+          ? "Honest stub book. Every nested claim is backed by a returned child payload. Idle word is backed."
+          : "Nested receipt without a return. The verified stamp is carbon-only.");
+        spawnN.textContent = result.facts.spawned ? "yes" : (hold ? "held" : "—");
+        returnN.textContent = hold
+          ? String(row.childrenReturnedCount ?? "all")
+          : String(row.childrenReturnedCount ?? (result.facts.neverReturned ? "0" : "—"));
+        gage.className = "gage " + (hold ? "hold" : "fail");
+        windowEl.classList.toggle("hold-box", hold);
+        lamp.className = "lamp " + (hold ? "on" : "fail");
+        lampMode.textContent = hold ? "lamp green · child returned" : "lamp dark · no child returned";
+        document.getElementById("never-btn").setAttribute("aria-pressed", String(!hold && (kind === "never-returned" || result.facts.neverReturned)));
+        document.getElementById("theatre-btn").setAttribute("aria-pressed", String(kind === "citation-theatre"));
+        document.getElementById("stamp-statute").className = result.facts.phantomCite && !hold ? "on" : (hold ? "hold-on" : "");
+        document.getElementById("stamp-article").className = result.facts.phantomCite && !hold ? "on" : (hold ? "hold-on" : "");
+        document.getElementById("stamp-date").className = result.facts.phantomCite && !hold ? "on" : (hold ? "hold-on" : "");
+        document.getElementById("stamp-amount").className = result.facts.phantomCite && !hold ? "on" : (hold ? "hold-on" : "");
+        document.getElementById("stamp-correct").className = result.facts.correctionList && !hold ? "on" : "";
+        fanLedger.className = "ledger-card " + (result.facts.neverReturned && !hold ? "jam" : "hold-card");
+        fanLedger.innerHTML = `<strong>fan-out / return</strong>nested ${result.facts.nested ? "yes" : "no"}<br />spawned ${result.facts.spawned ? "yes" : "no"}<br />returned ${result.facts.neverReturned ? "none" : hold ? "payload" : "—"}<br />verified frame ${result.facts.presented ? "yes" : "no"}`;
+        citeLedger.className = "ledger-card " + (result.facts.phantomCite && !hold ? "jam" : "hold-card");
+        citeLedger.innerHTML = `<strong>cite / write</strong>phantom ${result.facts.phantomCite ? "yes" : "no"}<br />parent-blind ${result.facts.parentBlind ? "yes" : "no"}<br />write-leak ${result.facts.writeTurnLeak ? "yes" : "no"}<br />incorrect ${row.incorrectItems ?? (hold ? "0" : INCORRECT_ITEMS)}`;
+        spindleNote.textContent = hold
+          ? "Honest spindle. Every nested stub has a returned payload."
+          : `${row.agentsAffected ?? AGENTS_AFFECTED} nested stubs. Zero returns. ${row.incorrectItems ?? INCORRECT_ITEMS} incorrect items on later verify.`;
+        renderStubs(hold);
+        setSlots(hold);
+        renderChips(kind);
+        probeEl.value = JSON.stringify(row, null, 2);
+      }
+      function apply(probe, note) {
+        paint(score(probe), note);
+      }
+      function fileKind(kind) {
+        if (kind === IDLE_WORD) {
+          apply(seedBacked(), "Honest control filed. Admit backed unlocks here.");
+          return;
+        }
+        filed.add(kind);
+        apply(seedNearby(kind), `Filed ${kind}. Nearby unique flags win their own seed.`);
+      }
+      function readProbe() {
+        try {
+          return cloneProbe(JSON.parse(probeEl.value));
+        } catch {
+          return cloneProbe(seedFabricated());
+        }
+      }
+
+      renderChips("fabricated-verified");
+      apply(seedFabricated(), "Seeded #90807 already on the stub book. Score the carbon or admit backed.");
+
+      chipsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      stampsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      stubsStack.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      document.getElementById("score-btn").addEventListener("click", () => {
+        apply(readProbe(), "Scored from the probe on the stub book.");
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        const result = score(readProbe());
+        if (result.backed) {
+          apply(result.probe, "Admitted backed. Every nested claim has a returned child payload.");
+        } else {
+          paint(result, "Admit does not lie. A nested receipt without a return stays empty. Idle word is backed.");
+        }
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        filed.clear();
+        apply(seedFabricated(), "Restored #90807. The verified stamp is still carbon-only.");
+      });
+      document.getElementById("parent-hit").addEventListener("click", () => fileKind("parent-blind"));
+      document.getElementById("child-a-hit").addEventListener("click", () => fileKind("never-returned"));
+      document.getElementById("child-b-hit").addEventListener("click", () => fileKind("nested-empty"));
+      document.getElementById("child-c-hit").addEventListener("click", () => fileKind("phantom-cite"));
+      document.getElementById("cite-hit").addEventListener("click", () => fileKind("citation-theatre"));
+      document.getElementById("write-hit").addEventListener("click", () => fileKind("write-turn-leak"));
+      document.getElementById("lamp").addEventListener("click", () => fileKind("never-returned"));
+      document.getElementById("never-btn").addEventListener("click", () => fileKind("never-returned"));
+      document.getElementById("theatre-btn").addEventListener("click", () => fileKind("citation-theatre"));
+      document.getElementById("stamp-statute").addEventListener("click", () => fileKind("phantom-cite"));
+      document.getElementById("stamp-article").addEventListener("click", () => fileKind("citation-theatre"));
+      document.getElementById("stamp-date").addEventListener("click", () => fileKind("phantom-cite"));
+      document.getElementById("stamp-amount").addEventListener("click", () => fileKind("fabricated-verified"));
+      document.getElementById("stamp-correct").addEventListener("click", () => fileKind("correction-list-only"));
+    </script>
+  </body>
+</html>

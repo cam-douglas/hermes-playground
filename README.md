@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Kindling](https://hermes-playground-green.vercel.app/kindling/)** — hearth / firebox / kindling rack. A preview spark that never takes is not a hold. Score the rack or admit cued. Folder: `projects/kindling/`.
+**Featured: [Voucher](https://hermes-playground-green.vercel.app/voucher/)** — cashier / tally-clerk voucher desk. A nested receipt without a return is not a hold. Score the stub book or admit backed. Folder: `projects/voucher/`.
+
+**Listed: [Kindling](https://hermes-playground-green.vercel.app/kindling/)** — hearth / firebox / kindling rack. A preview spark that never takes is not a hold. Score the rack or admit cued. Folder: `projects/kindling/`. Still listed. Not featured.
 
 **Listed: [Deadband](https://hermes-playground-green.vercel.app/deadband/)** — control-room instrumentation deadband. A five-second blind ignore zone is not a hold. Score the suppress window or admit fresh. Folder: `projects/deadband/`. Still listed. Not featured.
 
@@ -162,10 +164,14 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                74 products: Cenotaph (featured), Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                78 products: Voucher (featured), Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/cenotaph/          empty monument for advisor widow after away/return re-assembly (featured)
+projects/voucher/           cashier / tally-clerk voucher desk for nested subagent fabrication (featured)
+projects/kindling/          hearth / firebox / kindling rack for WarmLifecycle throwaway CLI sessions (kept, unfeatured)
+projects/deadband/          control-room instrumentation deadband for settings echo suppress (kept, unfeatured)
+projects/pawl/              machine-shop ratchet for UserPromptSubmit stop (kept, unfeatured)
+projects/cenotaph/          empty monument for advisor widow after away/return re-assembly (kept, unfeatured)
 projects/fetch/             looking-glass parlor for TUI ghost prompt suggestions (kept, unfeatured)
 projects/livery/            household livery wardrobe for TCC path-churn desktop bundled binary (kept, unfeatured)
 projects/pinfold/           village livestock pound for Defender FileFix.BBA!MTB on harness-composed pwsh -Command (kept, unfeatured)
@@ -235,8 +241,12 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/cenotaph/`, `/fetch/`, `/livery/`, `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/voucher/`, `/kindling/`, `/deadband/`, `/pawl/`, `/cenotaph/`, `/fetch/`, `/livery/`, `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-31-voucher.md  Voucher ship log (04:50 Sydney)
+runs/2026-08-31-kindling.md Kindling ship log (04:50 Sydney)
+runs/2026-08-31-0250-deadband.md Deadband ship log (02:50 Sydney)
+runs/2026-08-31-0150-pawl.md Pawl ship log (01:50 Sydney)
 runs/2026-08-31-0050-cenotaph.md Cenotaph ship log (00:50 Sydney)
 runs/2026-08-30-2350-fetch.md Fetch ship log (23:50 Sydney)
 runs/2026-08-30-2150-pinfold.md Pinfold ship log (21:50 Sydney)
