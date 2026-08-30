@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Carrel — library reading room for Claude Code preview_start launch.json session-cwd. A borrowed carrel is not a hold. Idle word is seated."
+    />
+    <title>Carrel — library carrel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --walnut: #1c140e;
+        --panel: #2a1d14;
+        --rail: #3a2a1c;
+        --parchment: #f3e6c8;
+        --card: #efe0b8;
+        --lamp: #e8a54b;
+        --shade: #1e3a2f;
+        --moss: #4a7c59;
+        --brass: #c4a35a;
+        --ink: #f6edd8;
+        --mute: #9a8770;
+        --alarm: #b33a32;
+        --hold: #6f9a6a;
+        --rule: rgba(196, 163, 90, 0.28);
+        --display: "Fraunces", "Palatino Linotype", serif;
+        --body: "Literata", "Georgia", serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 50% 35% at 50% 0%, rgba(232, 165, 75, 0.12), transparent 55%),
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.012) 0 2px,
+            transparent 2px 28px
+          ),
+          var(--walnut);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--lamp); }
+      .reading-room {
+        width: min(1240px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 80px;
+      }
+      .lintel {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: end;
+        gap: 12px;
+        padding: 10px 4px 16px;
+        border-bottom: 3px solid var(--brass);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(44px, 8vw, 76px);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-align: center;
+        line-height: 0.88;
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-align: right;
+      }
+      .thesis {
+        margin: 16px 0 0;
+        font-size: 19px;
+        font-style: italic;
+        color: var(--parchment);
+      }
+      .stacks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        font-family: var(--mono);
+        font-size: 11px;
+        margin-top: 10px;
+      }
+      .floor {
+        display: grid;
+        grid-template-columns: 270px 1fr 300px;
+        gap: 16px;
+        margin-top: 20px;
+      }
+      @media (max-width: 980px) {
+        .floor { grid-template-columns: 1fr; }
+        .lintel { grid-template-columns: 1fr; }
+        .hours { text-align: left; }
+      }
+      .carrel-aisle,
+      .card-catalog,
+      .call-slip {
+        background: var(--panel);
+        border: 1px solid var(--rule);
+        padding: 14px;
+      }
+      .carrel-aisle {
+        background:
+          linear-gradient(180deg, rgba(30, 58, 47, 0.35), transparent 42%),
+          var(--rail);
+      }
+      .hed {
+        font-family: var(--display);
+        font-size: 14px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin: 0 0 10px;
+      }
+      .study-carrel {
+        position: relative;
+        margin-bottom: 10px;
+        padding: 10px 10px 10px 14px;
+        border: 1px solid var(--brass);
+        background: #24180f;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .study-carrel.borrowed {
+        border-style: dashed;
+        border-color: var(--alarm);
+        background: rgba(179, 58, 50, 0.12);
+      }
+      .study-carrel.hold {
+        border-color: var(--hold);
+      }
+      .study-carrel .banker-lamp {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #3a2f22;
+        box-shadow: inset 0 0 0 2px #5a4630;
+      }
+      .study-carrel.lit .banker-lamp {
+        background: var(--lamp);
+        box-shadow: 0 0 10px var(--lamp);
+      }
+      .drawer {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        background: var(--card);
+        color: #2a1d14;
+        font-family: var(--mono);
+        font-size: 12px;
+        border-left: 6px solid var(--shade);
+      }
+      .drawer.pulled {
+        border-left-color: var(--alarm);
+        background: #f6d9a4;
+      }
+      .drawer.private {
+        border-left-color: var(--moss);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid var(--rule);
+        padding: 4px 8px;
+        background: transparent;
+      }
+      .chip.on { border-color: var(--brass); color: var(--brass); }
+      .chip.alarm { border-color: var(--alarm); color: var(--alarm); }
+      .chip.hold { border-color: var(--hold); color: var(--hold); }
+      .actions, .seeds {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .actions button, .seeds button {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        background: var(--rail);
+        border: 1px solid var(--brass);
+        padding: 7px 10px;
+      }
+      .actions button.primary {
+        background: var(--lamp);
+        color: var(--walnut);
+        border-color: var(--lamp);
+      }
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        resize: vertical;
+        background: #140e0a;
+        color: var(--parchment);
+        border: 1px solid var(--rule);
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 8px;
+      }
+      .verdict-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        border-top: 1px solid var(--rule);
+        padding-top: 10px;
+        margin-top: 10px;
+      }
+      .verdict-word {
+        font-family: var(--display);
+        font-size: 30px;
+        letter-spacing: 0.04em;
+      }
+      .verdict-word.alarm { color: var(--alarm); }
+      .verdict-word.hold { color: var(--hold); }
+      .copy {
+        margin-top: 10px;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .sinks, .slip-line {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .adapter {
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px dashed var(--rule);
+      }
+      .hours-board {
+        margin-top: 16px;
+        padding: 8px 12px;
+        background: var(--shade);
+        border: 1px solid rgba(106, 154, 106, 0.35);
+        font-family: var(--mono);
+        font-size: 11px;
+        color: #cfe3c8;
+      }
+      .why {
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 3px solid var(--brass);
+        font-size: 14px;
+        color: var(--mute);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reading-room">
+      <header class="lintel">
+        <p class="mark">Reading room · communal catalog</p>
+        <h1>Carrel</h1>
+        <p class="hours">Vol. 90661<br />11:50 Sydney · carrel</p>
+      </header>
+      <p class="thesis">
+        A borrowed carrel is not a hold. Score the reading room or admit <b>seated</b>.
+        Each worktree lane looks like its own desk; <code>preview_start</code> still
+        consults the session's catalog.
+      </p>
+      <p class="stacks">
+        <a href="https://github.com/anthropics/claude-code/issues/90661">#90661 primary</a>
+        <a href="https://github.com/anthropics/claude-code/issues/63008">#63008 main-spawn</a>
+        <a href="https://github.com/anthropics/claude-code/issues/76496">#76496 nested-miss</a>
+        <a href="https://github.com/anthropics/claude-code/issues/86039">#86039 related</a>
+        <a href="https://github.com/openai/codex/issues/18969">codex#18969</a>
+        <span>bug / has repro / platform:macos / area:agents</span>
+      </p>
+      <div class="floor">
+        <aside class="carrel-aisle" aria-label="Study carrels">
+          <p class="hed">Study carrels</p>
+          <div id="aisle"></div>
+        </aside>
+        <section class="card-catalog" aria-label="Card catalog">
+          <p class="hed">Communal card catalog</p>
+          <div id="drawers"></div>
+          <p class="hed">Verdict chips</p>
+          <div class="chips" id="chips"></div>
+          <div class="seeds" id="seeds"></div>
+          <div class="actions">
+            <button class="primary" id="score">Score the reading room</button>
+            <button id="admit">Admit seated</button>
+            <button id="restore">Restore · #90661</button>
+          </div>
+          <label class="hed" for="raw">launch.json + preview_start payload</label>
+          <textarea id="raw" spellcheck="false" placeholder='{"sessionCwd":"…","callerCwd":"…","preview_start":{"name":"lane-web"}}'></textarea>
+          <div class="verdict-row">
+            <span id="verdictWord" class="verdict-word hold">seated</span>
+            <span id="idleMark" class="mark">idle word seated</span>
+          </div>
+          <p class="copy" id="feed"></p>
+          <div class="sinks" id="sinks"></div>
+        </section>
+        <aside class="call-slip" aria-label="Call slip">
+          <p class="hed">Call slip</p>
+          <div id="slip"></div>
+          <p class="hed">Native adapters</p>
+          <div id="adapters"></div>
+        </aside>
+      </div>
+      <div class="hours-board" id="ticker">
+        HOURS · #90661 root-web :3000 vs lane-web :3101 · session cwd catalog · worktree carrel ignored · #63008 main-spawn · #76496 nested-miss · #86039 is a different shelf
+      </div>
+      <section class="why">
+        <p>
+          Primary:
+          <a href="https://github.com/anthropics/claude-code/issues/90661">anthropics/claude-code#90661</a>
+          (OPEN, filed 2026-08-29, labels bug / has repro / platform:macos / area:agents).
+          Title: preview_start resolves .claude/launch.json from the session cwd, not the calling agent's,
+          so concurrent worktree lanes must contend for one config file.
+          Same-class nearby:
+          <a href="https://github.com/anthropics/claude-code/issues/63008">#63008</a>
+          spawn cwd is main repo;
+          <a href="https://github.com/anthropics/claude-code/issues/76496">#76496</a>
+          nested worktree lookup miss.
+          Related, different:
+          <a href="https://github.com/anthropics/claude-code/issues/86039">#86039</a>
+          relative cwd <i>inside</i> the card;
+          <a href="https://github.com/anthropics/claude-code/issues/85319">#85319</a>
+          Start-dev-server button.
+          Cross-ecosystem:
+          <a href="https://github.com/openai/codex/issues/18969">openai/codex#18969</a>,
+          <a href="https://github.com/openai/codex/issues/23095">#23095</a>,
+          <a href="https://github.com/openai/codex/issues/30570">#30570</a>.
+        </p>
+        <p>
+          NOT Wicket (absolute Edit/Write isolation escape).
+          NOT Fascia (trust-dialog names spawn_task cwd #90638).
+          NOT Hasp (file-lease last-writer-wins on a generic path).
+          NOT Iota (Windows path-key identity).
+          NOT Cinch (silent partial mounts).
+          NOT Cubby (wrong-ancestor auto-memory).
+          NOT Byline (phantom hook agent_id #90662).
+          NOT leftover woodworking / millimetre-slider clones.
+          Different problem: which launch.json file preview_start discovers.
+          Different UI: library reading room / study carrels / communal card catalog / call slips.
+          Fonts: Fraunces + Literata + IBM Plex Mono. Idle word is <b>seated</b>.
+        </p>
+      </section>
+    </div>
+    <script>
+      const IDLE_WORD = "seated";
+      const SLACK = ["borrowed", "misfiled", "contended", "overwritten", "sibling-served", "lane-blind", "nested-miss", "main-spawn"];
+      const LINEAR = ["borrowed", "misfiled", "sibling-served", "contended"];
+      const VERDICTS = ["seated", "borrowed", "misfiled", "contended", "overwritten", "sibling-served", "lane-blind", "nested-miss", "main-spawn", "fallback-ok", "off-shelf"];
+      const SESSION = "/Users/ada/src/hermes";
+      const CALLER = "/Users/ada/src/hermes/.claude/worktrees/lane-a";
+      const SESSION_LAUNCH = "/Users/ada/src/hermes/.claude/launch.json";
+      const CALLER_LAUNCH = "/Users/ada/src/hermes/.claude/worktrees/lane-a/.claude/launch.json";
+      const NESTED = "/Users/ada/src/hermes/.claude/worktrees/lane-web/.claude/launch.json";
+
+      function emptyRoom() {
+        return {
+          session: "", issue: null, source: "",
+          sessionCwd: "", callerCwd: "", launchJsonPathUsed: "",
+          requestedName: "", sessionConfigs: [], callerConfigs: [],
+          configsInScope: [], spawnCwd: "", port: null, servedWorktree: "",
+          siblingWrites: 0, lastWriterWins: false, errorOnContention: false,
+          callerLaunchExists: null, sessionLaunchExists: null, fallbackExplicit: false,
+          fileExistsAtCitedPath: false, lookupFailed: false, citedPath: "",
+          isolation: "", discoveryRoot: "", callerCwdWalked: null,
+          nameMatchedAgainst: "", nearby: "",
+          relativeCwdInsideLaunch: false, wicketEscape: false, fasciaTrust: false,
+          haspLease: false, bylineGhost: false, issue86039: false, scored: false
+        };
+      }
+      function norm(p) { return String(p || "").replace(/\\/g, "/").replace(/\/+$/, ""); }
+      function under(child, parent) {
+        var c = norm(child), p = norm(parent);
+        return c && p && (c === p || c.indexOf(p + "/") === 0);
+      }
+      function callerRoot(cwd) {
+        var p = norm(cwd);
+        var m = p.match(/^(.*\/\.claude\/worktrees\/[^/]+)/);
+        return m ? m[1] : p;
+      }
+      function namesOf(list) {
+        return (list || []).map(function (row) { return typeof row === "string" ? row : row && row.name; }).filter(Boolean);
+      }
+      function isOffShelf(row) {
+        var n = String(row.nearby || "").toLowerCase();
+        return n === "86039" || n === "wicket" || n === "fascia" || n === "hasp" || n === "byline" ||
+          row.relativeCwdInsideLaunch || row.wicketEscape || row.fasciaTrust || row.haspLease || row.bylineGhost || row.issue86039;
+      }
+      function isIdle(row) {
+        return !(row.sessionCwd || row.callerCwd || row.launchJsonPathUsed || row.requestedName ||
+          namesOf(row.sessionConfigs).length || namesOf(row.callerConfigs).length ||
+          row.spawnCwd || row.servedWorktree || row.siblingWrites || row.lookupFailed || row.nearby || isOffShelf(row));
+      }
+      function analyze(row) {
+        var sessionCwd = norm(row.sessionCwd);
+        var callerCwd = norm(row.callerCwd);
+        var root = callerRoot(callerCwd);
+        var used = norm(row.launchJsonPathUsed);
+        var requested = String(row.requestedName || "");
+        var sessionNames = namesOf(row.sessionConfigs);
+        var callerNames = namesOf(row.callerConfigs);
+        var usedCaller = Boolean(used && root && under(used, root));
+        var usedSession = Boolean(used && sessionCwd && under(used, sessionCwd) && !usedCaller);
+        var scopeNames = namesOf(row.configsInScope).length ? namesOf(row.configsInScope) : (usedCaller ? callerNames : sessionNames);
+        var hasCaller = row.callerLaunchExists === false ? false : (row.callerLaunchExists === true || callerNames.length > 0);
+        var nameInCaller = Boolean(requested && callerNames.indexOf(requested) !== -1);
+        var nameInScope = Boolean(requested && scopeNames.indexOf(requested) !== -1);
+        var split = Boolean(sessionCwd && callerCwd && sessionCwd !== callerCwd);
+        var siblingServed = Boolean(row.servedWorktree && callerCwd && norm(row.servedWorktree) !== callerCwd && norm(row.servedWorktree) !== root && row.port != null);
+        var overwritten = Boolean(row.lastWriterWins && row.errorOnContention === false && Number(row.siblingWrites || 0) >= 2);
+        var contended = Number(row.siblingWrites || 0) >= 2 && !overwritten;
+        var nestedMiss = Boolean(row.lookupFailed && row.fileExistsAtCitedPath && /\.claude\/worktrees\//.test(row.citedPath || used || ""));
+        var spawn = norm(row.spawnCwd);
+        var mainSpawn = Boolean(spawn && split && usedCaller && !usedSession && (spawn === sessionCwd || (under(spawn, sessionCwd) && !under(spawn, root))));
+        var borrowed = Boolean(split && usedSession && hasCaller);
+        var misfiled = Boolean(requested && !nameInScope && nameInCaller && (usedSession || String(row.nameMatchedAgainst || "").toLowerCase() === "orchestrator"));
+        var laneBlind = Boolean(split && !usedCaller && (row.callerCwdWalked === false || (row.discoveryRoot && norm(row.discoveryRoot) === sessionCwd && norm(row.discoveryRoot) !== callerCwd)));
+        var fallbackOk = Boolean(!hasCaller && (row.sessionLaunchExists !== false && (sessionNames.length || row.sessionLaunchExists)) && usedSession && row.fallbackExplicit && !borrowed);
+        var seatedHold = Boolean(usedCaller && nameInCaller && !usedSession && !isOffShelf(row));
+        return {
+          sessionCwd: sessionCwd, callerCwd: callerCwd, used: used, requested: requested,
+          sessionNames: sessionNames, callerNames: callerNames, scopeNames: scopeNames,
+          usedCaller: usedCaller, usedSession: usedSession, hasCaller: hasCaller,
+          siblingServed: siblingServed, overwritten: overwritten, contended: contended,
+          nestedMiss: nestedMiss, mainSpawn: mainSpawn, borrowed: borrowed, misfiled: misfiled,
+          laneBlind: laneBlind, fallbackOk: fallbackOk, seatedHold: seatedHold, offShelf: isOffShelf(row)
+        };
+      }
+      function classify(row) {
+        if (isOffShelf(row)) return "off-shelf";
+        if (isIdle(row)) return "seated";
+        var f = analyze(row);
+        if (f.siblingServed) return "sibling-served";
+        if (f.overwritten) return "overwritten";
+        if (f.contended) return "contended";
+        if (f.nestedMiss) return "nested-miss";
+        if (f.mainSpawn) return "main-spawn";
+        if (f.borrowed) return "borrowed";
+        if (f.misfiled) return "misfiled";
+        if (f.laneBlind) return "lane-blind";
+        if (f.fallbackOk) return "fallback-ok";
+        return "seated";
+      }
+      function feedOf(kind) {
+        if (kind === "borrowed") return "● Borrowed · preview_start resolved launch.json from the session cwd instead of the calling agent's · primary #90661";
+        if (kind === "misfiled") return "● Misfiled · name matched against orchestrator configurations; lane name missing from the communal catalog";
+        if (kind === "contended") return "● Contended · N lanes writing one shared launch.json · last writer is not a hold";
+        if (kind === "overwritten") return "● Overwritten · last-writer-wins on the communal catalog, no error";
+        if (kind === "sibling-served") return "● Sibling-served · preview serving a sibling worktree under this lane's port";
+        if (kind === "lane-blind") return "● Lane-blind · caller cwd ignored for launch.json discovery";
+        if (kind === "nested-miss") return "● Nested-miss · #76496 file exists in nested .claude/worktrees/<name>/ but lookup fails";
+        if (kind === "main-spawn") return "● Main-spawn · #63008 spawn cwd is the main repo, not the worktree";
+        if (kind === "fallback-ok") return "● Fallback-ok · caller has no file; session fallback is explicit and safe";
+        if (kind === "off-shelf") return "● Off-shelf · related slip, not #90661 discovery-from-session-cwd · label, do not treat as this bug";
+        return "● Seated · preview_start resolved launch.json from the calling agent's own worktree · hold is quiet · idle word is seated";
+      }
+      function seedOf(name) {
+        var row = emptyRoom();
+        row.scored = true;
+        row.sessionCwd = SESSION;
+        row.callerCwd = CALLER;
+        row.isolation = "worktree";
+        if (name === "seated" || name === "control") {
+          row.session = "seated-hold"; row.issue = 90661;
+          row.launchJsonPathUsed = CALLER_LAUNCH;
+          row.requestedName = "lane-web";
+          row.sessionConfigs = [{ name: "root-web", port: 3000 }];
+          row.callerConfigs = [{ name: "lane-web", port: 3101 }];
+          row.configsInScope = [{ name: "lane-web", port: 3101 }];
+          row.spawnCwd = CALLER; row.port = 3101; row.servedWorktree = CALLER;
+          row.callerLaunchExists = true; row.sessionLaunchExists = true;
+          row.callerCwdWalked = true; row.discoveryRoot = CALLER;
+          return row;
+        }
+        if (name === "misfiled") {
+          row.session = "90661-misfiled"; row.issue = 90661;
+          row.launchJsonPathUsed = CALLER_LAUNCH;
+          row.requestedName = "lane-web";
+          row.sessionConfigs = [{ name: "root-web", port: 3000 }];
+          row.callerConfigs = [{ name: "lane-web", port: 3101 }];
+          row.configsInScope = [{ name: "root-web", port: 3000 }];
+          row.nameMatchedAgainst = "orchestrator";
+          row.callerLaunchExists = true; row.spawnCwd = CALLER; row.port = 3000;
+          return row;
+        }
+        if (name === "contended") {
+          row.session = "90661-contended"; row.issue = 90661;
+          row.launchJsonPathUsed = SESSION_LAUNCH;
+          row.requestedName = "lane-web";
+          row.sessionConfigs = [{ name: "root-web", port: 3000 }];
+          row.callerConfigs = [{ name: "lane-web", port: 3101 }];
+          row.siblingWrites = 3; row.callerLaunchExists = true;
+          return row;
+        }
+        if (name === "overwritten") {
+          row.session = "90661-overwritten"; row.issue = 90661;
+          row.launchJsonPathUsed = SESSION_LAUNCH;
+          row.requestedName = "lane-web";
+          row.sessionConfigs = [{ name: "lane-c-web", port: 3103 }];
+          row.callerConfigs = [{ name: "lane-web", port: 3101 }];
+          row.siblingWrites = 3; row.lastWriterWins = true; row.callerLaunchExists = true;
+          return row;
+        }
+        if (name === "sibling-served") {
+          row.session = "90661-sibling-served"; row.issue = 90661;
+          row.launchJsonPathUsed = SESSION_LAUNCH;
+          row.requestedName = "lane-web";
+          row.sessionConfigs = [{ name: "root-web", port: 3000 }];
+          row.callerConfigs = [{ name: "lane-web", port: 3101 }];
+          row.spawnCwd = SESSION; row.port = 3101; row.servedWorktree = SESSION;
+          row.callerLaunchExists = true;
+          return row;
+        }
+        if (name === "lane-blind") {
+          row.session = "90661-lane-blind"; row.issue = 90661;
+          row.requestedName = "lane-web";
+          row.sessionConfigs = [{ name: "root-web", port: 3000 }];
+          row.callerConfigs = [{ name: "lane-web", port: 3101 }];
+          row.callerLaunchExists = true; row.callerCwdWalked = false; row.discoveryRoot = SESSION;
+          return row;
+        }
+        if (name === "nested-miss") {
+          row.session = "76496-nested-miss"; row.issue = 76496;
+          row.callerCwd = "/Users/ada/src/hermes/.claude/worktrees/lane-web";
+          row.citedPath = NESTED; row.fileExistsAtCitedPath = true; row.lookupFailed = true;
+          row.requestedName = "lane-web";
+          row.callerConfigs = [{ name: "lane-web", port: 3101 }];
+          row.callerLaunchExists = true;
+          return row;
+        }
+        if (name === "main-spawn") {
+          row.session = "63008-main-spawn"; row.issue = 63008;
+          row.launchJsonPathUsed = CALLER_LAUNCH;
+          row.requestedName = "lane-web";
+          row.sessionConfigs = [{ name: "root-web", port: 3000 }];
+          row.callerConfigs = [{ name: "lane-web", port: 3101 }];
+          row.configsInScope = [{ name: "lane-web", port: 3101 }];
+          row.spawnCwd = SESSION; row.port = 3101; row.callerLaunchExists = true;
+          row.callerCwdWalked = true; row.discoveryRoot = CALLER;
+          return row;
+        }
+        if (name === "fallback-ok") {
+          row.session = "fallback-ok"; row.issue = 90661;
+          row.launchJsonPathUsed = SESSION_LAUNCH;
+          row.requestedName = "root-web";
+          row.sessionConfigs = [{ name: "root-web", port: 3000 }];
+          row.callerConfigs = [];
+          row.callerLaunchExists = false; row.sessionLaunchExists = true; row.fallbackExplicit = true;
+          row.spawnCwd = SESSION; row.port = 3000;
+          return row;
+        }
+        if (name === "off-shelf") {
+          row.session = "86039-in-card"; row.issue = 86039;
+          row.launchJsonPathUsed = CALLER_LAUNCH;
+          row.requestedName = "lane-web";
+          row.callerConfigs = [{ name: "lane-web", port: 3101, cwd: "." }];
+          row.relativeCwdInsideLaunch = true; row.issue86039 = true; row.nearby = "86039";
+          row.callerLaunchExists = true;
+          return row;
+        }
+        row.session = "90661-borrowed"; row.issue = 90661;
+        row.launchJsonPathUsed = SESSION_LAUNCH;
+        row.requestedName = "lane-web";
+        row.sessionConfigs = [{ name: "root-web", port: 3000 }];
+        row.callerConfigs = [{ name: "lane-web", port: 3101 }];
+        row.configsInScope = [{ name: "root-web", port: 3000 }];
+        row.spawnCwd = SESSION; row.port = 3000;
+        row.callerLaunchExists = true; row.sessionLaunchExists = true;
+        row.callerCwdWalked = false; row.discoveryRoot = SESSION;
+        return row;
+      }
+      function demoSinks(kind) {
+        var slack = SLACK.indexOf(kind) !== -1;
+        var linear = LINEAR.indexOf(kind) !== -1;
+        return [
+          { adapter: "slack", mode: "demo", summary: slack ? "Would post to Slack: " + kind + " reading-room alarm." : "Would skip Slack. Carrel is " + kind + "." },
+          { adapter: "github", mode: "demo", summary: "Would open a GitHub carrel-ledger issue. Demo: no token." },
+          { adapter: "linear", mode: "demo", summary: linear ? "Would open a Linear ticket: carrel " + kind : "Would skip Linear. Verdict " + kind + " is not borrowed / misfiled / sibling-served / contended." }
+        ];
+      }
+      function scoreRoom(row) {
+        var kind = classify(row);
+        var f = analyze(row);
+        return { verdict: kind, seated: kind === "seated", facts: f, feed: feedOf(kind), sinks: demoSinks(kind), room: row };
+      }
+      function parseRaw(text) {
+        var raw = String(text || "").trim();
+        if (!raw) return seedOf("borrowed");
+        if (raw.startsWith("{")) {
+          try {
+            var parsed = JSON.parse(raw);
+            var row = emptyRoom();
+            Object.keys(parsed).forEach(function (k) { row[k] = parsed[k]; });
+            if (parsed.preview_start && parsed.preview_start.name) row.requestedName = parsed.preview_start.name;
+            if (parsed.configurations) row.sessionConfigs = parsed.configurations;
+            row.scored = true;
+            return row;
+          } catch (e) { /* fall through */ }
+        }
+        var call = raw.match(/preview_start\s*\(\s*\{[\s\S]*?name\s*:\s*["']([^"']+)["']/i);
+        if (call) {
+          var fromCall = seedOf("borrowed");
+          fromCall.requestedName = call[1];
+          return fromCall;
+        }
+        return seedOf("borrowed");
+      }
+
+      var room = seedOf("borrowed");
+      function render() {
+        var out = scoreRoom(room);
+        var f = out.facts;
+        var aisle = document.getElementById("aisle");
+        aisle.innerHTML = [
+          { id: "session", title: "Session desk", path: room.sessionCwd || SESSION, note: "communal catalog" },
+          { id: "lane-a", title: "Lane A carrel", path: room.callerCwd || CALLER, note: "private-looking" },
+          { id: "lane-b", title: "Lane B carrel", path: (room.callerCwd || CALLER).replace("lane-a", "lane-b"), note: "sibling" }
+        ].map(function (desk) {
+          var borrowed = out.verdict !== "seated" && out.verdict !== "fallback-ok" && out.verdict !== "off-shelf" && desk.id === "lane-a";
+          var hold = out.verdict === "seated" && desk.id === "lane-a";
+          var lit = desk.id === "lane-a" || (desk.id === "session" && (f.usedSession || out.verdict === "borrowed"));
+          return '<div class="study-carrel' + (borrowed ? " borrowed" : "") + (hold ? " hold" : "") + (lit ? " lit" : "") + '"><span class="banker-lamp" aria-hidden="true"></span><strong>' + desk.title + '</strong><div>' + desk.path + '</div><div>' + desk.note + '</div></div>';
+        }).join("");
+        var drawers = document.getElementById("drawers");
+        var sessionNames = namesOf(room.sessionConfigs).join(", ") || "root-web";
+        var callerNames = namesOf(room.callerConfigs).join(", ") || "lane-web";
+        drawers.innerHTML =
+          '<div class="drawer' + (f.usedSession || out.verdict === "borrowed" ? " pulled" : "") + '"><span>Session catalog</span><span>' + sessionNames + '</span></div>' +
+          '<div class="drawer private' + (f.usedCaller ? " pulled" : "") + '"><span>Lane catalog</span><span>' + callerNames + '</span></div>';
+        document.getElementById("chips").innerHTML = VERDICTS.map(function (v) {
+          var on = v === out.verdict ? " on" : "";
+          var tone = v === "seated" || v === "fallback-ok" ? " hold" : (v === "off-shelf" ? "" : " alarm");
+          return '<span class="chip' + on + (v === out.verdict ? tone : "") + '">' + v + "</span>";
+        }).join("");
+        var word = document.getElementById("verdictWord");
+        word.textContent = out.verdict;
+        word.className = "verdict-word " + (out.seated || out.verdict === "fallback-ok" ? "hold" : "alarm");
+        document.getElementById("feed").textContent = out.feed;
+        document.getElementById("slip").innerHTML =
+          '<div class="slip-line">requested <b>' + (room.requestedName || "lane-web") + "</b></div>" +
+          '<div class="slip-line">used <b>' + (room.launchJsonPathUsed || "—") + "</b></div>" +
+          '<div class="slip-line">session cwd ' + (room.sessionCwd || "—") + "</div>" +
+          '<div class="slip-line">caller cwd ' + (room.callerCwd || "—") + "</div>" +
+          '<div class="slip-line">port ' + (room.port == null ? "—" : room.port) + "</div>" +
+          '<div class="slip-line">issue #' + (room.issue || 90661) + "</div>";
+        document.getElementById("adapters").innerHTML = out.sinks.map(function (s) {
+          return '<div class="adapter"><strong>' + s.adapter + '</strong> · ' + s.mode + '<div>' + s.summary + "</div></div>";
+        }).join("");
+        document.getElementById("sinks").textContent = out.sinks.map(function (s) { return s.adapter + ": " + s.summary; }).join(" · ");
+        if (document.getElementById("raw").value.trim() === "") {
+          document.getElementById("raw").value = JSON.stringify({
+            sessionCwd: room.sessionCwd,
+            callerCwd: room.callerCwd,
+            launchJsonPathUsed: room.launchJsonPathUsed,
+            preview_start: { name: room.requestedName },
+            sessionConfigs: room.sessionConfigs,
+            callerConfigs: room.callerConfigs,
+            spawnCwd: room.spawnCwd,
+            port: room.port,
+            siblingWrites: room.siblingWrites,
+            lastWriterWins: room.lastWriterWins,
+            servedWorktree: room.servedWorktree,
+            lookupFailed: room.lookupFailed,
+            fileExistsAtCitedPath: room.fileExistsAtCitedPath,
+            citedPath: room.citedPath,
+            fallbackExplicit: room.fallbackExplicit,
+            callerLaunchExists: room.callerLaunchExists,
+            nameMatchedAgainst: room.nameMatchedAgainst,
+            nearby: room.nearby
+          }, null, 2);
+        }
+      }
+      document.getElementById("seeds").innerHTML = ["borrowed", "misfiled", "contended", "overwritten", "sibling-served", "lane-blind", "nested-miss", "main-spawn", "fallback-ok", "seated", "off-shelf"].map(function (name) {
+        return '<button data-seed="' + name + '">' + name + "</button>";
+      }).join("");
+      document.getElementById("seeds").addEventListener("click", function (ev) {
+        var name = ev.target.getAttribute("data-seed");
+        if (!name) return;
+        room = seedOf(name);
+        document.getElementById("raw").value = "";
+        render();
+      });
+      document.getElementById("score").addEventListener("click", function () {
+        room = parseRaw(document.getElementById("raw").value);
+        render();
+      });
+      document.getElementById("admit").addEventListener("click", function () {
+        room = parseRaw(document.getElementById("raw").value);
+        render();
+      });
+      document.getElementById("restore").addEventListener("click", function () {
+        room = seedOf("borrowed");
+        document.getElementById("raw").value = "";
+        render();
+      });
+      render();
+    </script>
+  </body>
+</html>
