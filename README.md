@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Datum](https://hermes-playground-green.vercel.app/datum/)** — surveyor's datum. A wrong base is not a hold. Score the plate or admit level. Folder: `projects/datum/`.
+**Featured: [Byline](https://hermes-playground-green.vercel.app/byline/)** — newsroom byline. A ghost byline is not a hold. Score the rack or admit credited. Folder: `projects/byline/`.
+
+**Listed: [Datum](https://hermes-playground-green.vercel.app/datum/)** — surveyor's datum. A wrong base is not a hold. Score the plate or admit level. Folder: `projects/datum/`. Still listed. Not featured.
 
 **Listed: [Calque](https://hermes-playground-green.vercel.app/calque/)** — linguistic calque. A false gloss is not a hold. Score the folio or admit verbatim. Folder: `projects/calque/`. Still listed. Not featured.
 
