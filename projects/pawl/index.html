@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Pawl — machine-shop ratchet for Claude Code #90784: UserPromptSubmit hooks permanently stop firing after a duplicate generate_session_title. A tooth that caught the wrong stroke is not a hold. Idle word is engaged."
+    />
+    <title>Pawl — ratchet bench</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Red+Hat+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --oil: #0b0907;
+        --walnut: #1c1610;
+        --plate: #2a2218;
+        --brass: #d4a017;
+        --brass-hot: #f3c44a;
+        --brass-deep: #7a5810;
+        --steel: #9aa4ad;
+        --steel-deep: #3a4248;
+        --lamp: #ffd78a;
+        --jam: #e05a28;
+        --hold: #7cb87c;
+        --crt: #ffbf47;
+        --copy: #efe6d4;
+        --quiet: #9a8e7a;
+        --display: "Archivo Black", "Impact", sans-serif;
+        --body: "Figtree", "Avenir Next", sans-serif;
+        --mono: "Red Hat Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          radial-gradient(ellipse 42% 28% at 72% 8%, rgba(255, 215, 138, 0.14), transparent 58%),
+          radial-gradient(ellipse 30% 24% at 8% 92%, rgba(212, 160, 23, 0.08), transparent 62%),
+          repeating-linear-gradient(
+            92deg,
+            transparent 0 17px,
+            rgba(40, 28, 16, 0.35) 17px 18px
+          ),
+          linear-gradient(180deg, #16110c 0%, var(--oil) 46%, #070605 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--brass-hot); }
+      .shop {
+        width: min(1200px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 16px 0 80px;
+      }
+      .nameplate {
+        padding: 18px 22px 16px;
+        background:
+          linear-gradient(180deg, #3a2e20 0%, var(--walnut) 52%, #120e0a 100%);
+        border: 1px solid rgba(212, 160, 23, 0.28);
+        box-shadow:
+          inset 0 1px 0 rgba(243, 196, 74, 0.18),
+          0 16px 36px rgba(0, 0, 0, 0.45);
+        position: relative;
+      }
+      .nameplate::before,
+      .nameplate::after {
+        content: "";
+        position: absolute;
+        top: 10px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #d8d0c4, #6a6258 70%);
+        box-shadow: inset 0 -1px 0 #2a241c;
+      }
+      .nameplate::before { left: 10px; }
+      .nameplate::after { right: 10px; }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-family: var(--display);
+        font-size: clamp(52px, 9vw, 96px);
+        font-weight: 400;
+        letter-spacing: 0.02em;
+        line-height: 0.84;
+        color: var(--brass-hot);
+        text-shadow: 0 2px 0 #3a2a08;
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 8px 0 0;
+        color: var(--quiet);
+      }
+      .thesis {
+        margin: 10px 0 0;
+        font-size: clamp(17px, 2.2vw, 22px);
+        font-style: italic;
+        max-width: 38em;
+        color: var(--copy);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.02em;
+        padding: 4px 9px;
+        border: 1px solid rgba(212, 160, 23, 0.22);
+        background: rgba(12, 10, 8, 0.7);
+        color: var(--quiet);
+      }
+      .chip.fail { border-color: var(--jam); color: #f3b49a; background: rgba(224, 90, 40, 0.14); }
+      .chip.hold { border-color: var(--brass-deep); color: var(--hold); background: rgba(40, 56, 40, 0.45); }
+      .chip.contrast { border-color: var(--steel-deep); color: var(--steel); }
+      .chip[aria-current="true"] { outline: 2px solid var(--brass-hot); }
+
+      .bench {
+        position: relative;
+        margin-top: 14px;
+        min-height: 520px;
+        overflow: hidden;
+        border: 1px solid rgba(212, 160, 23, 0.2);
+        background:
+          radial-gradient(ellipse 28% 22% at 78% 12%, rgba(255, 215, 138, 0.12), transparent 60%),
+          repeating-radial-gradient(circle at 18% 72%, rgba(20, 12, 6, 0.4) 0 2px, transparent 2px 18px),
+          linear-gradient(180deg, #241c14 0%, #14100c 58%, #0c0a08 100%);
+      }
+      .bench.jammed .wheel { animation-play-state: paused; filter: saturate(0.7); }
+      .bench.hold-bench .pawl-arm { fill: var(--hold); }
+      .lamp {
+        position: absolute;
+        top: 0;
+        right: 12%;
+        width: 18px;
+        height: 46px;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        z-index: 3;
+      }
+      .lamp span {
+        display: block;
+        width: 18px;
+        height: 18px;
+        margin: 28px auto 0;
+        border-radius: 50%;
+        background: radial-gradient(circle at 40% 35%, #fff6d0, var(--lamp) 46%, #8a6020 100%);
+        box-shadow: 0 0 28px 10px rgba(255, 215, 138, 0.28);
+      }
+      .lamp b {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 3px;
+        height: 30px;
+        background: #4a4034;
+        transform: translateX(-50%);
+      }
+      .gage {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        z-index: 2;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.55;
+        color: var(--quiet);
+        padding: 8px 10px;
+        border: 1px solid rgba(212, 160, 23, 0.2);
+        background: rgba(10, 8, 6, 0.72);
+      }
+      .gage strong { color: var(--brass-hot); display: block; }
+      .gage.fail { border-color: var(--jam); color: #f3b49a; }
+      .gage.hold { border-color: var(--hold); color: var(--hold); }
+      .wheel-wrap {
+        position: absolute;
+        inset: 36px auto auto 50%;
+        width: min(360px, 78vw);
+        height: min(360px, 78vw);
+        transform: translateX(-56%);
+      }
+      .wheel {
+        width: 100%;
+        height: 100%;
+        animation: tick 6.4s linear infinite;
+        transform-origin: 50% 50%;
+      }
+      @keyframes tick {
+        0% { transform: rotate(0deg); }
+        12% { transform: rotate(11deg); }
+        14% { transform: rotate(22.5deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .pawl-hit {
+        position: absolute;
+        right: -8%;
+        top: 38%;
+        width: 42%;
+        height: 28%;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        z-index: 2;
+      }
+      .pawl-hit:focus-visible { outline: 2px solid var(--brass); }
+      .oil {
+        position: absolute;
+        left: 8%;
+        bottom: 18%;
+        width: 90px;
+        height: 36px;
+        border: 0;
+        padding: 0;
+        border-radius: 50%;
+        background: radial-gradient(ellipse at 40% 40%, rgba(40, 24, 10, 0.9), transparent 70%);
+        box-shadow: 0 0 18px rgba(20, 10, 4, 0.6);
+      }
+      .counts {
+        position: absolute;
+        right: 16px;
+        bottom: 72px;
+        display: grid;
+        gap: 6px;
+        z-index: 2;
+      }
+      .counts button {
+        font-family: var(--mono);
+        font-size: 11px;
+        text-align: left;
+        padding: 7px 10px;
+        border: 1px solid rgba(154, 164, 173, 0.24);
+        background: rgba(12, 10, 8, 0.78);
+        color: var(--steel);
+      }
+      .counts button.dead { border-color: var(--jam); color: #f3b49a; }
+      .counts button.ok { border-color: var(--hold); color: var(--hold); }
+      .crt {
+        margin-top: 0;
+        padding: 10px 14px 12px;
+        background: #0a0c08;
+        border: 1px solid rgba(255, 191, 71, 0.22);
+        border-top: 0;
+        box-shadow: inset 0 0 24px rgba(255, 191, 71, 0.06);
+      }
+      .crt .hed {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--crt);
+        margin: 0 0 6px;
+      }
+      .log {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--crt);
+        white-space: pre-wrap;
+        min-height: 5.4em;
+      }
+      .log .ghost { color: #8a6e28; }
+      .log button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+      }
+      .desk {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .panel {
+        padding: 14px 16px 16px;
+        background: var(--walnut);
+        border: 1px solid rgba(212, 160, 23, 0.18);
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin: 0 0 8px;
+      }
+      .stamps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .stamps button {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 5px 8px;
+        border: 1px solid rgba(212, 160, 23, 0.24);
+        background: #120e0a;
+        color: var(--quiet);
+      }
+      .stamps button[aria-pressed="true"] {
+        border-color: var(--brass-hot);
+        color: var(--brass-hot);
+      }
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .act button {
+        font-family: var(--display);
+        font-size: 15px;
+        letter-spacing: 0.04em;
+        padding: 8px 12px;
+        border: 1px solid var(--brass);
+        background: #1a140c;
+        color: var(--brass-hot);
+      }
+      .act .admit { border-color: var(--hold); color: var(--hold); }
+      .act .restore { border-color: var(--jam); color: #f3b49a; }
+      label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        margin-bottom: 6px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        resize: vertical;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--copy);
+        background: #0c0a08;
+        border: 1px solid rgba(212, 160, 23, 0.2);
+        padding: 8px;
+      }
+      .verdict-face {
+        margin: 0 0 8px;
+        font-family: var(--display);
+        font-size: clamp(28px, 4vw, 42px);
+        letter-spacing: 0.02em;
+        line-height: 0.9;
+      }
+      .verdict-face.fail { color: var(--jam); }
+      .verdict-face.hold { color: var(--hold); }
+      .feed {
+        font-size: 15px;
+        margin: 0 0 10px;
+        color: var(--copy);
+      }
+      .reasons {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+      }
+      .ledgers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .ledger-card {
+        padding: 8px 10px;
+        border: 1px solid rgba(212, 160, 23, 0.16);
+        background: #120e0a;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--quiet);
+      }
+      .ledger-card strong { display: block; color: var(--brass-hot); margin-bottom: 4px; }
+      .ledger-card.jam { border-color: var(--jam); color: #f3b49a; }
+      .ledger-card.hold-card { border-color: var(--hold); color: var(--hold); }
+      .path {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        line-height: 1.55;
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+        max-width: 64em;
+        line-height: 1.5;
+      }
+      footer a { color: var(--brass); }
+      footer code { font-family: var(--mono); font-size: 12px; }
+      @media (max-width: 820px) {
+        .desk, .ledgers { grid-template-columns: 1fr; }
+        .wheel-wrap { transform: translateX(-50%); }
+        .counts { left: 16px; right: auto; bottom: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shop">
+      <header class="nameplate">
+        <p class="mark">01:50 Sydney · pawl</p>
+        <h1>Pawl</h1>
+        <p class="hours">#90784 · ratchet / brass tooth</p>
+        <p class="thesis">A tooth that caught the wrong stroke is not a hold. Score the ratchet or admit engaged.</p>
+      </header>
+      <div class="chips" id="chips"></div>
+
+      <section class="bench jammed" id="bench" aria-label="Machine-shop ratchet bench">
+        <button type="button" class="lamp" id="lamp" title="File first-turn-race">
+          <b></b><span></span>
+        </button>
+        <div class="gage fail" id="gage">
+          <strong>stroke gage</strong>
+          title × <span id="title-n">2</span><br />
+          expected × 1
+        </div>
+        <div class="wheel-wrap">
+          <svg class="wheel" id="wheel" viewBox="0 0 200 200" role="img" aria-label="Steel ratchet wheel">
+            <circle cx="100" cy="100" r="86" fill="#2a3036" stroke="#8a9298" stroke-width="3" />
+            <g fill="#c5ccd2" stroke="#1a1e22" stroke-width="1">
+              <polygon points="100,8 108,28 92,28" />
+              <polygon points="142,20 140,40 124,32" transform="rotate(22.5 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(45 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(67.5 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(90 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(112.5 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(135 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(157.5 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(180 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(202.5 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(225 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(247.5 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(270 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(292.5 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(315 100 100)" />
+              <polygon points="100,8 108,28 92,28" transform="rotate(337.5 100 100)" />
+            </g>
+            <circle cx="100" cy="100" r="28" fill="#1c2024" stroke="#d4a017" stroke-width="3" />
+            <circle cx="100" cy="100" r="8" fill="#f3c44a" />
+          </svg>
+          <button type="button" class="pawl-hit" id="pawl-hit" title="Score the brass pawl" aria-label="Brass pawl tooth">
+            <svg viewBox="0 0 120 70" width="100%" height="100%">
+              <path class="pawl-arm" d="M8 18 L78 8 L112 28 L86 42 L28 38 Z" fill="#d4a017" stroke="#7a5810" stroke-width="2" />
+              <circle cx="22" cy="28" r="8" fill="#8a6a1a" stroke="#f3c44a" stroke-width="2" />
+            </svg>
+          </button>
+        </div>
+        <button type="button" class="oil" id="oil" title="File sticky-delivered" aria-label="Oil stain"></button>
+        <div class="counts">
+          <button type="button" class="dead" id="ups" title="File session-lifetime">UPS × <b id="ups-n">0</b></button>
+          <button type="button" class="ok" id="others" title="File other-hooks-fine">PreToolUse × <b>999</b><br />Stop × 17</button>
+        </div>
+      </section>
+
+      <section class="crt" aria-label="Extension host debug log">
+        <p class="hed">exthost · Anthropic.claude-code</p>
+        <pre class="log" id="log"></pre>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">Stamp the class</p>
+          <p class="path">Wrong stamps bind the tooth. Correct stamps file the ratchet. The idle word unlocks only on the honest stroke.</p>
+          <div class="stamps" id="stamps"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score the pawl</button>
+            <button type="button" class="admit" id="admit-btn">Admit engaged</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90784</button>
+          </div>
+          <label for="probe">Probe · doubled title / hook log / transcript / other hooks</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Machinist's note</p>
+          <p class="verdict-face fail" id="verdict">doubled-title</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <p class="path" id="path"></p>
+          <div class="ledgers" aria-live="polite">
+            <div class="ledger-card jam" id="title-ledger"></div>
+            <div class="ledger-card" id="hook-ledger"></div>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90784">anthropics/claude-code#90784</a>
+        (OPEN, 2026-08-30) — UserPromptSubmit hooks permanently stop firing for a session, correlated with a duplicate
+        <code>generate_session_title</code> (4 specimens, Claude Code 2.1.247, <code>claude-vscode</code> on macOS).
+        Nearby:
+        <a href="https://github.com/anthropics/claude-code/issues/85669">#85669</a> attachment skip,
+        <a href="https://github.com/anthropics/claude-code/issues/55951">#55951</a> sidebar sessionTitle,
+        <a href="https://github.com/anthropics/claude-code/issues/86413">#86413</a> systemMessage leak.
+        Cross-ecosystem:
+        <a href="https://github.com/openai/codex/issues/35863">openai/codex#35863</a>,
+        <a href="https://github.com/openai/codex/issues/34694">#34694</a>.
+        NOT Pale, Ambo, Cotter, Fetch, Cenotaph.
+        Ask: serialize hook-context attachment, or retry if delivery was not confirmed.
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "engaged";
+      const DEMO_TITLE = 2;
+      const DEMO_UPS = 0;
+      const DEMO_PRE = 999;
+      const DEMO_STOP = 17;
+      const DEMO_SPECIMENS = 4;
+      const DEMO_VERSION = "2.1.247";
+      const ALARM = [
+        "doubled-title", "first-turn-race", "sticky-delivered",
+        "context-orphaned", "transcript-blank", "session-lifetime",
+      ];
+      const VERDICTS = [
+        "engaged", "doubled-title", "first-turn-race", "sticky-delivered",
+        "context-orphaned", "other-hooks-fine", "transcript-blank",
+        "log-said-sent", "no-user-error", "session-lifetime",
+        "attachment-different", "pale-not-this",
+      ];
+      const FAIL = new Set(ALARM);
+      const CONTRAST = new Set(["attachment-different", "pale-not-this"]);
+      const filed = new Set();
+
+      function asText(v) { return v == null ? "" : String(v); }
+      function asNBool(v) {
+        if (v === true || v === false) return v;
+        return null;
+      }
+      function asNNum(v) {
+        if (v == null || v === "") return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function emptyProbe() {
+        return {
+          session: "", issue: null, source: "",
+          doubledTitleRequest: null, titleRequestCount: null,
+          userPromptSubmitFired: null, userPromptSubmitCount: null,
+          hookScriptRan: null, logSaidAdditionalContext: null,
+          hookSpecificOutputInTranscript: null, otherHooksFine: null,
+          preToolUseCount: null, stopCount: null, sessionStartOk: null,
+          noUserError: null, stickyForSession: null, firstTurnRace: null,
+          stickyDelivered: null, nearbyAttachmentSkip: false, nearbyPaleRoot: false,
+          specimens: null, version: "", entrypoint: "",
+          nearbyDoubledTitle: false, nearbyFirstTurnRace: false,
+          nearbyStickyDelivered: false, nearbyContextOrphaned: false,
+          nearbyOtherHooksFine: false, nearbyTranscriptBlank: false,
+          nearbyLogSaidSent: false, nearbyNoUserError: false,
+          nearbySessionLifetime: false, nearbyAttachmentDifferent: false,
+          nearbyPaleNotThis: false,
+        };
+      }
+      function uniqueNearby(row) {
+        return Boolean(
+          row.nearbyDoubledTitle || row.nearbyFirstTurnRace || row.nearbyStickyDelivered ||
+          row.nearbyContextOrphaned || row.nearbyOtherHooksFine || row.nearbyTranscriptBlank ||
+          row.nearbyLogSaidSent || row.nearbyNoUserError || row.nearbySessionLifetime ||
+          row.nearbyAttachmentDifferent || row.nearbyPaleNotThis ||
+          row.nearbyAttachmentSkip || row.nearbyPaleRoot
+        );
+      }
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.pawl && typeof src.pawl === "object" ? src.pawl
+          : src.probe && typeof src.probe === "object" ? src.probe
+          : src;
+        return { ...emptyProbe(), ...nested,
+          doubledTitleRequest: asNBool(nested.doubledTitleRequest),
+          titleRequestCount: asNNum(nested.titleRequestCount),
+          userPromptSubmitFired: asNBool(nested.userPromptSubmitFired),
+          userPromptSubmitCount: asNNum(nested.userPromptSubmitCount),
+          hookScriptRan: asNBool(nested.hookScriptRan),
+          logSaidAdditionalContext: asNBool(nested.logSaidAdditionalContext),
+          hookSpecificOutputInTranscript: asNBool(nested.hookSpecificOutputInTranscript),
+          otherHooksFine: asNBool(nested.otherHooksFine),
+          preToolUseCount: asNNum(nested.preToolUseCount),
+          stopCount: asNNum(nested.stopCount),
+          sessionStartOk: asNBool(nested.sessionStartOk),
+          noUserError: asNBool(nested.noUserError),
+          stickyForSession: asNBool(nested.stickyForSession),
+          firstTurnRace: asNBool(nested.firstTurnRace),
+          stickyDelivered: asNBool(nested.stickyDelivered),
+          specimens: asNNum(nested.specimens),
+          version: asText(nested.version || ""),
+          entrypoint: asText(nested.entrypoint || ""),
+        };
+      }
+      function isIdle(row) {
+        return !(
+          row.doubledTitleRequest != null || row.titleRequestCount != null ||
+          row.userPromptSubmitFired != null || row.userPromptSubmitCount != null ||
+          row.hookScriptRan != null || row.logSaidAdditionalContext != null ||
+          row.hookSpecificOutputInTranscript != null || row.otherHooksFine != null ||
+          row.preToolUseCount != null || row.stopCount != null ||
+          row.sessionStartOk != null || row.noUserError != null ||
+          row.stickyForSession != null || row.firstTurnRace != null ||
+          row.stickyDelivered != null || row.specimens != null ||
+          row.version || row.session || row.source || row.entrypoint || uniqueNearby(row)
+        );
+      }
+      function analyze(input) {
+        const row = cloneProbe(input);
+        const doubled = row.doubledTitleRequest === true || (row.titleRequestCount != null && row.titleRequestCount >= 2);
+        const upsDead = row.userPromptSubmitFired === false || row.userPromptSubmitCount === 0;
+        const scriptRan = row.hookScriptRan === true;
+        const logSent = row.logSaidAdditionalContext === true;
+        const transcriptBlank = row.hookSpecificOutputInTranscript === false;
+        const othersOk = row.otherHooksFine === true ||
+          (row.preToolUseCount != null && row.preToolUseCount > 0) ||
+          (row.stopCount != null && row.stopCount > 0);
+        const race = row.firstTurnRace === true;
+        const sticky = row.stickyDelivered === true || row.stickyForSession === true;
+        const pale = row.nearbyPaleRoot === true || row.nearbyPaleNotThis === true;
+        const attachment = row.nearbyAttachmentSkip === true || row.nearbyAttachmentDifferent === true;
+        const primaryTriad = Boolean(doubled && scriptRan && logSent && transcriptBlank && upsDead && !uniqueNearby(row) && !pale && !attachment);
+        const honest = Boolean(
+          row.userPromptSubmitFired === true &&
+          row.hookSpecificOutputInTranscript === true &&
+          row.doubledTitleRequest !== true &&
+          (row.titleRequestCount == null || row.titleRequestCount <= 1) &&
+          !uniqueNearby(row) && !pale && !attachment
+        );
+        return { row, doubled, upsDead, scriptRan, logSent, transcriptBlank, othersOk, race, sticky, pale, attachment, primaryTriad, honest };
+      }
+      function classify(input) {
+        const row = cloneProbe(input);
+        if (isIdle(row)) return "engaged";
+        if (!analyze(row).primaryTriad) {
+          if (row.nearbyPaleNotThis || row.nearbyPaleRoot) return "pale-not-this";
+          if (row.nearbyAttachmentDifferent || row.nearbyAttachmentSkip) return "attachment-different";
+          if (row.nearbySessionLifetime) return "session-lifetime";
+          if (row.nearbyNoUserError) return "no-user-error";
+          if (row.nearbyLogSaidSent) return "log-said-sent";
+          if (row.nearbyTranscriptBlank) return "transcript-blank";
+          if (row.nearbyOtherHooksFine) return "other-hooks-fine";
+          if (row.nearbyContextOrphaned) return "context-orphaned";
+          if (row.nearbyStickyDelivered) return "sticky-delivered";
+          if (row.nearbyFirstTurnRace) return "first-turn-race";
+          if (row.nearbyDoubledTitle) return "doubled-title";
+        }
+        const f = analyze(row);
+        if (f.primaryTriad) return "doubled-title";
+        if (f.honest) return "engaged";
+        if (f.pale) return "pale-not-this";
+        if (f.attachment) return "attachment-different";
+        if (f.race && f.doubled) return "first-turn-race";
+        if (row.stickyDelivered === true) return "sticky-delivered";
+        if (f.scriptRan && f.transcriptBlank && f.logSent) return "context-orphaned";
+        if (f.othersOk && f.upsDead && !f.doubled) return "other-hooks-fine";
+        if (f.transcriptBlank && f.scriptRan && !f.logSent) return "transcript-blank";
+        if (f.logSent && f.transcriptBlank) return "log-said-sent";
+        if (row.noUserError === true && f.upsDead) return "no-user-error";
+        if (row.stickyForSession === true && f.upsDead) return "session-lifetime";
+        if (f.doubled && f.upsDead) return "doubled-title";
+        return "engaged";
+      }
+      function feedOf(kind) {
+        const map = {
+          "doubled-title": "● Doubled-title · two generate_session_title requests within ~100ms · primary #90784",
+          "first-turn-race": "● First-turn-race · title generation races the first real turn for hook-context attachment",
+          "sticky-delivered": "● Sticky-delivered · session marked already-delivered; later turns never retry UserPromptSubmit",
+          "context-orphaned": "● Context-orphaned · additionalContext generated and logged, never reaches the model",
+          "other-hooks-fine": "● Other-hooks-fine · SessionStart / PreToolUse / PostToolUse / Stop keep working",
+          "transcript-blank": "● Transcript-blank · hookSpecificOutput never appears in the session transcript",
+          "log-said-sent": "● Log-said-sent · extension host log says the script provided additionalContext",
+          "no-user-error": "● No-user-error · Claude Code UI shows no error, warning, or miss",
+          "session-lifetime": "● Session-lifetime · UserPromptSubmit stays dead for the whole session",
+          "attachment-different": "● Attachment-different · nearby #85669 skips UserPromptSubmit on attachment, not a doubled title",
+          "pale-not-this": "● Pale-not-this · Pale #90683 is hooks never loading because project root ≠ repo root",
+        };
+        return map[kind] || "● Engaged · honest ratchet · UserPromptSubmit fires and hookSpecificOutput lands in the transcript · idle word is engaged";
+      }
+      function reasonsOf(input, kind) {
+        const f = analyze(input);
+        const reasons = [`verdict ${kind}`];
+        if (kind === "doubled-title" || f.primaryTriad) {
+          reasons.push("#90784 UserPromptSubmit hooks permanently stop firing, correlated with a duplicate generate_session_title request");
+        }
+        if (f.doubled) reasons.push(`doubled generate_session_title: ${f.row.titleRequestCount ?? DEMO_TITLE} requests within ~100ms`);
+        if (f.upsDead) reasons.push(`UserPromptSubmit count ${f.row.userPromptSubmitCount ?? DEMO_UPS} across the session lifetime`);
+        if (f.scriptRan) reasons.push("hook scripts still run");
+        if (f.logSent) reasons.push('extension host log: "provided additionalContext"');
+        if (f.transcriptBlank) reasons.push("hookSpecificOutput never appears in the session transcript");
+        if (f.othersOk) reasons.push(`other hooks fine: PreToolUse ${f.row.preToolUseCount ?? DEMO_PRE} / Stop ${f.row.stopCount ?? DEMO_STOP}`);
+        if (f.race) reasons.push("first-turn race for hook-context attachment");
+        if (f.sticky) reasons.push("sticky already-delivered state for the session lifetime");
+        if (f.row.noUserError) reasons.push("no user-visible error or warning");
+        if (f.pale) reasons.push("Pale #90683 contrast: hooks never load because project root ≠ repo root — not this tooth");
+        if (f.attachment) reasons.push("nearby #85669 UserPromptSubmit skipped on attachment — not a doubled title");
+        if (f.row.specimens != null) reasons.push(`${f.row.specimens} specimens`);
+        if (kind === "engaged") {
+          reasons.push("UserPromptSubmit fires; hookSpecificOutput lands in the transcript; a single generate_session_title; idle word is engaged");
+        }
+        return reasons;
+      }
+      function seedDoubled() {
+        return {
+          session: "90784-doubled-title", issue: 90784,
+          source: "primary #90784 duplicate generate_session_title; hook ran; additionalContext logged; hookSpecificOutput absent; UPS dead",
+          doubledTitleRequest: true, titleRequestCount: DEMO_TITLE,
+          userPromptSubmitFired: false, userPromptSubmitCount: DEMO_UPS,
+          hookScriptRan: true, logSaidAdditionalContext: true,
+          hookSpecificOutputInTranscript: false, otherHooksFine: true,
+          preToolUseCount: DEMO_PRE, stopCount: DEMO_STOP, sessionStartOk: true,
+          noUserError: true, stickyForSession: true, firstTurnRace: true,
+          stickyDelivered: true, specimens: DEMO_SPECIMENS, version: DEMO_VERSION,
+          entrypoint: "claude-vscode",
+        };
+      }
+      function seedEngaged() {
+        return {
+          session: "engaged-hold", issue: 90784,
+          source: "honest control: single generate_session_title; UPS fires; hookSpecificOutput lands",
+          doubledTitleRequest: false, titleRequestCount: 1,
+          userPromptSubmitFired: true, userPromptSubmitCount: 4,
+          hookScriptRan: true, logSaidAdditionalContext: true,
+          hookSpecificOutputInTranscript: true, otherHooksFine: true,
+          preToolUseCount: 12, stopCount: 3, sessionStartOk: true,
+          noUserError: true, stickyForSession: false, firstTurnRace: false,
+          stickyDelivered: false, specimens: DEMO_SPECIMENS, version: DEMO_VERSION,
+          entrypoint: "claude-vscode",
+        };
+      }
+      const NEARBY_FLAG = {
+        "doubled-title": "nearbyDoubledTitle",
+        "first-turn-race": "nearbyFirstTurnRace",
+        "sticky-delivered": "nearbyStickyDelivered",
+        "context-orphaned": "nearbyContextOrphaned",
+        "other-hooks-fine": "nearbyOtherHooksFine",
+        "transcript-blank": "nearbyTranscriptBlank",
+        "log-said-sent": "nearbyLogSaidSent",
+        "no-user-error": "nearbyNoUserError",
+        "session-lifetime": "nearbySessionLifetime",
+        "attachment-different": "nearbyAttachmentDifferent",
+        "pale-not-this": "nearbyPaleNotThis",
+      };
+      function seedNearby(kind) {
+        const flag = NEARBY_FLAG[kind];
+        const row = emptyProbe();
+        row.session = "90784-" + kind;
+        row.issue = kind === "attachment-different" ? 85669 : kind === "pale-not-this" ? 90683 : 90784;
+        row.version = DEMO_VERSION;
+        if (flag) row[flag] = true;
+        if (kind === "attachment-different") row.nearbyAttachmentSkip = true;
+        if (kind === "pale-not-this") row.nearbyPaleRoot = true;
+        return row;
+      }
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        return {
+          verdict: kind,
+          engaged: kind === IDLE_WORD,
+          alarm: ALARM.includes(kind),
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          facts: analyze(row),
+          probe: row,
+        };
+      }
+
+      const chipsEl = document.getElementById("chips");
+      const stampsEl = document.getElementById("stamps");
+      const probeEl = document.getElementById("probe");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const pathEl = document.getElementById("path");
+      const titleLedger = document.getElementById("title-ledger");
+      const hookLedger = document.getElementById("hook-ledger");
+      const bench = document.getElementById("bench");
+      const gage = document.getElementById("gage");
+      const logEl = document.getElementById("log");
+      const titleN = document.getElementById("title-n");
+      const upsN = document.getElementById("ups-n");
+
+      function chipClass(kind) {
+        if (kind === IDLE_WORD) return "chip hold";
+        if (FAIL.has(kind)) return "chip fail";
+        if (CONTRAST.has(kind)) return "chip contrast";
+        return "chip";
+      }
+      function renderChips(current) {
+        chipsEl.innerHTML = VERDICTS.map((kind) =>
+          `<button type="button" class="${chipClass(kind)}" data-kind="${kind}" aria-current="${kind === current}">${kind}</button>`
+        ).join("");
+        stampsEl.innerHTML = VERDICTS.filter((k) => k !== IDLE_WORD).map((kind) =>
+          `<button type="button" data-kind="${kind}" aria-pressed="${filed.has(kind)}">${kind}</button>`
+        ).join("");
+      }
+      function logLines(row, kind) {
+        const doubled = row.titleRequestCount != null ? row.titleRequestCount >= 2 : row.doubledTitleRequest === true;
+        const a = `[DEBUG] [API REQUEST] /v1/messages ... source=generate_session_title`;
+        const b = doubled
+          ? `[DEBUG] [API REQUEST] /v1/messages ... source=generate_session_title`
+          : `[DEBUG] [API REQUEST] /v1/messages ... source=sdk`;
+        const hook = row.logSaidAdditionalContext === false
+          ? `hook: (no additionalContext log)`
+          : `hook: provided additionalContext`;
+        const out = row.hookSpecificOutputInTranscript
+          ? `transcript: hookSpecificOutput = { additionalContext }`
+          : `transcript: hookSpecificOutput = ∅`;
+        return `${a}\n${b}\n${hook}\n${out}\nclass: ${kind}`;
+      }
+      function paint(result, note) {
+        const kind = result.verdict;
+        const row = result.probe;
+        verdictEl.textContent = kind;
+        verdictEl.className = "verdict-face " + (kind === IDLE_WORD ? "hold" : "fail");
+        feedEl.textContent = result.feed;
+        reasonsEl.innerHTML = result.reasons.map((r) => `<li>${r}</li>`).join("");
+        pathEl.textContent = note || (result.engaged
+          ? "Honest stroke. The tooth caught once. Idle word is engaged."
+          : "Wrong stroke. The tooth is still jammed.");
+        titleN.textContent = row.titleRequestCount == null ? "—" : String(row.titleRequestCount);
+        upsN.textContent = row.userPromptSubmitCount == null ? "—" : String(row.userPromptSubmitCount);
+        gage.className = "gage " + (result.engaged ? "hold" : "fail");
+        bench.classList.toggle("jammed", !result.engaged);
+        bench.classList.toggle("hold-bench", result.engaged);
+        titleLedger.className = "ledger-card " + (result.facts.doubled ? "jam" : "hold-card");
+        titleLedger.innerHTML = `<strong>title strokes</strong>generate_session_title × ${row.titleRequestCount ?? "—"}<br />doubled ${result.facts.doubled ? "yes" : "no"}<br />race ${result.facts.race ? "yes" : "no"}`;
+        hookLedger.className = "ledger-card " + (result.facts.transcriptBlank ? "jam" : "hold-card");
+        hookLedger.innerHTML = `<strong>hook delivery</strong>script ${result.facts.scriptRan ? "ran" : "—"}<br />log ${result.facts.logSent ? "sent" : "—"}<br />transcript ${result.facts.transcriptBlank ? "blank" : result.engaged ? "landed" : "—"}<br />UPS ${row.userPromptSubmitCount ?? "—"}`;
+        logEl.innerHTML = `<button type="button" id="log-btn" title="File log-said-sent">${logLines(row, kind)}</button>`;
+        document.getElementById("log-btn").addEventListener("click", () => fileKind("log-said-sent"));
+        renderChips(kind);
+        probeEl.value = JSON.stringify(row, null, 2);
+      }
+      function apply(probe, note) {
+        paint(score(probe), note);
+      }
+      function fileKind(kind) {
+        if (kind === IDLE_WORD) {
+          apply(seedEngaged(), "Honest control filed. Admit engaged unlocks here.");
+          return;
+        }
+        filed.add(kind);
+        apply(seedNearby(kind), `Filed ${kind}. Nearby unique flags win their own seed.`);
+      }
+      function readProbe() {
+        try {
+          return cloneProbe(JSON.parse(probeEl.value));
+        } catch {
+          return cloneProbe(seedDoubled());
+        }
+      }
+
+      renderChips("doubled-title");
+      apply(seedDoubled(), "Seeded #90784 already on the tooth. Score the ratchet or admit engaged.");
+
+      chipsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      stampsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-kind]");
+        if (btn) fileKind(btn.dataset.kind);
+      });
+      document.getElementById("score-btn").addEventListener("click", () => {
+        apply(readProbe(), "Scored from the probe on the bench.");
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        const result = score(readProbe());
+        if (result.engaged) {
+          apply(result.probe, "Admitted engaged. The tooth caught the right stroke.");
+        } else {
+          paint(result, "Admit does not lie. A jammed pawl stays jammed. Idle word is engaged.");
+        }
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        filed.clear();
+        apply(seedDoubled(), "Restored #90784. Doubled stroke still on the tooth.");
+      });
+      document.getElementById("pawl-hit").addEventListener("click", () => {
+        apply(seedDoubled(), "Brass tooth clicked. Primary doubled-title is on the pawl.");
+      });
+      document.getElementById("lamp").addEventListener("click", () => fileKind("first-turn-race"));
+      document.getElementById("oil").addEventListener("click", () => fileKind("sticky-delivered"));
+      document.getElementById("ups").addEventListener("click", () => fileKind("session-lifetime"));
+      document.getElementById("others").addEventListener("click", () => fileKind("other-hooks-fine"));
+      document.getElementById("wheel").addEventListener("click", () => fileKind("doubled-title"));
+    </script>
+  </body>
+</html>

@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Cenotaph](https://hermes-playground-green.vercel.app/cenotaph/)** — empty monument. A vacant monument is not a pair. Score the stone or admit stood. Folder: `projects/cenotaph/`.
+**Featured: [Pawl](https://hermes-playground-green.vercel.app/pawl/)** — machine-shop ratchet. A tooth that caught the wrong stroke is not a hold. Score the ratchet or admit engaged. Folder: `projects/pawl/`.
+
+**Listed: [Cenotaph](https://hermes-playground-green.vercel.app/cenotaph/)** — empty monument. A vacant monument is not a pair. Score the stone or admit stood. Folder: `projects/cenotaph/`. Still listed. Not featured.
 
 **Listed: [Fetch](https://hermes-playground-green.vercel.app/fetch/)** — looking-glass parlor. A fetch on the glass is not a keyed reply. Score the pane or admit muted. Folder: `projects/fetch/`. Still listed. Not featured.
 
