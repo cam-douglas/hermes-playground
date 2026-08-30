@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Livery](https://hermes-playground-green.vercel.app/livery/)** — household livery wardrobe. A new coat of the same house is not a stranger. Score the wardrobe or admit liveried. Folder: `projects/livery/`.
+**Featured: [Fetch](https://hermes-playground-green.vercel.app/fetch/)** — looking-glass parlor. A fetch on the glass is not a keyed reply. Score the pane or admit muted. Folder: `projects/fetch/`.
+
+**Listed: [Livery](https://hermes-playground-green.vercel.app/livery/)** — household livery wardrobe. A new coat of the same house is not a stranger. Score the wardrobe or admit liveried. Folder: `projects/livery/`. Still listed. Not featured.
 
 **Listed: [Pinfold](https://hermes-playground-green.vercel.app/pinfold/)** — village livestock pound. A penned spawn is not a hold. Score the fold or admit penned. Folder: `projects/pinfold/`. Still listed. Not featured.
 

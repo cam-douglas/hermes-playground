@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Fetch — looking-glass parlor for Claude Code #90755: prompt suggestions render as ghost text indistinguishable from typed input in scraped/headless terminals. A fetch on the glass is not a keyed reply. Idle word is muted."
+    />
+    <title>Fetch — looking-glass parlor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --night: #07090d;
+        --slate: #12161c;
+        --pew: #2a3038;
+        --silver: #c5cdd6;
+        --moon: #e8eef4;
+        --fog: rgba(196, 208, 220, 0.14);
+        --copy: #dce4ec;
+        --quiet: #8a949e;
+        --alarm: #d4b896;
+        --alarm-hot: #f0d4a8;
+        --hold: #8eb8b0;
+        --hold-deep: #2a4a46;
+        --display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+        --body: "Manrope", "Avenir Next", sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--copy);
+        background:
+          radial-gradient(ellipse 28% 22% at 78% 4%, rgba(220, 230, 240, 0.14), transparent 62%),
+          radial-gradient(ellipse 40% 30% at 12% 92%, rgba(90, 110, 130, 0.16), transparent 64%),
+          linear-gradient(180deg, #0c1016 0%, var(--night) 46%, #0a0e14 100%);
+      }
+      button { font: inherit; cursor: pointer; color: inherit; }
+      a { color: var(--silver); }
+      .parlor {
+        width: min(1240px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 16px 0 80px;
+      }
+      .lintel {
+        padding: 18px 22px 16px;
+        background:
+          linear-gradient(180deg, #1c222a 0%, var(--slate) 52%, #0e1218 100%);
+        border: 1px solid rgba(197, 205, 214, 0.18);
+        box-shadow:
+          inset 0 1px 0 rgba(232, 238, 244, 0.12),
+          0 16px 40px rgba(0, 0, 0, 0.35);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--silver);
+      }
+      h1 {
+        margin: 4px 0 0;
+        font-family: var(--display);
+        font-size: clamp(52px, 9vw, 92px);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 0.82;
+        color: var(--moon);
+      }
+      .hours {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 8px 0 0;
+        color: var(--quiet);
+      }
+      .thesis {
+        margin: 10px 0 0;
+        font-family: var(--display);
+        font-size: clamp(18px, 2.4vw, 24px);
+        font-style: italic;
+        max-width: 36em;
+        color: var(--silver);
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        padding: 4px 9px;
+        border: 1px solid rgba(197, 205, 214, 0.22);
+        background: rgba(18, 22, 28, 0.7);
+        color: var(--quiet);
+      }
+      .chip.fail { border-color: var(--alarm); color: var(--alarm-hot); background: rgba(212, 184, 150, 0.1); }
+      .chip.hold { border-color: var(--hold-deep); color: var(--hold); background: rgba(42, 74, 70, 0.28); }
+      .chip.contrast { border-color: var(--silver); color: var(--moon); }
+      .chip[aria-current="true"] { outline: 2px solid var(--moon); }
+
+      .glass {
+        position: relative;
+        margin-top: 16px;
+        min-height: 520px;
+        overflow: hidden;
+        border: 12px solid #3a424c;
+        border-radius: 46% 46% 42% 42% / 38% 38% 48% 48%;
+        box-shadow:
+          inset 0 0 0 3px #8a949e,
+          inset 0 0 80px rgba(200, 214, 226, 0.08),
+          0 22px 0 #05070a,
+          0 0 80px rgba(200, 214, 226, 0.08);
+        background:
+          radial-gradient(ellipse 70% 55% at 50% 42%, rgba(30, 38, 48, 0.55), transparent 70%),
+          linear-gradient(180deg, #161c24 0%, #0c1016 70%, #10161c 100%);
+      }
+      .glass::before {
+        content: "";
+        position: absolute;
+        inset: 8% 18% auto 12%;
+        height: 28%;
+        background: linear-gradient(180deg, rgba(232, 238, 244, 0.16), transparent);
+        border-radius: 50%;
+        filter: blur(8px);
+        pointer-events: none;
+      }
+      .glass.hold-glass {
+        box-shadow:
+          inset 0 0 0 3px #8eb8b0,
+          inset 0 0 80px rgba(142, 184, 176, 0.12),
+          0 22px 0 #05070a;
+      }
+      .tui {
+        position: absolute;
+        left: 16%;
+        right: 16%;
+        top: 18%;
+        bottom: 28%;
+        padding: 14px 16px 12px;
+        background: rgba(8, 10, 14, 0.72);
+        border: 1px solid rgba(197, 205, 214, 0.16);
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--quiet);
+        overflow: hidden;
+        z-index: 3;
+      }
+      .tui .turn { color: var(--copy); }
+      .tui .ghost-line {
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        color: var(--moon);
+        font-family: var(--mono);
+        font-size: 14px;
+        letter-spacing: 0.01em;
+      }
+      .tui .ghost-line .prompt { color: var(--silver); }
+      .tui .ghost-line .ghost {
+        color: rgba(232, 238, 244, 0.42);
+        font-style: italic;
+      }
+      .tui .ghost-line.keyed .ghost {
+        color: var(--hold);
+        font-style: normal;
+        opacity: 0.35;
+      }
+      .tui .ghost-line.keyed .ghost::after { content: none; }
+      .fetch-shade {
+        position: absolute;
+        right: 10%;
+        bottom: 18%;
+        width: 88px;
+        height: 140px;
+        z-index: 2;
+        border: 0;
+        padding: 0;
+        background:
+          radial-gradient(ellipse 50% 30% at 50% 12%, rgba(220, 230, 240, 0.28), transparent 70%),
+          linear-gradient(180deg, rgba(180, 194, 208, 0.18), rgba(20, 24, 30, 0.05));
+        clip-path: ellipse(38% 48% at 50% 42%);
+        filter: blur(0.4px);
+      }
+      .scrape {
+        position: absolute;
+        left: 10%;
+        bottom: 8%;
+        z-index: 5;
+        border: 0;
+        padding: 8px 10px;
+        background: #1a2028;
+        color: var(--alarm-hot);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.04em;
+        line-height: 1.4;
+        text-align: left;
+        box-shadow: 2px 4px 0 #05070a;
+        max-width: 46%;
+      }
+      .scrape b { display: block; color: var(--silver); margin-bottom: 2px; }
+      .marked-ticket {
+        position: absolute;
+        right: 10%;
+        top: 12%;
+        z-index: 5;
+        border: 1px dashed var(--hold);
+        padding: 6px 8px;
+        background: rgba(18, 28, 28, 0.85);
+        color: var(--hold);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        max-width: 160px;
+        text-align: left;
+      }
+      .source-chip {
+        position: absolute;
+        left: 12%;
+        top: 10%;
+        z-index: 5;
+        border: 0;
+        padding: 6px 8px;
+        background: #222830;
+        color: var(--quiet);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-align: left;
+      }
+      .walk {
+        position: absolute;
+        inset: auto 10% 4% 10%;
+        z-index: 7;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: center;
+      }
+      .stone {
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 5px 8px;
+        background: #2a3038;
+        color: var(--moon);
+        border: 1px solid #4a5460;
+      }
+      .stone.filed { background: var(--hold-deep); color: var(--hold); }
+      .stone[aria-pressed="true"] { outline: 2px solid var(--moon); }
+
+      .desk {
+        display: grid;
+        grid-template-columns: minmax(280px, 1.1fr) minmax(260px, 0.9fr);
+        gap: 14px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) {
+        .desk { grid-template-columns: 1fr; }
+        .glass { border-radius: 18px; min-height: 440px; }
+        .tui { left: 8%; right: 8%; top: 22%; }
+        .scrape { max-width: 70%; }
+      }
+      .panel {
+        padding: 14px 16px 16px;
+        background: rgba(12, 16, 22, 0.86);
+        border: 1px solid rgba(197, 205, 214, 0.14);
+      }
+      .hed {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--silver);
+        margin: 0 0 8px;
+      }
+      .strays, .stamps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .stray, .stamp {
+        padding: 6px 8px;
+        border: 1px solid rgba(197, 205, 214, 0.2);
+        background: #161c24;
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+      .stray small { display: block; color: var(--quiet); font-size: 9px; }
+      .stray.filed { border-color: var(--hold); color: var(--hold); }
+      .stamp { background: var(--pew); color: var(--moon); }
+      .act {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      .act button {
+        padding: 8px 12px;
+        background: #1a2028;
+        color: var(--copy);
+        border: 1px solid #4a5460;
+        font-family: var(--display);
+        font-size: 20px;
+        letter-spacing: 0.03em;
+      }
+      .act button.admit { background: var(--hold-deep); color: #f4f8f6; border-color: var(--hold); }
+      .act button.restore { background: #3a3228; color: var(--alarm-hot); border-color: #6a5a40; }
+      label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--quiet);
+        margin: 8px 0 6px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        resize: vertical;
+        background: #0a0e14;
+        color: var(--copy);
+        border: 1px solid rgba(197, 205, 214, 0.18);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 10px;
+      }
+      .verdict-face {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(40px, 6.5vw, 68px);
+        letter-spacing: -0.02em;
+        line-height: 0.88;
+        color: var(--alarm-hot);
+      }
+      .verdict-face.fail { color: var(--alarm-hot); }
+      .verdict-face.hold { color: var(--hold); }
+      .verdict-face.contrast { color: var(--moon); }
+      .feed { color: var(--copy); line-height: 1.45; }
+      .reasons {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        color: var(--quiet);
+        font-size: 14px;
+      }
+      .ledger, .path {
+        margin-top: 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+        line-height: 1.55;
+      }
+      .path strong { color: var(--moon); }
+      footer {
+        margin-top: 20px;
+        color: var(--quiet);
+        font-size: 14px;
+        max-width: 62em;
+        line-height: 1.5;
+      }
+      footer a { color: var(--silver); }
+      footer code { font-family: var(--mono); font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <main class="parlor">
+      <header class="lintel">
+        <p class="mark">23:50 Sydney · fetch</p>
+        <h1>Fetch</h1>
+        <p class="hours">#90755 · looking-glass parlor / silvered scrying pane</p>
+        <p class="thesis">A fetch on the glass is not a keyed reply. Score the pane or admit muted.</p>
+      </header>
+      <div class="chips" id="chips"></div>
+
+      <section class="glass" id="glass" aria-label="Looking-glass parlor">
+        <button type="button" class="source-chip" id="source-chip" title="File suggestion-source">
+          source=prompt_suggestion
+        </button>
+        <button type="button" class="marked-ticket" id="marked-ticket" title="Honest muted pane">
+          honest pane · marked / keyed-only
+        </button>
+        <div class="tui" aria-label="TUI composer reflection">
+          <div class="turn">Would you like me to edit the documents?</div>
+          <button type="button" class="ghost-line" id="ghost-line" title="Seed ghosted #90755">
+            <span class="prompt">❯</span>
+            <span class="ghost" id="ghost-text">Yes, go ahead</span>
+          </button>
+        </div>
+        <button type="button" class="fetch-shade" id="fetch-shade" title="The fetch on the glass" aria-label="Fetch doppelganger"></button>
+        <button type="button" class="scrape" id="scrape" title="File scraped / byte-identical">
+          <b>tmux capture-pane -p</b>
+          ❯ Yes, go ahead<br />
+          styling stripped · byte-identical
+        </button>
+        <div class="walk" id="walk" aria-label="Walk the parlor"></div>
+      </section>
+
+      <section class="desk">
+        <aside class="panel">
+          <p class="hed">Walk the parlor</p>
+          <div class="strays" id="strays"></div>
+          <p class="hed" style="margin-top:14px">Stamp the class</p>
+          <p class="path">Wrong stamps bind the glass. Correct stamps file the pane. The idle word unlocks only on the honest (muted / marked) pane.</p>
+          <div class="stamps" id="stamps"></div>
+          <div class="act">
+            <button type="button" id="score-btn">Score the pane</button>
+            <button type="button" class="admit" id="admit-btn">Admit muted</button>
+            <button type="button" class="restore" id="restore-btn">Restore · #90755</button>
+          </div>
+          <label for="probe">Probe · suggestion / capture-pane / channels / keystrokes</label>
+          <textarea id="probe" spellcheck="false"></textarea>
+        </aside>
+        <article class="panel">
+          <p class="hed">Scrying note</p>
+          <p class="verdict-face fail" id="verdict">ghosted</p>
+          <p class="feed" id="feed"></p>
+          <ul class="reasons" id="reasons"></ul>
+          <p class="path" id="path"></p>
+          <div class="ledger" id="ledger" aria-live="polite"></div>
+        </article>
+      </section>
+
+      <footer>
+        Primary
+        <a href="https://github.com/anthropics/claude-code/issues/90755">anthropics/claude-code#90755</a>
+        (OPEN, 2026-08-30) — prompt suggestions render as ghost text indistinguishable from typed input in scraped/headless terminals; fabricated user messages incl. fake approvals.
+        Related (same habitat; not primary):
+        <a href="https://github.com/anthropics/claude-code/issues/78177">#78177</a>
+        Remote Control composer never submitted,
+        <a href="https://github.com/anthropics/claude-code/issues/86896">#86896</a>
+        spurious tmux interrupt,
+        <a href="https://github.com/anthropics/claude-code/issues/77155">#77155</a>
+        <code>--channels</code> / <code>--plugin-dir</code>,
+        <a href="https://github.com/anthropics/claude-code/issues/77569">#77569</a>
+        display-vs-semantic leak.
+        NOT Livery, Pinfold, Palimpsest, Escutcheon, Chatelaine, Fob, Visa, Sigil, Hasp, Knock, Slype, Scrim, Chute, Ambo, Byline.
+        Suggested consumer fix: machine-readable marker on the suggestion line; auto-suppress under <code>--channels</code> / no recent keystrokes; document <code>promptSuggestionEnabled</code> for headless.
+      </footer>
+    </main>
+    <script>
+      const IDLE_WORD = "muted";
+      const DEMO_SUGGESTION = "Yes, go ahead";
+      const DEMO_CAPTURE = "❯ Yes, go ahead";
+      const DEMO_SOURCE = "prompt_suggestion";
+      const DEMO_CHANNELS = "plugin:telegram";
+      const DEMO_VERSION = "2.1.251";
+      const ALARM = [
+        "ghosted", "scraped", "fabricated", "fake-approve", "self-loop",
+        "unmarked", "default-on", "channel-blind", "byte-identical",
+        "watchdog-fed", "suggestion-source",
+      ];
+      const FAIL_PATH = ALARM.slice();
+      const ledger = [];
+      const filed = new Set();
+
+      function asText(v) { return v == null ? "" : String(v); }
+      function asNBool(v) {
+        if (v === true || v === false) return v;
+        return null;
+      }
+      function asNNum(v) {
+        if (v == null || v === "") return null;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function emptyProbe() {
+        return {
+          session: "", issue: null, source: "",
+          promptSuggestionEnabled: null, suggestionSource: "", ghostText: "",
+          capturePaneText: "", composerMarked: null, channelsActive: null,
+          recentKeystrokes: null, submittedAsUser: null, approvalText: "",
+          watchdogFed: null, selfLoop: null, fabricatedCount: null,
+          headless: null, permissionMode: "", version: "", nearby: "",
+          nearbyGhosted: false, nearbyScraped: false, nearbyFabricated: false,
+          nearbyFakeApprove: false, nearbySelfLoop: false, nearbyUnmarked: false,
+          nearbyDefaultOn: false, nearbyChannelBlind: false, nearbyByteIdentical: false,
+          nearbyWatchdogFed: false, nearbySuggestionSource: false,
+        };
+      }
+      function cloneProbe(input) {
+        const src = input && typeof input === "object" ? input : {};
+        const nested = src.fetch && typeof src.fetch === "object" ? src.fetch : src;
+        return {
+          ...emptyProbe(), ...nested,
+          promptSuggestionEnabled: asNBool(nested.promptSuggestionEnabled),
+          suggestionSource: asText(nested.suggestionSource || ""),
+          ghostText: asText(nested.ghostText || ""),
+          capturePaneText: asText(nested.capturePaneText || ""),
+          composerMarked: asNBool(nested.composerMarked),
+          channelsActive: asNBool(nested.channelsActive),
+          recentKeystrokes: asNBool(nested.recentKeystrokes),
+          submittedAsUser: asNBool(nested.submittedAsUser),
+          approvalText: asText(nested.approvalText || ""),
+          watchdogFed: asNBool(nested.watchdogFed),
+          selfLoop: asNBool(nested.selfLoop),
+          fabricatedCount: asNNum(nested.fabricatedCount),
+          headless: asNBool(nested.headless),
+          permissionMode: asText(nested.permissionMode || ""),
+          version: asText(nested.version || ""),
+          nearby: asText(nested.nearby || ""),
+          nearbyGhosted: Boolean(nested.nearbyGhosted),
+          nearbyScraped: Boolean(nested.nearbyScraped),
+          nearbyFabricated: Boolean(nested.nearbyFabricated),
+          nearbyFakeApprove: Boolean(nested.nearbyFakeApprove),
+          nearbySelfLoop: Boolean(nested.nearbySelfLoop),
+          nearbyUnmarked: Boolean(nested.nearbyUnmarked),
+          nearbyDefaultOn: Boolean(nested.nearbyDefaultOn),
+          nearbyChannelBlind: Boolean(nested.nearbyChannelBlind),
+          nearbyByteIdentical: Boolean(nested.nearbyByteIdentical),
+          nearbyWatchdogFed: Boolean(nested.nearbyWatchdogFed),
+          nearbySuggestionSource: Boolean(nested.nearbySuggestionSource),
+        };
+      }
+      function uniqueNearby(row) {
+        return Boolean(row.nearbyGhosted || row.nearbyScraped || row.nearbyFabricated ||
+          row.nearbyFakeApprove || row.nearbySelfLoop || row.nearbyUnmarked ||
+          row.nearbyDefaultOn || row.nearbyChannelBlind || row.nearbyByteIdentical ||
+          row.nearbyWatchdogFed || row.nearbySuggestionSource);
+      }
+      function analyze(input) {
+        const row = cloneProbe(input);
+        const suggestionSource = /prompt_suggestion/i.test(row.suggestionSource + row.source);
+        const ghostOnPrompt = Boolean(row.ghostText) || (/❯/.test(row.capturePaneText) && row.capturePaneText.replace(/❯\s*/, "").trim());
+        const marked = row.composerMarked === true || /\[suggestion\]|░/.test(row.capturePaneText + row.ghostText);
+        const unmarked = Boolean(ghostOnPrompt && !marked);
+        const scraped = Boolean(asText(row.capturePaneText).replace(/❯\s*/g, "").trim());
+        const byteIdentical = Boolean(row.ghostText && row.capturePaneText && row.capturePaneText.includes(row.ghostText));
+        const defaultOn = row.promptSuggestionEnabled === true;
+        const channelBlind = row.channelsActive === true && row.promptSuggestionEnabled !== false;
+        const watchdogFed = row.watchdogFed === true;
+        const fabricated = row.submittedAsUser === true || (row.fabricatedCount != null && row.fabricatedCount > 0);
+        const fakeApprove = /yes,?\s+go ahead/i.test(row.approvalText + row.ghostText) && row.submittedAsUser === true;
+        const selfLoop = row.selfLoop === true;
+        const ghostedTriad = Boolean(ghostOnPrompt && unmarked &&
+          (suggestionSource || defaultOn || row.promptSuggestionEnabled !== false) &&
+          (scraped || byteIdentical || watchdogFed || fabricated) && !uniqueNearby(row));
+        const honest = Boolean((row.promptSuggestionEnabled === false || marked) &&
+          !fabricated && row.submittedAsUser !== true && !watchdogFed && !selfLoop && !uniqueNearby(row));
+        return {
+          row, suggestionSource, ghostOnPrompt, marked, unmarked, scraped, byteIdentical,
+          defaultOn, channelBlind, watchdogFed, fabricated, fakeApprove, selfLoop,
+          ghostedTriad, honest, suggestionsOff: row.promptSuggestionEnabled === false,
+        };
+      }
+      function classify(input) {
+        const row = cloneProbe(input);
+        const idle = !(row.promptSuggestionEnabled != null || row.suggestionSource || row.ghostText ||
+          row.capturePaneText || row.composerMarked != null || row.channelsActive != null ||
+          row.recentKeystrokes != null || row.submittedAsUser != null || row.approvalText ||
+          row.watchdogFed != null || row.selfLoop != null || row.fabricatedCount != null ||
+          row.headless != null || row.permissionMode || row.version || uniqueNearby(row));
+        if (idle) return "muted";
+        const f = analyze(row);
+        if (!f.ghostedTriad) {
+          if (row.nearbySuggestionSource) return "suggestion-source";
+          if (row.nearbyWatchdogFed) return "watchdog-fed";
+          if (row.nearbyByteIdentical) return "byte-identical";
+          if (row.nearbyChannelBlind) return "channel-blind";
+          if (row.nearbyDefaultOn) return "default-on";
+          if (row.nearbyUnmarked) return "unmarked";
+          if (row.nearbySelfLoop) return "self-loop";
+          if (row.nearbyFakeApprove) return "fake-approve";
+          if (row.nearbyFabricated) return "fabricated";
+          if (row.nearbyScraped) return "scraped";
+          if (row.nearbyGhosted) return "ghosted";
+        }
+        if (f.ghostedTriad) return "ghosted";
+        if (f.honest) return "muted";
+        if (f.fakeApprove) return "fake-approve";
+        if (f.selfLoop) return "self-loop";
+        if (f.fabricated) return "fabricated";
+        if (f.watchdogFed) return "watchdog-fed";
+        if (f.byteIdentical && f.scraped) return "byte-identical";
+        if (f.scraped) return "scraped";
+        if (f.unmarked) return "unmarked";
+        if (f.channelBlind) return "channel-blind";
+        if (f.defaultOn && !f.honest) return "default-on";
+        if (f.suggestionSource && !f.honest) return "suggestion-source";
+        if (f.honest) return "muted";
+        return "muted";
+      }
+      function feedOf(kind) {
+        if (kind === "ghosted") return "● Ghosted · suggestion rendered as ghost text on the ❯ input line · primary #90755";
+        if (kind === "scraped") return "● Scraped · capture-pane / pane scrape sees byte-identical suggestion text";
+        if (kind === "fabricated") return "● Fabricated · suggestion submitted as a real user message · 220+ in one report";
+        if (kind === "fake-approve") return "● Fake-approve · fabricated approval like “Yes, go ahead” was acted on";
+        if (kind === "self-loop") return "● Self-loop · each reply generates a fresh suggestion which is resubmitted";
+        if (kind === "unmarked") return "● Unmarked · no machine-readable marker / glyph / prefix on the suggestion line";
+        if (kind === "default-on") return "● Default-on · promptSuggestionEnabled is default on";
+        if (kind === "channel-blind") return "● Channel-blind · suggestions still on under --channels / headless";
+        if (kind === "byte-identical") return "● Byte-identical · styled ghost equals typed bytes after scrape";
+        if (kind === "watchdog-fed") return "● Watchdog-fed · automation treats the suggestion as stuck human input";
+        if (kind === "suggestion-source") return "● Suggestion-source · debug source=prompt_suggestion";
+        return "● Muted · suggestions off or marked · input line is keyed-only · idle word is muted";
+      }
+      function reasonsOf(input, kind) {
+        const f = analyze(input);
+        const reasons = ["verdict " + kind];
+        if (kind === "ghosted" || f.ghostedTriad) {
+          reasons.push("#90755 prompt suggestions render as ghost text indistinguishable from typed input in scraped/headless terminals");
+        }
+        if (f.ghostOnPrompt) reasons.push("ghost on ❯: " + (f.row.ghostText || DEMO_SUGGESTION));
+        if (f.suggestionSource) reasons.push("debug source=" + (f.row.suggestionSource || DEMO_SOURCE));
+        if (f.scraped) reasons.push("pane scrape: " + (f.row.capturePaneText || DEMO_CAPTURE));
+        if (f.byteIdentical) reasons.push("styled ghost == typed bytes after scrape");
+        if (f.unmarked) reasons.push("no machine-readable marker / glyph / prefix on the suggestion line");
+        if (f.marked) reasons.push("composer marked — scrapers can filter suggestion text");
+        if (f.watchdogFed) reasons.push("watchdog fed from tmux capture-pane -p");
+        if (f.fabricated) reasons.push("submitted as a real user message");
+        if (f.fakeApprove) reasons.push("fake approval acted on: Yes, go ahead");
+        if (f.selfLoop) reasons.push("each reply generates a fresh suggestion which is resubmitted");
+        if (kind === "muted") reasons.push("suggestions off or marked; input line is keyed-only; idle word is muted");
+        return reasons;
+      }
+      function score(probe) {
+        const row = cloneProbe(probe);
+        const kind = classify(row);
+        const f = analyze(row);
+        return {
+          verdict: kind,
+          muted: kind === "muted",
+          alarm: ALARM.includes(kind),
+          idleWord: IDLE_WORD,
+          facts: {
+            ghostedTriad: f.ghostedTriad, honest: f.honest, ghostOnPrompt: f.ghostOnPrompt,
+            unmarked: f.unmarked, scraped: f.scraped, fabricated: f.fabricated,
+            ghostText: row.ghostText, capturePaneText: row.capturePaneText,
+          },
+          reasons: reasonsOf(row, kind),
+          feed: feedOf(kind),
+          probe: row,
+        };
+      }
+
+      const SEEDS = {
+        ghosted: () => ({
+          session: "90755-ghosted", issue: 90755,
+          source: "primary #90755 ghost text on ❯; capture-pane byte-identical; source=prompt_suggestion",
+          promptSuggestionEnabled: true, suggestionSource: DEMO_SOURCE,
+          ghostText: DEMO_SUGGESTION, capturePaneText: DEMO_CAPTURE,
+          composerMarked: false, channelsActive: true, recentKeystrokes: false,
+          submittedAsUser: true, approvalText: DEMO_SUGGESTION, watchdogFed: true,
+          selfLoop: true, fabricatedCount: 220, headless: true, permissionMode: "auto",
+          version: DEMO_VERSION,
+        }),
+        scraped: () => ({
+          session: "90755-scraped", issue: 90755, ghostText: DEMO_SUGGESTION,
+          capturePaneText: DEMO_CAPTURE, nearbyScraped: true, version: DEMO_VERSION,
+        }),
+        fabricated: () => ({
+          session: "90755-fabricated", issue: 90755, promptSuggestionEnabled: true,
+          suggestionSource: DEMO_SOURCE, ghostText: DEMO_SUGGESTION,
+          capturePaneText: DEMO_CAPTURE, submittedAsUser: true, fabricatedCount: 220,
+          nearbyFabricated: true, version: DEMO_VERSION,
+        }),
+        "fake-approve": () => ({
+          session: "90755-fake-approve", issue: 90755, ghostText: DEMO_SUGGESTION,
+          approvalText: DEMO_SUGGESTION, submittedAsUser: true, nearbyFakeApprove: true,
+          version: DEMO_VERSION,
+        }),
+        "self-loop": () => ({
+          session: "90755-self-loop", issue: 90755, ghostText: DEMO_SUGGESTION,
+          selfLoop: true, submittedAsUser: true, nearbySelfLoop: true, version: DEMO_VERSION,
+        }),
+        unmarked: () => ({
+          session: "90755-unmarked", issue: 90755, ghostText: DEMO_SUGGESTION,
+          capturePaneText: DEMO_CAPTURE, composerMarked: false, nearbyUnmarked: true,
+          version: DEMO_VERSION,
+        }),
+        "default-on": () => ({
+          session: "90755-default-on", issue: 90755, promptSuggestionEnabled: true,
+          nearbyDefaultOn: true, version: DEMO_VERSION,
+        }),
+        "channel-blind": () => ({
+          session: "90755-channel-blind", issue: 90755, promptSuggestionEnabled: true,
+          channelsActive: true, headless: true, permissionMode: DEMO_CHANNELS,
+          nearbyChannelBlind: true, version: DEMO_VERSION,
+        }),
+        "byte-identical": () => ({
+          session: "90755-byte-identical", issue: 90755, ghostText: DEMO_SUGGESTION,
+          capturePaneText: DEMO_CAPTURE, nearbyByteIdentical: true, version: DEMO_VERSION,
+        }),
+        "watchdog-fed": () => ({
+          session: "90755-watchdog-fed", issue: 90755, ghostText: DEMO_SUGGESTION,
+          capturePaneText: DEMO_CAPTURE, watchdogFed: true, nearbyWatchdogFed: true,
+          version: DEMO_VERSION,
+        }),
+        "suggestion-source": () => ({
+          session: "90755-suggestion-source", issue: 90755, suggestionSource: DEMO_SOURCE,
+          nearbySuggestionSource: true, version: DEMO_VERSION,
+        }),
+        muted: () => ({
+          session: "muted-hold", issue: 90755,
+          source: "honest control: promptSuggestionEnabled off; suggestion line marked; input keyed-only",
+          promptSuggestionEnabled: false, capturePaneText: "❯", composerMarked: true,
+          channelsActive: true, recentKeystrokes: false, submittedAsUser: false,
+          watchdogFed: false, selfLoop: false, headless: true, permissionMode: DEMO_CHANNELS,
+          version: DEMO_VERSION,
+        }),
+      };
+
+      const seedOrder = [
+        ["ghosted", "ghosted #90755"],
+        ["scraped", "scraped"],
+        ["fabricated", "fabricated"],
+        ["fake-approve", "fake-approve"],
+        ["self-loop", "self-loop"],
+        ["unmarked", "unmarked"],
+        ["default-on", "default-on"],
+        ["channel-blind", "channel-blind"],
+        ["byte-identical", "byte-identical"],
+        ["watchdog-fed", "watchdog-fed"],
+        ["suggestion-source", "suggestion-source"],
+        ["muted", "honest muted"],
+      ];
+      const stampOrder = seedOrder.map(([key]) => key);
+
+      const probeEl = document.getElementById("probe");
+      const straysEl = document.getElementById("strays");
+      const stampsEl = document.getElementById("stamps");
+      const walkEl = document.getElementById("walk");
+      const verdictEl = document.getElementById("verdict");
+      const feedEl = document.getElementById("feed");
+      const reasonsEl = document.getElementById("reasons");
+      const ledgerEl = document.getElementById("ledger");
+      const chipsEl = document.getElementById("chips");
+      const pathEl = document.getElementById("path");
+      const ghostTextEl = document.getElementById("ghost-text");
+      const ghostLineEl = document.getElementById("ghost-line");
+      const glassEl = document.getElementById("glass");
+
+      function writeProbe(probe) { probeEl.value = JSON.stringify(probe, null, 2); }
+      function readProbe() {
+        try { return cloneProbe(JSON.parse(probeEl.value || "{}")); }
+        catch { return cloneProbe(SEEDS.ghosted()); }
+      }
+
+      function paintGlass(result) {
+        const hold = result.muted;
+        glassEl.classList.toggle("hold-glass", hold);
+        ghostLineEl.classList.toggle("keyed", hold);
+        ghostTextEl.textContent = hold ? "" : (result.facts.ghostText || DEMO_SUGGESTION);
+        document.getElementById("scrape").innerHTML = hold
+          ? "<b>tmux capture-pane -p</b>❯<br />keyed-only · suggestion muted"
+          : "<b>tmux capture-pane -p</b>❯ Yes, go ahead<br />styling stripped · byte-identical";
+      }
+
+      function pathCopy() {
+        const n = FAIL_PATH.filter((k) => filed.has(k)).length;
+        const unlocked = filed.has("muted");
+        return n + "/11 panes filed" + (unlocked
+          ? " · idle word <strong>muted</strong> unlocked"
+          : " · idle word locked until the honest pane is stamped");
+      }
+
+      function render(result, stampOk) {
+        const hold = result.muted;
+        const fail = result.alarm;
+        verdictEl.textContent = stampOk === false ? "binds" : result.verdict;
+        verdictEl.className = "verdict-face " + (stampOk === false ? "fail" : hold ? "hold" : "fail");
+        feedEl.textContent = stampOk === false
+          ? "● Wrong stamp. The glass binds. A fetch on the glass is not a keyed reply. Score the pane."
+          : result.feed;
+        reasonsEl.innerHTML = (stampOk === false
+          ? ["wrong stamp", "the fetch does not turn", "idle word stays locked"]
+          : result.reasons
+        ).map((row) => `<li>${row}</li>`).join("");
+        ledger.unshift({
+          at: new Date().toISOString(),
+          verdict: stampOk === false ? "binds" : result.verdict,
+          muted: result.muted,
+        });
+        ledgerEl.innerHTML = ledger.slice(0, 8).map((row) =>
+          `${row.at} · ${row.verdict} · muted=${row.muted}`
+        ).join("<br>");
+        const chipKind = stampOk === false || fail ? "fail" : hold ? "hold" : "contrast";
+        chipsEl.innerHTML = [
+          ["#90755", fail || stampOk === false ? "fail" : hold ? "hold" : "contrast"],
+          [stampOk === false ? "binds" : result.verdict, chipKind],
+          [hold ? "pane muted" : "fetch on the glass", hold ? "hold" : "fail"],
+          ["idle " + IDLE_WORD, filed.has("muted") ? "hold" : "contrast"],
+        ].map(([label, klass]) => {
+          const current = (klass === "fail" || klass === "hold") && label === (stampOk === false ? "binds" : result.verdict);
+          return `<span class="chip ${klass}"${current ? ' aria-current="true"' : ""}>${label}</span>`;
+        }).join("");
+        pathEl.innerHTML = pathCopy();
+        paintGlass(result);
+        document.querySelectorAll("#strays button, #walk button").forEach((btn) => {
+          btn.classList.toggle("filed", filed.has(btn.dataset.seed));
+          btn.setAttribute("aria-pressed", String(btn.dataset.seed === result.verdict || (result.muted && btn.dataset.seed === "muted")));
+        });
+      }
+
+      function applySeed(name) {
+        const probe = SEEDS[name]();
+        writeProbe(probe);
+        render(score(probe));
+      }
+
+      function stamp(kind) {
+        const probe = readProbe();
+        const result = score(probe);
+        if (kind !== result.verdict) {
+          render(result, false);
+          return;
+        }
+        if (kind === "muted") {
+          if (!result.muted) {
+            render(result, false);
+            return;
+          }
+          filed.add("muted");
+        } else if (FAIL_PATH.includes(kind)) {
+          filed.add(kind);
+        }
+        render(result, true);
+      }
+
+      seedOrder.forEach(([key, label]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "stray";
+        btn.dataset.seed = key;
+        btn.innerHTML = `${label}<small>walk</small>`;
+        btn.addEventListener("click", () => applySeed(key));
+        straysEl.appendChild(btn);
+        const stone = document.createElement("button");
+        stone.type = "button";
+        stone.className = "stone";
+        stone.dataset.seed = key;
+        stone.textContent = key;
+        stone.addEventListener("click", () => applySeed(key));
+        walkEl.appendChild(stone);
+      });
+
+      stampOrder.forEach((key) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "stamp";
+        btn.textContent = key;
+        btn.addEventListener("click", () => stamp(key));
+        stampsEl.appendChild(btn);
+      });
+
+      document.getElementById("score-btn").addEventListener("click", () => {
+        render(score(readProbe()));
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => {
+        const current = score(readProbe());
+        if (current.muted) {
+          filed.add("muted");
+          render(current, true);
+          return;
+        }
+        render(current, false);
+      });
+      document.getElementById("restore-btn").addEventListener("click", () => {
+        applySeed("ghosted");
+      });
+      document.getElementById("ghost-line").addEventListener("click", () => applySeed("ghosted"));
+      document.getElementById("scrape").addEventListener("click", () => applySeed("scraped"));
+      document.getElementById("source-chip").addEventListener("click", () => applySeed("suggestion-source"));
+      document.getElementById("marked-ticket").addEventListener("click", () => applySeed("muted"));
+      document.getElementById("fetch-shade").addEventListener("click", () => applySeed("fabricated"));
+
+      applySeed("ghosted");
+    </script>
+  </body>
+</html>
