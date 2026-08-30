@@ -25,6 +25,7 @@ NOT **Cote** — resume hub identity split.
 NOT **Ullage** — silent context drop / prefix freeze.
 NOT **Voucher** ([#90807](https://github.com/anthropics/claude-code/issues/90807)) — nested subagent fabrication.
 NOT **Almanac** ([#90804](https://github.com/anthropics/claude-code/issues/90804)) — one-shot Loop ghost.
+NOT **Stile** ([#90767](https://github.com/anthropics/claude-code/issues/90767)) — weaker; Bollard/Cote-adjacent. Stay on Scion.
 
 Different UI: night orchard / grafting shed / wet bark / cambium green / grafting tape / wax / lantern / rootstock vs scion / annual rings. Fraunces + Figtree + Spline Sans Mono. NOT Almanac cream/vermilion, NOT Voucher cashier, NOT Kindling hearth, NOT Deadband control-room.
 
@@ -60,10 +61,12 @@ Local fingerprints: `data/parent.json`, `data/child.json`, `data/parent.jsonl`, 
 1. Live fetch `https://api.github.com/repos/anthropics/claude-code/issues/90815` (title + state). Unauthenticated. See `.env.example`.
 2. Local seed json/jsonl under `data/`.
 3. Hook CLI: `node projects/scion/hook/index.mjs`.
+4. Opposite pole card + fetch for [#85281](https://github.com/anthropics/claude-code/issues/85281) (has-banner, no-bridge). Cite only — not a hollow seed.
 
 ## Sources
 
 - [anthropics/claude-code#90815](https://github.com/anthropics/claude-code/issues/90815) OPEN
+- [anthropics/claude-code#85281](https://github.com/anthropics/claude-code/issues/85281) OPEN — opposite pole: VS Code RC banner with no `bridgeSessionId` (has-banner, no-bridge) vs Scion has-bridge / no-lineage / lastSequenceNum 0
 - [anthropics/claude-code#78563](https://github.com/anthropics/claude-code/issues/78563) OPEN — Desktop forks never enable Remote Control
 - [anthropics/claude-code#90791](https://github.com/anthropics/claude-code/issues/90791) OPEN — VS Code remote session from another machine
 - [anthropics/claude-code#85875](https://github.com/anthropics/claude-code/issues/85875) OPEN — subsequent forks silently empty

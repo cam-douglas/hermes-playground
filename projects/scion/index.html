@@ -297,6 +297,32 @@
       }
       .issue .state.closed { border-color: var(--fail); color: var(--fail); }
       .reasons { margin: 8px 0 0; padding-left: 18px; color: var(--quiet); font-size: 14px; }
+      .poles {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      @media (max-width: 860px) { .poles { grid-template-columns: 1fr; } }
+      .pole {
+        background: #120e0b;
+        border: 1px solid rgba(230, 213, 176, 0.14);
+        padding: 14px;
+        cursor: pointer;
+      }
+      .pole[aria-pressed="true"] { border-color: var(--cambium); }
+      .pole.opposite[aria-pressed="true"] { border-color: var(--wax); }
+      .pole h3 {
+        margin: 6px 0 8px;
+        font-family: var(--display);
+        font-size: 22px;
+      }
+      .pole p { margin: 0 0 8px; color: var(--quiet); font-size: 14px; }
+      .pole button {
+        border: 1px solid rgba(230, 213, 176, 0.22);
+        background: #1a140f;
+        padding: 6px 10px;
+      }
       .sources { margin-top: 16px; }
       .sources ul { margin: 0; padding-left: 18px; color: var(--quiet); }
       .sources li { margin: 6px 0; }
@@ -360,6 +386,7 @@
         <aside class="panel" aria-label="Issue and ticket">
           <h2>Live cambium</h2>
           <p class="issue" id="issue-card">Fetching anthropics/claude-code#90815…</p>
+          <p class="issue" id="pole-card">Fetching opposite pole #85281…</p>
           <p class="meta" id="local-seeds">Local seeds: parent 9363037/3942 · child 40676/38 · lastSequenceNum 0 · +2s</p>
           <h2>Graft ticket</h2>
           <div class="seeds" role="group" aria-label="Seed switches">
@@ -376,10 +403,35 @@
         </aside>
       </div>
 
+      <section class="panel poles" aria-label="Opposite poles">
+        <article class="pole" id="pole-scion" role="button" tabindex="0" aria-pressed="true">
+          <p class="mark">this graft · #90815</p>
+          <h3>Has-bridge, no-lineage</h3>
+          <p>Healthy RC banner and a minted <code>bridgeSessionId</code> / <code>bridge-session</code> header. No <code>forkedFromSessionId</code>. <code>lastSequenceNum: 0</code>. Rings never took.</p>
+          <div class="chips">
+            <span class="chip on">has-bridge</span>
+            <span class="chip on">no-lineage</span>
+            <span class="chip on">lastSequenceNum-0</span>
+          </div>
+        </article>
+        <article class="pole opposite" id="pole-85281" role="button" tabindex="0" aria-pressed="false">
+          <p class="mark">opposite pole · #85281</p>
+          <h3>Has-banner, no-bridge</h3>
+          <p>VS Code panel shows “Remote Control is active” after <code>/remote-control</code>, but never writes <code>bridgeSessionId</code>. Outbound <code>from="unknown"</code>; peers cannot reply. CLI on the same machine mints one immediately.</p>
+          <div class="chips">
+            <span class="chip on">has-banner</span>
+            <span class="chip on">no-bridge</span>
+            <span class="chip">from-unknown</span>
+          </div>
+          <p class="meta" id="pole-quote">Cite only. Not a hollow seed. Not Stile / #90767.</p>
+        </article>
+      </section>
+
       <section class="panel sources">
         <h2>Sources</h2>
         <ul>
           <li><a href="https://github.com/anthropics/claude-code/issues/90815">#90815</a> OPEN — VS Code extension: forking while Remote Control is on produces a child with empty history. Author alonsorobots. 2026-08-30T19:34:40Z. Extension 2.1.251. Child jsonl first record type bridge-session lastSequenceNum 0; 38 recs / 40 KB vs parent 3942 recs / 9.3 MB.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/85281">#85281</a> OPEN — opposite pole: VS Code RC banner with NO <code>bridgeSessionId</code> (has-banner, no-bridge). Scion is has-bridge, no-lineage, lastSequenceNum 0. Author jmchambers. Filed 2026-08-09T15:52:45Z. Labels: area:ide. Claude Code 2.1.226.</li>
           <li><a href="https://github.com/anthropics/claude-code/issues/78563">#78563</a> OPEN — Desktop forks never enable Remote Control. Mirror: fork wins, bridge never called; here bridge wins, fork never seeds. Cross-tab: 0 of 4 forks had bridgeSessionIds; 97 of ~100 non-forks did.</li>
           <li><a href="https://github.com/anthropics/claude-code/issues/90791">#90791</a> OPEN — VS Code opening a remote session from another machine: “Couldn't load earlier messages”; each send silently creates a NEW local session whose jsonl begins with its own bridge-session lastSequenceNum 0.</li>
           <li><a href="https://github.com/anthropics/claude-code/issues/85875">#85875</a> OPEN — after the first successful fork, subsequent forks silently create empty sessions (jsonl only ai-title/agent-name) while state.json still has forkParentSessionId. Spawn without --resume when sessionFile is null.</li>
@@ -649,6 +701,19 @@
 
       applySeed("hollow");
 
+      function pressPole(id) {
+        document.getElementById("pole-scion").setAttribute("aria-pressed", String(id === "pole-scion"));
+        document.getElementById("pole-85281").setAttribute("aria-pressed", String(id === "pole-85281"));
+      }
+      document.getElementById("pole-scion").addEventListener("click", () => pressPole("pole-scion"));
+      document.getElementById("pole-85281").addEventListener("click", () => pressPole("pole-85281"));
+      document.getElementById("pole-scion").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pressPole("pole-scion"); }
+      });
+      document.getElementById("pole-85281").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pressPole("pole-85281"); }
+      });
+
       fetch("https://api.github.com/repos/anthropics/claude-code/issues/90815")
         .then((res) => {
           if (!res.ok) throw new Error("GitHub " + res.status);
@@ -668,6 +733,35 @@
           document.getElementById("issue-card").textContent =
             "GitHub unauthenticated fetch did not land. #90815 remains OPEN in the local seed. See .env.example.";
         });
+
+      fetch("https://api.github.com/repos/anthropics/claude-code/issues/85281")
+        .then((res) => {
+          if (!res.ok) throw new Error("GitHub " + res.status);
+          return res.json();
+        })
+        .then((issue) => {
+          const card = document.getElementById("pole-card");
+          const state = document.createElement("span");
+          state.className = "state" + (issue.state === "closed" ? " closed" : "");
+          state.textContent = issue.state || "unknown";
+          const link = document.createElement("a");
+          link.href = issue.html_url || "https://github.com/anthropics/claude-code/issues/85281";
+          link.textContent = "pole #" + issue.number + " " + (issue.title || "");
+          card.replaceChildren(state, document.createTextNode(" opposite "), link);
+        })
+        .catch(() => {
+          document.getElementById("pole-card").textContent =
+            "Opposite pole #85281: has-banner, no-bridge. Local cite if GitHub fetch misses.";
+        });
+
+      fetch("./data/85281.json")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((pole) => {
+          if (!pole) return;
+          document.getElementById("pole-quote").textContent =
+            pole.note || "Cite only. Has-banner, no-bridge. Not a hollow seed.";
+        })
+        .catch(() => {});
 
       Promise.all([
         fetch("./data/parent.json").then((r) => (r.ok ? r.json() : null)).catch(() => null),

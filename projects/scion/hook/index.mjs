@@ -29,6 +29,9 @@
  * NOT Ullage (silent context drop).
  * NOT Voucher (nested subagent fabrication).
  * NOT Almanac (one-shot Loop ghost).
+ * Opposite pole #85281: has-banner, no-bridge
+ * (cite; do not score as hollow).
+ * Not Stile / #90767.
  */
 import { readFileSync } from "node:fs";
 import { stdin } from "node:process";
