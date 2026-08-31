@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
  * Gnomon — observatory / sundial-terrace classifier.
- * A shared mtime is not a hold. Score the gnomon or admit cast.
+ * A shared mtime is not a hold. Score the gnomon or admit pointed.
  *
  *   echo '{"sharedMtime":true,"timestampFreeTail":true}' | node gnomon.mjs
  *   node gnomon.mjs ticket.json
  *
- * Idle word is cast (shadow cast matches last timestamped event;
- * healthy dating). Seeded state is eclipsed / #90954.
- * NEVER idle as "gnomon", "eclipsed", "mtime", "transcript",
- * "bulk", "rewrite", "shared", "spoiled", "banked", "trammel",
- * "hunting", "traced", "soundpost", "flong", "bulla".
+ * Idle word is pointed (mtime tracks last timestamped event;
+ * true shadow). Seeded state is collapsed / #90954.
+ * NEVER idle as "gnomon", "collapsed", "mtime", "transcript",
+ * "bulk", "cast", "eclipsed", "spoiled", "banked", "rewrite",
+ * "shared", "trammel", "hunting", "traced".
  *
  * Primary #90954: closed session transcripts under
  * ~/.claude/projects/<project>/ are observed with a shared
@@ -25,10 +25,11 @@
  *
  * Contrast: preserve mtime on closed transcripts OR require
  * timestamp on appended records.
- * Same-class cite (different mechanism, same family of
- * session-file integrity): #90932 display stitch; #90931
- * Desktop fork ENOTDIR on symlink project dir; #90955 version
- * signal skew (NOT mtime).
+ * Same-class cite (mtime date-signal family, different
+ * symptoms): #87900 VS Code startup indexing rewrites session
+ * mtimes; #81803 session history times scramble after extension
+ * update; #72746 Agent View last-changed reflects file mtime;
+ * #68929 session list sorts by mtime, AI-title backfill clobbers.
  * NOT Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy,
  * Moviola, Clepsydra, Palimpsest, Almanac, Datum, Tally,
  * Cenotaph.
@@ -39,29 +40,31 @@ import { stdin } from "node:process";
 import { pathToFileURL } from "node:url";
 
 export const VERDICTS = Object.freeze([
-  "eclipsed",
-  "cast",
-  "shared-mtime",
-  "bulk-rewrite",
-  "timestamp-free",
-  "last-prompt",
-  "mode-tail",
+  "collapsed",
+  "pointed",
+  "bulk-mtime",
+  "shared-second",
   "closed-transcript",
-  "date-skew",
+  "date-signal",
+  "untimed-tail",
+  "last-prompt",
   "silent-wrong",
-  "retention-trap",
-  "ls-lt-lie",
+  "retention-lie",
+  "cluster-114",
+  "mtime-vs-content",
+  "archive-clock",
+  "no-timestamp",
 ]);
-export const IDLE_WORD = "cast";
-export const SEEDED_WORD = "eclipsed";
-export const HOLD_VERDICTS = Object.freeze(["cast"]);
+export const IDLE_WORD = "pointed";
+export const SEEDED_WORD = "collapsed";
+export const HOLD_VERDICTS = Object.freeze(["pointed"]);
 export const ALARM_VERDICTS = Object.freeze(
-  VERDICTS.filter((name) => name !== "cast"),
+  VERDICTS.filter((name) => name !== "pointed"),
 );
 export const CHIPS = Object.freeze([...VERDICTS]);
 export const FEATURED_ISSUE = 90954;
 export const PRIMARY_ISSUES = Object.freeze([90954]);
-export const SAME_CLASS = Object.freeze([90932, 90931, 90955]);
+export const SAME_CLASS = Object.freeze([87900, 81803, 72746, 68929]);
 export const CONTRAST_NOTE =
   "preserve mtime on closed transcripts OR require timestamp on appended records";
 export const NOT_PRODUCTS = Object.freeze([
@@ -128,25 +131,24 @@ export const EXAMPLES = Object.freeze([
 export const HYPOTHESIS_NOTE =
   "The bulk-append-of-timestamp-free-metadata trigger is a labeled observation, not a proven cause.";
 export const HUB_LINE =
-  "20:50 gnomon: a shared mtime is not a hold. Score the gnomon or admit cast.";
+  "20:50 gnomon: a shared mtime is not a hold. Score the gnomon or admit pointed.";
 export const MARK = "20:50 / hermes catalog #94 / #90954";
 export const PHRASE = "a shared mtime is not a hold";
 export const FORBIDDEN_IDLE = Object.freeze([
   "gnomon",
-  "eclipsed",
+  "collapsed",
   "mtime",
   "transcript",
   "bulk",
-  "rewrite",
-  "shared",
+  "cast",
+  "eclipsed",
   "spoiled",
   "banked",
+  "rewrite",
+  "shared",
   "trammel",
   "hunting",
   "traced",
-  "soundpost",
-  "flong",
-  "bulla",
 ]);
 
 function firstText(...values) {
@@ -196,10 +198,10 @@ function blankTicket() {
 }
 
 export function emptyTicket() {
-  return seedCast();
+  return seedPointed();
 }
 
-export function seedCast() {
+export function seedPointed() {
   return {
     seed: IDLE_WORD,
     issue: null,
@@ -218,11 +220,11 @@ export function seedCast() {
     lastEventDaysAgo: 0,
     healthyDating: true,
     outputText:
-      "mtime matches last timestamped event; shadow cast matches last event; healthy dating",
+      "mtime tracks last timestamped event; true shadow; healthy dating",
   };
 }
 
-export function seedEclipsed() {
+export function seedCollapsed() {
   return {
     seed: SEEDED_WORD,
     issue: FEATURED_ISSUE,
@@ -288,6 +290,7 @@ export function cloneTicket(input) {
     sharedMtime: firstBool(
       nested.sharedMtime,
       nested.shared_mtime,
+      nested.sharedSecond,
       src.sharedMtime,
     ),
     clusterCount: firstNum(
@@ -299,6 +302,8 @@ export function cloneTicket(input) {
       nested.timestampFreeTail,
       nested.timestamp_free_tail,
       nested.timestampFree,
+      nested.noTimestamp,
+      nested.untimedTail,
       src.timestampFreeTail,
     ),
     lastPromptTail: firstBool(
@@ -312,7 +317,13 @@ export function cloneTicket(input) {
       nested.closed_transcript,
       src.closedTranscript,
     ),
-    dateSkew: firstBool(nested.dateSkew, nested.date_skew, src.dateSkew),
+    dateSkew: firstBool(
+      nested.dateSkew,
+      nested.date_skew,
+      nested.dateSignal,
+      nested.mtimeVsContent,
+      src.dateSkew,
+    ),
     silentWrong: firstBool(
       nested.silentWrong,
       nested.silent_wrong,
@@ -321,9 +332,15 @@ export function cloneTicket(input) {
     retentionTrap: firstBool(
       nested.retentionTrap,
       nested.retention_trap,
+      nested.retentionLie,
       src.retentionTrap,
     ),
-    lsLtLie: firstBool(nested.lsLtLie, nested.ls_lt_lie, src.lsLtLie),
+    lsLtLie: firstBool(
+      nested.lsLtLie,
+      nested.ls_lt_lie,
+      nested.archiveClock,
+      src.lsLtLie,
+    ),
     mtimePreserved: firstBool(
       nested.mtimePreserved,
       nested.mtime_preserved,
@@ -385,13 +402,13 @@ export function normalize(input) {
     input.healthyDating == null &&
     input.mtimePreserved == null;
   if ((issue === FEATURED_ISSUE || raw.issue === FEATURED_ISSUE) && missingCore) {
-    return { ...seedEclipsed(), ...cloned, ...raw };
+    return { ...seedCollapsed(), ...cloned, ...raw };
   }
   if (cloned.seed === SEEDED_WORD && missingCore) {
-    return { ...seedEclipsed(), ...cloned, ...raw };
+    return { ...seedCollapsed(), ...cloned, ...raw };
   }
   if (cloned.seed === IDLE_WORD && missingCore) {
-    return { ...seedCast(), ...cloned, ...raw };
+    return { ...seedPointed(), ...cloned, ...raw };
   }
   return { ...blankTicket(), ...cloned, ...raw };
 }
@@ -403,38 +420,49 @@ function textOf(ticket) {
 export function flagsOf(ticket) {
   const row = cloneTicket(ticket);
   const text = textOf(row);
-  const sharedMtime =
+  const sharedSecond =
     row.sharedMtime === true ||
-    /114 files|identical (filesystem )?mtime|share (one |a )?(identical )?mtime|same single second|shared identical mtime/i.test(
+    /114 files|identical (filesystem )?mtime|share (one |a )?(identical )?mtime|same single second|shared identical mtime|shared-second/i.test(
       text,
     );
-  const cluster =
+  const cluster114 =
     (row.clusterCount != null && row.clusterCount >= CLUSTER_COUNT) ||
-    /114 files/i.test(text);
-  const timestampFree =
+    /114 files|cluster-114|cluster of 114/i.test(text);
+  const noTimestamp =
     row.timestampFreeTail === true ||
-    /no `?timestamp`? field|timestamp-free|carry (NO|no) timestamp/i.test(text);
+    /no `?timestamp`? field|no-timestamp|carry (NO|no) timestamp/i.test(text);
   const lastPrompt =
     row.lastPromptTail === true || /last-prompt/i.test(text);
   const modeTail = row.modeTail === true || /mode ×21|mode records|tail.*\bmode\b/i.test(text);
+  const untimedTail =
+    noTimestamp ||
+    modeTail ||
+    /untimed-tail|untimed (last-prompt|mode|tail)/i.test(text);
   const closed =
     row.closedTranscript === true ||
     /already-closed|closed (session )?transcripts?/i.test(text);
-  const dateSkew =
+  const dateSignal =
     row.dateSkew === true ||
     (row.lastEventDaysAgo != null && row.lastEventDaysAgo >= MIN_SKEW_DAYS) ||
-    /median 17 days|mtime minus|mtime-minus-last-event|days after their last real event/i.test(
+    /median 17 days|mtime minus|mtime-minus-last-event|days after their last real event|date-signal/i.test(
+      text,
+    );
+  const mtimeVsContent =
+    dateSignal ||
+    /mtime-vs-content|mtime vs (last event|content)|content's last (real |timestamped )?event/i.test(
       text,
     );
   const silentWrong =
     row.silentWrong === true ||
     /silent-wrong|nothing errors|wrong answer looks/i.test(text);
-  const retentionTrap =
+  const retentionLie =
     row.retentionTrap === true ||
-    /retention policy|age out recent|preserve stale sessions/i.test(text);
-  const lsLtLie =
+    /retention policy|age out recent|preserve stale sessions|retention-lie/i.test(
+      text,
+    );
+  const archiveClock =
     row.lsLtLie === true ||
-    /ls -lt|burst of 114 sessions/i.test(text);
+    /ls -lt|burst of 114 sessions|archive-clock/i.test(text);
   const mtimePreserved =
     row.mtimePreserved === true ||
     /preserve(s|d)? (its )?mtime|writes to an already-closed transcript preserve/i.test(
@@ -447,82 +475,84 @@ export function flagsOf(ticket) {
     );
   const healthyDating =
     row.healthyDating === true ||
-    /mtime matches last timestamped event|shadow cast matches last event|healthy dating/i.test(
-      text,
-    );
-  const bulkRewrite =
-    (sharedMtime && closed) ||
-    /bulk (operation|rewrite|append)|appended to in one bulk/i.test(text);
-  const eclipsed =
-    sharedMtime &&
-    timestampFree &&
+    /mtime tracks last timestamped event|true shadow|healthy dating/i.test(text);
+  const bulkMtime =
+    (sharedSecond && closed) ||
+    /bulk (operation|rewrite|append|mtime)|appended to in one bulk/i.test(text);
+  const collapsed =
+    sharedSecond &&
+    untimedTail &&
     closed &&
-    dateSkew &&
+    dateSignal &&
     !mtimePreserved &&
     !timestampRequired &&
     !healthyDating;
-  const cast =
+  const pointed =
     (healthyDating || mtimePreserved || timestampRequired) &&
-    !sharedMtime &&
-    !dateSkew &&
-    !eclipsed;
+    !sharedSecond &&
+    !dateSignal &&
+    !collapsed;
   return {
-    sharedMtime,
-    cluster,
-    timestampFree,
+    sharedSecond,
+    cluster114,
+    noTimestamp,
     lastPrompt,
     modeTail,
+    untimedTail,
     closed,
-    dateSkew,
+    dateSignal,
+    mtimeVsContent,
     silentWrong,
-    retentionTrap,
-    lsLtLie,
+    retentionLie,
+    archiveClock,
     mtimePreserved,
     timestampRequired,
     healthyDating,
-    bulkRewrite,
-    eclipsed,
-    cast,
+    bulkMtime,
+    collapsed,
+    pointed,
   };
 }
 
 export function chipsOf(ticket) {
   const flags = flagsOf(ticket);
   const chips = [];
-  if (flags.eclipsed) chips.push("eclipsed");
-  if (flags.cast) chips.push("cast");
-  if (flags.sharedMtime && !flags.cast) chips.push("shared-mtime");
-  if (flags.bulkRewrite && !flags.cast) chips.push("bulk-rewrite");
-  if (flags.timestampFree && !flags.cast) chips.push("timestamp-free");
-  if (flags.lastPrompt && !flags.cast) chips.push("last-prompt");
-  if (flags.modeTail && !flags.cast) chips.push("mode-tail");
-  if (flags.closed && !flags.cast) chips.push("closed-transcript");
-  if (flags.dateSkew && !flags.cast) chips.push("date-skew");
-  if (flags.silentWrong && !flags.cast) chips.push("silent-wrong");
-  if (flags.retentionTrap && !flags.cast) chips.push("retention-trap");
-  if (flags.lsLtLie && !flags.cast) chips.push("ls-lt-lie");
+  if (flags.collapsed) chips.push("collapsed");
+  if (flags.pointed) chips.push("pointed");
+  if (flags.bulkMtime && !flags.pointed) chips.push("bulk-mtime");
+  if (flags.sharedSecond && !flags.pointed) chips.push("shared-second");
+  if (flags.closed && !flags.pointed) chips.push("closed-transcript");
+  if (flags.dateSignal && !flags.pointed) chips.push("date-signal");
+  if (flags.untimedTail && !flags.pointed) chips.push("untimed-tail");
+  if (flags.lastPrompt && !flags.pointed) chips.push("last-prompt");
+  if (flags.silentWrong && !flags.pointed) chips.push("silent-wrong");
+  if (flags.retentionLie && !flags.pointed) chips.push("retention-lie");
+  if (flags.cluster114 && !flags.pointed) chips.push("cluster-114");
+  if (flags.mtimeVsContent && !flags.pointed) chips.push("mtime-vs-content");
+  if (flags.archiveClock && !flags.pointed) chips.push("archive-clock");
+  if (flags.noTimestamp && !flags.pointed) chips.push("no-timestamp");
   return [...new Set(chips)];
 }
 
 function reasonsOf(ticket, flags, verdict) {
   const reasons = [];
-  if (verdict === "cast") {
+  if (verdict === "pointed") {
     reasons.push(
-      "mtime matches last timestamped event; shadow cast matches last event; healthy dating",
+      "mtime tracks last timestamped event; true shadow; healthy dating",
     );
-    reasons.push("hold: this is a cast shadow, not an eclipsed dial");
+    reasons.push("hold: this is a pointed shadow, not a collapsed dial");
   }
-  if (flags.sharedMtime) {
+  if (flags.sharedSecond) {
     reasons.push(
       "114 files share one identical filesystem mtime — epoch 1787422837 (2026-08-22T21:20:37 local)",
     );
   }
-  if (flags.bulkRewrite) {
+  if (flags.bulkMtime) {
     reasons.push(
       "many long-closed transcripts were appended to in one bulk operation (observation, not a proven trigger)",
     );
   }
-  if (flags.timestampFree) {
+  if (flags.noTimestamp || flags.untimedTail) {
     reasons.push(
       "last-prompt and mode records carry no timestamp field — the write leaves no trace in content",
     );
@@ -530,13 +560,10 @@ function reasonsOf(ticket, flags, verdict) {
   if (flags.lastPrompt) {
     reasons.push("tail record type last-prompt ×76 of the 114-file cluster");
   }
-  if (flags.modeTail) {
-    reasons.push("tail record type mode ×21 of the 114-file cluster");
-  }
   if (flags.closed) {
     reasons.push("writes land on already-closed session transcripts");
   }
-  if (flags.dateSkew) {
+  if (flags.dateSignal || flags.mtimeVsContent) {
     reasons.push(
       "mtime minus last timestamped record: min 3 days, median 17 days, max 47 days; 93 of 114 more than 7 days after last real event",
     );
@@ -546,20 +573,23 @@ function reasonsOf(ticket, flags, verdict) {
       "silent-wrong-output: nothing errors, and the wrong answer looks exactly like the right one",
     );
   }
-  if (flags.retentionTrap) {
+  if (flags.retentionLie) {
     reasons.push(
       "a retention policy keyed on mtime will preserve stale sessions and can age out recent ones",
     );
   }
-  if (flags.lsLtLie) {
+  if (flags.archiveClock) {
     reasons.push(
       "ls -lt reports a burst of 114 sessions on a day when no work happened, and hides the days work actually did happen",
     );
   }
+  if (flags.cluster114) {
+    reasons.push("largest cluster is 114 files at one identical second");
+  }
   if (flags.mtimePreserved || flags.timestampRequired) {
     reasons.push(CONTRAST_NOTE);
   }
-  if (flags.eclipsed) {
+  if (flags.collapsed) {
     reasons.push(HYPOTHESIS_NOTE);
   }
   return reasons;
@@ -572,24 +602,26 @@ function canonicalSeed(seed) {
 
 function pickVerdict(seed, flags, chips) {
   const named = canonicalSeed(seed);
-  if (named === IDLE_WORD && flags.cast) return "cast";
-  if (named === SEEDED_WORD || flags.eclipsed) return "eclipsed";
+  if (named === IDLE_WORD && flags.pointed) return "pointed";
+  if (named === SEEDED_WORD || flags.collapsed) return "collapsed";
   if (VERDICTS.includes(named) && chips.includes(named) && named !== IDLE_WORD) {
     return named;
   }
-  if (flags.eclipsed) return "eclipsed";
-  if (flags.cast) return "cast";
-  if (flags.lsLtLie) return "ls-lt-lie";
-  if (flags.retentionTrap) return "retention-trap";
+  if (flags.collapsed) return "collapsed";
+  if (flags.pointed) return "pointed";
+  if (flags.archiveClock) return "archive-clock";
+  if (flags.retentionLie) return "retention-lie";
   if (flags.silentWrong) return "silent-wrong";
-  if (flags.dateSkew) return "date-skew";
+  if (flags.mtimeVsContent) return "mtime-vs-content";
+  if (flags.dateSignal) return "date-signal";
   if (flags.lastPrompt) return "last-prompt";
-  if (flags.modeTail) return "mode-tail";
-  if (flags.timestampFree) return "timestamp-free";
-  if (flags.bulkRewrite) return "bulk-rewrite";
-  if (flags.sharedMtime) return "shared-mtime";
+  if (flags.noTimestamp) return "no-timestamp";
+  if (flags.untimedTail) return "untimed-tail";
+  if (flags.bulkMtime) return "bulk-mtime";
+  if (flags.cluster114) return "cluster-114";
+  if (flags.sharedSecond) return "shared-second";
   if (flags.closed) return "closed-transcript";
-  return "cast";
+  return "pointed";
 }
 
 export function analyze(input) {
@@ -598,37 +630,37 @@ export function analyze(input) {
   const chips = chipsOf(ticket);
   const seed = String(ticket.seed || "").toLowerCase();
   const verdict = pickVerdict(seed, flags, chips);
-  const hold = verdict === "cast";
+  const hold = verdict === "pointed";
   return {
     verdict,
     chips,
     reasons: reasonsOf(ticket, flags, verdict),
-    cast: verdict === "cast" || flags.cast,
-    eclipsed: verdict === "eclipsed" || flags.eclipsed,
+    pointed: verdict === "pointed" || flags.pointed,
+    collapsed: verdict === "collapsed" || flags.collapsed,
     hold,
     alarm: !hold,
     idleWord: IDLE_WORD,
     seededWord: SEEDED_WORD,
     flags,
     contrast: {
-      dial: flags.sharedMtime
-        ? "114 files share one identical mtime — the gnomon casts one false noon"
+      dial: flags.sharedSecond
+        ? "114 files share one identical mtime — one false noon"
         : "mtimes spread across the days work occurred",
-      shadow: flags.dateSkew
+      shadow: flags.dateSignal
         ? "mtime minus last timestamped event: median 17 days"
         : flags.healthyDating || flags.mtimePreserved
-          ? "shadow cast matches last timestamped event"
+          ? "true shadow tracks last timestamped event"
           : "dating not yet scored",
-      meridian: flags.timestampFree
+      meridian: flags.noTimestamp || flags.untimedTail
         ? "appended last-prompt / mode carry no timestamp"
         : flags.timestampRequired
           ? "appended records carry a timestamp"
           : "content dating is intact",
-      note: flags.eclipsed
-        ? "A shared mtime is not a hold. Score the gnomon or admit cast. Bulk-append of timestamp-free metadata is a labeled observation, not a proven trigger."
+      note: flags.collapsed
+        ? "A shared mtime is not a hold. Score the gnomon or admit pointed. Bulk-append of timestamp-free metadata is a labeled observation, not a proven trigger."
         : flags.mtimePreserved || flags.timestampRequired
           ? CONTRAST_NOTE
-          : "Cast: mtime matches last timestamped event; the shadow is true.",
+          : "Pointed: mtime tracks last timestamped event; the shadow is true.",
     },
     issue: ticket.issue ?? null,
     mark: MARK,
@@ -650,12 +682,12 @@ export function decide(input) {
 
 export function decideSeed(name) {
   if (name === SEEDED_WORD || name === 90954 || name === "90954") {
-    return analyze(seedEclipsed());
+    return analyze(seedCollapsed());
   }
-  if (name === IDLE_WORD || name === "cast") {
-    return analyze(seedCast());
+  if (name === IDLE_WORD || name === "pointed") {
+    return analyze(seedPointed());
   }
-  return analyze(seedCast());
+  return analyze(seedPointed());
 }
 
 export function handle(input) {
@@ -663,9 +695,9 @@ export function handle(input) {
   return {
     ...result,
     hookSpecificOutput: {
-      additionalContext: result.eclipsed
-        ? `eclipsed gnomon #${FEATURED_ISSUE}: 114 closed transcripts share mtime 1787422837; last-prompt and mode carry no timestamp; median skew 17 days. ${HYPOTHESIS_NOTE}`
-        : `cast gnomon. Idle word ${IDLE_WORD}. mtime matches last timestamped event; shadow is true.`,
+      additionalContext: result.collapsed
+        ? `collapsed gnomon #${FEATURED_ISSUE}: 114 closed transcripts share mtime 1787422837; last-prompt and mode carry no timestamp; median skew 17 days. ${HYPOTHESIS_NOTE}`
+        : `pointed sundial. Idle word ${IDLE_WORD}. mtime tracks last timestamped event; the shadow is true.`,
     },
   };
 }

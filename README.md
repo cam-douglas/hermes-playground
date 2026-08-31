@@ -2,7 +2,7 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Gnomon](https://hermes-playground-green.vercel.app/gnomon/)** — observatory / sundial terrace. A shared mtime is not a hold. Score the gnomon or admit cast. Folder: `projects/gnomon/`.
+**Featured: [Gnomon](https://hermes-playground-green.vercel.app/gnomon/)** — observatory / sundial terrace. A shared mtime is not a hold. Score the gnomon or admit pointed. Folder: `projects/gnomon/`.
 
 **Listed: [Spoil](https://hermes-playground-green.vercel.app/spoil/)** — mining spoil-tip / assay-bank desk. A spoiled index is not a hold. Score the spoil or admit banked. Folder: `projects/spoil/`. Still listed. Not featured.
 

@@ -48,8 +48,8 @@ import {
   handle,
   normalize,
   score,
-  seedCast,
-  seedEclipsed,
+  seedCollapsed,
+  seedPointed,
 } from "./gnomon.mjs";
 
 function readData(name) {
@@ -66,73 +66,77 @@ function hookPath() {
   return fileURLToPath(new URL("./gnomon.mjs", import.meta.url));
 }
 
-test("idle cast is a hold; shadow matches last event", () => {
-  const result = analyze(seedCast());
-  assert.equal(result.verdict, "cast");
-  assert.equal(result.idleWord, "cast");
+test("idle pointed is a hold; true shadow tracks last event", () => {
+  const result = analyze(seedPointed());
+  assert.equal(result.verdict, "pointed");
+  assert.equal(result.idleWord, "pointed");
   assert.equal(result.hold, true);
   assert.equal(result.alarm, false);
-  assert.equal(result.eclipsed, false);
-  assert.ok(result.chips.includes("cast"));
-  assert.ok(!result.chips.includes("eclipsed"));
-  assert.ok(!result.chips.includes("shared-mtime"));
+  assert.equal(result.collapsed, false);
+  assert.ok(result.chips.includes("pointed"));
+  assert.ok(!result.chips.includes("collapsed"));
+  assert.ok(!result.chips.includes("shared-second"));
   assert.doesNotMatch(
     result.idleWord,
-    /gnomon|eclipsed|mtime|transcript|bulk|rewrite|shared|spoiled|banked|trammel|hunting|traced|soundpost|flong|bulla/i,
+    /gnomon|collapsed|mtime|transcript|bulk|cast|eclipsed|spoiled|banked|rewrite|shared|trammel|hunting|traced/i,
   );
 });
 
-test("empty ticket and empty stdin classify cast", () => {
-  assert.equal(classify(emptyTicket()), "cast");
-  assert.equal(classify(""), "cast");
-  assert.equal(classify(null), "cast");
-  assert.equal(decideSeed("cast").verdict, "cast");
+test("empty ticket and empty stdin classify pointed", () => {
+  assert.equal(classify(emptyTicket()), "pointed");
+  assert.equal(classify(""), "pointed");
+  assert.equal(classify(null), "pointed");
+  assert.equal(decideSeed("pointed").verdict, "pointed");
 });
 
-test("seeded eclipsed #90954 is alarm with the shared-mtime chips", () => {
-  const result = analyze(seedEclipsed());
-  assert.equal(result.verdict, "eclipsed");
+test("seeded collapsed #90954 is alarm with the shared-second chips", () => {
+  const result = analyze(seedCollapsed());
+  assert.equal(result.verdict, "collapsed");
   assert.equal(result.alarm, true);
   assert.equal(result.hold, false);
-  assert.ok(result.chips.includes("eclipsed"));
-  assert.ok(result.chips.includes("shared-mtime"));
-  assert.ok(result.chips.includes("bulk-rewrite"));
-  assert.ok(result.chips.includes("timestamp-free"));
-  assert.ok(result.chips.includes("last-prompt"));
-  assert.ok(result.chips.includes("mode-tail"));
+  assert.ok(result.chips.includes("collapsed"));
+  assert.ok(result.chips.includes("bulk-mtime"));
+  assert.ok(result.chips.includes("shared-second"));
   assert.ok(result.chips.includes("closed-transcript"));
-  assert.ok(result.chips.includes("date-skew"));
+  assert.ok(result.chips.includes("date-signal"));
+  assert.ok(result.chips.includes("untimed-tail"));
+  assert.ok(result.chips.includes("last-prompt"));
   assert.ok(result.chips.includes("silent-wrong"));
-  assert.ok(result.chips.includes("retention-trap"));
-  assert.ok(result.chips.includes("ls-lt-lie"));
-  assert.ok(!result.chips.includes("cast"));
+  assert.ok(result.chips.includes("retention-lie"));
+  assert.ok(result.chips.includes("cluster-114"));
+  assert.ok(result.chips.includes("mtime-vs-content"));
+  assert.ok(result.chips.includes("archive-clock"));
+  assert.ok(result.chips.includes("no-timestamp"));
+  assert.ok(!result.chips.includes("pointed"));
   assert.match(result.contrast.dial, /114 files/);
   assert.match(result.contrast.shadow, /median 17 days/);
   assert.match(result.contrast.meridian, /no timestamp/);
   assert.match(result.contrast.note, /labeled observation/);
 });
 
-test("data fixtures classify cast vs eclipsed vs named chips", () => {
-  assert.equal(classify(readData("cast.json")), "cast");
-  assert.equal(classify(readData("eclipsed.json")), "eclipsed");
-  assert.equal(classify(readData("90954.json")), "eclipsed");
-  assert.equal(classify(readData("shared-mtime.json")), "shared-mtime");
-  assert.equal(classify(readData("bulk-rewrite.json")), "bulk-rewrite");
-  assert.equal(classify(readData("timestamp-free.json")), "timestamp-free");
-  assert.equal(classify(readData("last-prompt.json")), "last-prompt");
-  assert.equal(classify(readData("mode-tail.json")), "mode-tail");
+test("data fixtures classify pointed vs collapsed vs named chips", () => {
+  assert.equal(classify(readData("pointed.json")), "pointed");
+  assert.equal(classify(readData("collapsed.json")), "collapsed");
+  assert.equal(classify(readData("90954.json")), "collapsed");
+  assert.equal(classify(readData("bulk-mtime.json")), "bulk-mtime");
+  assert.equal(classify(readData("shared-second.json")), "shared-second");
   assert.equal(classify(readData("closed-transcript.json")), "closed-transcript");
-  assert.equal(classify(readData("date-skew.json")), "date-skew");
+  assert.equal(classify(readData("date-signal.json")), "date-signal");
+  assert.equal(classify(readData("untimed-tail.json")), "untimed-tail");
+  assert.equal(classify(readData("last-prompt.json")), "last-prompt");
   assert.equal(classify(readData("silent-wrong.json")), "silent-wrong");
-  assert.equal(classify(readData("retention-trap.json")), "retention-trap");
-  assert.equal(classify(readData("ls-lt-lie.json")), "ls-lt-lie");
+  assert.equal(classify(readData("retention-lie.json")), "retention-lie");
+  assert.equal(classify(readData("cluster-114.json")), "cluster-114");
+  assert.equal(classify(readData("mtime-vs-content.json")), "mtime-vs-content");
+  assert.equal(classify(readData("archive-clock.json")), "archive-clock");
+  assert.equal(classify(readData("no-timestamp.json")), "no-timestamp");
 });
 
-test("eclipsed seed is alarm; cast seed is hold", () => {
-  assert.equal(score(seedEclipsed()).alarm, true);
-  assert.equal(score(seedEclipsed()).hold, false);
-  assert.equal(score(seedCast()).hold, true);
-  assert.equal(score(seedCast()).alarm, false);
+test("collapsed seed is alarm; pointed seed is hold", () => {
+  assert.equal(score(seedCollapsed()).alarm, true);
+  assert.equal(score(seedCollapsed()).hold, false);
+  assert.equal(score(seedPointed()).hold, true);
+  assert.equal(score(seedPointed()).alarm, false);
 });
 
 test("normalize seeds 90954 without ticket fields", () => {
@@ -142,47 +146,47 @@ test("normalize seeds 90954 without ticket fields", () => {
   assert.equal(ticket.closedTranscript, true);
   assert.equal(ticket.dateSkew, true);
   assert.equal(ticket.lastPromptTail, true);
-  assert.equal(classify(ticket), "eclipsed");
+  assert.equal(classify(ticket), "collapsed");
 });
 
-test("score / decide / handle agree on eclipsed vs cast", () => {
-  assert.equal(score(seedEclipsed()).verdict, "eclipsed");
-  assert.equal(decide(seedCast()).verdict, "cast");
-  const fail = handle(seedEclipsed());
-  const hold = handle(seedCast());
+test("score / decide / handle agree on collapsed vs pointed", () => {
+  assert.equal(score(seedCollapsed()).verdict, "collapsed");
+  assert.equal(decide(seedPointed()).verdict, "pointed");
+  const fail = handle(seedCollapsed());
+  const hold = handle(seedPointed());
   assert.match(fail.hookSpecificOutput.additionalContext, /#90954/);
-  assert.match(hold.hookSpecificOutput.additionalContext, /cast/i);
+  assert.match(hold.hookSpecificOutput.additionalContext, /pointed/i);
 });
 
 test("decideSeed aliases", () => {
-  assert.equal(decideSeed("eclipsed").verdict, "eclipsed");
-  assert.equal(decideSeed(90954).verdict, "eclipsed");
-  assert.equal(decideSeed("90954").verdict, "eclipsed");
-  assert.equal(decideSeed("cast").verdict, "cast");
+  assert.equal(decideSeed("collapsed").verdict, "collapsed");
+  assert.equal(decideSeed(90954).verdict, "collapsed");
+  assert.equal(decideSeed("90954").verdict, "collapsed");
+  assert.equal(decideSeed("pointed").verdict, "pointed");
 });
 
 test("CLI scores data files", () => {
-  const eclipsed = spawnSync(
+  const collapsed = spawnSync(
     process.execPath,
-    [hookPath(), fileURLToPath(new URL("../data/eclipsed.json", import.meta.url))],
+    [hookPath(), fileURLToPath(new URL("../data/collapsed.json", import.meta.url))],
     { encoding: "utf8" },
   );
-  assert.equal(eclipsed.status, 0, eclipsed.stderr);
-  assert.equal(JSON.parse(eclipsed.stdout).verdict, "eclipsed");
+  assert.equal(collapsed.status, 0, collapsed.stderr);
+  assert.equal(JSON.parse(collapsed.stdout).verdict, "collapsed");
 
-  const cast = spawnSync(
+  const pointed = spawnSync(
     process.execPath,
-    [hookPath(), fileURLToPath(new URL("../data/cast.json", import.meta.url))],
+    [hookPath(), fileURLToPath(new URL("../data/pointed.json", import.meta.url))],
     { encoding: "utf8" },
   );
-  assert.equal(cast.status, 0, cast.stderr);
-  assert.equal(JSON.parse(cast.stdout).verdict, "cast");
+  assert.equal(pointed.status, 0, pointed.stderr);
+  assert.equal(JSON.parse(pointed.stdout).verdict, "pointed");
 });
 
 test("constants match the issue facts only", () => {
   assert.equal(FEATURED_ISSUE, 90954);
   assert.deepEqual([...PRIMARY_ISSUES], [90954]);
-  assert.deepEqual([...SAME_CLASS], [90932, 90931, 90955]);
+  assert.deepEqual([...SAME_CLASS], [87900, 81803, 72746, 68929]);
   assert.equal(REPORTER, "somarakis");
   assert.equal(FILED_AT, "2026-08-31T10:32:53Z");
   assert.equal(CCD, "2.1.247");
@@ -199,21 +203,19 @@ test("constants match the issue facts only", () => {
   assert.equal(OVER_SEVEN_DAYS, 93);
   assert.equal(TAIL_COUNTS["last-prompt"], 76);
   assert.equal(TAIL_COUNTS.mode, 21);
-  assert.equal(TAIL_COUNTS.attachment, 10);
-  assert.equal(TAIL_COUNTS["queue-operation"], 4);
-  assert.equal(TAIL_COUNTS.user, 2);
-  assert.equal(TAIL_COUNTS.assistant, 1);
   assert.equal(EXAMPLES[0].lastEvent, "2026-07-22T14:00:18Z");
   assert.equal(EXAMPLES[1].lastEvent, "2026-08-04T10:19:24Z");
-  assert.equal(IDLE_WORD, "cast");
-  assert.equal(SEEDED_WORD, "eclipsed");
-  assert.notEqual(IDLE_WORD, "eclipsed");
+  assert.equal(IDLE_WORD, "pointed");
+  assert.equal(SEEDED_WORD, "collapsed");
+  assert.notEqual(IDLE_WORD, "collapsed");
   assert.notEqual(IDLE_WORD, "gnomon");
-  assert.deepEqual([...HOLD_VERDICTS], ["cast"]);
-  assert.ok(ALARM_VERDICTS.includes("eclipsed"));
-  assert.ok(!ALARM_VERDICTS.includes("cast"));
+  assert.notEqual(IDLE_WORD, "cast");
+  assert.notEqual(IDLE_WORD, "eclipsed");
+  assert.deepEqual([...HOLD_VERDICTS], ["pointed"]);
+  assert.ok(ALARM_VERDICTS.includes("collapsed"));
+  assert.ok(!ALARM_VERDICTS.includes("pointed"));
   assert.deepEqual([...VERDICTS], [...CHIPS]);
-  assert.equal(VERDICTS.length, 12);
+  assert.equal(VERDICTS.length, 14);
   assert.deepEqual(
     [...LABELS],
     ["bug", "has repro", "platform:macos", "area:core"],
@@ -222,6 +224,7 @@ test("constants match the issue facts only", () => {
   assert.match(ISSUE_URL, /90954/);
   assert.match(PHRASE, /shared mtime is not a hold/i);
   assert.match(HUB_LINE, /20:50 gnomon/);
+  assert.match(HUB_LINE, /admit pointed/);
   assert.match(MARK, /20:50/);
   assert.match(MARK, /#94/);
   assert.match(MARK, /#90954/);
@@ -229,9 +232,7 @@ test("constants match the issue facts only", () => {
   assert.match(HYPOTHESIS_NOTE, /labeled observation, not a proven cause/);
   assert.ok(NOT_PRODUCTS.includes("spoil"));
   assert.ok(NOT_PRODUCTS.includes("trammel"));
-  assert.ok(NOT_PRODUCTS.includes("soundpost"));
   assert.ok(NOT_PRODUCTS.includes("clepsydra"));
-  assert.ok(NOT_PRODUCTS.includes("palimpsest"));
   for (const word of FORBIDDEN_IDLE) {
     assert.notEqual(IDLE_WORD, word);
   }
@@ -240,22 +241,24 @@ test("constants match the issue facts only", () => {
 test("chips.json and fingerprints stay aligned", () => {
   const chips = readData("chips.json");
   assert.deepEqual(chips.verdicts, [...VERDICTS]);
-  assert.equal(chips.idleWord, "cast");
+  assert.equal(chips.idleWord, "pointed");
+  assert.equal(chips.seededWord, "collapsed");
   const fp = readData("fingerprints.json");
   assert.equal(fp.primary, 90954);
   assert.equal(fp.ccd, "2.1.247");
   assert.equal(fp.clusterEpoch, 1787422837);
   assert.equal(fp.clusterCount, 114);
-  assert.deepEqual(fp.sameClass, [90932, 90931, 90955]);
+  assert.deepEqual(fp.sameClass, [87900, 81803, 72746, 68929]);
   const contrast = readData("contrast.json");
   assert.match(contrast.preserveMtime.result, /preserve/);
   assert.match(contrast.timestampRequired.result, /timestamp/);
-  assert.equal(contrast.sameClass.rewindContinue, 90932);
-  assert.equal(contrast.sameClass.symlinkEnotdir, 90931);
-  assert.equal(contrast.sameClass.versionSkew, 90955);
+  assert.equal(contrast.sameClass.startupIndexing, 87900);
+  assert.equal(contrast.sameClass.extensionUpdate, 81803);
+  assert.equal(contrast.sameClass.agentViewLastChanged, 72746);
+  assert.equal(contrast.sameClass.titleBackfill, 68929);
 });
 
-test("chipsOf on a raw eclipsed ticket still marks date-skew", () => {
+test("chipsOf on a raw collapsed ticket still marks date-signal", () => {
   const chips = chipsOf({
     sharedMtime: true,
     timestampFreeTail: true,
@@ -270,14 +273,16 @@ test("chipsOf on a raw eclipsed ticket still marks date-skew", () => {
     timestampRequired: false,
     healthyDating: false,
     lastEventDaysAgo: 17,
+    clusterCount: 114,
   });
-  assert.ok(chips.includes("eclipsed"));
-  assert.ok(chips.includes("date-skew"));
-  assert.ok(chips.includes("timestamp-free"));
-  assert.ok(!chips.includes("cast"));
+  assert.ok(chips.includes("collapsed"));
+  assert.ok(chips.includes("date-signal"));
+  assert.ok(chips.includes("no-timestamp"));
+  assert.ok(chips.includes("cluster-114"));
+  assert.ok(!chips.includes("pointed"));
 });
 
-test("preserve-mtime contrast does not eclipse", () => {
+test("preserve-mtime contrast does not collapse", () => {
   const result = analyze({
     sharedMtime: false,
     timestampFreeTail: false,
@@ -288,29 +293,32 @@ test("preserve-mtime contrast does not eclipse", () => {
     healthyDating: false,
     outputText: "writes to an already-closed transcript preserve its mtime",
   });
-  assert.notEqual(result.verdict, "eclipsed");
+  assert.notEqual(result.verdict, "collapsed");
   assert.ok(result.reasons.some((row) => /preserve mtime/i.test(row)));
 });
 
-test("living page is an observatory sundial terrace, idle cast, seeded eclipsed", () => {
+test("living page is an observatory sundial terrace, idle pointed, seeded collapsed", () => {
   const html = readPage();
-  assert.match(html, /Idle word:\s*cast/);
-  assert.match(html, /cast/);
-  assert.match(html, /eclipsed/);
-  assert.match(html, /shared-mtime/);
-  assert.match(html, /bulk-rewrite/);
-  assert.match(html, /timestamp-free/);
-  assert.match(html, /last-prompt/);
-  assert.match(html, /mode-tail/);
+  assert.match(html, /Idle word:\s*pointed/);
+  assert.match(html, /pointed/);
+  assert.match(html, /collapsed/);
+  assert.match(html, /bulk-mtime/);
+  assert.match(html, /shared-second/);
   assert.match(html, /closed-transcript/);
-  assert.match(html, /date-skew/);
+  assert.match(html, /date-signal/);
+  assert.match(html, /untimed-tail/);
+  assert.match(html, /last-prompt/);
   assert.match(html, /silent-wrong/);
-  assert.match(html, /retention-trap/);
-  assert.match(html, /ls-lt-lie/);
+  assert.match(html, /retention-lie/);
+  assert.match(html, /cluster-114/);
+  assert.match(html, /mtime-vs-content/);
+  assert.match(html, /archive-clock/);
+  assert.match(html, /no-timestamp/);
   assert.match(html, /#90954/);
-  assert.match(html, /#90932/);
-  assert.match(html, /#90931/);
-  assert.match(html, /#90955/);
+  assert.match(html, /#87900/);
+  assert.match(html, /#81803/);
+  assert.match(html, /#72746/);
+  assert.match(html, /#68929/);
   assert.match(html, /20:50/);
   assert.match(html, /catalog #94/);
   assert.match(html, /2\.1\.247/);
@@ -320,22 +328,24 @@ test("living page is an observatory sundial terrace, idle cast, seeded eclipsed"
   assert.match(html, /IBM\+Plex\+Sans|IBM Plex Sans/);
   assert.match(html, /Space\+Mono|Space Mono/);
   assert.match(html, /Score the gnomon/);
-  assert.match(html, /Pin idle cast/);
-  assert.match(html, /Pin seeded eclipsed/);
+  assert.match(html, /Pin idle pointed/);
+  assert.match(html, /Pin seeded collapsed/);
+  assert.match(html, /admit pointed/);
   assert.match(html, /sundial/i);
   assert.match(html, /observatory/i);
   assert.match(html, /meridian/i);
   assert.match(html, /labeled observation/);
-  assert.doesNotMatch(html, /Idle word:\s*eclipsed/i);
+  assert.doesNotMatch(html, /Idle word:\s*collapsed/i);
   assert.doesNotMatch(html, /Idle word:\s*gnomon/i);
+  assert.doesNotMatch(html, /Idle word:\s*cast/);
+  assert.doesNotMatch(html, /Idle word:\s*eclipsed/);
   assert.doesNotMatch(html, /Idle word:\s*banked/);
   assert.doesNotMatch(html, /Idle word:\s*traced/);
-  assert.doesNotMatch(html, /Idle word:\s*coupled/);
+  assert.doesNotMatch(html, /Pin idle cast/);
+  assert.doesNotMatch(html, /Pin seeded eclipsed/);
   assert.doesNotMatch(html, /Score the spoil/);
   assert.doesNotMatch(html, /Pin idle banked/);
   assert.doesNotMatch(html, /Score the grooves/);
-  assert.doesNotMatch(html, /Pin idle traced/);
-  assert.doesNotMatch(html, /Score the plates/);
   assert.doesNotMatch(html, /family=Instrument/);
   assert.doesNotMatch(html, /family=Source\+Serif/);
   assert.doesNotMatch(html, /family=JetBrains/);
@@ -345,17 +355,9 @@ test("living page is an observatory sundial terrace, idle cast, seeded eclipsed"
   assert.doesNotMatch(html, /family=Fraunces/);
   assert.doesNotMatch(html, /family=Source\+Sans/);
   assert.doesNotMatch(html, /family=IBM\+Plex\+Mono/);
-  assert.doesNotMatch(html, /family=Barlow/);
-  assert.doesNotMatch(html, /family=Spline/);
-  assert.doesNotMatch(html, /family=Cormorant/);
-  assert.doesNotMatch(html, /family=Playfair/);
-  assert.doesNotMatch(html, /family=Cinzel/);
   assert.doesNotMatch(html, /luthier cutaway/);
   assert.doesNotMatch(html, /composing-stone/);
   assert.doesNotMatch(html, /papal lead/);
-  assert.doesNotMatch(html, /hide-glue/);
-  assert.doesNotMatch(html, /mahogany/);
-  assert.doesNotMatch(html, /Prussian/);
   assert.doesNotMatch(html, /corrugated/);
   assert.doesNotMatch(html, /spoil tip/i);
   assert.doesNotMatch(html, /ochre heap/i);
