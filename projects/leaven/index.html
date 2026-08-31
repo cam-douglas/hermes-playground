@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Leaven — bakery proofing bench for Claude Code #90782: a first turn of foreign starter is not a bake. Score the crocks or admit unleavened."
+    />
+    <title>Leaven</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Source+Code+Pro:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --maple: #c9844a;
+        --maple-deep: #8a4f24;
+        --board: #d9a066;
+        --flour: #f6f0e4;
+        --cream: #faf4ea;
+        --sourdough: #c9a36a;
+        --brick: #9a3a28;
+        --brick-deep: #6b2418;
+        --glass: #9ec4bc;
+        --glass-deep: #4f7a72;
+        --chalk: #f7f4ec;
+        --ember: #e24a1c;
+        --ink: #2a1c12;
+        --quiet: #7a5a3a;
+        --hold: #3d6b3a;
+        --display: "Newsreader", "Iowan Old Style", Palatino, serif;
+        --body: "Karla", "Gill Sans", "Segoe UI", sans-serif;
+        --mono: "Source Code Pro", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.55) 0 2px, transparent 3px),
+          radial-gradient(circle at 78% 64%, rgba(255, 255, 255, 0.4) 0 1px, transparent 2px),
+          radial-gradient(ellipse at 50% -10%, rgba(250, 244, 234, 0.9), transparent 48%),
+          repeating-linear-gradient(90deg, #c9844a 0 14px, #b8743c 14px 15px, #d9a066 15px 28px),
+          linear-gradient(180deg, #f3e6d2 0%, #e8d3b0 40%, #c9844a 100%);
+        background-attachment: fixed;
+      }
+      button, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: var(--brick); }
+      .shop {
+        width: min(1240px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 16px 0 64px;
+      }
+      .sign {
+        position: relative;
+        padding: 22px 24px 18px;
+        background:
+          linear-gradient(180deg, #f7efe2 0%, #ead8b8 70%, #d9b98a 100%);
+        border: 10px solid var(--maple-deep);
+        box-shadow:
+          inset 0 0 0 2px rgba(250, 244, 234, 0.7),
+          0 16px 0 rgba(138, 79, 36, 0.18);
+        overflow: hidden;
+      }
+      .sign::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 18% 22%, rgba(255,255,255,0.45) 0 3px, transparent 4px),
+          radial-gradient(circle at 72% 40%, rgba(255,255,255,0.35) 0 2px, transparent 3px),
+          radial-gradient(circle at 40% 80%, rgba(255,255,255,0.25) 0 2px, transparent 3px);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--brick);
+      }
+      h1 {
+        margin: 6px 0 4px;
+        font-family: var(--display);
+        font-size: clamp(48px, 9vw, 92px);
+        line-height: 0.82;
+        letter-spacing: -0.03em;
+        font-weight: 700;
+      }
+      .phrase { max-width: 40em; margin: 0; font-size: 18px; }
+      .idle {
+        margin: 8px 0 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+      }
+      .bench {
+        display: grid;
+        grid-template-columns: 0.9fr 1.2fr 0.9fr;
+        gap: 14px;
+        margin-top: 14px;
+      }
+      @media (max-width: 980px) {
+        .bench { grid-template-columns: 1fr; }
+      }
+      .panel {
+        background: rgba(250, 244, 234, 0.88);
+        border: 2px solid rgba(138, 79, 36, 0.22);
+        padding: 14px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+      }
+      .panel h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 26px;
+      }
+      .crocks {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .crock {
+        position: relative;
+        min-height: 148px;
+        padding: 8px 8px 10px;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.55), rgba(158,196,188,0.18));
+        border: 2px solid rgba(79, 122, 114, 0.45);
+        border-radius: 8px 8px 18px 18px;
+        overflow: hidden;
+      }
+      .crock .lid {
+        height: 10px;
+        margin: -2px 10px 8px;
+        background: var(--maple-deep);
+        border-radius: 3px;
+      }
+      .crock .fill {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        height: 42%;
+        background: linear-gradient(180deg, #e8c98a, #c9844a);
+        border-radius: 0 0 14px 14px;
+        opacity: 0.55;
+      }
+      .crock.spill .fill {
+        height: 78%;
+        background: linear-gradient(180deg, #e24a1c, #9a3a28);
+        opacity: 0.8;
+        animation: rise 0.8s ease;
+      }
+      @keyframes rise {
+        from { height: 30%; }
+        to { height: 78%; }
+      }
+      .crock .label {
+        position: relative;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        color: var(--glass-deep);
+      }
+      .crock.spill .label { color: var(--ember); font-weight: 600; }
+      .dough-well {
+        position: relative;
+        min-height: 280px;
+        border-radius: 50% 46% 48% 52%;
+        background:
+          radial-gradient(ellipse at 40% 35%, #f3e0b8, #d4a066 62%, #b8743c 100%);
+        border: 8px solid #8a4f24;
+        box-shadow:
+          inset 0 0 0 3px rgba(250, 244, 234, 0.25),
+          0 10px 0 rgba(138, 79, 36, 0.2);
+        padding: 28px 26px 22px;
+        overflow: hidden;
+      }
+      .dough-well.leavened {
+        background:
+          radial-gradient(ellipse at 60% 40%, #f0c8a0, #c9844a 50%, #9a3a28 100%);
+      }
+      .dough-well.hold {
+        background:
+          radial-gradient(ellipse at 40% 35%, #f7efe2, #e2c48a 70%, #c9a36a 100%);
+      }
+      .dough-well.spill-on::before {
+        content: "";
+        position: absolute;
+        left: 18%;
+        top: -8px;
+        width: 16px;
+        height: 46px;
+        background: linear-gradient(180deg, #e24a1c, transparent);
+        opacity: 0.7;
+        animation: drip 1.1s ease-in-out infinite;
+      }
+      @keyframes drip {
+        0%, 100% { transform: translateY(0); opacity: 0.2; }
+        50% { transform: translateY(18px); opacity: 0.85; }
+      }
+      .turn {
+        position: relative;
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.45;
+        color: #3a2416;
+        max-height: 210px;
+        overflow: auto;
+      }
+      .oven {
+        min-height: 220px;
+        padding: 16px 14px 12px;
+        background:
+          repeating-linear-gradient(90deg, #9a3a28 0 28px, #7a2c1e 28px 30px, #b04530 30px 56px);
+        border: 6px solid #4a1a12;
+        color: var(--chalk);
+        box-shadow: inset 0 0 40px rgba(0,0,0,0.35);
+      }
+      .oven.bake {
+        box-shadow:
+          inset 0 0 40px rgba(0,0,0,0.25),
+          0 0 24px rgba(226, 74, 28, 0.35);
+      }
+      .peel {
+        height: 18px;
+        margin: 8px 0 12px;
+        background: linear-gradient(90deg, #8a4f24, #d9a066 40%, #f6f0e4);
+        border-radius: 0 10px 10px 0;
+        transform-origin: left center;
+        transition: transform 0.4s ease;
+      }
+      .oven.hold .peel { transform: translateX(18px); }
+      .oven.alarm .peel { transform: translateX(-6px) rotate(-6deg); }
+      .score {
+        margin-top: 10px;
+        padding: 10px 12px;
+        background: #2a2a28;
+        color: var(--chalk);
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.55;
+        border: 1px dashed rgba(247, 244, 236, 0.35);
+      }
+      .score strong { color: #fff8e8; }
+      .actions, .seeds, .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .actions button, .seeds button, .tools button {
+        border: 1px solid rgba(42, 28, 18, 0.2);
+        background: var(--cream);
+        padding: 8px 12px;
+        border-radius: 999px;
+      }
+      .actions button:hover, .seeds button:hover, .tools button:hover {
+        border-color: var(--brick);
+        color: var(--brick);
+      }
+      .seeds button[aria-pressed="true"] {
+        background: #f3d6c4;
+        border-color: var(--ember);
+        color: var(--ember);
+      }
+      .verdict {
+        margin-top: 12px;
+        padding: 12px 14px;
+        background: #fff8ec;
+        border: 1px solid rgba(42, 28, 18, 0.12);
+      }
+      .verdict .word {
+        font-family: var(--display);
+        font-size: 34px;
+        letter-spacing: -0.03em;
+        text-transform: lowercase;
+      }
+      .verdict.fail .word { color: var(--ember); }
+      .verdict.hold .word { color: var(--hold); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 3px 8px;
+        border: 1px solid rgba(42, 28, 18, 0.16);
+        border-radius: 999px;
+        color: var(--quiet);
+      }
+      .chip.on {
+        border-color: var(--ember);
+        color: var(--ember);
+        background: rgba(226, 74, 28, 0.08);
+      }
+      .verdict.hold .chip.on {
+        border-color: var(--hold);
+        color: var(--hold);
+        background: rgba(61, 107, 58, 0.08);
+      }
+      textarea {
+        width: 100%;
+        min-height: 200px;
+        margin-top: 8px;
+        padding: 10px;
+        resize: vertical;
+        background: #fffaf0;
+        border: 1px dashed rgba(138, 79, 36, 0.35);
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .drop {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border: 1px dashed rgba(138, 79, 36, 0.4);
+        color: var(--quiet);
+        font-size: 13px;
+        text-align: center;
+      }
+      .drop.hot { border-color: var(--ember); color: var(--ember); }
+      .issue { font-family: var(--mono); font-size: 13px; line-height: 1.5; }
+      .issue .state {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--hold);
+        color: var(--hold);
+        text-transform: uppercase;
+        font-size: 11px;
+      }
+      .issue .state.closed { border-color: var(--ember); color: var(--ember); }
+      .reasons { margin: 8px 0 0; padding-left: 18px; color: var(--quiet); font-size: 14px; }
+      .cards, .adapters {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 980px) {
+        .cards, .adapters { grid-template-columns: 1fr; }
+      }
+      .card {
+        background: var(--cream);
+        border: 1px solid rgba(42, 28, 18, 0.1);
+        padding: 14px;
+      }
+      .card h3 {
+        margin: 6px 0 8px;
+        font-family: var(--display);
+        font-size: 22px;
+      }
+      .card p { margin: 0 0 8px; color: var(--quiet); font-size: 14px; }
+      .sources { margin-top: 14px; }
+      .sources ul { margin: 0; padding-left: 18px; color: var(--quiet); }
+      .sources li { margin: 6px 0; }
+      footer { margin-top: 16px; color: var(--quiet); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main class="shop">
+      <header class="sign">
+        <p class="mark">09:50 Sydney · leaven</p>
+        <h1>Leaven</h1>
+        <p class="phrase">A first turn of foreign starter is not a bake. Score the crocks or admit unleavened.</p>
+        <p class="idle">Idle word: unleavened. Maple boards / glass crocks / peel and kiln. Seeded leavened.</p>
+      </header>
+
+      <div class="bench">
+        <section class="panel" aria-label="Starter crocks">
+          <h2>Starter crocks</h2>
+          <div class="crocks">
+            <article class="crock" id="crock-notion" data-crock="notion-mcp">
+              <div class="lid"></div>
+              <p class="label">Notion-MCP</p>
+              <p class="label">search-tool edict</p>
+              <span class="fill" aria-hidden="true"></span>
+            </article>
+            <article class="crock" id="crock-superpowers" data-crock="superpowers">
+              <div class="lid"></div>
+              <p class="label">superpowers</p>
+              <p class="label">spanish-skill</p>
+              <span class="fill" aria-hidden="true"></span>
+            </article>
+            <article class="crock" id="crock-harness" data-crock="harness-system">
+              <div class="lid"></div>
+              <p class="label">harness-system</p>
+              <p class="label">_bump_bwrap_repro</p>
+              <span class="fill" aria-hidden="true"></span>
+            </article>
+            <article class="crock" id="crock-skill" data-crock="skill-guidance">
+              <div class="lid"></div>
+              <p class="label">skill-guidance</p>
+              <p class="label">skill-echo</p>
+              <span class="fill" aria-hidden="true"></span>
+            </article>
+          </div>
+          <div class="actions">
+            <button type="button" id="load-btn">Load Explore ticket</button>
+            <button type="button" id="quarantine-btn">Quarantine the loaf</button>
+            <button type="button" id="relaunch-btn">Relaunch clean</button>
+            <button type="button" id="score-btn">Score the crocks</button>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="First visible turn">
+          <h2>First visible turn</h2>
+          <div class="dough-well leavened" id="dough">
+            <p class="turn" id="turn-text"></p>
+          </div>
+          <div class="score" id="chalk">
+            tools <strong id="tool-uses">0</strong>
+            · seconds <strong id="seconds">12</strong>
+            · shaped <strong id="shaped">instruction</strong>
+            · siblings <strong id="siblings">clean</strong>
+          </div>
+          <div class="verdict fail" id="verdict-box">
+            <div class="word" id="verdict-word">leavened</div>
+            <p id="verdict-feed">● Leavened · 0 tools + 2–12s + instruction-shaped foreign starter · alarm</p>
+            <div class="chips" id="chip-row"></div>
+          </div>
+        </section>
+
+        <aside class="panel" aria-label="Peel and oven">
+          <h2>Peel / oven</h2>
+          <div class="oven alarm" id="oven">
+            <p class="mark" id="oven-mark">quarantine</p>
+            <div class="peel" aria-hidden="true"></div>
+            <p id="oven-copy">0-tool instruction loaf. Do not bake. Discard and relaunch.</p>
+          </div>
+          <p class="issue" id="issue-card">Fetching anthropics/claude-code#90782…</p>
+          <p class="idle" id="local-seeds">Local seeds: 5/20 · 0 tools · 2–12s · instruction-shaped</p>
+          <div class="seeds" role="group" aria-label="Seed chips">
+            <button type="button" id="seed-leavened" aria-pressed="true">leavened</button>
+            <button type="button" id="seed-unleavened" aria-pressed="false">unleavened</button>
+            <button type="button" id="seed-contaminated" aria-pressed="false">contaminated</button>
+            <button type="button" id="seed-foreign" aria-pressed="false">foreign-echo</button>
+            <button type="button" id="seed-zero" aria-pressed="false">zero-tool</button>
+            <button type="button" id="seed-debris" aria-pressed="false">system-debris</button>
+            <button type="button" id="seed-mcp" aria-pressed="false">mcp-echo</button>
+            <button type="button" id="seed-skill" aria-pressed="false">skill-echo</button>
+            <button type="button" id="seed-blank" aria-pressed="false">blank-abort</button>
+            <button type="button" id="seed-relaunch" aria-pressed="false">relaunched-clean</button>
+            <button type="button" id="seed-spanish" aria-pressed="false">spanish-skill</button>
+            <button type="button" id="seed-notion" aria-pressed="false">notion-mcp</button>
+          </div>
+          <div class="drop" id="drop">Drop an Explore launch ticket JSON onto the board</div>
+          <textarea id="ticket" spellcheck="false" aria-label="Explore launch ticket JSON"></textarea>
+          <div class="tools">
+            <button type="button" id="apply-ticket">Score pasted ticket</button>
+            <button type="button" id="export-ticket">Export launch ticket</button>
+          </div>
+          <ol class="reasons" id="reasons"></ol>
+        </aside>
+      </div>
+
+      <section class="panel cards" aria-label="Why not a clone">
+        <article class="card">
+          <p class="mark">primary · #90782</p>
+          <h3>Foreign starter</h3>
+          <p>OPEN, has-repro, macOS, area:agents. Filed 2026-08-30T15:29:59Z by Beppo90. Claude Code CLI darwin 25.5.0, model claude-fable-5. ~5/20 Explore launches, 0 tools, 2–12s, instruction-shaped.</p>
+        </article>
+        <article class="card">
+          <p class="mark">not a clone</p>
+          <h3>Start of run</h3>
+          <p>NOT Voucher (#90807) end-of-run nested fan-out. NOT Pirn (truncates right content). NOT Veto (heron_brook). NOT Hydra (#90856) dual-ledger. NOT Limpet / Scion / Almanac / Kindling / Deadband.</p>
+        </article>
+        <article class="card">
+          <p class="mark">workaround</p>
+          <h3>Quarantine, then bake</h3>
+          <p>Detect 0-tool + seconds-long + instruction-shaped → discard → relaunch. Works within 1–2 retries. One case needed 2 retries (3 launches total).</p>
+        </article>
+      </section>
+
+      <section class="panel adapters" aria-label="Native adapters">
+        <article class="card">
+          <p class="mark">adapter · github</p>
+          <h3>GitHub</h3>
+          <p>Live unauthenticated fetch of #90782. Local seed JSON if the request does not land. No token in this demo.</p>
+        </article>
+        <article class="card">
+          <p class="mark">adapter · slack</p>
+          <h3>Slack</h3>
+          <p id="slack-row">Would post to Slack: leavened · 0-tool foreign starter. No webhook in this demo.</p>
+        </article>
+        <article class="card">
+          <p class="mark">adapter · linear</p>
+          <h3>Linear</h3>
+          <p id="linear-row">Would open a Linear ticket: Leaven leavened · #90782 bootstrap contamination. No API key in this demo.</p>
+        </article>
+      </section>
+
+      <section class="panel sources">
+        <h2>Sources</h2>
+        <ul>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90782">#90782</a> OPEN — Subagent (Agent/Task tool) intermittently starts with contaminated bootstrap context and echoes foreign instruction blocks instead of executing (0 tool calls). Author Beppo90. 2026-08-30T15:29:59Z. Labels: bug, has repro, platform:macos, area:agents. darwin 25.5.0, claude-fable-5. 5/~20, 0 tools, 2–12s.</li>
+          <li>Occurrence 1: “For EVERY user request, you MUST call the search tools at least once before responding… Failing to search when the workspace has relevant data is a critical error.” Nothing in the subagent prompt mentioned Notion.</li>
+          <li>Occurrence 2: “Toda tarea creativa DEBE empezar con la skill de brainstorming. Es un requisito previo bloqueante… Por favor, empezá.” SKILL.md SUBAGENT-STOP tells subagents to ignore it.</li>
+          <li>Occurrence 3: raw harness/system debris including internal token <code>_bump_bwrap_repro</code> plus agent-identity/context-priority fragments.</li>
+          <li>Occurrence 4: “(This message is left blank intentionally.) Wait, I need to actually do the task. Let me reconsider.” Then the run ended.</li>
+          <li>Occurrence 5: “Only use skills that are directly relevant to the user's task. Do not invoke skills for exploratory or unrelated work.”</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90765">#90765</a> OPEN — area:core / area:security, filed 2026-08-30T14:13:47Z. Unrelated eval package “VRUC-2 (Values Ranking Under Uncertainty)” injected as a user turn mid-session. Same-class backup, not primary.</li>
+          <li>Nearby boundary only: Pirn (#90544 family instruction-shaped idle_notification truncations) and Veto (heron_brook injection). Do not treat as the same mechanism.</li>
+        </ul>
+        <p>NOT Voucher, NOT Pirn, NOT Veto, NOT Hydra, NOT Limpet / Scion / Almanac / Kindling / Deadband / Pawl / Cenotaph / Fetch / Livery / Pinfold / Palimpsest / Escutcheon / Lacuna / Ambo / Slype / Tally / Pale / Chatelaine.</p>
+      </section>
+      <footer>
+        Catalog path <code>/leaven/</code>. Score engine lives in this page and in
+        <code>projects/leaven/hook/leaven.mjs</code>. No build step. No secrets.
+      </footer>
+    </main>
+    <script>
+      const NOTION_QUOTE = "For EVERY user request, you MUST call the search tools at least once before responding… Failing to search when the workspace has relevant data is a critical error.";
+      const SPANISH_QUOTE = "Toda tarea creativa DEBE empezar con la skill de brainstorming. Es un requisito previo bloqueante… Por favor, empezá.";
+      const HARNESS_TOKEN = "_bump_bwrap_repro";
+      const BLANK_QUOTE = "(This message is left blank intentionally.) Wait, I need to actually do the task. Let me reconsider.";
+      const SKILL_QUOTE = "Only use skills that are directly relevant to the user's task. Do not invoke skills for exploratory or unrelated work.";
+      const CHIP_NAMES = [
+        "unleavened", "leavened", "contaminated", "foreign-echo", "zero-tool",
+        "system-debris", "mcp-echo", "skill-echo", "blank-abort", "relaunched-clean",
+        "spanish-skill", "notion-mcp",
+      ];
+      const HOLD = ["unleavened"];
+      const ALARM = CHIP_NAMES.filter((name) => name !== "unleavened" && name !== "spanish-skill" && name !== "notion-mcp");
+      const SEED_ALIASES = { "spanish-skill": "skill-echo", "notion-mcp": "mcp-echo" };
+      const SEED_BUTTONS = {
+        leavened: "seed-leavened",
+        unleavened: "seed-unleavened",
+        contaminated: "seed-contaminated",
+        "foreign-echo": "seed-foreign",
+        "zero-tool": "seed-zero",
+        "system-debris": "seed-debris",
+        "mcp-echo": "seed-mcp",
+        "skill-echo": "seed-skill",
+        "blank-abort": "seed-blank",
+        "relaunched-clean": "seed-relaunch",
+        "spanish-skill": "seed-spanish",
+        "notion-mcp": "seed-notion",
+      };
+      const SEEDS = {
+        leavened: {
+          seed: "leavened", issue: 90782, toolUses: 0, durationSeconds: 12,
+          outputText: NOTION_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["notion-mcp", "mcp-echo"], relaunchSucceeded: true,
+          siblingClean: true, mcpMentionedInPrompt: false, version: "darwin 25.5.0",
+          platform: "macos", model: "claude-fable-5", subagentType: "Explore", runInBackground: true,
+        },
+        unleavened: {
+          seed: "unleavened", issue: 90782, toolUses: 10, durationSeconds: 90,
+          outputText: "Explored the tree. Notes from Explore: files listed, no instruction blocks.",
+          instructionShaped: false, debrisFingerprints: [], relaunchSucceeded: false,
+          siblingClean: true, mcpMentionedInPrompt: false, version: "darwin 25.5.0",
+          platform: "macos", model: "claude-fable-5",
+        },
+        contaminated: {
+          seed: "contaminated", issue: 90782, toolUses: 0, durationSeconds: 2,
+          outputText: NOTION_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["contaminated"], mcpMentionedInPrompt: false, siblingClean: true,
+        },
+        "foreign-echo": {
+          seed: "foreign-echo", issue: 90782, toolUses: 0, durationSeconds: 12,
+          outputText: NOTION_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["foreign-echo"], mcpMentionedInPrompt: false,
+        },
+        "zero-tool": {
+          seed: "zero-tool", issue: 90782, toolUses: 0, durationSeconds: 2,
+          outputText: NOTION_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["zero-tool"], mcpMentionedInPrompt: false,
+        },
+        "system-debris": {
+          seed: "system-debris", issue: 90782, toolUses: 0, durationSeconds: 12,
+          outputText: "Raw harness/system debris including internal token " + HARNESS_TOKEN + " plus agent-identity/context-priority fragments.",
+          instructionShaped: true, debrisFingerprints: ["system-debris", HARNESS_TOKEN], mcpMentionedInPrompt: false,
+        },
+        "mcp-echo": {
+          seed: "mcp-echo", issue: 90782, toolUses: 0, durationSeconds: 12,
+          outputText: NOTION_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["notion-mcp", "mcp-echo"], mcpMentionedInPrompt: false, siblingClean: true,
+        },
+        "skill-echo": {
+          seed: "skill-echo", issue: 90782, toolUses: 0, durationSeconds: 12,
+          outputText: SKILL_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["skill-echo", "skill-guidance"], mcpMentionedInPrompt: false,
+        },
+        "blank-abort": {
+          seed: "blank-abort", issue: 90782, toolUses: 0, durationSeconds: 2,
+          outputText: BLANK_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["blank-abort"], mcpMentionedInPrompt: false,
+        },
+        "relaunched-clean": {
+          seed: "relaunched-clean", issue: 90782, toolUses: 0, durationSeconds: 12,
+          outputText: NOTION_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["notion-mcp"], relaunchSucceeded: true, siblingClean: true,
+          mcpMentionedInPrompt: false, retries: 2, launches: 3,
+        },
+        "spanish-skill": {
+          seed: "spanish-skill", issue: 90782, toolUses: 0, durationSeconds: 12,
+          outputText: SPANISH_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["spanish-skill", "skill-echo"], mcpMentionedInPrompt: false,
+        },
+        "notion-mcp": {
+          seed: "notion-mcp", issue: 90782, toolUses: 0, durationSeconds: 12,
+          outputText: NOTION_QUOTE, instructionShaped: true,
+          debrisFingerprints: ["notion-mcp", "mcp-echo"], mcpMentionedInPrompt: false,
+        },
+      };
+
+      function detectDebris(text) {
+        const raw = String(text || "");
+        const found = [];
+        if (/for every user request/i.test(raw) && /search tools/i.test(raw)) found.push("notion-mcp", "mcp-echo");
+        if (/toda tarea creativa/i.test(raw) && /brainstorming/i.test(raw)) found.push("spanish-skill", "skill-echo");
+        if (raw.includes(HARNESS_TOKEN) || /agent-identity|context-priority|_bump_bwrap/i.test(raw)) found.push("system-debris", HARNESS_TOKEN);
+        if (/left blank intentionally/i.test(raw) && /reconsider/i.test(raw)) found.push("blank-abort");
+        if (/only use skills that are directly relevant/i.test(raw)) found.push("skill-echo", "skill-guidance");
+        return [...new Set(found)];
+      }
+      function looksInstruction(text) {
+        const raw = String(text || "");
+        if (!raw.trim()) return false;
+        if (detectDebris(raw).length) return true;
+        return /you MUST|requisito previo|do not invoke skills|left blank intentionally/i.test(raw);
+      }
+      function scoreTicket(raw) {
+        const t = raw && typeof raw === "object" ? raw : SEEDS.leavened;
+        const tools = Number(t.toolUses);
+        const seconds = Number(t.durationSeconds);
+        const detected = detectDebris(t.outputText);
+        const debris = [...new Set([...(t.debrisFingerprints || []), ...detected])];
+        const shaped = t.instructionShaped === true || looksInstruction(t.outputText);
+        const zeroTool = tools === 0;
+        const secondsLong = Number.isFinite(seconds) && seconds <= 12;
+        const healthy = Number.isFinite(seconds) && seconds >= 90 && seconds <= 220;
+        const unleavened = tools > 0 && healthy && shaped !== true && debris.length === 0;
+        const leavenedPattern = zeroTool && secondsLong && (shaped || debris.length > 0);
+        const mcpEcho = debris.includes("notion-mcp") || debris.includes("mcp-echo");
+        const skillEcho = debris.includes("skill-echo") || debris.includes("spanish-skill") || debris.includes("skill-guidance");
+        const systemDebris = debris.includes("system-debris") || debris.includes(HARNESS_TOKEN) || String(t.outputText || "").includes(HARNESS_TOKEN);
+        const blankAbort = debris.includes("blank-abort");
+        const rawSeed = String(t.seed || "").toLowerCase();
+        const seed = SEED_ALIASES[rawSeed] || rawSeed;
+        let verdict = "unleavened";
+        if (unleavened && seed !== "relaunched-clean") verdict = "unleavened";
+        else if (ALARM.includes(seed)) verdict = seed;
+        else if (blankAbort) verdict = "blank-abort";
+        else if (systemDebris) verdict = "system-debris";
+        else if (mcpEcho && t.mcpMentionedInPrompt !== true) verdict = "mcp-echo";
+        else if (skillEcho) verdict = "skill-echo";
+        else if (t.relaunchSucceeded === true && leavenedPattern) verdict = "relaunched-clean";
+        else if (leavenedPattern) verdict = "leavened";
+        else if (zeroTool && secondsLong) verdict = "zero-tool";
+        else if (shaped) verdict = "foreign-echo";
+        else if (debris.length) verdict = "contaminated";
+        const chips = [];
+        if (unleavened) chips.push("unleavened");
+        if (leavenedPattern) chips.push("leavened", "contaminated", "foreign-echo");
+        if (zeroTool) chips.push("zero-tool");
+        if (systemDebris) chips.push("system-debris");
+        if (mcpEcho && t.mcpMentionedInPrompt !== true) chips.push("mcp-echo", "notion-mcp");
+        if (skillEcho) chips.push("skill-echo");
+        if (debris.includes("spanish-skill") || /toda tarea creativa/i.test(t.outputText || "")) chips.push("spanish-skill");
+        if (blankAbort) chips.push("blank-abort");
+        if (t.relaunchSucceeded === true && leavenedPattern) chips.push("relaunched-clean");
+        const feeds = {
+          unleavened: "● Unleavened · tools used, healthy band, task-shaped, no debris · hold",
+          contaminated: "● Contaminated · bootstrap context assembled the wrong starter · alarm",
+          "foreign-echo": "● Foreign-echo · first visible turn is instruction-shaped, not the task · alarm",
+          "zero-tool": "● Zero-tool · 0 tool uses in a seconds-long Explore launch · alarm",
+          "system-debris": "● System-debris · harness token _bump_bwrap_repro in the visible turn · alarm",
+          "mcp-echo": "● MCP-echo · Notion-MCP search-tool edict with Notion never in the prompt · alarm",
+          "skill-echo": "● Skill-echo · plugin skill rule or skill-usage guidance echoed as the result · alarm",
+          "blank-abort": "● Blank-abort · left blank intentionally, then reconsider, then the run ended · alarm",
+          "relaunched-clean": "● Relaunched-clean · discard the 0-tool loaf and the identical prompt bakes · alarm",
+          leavened: "● Leavened · 0 tools + 2–12s + instruction-shaped foreign starter · alarm",
+        };
+        const reasons = ["verdict " + verdict];
+        if (verdict === "unleavened") {
+          reasons.push("tools used, duration in the healthy 90–220s band, task-shaped, no debris");
+        } else {
+          reasons.push("#90782 subagent intermittently starts with contaminated bootstrap context and echoes foreign instruction blocks (0 tool calls)");
+        }
+        if (zeroTool) reasons.push("0 tool uses reported for the run");
+        if (Number.isFinite(seconds)) reasons.push(seconds + "s duration (contaminated band 2–12s; healthy 90–220s)");
+        if (shaped) reasons.push("result is instruction-shaped text, not task output");
+        if (systemDebris) reasons.push("harness/system debris includes " + HARNESS_TOKEN);
+        if (t.siblingClean === true) reasons.push("sibling subagents launched the same instant completed clean");
+        if (t.relaunchSucceeded === true) reasons.push("identical relaunch succeeded (workaround: discard → relaunch; 1–2 retries)");
+        return {
+          ticket: t,
+          verdict,
+          hold: HOLD.includes(verdict),
+          chips: [...new Set(chips)],
+          feed: feeds[verdict] || ("● " + verdict + " · alarm"),
+          reasons,
+          mcpEcho, skillEcho, systemDebris, blankAbort, leavenedPattern,
+        };
+      }
+
+      const ticketEl = document.getElementById("ticket");
+      const dough = document.getElementById("dough");
+      const turnText = document.getElementById("turn-text");
+      const oven = document.getElementById("oven");
+      const ovenMark = document.getElementById("oven-mark");
+      const ovenCopy = document.getElementById("oven-copy");
+      const verdictWord = document.getElementById("verdict-word");
+      const verdictFeed = document.getElementById("verdict-feed");
+      const verdictBox = document.getElementById("verdict-box");
+      const chipRow = document.getElementById("chip-row");
+      const reasonsEl = document.getElementById("reasons");
+
+      function crockSpill(result) {
+        const chips = result.chips.join(" ");
+        const text = String(result.ticket.outputText || "");
+        document.getElementById("crock-notion").classList.toggle("spill", /notion-mcp|mcp-echo/.test(chips) || /search tools/i.test(text));
+        document.getElementById("crock-superpowers").classList.toggle("spill", /spanish-skill/.test(chips) || /toda tarea creativa/i.test(text));
+        document.getElementById("crock-harness").classList.toggle("spill", /system-debris/.test(chips) || text.includes(HARNESS_TOKEN));
+        document.getElementById("crock-skill").classList.toggle("spill", (/skill-echo/.test(chips) && !/toda tarea creativa/i.test(text)) || /directly relevant/i.test(text));
+      }
+
+      function render(result) {
+        const t = result.ticket;
+        ticketEl.value = JSON.stringify(t, null, 2);
+        turnText.textContent = t.outputText || "(no first-turn text)";
+        verdictWord.textContent = result.verdict;
+        verdictFeed.textContent = result.feed;
+        verdictBox.className = "verdict " + (result.hold ? "hold" : "fail");
+        dough.className = "dough-well " + (result.hold ? "hold" : "leavened") + (result.hold ? "" : " spill-on");
+        document.getElementById("tool-uses").textContent = t.toolUses == null ? "—" : String(t.toolUses);
+        document.getElementById("seconds").textContent = t.durationSeconds == null ? "—" : String(t.durationSeconds);
+        document.getElementById("shaped").textContent = result.hold ? "task" : "instruction";
+        document.getElementById("siblings").textContent = t.siblingClean ? "clean" : "—";
+        oven.className = "oven " + (result.hold ? "bake hold" : "alarm");
+        ovenMark.textContent = result.hold ? "bake" : "quarantine";
+        ovenCopy.textContent = result.hold
+          ? "Healthy band. Tools used. Task-shaped. No debris. Slide the peel in."
+          : "0-tool instruction loaf. Do not bake. Discard and relaunch.";
+        crockSpill(result);
+        chipRow.replaceChildren(
+          ...CHIP_NAMES.map((name) => {
+            const span = document.createElement("span");
+            span.className = "chip" + (result.chips.includes(name) ? " on" : "");
+            span.textContent = name;
+            return span;
+          }),
+        );
+        reasonsEl.replaceChildren(
+          ...result.reasons.map((reason) => {
+            const li = document.createElement("li");
+            li.textContent = reason;
+            return li;
+          }),
+        );
+        const pressed = t.seed || result.verdict;
+        for (const [name, id] of Object.entries(SEED_BUTTONS)) {
+          document.getElementById(id).setAttribute("aria-pressed", String(pressed === name || result.verdict === name));
+        }
+        const slack = document.getElementById("slack-row");
+        const linear = document.getElementById("linear-row");
+        if (result.hold) {
+          slack.textContent = "Would skip Slack. Bench is " + result.verdict + ". No webhook in this demo.";
+          linear.textContent = "Would skip Linear. Verdict " + result.verdict + " is a bake. No API key in this demo.";
+        } else {
+          slack.textContent = "Would post to Slack: " + result.verdict + " · 0-tool foreign starter. No webhook in this demo.";
+          linear.textContent = "Would open a Linear ticket: Leaven " + result.verdict + " · #" + (t.issue || 90782) + " bootstrap contamination. No API key in this demo.";
+        }
+      }
+
+      function applySeed(name) {
+        render(scoreTicket(SEEDS[name] || SEEDS.leavened));
+      }
+      function applyEditor() {
+        try {
+          render(scoreTicket(JSON.parse(ticketEl.value)));
+        } catch {
+          verdictWord.textContent = "leavened";
+          verdictFeed.textContent = "Ticket JSON did not parse. Score the crocks or admit unleavened.";
+          verdictBox.className = "verdict fail";
+        }
+      }
+
+      document.getElementById("load-btn").addEventListener("click", () => applySeed("leavened"));
+      document.getElementById("quarantine-btn").addEventListener("click", () => applySeed("leavened"));
+      document.getElementById("relaunch-btn").addEventListener("click", () => applySeed("unleavened"));
+      document.getElementById("score-btn").addEventListener("click", applyEditor);
+      document.getElementById("apply-ticket").addEventListener("click", applyEditor);
+      for (const [name, id] of Object.entries(SEED_BUTTONS)) {
+        document.getElementById(id).addEventListener("click", () => applySeed(name));
+      }
+      document.getElementById("export-ticket").addEventListener("click", () => {
+        const blob = new Blob([ticketEl.value], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "leaven-launch-ticket.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      const drop = document.getElementById("drop");
+      function loadFile(file) {
+        file.text().then((text) => {
+          ticketEl.value = text;
+          applyEditor();
+        });
+      }
+      ;["dragenter", "dragover"].forEach((name) => {
+        drop.addEventListener(name, (event) => {
+          event.preventDefault();
+          drop.classList.add("hot");
+        });
+        dough.addEventListener(name, (event) => {
+          event.preventDefault();
+          drop.classList.add("hot");
+        });
+      });
+      ;["dragleave", "drop"].forEach((name) => {
+        drop.addEventListener(name, (event) => {
+          event.preventDefault();
+          drop.classList.remove("hot");
+          if (name === "drop" && event.dataTransfer.files[0]) loadFile(event.dataTransfer.files[0]);
+        });
+        dough.addEventListener(name, (event) => {
+          event.preventDefault();
+          drop.classList.remove("hot");
+          if (name === "drop" && event.dataTransfer.files[0]) loadFile(event.dataTransfer.files[0]);
+        });
+      });
+
+      applySeed("leavened");
+
+      function liveIssue(id, el) {
+        fetch("https://api.github.com/repos/anthropics/claude-code/issues/" + id)
+          .then((res) => {
+            if (!res.ok) throw new Error("GitHub " + res.status);
+            return res.json();
+          })
+          .then((issue) => {
+            const state = document.createElement("span");
+            state.className = "state" + (issue.state === "closed" ? " closed" : "");
+            state.textContent = issue.state || "unknown";
+            const link = document.createElement("a");
+            link.href = issue.html_url || ("https://github.com/anthropics/claude-code/issues/" + id);
+            link.textContent = "#" + issue.number + " " + (issue.title || "");
+            el.replaceChildren(state, link);
+          })
+          .catch(() => {
+            el.textContent =
+              "GitHub unauthenticated fetch did not land. #" + id + " remains OPEN in the local seed. See .env.example.";
+          });
+      }
+      liveIssue(90782, document.getElementById("issue-card"));
+
+      fetch("./data/fingerprints.json")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((prints) => {
+          if (!prints || !prints.primary || !prints.primary[0]) return;
+          const row = prints.primary[0];
+          document.getElementById("local-seeds").textContent =
+            "Local seeds loaded: #" + row.issue + " · 5/20 · 0 tools · 2–12s · instruction-shaped";
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>
