@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Bulla — papal lead-bulla assay desk for Claude Desktop #90891: a broken seal is not a hold. Score the lead or admit sealed."
+    />
+    <title>Bulla</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --cloth: #1c2418;
+        --cloth-lit: #2a3324;
+        --olive: #3d4a32;
+        --lead: #7a7f86;
+        --lead-bright: #b4b8be;
+        --lead-dark: #3a3d42;
+        --vermillion: #c23b22;
+        --cord: #b8321a;
+        --parchment: #e4dfd0;
+        --parchment-cool: #d8d4c6;
+        --ink: #1f221c;
+        --quiet: #9aa394;
+        --brass: #b8954a;
+        --sealed: #7ea37a;
+        --blown: #c23b22;
+        --display: "Cormorant Garamond", "Palatino Linotype", Palatino, serif;
+        --body: "IBM Plex Sans", "Helvetica Neue", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--parchment);
+        background:
+          radial-gradient(ellipse at 18% 8%, rgba(194, 59, 34, 0.08), transparent 34%),
+          radial-gradient(ellipse at 82% 0%, rgba(184, 149, 74, 0.08), transparent 28%),
+          repeating-linear-gradient(135deg, rgba(26, 32, 22, 0.55) 0 2px, transparent 2px 11px),
+          linear-gradient(180deg, #141910 0%, var(--cloth) 42%, #12160f 100%);
+      }
+      button, textarea, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: #e2b36a; }
+      .chancery {
+        width: min(1240px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 72px;
+      }
+      .hem {
+        height: 8px;
+        border-radius: 999px;
+        background:
+          repeating-linear-gradient(90deg, var(--cord) 0 10px, #7a2214 10px 14px, var(--lead) 14px 18px, #7a2214 18px 22px);
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+      }
+      .mast {
+        margin-top: 18px;
+        padding: 22px 26px 18px;
+        background:
+          linear-gradient(180deg, rgba(61, 74, 50, 0.55), rgba(28, 36, 24, 0.92));
+        border: 1px solid rgba(184, 149, 74, 0.28);
+        box-shadow: inset 0 1px 0 rgba(228, 223, 208, 0.06);
+      }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      h1 {
+        margin: 4px 0 2px;
+        font-family: var(--display);
+        font-size: clamp(56px, 11vw, 108px);
+        line-height: 0.82;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .phrase { margin: 0; font-family: var(--display); font-size: 22px; font-style: italic; max-width: 40em; color: var(--parchment-cool); }
+      .idle { margin: 8px 0 0; font-family: var(--mono); font-size: 12px; color: var(--quiet); }
+      .bench {
+        display: grid;
+        grid-template-columns: 0.86fr 1.14fr 0.9fr;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      @media (max-width: 1040px) {
+        .bench { grid-template-columns: 1fr; }
+      }
+      .puck-well, .docket, .assay, .register, .stylus, .sources {
+        background: rgba(22, 28, 20, 0.72);
+        border: 1px solid rgba(184, 149, 74, 0.18);
+        padding: 14px;
+      }
+      h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 26px;
+        font-weight: 600;
+      }
+      .puck-stage {
+        position: relative;
+        min-height: 280px;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at 50% 42%, rgba(122, 127, 134, 0.18), transparent 48%),
+          repeating-linear-gradient(90deg, rgba(42, 51, 36, 0.7) 0 8px, rgba(28, 36, 24, 0.7) 8px 16px);
+        overflow: hidden;
+      }
+      .cord {
+        position: absolute;
+        left: 8%;
+        right: 8%;
+        top: 46%;
+        height: 7px;
+        background: linear-gradient(90deg, transparent, var(--cord) 8%, #8a2416 50%, var(--cord) 92%, transparent);
+        transform: rotate(-8deg);
+        box-shadow: 0 8px 0 rgba(0, 0, 0, 0.25);
+        transition: transform 280ms ease, opacity 280ms ease;
+      }
+      .puck-stage.cracked .cord {
+        transform: rotate(14deg) translateY(18px);
+        opacity: 0.55;
+      }
+      .puck {
+        position: relative;
+        width: 168px;
+        height: 168px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 32% 28%, var(--lead-bright), var(--lead) 42%, var(--lead-dark) 78%);
+        box-shadow:
+          0 18px 28px rgba(0, 0, 0, 0.45),
+          inset 0 0 0 10px rgba(58, 61, 66, 0.55),
+          inset 0 -18px 24px rgba(0, 0, 0, 0.28);
+        display: grid;
+        place-items: center;
+        color: #1a1c1e;
+        transition: filter 280ms ease, transform 280ms ease;
+      }
+      .puck strong {
+        font-family: var(--display);
+        font-size: 34px;
+        letter-spacing: 0.08em;
+      }
+      .puck small {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .puck-stage.cracked .puck {
+        filter: saturate(0.4) contrast(1.15);
+        transform: rotate(-12deg);
+        background:
+          radial-gradient(circle at 70% 30%, #8a6a62, #5a4a48 40%, #2c2624 80%);
+      }
+      .crack {
+        display: none;
+        position: absolute;
+        inset: 18% 22%;
+        border-left: 2px solid rgba(226, 210, 190, 0.7);
+        transform: rotate(18deg);
+      }
+      .puck-stage.cracked .crack { display: block; }
+      .sconce {
+        margin-top: 12px;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+      }
+      .sconce b { color: var(--sealed); }
+      .puck-stage.cracked + .sconce b { color: var(--blown); }
+      .docket {
+        background:
+          linear-gradient(180deg, #ece7d8, var(--parchment) 40%, #d3cebf);
+        color: var(--ink);
+        border-color: rgba(184, 149, 74, 0.4);
+      }
+      .docket h2, .docket a { color: #5a3a18; }
+      .rows { display: grid; gap: 8px; font-size: 14px; }
+      .row {
+        display: grid;
+        grid-template-columns: 7.5em 1fr;
+        gap: 8px;
+        padding: 7px 8px;
+        background: rgba(255, 255, 255, 0.28);
+        border: 1px solid rgba(80, 70, 50, 0.12);
+      }
+      .row span { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #6a6254; }
+      .beads { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .bead {
+        min-width: 64px;
+        padding: 6px 8px;
+        border-radius: 999px;
+        background: #3d4a32;
+        color: var(--parchment);
+        font-family: var(--mono);
+        font-size: 11px;
+        text-align: center;
+      }
+      .bead.dead {
+        background: #5a2a22;
+        text-decoration: line-through;
+        opacity: 0.72;
+      }
+      .counter {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid rgba(90, 58, 24, 0.22);
+        background: rgba(184, 149, 74, 0.12);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .counter b { color: #2f6a38; }
+      .verdict-box {
+        padding: 12px 12px 10px;
+        border: 1px solid rgba(126, 163, 122, 0.4);
+        background: rgba(126, 163, 122, 0.08);
+      }
+      .verdict-box.alarm {
+        border-color: rgba(194, 59, 34, 0.5);
+        background: rgba(194, 59, 34, 0.08);
+      }
+      #verdict-word {
+        font-family: var(--display);
+        font-size: 42px;
+        line-height: 0.9;
+        margin: 0;
+      }
+      #verdict-feed { margin: 6px 0 0; color: var(--quiet); font-size: 13px; }
+      .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+      .chip {
+        padding: 3px 8px;
+        border: 1px solid rgba(184, 149, 74, 0.28);
+        border-radius: 999px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+      }
+      .chip.on { color: var(--parchment); border-color: var(--brass); background: rgba(184, 149, 74, 0.14); }
+      .reasons { margin: 0; padding-left: 18px; color: var(--quiet); font-size: 13px; }
+      .actions, .seeds { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      button.act, button.seed {
+        border: 1px solid rgba(184, 149, 74, 0.35);
+        background: #1a2016;
+        padding: 7px 10px;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      button.act { background: var(--olive); color: var(--parchment); }
+      button.seed[aria-pressed="true"] {
+        background: var(--vermillion);
+        border-color: #e07a5a;
+        color: #fff4ea;
+      }
+      .register-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      @media (max-width: 800px) {
+        .register-grid { grid-template-columns: 1fr; }
+      }
+      .lane {
+        background: #12160f;
+        border: 1px solid rgba(184, 149, 74, 0.16);
+        padding: 10px;
+        min-height: 180px;
+      }
+      .lane h3 {
+        margin: 0 0 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .tick {
+        display: grid;
+        grid-template-columns: 5.6em 1fr;
+        gap: 8px;
+        padding: 6px 0;
+        border-top: 1px dashed rgba(154, 163, 148, 0.18);
+        font-size: 12px;
+        color: var(--quiet);
+      }
+      .tick time { font-family: var(--mono); color: var(--parchment-cool); }
+      .tick.quiet { opacity: 0.35; }
+      .stylus textarea {
+        width: 100%;
+        min-height: 140px;
+        resize: vertical;
+        background: #12160f;
+        border: 1px solid rgba(184, 149, 74, 0.22);
+        padding: 10px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--parchment);
+      }
+      .drop {
+        margin-top: 8px;
+        padding: 14px;
+        border: 1px dashed rgba(184, 149, 74, 0.35);
+        color: var(--quiet);
+        font-size: 13px;
+        text-align: center;
+      }
+      .issue { margin: 8px 0 0; font-size: 13px; color: var(--quiet); }
+      .sources ul { margin: 0; padding-left: 18px; color: var(--quiet); font-size: 13px; }
+      footer { margin-top: 18px; color: var(--quiet); font-size: 13px; }
+      footer code { font-family: var(--mono); font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <main class="chancery">
+      <div class="hem" aria-hidden="true"></div>
+      <header class="mast">
+        <p class="mark">15:50 / hermes catalog #89 / #90891</p>
+        <h1>Bulla</h1>
+        <p class="phrase">A broken seal is not a hold. Score the lead or admit sealed.</p>
+        <p class="idle">Idle word: sealed. Seeded state: blown. Papal chancery / lead-bulla assay desk — cool parchment, lead puck, vermillion cord.</p>
+      </header>
+
+      <section class="bench">
+        <article class="puck-well">
+          <h2>Lead puck</h2>
+          <div id="puck-stage" class="puck-stage">
+            <div class="cord" aria-hidden="true"></div>
+            <div class="puck" id="puck">
+              <div>
+                <strong id="puck-word">SEALED</strong>
+                <small>CodeIntegrity.cat</small>
+              </div>
+              <i class="crack" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="sconce">
+            <span>sconce / seal = <b id="sconce-word">sealed</b></span>
+            <span id="package-chip">package Ok</span>
+          </div>
+        </article>
+
+        <article class="docket">
+          <h2>Parchment docket</h2>
+          <div class="rows">
+            <div class="row"><span>Package</span><div id="pkg-family">Claude_1.40609.0.0_x64__pzs8sxrjxfjjc</div></div>
+            <div class="row"><span>Desktop</span><div>1.40609.0.0 · SignatureKind: Developer</div></div>
+            <div class="row"><span>Catalog</span><div id="cat-line">AppxMetadata\CodeIntegrity.cat present</div></div>
+            <div class="row"><span>GPU</span><div id="gpu-line">alive · NVIDIA GeForce RTX 5060 Ti</div></div>
+            <div class="row"><span>Host</span><div id="host-line">embedded CC 2.1.247 running</div></div>
+          </div>
+          <div class="beads" id="beads" aria-label="Embedded sessions"></div>
+          <div class="counter">
+            Standalone unpackaged 2.1.251 · <b id="unpackaged-word">CLEAR</b>
+          </div>
+        </article>
+
+        <article class="assay">
+          <h2>Assay</h2>
+          <div id="verdict-box" class="verdict-box">
+            <p id="verdict-word">sealed</p>
+            <p id="verdict-feed">● Sealed · intact MSIX seal, CodeIntegrity.cat present, GPU alive, embedded sessions running · hold</p>
+          </div>
+          <div id="chip-row" class="chip-row"></div>
+          <ol id="reasons" class="reasons"></ol>
+          <div class="actions">
+            <button class="act" id="idle-btn" type="button">Admit sealed</button>
+            <button class="act" id="blow-btn" type="button">Seed blown</button>
+            <button class="act" id="score-btn" type="button">Score the lead</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="register">
+        <h2>Chancery register</h2>
+        <p class="issue" id="issue-card">
+          <a href="https://github.com/anthropics/claude-code/issues/90891">#90891</a> OPEN · local seed · 2026-08-31T04:07:51Z · gsl0001
+        </p>
+        <div class="register-grid">
+          <div class="lane">
+            <h3>Code Integrity · Event 3010 then 3033</h3>
+            <div id="ci-lane"></div>
+          </div>
+          <div class="lane">
+            <h3>main.log · GPU process gone</h3>
+            <div id="log-lane"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stylus">
+        <h2>Brass stylus</h2>
+        <div class="seeds" id="seed-row"></div>
+        <textarea id="ticket" spellcheck="false" aria-label="Probe ticket JSON"></textarea>
+        <div class="actions">
+          <button class="act" id="apply-ticket" type="button">Apply ticket</button>
+          <button class="act" id="export-ticket" type="button">Export ticket</button>
+        </div>
+        <div class="drop" id="drop">Paste or drop a probe ticket JSON here. Score the seal.</div>
+      </section>
+
+      <section class="sources">
+        <h2>Docket notes</h2>
+        <ul>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90891">#90891</a> OPEN — Claude Desktop (Windows MSIX) updater modifies package in place, breaking code integrity; blocked vk_swiftshader.dll load crashes GPU process and kills all embedded Claude Code sessions. 2026-08-31T04:07:51Z. Labels: bug, has repro, platform:windows, area:desktop. Reporter gsl0001.</li>
+          <li>Root cause (issue writeup): updater writes in place inside <code>C:\Program Files\WindowsApps\Claude_…</code>. <code>AppxMetadata\CodeIntegrity.cat</code> missing. Event 3010 (<code>0xC000003A</code>) then Event 3033 blocks <code>app\vk_swiftshader.dll</code>. GPU process gone exitCode 101457950. Electron tears down. Every embedded session killed. Package Modified, NeedsRemediation. Standalone unpackaged 2.1.251 unaffected.</li>
+          <li>Five crashes 2026-08-30 local: 16:46:30, 17:00:51, 17:09:21, 17:26:42, 20:09:29. Final daytime crash ~8s after an in-app browser preview. Package installed 2026-08-28 08:02; GPU DLLs rewritten 2026-08-30 21:01–21:02. DLL Authenticode still valid (CN="Anthropic, PBC").</li>
+          <li>Same-class (cite): <a href="https://github.com/anthropics/claude-code/issues/89112">#89112</a> catalog never shipped; <a href="https://github.com/anthropics/claude-code/issues/81341">#81341</a> CIG + vendor-signed SwiftShader; <a href="https://github.com/anthropics/claude-code/issues/89016">#89016</a> GPU 101457950 / NeedsRemediation. Updater-family: <a href="https://github.com/anthropics/claude-code/issues/81875">#81875</a>, <a href="https://github.com/anthropics/claude-code/issues/89687">#89687</a>. Cross: <a href="https://github.com/electron/electron/issues/51761">electron#51761</a> (zombie SID DACL, not catalog-missing).</li>
+          <li>NOT Wraith #90373 (unlink mid-session). NOT Carcase #90867. NOT Damper #90874/#90877. NOT Livery #90748. NOT Trompe #90881. NOT Davy #90886. NOT Assay / Sigil.</li>
+        </ul>
+      </section>
+      <footer>
+        Catalog path <code>/bulla/</code>. Score engine lives in this page and in
+        <code>projects/bulla/hook/bulla.mjs</code>. No build step. No secrets.
+      </footer>
+    </main>
+    <script>
+      const CHIP_NAMES = [
+        "sealed", "blown", "in-place", "cat-missing", "gpu-dead",
+        "sessions-killed", "needs-remediation", "unpackaged-clear",
+        "swiftshader-blocked", "catalog-void", "event-3010", "event-3033",
+      ];
+      const HOLD = ["sealed"];
+      const ALARM = CHIP_NAMES.filter((name) => HOLD.indexOf(name) === -1);
+      const TITLE = "Claude Desktop (Windows MSIX) updater modifies package in place, breaking code integrity; blocked vk_swiftshader.dll load crashes GPU process and kills all embedded Claude Code sessions";
+      const CRASH_TIMES = ["16:46:30", "17:00:51", "17:09:21", "17:26:42", "20:09:29"];
+      const EXIT = 101457950;
+      const FEEDS = {
+        sealed: "● Sealed · intact MSIX seal, CodeIntegrity.cat present, GPU alive, embedded sessions running · hold",
+        blown: "● Blown · in-place mutate of sealed MSIX → cat missing → 3010 → 3033 → GPU dead → sessions killed · alarm",
+        "in-place": "● In-place · updater wrote files inside the immutable WindowsApps package directory · alarm",
+        "cat-missing": "● Cat-missing · AppxMetadata\\CodeIntegrity.cat absent (Test-Path = False) · alarm",
+        "gpu-dead": "● Gpu-dead · GPU process gone … exitCode: 101457950 · alarm",
+        "sessions-killed": "● Sessions-killed · Electron tore down the app; every embedded Claude Code session died · alarm",
+        "needs-remediation": "● Needs-remediation · package status Modified, NeedsRemediation · alarm",
+        "unpackaged-clear": "● Unpackaged-clear · standalone unpackaged Claude Code 2.1.251 stays clear · witness",
+        "swiftshader-blocked": "● Swiftshader-blocked · claude.exe blocked loading app\\vk_swiftshader.dll · alarm",
+        "catalog-void": "● Catalog-void · per-file CI catalog missing; package integrity cannot validate · alarm",
+        "event-3010": "● Event-3010 · Code Integrity unable to load CodeIntegrity.cat — 0xC000003A STATUS_OBJECT_PATH_NOT_FOUND · alarm",
+        "event-3033": "● Event-3033 · claude.exe load of app\\vk_swiftshader.dll failed Microsoft signing-level · alarm",
+      };
+      function base(seed, extra) {
+        return Object.assign({
+          seed: seed,
+          issue: 90891,
+          title: TITLE,
+          inPlaceWrite: true,
+          catPresent: false,
+          event3010: true,
+          event3033: true,
+          gpuCrashed: true,
+          sessionsKilled: true,
+          packageStatus: "Modified, NeedsRemediation",
+          unpackagedOk: true,
+          dllBlocked: true,
+          exitCode: EXIT,
+          crashTimes: CRASH_TIMES.slice(),
+          desktopVersion: "1.40609.0.0",
+          embeddedCli: "2.1.247",
+          standaloneCli: "2.1.251",
+          packageFamily: "Claude_1.40609.0.0_x64__pzs8sxrjxfjjc",
+          platform: "windows",
+          outputText: "updater wrote in place; CodeIntegrity.cat missing; Event 3010 0xC000003A; Event 3033 blocked vk_swiftshader.dll; GPU process gone exitCode 101457950; sessions killed; NeedsRemediation; unpackaged clear",
+        }, extra || {});
+      }
+      const SEEDS = {
+        sealed: () => base("sealed", {
+          inPlaceWrite: false, catPresent: true, event3010: false, event3033: false,
+          gpuCrashed: false, sessionsKilled: false, packageStatus: "Ok", dllBlocked: false,
+          exitCode: null, crashTimes: [],
+          outputText: "intact MSIX seal; CodeIntegrity.cat present; GPU alive; embedded sessions running; package Ok",
+        }),
+        blown: () => base("blown"),
+        "in-place": () => base("in-place", {
+          catPresent: true, event3010: false, event3033: false, gpuCrashed: false,
+          sessionsKilled: false, packageStatus: "Ok", dllBlocked: false, exitCode: null, crashTimes: [],
+          outputText: "updater wrote files in place inside the immutable WindowsApps package directory",
+        }),
+        "cat-missing": () => base("cat-missing", {
+          inPlaceWrite: false, event3010: false, event3033: false, gpuCrashed: false,
+          sessionsKilled: false, packageStatus: "Ok", dllBlocked: false, exitCode: null, crashTimes: [],
+          outputText: "AppxMetadata\\CodeIntegrity.cat is absent (Test-Path = False)",
+        }),
+        "gpu-dead": () => base("gpu-dead", {
+          inPlaceWrite: false, catPresent: true, event3010: false, event3033: false,
+          sessionsKilled: false, packageStatus: "Ok", dllBlocked: false,
+          outputText: "GPU process gone: type: GPU, reason: crashed, exitCode: 101457950, serviceName: GPU",
+        }),
+        "sessions-killed": () => base("sessions-killed", {
+          inPlaceWrite: false, catPresent: true, event3010: false, event3033: false,
+          gpuCrashed: false, packageStatus: "Ok", dllBlocked: false, exitCode: null, crashTimes: [],
+          outputText: "Electron tore down the whole app; every embedded Claude Code session was killed",
+        }),
+        "needs-remediation": () => base("needs-remediation", {
+          inPlaceWrite: false, catPresent: true, event3010: false, event3033: false,
+          gpuCrashed: false, sessionsKilled: false, dllBlocked: false, exitCode: null, crashTimes: [],
+          outputText: "package status observed: Modified, NeedsRemediation",
+        }),
+        "unpackaged-clear": () => base("unpackaged-clear", {
+          inPlaceWrite: false, catPresent: true, event3010: false, event3033: false,
+          gpuCrashed: false, sessionsKilled: false, packageStatus: "Ok", dllBlocked: false,
+          exitCode: null, crashTimes: [],
+          outputText: "standalone unpackaged Claude Code 2.1.251 is unaffected",
+        }),
+        "swiftshader-blocked": () => base("swiftshader-blocked", {
+          inPlaceWrite: false, catPresent: true, event3010: false, event3033: false,
+          gpuCrashed: false, sessionsKilled: false, packageStatus: "Ok",
+          outputText: "claude.exe blocked loading app\\vk_swiftshader.dll (Chromium SwiftShader)",
+        }),
+        "catalog-void": () => base("catalog-void", {
+          inPlaceWrite: false, event3010: false, event3033: false, gpuCrashed: false,
+          sessionsKilled: false, packageStatus: "Ok", dllBlocked: false, exitCode: null, crashTimes: [],
+          outputText: "per-file CI catalog missing; package integrity cannot validate; catalog-void",
+        }),
+        "event-3010": () => base("event-3010", {
+          inPlaceWrite: false, catPresent: true, event3033: false, gpuCrashed: false,
+          sessionsKilled: false, packageStatus: "Ok", dllBlocked: false, exitCode: null, crashTimes: [],
+          outputText: "Event 3010: Code Integrity was unable to load CodeIntegrity.cat — status 0xC000003A STATUS_OBJECT_PATH_NOT_FOUND",
+        }),
+        "event-3033": () => base("event-3033", {
+          inPlaceWrite: false, catPresent: true, event3010: false, gpuCrashed: false,
+          sessionsKilled: false, packageStatus: "Ok", dllBlocked: false, exitCode: null, crashTimes: [],
+          outputText: "Event 3033: claude.exe attempted to load app\\vk_swiftshader.dll but it did not meet Microsoft signing-level requirements",
+        }),
+      };
+      function pick(t, keys) {
+        for (const key of keys) {
+          if (t[key] != null && t[key] !== "") return t[key];
+        }
+        return undefined;
+      }
+      function normalize(raw) {
+        const t = raw && typeof raw === "object" ? raw : {};
+        return {
+          seed: String(pick(t, ["seed"]) || ""),
+          issue: Number(pick(t, ["issue"])) || 90891,
+          inPlaceWrite: pick(t, ["inPlaceWrite", "in_place_write", "inPlace"]),
+          catPresent: pick(t, ["catPresent", "cat_present", "catalogPresent"]),
+          event3010: pick(t, ["event3010", "event_3010"]),
+          event3033: pick(t, ["event3033", "event_3033"]),
+          gpuCrashed: pick(t, ["gpuCrashed", "gpu_crashed", "gpuDead"]),
+          sessionsKilled: pick(t, ["sessionsKilled", "sessions_killed"]),
+          packageStatus: String(pick(t, ["packageStatus", "package_status", "status"]) || ""),
+          unpackagedOk: pick(t, ["unpackagedOk", "unpackaged_ok", "standaloneOk"]),
+          dllBlocked: pick(t, ["dllBlocked", "dll_blocked", "swiftshaderBlocked"]),
+          exitCode: pick(t, ["exitCode", "exit_code"]),
+          outputText: String(pick(t, ["outputText", "output", "text"]) || ""),
+        };
+      }
+      function scoreTicket(raw) {
+        const t = normalize(raw);
+        const text = t.outputText;
+        const inPlace = t.inPlaceWrite === true || /in[- ]place (write|mutate|modif)/i.test(text);
+        const catMissing = t.catPresent === false || /cat (missing|absent|void)|CodeIntegrity\.cat.*(missing|absent|False)|catalog[- ]void/i.test(text);
+        const ev3010 = t.event3010 === true || /event\s*3010|0xC000003A|STATUS_OBJECT_PATH_NOT_FOUND/i.test(text);
+        const ev3033 = t.event3033 === true || /event\s*3033|signing-level|did not meet Microsoft/i.test(text);
+        const swift = t.dllBlocked === true || /vk_swiftshader|swiftshader[- ]blocked|dll blocked/i.test(text);
+        const gpuDead = t.gpuCrashed === true || t.exitCode === EXIT || /gpu process gone|gpu[- ]dead|exitCode:\s*101457950/i.test(text);
+        const sessionsDead = t.sessionsKilled === true || /sessions? (killed|torn)|embedded .* killed|Electron tears down/i.test(text);
+        const needs = /needsremediation|modified/i.test(t.packageStatus) || /NeedsRemediation/i.test(text);
+        const unpackaged = t.unpackagedOk === true || /unpackaged|standalone .* (ok|unaffected|clear)/i.test(text);
+        const catalogVoid = catMissing || /catalog[- ]void/i.test(text);
+        const packageOk = !needs && (!t.packageStatus || /^(ok|sealed|intact)$/i.test(t.packageStatus));
+        const sealed = t.inPlaceWrite !== true && t.catPresent !== false && t.event3010 !== true &&
+          t.event3033 !== true && t.gpuCrashed !== true && t.sessionsKilled !== true &&
+          t.dllBlocked !== true && packageOk;
+        const blown = t.inPlaceWrite === true && t.catPresent === false && t.event3010 === true &&
+          t.event3033 === true && t.gpuCrashed === true && t.sessionsKilled === true &&
+          (needs || t.dllBlocked === true);
+        const seed = String(t.seed || "").toLowerCase();
+        let verdict = "sealed";
+        if (sealed && ALARM.indexOf(seed) === -1) verdict = "sealed";
+        else if (ALARM.indexOf(seed) !== -1) verdict = seed;
+        else if (blown) verdict = "blown";
+        else if (inPlace) verdict = "in-place";
+        else if (catMissing) verdict = "cat-missing";
+        else if (ev3010 && !ev3033) verdict = "event-3010";
+        else if (ev3033) verdict = "event-3033";
+        else if (swift) verdict = "swiftshader-blocked";
+        else if (gpuDead) verdict = "gpu-dead";
+        else if (sessionsDead) verdict = "sessions-killed";
+        else if (needs) verdict = "needs-remediation";
+        else if (catalogVoid) verdict = "catalog-void";
+        else if (unpackaged) verdict = "unpackaged-clear";
+        const chips = [];
+        if (sealed) chips.push("sealed");
+        if (blown) chips.push("blown");
+        if (inPlace) chips.push("in-place");
+        if (catMissing) chips.push("cat-missing");
+        if (gpuDead) chips.push("gpu-dead");
+        if (sessionsDead) chips.push("sessions-killed");
+        if (needs) chips.push("needs-remediation");
+        if (unpackaged) chips.push("unpackaged-clear");
+        if (swift) chips.push("swiftshader-blocked");
+        if (catalogVoid) chips.push("catalog-void");
+        if (ev3010) chips.push("event-3010");
+        if (ev3033) chips.push("event-3033");
+        const reasons = ["verdict " + verdict];
+        if (verdict === "sealed") reasons.push("intact MSIX seal; CodeIntegrity.cat present; GPU alive; embedded sessions running");
+        else reasons.push("#90891 Claude Desktop (Windows MSIX) updater modifies package in place, breaking code integrity");
+        if (inPlace) reasons.push("updater wrote files in place inside C:\\Program Files\\WindowsApps\\Claude_…");
+        if (catMissing) reasons.push("AppxMetadata\\CodeIntegrity.cat is absent (Test-Path = False)");
+        if (ev3010) reasons.push("Event 3010: Code Integrity unable to load CodeIntegrity.cat — 0xC000003A");
+        if (ev3033) reasons.push("Event 3033: claude.exe blocked loading app\\vk_swiftshader.dll");
+        if (gpuDead) reasons.push("GPU process gone … exitCode: 101457950");
+        if (sessionsDead) reasons.push("Electron tore down the whole app; every embedded session killed");
+        if (unpackaged) reasons.push("standalone unpackaged Claude Code 2.1.251 stays clear");
+        return { ticket: t, verdict, hold: HOLD.indexOf(verdict) !== -1, chips: [...new Set(chips)], reasons, feed: FEEDS[verdict] || ("● " + verdict + " · alarm") };
+      }
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+      function paintRegister(kind) {
+        const live = kind === "blown" || kind === "gpu-dead" || kind === "event-3010" || kind === "event-3033";
+        document.getElementById("ci-lane").innerHTML = CRASH_TIMES.map((time) =>
+          '<div class="tick' + (live ? "" : " quiet") + '"><time>' + time +
+          "</time><div>3010 unable to load CodeIntegrity.cat 0xC000003A → 3033 vk_swiftshader.dll signing-level</div></div>"
+        ).join("");
+        document.getElementById("log-lane").innerHTML = CRASH_TIMES.map((time) =>
+          '<div class="tick' + (live ? "" : " quiet") + '"><time>' + time +
+          "</time><div>GPU process gone: type: GPU, reason: crashed, exitCode: 101457950, serviceName: GPU</div></div>"
+        ).join("");
+      }
+      function paint(result) {
+        const t = result.ticket;
+        const cracked = result.verdict !== "sealed" && result.verdict !== "unpackaged-clear";
+        document.getElementById("verdict-word").textContent = result.verdict;
+        document.getElementById("verdict-feed").textContent = result.feed;
+        document.getElementById("verdict-box").classList.toggle("alarm", !result.hold);
+        document.getElementById("verdict-box").classList.toggle("hold", result.hold);
+        document.getElementById("ticket").value = JSON.stringify(t.seed && SEEDS[t.seed] ? SEEDS[t.seed]() : t, null, 2);
+        document.getElementById("chip-row").innerHTML = CHIP_NAMES.map((name) =>
+          '<span class="chip' + (result.chips.indexOf(name) !== -1 ? " on" : "") + '">' + name + "</span>"
+        ).join("");
+        document.getElementById("reasons").innerHTML = result.reasons.map((line) => "<li>" + escapeHtml(line) + "</li>").join("");
+        document.querySelectorAll("button.seed").forEach((btn) => {
+          btn.setAttribute("aria-pressed", btn.dataset.seed === (t.seed || result.verdict) ? "true" : "false");
+        });
+        const stage = document.getElementById("puck-stage");
+        stage.classList.toggle("cracked", cracked);
+        document.getElementById("puck-word").textContent = cracked ? "BLOWN" : "SEALED";
+        document.getElementById("sconce-word").textContent = cracked ? result.verdict : "sealed";
+        const catMissing = result.chips.indexOf("cat-missing") !== -1 || result.chips.indexOf("catalog-void") !== -1;
+        document.getElementById("cat-line").textContent = catMissing
+          ? "AppxMetadata\\CodeIntegrity.cat absent (Test-Path = False)"
+          : "AppxMetadata\\CodeIntegrity.cat present";
+        document.getElementById("gpu-line").textContent = result.chips.indexOf("gpu-dead") !== -1
+          ? "GPU process gone · exitCode: 101457950"
+          : "alive · NVIDIA GeForce RTX 5060 Ti";
+        document.getElementById("host-line").textContent = result.chips.indexOf("sessions-killed") !== -1
+          ? "Electron tear-down · embedded CC 2.1.247 killed"
+          : "embedded CC 2.1.247 running";
+        document.getElementById("package-chip").textContent = result.chips.indexOf("needs-remediation") !== -1
+          ? "Modified, NeedsRemediation"
+          : "package Ok";
+        document.getElementById("unpackaged-word").textContent = "CLEAR";
+        const dead = result.chips.indexOf("sessions-killed") !== -1 || result.verdict === "blown";
+        document.getElementById("beads").innerHTML = ["sess-a", "sess-b", "sess-c"].map((name) =>
+          '<span class="bead' + (dead ? " dead" : "") + '">' + name + "</span>"
+        ).join("");
+        paintRegister(result.verdict);
+      }
+      function applySeed(name) {
+        const ticket = (SEEDS[name] || SEEDS.blown)();
+        paint(scoreTicket(ticket));
+      }
+      document.getElementById("seed-row").innerHTML = CHIP_NAMES.map((name) =>
+        '<button class="seed" type="button" data-seed="' + name + '" id="seed-' + name + '">' + name + "</button>"
+      ).join("");
+      document.getElementById("idle-btn").addEventListener("click", () => applySeed("sealed"));
+      document.getElementById("blow-btn").addEventListener("click", () => applySeed("blown"));
+      document.getElementById("score-btn").addEventListener("click", () => {
+        try { paint(scoreTicket(JSON.parse(document.getElementById("ticket").value))); }
+        catch (err) { document.getElementById("verdict-feed").textContent = "Ticket JSON did not parse. Score the lead or admit sealed."; }
+      });
+      document.getElementById("apply-ticket").addEventListener("click", () => {
+        try { paint(scoreTicket(JSON.parse(document.getElementById("ticket").value))); }
+        catch (err) { document.getElementById("verdict-feed").textContent = "Ticket JSON did not parse. Score the lead or admit sealed."; }
+      });
+      document.getElementById("export-ticket").addEventListener("click", () => {
+        const blob = new Blob([document.getElementById("ticket").value], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "bulla-ticket.json";
+        a.click();
+      });
+      document.querySelectorAll("button.seed").forEach((btn) => {
+        btn.addEventListener("click", () => applySeed(btn.dataset.seed));
+      });
+      const drop = document.getElementById("drop");
+      function loadFile(file) {
+        file.text().then((text) => {
+          try { paint(scoreTicket(JSON.parse(text))); drop.textContent = "Loaded " + file.name; }
+          catch (err) { drop.textContent = "Could not parse " + file.name; }
+        });
+      }
+      drop.addEventListener("dragover", (event) => { event.preventDefault(); });
+      drop.addEventListener("drop", (event) => {
+        event.preventDefault();
+        if (event.dataTransfer.files[0]) loadFile(event.dataTransfer.files[0]);
+      });
+      applySeed("sealed");
+      fetch("https://api.github.com/repos/anthropics/claude-code/issues/90891")
+        .then((res) => res.ok ? res.json() : Promise.reject())
+        .then((issue) => {
+          document.getElementById("issue-card").innerHTML =
+            '<a href="' + issue.html_url + '">#' + issue.number + "</a> " + (issue.state || "open").toUpperCase() +
+            " · " + issue.title + " · " + (issue.created_at || "2026-08-31T04:07:51Z");
+        })
+        .catch(() => {
+          document.getElementById("issue-card").innerHTML =
+            '<a href="https://github.com/anthropics/claude-code/issues/90891">#90891</a> OPEN · local seed · 2026-08-31T04:07:51Z · gsl0001';
+        });
+    </script>
+  </body>
+</html>
