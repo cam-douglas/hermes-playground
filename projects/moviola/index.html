@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Moviola — 1924 film-editing machine for Claude Code #90716: a recut print is not a hold. Score the splice or admit latched."
+    />
+    <title>Moviola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Special+Elite&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --projector: #070806;
+        --enamel: #163528;
+        --enamel-deep: #0c1f17;
+        --enamel-edge: #24543c;
+        --brass: #c4a15a;
+        --brass-bright: #e8c878;
+        --safelight: #c41e1e;
+        --safelight-glow: #ff3b3b;
+        --glass: #f4ead0;
+        --glass-dim: #cfc4a4;
+        --film: #14110e;
+        --sprocket: #2c2822;
+        --hold: #3d8a5a;
+        --ink: #0b0d0b;
+        --quiet: #8a927c;
+        --display: "Special Elite", "Courier New", monospace;
+        --body: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+        --mono: "Share Tech Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--glass);
+        background:
+          radial-gradient(ellipse at 18% 0%, rgba(196, 30, 30, 0.16), transparent 42%),
+          radial-gradient(ellipse at 88% 12%, rgba(196, 161, 90, 0.12), transparent 38%),
+          repeating-linear-gradient(90deg, rgba(22, 53, 40, 0.35) 0 1px, transparent 1px 17px),
+          var(--projector);
+        background-attachment: fixed;
+      }
+      button, textarea, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: var(--brass-bright); }
+      .bay {
+        width: min(1240px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 16px 0 56px;
+      }
+      .nameplate {
+        position: relative;
+        padding: 26px 28px 20px;
+        background:
+          linear-gradient(180deg, #1d4634 0%, var(--enamel) 48%, var(--enamel-deep) 100%);
+        border: 8px solid #0a1611;
+        box-shadow:
+          inset 0 0 0 1px rgba(196, 161, 90, 0.35),
+          0 0 0 2px #1a1208,
+          0 22px 40px rgba(0, 0, 0, 0.45);
+      }
+      .nameplate::before,
+      .nameplate::after {
+        content: "";
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, var(--brass-bright), var(--brass) 55%, #6a5018);
+        top: 10px;
+      }
+      .nameplate::before { left: 10px; }
+      .nameplate::after { right: 10px; }
+      .mark {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      h1 {
+        margin: 8px 0 6px;
+        font-family: var(--display);
+        font-size: clamp(46px, 8vw, 84px);
+        line-height: 0.92;
+        font-weight: 400;
+        color: var(--brass-bright);
+        text-shadow: 0 2px 0 #07140e;
+      }
+      .phrase { max-width: 42em; margin: 0; font-size: 18px; }
+      .idle {
+        margin: 8px 0 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 1.2fr 0.95fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 980px) {
+        .deck { grid-template-columns: 1fr; }
+      }
+      .housing {
+        background: linear-gradient(180deg, #121512, #0b0d0b);
+        border: 1px solid rgba(196, 161, 90, 0.22);
+        padding: 14px;
+        box-shadow: inset 0 0 0 1px rgba(244, 234, 208, 0.03);
+      }
+      .housing h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 22px;
+        color: var(--brass);
+      }
+      .viewer {
+        position: relative;
+        min-height: 168px;
+        background:
+          radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.18), transparent 55%),
+          repeating-linear-gradient(135deg, rgba(80, 70, 40, 0.08) 0 2px, transparent 2px 6px),
+          var(--glass);
+        color: var(--ink);
+        border: 10px solid #1a1c16;
+        box-shadow:
+          inset 0 0 40px rgba(40, 30, 10, 0.28),
+          0 0 0 1px var(--brass);
+        padding: 18px 20px 16px;
+      }
+      .viewer .frame-id {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #6a5c38;
+      }
+      .viewer h3 {
+        margin: 4px 0 6px;
+        font-family: var(--display);
+        font-size: 28px;
+      }
+      .viewer p { margin: 0; font-size: 15px; }
+      .lamp-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 12px 0 10px;
+      }
+      .lamp {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        border: 4px solid #3a120f;
+        background: #2a0c0c;
+        box-shadow: inset 0 0 10px #000;
+        display: grid;
+        place-items: center;
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        color: #6a3030;
+      }
+      .lamp.on {
+        background: radial-gradient(circle at 35% 30%, #ff8a7a, var(--safelight-glow) 40%, var(--safelight));
+        color: #2a0404;
+        box-shadow: 0 0 22px rgba(255, 59, 59, 0.65), inset 0 0 8px #fff3;
+      }
+      .lamp-copy { font-family: var(--mono); font-size: 12px; color: var(--quiet); }
+      .lamp-copy strong { color: var(--glass); }
+      .counters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .counter {
+        background: #050605;
+        border: 1px solid rgba(196, 161, 90, 0.28);
+        padding: 8px 10px;
+      }
+      .counter span {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--quiet);
+      }
+      .counter strong {
+        font-family: var(--mono);
+        font-size: 26px;
+        letter-spacing: 0.04em;
+        color: var(--brass-bright);
+      }
+      .gauge {
+        margin-top: 10px;
+        height: 12px;
+        background: #111;
+        border: 1px solid rgba(196, 161, 90, 0.25);
+        position: relative;
+      }
+      .gauge > i {
+        display: block;
+        height: 100%;
+        width: 18%;
+        background: linear-gradient(90deg, var(--hold), var(--brass));
+      }
+      .gauge.hot > i {
+        width: 100%;
+        background: linear-gradient(90deg, #8a2018, var(--safelight-glow));
+      }
+      .gauge-label {
+        margin: 6px 0 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+      }
+      .strip {
+        display: flex;
+        gap: 0;
+        overflow: hidden;
+        margin-top: 12px;
+        background: var(--film);
+        border: 1px solid #2a241c;
+        min-height: 86px;
+      }
+      .cell {
+        flex: 0 0 72px;
+        position: relative;
+        border-right: 1px solid #2c261e;
+        background:
+          linear-gradient(#1a1612, #12100d);
+        padding: 16px 6px 10px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--glass-dim);
+      }
+      .cell::before,
+      .cell::after {
+        content: "";
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        height: 6px;
+        background:
+          repeating-linear-gradient(90deg, #0b0b0b 0 6px, transparent 6px 12px);
+      }
+      .cell::before { top: 3px; }
+      .cell::after { bottom: 3px; }
+      .cell.splice {
+        flex-basis: 38px;
+        background:
+          repeating-linear-gradient(135deg, #1a0808, #1a0808 4px, #3a1010 4px, #3a1010 8px);
+        color: var(--safelight-glow);
+        display: grid;
+        place-items: center;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+      }
+      .cell.gone { opacity: 0.28; text-decoration: line-through; }
+      .bin {
+        margin-top: 10px;
+        min-height: 92px;
+        background:
+          repeating-linear-gradient(90deg, #1a140c 0 10px, #12100c 10px 22px);
+        border: 1px dashed rgba(196, 161, 90, 0.28);
+        padding: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .clip {
+        background: #2a2116;
+        border-top: 4px solid var(--brass);
+        padding: 6px 8px;
+        min-width: 110px;
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+      .clip em { display: block; color: var(--quiet); font-style: normal; }
+      .actions, .tools, .seeds { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      button {
+        background: #141a14;
+        border: 1px solid rgba(196, 161, 90, 0.4);
+        color: var(--brass-bright);
+        padding: 7px 10px;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+      }
+      button[aria-pressed="true"] {
+        background: var(--enamel);
+        border-color: var(--brass);
+      }
+      .verdict .word {
+        font-family: var(--display);
+        font-size: 36px;
+        line-height: 1;
+        color: var(--safelight-glow);
+      }
+      .verdict.hold .word { color: var(--hold); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 2px 7px;
+        border: 1px solid rgba(196, 161, 90, 0.28);
+        color: var(--quiet);
+      }
+      .chip.on { color: var(--glass); border-color: var(--brass); }
+      textarea, .drop, pre, .jsonl {
+        width: 100%;
+        background: #080908;
+        border: 1px solid rgba(196, 161, 90, 0.22);
+        color: var(--glass-dim);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      textarea, .jsonl { min-height: 120px; padding: 8px; resize: vertical; }
+      .drop {
+        padding: 10px;
+        text-align: center;
+        color: var(--quiet);
+        margin: 8px 0;
+      }
+      .reasons { margin: 10px 0 0; padding-left: 18px; color: var(--quiet); }
+      .reasons li { margin: 4px 0; }
+      .issue { color: var(--quiet); font-size: 14px; }
+      .natives {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      @media (max-width: 860px) {
+        .natives { grid-template-columns: 1fr; }
+      }
+      .map {
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        gap: 6px;
+        align-items: stretch;
+        min-height: 46px;
+        margin-top: 8px;
+      }
+      .bp-floor {
+        background: var(--enamel);
+        border: 1px solid var(--brass);
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 6px;
+      }
+      .bp-prefix {
+        background: #1a1010;
+        border: 1px dashed var(--safelight);
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 6px;
+      }
+      .bp-prefix.ok {
+        background: #102016;
+        border-color: var(--hold);
+      }
+      .replay {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .replay label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+      }
+      .replay input {
+        width: 100%;
+        background: #080908;
+        border: 1px solid rgba(196, 161, 90, 0.3);
+        padding: 6px;
+        font-family: var(--mono);
+      }
+      .sources { margin-top: 14px; }
+      .sources ul { margin: 0; padding-left: 18px; color: var(--quiet); }
+      .sources li { margin: 6px 0; }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 12px;
+      }
+      @media (max-width: 860px) {
+        .cards { grid-template-columns: 1fr; }
+      }
+      .card-box {
+        background: rgba(8, 10, 8, 0.7);
+        border: 1px solid rgba(196, 161, 90, 0.18);
+        padding: 12px;
+      }
+      .card-box h3 { margin: 4px 0 6px; font-family: var(--display); font-size: 20px; color: var(--brass); }
+      .card-box p { margin: 0; color: var(--quiet); font-size: 14px; }
+      footer { margin-top: 16px; color: var(--quiet); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main class="bay">
+      <header class="nameplate">
+        <p class="mark">12:50 / hermes catalog #86 / #90716</p>
+        <h1>Moviola</h1>
+        <p class="phrase">a recut print is not a hold. Score the splice or admit latched.</p>
+        <p class="idle">Idle word: latched. Projector-black / enamel green / brass / red safelight / ground-glass cream. Seeded recut.</p>
+      </header>
+
+      <div class="deck">
+        <section class="housing" aria-label="Ground-glass viewer">
+          <h2>Ground glass</h2>
+          <div class="viewer" id="viewer">
+            <div class="frame-id" id="frame-id">frame 41 · p041.png · 3,361 tokens</div>
+            <h3 id="frame-title">Page-sized PNG on the gate</h3>
+            <p id="frame-copy">First collapse at image #41. The prefix no longer matches the print that was latched.</p>
+          </div>
+          <div class="lamp-row">
+            <div class="lamp on" id="reprint-lamp" aria-live="polite">REPRINT</div>
+            <div class="lamp-copy">
+              Red <strong>REPRINT</strong> lamp lights when cache_read collapses to the system+tools floor (~26314).
+              <span id="lamp-state">Lamp on. Floor hit. Full reprint.</span>
+            </div>
+          </div>
+          <div class="counters">
+            <div class="counter">
+              <span>footage · cache_read</span>
+              <strong id="read-count">26,314</strong>
+            </div>
+            <div class="counter">
+              <span>footage · cache_creation</span>
+              <strong id="write-count">590,100</strong>
+            </div>
+          </div>
+          <div class="gauge hot" id="burn-gauge"><i></i></div>
+          <p class="gauge-label" id="burn-label">burn 5.7× · 12.1M/hour → 68.5M/hour · 5-hour allowance in 31 minutes</p>
+          <div class="strip" id="film-strip" aria-label="Sprocketed conversation prefix"></div>
+          <h2 style="margin-top:14px">Trim bin</h2>
+          <div class="bin" id="trim-bin" aria-label="Evicted frames"></div>
+          <div class="actions">
+            <button type="button" id="load-btn">Load #90716 recut</button>
+            <button type="button" id="score-btn">Score the splice</button>
+            <button type="button" id="admit-btn">Admit latched</button>
+          </div>
+        </section>
+
+        <aside class="housing" aria-label="Cutting-room desk">
+          <h2>Cutting room</h2>
+          <p class="issue" id="issue-card">Fetching anthropics/claude-code#90716…</p>
+          <p class="idle" id="local-seeds">Local seeds: #90716 · recut · CLI 2.1.220 · Bewelge · 2026-08-30T09:40:19Z · labels bug / has repro / platform:windows / area:cost / area:core</p>
+          <div class="verdict" id="verdict-box">
+            <div class="word" id="verdict-word">recut</div>
+            <p id="verdict-feed">● Recut · earliest images dropped, prefix mutated, full re-cache · alarm</p>
+            <div class="chips" id="chip-row"></div>
+          </div>
+          <div class="seeds" role="group" aria-label="Seed chips">
+            <button type="button" id="seed-recut" aria-pressed="true">recut</button>
+            <button type="button" id="seed-latched" aria-pressed="false">latched</button>
+            <button type="button" id="seed-mutated" aria-pressed="false">mutated</button>
+            <button type="button" id="seed-evicted" aria-pressed="false">evicted</button>
+            <button type="button" id="seed-recached" aria-pressed="false">recached</button>
+            <button type="button" id="seed-burned" aria-pressed="false">burned</button>
+            <button type="button" id="seed-collapsed" aria-pressed="false">collapsed</button>
+            <button type="button" id="seed-silent" aria-pressed="false">silent</button>
+            <button type="button" id="seed-one" aria-pressed="false">one-in-one-out</button>
+            <button type="button" id="seed-prefix" aria-pressed="false">prefix-rewritten</button>
+          </div>
+          <div class="drop" id="drop">Drop a ticket JSON onto the gate</div>
+          <textarea id="ticket" spellcheck="false" aria-label="Probe ticket JSON"></textarea>
+          <div class="tools">
+            <button type="button" id="apply-ticket">Score pasted ticket</button>
+            <button type="button" id="export-ticket">Export ticket</button>
+          </div>
+          <ol class="reasons" id="reasons"></ol>
+        </aside>
+      </div>
+
+      <section class="natives" aria-label="Native integrations">
+        <article class="housing">
+          <h2>Session JSONL usage</h2>
+          <p class="idle">Paste or drop a Claude session JSONL. The parser reads cache_read_input_tokens vs cache_creation_input_tokens and flags a floor collapse.</p>
+          <textarea class="jsonl" id="jsonl-input" spellcheck="false" aria-label="Session JSONL">{"type":"assistant","message":{"usage":{"input_tokens":80,"cache_read_input_tokens":658681,"cache_creation_input_tokens":3439}}}
+{"type":"assistant","message":{"usage":{"input_tokens":80,"cache_read_input_tokens":26314,"cache_creation_input_tokens":590100}}}</textarea>
+          <div class="tools">
+            <button type="button" id="parse-jsonl">Parse usage</button>
+          </div>
+          <p class="idle" id="jsonl-out">Two turns loaded. First still amortizing at 658,681 / 3,439. Second collapsed to 26,314 / 590,100.</p>
+        </article>
+        <article class="housing">
+          <h2>Prompt-cache stats</h2>
+          <p class="idle">Anthropic prompt-cache counters for this reel. Before: image ~3.4k cache_creation with ~658,681 cache_read. After: cache_read 26,314 (system+tools only); cache_creation 590,100 and stays there.</p>
+          <div class="counters">
+            <div class="counter"><span>before read</span><strong>658,681</strong></div>
+            <div class="counter"><span>before write</span><strong>3,439</strong></div>
+            <div class="counter"><span>after read</span><strong id="stat-read">26,314</strong></div>
+            <div class="counter"><span>after write</span><strong id="stat-write">590,100</strong></div>
+          </div>
+        </article>
+        <article class="housing">
+          <h2>PDF page-to-PNG replay</h2>
+          <p class="idle">Threshold ~40 page-sized images. First collapse at #41, #45, #49. 24-image session at 688k never triggered. 20/20 full-page PNGs (~3.3k tokens) collapsed; 0/3 crops did not.</p>
+          <div class="replay">
+            <label>page images<input id="replay-pages" type="number" value="41" min="0" /></label>
+            <label>full-page PNGs<input id="replay-full" type="number" value="20" min="0" /></label>
+            <label>crops<input id="replay-crops" type="number" value="0" min="0" /></label>
+            <label>splice at<input id="replay-splice" type="number" value="41" min="0" /></label>
+          </div>
+          <div class="tools">
+            <button type="button" id="replay-btn">Replay threshold</button>
+          </div>
+          <p class="idle" id="replay-out">41 page images / 20 full-page. Crossed ~40. Expect recut at splice #41.</p>
+        </article>
+        <article class="housing">
+          <h2>Cache-breakpoint map</h2>
+          <p class="idle">Surviving breakpoint is the system+tools floor. Every breakpoint after that — the message prefix — is invalidated once an early frame is pulled.</p>
+          <div class="map">
+            <div class="bp-floor">system+tools<br />26,314</div>
+            <div class="bp-prefix" id="bp-prefix">message prefix · 600–740k rewritten as cache-creation</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="cards" aria-label="Why not a clone">
+        <article class="card-box">
+          <p class="mark">primary · #90716</p>
+          <h3>Silent prefix recut</h3>
+          <p>OPEN, has-repro, labels bug / has repro / platform:windows / area:cost / area:core, created 2026-08-30T09:40:19Z by Bewelge. CLI 2.1.220. PromptTotal dropped ~54k at first collapse (~16 page images × 3,361 tokens).</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">not this machine</p>
+          <h3>Editing room, not a bench</h3>
+          <p>NOT Carcase #90867 stealth-relaunch chrome. NOT Callboard #90858 skill autocomplete. NOT Leaven #90782 bootstrap contamination. NOT Hydra #90856 marketplace dual-ledger. NOT Limpet #89275, Scion #90815, Almanac #90804, Voucher #90807, Kindling #90798, Palimpsest #90725, Fetch #90755, Cenotaph #90771.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">same-class</p>
+          <h3>Cite, do not restyle</h3>
+          <p>#86075 tool-result sentinel (p=1.34e-28, $254). #89418 request-size pruning. #90363 failed-image poison (~12×). #90675 5-hour allowance in ~23 min. openai/codex#35925 silent pruning; cache misses 94% of a $210 session.</p>
+        </article>
+      </section>
+
+      <section class="housing sources">
+        <h2>Sources</h2>
+        <ul>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90716">#90716</a> OPEN — [BUG] Image eviction in long sessions mutates the conversation prefix, forcing a full context re-cache on every subsequent image read. 2026-08-30T09:40:19Z. Labels: bug, has repro, platform:windows, area:cost, area:core. CLI 2.1.220. Reporter Bewelge.</li>
+          <li>Threshold ~40 page-sized images; first collapse at image #41, #45, #49; 24-image session at 688k never triggered.</li>
+          <li>20/20 full-page PNGs (~3.3k tokens) collapsed; 0/3 crops did not. Image dimensions 1323×1871.</li>
+          <li>Before: image ~3.4k cache_creation with ~658,681 cache_read. After: cache_read 26,314; cache_creation 590,100 and stays there.</li>
+          <li>Across two sessions promptTotal dropped ~54k at first collapse (~16 page images × 3,361 tokens). After collapse: one-in-one-out (+113–149 tokens/turn).</li>
+          <li>No error, no warning, context_management null → client-side. Context 600–740k tokens rewritten as cache-creation.</li>
+          <li>Same work: 12.1M/hour before vs 68.5M/hour after = 5.7×; 5-hour allowance burned in 31 minutes.</li>
+          <li>Same-class (cite): <a href="https://github.com/anthropics/claude-code/issues/86075">#86075</a>, <a href="https://github.com/anthropics/claude-code/issues/89418">#89418</a>, <a href="https://github.com/anthropics/claude-code/issues/90363">#90363</a>, <a href="https://github.com/anthropics/claude-code/issues/90675">#90675</a>, <a href="https://github.com/openai/codex/issues/35925">openai/codex#35925</a>.</li>
+          <li>Nearby boundary only, do not ship: <a href="https://github.com/anthropics/claude-code/issues/72226">#72226</a>, <a href="https://github.com/anthropics/claude-code/issues/61091">#61091</a>, Cartouche <a href="https://github.com/anthropics/claude-code/issues/90881">#90881</a>, Weir <a href="https://github.com/anthropics/claude-code/issues/90802">#90802</a>.</li>
+        </ul>
+      </section>
+      <footer>
+        Catalog path <code>/moviola/</code>. Score engine lives in this page and in
+        <code>projects/moviola/hook/moviola.mjs</code>. No build step. No secrets.
+      </footer>
+    </main>
+    <script>
+      const CHIP_NAMES = [
+        "latched", "recut", "mutated", "evicted", "recached",
+        "burned", "collapsed", "silent", "one-in-one-out", "prefix-rewritten",
+      ];
+      const HOLD = ["latched"];
+      const ALARM = CHIP_NAMES.filter((name) => HOLD.indexOf(name) === -1);
+      const SEED_BUTTONS = {
+        recut: "seed-recut",
+        latched: "seed-latched",
+        mutated: "seed-mutated",
+        evicted: "seed-evicted",
+        recached: "seed-recached",
+        burned: "seed-burned",
+        collapsed: "seed-collapsed",
+        silent: "seed-silent",
+        "one-in-one-out": "seed-one",
+        "prefix-rewritten": "seed-prefix",
+      };
+      const TITLE = "[BUG] Image eviction in long sessions mutates the conversation prefix, forcing a full context re-cache on every subsequent image read";
+      function num(v) {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function nearFloor(v) {
+        const n = num(v);
+        return n != null && (Math.abs(n - 26314) <= 40 || Math.abs(n - 26317) <= 40);
+      }
+      function base(seed, extra) {
+        return Object.assign({
+          seed: seed,
+          issue: 90716,
+          title: TITLE,
+          imageCount: 41,
+          cropImages: 0,
+          fullPagePngs: 20,
+          prefixMutated: true,
+          earliestDropped: true,
+          evictedCount: 16,
+          cacheRead: 26314,
+          cacheCreation: 590100,
+          promptTotalDelta: -53482,
+          burnRate: 5.7,
+          tokensPerHour: 68500000,
+          allowanceMinutes: 31,
+          contextManagement: null,
+          warning: "",
+          error: "",
+          oneInOneOut: false,
+          spliceAt: 41,
+          prefixStable: false,
+          breakpointsInvalidated: true,
+          trimBin: [
+            { filename: "p001.png", tokens: 3361, evictionTurn: 41 },
+            { filename: "p002.png", tokens: 3361, evictionTurn: 41 },
+            { filename: "p016.png", tokens: 3361, evictionTurn: 41 },
+          ],
+          outputText: "cache_read=26314 cache_creation=590100 prefix mutated; earliest images dropped",
+          cli: "2.1.220",
+          platform: "windows",
+        }, extra || {});
+      }
+      const SEEDS = {
+        recut: base("recut"),
+        latched: base("latched", {
+          imageCount: 24, cropImages: 3, fullPagePngs: 0, prefixMutated: false,
+          earliestDropped: false, evictedCount: 0, cacheRead: 658681, cacheCreation: 3439,
+          promptTotalDelta: 3361, burnRate: 1, tokensPerHour: 12100000, allowanceMinutes: null,
+          oneInOneOut: false, spliceAt: null, prefixStable: true, breakpointsInvalidated: false,
+          trimBin: [], outputText: "prefix byte-stable; cache_read 658681 still amortizing; 24-image session at 688k never triggered",
+        }),
+        mutated: base("mutated", {
+          imageCount: 22, earliestDropped: false, evictedCount: 0, cacheRead: 658681,
+          cacheCreation: 3439, burnRate: 1, tokensPerHour: 12100000, allowanceMinutes: null,
+          spliceAt: null, breakpointsInvalidated: false, trimBin: [],
+          outputText: "prefix mutated but burn numbers not yet on the counter",
+        }),
+        evicted: base("evicted", {
+          imageCount: 16, prefixMutated: false, cacheRead: 658681, cacheCreation: 3439,
+          burnRate: 1, tokensPerHour: 12100000, allowanceMinutes: null, spliceAt: null,
+          breakpointsInvalidated: false, outputText: "earliest image-frames pulled into the trim bin",
+        }),
+        recached: base("recached", {
+          imageCount: 30, prefixMutated: false, earliestDropped: false, evictedCount: 0,
+          cacheRead: 658681, spliceAt: null, burnRate: 1, tokensPerHour: 12100000,
+          allowanceMinutes: null, trimBin: [], outputText: "full context rewritten as cache-creation",
+        }),
+        burned: base("burned", {
+          imageCount: 19, prefixMutated: false, earliestDropped: false, evictedCount: 0,
+          cacheRead: 658681, cacheCreation: 3439, spliceAt: null, breakpointsInvalidated: false,
+          trimBin: [], outputText: "5.7× burn; 5-hour allowance gone in 31 minutes",
+        }),
+        collapsed: base("collapsed", {
+          imageCount: 30, prefixMutated: false, earliestDropped: false, evictedCount: 0,
+          cacheCreation: 3439, burnRate: 1, tokensPerHour: 12100000, allowanceMinutes: null,
+          spliceAt: null, breakpointsInvalidated: false, trimBin: [],
+          outputText: "cache_read at the system+tools floor (~26314)",
+        }),
+        silent: base("silent", {
+          imageCount: 22, earliestDropped: false, evictedCount: 0, cacheRead: 658681,
+          cacheCreation: 3439, burnRate: 1, tokensPerHour: 12100000, allowanceMinutes: null,
+          spliceAt: null, breakpointsInvalidated: false, trimBin: [],
+          outputText: "no error, no warning, context_management null",
+        }),
+        "one-in-one-out": base("one-in-one-out", {
+          imageCount: 30, prefixMutated: false, earliestDropped: false, evictedCount: 0,
+          cacheRead: 658681, cacheCreation: 3439, promptTotalDelta: 113, oneInOneOut: true,
+          burnRate: 1, tokensPerHour: 12100000, allowanceMinutes: null, spliceAt: null,
+          breakpointsInvalidated: false, trimBin: [], outputText: "one-in-one-out (+113–149 tokens/turn)",
+        }),
+        "prefix-rewritten": base("prefix-rewritten", {
+          imageCount: 22, prefixMutated: false, earliestDropped: false, evictedCount: 0,
+          cacheRead: 658681, cacheCreation: 3439, burnRate: 1, tokensPerHour: 12100000,
+          allowanceMinutes: null, spliceAt: null, oneInOneOut: false, trimBin: [],
+          outputText: "cache breakpoints after system/tools invalidated",
+        }),
+      };
+      const FEEDS = {
+        latched: "● Latched · prefix byte-stable, cache_read still amortizing, no eviction splice · hold",
+        mutated: "● Mutated · conversation prefix rewritten; burn numbers not yet on the counter · alarm",
+        evicted: "● Evicted · earliest image-frames in the trim bin · alarm",
+        recached: "● Recached · 600–740k context rewritten as cache-creation · alarm",
+        burned: "● Burned · 5.7× burn; 5-hour allowance gone in 31 minutes · alarm",
+        collapsed: "● Collapsed · cache_read at the system+tools floor (~26314) · alarm",
+        silent: "● Silent · no error, no warning, context_management null · alarm",
+        "one-in-one-out": "● One-in-one-out · promptTotal +113–149 after collapse · alarm",
+        "prefix-rewritten": "● Prefix-rewritten · cache breakpoints after system/tools invalidated · alarm",
+        recut: "● Recut · earliest images dropped, prefix mutated, full re-cache · alarm",
+      };
+      function pick(t, keys) {
+        for (const key of keys) {
+          if (t[key] !== undefined && t[key] !== "") return t[key];
+        }
+        return undefined;
+      }
+      function normalize(raw) {
+        const t = raw && typeof raw === "object" ? raw : SEEDS.recut;
+        return {
+          seed: String(pick(t, ["seed"]) || ""),
+          issue: num(pick(t, ["issue"])) || 90716,
+          imageCount: num(pick(t, ["imageCount", "images", "pageImages", "page_images"])),
+          cropImages: num(pick(t, ["cropImages", "crop_images", "crops"])),
+          fullPagePngs: num(pick(t, ["fullPagePngs", "full_page_pngs"])),
+          prefixMutated: pick(t, ["prefixMutated", "prefix_mutated"]),
+          earliestDropped: pick(t, ["earliestDropped", "earliest_dropped"]),
+          evictedCount: num(pick(t, ["evictedCount", "evicted_count"])),
+          cacheRead: num(pick(t, ["cacheRead", "cache_read", "cache_read_input_tokens"])),
+          cacheCreation: num(pick(t, ["cacheCreation", "cache_creation", "cache_creation_input_tokens"])),
+          promptTotalDelta: num(pick(t, ["promptTotalDelta", "prompt_total_delta"])),
+          burnRate: num(pick(t, ["burnRate", "burn_rate"])),
+          tokensPerHour: num(pick(t, ["tokensPerHour", "tokens_per_hour"])),
+          allowanceMinutes: num(pick(t, ["allowanceMinutes", "allowance_minutes"])),
+          contextManagement: t.contextManagement !== undefined ? t.contextManagement : t.context_management,
+          warning: pick(t, ["warning"]) || "",
+          error: pick(t, ["error"]) || "",
+          oneInOneOut: pick(t, ["oneInOneOut", "one_in_one_out"]),
+          spliceAt: num(pick(t, ["spliceAt", "splice_at", "collapseAtImage"])),
+          prefixStable: pick(t, ["prefixStable", "prefix_stable"]),
+          breakpointsInvalidated: pick(t, ["breakpointsInvalidated", "breakpoints_invalidated"]),
+          trimBin: Array.isArray(t.trimBin) ? t.trimBin : (Array.isArray(t.trim_bin) ? t.trim_bin : []),
+          outputText: pick(t, ["outputText", "output", "text"]) || "",
+          title: t.title || TITLE,
+        };
+      }
+      function scoreTicket(raw) {
+        const t = normalize(raw);
+        const images = t.imageCount || 0;
+        const evicted = t.evictedCount || 0;
+        const collapsed = nearFloor(t.cacheRead);
+        const rewritten = t.cacheCreation != null && t.cacheCreation >= 500000;
+        const crossed = images >= 40;
+        const mutated = t.prefixMutated === true;
+        const dropped = t.earliestDropped === true || evicted > 0 || t.trimBin.length > 0;
+        const burned = t.burnRate >= 5.7 || t.tokensPerHour >= 68500000 || t.allowanceMinutes === 31;
+        const silent = t.contextManagement === null && !t.warning && !t.error;
+        const oneOut = t.oneInOneOut === true || (t.promptTotalDelta >= 113 && t.promptTotalDelta <= 149);
+        const prefixRewritten = t.breakpointsInvalidated === true || (mutated && collapsed);
+        const latched = mutated !== true && t.earliestDropped !== true && evicted === 0 && t.trimBin.length === 0 &&
+          (t.cacheRead == null || t.cacheRead >= 500000) &&
+          (t.cacheCreation == null || (t.cacheCreation > 0 && t.cacheCreation <= 12000)) &&
+          images < 40 &&
+          (t.burnRate == null || t.burnRate < 2) &&
+          t.breakpointsInvalidated !== true;
+        const recut = collapsed || rewritten || (crossed && mutated) || (crossed && t.earliestDropped === true) || [41, 45, 49].indexOf(t.spliceAt) !== -1;
+        const seed = String(t.seed || "").toLowerCase();
+        let verdict = "latched";
+        if (latched && ALARM.indexOf(seed) === -1) verdict = "latched";
+        else if (ALARM.indexOf(seed) !== -1) verdict = seed;
+        else if (recut) verdict = "recut";
+        else if (oneOut) verdict = "one-in-one-out";
+        else if (burned) verdict = "burned";
+        else if (collapsed) verdict = "collapsed";
+        else if (rewritten) verdict = "recached";
+        else if (prefixRewritten) verdict = "prefix-rewritten";
+        else if (dropped) verdict = "evicted";
+        else if (mutated) verdict = "mutated";
+        const chips = [];
+        if (latched) chips.push("latched");
+        if (recut) chips.push("recut");
+        if (mutated) chips.push("mutated");
+        if (dropped) chips.push("evicted");
+        if (rewritten) chips.push("recached");
+        if (burned) chips.push("burned");
+        if (collapsed) chips.push("collapsed");
+        if (silent) chips.push("silent");
+        if (oneOut) chips.push("one-in-one-out");
+        if (prefixRewritten) chips.push("prefix-rewritten");
+        const reasons = ["verdict " + verdict];
+        if (verdict === "latched") {
+          reasons.push("prefix byte-stable; cache_read still amortizing at the ~658k class");
+        } else {
+          reasons.push("#90716 Image eviction in long sessions mutates the conversation prefix, forcing a full context re-cache on every subsequent image read");
+        }
+        if (mutated) reasons.push("prefix mutated: earliest page images dropped from the conversation sent to the API");
+        if (collapsed) reasons.push("cache_read collapsed to session-constant " + t.cacheRead + " (system+tools floor ~26314)");
+        if (rewritten) reasons.push("cache_creation jumped to " + t.cacheCreation + "; 600–740k tokens rewritten as cache-creation");
+        if (images >= 40) reasons.push("threshold ~40 page-sized images; this reel is at " + images + " (first collapse at #41, #45, #49)");
+        if (dropped) reasons.push("earliest images dropped; trim bin holds evicted frames");
+        if (burned) reasons.push("same work: 12.1M/hour before vs 68.5M/hour after = 5.7×; 5-hour allowance burned in 31 minutes");
+        if (silent) reasons.push("no error, no warning, context_management null → client-side");
+        if (oneOut) reasons.push("after collapse: one-in-one-out (+113–149 tokens/turn)");
+        return { ticket: t, verdict, hold: HOLD.indexOf(verdict) !== -1, chips: [...new Set(chips)], reasons, feed: FEEDS[verdict] || ("● " + verdict + " · alarm") };
+      }
+      function fmt(n) {
+        if (n == null) return "—";
+        return Number(n).toLocaleString("en-US");
+      }
+      function renderStrip(ticket, recut) {
+        const strip = document.getElementById("film-strip");
+        const frames = [];
+        const count = Math.max(6, Math.min(12, ticket.imageCount || 8));
+        const splice = recut || ticket.prefixMutated || nearFloor(ticket.cacheRead);
+        for (let i = 1; i <= count; i += 1) {
+          if (splice && i === 3) frames.push('<div class="cell splice">SPLICE</div>');
+          const gone = splice && i <= 2;
+          frames.push('<div class="cell' + (gone ? " gone" : "") + '">p' + String(i).padStart(3, "0") + '<br />' + (gone ? "pulled" : "3.3k") + "</div>");
+        }
+        strip.innerHTML = frames.join("");
+      }
+      function renderBin(ticket) {
+        const bin = document.getElementById("trim-bin");
+        const rows = ticket.trimBin || [];
+        if (!rows.length) {
+          bin.innerHTML = '<span class="idle">Trim bin empty. Prefix still latched.</span>';
+          return;
+        }
+        bin.innerHTML = rows.map((row) => (
+          '<div class="clip"><strong>' + (row.filename || "frame") + "</strong><em>" +
+          (row.tokens || 3361) + " tokens · eviction turn " + (row.evictionTurn || "?") + "</em></div>"
+        )).join("");
+      }
+      function paint(result) {
+        const t = result.ticket;
+        const lampOn = nearFloor(t.cacheRead) || result.verdict === "recut" || result.verdict === "collapsed";
+        document.getElementById("verdict-word").textContent = result.verdict;
+        document.getElementById("verdict-feed").textContent = result.feed;
+        document.getElementById("verdict-box").className = "verdict " + (result.hold ? "hold" : "");
+        document.getElementById("read-count").textContent = fmt(t.cacheRead);
+        document.getElementById("write-count").textContent = fmt(t.cacheCreation);
+        document.getElementById("stat-read").textContent = fmt(t.cacheRead);
+        document.getElementById("stat-write").textContent = fmt(t.cacheCreation);
+        document.getElementById("reprint-lamp").className = "lamp" + (lampOn ? " on" : "");
+        document.getElementById("lamp-state").textContent = lampOn
+          ? "Lamp on. Floor hit. Full reprint."
+          : "Lamp off. Film latched. Strip continuous.";
+        const hot = Number(t.burnRate) >= 5.7 || Number(t.tokensPerHour) >= 68500000;
+        document.getElementById("burn-gauge").className = "gauge" + (hot ? " hot" : "");
+        document.getElementById("burn-label").textContent = hot
+          ? "burn 5.7× · 12.1M/hour → 68.5M/hour · 5-hour allowance in 31 minutes"
+          : "burn 1× · 12.1M/hour · prefix still amortizing";
+        document.getElementById("frame-id").textContent = lampOn
+          ? "frame " + (t.spliceAt || 41) + " · p041.png · 3,361 tokens"
+          : "frame " + (t.imageCount || 24) + " · crop · prefix still latched";
+        document.getElementById("frame-title").textContent = lampOn ? "Page-sized PNG on the gate" : "Latched print on the gate";
+        document.getElementById("frame-copy").textContent = lampOn
+          ? "First collapse at image #41. The prefix no longer matches the print that was latched."
+          : "24-image session at 688k never triggered. cache_read still 658,681.";
+        document.getElementById("bp-prefix").className = "bp-prefix" + (result.hold ? " ok" : "");
+        document.getElementById("bp-prefix").textContent = result.hold
+          ? "message prefix · still byte-stable after the system/tools floor"
+          : "message prefix · 600–740k rewritten as cache-creation";
+        document.getElementById("chip-row").innerHTML = CHIP_NAMES.map((name) =>
+          '<span class="chip' + (result.chips.indexOf(name) !== -1 ? " on" : "") + '">' + name + "</span>"
+        ).join("");
+        document.getElementById("reasons").innerHTML = result.reasons.map((row) => "<li>" + row + "</li>").join("");
+        document.getElementById("ticket").value = JSON.stringify(t, null, 2);
+        const pressed = t.seed || result.verdict;
+        Object.keys(SEED_BUTTONS).forEach((name) => {
+          const el = document.getElementById(SEED_BUTTONS[name]);
+          if (el) el.setAttribute("aria-pressed", String(pressed === name || result.verdict === name));
+        });
+        renderStrip(t, !result.hold);
+        renderBin(t);
+      }
+      function applySeed(name) {
+        paint(scoreTicket(SEEDS[name] || SEEDS.recut));
+      }
+      function parseJsonl(text) {
+        const turns = [];
+        String(text || "").split(/\r?\n/).forEach((line) => {
+          const trimmed = line.trim();
+          if (!trimmed) return;
+          try {
+            const row = JSON.parse(trimmed);
+            const usage = (row.message && row.message.usage) || row.usage || row;
+            const cacheRead = num(usage.cache_read_input_tokens || usage.cacheRead || usage.cache_read);
+            const cacheCreation = num(usage.cache_creation_input_tokens || usage.cacheCreation || usage.cache_creation);
+            const input = num(usage.input_tokens || usage.inputTokens);
+            if (cacheRead == null && cacheCreation == null) return;
+            turns.push({ cacheRead, cacheCreation, input, promptTotal: (input || 0) + (cacheRead || 0) + (cacheCreation || 0) });
+          } catch (err) { /* skip */ }
+        });
+        const last = turns[turns.length - 1] || {};
+        return {
+          turns,
+          collapsed: turns.some((turn) => nearFloor(turn.cacheRead)),
+          ticket: {
+            cacheRead: last.cacheRead,
+            cacheCreation: last.cacheCreation,
+            prefixMutated: turns.some((turn) => nearFloor(turn.cacheRead)),
+            earliestDropped: turns.some((turn) => nearFloor(turn.cacheRead)),
+            imageCount: turns.some((turn) => nearFloor(turn.cacheRead)) ? 41 : turns.length,
+          },
+        };
+      }
+      document.getElementById("load-btn").addEventListener("click", () => applySeed("recut"));
+      document.getElementById("score-btn").addEventListener("click", () => {
+        try { paint(scoreTicket(JSON.parse(document.getElementById("ticket").value))); }
+        catch (err) { document.getElementById("verdict-feed").textContent = "Ticket JSON did not parse. Score the splice or admit latched."; }
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => applySeed("latched"));
+      document.getElementById("apply-ticket").addEventListener("click", () => {
+        try { paint(scoreTicket(JSON.parse(document.getElementById("ticket").value))); }
+        catch (err) { document.getElementById("verdict-feed").textContent = "Ticket JSON did not parse. Score the splice or admit latched."; }
+      });
+      document.getElementById("export-ticket").addEventListener("click", () => {
+        const blob = new Blob([document.getElementById("ticket").value], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "moviola-ticket.json";
+        a.click();
+      });
+      Object.keys(SEED_BUTTONS).forEach((name) => {
+        document.getElementById(SEED_BUTTONS[name]).addEventListener("click", () => applySeed(name));
+      });
+      const drop = document.getElementById("drop");
+      function loadFile(file) {
+        file.text().then((text) => {
+          try { paint(scoreTicket(JSON.parse(text))); drop.textContent = "Loaded " + file.name; }
+          catch (err) { drop.textContent = "Could not parse " + file.name; }
+        });
+      }
+      drop.addEventListener("dragover", (event) => { event.preventDefault(); });
+      drop.addEventListener("drop", (event) => {
+        event.preventDefault();
+        if (event.dataTransfer.files[0]) loadFile(event.dataTransfer.files[0]);
+      });
+      document.getElementById("parse-jsonl").addEventListener("click", () => {
+        const parsed = parseJsonl(document.getElementById("jsonl-input").value);
+        const last = parsed.turns[parsed.turns.length - 1] || {};
+        document.getElementById("jsonl-out").textContent = parsed.turns.length +
+          " turns. Last cache_read " + fmt(last.cacheRead) + " / cache_creation " + fmt(last.cacheCreation) +
+          (parsed.collapsed ? ". Floor collapse — scoring as recut." : ". Still amortizing.");
+        paint(scoreTicket(parsed.ticket));
+      });
+      document.getElementById("replay-btn").addEventListener("click", () => {
+        const pages = num(document.getElementById("replay-pages").value) || 0;
+        const full = num(document.getElementById("replay-full").value) || 0;
+        const crops = num(document.getElementById("replay-crops").value) || 0;
+        const splice = num(document.getElementById("replay-splice").value);
+        const crossed = pages >= 40 || [41, 45, 49].indexOf(splice) !== -1;
+        document.getElementById("replay-out").textContent = pages + " page images / " + full +
+          " full-page / " + crops + " crops. " +
+          (crossed ? "Crossed ~40. Expect recut at splice #" + (splice || pages) + "." : "Under threshold. 24-image / 688k class stays latched.");
+        paint(scoreTicket({
+          seed: crossed ? "recut" : "latched",
+          imageCount: pages,
+          fullPagePngs: full,
+          cropImages: crops,
+          spliceAt: splice,
+          prefixMutated: crossed,
+          cacheRead: crossed ? 26314 : 658681,
+          cacheCreation: crossed ? 590100 : 3439,
+        }));
+      });
+      applySeed("recut");
+      fetch("https://api.github.com/repos/anthropics/claude-code/issues/90716")
+        .then((res) => res.ok ? res.json() : Promise.reject())
+        .then((issue) => {
+          document.getElementById("issue-card").innerHTML =
+            '<a href="' + issue.html_url + '">#' + issue.number + "</a> " + (issue.state || "open").toUpperCase() +
+            " · " + issue.title + " · " + (issue.created_at || "2026-08-30T09:40:19Z");
+        })
+        .catch(() => {
+          document.getElementById("issue-card").innerHTML =
+            '<a href="https://github.com/anthropics/claude-code/issues/90716">#90716</a> OPEN · local seed · 2026-08-30T09:40:19Z · Bewelge';
+        });
+    </script>
+  </body>
+</html>
