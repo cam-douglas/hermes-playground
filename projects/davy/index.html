@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Davy — miner's safety lamp for Claude Code #90886: a false canary is not a hold. Score the gauze or admit lit."
+    />
+    <title>Davy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --pit: #070605;
+        --stone: #1a1814;
+        --stone-wet: #24211b;
+        --gauze: #c9a45a;
+        --gauze-wire: #8a6a2e;
+        --flame: #ffb347;
+        --flame-core: #fff1b8;
+        --flame-edge: #e06a12;
+        --copper: #b87333;
+        --copper-dark: #6e3f1a;
+        --damp: #4a5a48;
+        --haze: rgba(120, 140, 70, 0.14);
+        --hold: #d4a24a;
+        --ash: #3a3630;
+        --ink: #0c0a08;
+        --quiet: #8a8070;
+        --paper: #e8dcc4;
+        --display: "Cinzel Decorative", "Cinzel", "Times New Roman", serif;
+        --title: "Cinzel", "Times New Roman", serif;
+        --body: "Spectral", "Iowan Old Style", Georgia, serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--paper);
+        background:
+          radial-gradient(ellipse at 50% 8%, rgba(255, 179, 71, 0.08), transparent 42%),
+          radial-gradient(ellipse at 12% 80%, var(--haze), transparent 38%),
+          radial-gradient(ellipse at 90% 30%, rgba(184, 115, 51, 0.1), transparent 36%),
+          repeating-linear-gradient(0deg, rgba(36, 33, 27, 0.55) 0 2px, transparent 2px 11px),
+          var(--pit);
+        background-attachment: fixed;
+      }
+      button, textarea, input { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: var(--gauze); }
+      .station {
+        width: min(1240px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 16px 0 56px;
+      }
+      .nameplate {
+        position: relative;
+        padding: 28px 30px 22px;
+        background:
+          linear-gradient(180deg, #2c2418 0%, var(--stone) 46%, #100e0b 100%);
+        border: 7px solid #3a2a16;
+        box-shadow:
+          inset 0 0 0 1px rgba(201, 164, 90, 0.4),
+          inset 0 0 40px rgba(0, 0, 0, 0.35),
+          0 0 0 3px #1a120a,
+          0 24px 48px rgba(0, 0, 0, 0.55);
+      }
+      .nameplate::before,
+      .nameplate::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #e8b86a, var(--copper) 55%, var(--copper-dark));
+        top: 12px;
+        box-shadow: 0 0 0 2px #2a1a0c;
+      }
+      .nameplate::before { left: 12px; }
+      .nameplate::after { right: 12px; }
+      .mark {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--gauze);
+      }
+      h1 {
+        margin: 8px 0 6px;
+        font-family: var(--display);
+        font-size: clamp(48px, 9vw, 92px);
+        line-height: 0.9;
+        font-weight: 400;
+        color: var(--gauze);
+        text-shadow: 0 2px 0 #0a0806, 0 0 28px rgba(255, 179, 71, 0.18);
+      }
+      .phrase { max-width: 44em; margin: 0; font-size: 19px; font-style: italic; }
+      .idle {
+        margin: 8px 0 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 1.15fr 0.95fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 980px) {
+        .deck { grid-template-columns: 1fr; }
+      }
+      .housing {
+        background:
+          linear-gradient(180deg, #161410, #0c0b09);
+        border: 1px solid rgba(201, 164, 90, 0.22);
+        padding: 14px;
+        box-shadow: inset 0 0 0 1px rgba(232, 220, 196, 0.03);
+      }
+      .housing h2 {
+        margin: 0 0 10px;
+        font-family: var(--title);
+        font-size: 21px;
+        letter-spacing: 0.06em;
+        color: var(--gauze);
+      }
+      .lamp-bay {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 14px;
+        align-items: center;
+      }
+      @media (max-width: 640px) {
+        .lamp-bay { grid-template-columns: 1fr; }
+      }
+      .lamp-svg {
+        width: 100%;
+        max-width: 180px;
+        display: block;
+      }
+      .flame-on { opacity: 1; }
+      .flame-off { opacity: 0.08; }
+      .viewer {
+        position: relative;
+        min-height: 156px;
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(255, 179, 71, 0.08), transparent 50%),
+          repeating-linear-gradient(90deg, rgba(138, 106, 46, 0.08) 0 1px, transparent 1px 7px),
+          var(--stone-wet);
+        border: 8px solid #2a2116;
+        box-shadow:
+          inset 0 0 40px rgba(0, 0, 0, 0.4),
+          0 0 0 1px var(--copper);
+        padding: 16px 18px 14px;
+      }
+      .viewer.snuffed {
+        background:
+          radial-gradient(ellipse at 50% 20%, rgba(80, 80, 70, 0.12), transparent 50%),
+          var(--stone);
+      }
+      .viewer .frame-id {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--copper);
+      }
+      .viewer h3 {
+        margin: 4px 0 6px;
+        font-family: var(--title);
+        font-size: 26px;
+        color: var(--paper);
+      }
+      .viewer p { margin: 0; font-size: 15px; color: var(--quiet); }
+      .gauges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .gauge-box {
+        background: #080706;
+        border: 1px solid rgba(201, 164, 90, 0.28);
+        padding: 8px 10px;
+      }
+      .gauge-box span {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--quiet);
+      }
+      .gauge-box strong {
+        font-family: var(--mono);
+        font-size: 26px;
+        letter-spacing: 0.04em;
+        color: var(--gauze);
+      }
+      .strike-bar {
+        margin-top: 10px;
+        height: 14px;
+        background: #11100d;
+        border: 1px solid rgba(201, 164, 90, 0.25);
+        position: relative;
+      }
+      .strike-bar > i {
+        display: block;
+        height: 100%;
+        width: 12%;
+        background: linear-gradient(90deg, var(--damp), var(--gauze));
+      }
+      .strike-bar.hot > i {
+        width: 100%;
+        background: linear-gradient(90deg, #5a2a10, var(--flame-edge), var(--flame));
+      }
+      .gauge-label {
+        margin: 6px 0 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+      }
+      .pid-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+        min-height: 42px;
+      }
+      .pid-chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 4px 7px;
+        border: 1px solid rgba(201, 164, 90, 0.3);
+        color: var(--quiet);
+        background: #100e0b;
+      }
+      .pid-chip.dead {
+        color: #c46a3a;
+        border-color: #8a3a1a;
+        text-decoration: line-through;
+      }
+      .pid-chip.own { border-color: var(--flame); color: var(--flame); }
+      .actions, .tools, .seeds { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      button {
+        background: #16120c;
+        border: 1px solid rgba(201, 164, 90, 0.4);
+        color: var(--gauze);
+        padding: 7px 10px;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+      }
+      button[aria-pressed="true"] {
+        background: #2a2114;
+        border-color: var(--gauze);
+        color: var(--paper);
+      }
+      .verdict .word {
+        font-family: var(--display);
+        font-size: 36px;
+        line-height: 1;
+        color: var(--flame-edge);
+      }
+      .verdict.hold .word { color: var(--hold); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 2px 7px;
+        border: 1px solid rgba(201, 164, 90, 0.28);
+        color: var(--quiet);
+      }
+      .chip.on { color: var(--paper); border-color: var(--gauze); }
+      textarea, .drop, pre, .jsonl {
+        width: 100%;
+        background: #0a0907;
+        border: 1px solid rgba(201, 164, 90, 0.22);
+        color: #cfc3a8;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      textarea, .jsonl { min-height: 120px; padding: 8px; resize: vertical; }
+      .drop {
+        padding: 10px;
+        text-align: center;
+        color: var(--quiet);
+        margin: 8px 0;
+      }
+      .reasons { margin: 10px 0 0; padding-left: 18px; color: var(--quiet); }
+      .reasons li { margin: 4px 0; }
+      .issue { color: var(--quiet); font-size: 14px; }
+      .natives {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      @media (max-width: 860px) {
+        .natives { grid-template-columns: 1fr; }
+      }
+      canvas {
+        width: 100%;
+        height: 160px;
+        background: #080706;
+        border: 1px solid rgba(201, 164, 90, 0.22);
+        display: block;
+      }
+      .replay {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .replay label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--quiet);
+      }
+      .replay input {
+        width: 100%;
+        background: #0a0907;
+        border: 1px solid rgba(201, 164, 90, 0.3);
+        padding: 6px;
+        font-family: var(--mono);
+      }
+      .sources { margin-top: 14px; }
+      .sources ul { margin: 0; padding-left: 18px; color: var(--quiet); }
+      .sources li { margin: 6px 0; }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 12px;
+      }
+      @media (max-width: 860px) {
+        .cards { grid-template-columns: 1fr; }
+      }
+      .card-box {
+        background: rgba(8, 7, 6, 0.7);
+        border: 1px solid rgba(201, 164, 90, 0.18);
+        padding: 12px;
+      }
+      .card-box h3 { margin: 4px 0 6px; font-family: var(--title); font-size: 20px; color: var(--gauze); }
+      .card-box p { margin: 0; color: var(--quiet); font-size: 14px; }
+      footer { margin-top: 16px; color: var(--quiet); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main class="station">
+      <header class="nameplate">
+        <p class="mark">13:50 / hermes catalog #87 / #90886</p>
+        <h1>Davy</h1>
+        <p class="phrase">A false canary is not a hold. Score the gauze or admit lit.</p>
+        <p class="idle">Idle word: lit. Pit-black / brass gauze / oil-flame amber / copper / damp stone. Seeded snuffed.</p>
+      </header>
+
+      <div class="deck">
+        <section class="housing" aria-label="Lamp station">
+          <h2>Lamp station</h2>
+          <div class="lamp-bay">
+            <svg class="lamp-svg" viewBox="0 0 120 200" role="img" aria-label="Davy safety lamp">
+              <defs>
+                <linearGradient id="brass" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="#e8c878" />
+                  <stop offset="1" stop-color="#8a6a2e" />
+                </linearGradient>
+                <radialGradient id="fire" cx="50%" cy="70%" r="60%">
+                  <stop offset="0" stop-color="#fff1b8" />
+                  <stop offset="0.45" stop-color="#ffb347" />
+                  <stop offset="1" stop-color="#e06a12" />
+                </radialGradient>
+                <pattern id="mesh" width="6" height="6" patternUnits="userSpaceOnUse">
+                  <path d="M0 0 L6 6 M6 0 L0 6" stroke="#c9a45a" stroke-width="0.6" opacity="0.7" />
+                </pattern>
+              </defs>
+              <ellipse cx="60" cy="188" rx="28" ry="6" fill="#1a120a" />
+              <rect x="38" y="150" width="44" height="36" rx="4" fill="url(#brass)" />
+              <rect x="44" y="156" width="32" height="18" fill="#2a1a0c" />
+              <rect x="32" y="52" width="56" height="98" rx="6" fill="#120e0a" stroke="url(#brass)" stroke-width="3" />
+              <rect x="36" y="56" width="48" height="88" fill="url(#mesh)" />
+              <g id="flame-group" class="flame-off">
+                <ellipse cx="60" cy="128" rx="10" ry="22" fill="url(#fire)" />
+                <ellipse cx="60" cy="134" rx="5" ry="10" fill="#fff8d4" opacity="0.85" />
+              </g>
+              <rect x="28" y="46" width="64" height="10" rx="2" fill="url(#brass)" />
+              <rect x="34" y="22" width="52" height="26" rx="8" fill="url(#brass)" />
+              <rect x="48" y="8" width="24" height="16" rx="3" fill="#8a6a2e" />
+              <circle cx="60" cy="12" r="4" fill="#e8c878" />
+            </svg>
+            <div class="viewer snuffed" id="viewer">
+              <div class="frame-id" id="frame-id">gauze · strikes 4 / threshold 2 · classic fallback</div>
+              <h3 id="frame-title">Working flame snuffed</h3>
+              <p id="frame-copy">The boot-canary banked false strikes from orphaned PIDs. Fullscreen itself rendered. The gauze lied.</p>
+            </div>
+          </div>
+          <div class="gauges">
+            <div class="gauge-box">
+              <span>strikes banked</span>
+              <strong id="strike-count">4</strong>
+            </div>
+            <div class="gauge-box">
+              <span>sticky threshold</span>
+              <strong id="threshold-count">2</strong>
+            </div>
+          </div>
+          <div class="strike-bar hot" id="strike-bar"><i></i></div>
+          <p class="gauge-label" id="strike-label">4 vs threshold 2 · several strikes from one scan, not four failed launches</p>
+          <div class="pid-row" id="pid-row" aria-label="Orphaned pending PIDs"></div>
+          <div class="actions">
+            <button type="button" id="load-btn">Load #90886 snuffed</button>
+            <button type="button" id="score-btn">Score the gauze</button>
+            <button type="button" id="admit-btn">Admit lit</button>
+          </div>
+        </section>
+
+        <aside class="housing" aria-label="Station desk">
+          <h2>Station desk</h2>
+          <p class="issue" id="issue-card">Fetching anthropics/claude-code#90886…</p>
+          <p class="idle" id="local-seeds">Local seeds: #90886 · snuffed · CLI 2.1.251 · canary since 2.1.236 · evertjr · 2026-08-31T03:26:28Z · labels bug / has repro / platform:macos / area:tui</p>
+          <div class="verdict" id="verdict-box">
+            <div class="word" id="verdict-word">snuffed</div>
+            <p id="verdict-feed">● Snuffed · working fullscreen auto-disabled by false boot-canary · alarm</p>
+            <div class="chips" id="chip-row"></div>
+          </div>
+          <div class="seeds" role="group" aria-label="Seed chips">
+            <button type="button" id="seed-snuffed" aria-pressed="true">snuffed</button>
+            <button type="button" id="seed-lit" aria-pressed="false">lit</button>
+            <button type="button" id="seed-struck" aria-pressed="false">struck</button>
+            <button type="button" id="seed-orphaned" aria-pressed="false">orphaned</button>
+            <button type="button" id="seed-reused" aria-pressed="false">reused</button>
+            <button type="button" id="seed-withdrawn" aria-pressed="false">withdrawn</button>
+            <button type="button" id="seed-ratcheted" aria-pressed="false">ratcheted</button>
+            <button type="button" id="seed-burst" aria-pressed="false">burst</button>
+            <button type="button" id="seed-lost" aria-pressed="false">lost-update</button>
+            <button type="button" id="seed-classic" aria-pressed="false">classic</button>
+            <button type="button" id="seed-pid" aria-pressed="false">pid-keyed</button>
+            <button type="button" id="seed-env" aria-pressed="false">env-on</button>
+          </div>
+          <div class="drop" id="drop">Drop a ticket JSON onto the gauze</div>
+          <textarea id="ticket" spellcheck="false" aria-label="Probe ticket JSON"></textarea>
+          <div class="tools">
+            <button type="button" id="apply-ticket">Score pasted ticket</button>
+            <button type="button" id="export-ticket">Export ticket</button>
+          </div>
+          <ol class="reasons" id="reasons"></ol>
+        </aside>
+      </div>
+
+      <section class="natives" aria-label="Native integrations">
+        <article class="housing">
+          <h2>~/.claude.json canary</h2>
+          <p class="idle">Paste or drop a ~/.claude.json snippet. The parser reads fullscreenAutoDisabled / fullscreenBootPending / strikes.</p>
+          <textarea class="jsonl" id="claude-input" spellcheck="false" aria-label="claude.json snippet">{
+  "fullscreenAutoDisabled": { "version": "2.1.251", "at": 1788146545484, "strikes": 4 },
+  "fullscreenBootPending": {
+    "18421": { "startedAt": 1788146530000 },
+    "18488": { "startedAt": 1788146530400 },
+    "18550": { "startedAt": 1788146530800 }
+  }
+}</textarea>
+          <div class="tools">
+            <button type="button" id="parse-claude">Parse canary fields</button>
+          </div>
+          <p class="idle" id="claude-out">Seeded snippet: strikes 4, threshold 2, three leftover pending PIDs.</p>
+        </article>
+        <article class="housing">
+          <h2>Burst replay</h2>
+          <p class="idle">Repro: set tui fullscreen; launch ~15 sessions concurrently each in its own pty; let them pass the 10s healthy mark; terminate the group; relaunch.</p>
+          <div class="replay">
+            <label>sessions<input id="burst-n" type="number" value="15" min="10" max="20" /></label>
+            <label>settle seconds<input id="burst-settle" type="number" value="10" min="1" /></label>
+          </div>
+          <div class="tools">
+            <button type="button" id="burst-btn">Replay 15-session burst</button>
+          </div>
+          <canvas id="burst-canvas" width="560" height="160" aria-label="PID map burst diagram"></canvas>
+          <p class="idle" id="burst-out">15 writers against one ~/.claude.json. Lost updates leave dead-PID entries.</p>
+        </article>
+        <article class="housing">
+          <h2>Strike vs threshold</h2>
+          <p class="idle">Sticky threshold is 2. Landing on 4 means several strikes were banked from a single scan of orphaned fullscreenBootPending, not four failed launches.</p>
+          <div class="gauges">
+            <div class="gauge-box"><span>issue strikes</span><strong>4</strong></div>
+            <div class="gauge-box"><span>sticky</span><strong>2</strong></div>
+            <div class="gauge-box"><span>canary since</span><strong>2.1.236</strong></div>
+            <div class="gauge-box"><span>CLI</span><strong>2.1.251</strong></div>
+          </div>
+        </article>
+        <article class="housing">
+          <h2>env_on workaround</h2>
+          <p class="idle">CLAUDE_CODE_NO_FLICKER=1 → entry path env_on, excluded from the set that arms the canary, so nothing is written and nothing can be orphaned; fullscreen stays on.</p>
+          <div class="tools">
+            <button type="button" id="env-btn">Apply env-on path</button>
+          </div>
+          <p class="idle" id="env-out">Workaround path idle. Seed env-on to exclude the canary.</p>
+        </article>
+      </section>
+
+      <section class="cards" aria-label="Why not a clone">
+        <article class="card-box">
+          <p class="mark">primary · #90886</p>
+          <h3>False boot-canary</h3>
+          <p>OPEN, has-repro, labels bug / has repro / platform:macos / area:tui, created 2026-08-31T03:26:28Z by evertjr. CLI 2.1.251. Canary since 2.1.236. Strikes 4 vs threshold 2. Fullscreen itself works.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">not this station</p>
+          <h3>Gauze, not a splice</h3>
+          <p>NOT Moviola #90716 prefix-mutating image eviction. NOT Carcase #90867 stealth-relaunch chrome. NOT Callboard #90858 skill autocomplete. NOT Leaven #90782, Hydra #90856, Limpet #89275, Scion #90815, Almanac #90804, Deadband #90789, Carrel #90661, Binnacle #90551, Fetch #90755, Kindling #90798.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">same-class</p>
+          <h3>Cite, do not restyle</h3>
+          <p>#85583 /tui reports the previous renderer. Deadband #90789 settings.json 5s echo. Carrel #90661 launch.json last-writer-wins. openai/codex#24224, #37226, #39642 concurrent-session isolation.</p>
+        </article>
+      </section>
+
+      <section class="housing sources">
+        <h2>Sources</h2>
+        <ul>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90886">#90886</a> OPEN — Fullscreen renderer auto-disables itself on machines running many concurrent sessions (false boot-canary strikes). 2026-08-31T03:26:28Z. Labels: bug, has repro, platform:macos, area:tui. CLI 2.1.251. Reporter evertjr.</li>
+          <li>settings.json has "tui": "fullscreen". Fullscreen itself works; it renders every time.</li>
+          <li>fullscreenAutoDisabled: {"version": "2.1.251", "at": 1788146545484, "strikes": 4}. Sticky threshold 2.</li>
+          <li>Pending map keyed by PID in the single shared ~/.claude.json. Every concurrent session adds an entry at startup and removes it ~10s later.</li>
+          <li>Burst start+settle = read-modify-write races; lost updates leave entries for dead PIDs. Next launch reads those as crashed boots.</li>
+          <li>Strikes only clear on a healthy settle. Signal-driven exit settles as withdrawn: removes that PID's entry but preserves the strike counter.</li>
+          <li>PID reuse is a false positive: pid === ownPid counted as a strike without startedAt vs process start.</li>
+          <li>Workaround: CLAUDE_CODE_NO_FLICKER=1 → entry path env_on, excluded from the set that arms the canary.</li>
+          <li>Same-class (cite): <a href="https://github.com/anthropics/claude-code/issues/85583">#85583</a>, Deadband <a href="https://github.com/anthropics/claude-code/issues/90789">#90789</a>, Carrel <a href="https://github.com/anthropics/claude-code/issues/90661">#90661</a>, <a href="https://github.com/openai/codex/issues/24224">openai/codex#24224</a>, <a href="https://github.com/openai/codex/issues/37226">#37226</a>, <a href="https://github.com/openai/codex/issues/39642">#39642</a>.</li>
+          <li>Nearby TUI boundary only, do not ship: <a href="https://github.com/anthropics/claude-code/issues/88372">#88372</a>, <a href="https://github.com/anthropics/claude-code/issues/84940">#84940</a>, <a href="https://github.com/anthropics/claude-code/issues/76022">#76022</a>, <a href="https://github.com/anthropics/claude-code/issues/85573">#85573</a>, <a href="https://github.com/anthropics/claude-code/issues/82886">#82886</a>, <a href="https://github.com/anthropics/claude-code/issues/85712">#85712</a>, <a href="https://github.com/anthropics/claude-code/issues/78693">#78693</a>.</li>
+        </ul>
+      </section>
+      <footer>
+        Catalog path <code>/davy/</code>. Score engine lives in this page and in
+        <code>projects/davy/hook/davy.mjs</code>. No build step. No secrets.
+      </footer>
+    </main>
+    <script>
+      const CHIP_NAMES = [
+        "lit", "snuffed", "struck", "orphaned", "reused", "withdrawn",
+        "ratcheted", "burst", "lost-update", "classic", "pid-keyed", "env-on",
+      ];
+      const HOLD = ["lit"];
+      const ALARM = CHIP_NAMES.filter((name) => HOLD.indexOf(name) === -1);
+      const SEED_BUTTONS = {
+        snuffed: "seed-snuffed",
+        lit: "seed-lit",
+        struck: "seed-struck",
+        orphaned: "seed-orphaned",
+        reused: "seed-reused",
+        withdrawn: "seed-withdrawn",
+        ratcheted: "seed-ratcheted",
+        burst: "seed-burst",
+        "lost-update": "seed-lost",
+        classic: "seed-classic",
+        "pid-keyed": "seed-pid",
+        "env-on": "seed-env",
+      };
+      const TITLE = "Fullscreen renderer auto-disables itself on machines running many concurrent sessions (false boot-canary strikes)";
+      function num(v) {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      }
+      function base(seed, extra) {
+        return Object.assign({
+          seed: seed,
+          issue: 90886,
+          title: TITLE,
+          concurrentSessions: 15,
+          strikes: 4,
+          strikeThreshold: 2,
+          autoDisabled: true,
+          pendingOrphans: 3,
+          pendingPids: [18421, 18488, 18550],
+          pidReuseStrike: false,
+          ownPid: 19002,
+          startedAtChecked: false,
+          withdrawnPreserve: false,
+          lostUpdate: true,
+          fullscreenWorks: true,
+          tuiSetting: "fullscreen",
+          envNoFlicker: false,
+          classicFallback: true,
+          renderer: "classic",
+          terminateRatherThanQuit: true,
+          pidKeyed: true,
+          settleSeconds: 10,
+          version: "2.1.251",
+          cli: "2.1.251",
+          platform: "macos",
+          outputText: "working fullscreen auto-disabled by false boot-canary; strikes 4 vs threshold 2",
+        }, extra || {});
+      }
+      const SEEDS = {
+        snuffed: base("snuffed"),
+        lit: base("lit", {
+          concurrentSessions: 1, strikes: 0, autoDisabled: false, pendingOrphans: 0,
+          pendingPids: [], lostUpdate: false, classicFallback: false, renderer: "fullscreen",
+          terminateRatherThanQuit: false, pidKeyed: false,
+          outputText: "tui=fullscreen; renderer actually fullscreen; strikes 0; no orphaned pending; no auto-disable",
+        }),
+        struck: base("struck", {
+          autoDisabled: false, pendingOrphans: 0, pendingPids: [], lostUpdate: false,
+          classicFallback: false, renderer: "fullscreen", terminateRatherThanQuit: false,
+          outputText: "fullscreenAutoDisabled.strikes banked at 4 vs sticky threshold 2",
+        }),
+        orphaned: base("orphaned", {
+          strikes: 0, autoDisabled: false, lostUpdate: false, classicFallback: false,
+          renderer: "fullscreen", terminateRatherThanQuit: false,
+          outputText: "leftover fullscreenBootPending entries for PIDs that are gone",
+        }),
+        reused: base("reused", {
+          strikes: 1, autoDisabled: false, pendingOrphans: 0, pendingPids: [19002],
+          pidReuseStrike: true, ownPid: 19002, lostUpdate: false, classicFallback: false,
+          renderer: "fullscreen", terminateRatherThanQuit: false,
+          outputText: "pid === ownPid counted as a strike without startedAt vs process start",
+        }),
+        withdrawn: base("withdrawn", {
+          strikes: 2, autoDisabled: false, pendingOrphans: 0, pendingPids: [],
+          withdrawnPreserve: true, lostUpdate: false, classicFallback: false,
+          renderer: "fullscreen", terminateRatherThanQuit: false,
+          outputText: "signal-driven exit settles withdrawn, removes own PID, preserves strike counter",
+        }),
+        ratcheted: base("ratcheted", {
+          strikes: 3, autoDisabled: false, pendingOrphans: 0, pendingPids: [],
+          lostUpdate: false, classicFallback: false, renderer: "fullscreen",
+          terminateRatherThanQuit: true,
+          outputText: "on machines that terminate rather than quit, counter only goes up",
+        }),
+        burst: base("burst", {
+          strikes: 0, autoDisabled: false, pendingOrphans: 0, pendingPids: [],
+          lostUpdate: false, classicFallback: false, renderer: "fullscreen",
+          terminateRatherThanQuit: false,
+          outputText: "10–20 concurrent sessions launched together; lost read-modify-write",
+        }),
+        "lost-update": base("lost-update", {
+          strikes: 0, autoDisabled: false, pendingOrphans: 0, pendingPids: [],
+          lostUpdate: true, classicFallback: false, renderer: "fullscreen",
+          terminateRatherThanQuit: false,
+          outputText: "concurrent RMW against one ~/.claude.json",
+        }),
+        classic: base("classic", {
+          strikes: 0, autoDisabled: false, pendingOrphans: 0, pendingPids: [],
+          lostUpdate: false, classicFallback: true, renderer: "classic",
+          terminateRatherThanQuit: false,
+          outputText: "fell back to classic renderer despite fullscreen working",
+        }),
+        "pid-keyed": base("pid-keyed", {
+          strikes: 0, autoDisabled: false, pendingOrphans: 0, pendingPids: [],
+          lostUpdate: false, classicFallback: false, renderer: "fullscreen",
+          terminateRatherThanQuit: false, pidKeyed: true,
+          outputText: "pending map keyed by PID in the single shared ~/.claude.json",
+        }),
+        "env-on": base("env-on", {
+          strikes: 0, autoDisabled: false, pendingOrphans: 0, pendingPids: [],
+          lostUpdate: false, envNoFlicker: true, classicFallback: false,
+          renderer: "fullscreen", terminateRatherThanQuit: false, pidKeyed: false,
+          outputText: "CLAUDE_CODE_NO_FLICKER=1 → entry path env_on, excluded from the set that arms the canary",
+        }),
+      };
+      const FEEDS = {
+        lit: "● Lit · tui=fullscreen, renderer actually fullscreen, strikes 0 or honest, no orphaned pending, no auto-disable · hold",
+        struck: "● Struck · fullscreenAutoDisabled.strikes banked (4 vs sticky threshold 2) · alarm",
+        orphaned: "● Orphaned · leftover fullscreenBootPending entries for PIDs that are gone · alarm",
+        reused: "● Reused · pid === ownPid counted as a strike without startedAt vs process start · alarm",
+        withdrawn: "● Withdrawn · signal-driven exit settles withdrawn, removes own PID, preserves strike counter · alarm",
+        ratcheted: "● Ratcheted · machines that terminate rather than quit; counter only goes up · alarm",
+        burst: "● Burst · 10–20 concurrent sessions launched together; lost read-modify-write · alarm",
+        "lost-update": "● Lost-update · concurrent RMW against one ~/.claude.json · alarm",
+        classic: "● Classic · fell back to classic renderer despite fullscreen working · alarm",
+        "pid-keyed": "● Pid-keyed · pending map keyed by PID in the single shared ~/.claude.json · alarm",
+        "env-on": "● Env-on · CLAUDE_CODE_NO_FLICKER=1 / env_on path excluded from canary · workaround",
+        snuffed: "● Snuffed · working fullscreen auto-disabled by false boot-canary · alarm",
+      };
+      function pick(t, keys) {
+        for (const key of keys) {
+          if (t[key] !== undefined && t[key] !== "") return t[key];
+        }
+        return undefined;
+      }
+      function orphansOf(t) {
+        if (t.pendingOrphans != null) return Number(t.pendingOrphans) || 0;
+        if (Array.isArray(t.pendingPids)) return t.pendingPids.length;
+        return 0;
+      }
+      function normalize(raw) {
+        const t = raw && typeof raw === "object" ? raw : SEEDS.snuffed;
+        const auto = t.fullscreenAutoDisabled || {};
+        return {
+          seed: String(pick(t, ["seed"]) || ""),
+          issue: num(pick(t, ["issue"])) || 90886,
+          concurrentSessions: num(pick(t, ["concurrentSessions", "concurrent_sessions", "sessions"])),
+          strikes: num(pick(t, ["strikes"])) != null ? num(pick(t, ["strikes"])) : num(auto.strikes),
+          strikeThreshold: num(pick(t, ["strikeThreshold", "strike_threshold"])) || 2,
+          autoDisabled: pick(t, ["autoDisabled", "auto_disabled"]),
+          pendingOrphans: num(pick(t, ["pendingOrphans", "pending_orphans"])),
+          pendingPids: Array.isArray(t.pendingPids) ? t.pendingPids : (Array.isArray(t.pending_pids) ? t.pending_pids : []),
+          pidReuseStrike: pick(t, ["pidReuseStrike", "pid_reuse_strike"]),
+          ownPid: num(pick(t, ["ownPid", "own_pid"])),
+          startedAtChecked: pick(t, ["startedAtChecked", "started_at_checked"]),
+          withdrawnPreserve: pick(t, ["withdrawnPreserve", "withdrawn_preserve", "withdrawn"]),
+          lostUpdate: pick(t, ["lostUpdate", "lost_update"]),
+          fullscreenWorks: pick(t, ["fullscreenWorks", "fullscreen_works"]),
+          tuiSetting: pick(t, ["tuiSetting", "tui_setting", "tui"]) || "",
+          envNoFlicker: pick(t, ["envNoFlicker", "env_no_flicker", "envOn"]),
+          classicFallback: pick(t, ["classicFallback", "classic_fallback"]),
+          renderer: pick(t, ["renderer"]) || "",
+          terminateRatherThanQuit: pick(t, ["terminateRatherThanQuit", "terminate_rather_than_quit"]),
+          pidKeyed: pick(t, ["pidKeyed", "pid_keyed"]),
+          settleSeconds: num(pick(t, ["settleSeconds", "settle_seconds"])),
+          outputText: pick(t, ["outputText", "output", "text"]) || "",
+          title: t.title || TITLE,
+        };
+      }
+      function scoreTicket(raw) {
+        const t = normalize(raw);
+        const threshold = t.strikeThreshold || 2;
+        const strikes = t.strikes == null ? 0 : t.strikes;
+        const orphans = orphansOf(t);
+        const envOn = t.envNoFlicker === true;
+        const snuffed = t.autoDisabled === true && t.fullscreenWorks === true && strikes >= threshold;
+        const struck = strikes >= threshold;
+        const orphaned = orphans > 0;
+        const reused = t.pidReuseStrike === true || (t.ownPid != null && t.pendingPids.indexOf(t.ownPid) !== -1 && t.startedAtChecked !== true);
+        const withdrawn = t.withdrawnPreserve === true;
+        const ratcheted = t.terminateRatherThanQuit === true;
+        const sessions = t.concurrentSessions || 0;
+        const burst = sessions >= 10 && sessions <= 20;
+        const lost = t.lostUpdate === true;
+        const classic = t.classicFallback === true || t.renderer === "classic";
+        const pidKeyed = t.pidKeyed === true;
+        const tui = String(t.tuiSetting || "fullscreen").toLowerCase();
+        const lit = tui === "fullscreen" && t.autoDisabled !== true && strikes < threshold && orphans === 0 &&
+          t.classicFallback !== true && t.renderer !== "classic" && t.fullscreenWorks !== false && !envOn;
+        const seed = String(t.seed || "").toLowerCase();
+        let verdict = "lit";
+        if (envOn && ALARM.indexOf(seed) === -1 && seed !== "lit") verdict = "env-on";
+        else if (lit && ALARM.indexOf(seed) === -1) verdict = "lit";
+        else if (ALARM.indexOf(seed) !== -1) verdict = seed;
+        else if (envOn) verdict = "env-on";
+        else if (snuffed) verdict = "snuffed";
+        else if (reused) verdict = "reused";
+        else if (orphaned) verdict = "orphaned";
+        else if (withdrawn) verdict = "withdrawn";
+        else if (ratcheted) verdict = "ratcheted";
+        else if (lost) verdict = "lost-update";
+        else if (burst) verdict = "burst";
+        else if (classic) verdict = "classic";
+        else if (pidKeyed) verdict = "pid-keyed";
+        else if (struck) verdict = "struck";
+        const chips = [];
+        if (lit) chips.push("lit");
+        if (snuffed) chips.push("snuffed");
+        if (struck) chips.push("struck");
+        if (orphaned) chips.push("orphaned");
+        if (reused) chips.push("reused");
+        if (withdrawn) chips.push("withdrawn");
+        if (ratcheted) chips.push("ratcheted");
+        if (burst) chips.push("burst");
+        if (lost) chips.push("lost-update");
+        if (classic) chips.push("classic");
+        if (pidKeyed) chips.push("pid-keyed");
+        if (envOn) chips.push("env-on");
+        const reasons = ["verdict " + verdict];
+        if (verdict === "lit") {
+          reasons.push("tui=fullscreen; renderer actually fullscreen; strikes 0 or honestly earned; no orphaned pending; no auto-disable");
+        } else if (verdict === "env-on") {
+          reasons.push("CLAUDE_CODE_NO_FLICKER=1 → entry path env_on, excluded from the set that arms the canary");
+        } else {
+          reasons.push("#90886 Fullscreen renderer auto-disables itself on machines running many concurrent sessions (false boot-canary strikes)");
+        }
+        if (t.autoDisabled === true && t.fullscreenWorks === true) reasons.push("working fullscreen auto-disabled; the renderer itself was not failing");
+        if (strikes >= 2) reasons.push("fullscreenAutoDisabled.strikes " + strikes + " vs sticky threshold " + threshold);
+        if (orphans > 0) reasons.push("leftover fullscreenBootPending entries for PIDs that are gone");
+        if (lost) reasons.push("burst start+settle = read-modify-write races against one ~/.claude.json");
+        if (classic) reasons.push("fell back to classic renderer despite fullscreen working");
+        return { ticket: t, verdict, hold: HOLD.indexOf(verdict) !== -1, chips: [...new Set(chips)], reasons, feed: FEEDS[verdict] || ("● " + verdict + " · alarm") };
+      }
+      function paint(result) {
+        const t = result.ticket;
+        const flameOn = result.verdict === "lit" || result.verdict === "env-on";
+        document.getElementById("verdict-word").textContent = result.verdict;
+        document.getElementById("verdict-feed").textContent = result.feed;
+        document.getElementById("verdict-box").className = "verdict " + (result.hold ? "hold" : "");
+        document.getElementById("strike-count").textContent = t.strikes == null ? "—" : String(t.strikes);
+        document.getElementById("threshold-count").textContent = String(t.strikeThreshold || 2);
+        const flame = document.getElementById("flame-group");
+        flame.setAttribute("class", flameOn ? "flame-on" : "flame-off");
+        document.getElementById("viewer").className = "viewer" + (flameOn ? "" : " snuffed");
+        document.getElementById("frame-id").textContent = flameOn
+          ? "gauze honest · strikes " + (t.strikes || 0) + " / threshold " + (t.strikeThreshold || 2) + " · fullscreen"
+          : "gauze · strikes " + (t.strikes == null ? 4 : t.strikes) + " / threshold " + (t.strikeThreshold || 2) + " · classic fallback";
+        document.getElementById("frame-title").textContent = flameOn ? "Lamp burning" : "Working flame snuffed";
+        document.getElementById("frame-copy").textContent = flameOn
+          ? "tui=fullscreen. Renderer actually fullscreen. No orphaned pending. Auto-disable off."
+          : "The boot-canary banked false strikes from orphaned PIDs. Fullscreen itself rendered. The gauze lied.";
+        const hot = (t.strikes || 0) >= 2;
+        document.getElementById("strike-bar").className = "strike-bar" + (hot ? " hot" : "");
+        document.getElementById("strike-label").textContent = hot
+          ? (t.strikes || 4) + " vs threshold " + (t.strikeThreshold || 2) + " · several strikes from one scan, not four failed launches"
+          : "strikes " + (t.strikes || 0) + " · below sticky threshold 2";
+        const pids = t.pendingPids || [];
+        const row = document.getElementById("pid-row");
+        if (!pids.length) {
+          row.innerHTML = '<span class="idle">No leftover pending PIDs. Gauze clear.</span>';
+        } else {
+          row.innerHTML = pids.map((pid) =>
+            '<span class="pid-chip' + (pid === t.ownPid ? " own" : " dead") + '">PID ' + pid + "</span>"
+          ).join("");
+        }
+        document.getElementById("chip-row").innerHTML = CHIP_NAMES.map((name) =>
+          '<span class="chip' + (result.chips.indexOf(name) !== -1 ? " on" : "") + '">' + name + "</span>"
+        ).join("");
+        document.getElementById("reasons").innerHTML = result.reasons.map((row) => "<li>" + row + "</li>").join("");
+        document.getElementById("ticket").value = JSON.stringify(t, null, 2);
+        const pressed = t.seed || result.verdict;
+        Object.keys(SEED_BUTTONS).forEach((name) => {
+          const el = document.getElementById(SEED_BUTTONS[name]);
+          if (el) el.setAttribute("aria-pressed", String(pressed === name || result.verdict === name));
+        });
+      }
+      function applySeed(name) {
+        paint(scoreTicket(SEEDS[name] || SEEDS.snuffed));
+      }
+      function parseClaude(text) {
+        try {
+          const parsed = JSON.parse(text);
+          const auto = parsed.fullscreenAutoDisabled || {};
+          const pending = parsed.fullscreenBootPending || {};
+          const pids = Object.keys(pending).map(Number).filter(Number.isFinite);
+          const strikes = num(auto.strikes);
+          return {
+            strikes: strikes,
+            strikeThreshold: 2,
+            autoDisabled: Boolean(auto.version) || (strikes != null && strikes >= 2),
+            pendingOrphans: pids.length,
+            pendingPids: pids,
+            pidKeyed: pids.length > 0,
+            lostUpdate: pids.length > 0,
+            fullscreenWorks: true,
+            tuiSetting: "fullscreen",
+            classicFallback: strikes != null && strikes >= 2,
+            version: auto.version,
+            outputText: "parsed ~/.claude.json canary: strikes=" + strikes + " pending=" + pids.length,
+          };
+        } catch (err) {
+          return null;
+        }
+      }
+      function drawBurst(n) {
+        const canvas = document.getElementById("burst-canvas");
+        const ctx = canvas.getContext("2d");
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.fillStyle = "#080706";
+        ctx.fillRect(0, 0, w, h);
+        const count = Math.max(10, Math.min(20, n || 15));
+        const leftover = [];
+        for (let i = 0; i < count; i += 1) {
+          const x = 18 + (i % 10) * 54;
+          const y = 28 + Math.floor(i / 10) * 70;
+          const keep = i % 5 !== 0;
+          ctx.strokeStyle = keep ? "#8a3a1a" : "#c9a45a";
+          ctx.fillStyle = keep ? "#2a120c" : "#1a1810";
+          ctx.fillRect(x, y, 44, 36);
+          ctx.strokeRect(x, y, 44, 36);
+          ctx.fillStyle = keep ? "#c46a3a" : "#c9a45a";
+          ctx.font = "10px 'IBM Plex Mono', monospace";
+          ctx.fillText(String(18000 + i * 17), x + 4, y + 22);
+          if (keep) leftover.push(18000 + i * 17);
+        }
+        return leftover;
+      }
+      document.getElementById("load-btn").addEventListener("click", () => applySeed("snuffed"));
+      document.getElementById("score-btn").addEventListener("click", () => {
+        try { paint(scoreTicket(JSON.parse(document.getElementById("ticket").value))); }
+        catch (err) { document.getElementById("verdict-feed").textContent = "Ticket JSON did not parse. Score the gauze or admit lit."; }
+      });
+      document.getElementById("admit-btn").addEventListener("click", () => applySeed("lit"));
+      document.getElementById("apply-ticket").addEventListener("click", () => {
+        try { paint(scoreTicket(JSON.parse(document.getElementById("ticket").value))); }
+        catch (err) { document.getElementById("verdict-feed").textContent = "Ticket JSON did not parse. Score the gauze or admit lit."; }
+      });
+      document.getElementById("export-ticket").addEventListener("click", () => {
+        const blob = new Blob([document.getElementById("ticket").value], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "davy-ticket.json";
+        a.click();
+      });
+      Object.keys(SEED_BUTTONS).forEach((name) => {
+        document.getElementById(SEED_BUTTONS[name]).addEventListener("click", () => applySeed(name));
+      });
+      const drop = document.getElementById("drop");
+      function loadFile(file) {
+        file.text().then((text) => {
+          try { paint(scoreTicket(JSON.parse(text))); drop.textContent = "Loaded " + file.name; }
+          catch (err) { drop.textContent = "Could not parse " + file.name; }
+        });
+      }
+      drop.addEventListener("dragover", (event) => { event.preventDefault(); });
+      drop.addEventListener("drop", (event) => {
+        event.preventDefault();
+        if (event.dataTransfer.files[0]) loadFile(event.dataTransfer.files[0]);
+      });
+      document.getElementById("parse-claude").addEventListener("click", () => {
+        const parsed = parseClaude(document.getElementById("claude-input").value);
+        if (!parsed) {
+          document.getElementById("claude-out").textContent = "Could not parse ~/.claude.json snippet.";
+          return;
+        }
+        document.getElementById("claude-out").textContent =
+          "strikes " + parsed.strikes + " · pending " + parsed.pendingOrphans +
+          " · " + (parsed.autoDisabled ? "auto-disabled" : "canary not sticky yet");
+        paint(scoreTicket(parsed));
+      });
+      document.getElementById("burst-btn").addEventListener("click", () => {
+        const n = num(document.getElementById("burst-n").value) || 15;
+        const leftover = drawBurst(n);
+        document.getElementById("burst-out").textContent =
+          n + " concurrent sessions. Lost read-modify-write left " + leftover.length +
+          " PID entries for processes that are gone.";
+        paint(scoreTicket({
+          seed: leftover.length ? "snuffed" : "burst",
+          concurrentSessions: n,
+          pendingOrphans: leftover.length,
+          pendingPids: leftover,
+          lostUpdate: leftover.length > 0,
+          pidKeyed: true,
+          fullscreenWorks: true,
+          tuiSetting: "fullscreen",
+          autoDisabled: leftover.length > 0,
+          strikes: leftover.length > 0 ? 4 : 0,
+          classicFallback: leftover.length > 0,
+        }));
+      });
+      document.getElementById("env-btn").addEventListener("click", () => {
+        document.getElementById("env-out").textContent =
+          "CLAUDE_CODE_NO_FLICKER=1 → env_on. Canary not armed. Nothing written, nothing orphaned.";
+        applySeed("env-on");
+      });
+      applySeed("snuffed");
+      drawBurst(15);
+      fetch("https://api.github.com/repos/anthropics/claude-code/issues/90886")
+        .then((res) => res.ok ? res.json() : Promise.reject())
+        .then((issue) => {
+          document.getElementById("issue-card").innerHTML =
+            '<a href="' + issue.html_url + '">#' + issue.number + "</a> " + (issue.state || "open").toUpperCase() +
+            " · " + issue.title + " · " + (issue.created_at || "2026-08-31T03:26:28Z");
+        })
+        .catch(() => {
+          document.getElementById("issue-card").innerHTML =
+            '<a href="https://github.com/anthropics/claude-code/issues/90886">#90886</a> OPEN · local seed · 2026-08-31T03:26:28Z · evertjr';
+        });
+    </script>
+  </body>
+</html>

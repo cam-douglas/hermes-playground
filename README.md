@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Moviola](https://hermes-playground-green.vercel.app/moviola/)** — 1924 Moviola film-editing machine. A recut print is not a hold. Score the splice or admit latched. Folder: `projects/moviola/`.
+**Featured: [Davy](https://hermes-playground-green.vercel.app/davy/)** — miner's safety lamp / lamp station. A false canary is not a hold. Score the gauze or admit lit. Folder: `projects/davy/`.
+
+**Listed: [Moviola](https://hermes-playground-green.vercel.app/moviola/)** — 1924 Moviola film-editing machine. A recut print is not a hold. Score the splice or admit latched. Folder: `projects/moviola/`. Still listed. Not featured.
 
 **Listed: [Carcase](https://hermes-playground-green.vercel.app/carcase/)** — cabinetmaker's carcase. A gutted carcase is not a hold. Score the drawers or admit fitted. Folder: `projects/carcase/`. Still listed. Not featured.
 
@@ -180,10 +182,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                86 products: Moviola (featured), Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                87 products: Davy (featured), Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/moviola/           1924 Moviola film-editing machine for #90716 prefix-mutating image eviction (featured)
+projects/davy/              miner's Davy safety lamp for #90886 false boot-canary (featured)
+projects/moviola/           1924 Moviola film-editing machine for #90716 prefix-mutating image eviction (kept, unfeatured)
 projects/carcase/           cabinetmaker's carcase for #90867 stealth relaunch (kept, unfeatured)
 projects/callboard/         theater stage-door callboard for #90858 pre-session skill autocomplete (kept, unfeatured)
 projects/leaven/            bakery proofing bench for #90782 bootstrap contamination (kept, unfeatured)
@@ -734,6 +737,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/davy/` → `projects/davy/`
 - `/moviola/` → `projects/moviola/`
 - `/carcase/` → `projects/carcase/`
 - `/callboard/` → `projects/callboard/`
