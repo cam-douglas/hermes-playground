@@ -41,6 +41,7 @@ NOT **Advowson** ([#91005](https://github.com/anthropics/claude-code/issues/9100
 NOT **Pawl** — sticky stop / wrong ratchet stroke.
 NOT **Tappet** — hook spawn vs seated injection.
 NOT **Leat** ([#90475](https://github.com/anthropics/claude-code/issues/90475)) — Bash guidance that promotes unbounded until-loops. Also: do not reuse Leat's mill-race UI or the banned name Noria.
+NOT **Sounder** ([#90555](https://github.com/anthropics/claude-code/issues/90555)) — TUI background Bash waiter completes, completion notification never re-invokes. Different host (SDK `query()` vs TUI), different child (Task vs `run_in_background` Bash), different freeze (`awaiting_post_task_result` ledger vs waiter IDs). Cousin, not primary. Product name stays **Parison**; Leat durable-banned Noria / Culvert / Weir / Flume / Millrace.
 NOT **#47936** — inverse: subagents stop early but are reported completed.
 NOT **#59962** — broader in_progress leftover after completed work (cousin, not this product's primary).
 NOT millimetre sliders, leftover woodworking, or clones of existing catalog folders.
@@ -91,4 +92,4 @@ Local fingerprints: `data/91037.json`, `data/hung.json`, `data/marvered.json`, p
 ## Sources
 
 - [anthropics/claude-code#91037](https://github.com/anthropics/claude-code/issues/91037) OPEN
-- Cousins (cite, not primaries): [#47936](https://github.com/anthropics/claude-code/issues/47936) inverse polarity (closed); [#59962](https://github.com/anthropics/claude-code/issues/59962) leftover in_progress (closed); also [#37521](https://github.com/anthropics/claude-code/issues/37521) [#61547](https://github.com/anthropics/claude-code/issues/61547) [#28482](https://github.com/anthropics/claude-code/issues/28482).
+- Cousins (cite, not primaries): [#47936](https://github.com/anthropics/claude-code/issues/47936) inverse polarity (closed); [#59962](https://github.com/anthropics/claude-code/issues/59962) leftover in_progress (closed); [Sounder #90555](https://github.com/anthropics/claude-code/issues/90555) TUI waiter completes / notification never re-invokes (different host, child, freeze); also [#37521](https://github.com/anthropics/claude-code/issues/37521) [#61547](https://github.com/anthropics/claude-code/issues/61547) [#28482](https://github.com/anthropics/claude-code/issues/28482).

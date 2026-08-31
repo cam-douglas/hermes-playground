@@ -228,8 +228,8 @@ test("CLI scores data files", () => {
 test("constants match the issue facts only", () => {
   assert.equal(FEATURED_ISSUE, 91037);
   assert.deepEqual([...PRIMARY_ISSUES], [91037]);
-  assert.deepEqual([...SAME_CLASS], [47936, 59962, 37521, 61547, 28482]);
-  assert.deepEqual([...COUSINS], [47936, 59962, 37521, 61547, 28482]);
+  assert.deepEqual([...SAME_CLASS], [47936, 59962, 90555, 37521, 61547, 28482]);
+  assert.deepEqual([...COUSINS], [47936, 59962, 90555, 37521, 61547, 28482]);
   assert.equal(FILED_AT, "2026-08-31T17:08:37Z");
   assert.equal(SDK_BAD_A, "0.3.197");
   assert.equal(SDK_BAD_B, "0.3.251");
@@ -276,6 +276,7 @@ test("constants match the issue facts only", () => {
   assert.ok(NOT_PRODUCTS.includes("cockade"));
   assert.ok(NOT_PRODUCTS.includes("lye"));
   assert.ok(NOT_PRODUCTS.includes("leat"));
+  assert.ok(NOT_PRODUCTS.includes("sounder"));
   assert.ok(NOT_PRODUCTS.includes("noria"));
   assert.ok(NOT_PRODUCTS.includes("suture"));
   assert.ok(NOT_PRODUCTS.includes("limpet"));
@@ -299,7 +300,7 @@ test("chips.json and fingerprints stay aligned", () => {
   assert.equal(fp.filesWritten, 256);
   assert.equal(fp.silenceSeconds, 900);
   assert.equal(fp.model, "claude-fable-5");
-  assert.deepEqual(fp.sameClass, [47936, 59962, 37521, 61547, 28482]);
+  assert.deepEqual(fp.sameClass, [47936, 59962, 90555, 37521, 61547, 28482]);
   const fixtures = readData("fixtures.json");
   assert.equal(fixtures.rows.length, 5);
   assert.equal(fixtures.rows[0].verdict, "hung");
@@ -399,6 +400,8 @@ test("living page is a glasshouse glory-hole shop, idle marvered, seeded hung", 
   assert.match(html, /#91037/);
   assert.match(html, /#47936/);
   assert.match(html, /#59962/);
+  assert.match(html, /#90555/);
+  assert.match(html, /Sounder/);
   assert.match(html, /03:50/);
   assert.match(html, /catalog #101/);
   assert.match(html, /0\.3\.251/);
