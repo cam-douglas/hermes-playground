@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Advowson](https://hermes-playground-green.vercel.app/advowson/)** — diocesan registry / patronage desk. A reserved living that silent-collates the built-in is not a hold. Score the presentation or admit vacant. Folder: `projects/advowson/`.
+**Featured: [Lye](https://hermes-playground-green.vercel.app/lye/)** — fuller's lye vat / scouring desk. A scrub that strips the relocated address from every child is not a hold. Score the vat or admit rinsed. Folder: `projects/lye/`.
+
+**Listed: [Advowson](https://hermes-playground-green.vercel.app/advowson/)** — diocesan registry / patronage desk. A reserved living that silent-collates the built-in is not a hold. Score the presentation or admit vacant. Folder: `projects/advowson/`. Still listed. Not featured.
 
 **Listed: [Smutch](https://hermes-playground-green.vercel.app/smutch/)** — binder's smutch bench. A home-folder Icon\r on every crate is not a hold. Score the smutches or admit plain. Folder: `projects/smutch/`. Still listed. Not featured.
 
@@ -204,10 +206,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                98 products: Advowson (featured), Smutch, Bitting, Puncheon, Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                99 products: Lye (featured), Advowson, Smutch, Bitting, Puncheon, Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/advowson/          diocesan registry for #91005 Workflow name silent built-in (featured)
+projects/lye/               fuller's lye vat for #91020 CLAUDE_CONFIG_DIR scrub regression (featured)
+projects/advowson/          diocesan registry for #91005 Workflow name silent built-in (kept, unfeatured)
 projects/smutch/            binder smutch bench for #90993 Icon\\r folder stamp (kept, unfeatured)
 projects/bitting/           locksmith bitting bench for #90970 Slack MCP most-recent-mint exclusivity (kept, unfeatured)
 projects/puncheon/          goldsmith puncheon rack for #90962 BOM-less .ps1 / PS 5.1 CP1252 (kept, unfeatured)
@@ -301,8 +304,9 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/advowson/`, `/smutch/`, `/bitting/`, `/puncheon/`, `/gnomon/`, `/spoil/`, `/trammel/`, `/soundpost/`, `/flong/`, `/callboard/`, `/leaven/`, `/hydra/`, `/limpet/`, `/scion/`, `/almanac/`, `/voucher/`, `/kindling/`, `/deadband/`, `/pawl/`, `/cenotaph/`, `/fetch/`, `/livery/`, `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/lye/`, `/advowson/`, `/smutch/`, `/bitting/`, `/puncheon/`, `/gnomon/`, `/spoil/`, `/trammel/`, `/soundpost/`, `/flong/`, `/callboard/`, `/leaven/`, `/hydra/`, `/limpet/`, `/scion/`, `/almanac/`, `/voucher/`, `/kindling/`, `/deadband/`, `/pawl/`, `/cenotaph/`, `/fetch/`, `/livery/`, `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-09-01-lye.md      Lye ship log (01:50 Sydney)
 runs/2026-09-01-advowson.md Advowson ship log (00:50 Sydney)
 runs/2026-08-31-2350-smutch.md Smutch ship log (23:50 Sydney)
 runs/2026-08-31-gnomon.md   Gnomon ship log (20:50 Sydney)

@@ -1,0 +1,51 @@
+{
+  "note": "No invented session IDs. The repro path /tmp/scrubprobe and the version pair 2.1.250 / 2.1.251 are the only identifiers named in the issue.",
+  "narrativeNotFixture": {
+    "reproPath": "/tmp/scrubprobe",
+    "cliBad": "2.1.251",
+    "cliGood": "2.1.250",
+    "scrubFlag": "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1"
+  },
+  "rows": [
+    {
+      "id": 1,
+      "hank": "SessionStart hook",
+      "probe": "grep '^CLAUDE_CONFIG_DIR='",
+      "count250": 1,
+      "count251": 0,
+      "verdict": "hook-blind",
+      "note": "hook env dump loses the relocated address on 2.1.251"
+    },
+    {
+      "id": 2,
+      "hank": "Bash tool",
+      "probe": "env | grep -c CLAUDE_CONFIG_DIR",
+      "count250": 1,
+      "count251": 0,
+      "verdict": "bash-blind",
+      "note": "Bash subprocess same strip under scrub"
+    },
+    {
+      "id": 3,
+      "hank": "parent vat",
+      "path": "/tmp/scrubprobe",
+      "listing": [".claude.json", "projects/", "sessions/"],
+      "verdict": "relocated-parent",
+      "note": "parent still writes the relocated CLAUDE_CONFIG_DIR on both versions"
+    },
+    {
+      "id": 4,
+      "hank": "scrub flag",
+      "flag": "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1",
+      "verdict": "scrub-flag",
+      "note": "scrub on for both 2.1.250 pass-through and 2.1.251 strip"
+    },
+    {
+      "id": 5,
+      "hank": "debug log",
+      "probe": "--debug",
+      "verdict": "unlogged",
+      "note": "nothing printed about the removal; --debug log silent"
+    }
+  ]
+}
