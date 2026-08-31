@@ -24,8 +24,11 @@
  * NOT Moviola #90716, Carcase #90867, Callboard #90858, Leaven #90782,
  * Hydra #90856, Limpet #89275, Scion #90815, Almanac #90804,
  * Deadband #90789, Carrel #90661, Binnacle #90551, Fetch #90755,
- * Kindling #90798. Nearby TUI only (do not ship): #88372, #84940,
- * #76022, #85573, #82886, #85712, #78693.
+ * Kindling #90798. Same-class cite (not primary): #88977, #78439,
+ * #85461, #73719, #90733. Nearby TUI only (do not ship): #88372,
+ * #84940, #76022, #85573, #82886, #85712, #78693. Backups (do not
+ * ship): Cartouche/Chimera #90881, Gyre #90800. Reject #90889
+ * (Limpet clone).
  */
 
 import { readFileSync } from "node:fs";
@@ -67,11 +70,13 @@ export const ALARM_VERDICTS = Object.freeze([
 export const CHIPS = Object.freeze([...VERDICTS]);
 export const FEATURED_ISSUE = 90886;
 export const PRIMARY_ISSUES = Object.freeze([90886]);
-export const SAME_CLASS = Object.freeze([85583, 90789, 90661]);
-export const NEARBY_BOUNDARY = Object.freeze([
-  88372, 84940, 76022, 85573, 82886, 85712, 78693,
+export const SAME_CLASS = Object.freeze([
+  85583, 90789, 90661, 88977, 78439, 85461, 73719, 90733,
 ]);
-export const CODEX_SAME = Object.freeze([24224, 37226, 39642]);
+export const NEARBY_BOUNDARY = Object.freeze([
+  88372, 84940, 76022, 85573, 82886, 85712, 78693, 90881, 90800,
+]);
+export const CODEX_SAME = Object.freeze([24224, 37226, 39642, 40109]);
 export const CLI = "2.1.251";
 export const CANARY_SINCE = "2.1.236";
 export const PLATFORM = "macos";

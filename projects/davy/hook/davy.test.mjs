@@ -9,6 +9,7 @@ import {
   AUTO_DISABLED_AT,
   CANARY_SINCE,
   CHIPS,
+  CODEX_SAME,
   CLI,
   CONCURRENT_MAX,
   CONCURRENT_MIN,
@@ -329,10 +330,16 @@ test("verdict and chip lists; idle is never davy / lamp / canary / flame / pit",
   assert.equal(DARWIN, "25.6.0");
   assert.equal(ARCH, "arm64");
   assert.deepEqual([...PRIMARY_ISSUES], [90886]);
-  assert.deepEqual([...SAME_CLASS], [85583, 90789, 90661]);
+  assert.deepEqual(
+    [...SAME_CLASS],
+    [85583, 90789, 90661, 88977, 78439, 85461, 73719, 90733],
+  );
   assert.ok(NEARBY_BOUNDARY.includes(88372));
   assert.ok(NEARBY_BOUNDARY.includes(84940));
   assert.ok(NEARBY_BOUNDARY.includes(78693));
+  assert.ok(NEARBY_BOUNDARY.includes(90881));
+  assert.ok(NEARBY_BOUNDARY.includes(90800));
+  assert.deepEqual([...CODEX_SAME], [24224, 37226, 39642, 40109]);
   assert.match(PHRASE, /false canary is not a hold/i);
   assert.match(MARK, /13:50/);
   assert.match(MARK, /#87/);
@@ -359,7 +366,16 @@ test("living page seeds snuffed and names lit idle", () => {
   assert.match(html, /#85583/);
   assert.match(html, /#90789/);
   assert.match(html, /#90661/);
+  assert.match(html, /#88977/);
+  assert.match(html, /#78439/);
+  assert.match(html, /#85461/);
+  assert.match(html, /#73719/);
+  assert.match(html, /#90733/);
   assert.match(html, /24224/);
+  assert.match(html, /40109/);
+  assert.match(html, /Cartouche/);
+  assert.match(html, /Chimera/);
+  assert.match(html, /Gyre/);
   assert.match(html, /13:50/);
   assert.match(html, /catalog #87/);
   assert.match(html, /2\.1\.251/);
