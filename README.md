@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Leaven](https://hermes-playground-green.vercel.app/leaven/)** — bakery proofing bench. A first turn of foreign starter is not a bake. Score the crocks or admit unleavened. Folder: `projects/leaven/`.
+**Featured: [Callboard](https://hermes-playground-green.vercel.app/callboard/)** — theater stage-door callboard. A cast skill that never makes the new-chat callboard is not a hold. Score the board or admit rostered. Folder: `projects/callboard/`.
+
+**Listed: [Leaven](https://hermes-playground-green.vercel.app/leaven/)** — bakery proofing bench. A first turn of foreign starter is not a bake. Score the crocks or admit unleavened. Folder: `projects/leaven/`. Still listed. Not featured.
 
 **Listed: [Hydra](https://hermes-playground-green.vercel.app/hydra/)** — marble registry hydra desk. A settings cut that regrows from the known ledger is not a hold. Score both ledgers or admit cauterized. Folder: `projects/hydra/`. Still listed. Not featured.
 
@@ -174,10 +176,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                83 products: Leaven (featured), Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                84 products: Callboard (featured), Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/leaven/            bakery proofing bench for #90782 bootstrap contamination (featured)
+projects/callboard/         theater stage-door callboard for #90858 pre-session skill autocomplete (featured)
+projects/leaven/            bakery proofing bench for #90782 bootstrap contamination (kept, unfeatured)
 projects/hydra/             marble registry hydra desk for dual-ledger marketplace resurrection (kept, unfeatured)
 projects/limpet/            tide-pool limpet pry desk for scheduled-task OS process leak (kept, unfeatured)
 projects/scion/             orchard grafting bench for empty bridged fork (kept, unfeatured)
@@ -256,8 +259,10 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/scion/`, `/almanac/`, `/voucher/`, `/kindling/`, `/deadband/`, `/pawl/`, `/cenotaph/`, `/fetch/`, `/livery/`, `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/callboard/`, `/leaven/`, `/hydra/`, `/limpet/`, `/scion/`, `/almanac/`, `/voucher/`, `/kindling/`, `/deadband/`, `/pawl/`, `/cenotaph/`, `/fetch/`, `/livery/`, `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-08-31-callboard.md Callboard ship log (10:50 Sydney)
+runs/2026-08-31-leaven.md   Leaven ship log (09:50 Sydney)
 runs/2026-08-31-scion.md    Scion ship log (06:50 Sydney)
 runs/2026-08-31-almanac.md  Almanac ship log (05:50 Sydney)
 runs/2026-08-31-voucher.md  Voucher ship log (04:50 Sydney)
@@ -723,6 +728,8 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/callboard/` → `projects/callboard/`
+- `/leaven/` → `projects/leaven/`
 - `/cenotaph/` → `projects/cenotaph/`
 - `/fetch/` → `projects/fetch/`
 - `/livery/` → `projects/livery/`

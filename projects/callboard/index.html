@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Callboard — theater stage-door desk for Claude Code #90858: a cast skill that never makes the new-chat callboard is not a hold. Score the board or admit rostered."
+    />
+    <title>Callboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --stage: #0a0908;
+        --board: #141210;
+        --rail: #c4a15a;
+        --brass: #d4b46a;
+        --brass-deep: #8a6d2e;
+        --chalk: #f4f0e6;
+        --card: #efe6d4;
+        --crimson: #c41e3a;
+        --crimson-deep: #7a1024;
+        --house: #b8944a;
+        --ink: #1a1612;
+        --quiet: #9a8c74;
+        --hold: #7ea36a;
+        --display: "Playfair Display", "Palatino Linotype", Palatino, serif;
+        --body: "DM Sans", "Gill Sans", "Segoe UI", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--chalk);
+        background:
+          radial-gradient(ellipse at 50% -8%, rgba(184, 148, 74, 0.22), transparent 42%),
+          radial-gradient(circle at 12% 88%, rgba(196, 30, 58, 0.08), transparent 28%),
+          radial-gradient(circle at 88% 18%, rgba(212, 180, 106, 0.08), transparent 24%),
+          repeating-linear-gradient(90deg, #0c0b0a 0 18px, #0a0908 18px 36px),
+          var(--stage);
+        background-attachment: fixed;
+      }
+      button, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: var(--brass); }
+      .house {
+        width: min(1240px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 16px 0 64px;
+      }
+      .playbill {
+        position: relative;
+        padding: 26px 28px 20px;
+        background:
+          linear-gradient(180deg, #1a1612 0%, #100e0c 70%, #0c0b0a 100%);
+        border: 3px solid var(--brass-deep);
+        box-shadow:
+          inset 0 0 0 1px rgba(212, 180, 106, 0.25),
+          0 0 80px rgba(184, 148, 74, 0.12);
+      }
+      .playbill::before,
+      .playbill::after {
+        content: "";
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--brass);
+        box-shadow: 0 0 0 3px #0c0b0a;
+      }
+      .playbill::before { top: 8px; left: 8px; }
+      .playbill::after { top: 8px; right: 8px; }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      h1 {
+        margin: 6px 0 4px;
+        font-family: var(--display);
+        font-size: clamp(52px, 9vw, 96px);
+        line-height: 0.82;
+        letter-spacing: -0.03em;
+        font-weight: 700;
+      }
+      .phrase { max-width: 42em; margin: 0; font-size: 18px; color: var(--card); }
+      .idle {
+        margin: 8px 0 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+      }
+      .desk {
+        display: grid;
+        grid-template-columns: 0.95fr 1.15fr 0.95fr;
+        gap: 14px;
+        margin-top: 14px;
+      }
+      @media (max-width: 980px) {
+        .desk { grid-template-columns: 1fr; }
+      }
+      .panel {
+        background: rgba(20, 18, 16, 0.92);
+        border: 1px solid rgba(196, 161, 90, 0.22);
+        padding: 14px;
+        box-shadow: inset 0 0 0 1px rgba(244, 240, 230, 0.03);
+      }
+      .panel h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 26px;
+      }
+      .rails {
+        display: grid;
+        gap: 10px;
+      }
+      .slot {
+        position: relative;
+        min-height: 72px;
+        padding: 10px 12px 10px 18px;
+        background: linear-gradient(180deg, #1c1916, #12100e);
+        border: 1px solid rgba(196, 161, 90, 0.28);
+        box-shadow: inset 0 8px 0 -6px var(--brass-deep);
+      }
+      .slot::before {
+        content: "";
+        position: absolute;
+        left: 6px;
+        top: 10px;
+        bottom: 10px;
+        width: 3px;
+        background: var(--brass);
+      }
+      .slot .tab {
+        position: absolute;
+        top: 0;
+        right: 14px;
+        width: 18px;
+        height: 22px;
+        background: var(--crimson);
+        clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+      }
+      .slot .name {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        color: var(--quiet);
+      }
+      .slot .card {
+        margin-top: 4px;
+        padding: 6px 8px;
+        background: var(--card);
+        color: var(--ink);
+        font-family: var(--display);
+        font-size: 16px;
+      }
+      .slot.empty .card {
+        background: transparent;
+        color: rgba(244, 240, 230, 0.35);
+        border: 1px dashed rgba(244, 240, 230, 0.22);
+        font-style: italic;
+      }
+      .slot.hold .card {
+        background: #e8f0dc;
+      }
+      .slot.alarm .tab { background: var(--crimson); }
+      .slot.hold .tab { background: var(--hold); }
+      .composer {
+        min-height: 220px;
+        padding: 16px 14px 12px;
+        background:
+          linear-gradient(180deg, #0e0d0b, #161310);
+        border: 2px solid rgba(196, 161, 90, 0.28);
+        color: var(--chalk);
+      }
+      .composer.alarm {
+        box-shadow: inset 0 0 40px rgba(196, 30, 58, 0.12);
+      }
+      .composer.hold {
+        box-shadow: inset 0 0 40px rgba(126, 163, 106, 0.12);
+      }
+      .slash {
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.55;
+        min-height: 88px;
+        padding: 10px;
+        border: 1px dashed rgba(244, 240, 230, 0.18);
+        color: var(--quiet);
+      }
+      .composer.alarm .slash { color: rgba(244, 240, 230, 0.28); }
+      .composer.hold .slash { color: var(--chalk); border-color: rgba(126, 163, 106, 0.35); }
+      .score {
+        margin-top: 10px;
+        padding: 10px 12px;
+        background: #0c0b0a;
+        color: var(--chalk);
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.55;
+        border: 1px dashed rgba(212, 180, 106, 0.28);
+      }
+      .score strong { color: var(--card); }
+      .actions, .seeds, .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .actions button, .seeds button, .tools button {
+        border: 1px solid rgba(212, 180, 106, 0.28);
+        background: #161310;
+        padding: 8px 12px;
+        border-radius: 2px;
+        color: var(--card);
+      }
+      .actions button:hover, .seeds button:hover, .tools button:hover {
+        border-color: var(--brass);
+        color: var(--brass);
+      }
+      .seeds button[aria-pressed="true"] {
+        background: #2a1218;
+        border-color: var(--crimson);
+        color: #f4c8ce;
+      }
+      .verdict {
+        margin-top: 12px;
+        padding: 12px 14px;
+        background: #161310;
+        border: 1px solid rgba(212, 180, 106, 0.18);
+      }
+      .verdict .word {
+        font-family: var(--display);
+        font-size: 34px;
+        letter-spacing: -0.03em;
+        text-transform: lowercase;
+      }
+      .verdict.fail .word { color: var(--crimson); }
+      .verdict.hold .word { color: var(--hold); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 3px 8px;
+        border: 1px solid rgba(244, 240, 230, 0.16);
+        border-radius: 2px;
+        color: var(--quiet);
+      }
+      .chip.on {
+        border-color: var(--crimson);
+        color: #f4c8ce;
+        background: rgba(196, 30, 58, 0.12);
+      }
+      .verdict.hold .chip.on {
+        border-color: var(--hold);
+        color: var(--hold);
+        background: rgba(126, 163, 106, 0.1);
+      }
+      textarea {
+        width: 100%;
+        min-height: 200px;
+        margin-top: 8px;
+        padding: 10px;
+        resize: vertical;
+        background: #0c0b0a;
+        border: 1px dashed rgba(196, 161, 90, 0.35);
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .drop {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border: 1px dashed rgba(196, 161, 90, 0.4);
+        color: var(--quiet);
+        font-size: 13px;
+        text-align: center;
+      }
+      .drop.hot { border-color: var(--crimson); color: #f4c8ce; }
+      .issue { font-family: var(--mono); font-size: 13px; line-height: 1.5; }
+      .issue .state {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 1px 7px;
+        border-radius: 2px;
+        border: 1px solid var(--hold);
+        color: var(--hold);
+        text-transform: uppercase;
+        font-size: 11px;
+      }
+      .issue .state.closed { border-color: var(--crimson); color: var(--crimson); }
+      .reasons { margin: 8px 0 0; padding-left: 18px; color: var(--quiet); font-size: 14px; }
+      .drawer {
+        margin-top: 12px;
+        padding: 10px 12px;
+        background: #0c0b0a;
+        border: 1px solid rgba(196, 161, 90, 0.22);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.55;
+        color: var(--quiet);
+      }
+      .drawer strong { color: var(--card); }
+      .cards, .adapters {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 980px) {
+        .cards, .adapters { grid-template-columns: 1fr; }
+      }
+      .card-box {
+        background: #161310;
+        border: 1px solid rgba(212, 180, 106, 0.14);
+        padding: 14px;
+      }
+      .card-box h3 {
+        margin: 6px 0 8px;
+        font-family: var(--display);
+        font-size: 22px;
+      }
+      .card-box p { margin: 0 0 8px; color: var(--quiet); font-size: 14px; }
+      .sources { margin-top: 14px; }
+      .sources ul { margin: 0; padding-left: 18px; color: var(--quiet); }
+      .sources li { margin: 6px 0; }
+      footer { margin-top: 16px; color: var(--quiet); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main class="house">
+      <header class="playbill">
+        <p class="mark">10:50 Sydney · callboard</p>
+        <h1>Callboard</h1>
+        <p class="phrase">A cast skill that never makes the new-chat callboard is not a hold. Score the board or admit rostered.</p>
+        <p class="idle">Idle word: rostered. Black board / chalk slots / understudy tabs / brass rails. Seeded blank.</p>
+      </header>
+
+      <div class="desk">
+        <section class="panel" aria-label="Stage-door slots">
+          <h2>Stage-door slots</h2>
+          <div class="rails">
+            <article class="slot empty alarm" id="slot-cloud">
+              <span class="tab" aria-hidden="true"></span>
+              <p class="name">anthropic-skills:&lt;name&gt;</p>
+              <p class="card" id="cloud-card">— blank until first message</p>
+            </article>
+            <article class="slot" id="slot-local">
+              <span class="tab" aria-hidden="true"></span>
+              <p class="name">~/.claude/skills</p>
+              <p class="card" id="local-card">local skill · already posted</p>
+            </article>
+            <article class="slot empty" id="slot-cache">
+              <span class="tab" aria-hidden="true"></span>
+              <p class="name">skills-plugin cache</p>
+              <p class="card" id="cache-card">on disk · menu-blind</p>
+            </article>
+          </div>
+          <div class="actions">
+            <button type="button" id="load-btn">Load #90858 board</button>
+            <button type="button" id="score-btn">Score the board</button>
+            <button type="button" id="admit-btn">Admit rostered</button>
+          </div>
+          <div class="drawer" id="cache-drawer">
+            Cache <strong>present</strong> at
+            <code>~/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/&lt;uuid&gt;/&lt;uuid&gt;/skills/</code>
+            · sibling <strong>manifest.json</strong> lastUpdated refreshes at session start.
+          </div>
+        </section>
+
+        <section class="panel" aria-label="New-chat composer">
+          <h2>New-chat slash</h2>
+          <div class="composer alarm" id="composer">
+            <p class="mark" id="composer-mark">pre-session</p>
+            <p class="slash" id="slash-text"></p>
+          </div>
+          <div class="score" id="chalk">
+            pre <strong id="pre-match">false</strong>
+            · post <strong id="post-match">true</strong>
+            · cache <strong id="cache-flag">present</strong>
+            · local <strong id="local-flag">visible</strong>
+          </div>
+          <div class="verdict fail" id="verdict-box">
+            <div class="word" id="verdict-word">blank</div>
+            <p id="verdict-feed">● Blank · new-chat slash autocomplete lists nothing for anthropic-skills:* until the first message · alarm</p>
+            <div class="chips" id="chip-row"></div>
+          </div>
+        </section>
+
+        <aside class="panel" aria-label="House desk">
+          <h2>House desk</h2>
+          <p class="issue" id="issue-card">Fetching anthropics/claude-code#90858…</p>
+          <p class="idle" id="local-seeds">Local seeds: #90858 · blank · 1.40609.0 · CLI 2.1.169 · Darwin 24.6.0</p>
+          <div class="seeds" role="group" aria-label="Seed chips">
+            <button type="button" id="seed-blank" aria-pressed="true">blank</button>
+            <button type="button" id="seed-rostered" aria-pressed="false">rostered</button>
+            <button type="button" id="seed-deferred" aria-pressed="false">deferred</button>
+            <button type="button" id="seed-cache" aria-pressed="false">cache-present</button>
+            <button type="button" id="seed-local" aria-pressed="false">local-ok</button>
+            <button type="button" id="seed-post" aria-pressed="false">post-start</button>
+            <button type="button" id="seed-dupe" aria-pressed="false">duplicate-workaround</button>
+            <button type="button" id="seed-named" aria-pressed="false">namespaced</button>
+            <button type="button" id="seed-scan" aria-pressed="false">scan-regress</button>
+            <button type="button" id="seed-menu" aria-pressed="false">menu-blind</button>
+          </div>
+          <div class="drop" id="drop">Drop an autocomplete probe ticket JSON onto the board</div>
+          <textarea id="ticket" spellcheck="false" aria-label="Autocomplete probe ticket JSON"></textarea>
+          <div class="tools">
+            <button type="button" id="apply-ticket">Score pasted ticket</button>
+            <button type="button" id="export-ticket">Export probe ticket</button>
+          </div>
+          <ol class="reasons" id="reasons"></ol>
+        </aside>
+      </div>
+
+      <section class="panel cards" aria-label="Why not a clone">
+        <article class="card-box">
+          <p class="mark">primary · #90858</p>
+          <h3>Blank new-chat</h3>
+          <p>OPEN, has-repro, macOS, regression, area:skills, area:plugins. Filed 2026-08-30T23:41:14Z. Desktop 1.40609.0 code mode; CLI 2.1.169; Darwin 24.6.0. Cache present. Skill() works. Menu empty.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">not a clone</p>
+          <h3>Pre-session only</h3>
+          <p>NOT Ordo (#90515) headless -p. NOT Kindling (#90798) WarmLifecycle. NOT Leaven (#90782) bootstrap echo. NOT Livery / Fetch / Sprag / Reed / Larder / Scion / Hydra / Limpet / Deadband / Almanac / Voucher.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">workaround</p>
+          <h3>Duplicate, then two</h3>
+          <p>Copy the skill into ~/.claude/skills → TWO autocomplete entries (bare + anthropic-skills: prefixed). Namespaced skills do not dedupe against local ones.</p>
+        </article>
+      </section>
+
+      <section class="panel adapters" aria-label="Native adapters">
+        <article class="card-box">
+          <p class="mark">adapter · github</p>
+          <h3>GitHub</h3>
+          <p>Live unauthenticated fetch of #90858. Local seed JSON if the request does not land. No token in this demo.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">adapter · slack</p>
+          <h3>Slack</h3>
+          <p id="slack-row">Would post to Slack: blank · pre-session anthropic-skills:* miss. No webhook in this demo.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">adapter · linear</p>
+          <h3>Linear</h3>
+          <p id="linear-row">Would open a Linear ticket: Callboard blank · #90858 pre-session discoverability. No API key in this demo.</p>
+        </article>
+      </section>
+
+      <section class="panel sources">
+        <h2>Sources</h2>
+        <ul>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90858">#90858</a> OPEN — [BUG] claude.ai skills (anthropic-skills:*) missing from new-chat slash-command autocomplete until first message (regression ~Aug 2026). 2026-08-30T23:41:14Z. Labels: has repro, platform:macos, regression, area:skills, area:plugins. Desktop 1.40609.0 code mode; CLI 2.1.169; Darwin 24.6.0.</li>
+          <li>Skills enabled on claude.ai (Settings &gt; Capabilities &gt; Skills) inject into desktop code-mode as plugin-namespaced <code>anthropic-skills:&lt;name&gt;</code>.</li>
+          <li>Until ~early-to-mid Aug 2026 they appeared in composer slash autocomplete of a brand-new chat. Since then, new not-yet-started chat autocomplete lists nothing for them until after the first message starts the session.</li>
+          <li>Skill is still fully available to the model in that fresh session (ListSkills shows enabled; Skill(anthropic-skills:&lt;name&gt;) loads fine). Only pre-first-message autocomplete is affected.</li>
+          <li>Cache exists on disk at <code>~/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/&lt;uuid&gt;/&lt;uuid&gt;/skills/</code> with sibling manifest.json whose lastUpdated refreshes at session start — data present while menu shows nothing.</li>
+          <li>Local skills in <code>~/.claude/skills</code> still appear in new-chat autocomplete immediately — menu works; only claude.ai/plugin pipeline is deferred.</li>
+          <li>Workaround: duplicate skill into ~/.claude/skills → then TWO autocomplete entries (bare + anthropic-skills: prefixed) because namespaced skills do not dedupe against local ones.</li>
+          <li>Timing note from reporter: 2.1.169 changelog mentions slash-command/skill scan regression introduced in 2.1.161 (fixed for <code>claude -p</code> on Windows); timing roughly matches; unconfirmed connection.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/82732">#82732</a> — cloud-shared skills inherit plugin load semantics (no mid-session reload). Cite only, not primary. Different problem.</li>
+        </ul>
+        <p>NOT Ordo, NOT Kindling, NOT Leaven, NOT Livery, NOT Fetch, NOT Sprag, NOT Reed, NOT Larder, NOT Scion, NOT Hydra / Limpet / Deadband / Almanac / Voucher.</p>
+      </section>
+      <footer>
+        Catalog path <code>/callboard/</code>. Score engine lives in this page and in
+        <code>projects/callboard/hook/callboard.mjs</code>. No build step. No secrets.
+      </footer>
+    </main>
+    <script>
+      const SCAN_NOTE = "2.1.169 changelog mentions slash-command/skill scan regression introduced in 2.1.161 (fixed for claude -p on Windows); timing roughly matches; unconfirmed connection.";
+      const WORKAROUND_NOTE = "duplicate skill into ~/.claude/skills → then TWO autocomplete entries (bare + anthropic-skills: prefixed) because namespaced skills do not dedupe against local ones.";
+      const CHIP_NAMES = [
+        "rostered", "blank", "deferred", "cache-present", "local-ok",
+        "post-start", "duplicate-workaround", "namespaced", "scan-regress", "menu-blind",
+      ];
+      const HOLD = ["rostered"];
+      const ALARM = CHIP_NAMES.filter((name) => name !== "rostered");
+      const SEED_BUTTONS = {
+        blank: "seed-blank",
+        rostered: "seed-rostered",
+        deferred: "seed-deferred",
+        "cache-present": "seed-cache",
+        "local-ok": "seed-local",
+        "post-start": "seed-post",
+        "duplicate-workaround": "seed-dupe",
+        namespaced: "seed-named",
+        "scan-regress": "seed-scan",
+        "menu-blind": "seed-menu",
+      };
+      function base(seed, extra) {
+        return Object.assign({
+          seed: seed,
+          issue: 90858,
+          title: "[BUG] claude.ai skills (anthropic-skills:*) missing from new-chat slash-command autocomplete until first message (regression ~Aug 2026)",
+          preSessionMatch: false,
+          postFirstMessageMatch: true,
+          cachePresent: true,
+          manifestFresh: true,
+          localSkillsVisible: true,
+          skillCallable: true,
+          listSkillsShows: true,
+          duplicateEntries: false,
+          namespacedPrefix: "anthropic-skills:",
+          outputText: "new-chat slash autocomplete lists nothing for anthropic-skills:* until first message; Skill() and ListSkills still work",
+          version: "1.40609.0",
+          cli: "2.1.169",
+          platform: "macos",
+          os: "Darwin 24.6.0",
+        }, extra || {});
+      }
+      const SEEDS = {
+        blank: base("blank"),
+        rostered: base("rostered", {
+          preSessionMatch: true,
+          outputText: "cloud/plugin skills appear in new-chat autocomplete before any message",
+        }),
+        deferred: base("deferred", {
+          outputText: "menu does not read the plugin pipeline until after the first message starts the session",
+        }),
+        "cache-present": base("cache-present", {
+          outputText: "cache exists on disk at skills-plugin/<uuid>/<uuid>/skills/ with sibling manifest.json whose lastUpdated refreshes at session start — data present while menu shows nothing",
+        }),
+        "local-ok": base("local-ok", {
+          outputText: "local skills in ~/.claude/skills still appear in new-chat autocomplete immediately — menu works; only claude.ai/plugin pipeline is deferred",
+        }),
+        "post-start": base("post-start", {
+          outputText: "after the first message starts the session, namespaced skills appear in slash autocomplete",
+        }),
+        "duplicate-workaround": base("duplicate-workaround", {
+          preSessionMatch: true,
+          duplicateEntries: true,
+          outputText: WORKAROUND_NOTE,
+        }),
+        namespaced: base("namespaced", {
+          outputText: "skills enabled on claude.ai (Settings > Capabilities > Skills) inject into desktop code-mode as plugin-namespaced anthropic-skills:<name>",
+        }),
+        "scan-regress": base("scan-regress", { outputText: SCAN_NOTE }),
+        "menu-blind": base("menu-blind", {
+          outputText: "cache present on disk; new-chat slash menu does not read the plugin pipeline pre-session",
+        }),
+      };
+      const FEEDS = {
+        rostered: "● Rostered · cloud/plugin skills appear in new-chat autocomplete before any message · hold",
+        deferred: "● Deferred · menu does not read the plugin pipeline until after the first message · alarm",
+        "cache-present": "● Cache-present · skills-plugin cache and fresh manifest on disk while the menu shows nothing · alarm",
+        "local-ok": "● Local-ok · ~/.claude/skills appear in new-chat autocomplete immediately; only the plugin pipeline is deferred · alarm",
+        "post-start": "● Post-start · after the first message starts the session the namespaced skills appear · alarm",
+        "duplicate-workaround": "● Duplicate-workaround · local copy yields TWO autocomplete entries (bare + anthropic-skills:) · alarm",
+        namespaced: "● Namespaced · claude.ai skills inject as plugin-namespaced anthropic-skills:<name> · alarm",
+        "scan-regress": "● Scan-regress · 2.1.169 changelog notes a slash-command/skill scan regression from 2.1.161; unconfirmed · alarm",
+        "menu-blind": "● Menu-blind · cache is present; the new-chat menu does not read it pre-session · alarm",
+        blank: "● Blank · new-chat slash autocomplete lists nothing for anthropic-skills:* until the first message · alarm",
+      };
+
+      function scoreTicket(raw) {
+        const t = raw && typeof raw === "object" ? raw : SEEDS.blank;
+        const blank = t.preSessionMatch === false;
+        const deferred = blank && t.postFirstMessageMatch === true;
+        const cachePresentAlarm = t.cachePresent === true && blank;
+        const localOk = t.localSkillsVisible === true && blank;
+        const postStart = t.postFirstMessageMatch === true && blank;
+        const duplicateWorkaround = t.duplicateEntries === true;
+        const namespaced = /^anthropic-skills:?$/i.test(String(t.namespacedPrefix || "")) || /anthropic-skills:/i.test(String(t.outputText || ""));
+        const scanRegress = /2\.1\.161/.test(String(t.outputText || "")) && /scan regression/i.test(String(t.outputText || ""));
+        const menuBlind = t.cachePresent === true && blank;
+        const rostered = t.preSessionMatch === true && t.duplicateEntries !== true;
+        const seed = String(t.seed || "").toLowerCase();
+        let verdict = "rostered";
+        if (rostered && ALARM.indexOf(seed) === -1) verdict = "rostered";
+        else if (ALARM.indexOf(seed) !== -1) verdict = seed;
+        else if (duplicateWorkaround) verdict = "duplicate-workaround";
+        else if (scanRegress) verdict = "scan-regress";
+        else if (blank && t.skillCallable !== false && t.listSkillsShows !== false && t.issue === 90858) verdict = "blank";
+        else if (deferred) verdict = "deferred";
+        else if (namespaced && blank) verdict = "namespaced";
+        else if (blank) verdict = "blank";
+        const chips = [];
+        if (rostered) chips.push("rostered");
+        if (blank) chips.push("blank");
+        if (deferred) chips.push("deferred", "post-start");
+        if (cachePresentAlarm) chips.push("cache-present");
+        if (localOk) chips.push("local-ok");
+        if (postStart) chips.push("post-start");
+        if (duplicateWorkaround) chips.push("duplicate-workaround");
+        if (namespaced) chips.push("namespaced");
+        if (scanRegress) chips.push("scan-regress");
+        if (menuBlind) chips.push("menu-blind");
+        const reasons = ["verdict " + verdict];
+        if (verdict === "rostered") {
+          reasons.push("cloud/plugin skills appear in new-chat autocomplete before any message");
+        } else {
+          reasons.push("#90858 claude.ai skills (anthropic-skills:*) missing from new-chat slash-command autocomplete until first message");
+        }
+        if (t.preSessionMatch === false) reasons.push("pre-session autocomplete does not list the namespaced skill");
+        if (t.postFirstMessageMatch === true) reasons.push("after the first message starts the session, autocomplete lists the skill");
+        if (t.cachePresent === true) reasons.push("cache present at skills-plugin/<uuid>/<uuid>/skills/");
+        if (t.localSkillsVisible === true) reasons.push("local skills in ~/.claude/skills still appear in new-chat autocomplete immediately");
+        if (t.skillCallable === true) reasons.push("Skill(anthropic-skills:<name>) loads fine in the fresh session");
+        if (t.listSkillsShows === true) reasons.push("ListSkills shows the skill enabled");
+        if (t.duplicateEntries === true) reasons.push(WORKAROUND_NOTE);
+        if (scanRegress) reasons.push(SCAN_NOTE);
+        return {
+          ticket: t,
+          verdict,
+          hold: HOLD.indexOf(verdict) !== -1,
+          chips: [...new Set(chips)],
+          feed: FEEDS[verdict] || ("● " + verdict + " · alarm"),
+          reasons,
+        };
+      }
+
+      const ticketEl = document.getElementById("ticket");
+      const composer = document.getElementById("composer");
+      const slashText = document.getElementById("slash-text");
+      const verdictWord = document.getElementById("verdict-word");
+      const verdictFeed = document.getElementById("verdict-feed");
+      const verdictBox = document.getElementById("verdict-box");
+      const chipRow = document.getElementById("chip-row");
+      const reasonsEl = document.getElementById("reasons");
+
+      function render(result) {
+        const t = result.ticket;
+        ticketEl.value = JSON.stringify(t, null, 2);
+        slashText.textContent = result.hold
+          ? "/anthropic-skills:<name>  ·  rostered before first message"
+          : (t.duplicateEntries
+            ? "/skill  and  /anthropic-skills:<name>  ·  TWO entries"
+            : "(empty)  ·  anthropic-skills:* not on the new-chat callboard");
+        verdictWord.textContent = result.verdict;
+        verdictFeed.textContent = result.feed;
+        verdictBox.className = "verdict " + (result.hold ? "hold" : "fail");
+        composer.className = "composer " + (result.hold ? "hold" : "alarm");
+        document.getElementById("composer-mark").textContent = result.hold ? "pre-session · rostered" : "pre-session · blank";
+        document.getElementById("pre-match").textContent = String(t.preSessionMatch);
+        document.getElementById("post-match").textContent = String(t.postFirstMessageMatch);
+        document.getElementById("cache-flag").textContent = t.cachePresent ? "present" : "—";
+        document.getElementById("local-flag").textContent = t.localSkillsVisible ? "visible" : "—";
+        const cloud = document.getElementById("slot-cloud");
+        const local = document.getElementById("slot-local");
+        const cache = document.getElementById("slot-cache");
+        cloud.className = "slot " + (result.hold || t.duplicateEntries ? "hold" : "empty alarm");
+        local.className = "slot " + (t.localSkillsVisible ? "hold" : "empty");
+        cache.className = "slot " + (t.cachePresent && !result.hold ? "empty alarm" : "hold");
+        document.getElementById("cloud-card").textContent = result.hold
+          ? "anthropic-skills:<name> · posted"
+          : (t.duplicateEntries ? "bare + anthropic-skills: · two cards" : "— blank until first message");
+        document.getElementById("local-card").textContent = t.localSkillsVisible
+          ? "local skill · already posted"
+          : "— local slot empty";
+        document.getElementById("cache-card").textContent = t.cachePresent
+          ? (result.hold ? "on disk · menu reads it" : "on disk · menu-blind")
+          : "cache missing";
+        document.getElementById("cache-drawer").innerHTML =
+          "Cache <strong>" + (t.cachePresent ? "present" : "missing") + "</strong> at " +
+          "<code>~/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/&lt;uuid&gt;/&lt;uuid&gt;/skills/</code>" +
+          " · sibling <strong>manifest.json</strong> lastUpdated " + (t.manifestFresh ? "refreshes at session start" : "stale") + ".";
+        chipRow.replaceChildren(
+          ...CHIP_NAMES.map((name) => {
+            const span = document.createElement("span");
+            span.className = "chip" + (result.chips.includes(name) ? " on" : "");
+            span.textContent = name;
+            return span;
+          }),
+        );
+        reasonsEl.replaceChildren(
+          ...result.reasons.map((reason) => {
+            const li = document.createElement("li");
+            li.textContent = reason;
+            return li;
+          }),
+        );
+        const pressed = t.seed || result.verdict;
+        for (const [name, id] of Object.entries(SEED_BUTTONS)) {
+          document.getElementById(id).setAttribute("aria-pressed", String(pressed === name || result.verdict === name));
+        }
+        const slack = document.getElementById("slack-row");
+        const linear = document.getElementById("linear-row");
+        if (result.hold) {
+          slack.textContent = "Would skip Slack. Board is " + result.verdict + ". No webhook in this demo.";
+          linear.textContent = "Would skip Linear. Verdict " + result.verdict + " is a hold. No API key in this demo.";
+        } else {
+          slack.textContent = "Would post to Slack: " + result.verdict + " · pre-session anthropic-skills:* miss. No webhook in this demo.";
+          linear.textContent = "Would open a Linear ticket: Callboard " + result.verdict + " · #" + (t.issue || 90858) + " pre-session discoverability. No API key in this demo.";
+        }
+      }
+
+      function applySeed(name) {
+        render(scoreTicket(SEEDS[name] || SEEDS.blank));
+      }
+      function applyEditor() {
+        try {
+          render(scoreTicket(JSON.parse(ticketEl.value)));
+        } catch {
+          verdictWord.textContent = "blank";
+          verdictFeed.textContent = "Ticket JSON did not parse. Score the board or admit rostered.";
+          verdictBox.className = "verdict fail";
+        }
+      }
+
+      document.getElementById("load-btn").addEventListener("click", () => applySeed("blank"));
+      document.getElementById("score-btn").addEventListener("click", applyEditor);
+      document.getElementById("admit-btn").addEventListener("click", () => applySeed("rostered"));
+      document.getElementById("apply-ticket").addEventListener("click", applyEditor);
+      for (const [name, id] of Object.entries(SEED_BUTTONS)) {
+        document.getElementById(id).addEventListener("click", () => applySeed(name));
+      }
+      document.getElementById("export-ticket").addEventListener("click", () => {
+        const blob = new Blob([ticketEl.value], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "callboard-probe-ticket.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      const drop = document.getElementById("drop");
+      function loadFile(file) {
+        file.text().then((text) => {
+          ticketEl.value = text;
+          applyEditor();
+        });
+      }
+      ;["dragenter", "dragover"].forEach((name) => {
+        drop.addEventListener(name, (event) => {
+          event.preventDefault();
+          drop.classList.add("hot");
+        });
+      });
+      ;["dragleave", "drop"].forEach((name) => {
+        drop.addEventListener(name, (event) => {
+          event.preventDefault();
+          drop.classList.remove("hot");
+          if (name === "drop" && event.dataTransfer.files[0]) loadFile(event.dataTransfer.files[0]);
+        });
+      });
+
+      applySeed("blank");
+
+      function liveIssue(id, el) {
+        fetch("https://api.github.com/repos/anthropics/claude-code/issues/" + id)
+          .then((res) => {
+            if (!res.ok) throw new Error("GitHub " + res.status);
+            return res.json();
+          })
+          .then((issue) => {
+            const state = document.createElement("span");
+            state.className = "state" + (issue.state === "closed" ? " closed" : "");
+            state.textContent = issue.state || "unknown";
+            const link = document.createElement("a");
+            link.href = issue.html_url || ("https://github.com/anthropics/claude-code/issues/" + id);
+            link.textContent = "#" + issue.number + " " + (issue.title || "");
+            el.replaceChildren(state, link);
+          })
+          .catch(() => {
+            el.textContent =
+              "GitHub unauthenticated fetch did not land. #" + id + " remains OPEN in the local seed. See .env.example.";
+          });
+      }
+      liveIssue(90858, document.getElementById("issue-card"));
+
+      fetch("./data/fingerprints.json")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((prints) => {
+          if (!prints || !prints.primary || !prints.primary[0]) return;
+          const row = prints.primary[0];
+          document.getElementById("local-seeds").textContent =
+            "Local seeds loaded: #" + row.issue + " · blank · 1.40609.0 · CLI 2.1.169 · Darwin 24.6.0";
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>
