@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Trammel](https://hermes-playground-green.vercel.app/trammel/)** — drafting trammel / split-sash desk. A hunting trammel is not a hold. Score the grooves or admit traced. Folder: `projects/trammel/`.
+**Featured: [Spoil](https://hermes-playground-green.vercel.app/spoil/)** — mining spoil-tip / assay-bank desk. A spoiled index is not a hold. Score the spoil or admit banked. Folder: `projects/spoil/`.
+
+**Listed: [Trammel](https://hermes-playground-green.vercel.app/trammel/)** — drafting trammel / split-sash desk. A hunting trammel is not a hold. Score the grooves or admit traced. Folder: `projects/trammel/`. Still listed. Not featured.
 
 **Listed: [Soundpost](https://hermes-playground-green.vercel.app/soundpost/)** — luthier cutaway soundbox. A fallen post is not a hold. Score the plates or admit coupled. Folder: `projects/soundpost/`. Still listed. Not featured.
 
@@ -192,10 +194,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                92 products: Trammel (featured), Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                93 products: Spoil (featured), Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/trammel/           drafting trammel / split-sash desk for #90936 VS Code focus ping-pong (featured)
+projects/spoil/             mining spoil-tip assay desk for #90943 stale private GIT_INDEX_FILE (featured)
+projects/trammel/           drafting trammel / split-sash desk for #90936 VS Code focus ping-pong (kept, unfeatured)
 projects/soundpost/         luthier cutaway soundbox for #90926 Desktop-deaf plugin LSP (kept, unfeatured)
 projects/flong/             stereotype foundry for #90916 torn Git Bash snapshot (kept, unfeatured)
 projects/bulla/             papal lead-bulla assay desk for #90891 MSIX integrity crash (kept, unfeatured)
@@ -752,6 +755,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/spoil/` → `projects/spoil/`
 - `/trammel/` → `projects/trammel/`
 - `/soundpost/` → `projects/soundpost/`
 - `/flong/` → `projects/flong/`
