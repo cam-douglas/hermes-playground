@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Callboard](https://hermes-playground-green.vercel.app/callboard/)** — theater stage-door callboard. A cast skill that never makes the new-chat callboard is not a hold. Score the board or admit rostered. Folder: `projects/callboard/`.
+**Featured: [Carcase](https://hermes-playground-green.vercel.app/carcase/)** — cabinetmaker's carcase. A gutted carcase is not a hold. Score the drawers or admit fitted. Folder: `projects/carcase/`.
+
+**Listed: [Callboard](https://hermes-playground-green.vercel.app/callboard/)** — theater stage-door callboard. A cast skill that never makes the new-chat callboard is not a hold. Score the board or admit rostered. Folder: `projects/callboard/`. Still listed. Not featured.
 
 **Listed: [Leaven](https://hermes-playground-green.vercel.app/leaven/)** — bakery proofing bench. A first turn of foreign starter is not a bake. Score the crocks or admit unleavened. Folder: `projects/leaven/`. Still listed. Not featured.
 
@@ -176,10 +178,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                84 products: Callboard (featured), Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                85 products: Carcase (featured), Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/callboard/         theater stage-door callboard for #90858 pre-session skill autocomplete (featured)
+projects/carcase/           cabinetmaker's carcase for #90867 stealth relaunch (featured)
+projects/callboard/         theater stage-door callboard for #90858 pre-session skill autocomplete (kept, unfeatured)
 projects/leaven/            bakery proofing bench for #90782 bootstrap contamination (kept, unfeatured)
 projects/hydra/             marble registry hydra desk for dual-ledger marketplace resurrection (kept, unfeatured)
 projects/limpet/            tide-pool limpet pry desk for scheduled-task OS process leak (kept, unfeatured)
@@ -728,6 +731,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/carcase/` → `projects/carcase/`
 - `/callboard/` → `projects/callboard/`
 - `/leaven/` → `projects/leaven/`
 - `/cenotaph/` → `projects/cenotaph/`

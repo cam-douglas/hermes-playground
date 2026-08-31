@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Carcase — cabinetmaker's bench for Claude Code #90867: a gutted carcase is not a hold. Score the drawers or admit fitted."
+    />
+    <title>Carcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Red+Hat+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --oak: #c4a574;
+        --oak-deep: #8a6d3d;
+        --bench: #3d2a18;
+        --bench-dark: #2a1c10;
+        --cubby: #1a1410;
+        --slip: #f3ead7;
+        --brass: #b08d57;
+        --brass-bright: #d4b57a;
+        --iron: #2c241c;
+        --sap: #6f8f5a;
+        --ink: #1c1610;
+        --quiet: #a89878;
+        --display: "Libre Baskerville", "Palatino Linotype", Palatino, serif;
+        --body: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+        --mono: "Red Hat Mono", ui-monospace, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        min-height: 100vh;
+        font-family: var(--body);
+        color: var(--slip);
+        background:
+          radial-gradient(ellipse at 70% 0%, rgba(176, 141, 87, 0.18), transparent 46%),
+          repeating-linear-gradient(90deg, rgba(196, 165, 116, 0.04) 0 2px, transparent 2px 11px),
+          repeating-linear-gradient(0deg, rgba(26, 20, 16, 0.35) 0 1px, transparent 1px 18px),
+          var(--bench);
+        background-attachment: fixed;
+      }
+      button, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: var(--brass-bright); }
+      .shop {
+        width: min(1280px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 64px;
+      }
+      .sign {
+        position: relative;
+        padding: 28px 30px 22px;
+        background:
+          linear-gradient(180deg, #4a3420 0%, #3d2a18 55%, #2e1f12 100%);
+        border: 10px solid var(--oak-deep);
+        box-shadow:
+          inset 0 0 0 1px rgba(196, 165, 116, 0.35),
+          0 18px 0 -8px var(--iron);
+      }
+      .sign::before,
+      .sign::after {
+        content: "";
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        border: 3px solid var(--iron);
+        background: var(--brass);
+      }
+      .sign::before { top: 8px; left: 8px; }
+      .sign::after { top: 8px; right: 8px; }
+      .mark {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      h1 {
+        margin: 8px 0 6px;
+        font-family: var(--display);
+        font-size: clamp(48px, 8vw, 88px);
+        line-height: 0.9;
+        letter-spacing: -0.02em;
+        font-weight: 700;
+        color: var(--oak);
+      }
+      .phrase { max-width: 44em; margin: 0; font-size: 18px; color: var(--slip); }
+      .idle {
+        margin: 8px 0 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--quiet);
+      }
+      .desk {
+        display: grid;
+        grid-template-columns: 1.05fr 1.1fr 0.95fr;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      @media (max-width: 980px) {
+        .desk { grid-template-columns: 1fr; }
+      }
+      .panel {
+        background: rgba(26, 20, 16, 0.78);
+        border: 1px solid rgba(196, 165, 116, 0.22);
+        padding: 14px;
+        box-shadow: inset 0 0 0 1px rgba(243, 234, 215, 0.03);
+      }
+      .panel h2 {
+        margin: 0 0 10px;
+        font-family: var(--display);
+        font-size: 24px;
+        color: var(--oak);
+      }
+      .carcase {
+        position: relative;
+        padding: 28px 14px 16px;
+        background:
+          repeating-linear-gradient(90deg, #b8955f 0 3px, #c4a574 3px 14px),
+          var(--oak);
+        border: 8px solid var(--oak-deep);
+        box-shadow:
+          inset 0 0 0 2px rgba(44, 36, 28, 0.35),
+          0 10px 0 var(--iron);
+      }
+      .carcase .rail {
+        position: absolute;
+        top: 4px;
+        left: 10px;
+        right: 10px;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--iron);
+        text-align: center;
+      }
+      .carcase.gutted .rail { color: #5a2018; }
+      .carcase.fitted .rail { color: var(--sap); }
+      .cubbies {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        min-height: 220px;
+      }
+      .cubby {
+        position: relative;
+        min-height: 68px;
+        background: var(--cubby);
+        border: 2px solid var(--iron);
+        overflow: hidden;
+      }
+      .drawer {
+        position: absolute;
+        inset: 4px;
+        background:
+          linear-gradient(180deg, #d2b888, #c4a574 40%, #a88850);
+        border: 1px solid #8a6d3d;
+        box-shadow: inset 0 1px 0 rgba(243, 234, 215, 0.35);
+      }
+      .pull {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 18px;
+        height: 8px;
+        margin: -4px 0 0 -9px;
+        border-radius: 8px;
+        background: var(--brass);
+        box-shadow: 0 1px 0 #6a5328;
+      }
+      .slip {
+        display: none;
+        position: absolute;
+        inset: 8px 6px;
+        padding: 5px 6px;
+        background: var(--slip);
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 9px;
+        line-height: 1.35;
+        transform: rotate(-2deg);
+      }
+      .cubby.empty .drawer { display: none; }
+      .cubby.empty .slip { display: block; }
+      .tally {
+        margin-top: 10px;
+        padding: 8px 10px;
+        background: var(--iron);
+        color: var(--oak);
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+      }
+      .tally.hold { color: var(--sap); }
+      .actions, .seeds, .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .actions button, .seeds button, .tools button {
+        border: 1px solid rgba(176, 141, 87, 0.4);
+        background: var(--bench-dark);
+        padding: 8px 12px;
+        border-radius: 1px;
+        color: var(--slip);
+      }
+      .actions button:hover, .seeds button:hover, .tools button:hover {
+        border-color: var(--brass);
+        color: var(--brass-bright);
+      }
+      .seeds button[aria-pressed="true"] {
+        background: #24180f;
+        border-color: var(--oak);
+        color: var(--oak);
+      }
+      .log {
+        min-height: 168px;
+        padding: 12px;
+        background: var(--cubby);
+        border: 1px solid rgba(176, 141, 87, 0.28);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.55;
+        color: var(--quiet);
+        white-space: pre-wrap;
+      }
+      .log.alarm { box-shadow: inset 0 0 40px rgba(90, 32, 24, 0.28); }
+      .log.hold { box-shadow: inset 0 0 40px rgba(111, 143, 90, 0.16); }
+      .score {
+        margin-top: 10px;
+        padding: 10px 12px;
+        background: var(--iron);
+        color: var(--slip);
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.55;
+        border: 1px dashed rgba(176, 141, 87, 0.35);
+      }
+      .score strong { color: var(--oak); }
+      .verdict {
+        margin-top: 12px;
+        padding: 12px 14px;
+        background: #24180f;
+        border: 1px solid rgba(176, 141, 87, 0.22);
+      }
+      .verdict .word {
+        font-family: var(--display);
+        font-size: 34px;
+        letter-spacing: -0.02em;
+        text-transform: lowercase;
+      }
+      .verdict.fail .word { color: #c47a4a; }
+      .verdict.hold .word { color: var(--sap); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 3px 8px;
+        border: 1px solid rgba(243, 234, 215, 0.16);
+        color: var(--quiet);
+      }
+      .chip.on {
+        border-color: #c47a4a;
+        color: #f3ead7;
+        background: rgba(90, 32, 24, 0.35);
+      }
+      .verdict.hold .chip.on {
+        border-color: var(--sap);
+        color: var(--sap);
+        background: rgba(111, 143, 90, 0.12);
+      }
+      textarea {
+        width: 100%;
+        min-height: 200px;
+        margin-top: 8px;
+        padding: 10px;
+        resize: vertical;
+        background: var(--cubby);
+        border: 1px dashed rgba(176, 141, 87, 0.4);
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .drop {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border: 1px dashed rgba(176, 141, 87, 0.45);
+        color: var(--quiet);
+        font-size: 13px;
+        text-align: center;
+      }
+      .drop.hot { border-color: var(--oak); color: var(--oak); }
+      .issue { font-family: var(--mono); font-size: 13px; line-height: 1.5; }
+      .issue .state {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 1px 7px;
+        border: 1px solid var(--sap);
+        color: var(--sap);
+        text-transform: uppercase;
+        font-size: 11px;
+      }
+      .issue .state.closed { border-color: #c47a4a; color: #c47a4a; }
+      .reasons { margin: 8px 0 0; padding-left: 18px; color: var(--quiet); font-size: 14px; }
+      .cards, .adapters {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 980px) {
+        .cards, .adapters { grid-template-columns: 1fr; }
+      }
+      .card-box {
+        background: #24180f;
+        border: 1px solid rgba(176, 141, 87, 0.18);
+        padding: 14px;
+      }
+      .card-box h3 {
+        margin: 6px 0 8px;
+        font-family: var(--display);
+        font-size: 22px;
+        color: var(--oak);
+      }
+      .card-box p { margin: 0 0 8px; color: var(--quiet); font-size: 14px; }
+      .sources { margin-top: 14px; }
+      .sources ul { margin: 0; padding-left: 18px; color: var(--quiet); }
+      .sources li { margin: 6px 0; }
+      footer { margin-top: 16px; color: var(--quiet); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main class="shop">
+      <header class="sign">
+        <p class="mark">11:50 Sydney · carcase</p>
+        <h1>Carcase</h1>
+        <p class="phrase">A gutted carcase is not a hold. Score the drawers or admit fitted.</p>
+        <p class="idle">Idle word: fitted. Oak box / brass pulls / empty cubbies / joinery bench. Seeded gutted.</p>
+      </header>
+
+      <div class="desk">
+        <section class="panel" aria-label="Cabinet carcase">
+          <h2>The box</h2>
+          <div class="carcase gutted" id="carcase-box">
+            <p class="rail" id="back-rail">[stealth-relaunch]</p>
+            <div class="cubbies" id="cubbies"></div>
+          </div>
+          <p class="tally" id="tally">9 PTYs stopped / 0 sessions restored</p>
+          <div class="actions">
+            <button type="button" id="load-btn">Load #90867 carcase</button>
+            <button type="button" id="score-btn">Score the drawers</button>
+            <button type="button" id="admit-btn">Admit fitted</button>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="Bench notes">
+          <h2>Bench notes</h2>
+          <pre class="log alarm" id="log-pane"></pre>
+          <div class="score" id="chalk">
+            stealth <strong id="stealth-flag">true</strong>
+            · nav <strong id="nav-flag">50</strong>
+            · killed <strong id="killed-flag">9</strong>
+            · procs <strong id="proc-flag">gone</strong>
+          </div>
+          <div class="verdict fail" id="verdict-box">
+            <div class="word" id="verdict-word">gutted</div>
+            <p id="verdict-feed">● Gutted · stealth relaunch restored chrome, processes gone · alarm</p>
+            <div class="chips" id="chip-row"></div>
+          </div>
+        </section>
+
+        <aside class="panel" aria-label="Shop ledger">
+          <h2>Shop ledger</h2>
+          <p class="issue" id="issue-card">Fetching anthropics/claude-code#90867…</p>
+          <p class="idle" id="local-seeds">Local seeds: #90867 · gutted · 1.37937.3 · CLI 2.1.246 · Windows 11 Pro 10.0.26200 x64</p>
+          <div class="seeds" role="group" aria-label="Seed chips">
+            <button type="button" id="seed-gutted" aria-pressed="true">gutted</button>
+            <button type="button" id="seed-fitted" aria-pressed="false">fitted</button>
+            <button type="button" id="seed-hollow" aria-pressed="false">hollow</button>
+            <button type="button" id="seed-stealth" aria-pressed="false">stealth-killed</button>
+            <button type="button" id="seed-chrome" aria-pressed="false">chrome-only</button>
+            <button type="button" id="seed-unconsented" aria-pressed="false">unconsented</button>
+            <button type="button" id="seed-emptied" aria-pressed="false">emptied</button>
+            <button type="button" id="seed-dummy" aria-pressed="false">dummy</button>
+            <button type="button" id="seed-occupied" aria-pressed="false">occupied</button>
+            <button type="button" id="seed-nav" aria-pressed="false">restored-nav</button>
+          </div>
+          <div class="drop" id="drop">Drop a probe ticket JSON onto the bench</div>
+          <textarea id="ticket" spellcheck="false" aria-label="Probe ticket JSON"></textarea>
+          <div class="tools">
+            <button type="button" id="apply-ticket">Score pasted ticket</button>
+            <button type="button" id="export-ticket">Export ticket</button>
+          </div>
+          <ol class="reasons" id="reasons"></ol>
+        </aside>
+      </div>
+
+      <section class="panel cards" aria-label="Why not a clone">
+        <article class="card-box">
+          <p class="mark">primary · #90867</p>
+          <h3>Chrome without drawers</h3>
+          <p>OPEN, has-repro, platform:windows, area:desktop. Filed 2026-08-31T01:47:30Z by wshallwshall, defect 1 of eight from #90172. Desktop 1.37937.3; CLI 2.1.246; Windows 11 Pro 10.0.26200 x64. Window and cards restored. Processes gone.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">not a clone</p>
+          <h3>Joinery, not a monument</h3>
+          <p>NOT Kindling (#90798) WarmLifecycle unused mint. NOT Scion (#90815) empty graft. NOT Cenotaph (#90771) vacant monument. NOT Limpet (processes linger). NOT Callboard / Leaven / Hydra. NOT a taxidermy manikin.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">same-class</p>
+          <h3>Borrowed unreachable</h3>
+          <p>#90874 auto-registers local sessions with cloud Remote Control; a dead local process, including a 7.4s <code>claude --bg</code>, reports <code>computer_unreachable</code>. jalalAzhmatkhan on #90172: “Can't reach your computer” while it's ALREADY RUNNING IN my computer. openai/codex#40969 force-kills after a 60s drain.</p>
+        </article>
+      </section>
+
+      <section class="panel adapters" aria-label="Native adapters">
+        <article class="card-box">
+          <p class="mark">adapter · github</p>
+          <h3>GitHub</h3>
+          <p>Live unauthenticated fetch of #90867. Local seed JSON if the request does not land. No token in this demo.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">adapter · slack</p>
+          <h3>Slack</h3>
+          <p id="slack-row">Would post to Slack: gutted · stealth relaunch restored chrome, processes gone. No webhook in this demo.</p>
+        </article>
+        <article class="card-box">
+          <p class="mark">adapter · linear</p>
+          <h3>Linear</h3>
+          <p id="linear-row">Would open a Linear ticket: Carcase gutted · #90867 stealth continuity lie. No API key in this demo.</p>
+        </article>
+      </section>
+
+      <section class="panel sources">
+        <h2>Sources</h2>
+        <ul>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90867">#90867</a> OPEN — Desktop update restart kills running Claude Code sessions: the stealth relaunch restores the window but not the sessions. 2026-08-31T01:47:30Z. Labels: bug, has repro, platform:windows, area:desktop. Desktop 1.37937.3; CLI 2.1.246; Windows 11 Pro 10.0.26200 x64.</li>
+          <li>The desktop app restarts itself to apply an update. <code>[stealth-relaunch]</code> restores the window and navigation history (50 entries). It does not restart the Claude Code CLI child processes that <code>onQuitCleanup: local-session-stop-all</code> killed.</li>
+          <li>Sidebar session cards survive because those records live on the server, so sessions look present and healthy. Opening one and sending a message fails with <code>Remote Control host unreachable (computer_unreachable)</code>.</li>
+          <li>Log: 2026-08-26 20:03:54 beforeQuit → 20:03:55 <code>[pty-host] worker exited (0) with 9 live PTY(s)</code> → 20:04:36 Starting app, nav-restore marker, stealth-relaunch. Nine sessions killed; zero restarted.</li>
+          <li>Recurred 2026-08-29 even without an app-version change (still 1.37937.3). When the kill lands before a session's first turn, no transcript is ever written — three auto-named sessions were unrecoverable.</li>
+          <li>The restart is designed to be invisible. That is what makes it harmful.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90874">#90874</a> same-class — local-only sessions auto-registered with cloud Remote Control. Banner text is a borrowed remote taxonomy. <code>disableRemoteControl</code> is all-or-nothing. A 7.4s <code>claude --bg</code> that exited normally reports the same card.</li>
+          <li><a href="https://github.com/anthropics/claude-code/issues/90172">#90172</a> umbrella. Second user jalalAzhmatkhan: “It's showing ‘Can't reach your computer’ error while it's ALREADY RUNNING IN my computer.”</li>
+          <li><a href="https://github.com/openai/codex/issues/40969">openai/codex#40969</a> same-class — auto-update force-kills active turns after a 60s drain budget, and cannot be disabled.</li>
+          <li>Nearby: <a href="https://github.com/anthropics/claude-code/issues/90868">#90868</a> CLAUDE_CONFIG_DIR; <a href="https://github.com/anthropics/claude-code/issues/90869">#90869</a> lockstep profiles; <a href="https://github.com/anthropics/claude-code/issues/90870">#90870</a> unconsented restart; #90871–#90873 rest of the eight; <a href="https://github.com/anthropics/claude-code/issues/86556">#86556</a> Squirrel any-relaunch; #90864 / #77871 RC availability after update.</li>
+          <li>Opposite pole: Kindling <a href="https://github.com/anthropics/claude-code/issues/90798">#90798</a> mints unused sessions. <a href="https://github.com/openai/codex/issues/41039">openai/codex#41039</a> Install-on-Quit — the consent policy Claude Desktop lacks.</li>
+        </ul>
+        <p>NOT Kindling, NOT Scion, NOT Cenotaph, NOT Limpet, NOT Callboard, NOT Leaven, NOT Hydra, NOT a taxidermy manikin.</p>
+      </section>
+      <footer>
+        Catalog path <code>/carcase/</code>. Score engine lives in this page and in
+        <code>projects/carcase/hook/carcase.mjs</code>. No build step. No secrets.
+      </footer>
+    </main>
+    <script>
+      const BANNER = "Can't reach your computer / It may be asleep or offline. Remote Control host unreachable (computer_unreachable)";
+      const SECOND_USER = "It's showing “Can't reach your computer” error while it's ALREADY RUNNING IN my computer.";
+      const STOP_ALL = "2026-08-26 20:03:54 [info] Running onQuitCleanup: local-session-stop-all";
+      const PTY = "2026-08-26 20:03:55 [warn] [pty-host] worker exited (0) with 9 live PTY(s); refork on demand";
+      const NAV_MARK = "2026-08-26 20:04:36 [info] [update-restart] Detected nav-restore marker, launching normally";
+      const STEALTH = "2026-08-26 20:04:36 [info] [stealth-relaunch] Restoring navigation (50 entries, active=49, dropped=0)";
+      const CHIP_NAMES = [
+        "fitted", "gutted", "hollow", "stealth-killed", "chrome-only",
+        "unconsented", "emptied", "dummy", "occupied", "restored-nav",
+      ];
+      const HOLD = ["fitted", "occupied"];
+      const ALARM = CHIP_NAMES.filter((name) => HOLD.indexOf(name) === -1);
+      const SEED_BUTTONS = {
+        gutted: "seed-gutted",
+        fitted: "seed-fitted",
+        hollow: "seed-hollow",
+        "stealth-killed": "seed-stealth",
+        "chrome-only": "seed-chrome",
+        unconsented: "seed-unconsented",
+        emptied: "seed-emptied",
+        dummy: "seed-dummy",
+        occupied: "seed-occupied",
+        "restored-nav": "seed-nav",
+      };
+      function base(seed, extra) {
+        return Object.assign({
+          seed: seed,
+          issue: 90867,
+          title: "Desktop update restart kills running Claude Code sessions: the stealth relaunch restores the window but not the sessions",
+          stealthRelaunch: true,
+          navRestored: true,
+          navEntryCount: 50,
+          sessionsKilled: 9,
+          processesRestarted: false,
+          cardsHealthy: true,
+          bannerUnreachable: true,
+          machineAwake: true,
+          transcriptPresent: true,
+          beforeFirstTurn: false,
+          userConsented: false,
+          outputText: "2026-08-26 20:03:54 [info] beforeQuit: handler fired, going down\n" + STOP_ALL + "\n" + PTY + "\n" + NAV_MARK + "\n" + STEALTH + "\n" + BANNER,
+          version: "1.37937.3",
+          cli: "2.1.246",
+          platform: "windows",
+          os: "Windows 11 Pro 10.0.26200 x64",
+        }, extra || {});
+      }
+      const SEEDS = {
+        gutted: base("gutted"),
+        fitted: base("fitted", {
+          sessionsKilled: 0,
+          processesRestarted: true,
+          bannerUnreachable: false,
+          userConsented: true,
+          outputText: "restored window still has living CLI children; sessions actually resume",
+        }),
+        hollow: base("hollow", {
+          outputText: "box present after stealth relaunch; interiors empty; drawers gone from the carcase",
+        }),
+        "stealth-killed": base("stealth-killed", { outputText: STOP_ALL + "\n" + PTY + "\n" + STEALTH }),
+        "chrome-only": base("chrome-only", {
+          outputText: NAV_MARK + "\n" + STEALTH + " — window + 50 nav entries restored, zero sessions restarted",
+        }),
+        unconsented: base("unconsented", {
+          outputText: "restart fires without user action, even with an update banner staged and unactioned (#90870)",
+        }),
+        emptied: base("emptied", {
+          outputText: PTY + " — nine sessions killed at 20:03:55; relaunch 41 seconds later restored 50 navigation entries and zero sessions",
+        }),
+        dummy: base("dummy", { outputText: BANNER + " — " + SECOND_USER }),
+        occupied: base("occupied", {
+          sessionsKilled: 0,
+          processesRestarted: true,
+          bannerUnreachable: false,
+          userConsented: true,
+          outputText: "tally of live local processes behind the cards; drawers occupied",
+        }),
+        "restored-nav": base("restored-nav", {
+          outputText: NAV_MARK + "\n[stealth-relaunch] Loaded navigation history (50 entries, active=49)",
+        }),
+      };
+      const FEEDS = {
+        fitted: "● Fitted · drawers in, CLI children still running, sessions actually resume · hold",
+        occupied: "● Occupied · tally of live local processes behind the cards · hold",
+        hollow: "● Hollow · box present, interiors empty · alarm",
+        "stealth-killed": "● Stealth-killed · [stealth-relaunch] / local-session-stop-all killed live PTYs · alarm",
+        "chrome-only": "● Chrome-only · window + 50 nav entries restored, zero sessions restarted · alarm",
+        unconsented: "● Unconsented · restart without user action (#90870 nearby) · alarm",
+        emptied: "● Emptied · nine sessions killed in one second · alarm",
+        dummy: "● Dummy · cards look healthy, send fails computer_unreachable · alarm",
+        "restored-nav": "● Restored-nav · nav-restore marker, 50 entries, 0 sessions · alarm",
+        gutted: "● Gutted · stealth relaunch restored chrome, processes gone · alarm",
+      };
+
+      function scoreTicket(raw) {
+        const t = raw && typeof raw === "object" ? raw : SEEDS.gutted;
+        const text = String(t.outputText || "");
+        const processesGone = t.processesRestarted === false;
+        const processesLive = t.processesRestarted === true;
+        const stealth = t.stealthRelaunch === true || /stealth-relaunch|local-session-stop-all|update-restart/i.test(text);
+        const cardsOk = t.cardsHealthy === true;
+        const navOk = t.navRestored === true;
+        const fitted = processesLive;
+        const occupied = processesLive;
+        const gutted = stealth && cardsOk && processesGone;
+        const hollow = (navOk || stealth || cardsOk) && processesGone;
+        const stealthKilled = stealth && processesGone;
+        const chromeOnly = processesGone && (navOk || Number(t.navEntryCount) >= 50 || /50 entries/i.test(text));
+        const unconsented = t.userConsented === false && stealth;
+        const emptied = Number(t.sessionsKilled) >= 9;
+        const dummy = (t.bannerUnreachable === true || /computer_unreachable|Can't reach your computer/i.test(text)) && (t.machineAwake === true || cardsOk);
+        const restoredNav = navOk && processesGone;
+        const seed = String(t.seed || "").toLowerCase();
+        let verdict = "gutted";
+        if (seed === "occupied" && occupied) verdict = "occupied";
+        else if (fitted && ALARM.indexOf(seed) === -1) verdict = "fitted";
+        else if (ALARM.indexOf(seed) !== -1) verdict = seed;
+        else if (gutted) verdict = "gutted";
+        else if (fitted) verdict = "fitted";
+        const chips = [];
+        if (fitted) chips.push("fitted");
+        if (gutted) chips.push("gutted");
+        if (hollow) chips.push("hollow");
+        if (stealthKilled) chips.push("stealth-killed");
+        if (chromeOnly) chips.push("chrome-only");
+        if (unconsented) chips.push("unconsented");
+        if (emptied) chips.push("emptied");
+        if (dummy) chips.push("dummy");
+        if (occupied) chips.push("occupied");
+        if (restoredNav) chips.push("restored-nav");
+        const reasons = ["verdict " + verdict];
+        if (verdict === "fitted" || verdict === "occupied") {
+          reasons.push("drawers in: CLI children still running / sessions actually resume");
+        } else {
+          reasons.push("#90867 Desktop update restart kills running Claude Code sessions: the stealth relaunch restores the window but not the sessions");
+        }
+        if (t.stealthRelaunch === true) reasons.push("[stealth-relaunch] restored navigation; quit logged beforeQuit then local-session-stop-all");
+        if (t.navRestored === true) reasons.push("[update-restart] Detected nav-restore marker; 50 entries");
+        if (t.processesRestarted === false) reasons.push("CLI child processes were not restarted; PTY worker exited with live PTYs");
+        if (t.cardsHealthy === true && processesGone) reasons.push("sidebar session cards survive on the server and look present and healthy");
+        if (Number(t.sessionsKilled) >= 9) reasons.push("one restart killed 9 running sessions (20:03:54 beforeQuit → 20:03:55 nine PTYs exited)");
+        if (t.bannerUnreachable === true) reasons.push(BANNER);
+        if (t.machineAwake === true && t.bannerUnreachable === true) reasons.push(SECOND_USER);
+        if (t.userConsented === false) reasons.push("#90870 nearby: the restart fires without user action");
+        return {
+          ticket: t,
+          verdict,
+          hold: HOLD.indexOf(verdict) !== -1,
+          chips: [...new Set(chips)],
+          feed: FEEDS[verdict] || ("● " + verdict + " · alarm"),
+          reasons,
+        };
+      }
+
+      const ticketEl = document.getElementById("ticket");
+      const logPane = document.getElementById("log-pane");
+      const verdictWord = document.getElementById("verdict-word");
+      const verdictFeed = document.getElementById("verdict-feed");
+      const verdictBox = document.getElementById("verdict-box");
+      const chipRow = document.getElementById("chip-row");
+      const reasonsEl = document.getElementById("reasons");
+      const cubbies = document.getElementById("cubbies");
+      const carcaseBox = document.getElementById("carcase-box");
+      const tally = document.getElementById("tally");
+      const backRail = document.getElementById("back-rail");
+
+      function drawCubbies(result) {
+        const t = result.ticket;
+        const filled = result.hold || t.processesRestarted === true;
+        cubbies.replaceChildren();
+        for (let i = 0; i < 9; i += 1) {
+          const cell = document.createElement("div");
+          cell.className = "cubby" + (filled ? "" : " empty");
+          const drawer = document.createElement("div");
+          drawer.className = "drawer";
+          const pull = document.createElement("span");
+          pull.className = "pull";
+          drawer.appendChild(pull);
+          const slip = document.createElement("div");
+          slip.className = "slip";
+          slip.textContent = "Can't reach your computer / computer_unreachable";
+          cell.append(drawer, slip);
+          cubbies.appendChild(cell);
+        }
+        carcaseBox.className = "carcase " + (filled ? "fitted" : "gutted");
+        backRail.textContent = filled ? "occupied" : "[stealth-relaunch]";
+        tally.className = "tally" + (filled ? " hold" : "");
+        tally.textContent = filled
+          ? "occupied · " + (9 - Number(t.sessionsKilled || 0)) + " drawers in"
+          : "9 PTYs stopped / 0 sessions restored";
+      }
+
+      function render(result) {
+        const t = result.ticket;
+        ticketEl.value = JSON.stringify(t, null, 2);
+        logPane.textContent = t.outputText || "";
+        logPane.className = "log " + (result.hold ? "hold" : "alarm");
+        verdictWord.textContent = result.verdict;
+        verdictFeed.textContent = result.feed;
+        verdictBox.className = "verdict " + (result.hold ? "hold" : "fail");
+        document.getElementById("stealth-flag").textContent = String(t.stealthRelaunch);
+        document.getElementById("nav-flag").textContent = String(t.navEntryCount ?? "—");
+        document.getElementById("killed-flag").textContent = String(t.sessionsKilled ?? "—");
+        document.getElementById("proc-flag").textContent = t.processesRestarted ? "live" : "gone";
+        drawCubbies(result);
+        chipRow.replaceChildren(
+          ...CHIP_NAMES.map((name) => {
+            const span = document.createElement("span");
+            span.className = "chip" + (result.chips.includes(name) ? " on" : "");
+            span.textContent = name;
+            return span;
+          }),
+        );
+        reasonsEl.replaceChildren(
+          ...result.reasons.map((reason) => {
+            const li = document.createElement("li");
+            li.textContent = reason;
+            return li;
+          }),
+        );
+        const pressed = t.seed || result.verdict;
+        for (const [name, id] of Object.entries(SEED_BUTTONS)) {
+          document.getElementById(id).setAttribute("aria-pressed", String(pressed === name || result.verdict === name));
+        }
+        const slack = document.getElementById("slack-row");
+        const linear = document.getElementById("linear-row");
+        if (result.hold) {
+          slack.textContent = "Would skip Slack. Carcase is " + result.verdict + ". No webhook in this demo.";
+          linear.textContent = "Would skip Linear. Verdict " + result.verdict + " is a hold. No API key in this demo.";
+        } else {
+          slack.textContent = "Would post to Slack: " + result.verdict + " · stealth relaunch restored chrome, processes gone. No webhook in this demo.";
+          linear.textContent = "Would open a Linear ticket: Carcase " + result.verdict + " · #" + (t.issue || 90867) + " stealth continuity lie. No API key in this demo.";
+        }
+      }
+
+      function applySeed(name) {
+        render(scoreTicket(SEEDS[name] || SEEDS.gutted));
+      }
+      function applyEditor() {
+        try {
+          render(scoreTicket(JSON.parse(ticketEl.value)));
+        } catch {
+          verdictWord.textContent = "gutted";
+          verdictFeed.textContent = "Ticket JSON did not parse. Score the drawers or admit fitted.";
+          verdictBox.className = "verdict fail";
+        }
+      }
+
+      document.getElementById("load-btn").addEventListener("click", () => applySeed("gutted"));
+      document.getElementById("score-btn").addEventListener("click", applyEditor);
+      document.getElementById("admit-btn").addEventListener("click", () => applySeed("fitted"));
+      document.getElementById("apply-ticket").addEventListener("click", applyEditor);
+      for (const [name, id] of Object.entries(SEED_BUTTONS)) {
+        document.getElementById(id).addEventListener("click", () => applySeed(name));
+      }
+      document.getElementById("export-ticket").addEventListener("click", () => {
+        const blob = new Blob([ticketEl.value], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "carcase-probe-ticket.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      const drop = document.getElementById("drop");
+      function loadFile(file) {
+        file.text().then((text) => {
+          ticketEl.value = text;
+          applyEditor();
+        });
+      }
+      ;["dragenter", "dragover"].forEach((name) => {
+        drop.addEventListener(name, (event) => {
+          event.preventDefault();
+          drop.classList.add("hot");
+        });
+      });
+      ;["dragleave", "drop"].forEach((name) => {
+        drop.addEventListener(name, (event) => {
+          event.preventDefault();
+          drop.classList.remove("hot");
+          if (name === "drop" && event.dataTransfer.files[0]) loadFile(event.dataTransfer.files[0]);
+        });
+      });
+
+      applySeed("gutted");
+
+      function liveIssue(id, el) {
+        fetch("https://api.github.com/repos/anthropics/claude-code/issues/" + id)
+          .then((res) => {
+            if (!res.ok) throw new Error("GitHub " + res.status);
+            return res.json();
+          })
+          .then((issue) => {
+            const state = document.createElement("span");
+            state.className = "state" + (issue.state === "closed" ? " closed" : "");
+            state.textContent = issue.state || "unknown";
+            const link = document.createElement("a");
+            link.href = issue.html_url || ("https://github.com/anthropics/claude-code/issues/" + id);
+            link.textContent = "#" + issue.number + " " + (issue.title || "");
+            el.replaceChildren(state, link);
+          })
+          .catch(() => {
+            el.textContent =
+              "GitHub unauthenticated fetch did not land. #" + id + " remains OPEN in the local seed. See .env.example.";
+          });
+      }
+      liveIssue(90867, document.getElementById("issue-card"));
+
+      fetch("./data/fingerprints.json")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((prints) => {
+          if (!prints || !prints.primary || !prints.primary[0]) return;
+          const row = prints.primary[0];
+          document.getElementById("local-seeds").textContent =
+            "Local seeds loaded: #" + row.issue + " · gutted · 1.37937.3 · CLI 2.1.246 · Windows 11 Pro 10.0.26200 x64";
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>
