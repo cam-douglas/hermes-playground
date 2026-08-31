@@ -719,7 +719,8 @@ export function flagsOf(ticket) {
     /ps51-ansi|PowerShell 5\.1|powershell\.exe|ANSI/i.test(text) ||
     (noBom && (emDash || cp1252));
   const named = canonicalSeed(row.seed);
-  const namedAlarm = VERDICTS.includes(named) && named !== IDLE_WORD;
+  const namedAlarm =
+    VERDICTS.includes(named) && named !== IDLE_WORD && named !== SEEDED_WORD;
   const asciiOnly =
     row.asciiOnly === true ||
     (/ASCII-only|pure ASCII|punches sit|scripts parse/i.test(text) && !namedAlarm);
