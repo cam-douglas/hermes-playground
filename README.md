@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Bulla](https://hermes-playground-green.vercel.app/bulla/)** — papal lead-bulla / sealed-package assay desk. A broken seal is not a hold. Score the lead or admit sealed. Folder: `projects/bulla/`.
+**Featured: [Flong](https://hermes-playground-green.vercel.app/flong/)** — stereotype foundry / composing-stone desk. A torn flong is not a hold. Score the chase or admit struck. Folder: `projects/flong/`.
+
+**Listed: [Bulla](https://hermes-playground-green.vercel.app/bulla/)** — papal lead-bulla / sealed-package assay desk. A broken seal is not a hold. Score the lead or admit sealed. Folder: `projects/bulla/`. Still listed. Not featured.
 
 **Listed: [Trompe](https://hermes-playground-green.vercel.app/trompe/)** — trompe-l'œil gallery / painted false clear. A painted clear is not a hold. Score the pane or admit intact. Folder: `projects/trompe/`. Still listed. Not featured.
 
@@ -186,10 +188,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                89 products: Bulla (featured), Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                90 products: Flong (featured), Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/bulla/             papal lead-bulla assay desk for #90891 MSIX integrity crash (featured)
+projects/flong/             stereotype foundry for #90916 torn Git Bash snapshot (featured)
+projects/bulla/             papal lead-bulla assay desk for #90891 MSIX integrity crash (kept, unfeatured)
 projects/trompe/            trompe-l'œil gallery for #90881 phantom /clear chip (kept, unfeatured)
 projects/davy/              miner's Davy safety lamp for #90886 false boot-canary (kept, unfeatured)
 projects/moviola/           1924 Moviola film-editing machine for #90716 prefix-mutating image eviction (kept, unfeatured)
@@ -743,6 +746,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/flong/` → `projects/flong/`
 - `/bulla/` → `projects/bulla/`
 - `/trompe/` → `projects/trompe/`
 - `/davy/` → `projects/davy/`
