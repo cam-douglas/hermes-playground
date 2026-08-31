@@ -133,7 +133,7 @@ export function cloneTicket(input) {
     (src.ticket && typeof src.ticket === "object" && src.ticket) ||
     (src.carcase && typeof src.carcase === "object" && src.carcase) ||
     (src.probe && typeof src.probe === "object" && src.probe) ||
-    (src.hide && typeof src.hide === "object" && src.hide) ||
+    (src.drawer && typeof src.drawer === "object" && src.drawer) ||
     src;
   return {
     issue: firstNum(nested.issue, src.issue) ?? FEATURED_ISSUE,
@@ -306,7 +306,6 @@ export function score(input) {
   return {
     verdict,
     state: verdict,
-    inhabited: false,
     fitted: verdict === "fitted" || facts.fitted,
     occupied: verdict === "occupied" || facts.occupied,
     gutted: verdict === "gutted" || facts.gutted,
