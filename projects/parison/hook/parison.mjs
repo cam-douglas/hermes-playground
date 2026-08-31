@@ -29,7 +29,8 @@
  * NOT Suture (#46987 SSE tear). NOT Limpet (#89275 process leak).
  * NOT Reveille. NOT Hydra. NOT Almanac. NOT Cockade (#91033).
  * NOT Lye (#91020). NOT Advowson (#91005). NOT Pawl. NOT Tappet.
- * NOT Leat (#90475). NOT #47936 (inverse). NOT #59962 (cousin).
+ * NOT Leat (#90475). NOT Sounder (#90555 TUI waiter / no re-invoke).
+ * NOT #47936 (inverse). NOT #59962 (cousin).
  * NOT mill-race water UI. Do not ship Noria / Culvert / Weir /
  * Flume / Millrace.
  */
@@ -66,8 +67,8 @@ export const ALARM_VERDICTS = Object.freeze(
 export const CHIPS = Object.freeze([...VERDICTS]);
 export const FEATURED_ISSUE = 91037;
 export const PRIMARY_ISSUES = Object.freeze([91037]);
-export const SAME_CLASS = Object.freeze([47936, 59962, 37521, 61547, 28482]);
-export const COUSINS = Object.freeze([47936, 59962, 37521, 61547, 28482]);
+export const SAME_CLASS = Object.freeze([47936, 59962, 90555, 37521, 61547, 28482]);
+export const COUSINS = Object.freeze([47936, 59962, 90555, 37521, 61547, 28482]);
 export const NOT_PRODUCTS = Object.freeze([
   "suture",
   "limpet",
@@ -80,6 +81,7 @@ export const NOT_PRODUCTS = Object.freeze([
   "pawl",
   "tappet",
   "leat",
+  "sounder",
   "noria",
 ]);
 export const ISSUE_URL =
@@ -120,7 +122,7 @@ export const PHRASE =
 export const HYPOTHESIS_NOTE =
   "NON-BINDING: treat this as a parent-side result-reconciliation wedge on Fable-5 xhigh parallel Task fan-out in the Agent SDK. Children finish (files on disk); the parent ledger never advances; the event stream goes silent; cost is never reported. Do not claim a root cause in Claude Code or SDK source you have not seen. Verify against the issue text and discard if wrong.";
 export const CONTRAST_NOTE =
-  "This is PARENT-SIDE RESULT RECONCILIATION FAILURE FOR PARALLEL TASK SUBAGENTS ON FABLE-5 XHIGH IN THE AGENT SDK — children finish (files on disk), parent ledger never advances, event stream goes silent, cost never reported. NOT Suture (#46987) SSE/stream tear. NOT Limpet (#89275) process still resident after end_turn. NOT Reveille heartbeats. NOT Hydra settings cut. NOT Almanac one-shot Loop ghost. NOT Cockade (#91033) ultracode arm. NOT Lye (#91020) CLAUDE_CONFIG_DIR scrub. NOT Advowson (#91005) Workflow name silent built-in. NOT Pawl sticky stop. NOT Tappet hook spawn. NOT Leat (#90475) unbounded until-loops. NOT #47936 inverse (subagents stop early but reported completed). NOT #59962 leftover in_progress. NOT mill-race water UI. Do not ship Noria / Culvert / Weir / Flume / Millrace.";
+  "This is PARENT-SIDE RESULT RECONCILIATION FAILURE FOR PARALLEL TASK SUBAGENTS ON FABLE-5 XHIGH IN THE AGENT SDK — children finish (files on disk), parent ledger never advances, event stream goes silent, cost never reported. NOT Suture (#46987) SSE/stream tear. NOT Limpet (#89275) process still resident after end_turn. NOT Reveille heartbeats. NOT Hydra settings cut. NOT Almanac one-shot Loop ghost. NOT Cockade (#91033) ultracode arm. NOT Lye (#91020) CLAUDE_CONFIG_DIR scrub. NOT Advowson (#91005) Workflow name silent built-in. NOT Pawl sticky stop. NOT Tappet hook spawn. NOT Leat (#90475) unbounded until-loops. NOT Sounder (#90555) TUI background Bash waiter completes, completion notification never re-invokes — different host (SDK query() vs TUI), different child (Task vs run_in_background Bash), different freeze (awaiting_post_task_result ledger vs waiter IDs). NOT #47936 inverse (subagents stop early but reported completed). NOT #59962 leftover in_progress. NOT mill-race water UI. Do not ship Noria / Culvert / Weir / Flume / Millrace. Product name stays Parison.";
 export const FORBIDDEN_IDLE = Object.freeze([
   "hung",
   "parison",

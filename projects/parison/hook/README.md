@@ -23,8 +23,8 @@ Empty stdin uses the idle **marvered** ticket. Stdout is JSON: `verdict`, `chips
 - **COST-UNREPORTED** if no terminal result ⇒ `total_cost_usd` never emitted
 - **FABLE-XHIGH** / **SDK-WEDGE** if Fable 5 xhigh + Agent SDK 0.3.197 / 0.3.251
 
-Primary: [anthropics/claude-code#91037](https://github.com/anthropics/claude-code/issues/91037). Cousins (not primaries): #47936 inverse; #59962 leftover in_progress; also #37521 #61547 #28482.
+Primary: [anthropics/claude-code#91037](https://github.com/anthropics/claude-code/issues/91037). Cousins (not primaries): #47936 inverse; #59962 leftover in_progress; Sounder #90555 TUI waiter completes / notification never re-invokes (different host, child, freeze); also #37521 #61547 #28482.
 
 Hypothesis only (NON-BINDING): parent-side result-reconciliation wedge on Fable-5 xhigh parallel Task fan-out. Do not claim a root cause in Claude Code or SDK source you have not seen.
 
-NOT Suture / Limpet / Reveille / Hydra / Almanac / Cockade / Lye / Advowson / Pawl / Tappet / Leat. Do not ship Noria / Culvert / Weir / Flume / Millrace.
+NOT Suture / Limpet / Reveille / Hydra / Almanac / Cockade / Lye / Advowson / Pawl / Tappet / Leat / Sounder. Do not ship Noria / Culvert / Weir / Flume / Millrace. Product name stays Parison.
