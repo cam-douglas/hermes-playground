@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Puncheon](https://hermes-playground-green.vercel.app/puncheon/)** — goldsmith / pewterer's puncheon rack. An unstruck mark is not a hold. Score the gold or admit hallmarked. Folder: `projects/puncheon/`.
+**Featured: [Bitting](https://hermes-playground-green.vercel.app/bitting/)** — locksmith's bitting bench. A sibling key with yesterday's cut is not a hold. Score the tumblers or admit seated. Folder: `projects/bitting/`.
+
+**Listed: [Puncheon](https://hermes-playground-green.vercel.app/puncheon/)** — goldsmith / pewterer's puncheon rack. An unstruck mark is not a hold. Score the gold or admit hallmarked. Folder: `projects/puncheon/`. Still listed. Not featured.
 
 **Listed: [Gnomon](https://hermes-playground-green.vercel.app/gnomon/)** — observatory / sundial terrace. A shared mtime is not a hold. Score the gnomon or admit pointed. Folder: `projects/gnomon/`. Still listed. Not featured.
 
@@ -198,10 +200,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                95 products: Puncheon (featured), Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                96 products: Bitting (featured), Puncheon, Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/puncheon/          goldsmith puncheon rack for #90962 BOM-less .ps1 / PS 5.1 CP1252 (featured)
+projects/bitting/           locksmith bitting bench for #90970 Slack MCP most-recent-mint exclusivity (featured)
+projects/puncheon/          goldsmith puncheon rack for #90962 BOM-less .ps1 / PS 5.1 CP1252 (kept, unfeatured)
 projects/gnomon/            observatory sundial terrace for #90954 shared-mtime closed transcripts (kept, unfeatured)
 projects/spoil/             mining spoil-tip assay desk for #90943 stale private GIT_INDEX_FILE (kept, unfeatured)
 projects/trammel/           drafting trammel / split-sash desk for #90936 VS Code focus ping-pong (kept, unfeatured)
@@ -762,6 +765,7 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/bitting/` → `projects/bitting/`
 - `/puncheon/` → `projects/puncheon/`
 - `/gnomon/` → `projects/gnomon/`
 - `/spoil/` → `projects/spoil/`
