@@ -346,7 +346,8 @@ export function walkSnapshot(text) {
 
   // A prior torn head wrecks quote state; the eval-replay plate is
   // where bash -n reports unexpected '('. Compact fixture: line 9.
-  if (evalReplay && midToken && evalLine && !bashN) {
+  // Prefer that smash over a trailing unmatched-quote EOF.
+  if (evalReplay && midToken && evalLine) {
     bashN = {
       line: evalLine,
       kind: "parse-fail",
