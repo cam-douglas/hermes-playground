@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Riddle](https://hermes-playground-green.vercel.app/riddle/)** — foundry / mining riddle-sieve. A riddle that jams on a duplicate pour is not a hold. Score the mesh or admit sifted. Folder: `projects/riddle/`.
+**Featured: [Virgule](https://hermes-playground-green.vercel.app/virgule/)** — compositor’s type-case / composing stick. A virgule that only strikes at index zero is not a hold. Score the stick or admit cased. Folder: `projects/virgule/`.
+
+**Listed: [Riddle](https://hermes-playground-green.vercel.app/riddle/)** — foundry / mining riddle-sieve. A riddle that jams on a duplicate pour is not a hold. Score the mesh or admit sifted. Folder: `projects/riddle/`. Still listed. Not featured.
 
 **Listed: [Garner](https://hermes-playground-green.vercel.app/garner/)** — grain loft / garner. An archive that stocks the loft instead of airing it is not a hold. Score the loft or admit aired. Folder: `projects/garner/`. Still listed. Not featured.
 
