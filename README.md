@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Sluice](https://hermes-playground-green.vercel.app/sluice/)** — millrace / sluice-gate / pool-gauge desk. A sluice that never drains leaves the mill pond rising until the whole yard floods. Score the race or admit drained. Folder: `projects/sluice/`.
+**Featured: [Postern](https://hermes-playground-green.vercel.app/postern/)** — bailey / postern-gate / night-ward desk. A postern that anyone in the bailey can bar is not a hold. Score the postern or admit warded. Folder: `projects/postern/`.
+
+**Listed: [Sluice](https://hermes-playground-green.vercel.app/sluice/)** — millrace / sluice-gate / pool-gauge desk. A sluice that never drains leaves the mill pond rising until the whole yard floods. Score the race or admit drained. Folder: `projects/sluice/`. Still listed. Not featured.
 
 **Listed: [Alidade](https://hermes-playground-green.vercel.app/alidade/)** — plane-table / alidade station desk. A sight on a foreign station with no plate is not a hold. Score the peg or admit stationed. Folder: `projects/alidade/`. Still listed. Not featured.
 
