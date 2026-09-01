@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Carillon](https://hermes-playground-green.vercel.app/carillon/)** — peal board / carillon console. A peal that registers three bells and strikes one is not a hold. Score the peal or admit pealed. Folder: `projects/carillon/`.
+**Featured: [Pintle](https://hermes-playground-green.vercel.app/pintle/)** — rudder pintle / gudgeon / tiller. A pintle that misses the gudgeon after one cd is not a hold. Score the hinge or admit hinged. Folder: `projects/pintle/`.
+
+**Listed: [Carillon](https://hermes-playground-green.vercel.app/carillon/)** — peal board / carillon console. A peal that registers three bells and strikes one is not a hold. Score the peal or admit pealed. Folder: `projects/carillon/`. Still listed. Not featured.
 
 **Listed: [Postern](https://hermes-playground-green.vercel.app/postern/)** — bailey / postern-gate / night-ward desk. A postern that anyone in the bailey can bar is not a hold. Score the postern or admit warded. Folder: `projects/postern/`. Still listed. Not featured.
 
@@ -218,10 +220,13 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                103 products: Sluice (featured), Alidade, Parison, Cockade, Lye, Advowson, Smutch, Bitting, Puncheon, Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                106 products: Pintle (featured), Carillon, Postern, Sluice, Alidade, Parison, Cockade, Lye, Advowson, Smutch, Bitting, Puncheon, Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/sluice/            millrace / sluice-gate / pool-gauge desk for #91265 Cowork Toke/File/SeAt leak (featured)
+projects/pintle/            rudder pintle / gudgeon / tiller for #91226 relative PreToolUse Bash deadlock (featured)
+projects/carillon/          peal board / carillon console for #91250 plugin SessionStart first-wins (kept, unfeatured)
+projects/postern/           bailey / postern-gate / night-ward desk for #91223 socket-dir squat (kept, unfeatured)
+projects/sluice/            millrace / sluice-gate / pool-gauge desk for #91265 Cowork Toke/File/SeAt leak (kept, unfeatured)
 projects/alidade/           plane-table / alidade station desk for #91055 silent foreign tool host (kept, unfeatured)
 projects/parison/           glasshouse glory-hole parison bench for #91037 Fable-5 xhigh parent wedge (kept, unfeatured)
 projects/cockade/           milliner cockade bench for #91033 ultracode silent arm (kept, unfeatured)
@@ -320,8 +325,11 @@ projects/reveille/          living muster board (kept, unfeatured)
 projects/quench/            runtime token-burn fuse (kept, unfeatured)
 projects/scrim/             agent I/O DLP (kept, unfeatured)
 projects/knock/             permission-gate relay (kept, unfeatured)
-vercel.json                 path routes before filesystem so `/sluice/`, `/alidade/`, `/parison/`, `/cockade/`, `/lye/`, `/advowson/`, `/smutch/`, `/bitting/`, `/puncheon/`, `/gnomon/`, `/spoil/`, `/trammel/`, `/soundpost/`, `/flong/`, `/callboard/`, `/leaven/`, `/hydra/`, `/limpet/`, `/scion/`, `/almanac/`, `/voucher/`, `/kindling/`, `/deadband/`, `/pawl/`, `/cenotaph/`, `/fetch/`, `/livery/`, `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
+vercel.json                 path routes before filesystem so `/pintle/`, `/carillon/`, `/postern/`, `/sluice/`, `/alidade/`, `/parison/`, `/cockade/`, `/lye/`, `/advowson/`, `/smutch/`, `/bitting/`, `/puncheon/`, `/gnomon/`, `/spoil/`, `/trammel/`, `/soundpost/`, `/flong/`, `/callboard/`, `/leaven/`, `/hydra/`, `/limpet/`, `/scion/`, `/almanac/`, `/voucher/`, `/kindling/`, `/deadband/`, `/pawl/`, `/cenotaph/`, `/fetch/`, `/livery/`, `/pinfold/`, `/palimpsest/`, `/escutcheon/`, `/lacuna/`, `/ambo/`, `/slype/`, `/tally/`, `/pale/`, `/chatelaine/`, `/waif/`, `/berth/`, `/carrel/`, `/byline/`, `/datum/`, `/calque/`, `/fascia/`, `/quoin/`, `/gaff/`, `/sear/`, `/grille/`, `/spile/`, `/bollard/`, `/clew/`, `/sounder/`, `/binnacle/`, `/pirn/`, `/cotter/`, `/fob/`, `/ordo/`, `/cinch/`, `/ullage/`, `/visa/`, `/sprag/`, `/lazaret/`, `/fusee/`, `/iota/`, `/leat/`, `/shunt/`, `/sump/`, `/pleat/`, `/scant/`, `/chad/`, `/kist/`, `/wraith/`, `/gasket/`, `/damper/`, `/cote/`, `/larder/`, `/tappet/`, `/aside/`, `/chute/`, `/tain/`, `/husk/`, `/snib/`, `/veto/`, `/assay/`, `/wicket/`, `/sigil/`, `/stencil/`, `/suture/`, `/blot/`, `/coda/`, `/reed/`, `/fathom/`, `/hasp/`, `/parity/`, `/reveille/`, `/quench/`, `/scrim/`, `/knock/` reach products
 runs/hours.json             ship log index
+runs/2026-09-02-0550-pintle.md Pintle ship log (05:50 Sydney)
+runs/2026-09-02-0450-carillon.md Carillon ship log (04:50 Sydney)
+runs/2026-09-02-0350-postern.md Postern ship log (03:50 Sydney)
 runs/2026-09-02-0250-sluice.md Sluice ship log (02:50 Sydney)
 runs/2026-09-01-alidade.md  Alidade ship log (04:50 Sydney)
 runs/2026-09-01-0450-alidade.md Alidade hour stem (04:50 Sydney)
@@ -796,6 +804,9 @@ Demo mode needs no Slack / GitHub / Linear secrets. Open the inbox, knock the ga
 Production host: `https://hermes-playground-green.vercel.app`.
 
 - `/` → hub (unconditional; the apex is not a project slug)
+- `/pintle/` → `projects/pintle/`
+- `/carillon/` → `projects/carillon/`
+- `/postern/` → `projects/postern/`
 - `/sluice/` → `projects/sluice/`
 - `/alidade/` → `projects/alidade/`
 - `/parison/` → `projects/parison/`
