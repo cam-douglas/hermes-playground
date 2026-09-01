@@ -63,7 +63,7 @@ Different idle: **warded**.
 1. Idle demo loads **warded** — session uid owns the sockets dir it uses; messaging on; rushlight steady.
 2. Seed **squatted** → #91223: both leaves barred; rushlight gutters; messaging off; DoS only.
 3. Two ashlar doors: great gate plaque `/tmp/cc-socks` and smaller postern `/tmp/cc-socks-<uid>`. Ghosted third arch is the missing `$HOME` door.
-4. Cousin cite strip for [#89401](https://github.com/anthropics/claude-code/issues/89401) labeled cousin-not-primary.
+4. Cousin cite strip labeled cousin-not-primary: claude-code UDS/sockets-dir/owner-vet [#89401](https://github.com/anthropics/claude-code/issues/89401) / [#89563](https://github.com/anthropics/claude-code/issues/89563) / [#86567](https://github.com/anthropics/claude-code/issues/86567) / [#84945](https://github.com/anthropics/claude-code/issues/84945); openai/codex shared `/tmp` IPC [codex#26761](https://github.com/openai/codex/issues/26761) / [codex#17765](https://github.com/openai/codex/issues/17765) / [codex#15435](https://github.com/openai/codex/issues/15435). Cite only. Primary stays #91223.
 5. DoS-only `peerToken` chip — owner check + peerToken still stop message theft.
 6. **Score the postern** walks the probe ticket and lights chips on the bailey. Chip-switch every verdict. Paste or drop JSON.
 
@@ -85,13 +85,21 @@ Local fingerprints: `data/91223.json`, `data/squatted.json`, `data/warded.json`,
 
 ## Native integrations
 
-1. GitHub fetch of [anthropics/claude-code#91223](https://github.com/anthropics/claude-code/issues/91223). Unauthenticated. Title, state, labels — not a squat cookbook. Cousin #89401 cited on the ledger. See `.env.example`.
+1. GitHub fetch of [anthropics/claude-code#91223](https://github.com/anthropics/claude-code/issues/91223). Unauthenticated. Title, state, labels — not a squat cookbook. Cousins cited on the ledger, not primaries. See `.env.example`.
 2. Paste/drop a probe ticket JSON and score it.
 3. Two-door bailey (great gate + postern) with a ghosted third arch for the missing `$HOME` door.
-4. DoS-only `peerToken` chip + cousin-not-primary cite strip for #89401.
+4. DoS-only `peerToken` chip + cousin-not-primary cite strip (#89401 / #89563 / #86567 / #84945 / codex#26761 / #17765 / #15435).
 5. Workaround plaque: `XDG_RUNTIME_DIR=/tmp/claude-<uid>` keeps messaging (35-byte path). Fallback `nNn()` still ignores those vars.
 
 ## Sources
 
-- [anthropics/claude-code#91223](https://github.com/anthropics/claude-code/issues/91223) OPEN
-- Cousin (cite, not primary): [#89401](https://github.com/anthropics/claude-code/issues/89401) CLOSED — Cross-session messaging silently disabled for secondary users on multi-user macOS (default socket dir `/tmp/cc-socks` is shared, first user owns it). Symptom treated in 2.1.248; #91223 documents the remaining first-come + dual-name squat.
+- [anthropics/claude-code#91223](https://github.com/anthropics/claude-code/issues/91223) OPEN — primary. Product stays Postern.
+- Cousins (cite, not primaries) — claude-code UDS / sockets-dir / owner-vet:
+  - [#89401](https://github.com/anthropics/claude-code/issues/89401) CLOSED — Cross-session messaging silently disabled for secondary users on multi-user macOS (default socket dir `/tmp/cc-socks` is shared, first user owns it). 2.1.248 partial fix; #91223 documents the remaining first-come + dual-name squat.
+  - [#89563](https://github.com/anthropics/claude-code/issues/89563) CLOSED — WSL2/WSLg `XDG_RUNTIME_DIR` 0777 inbox vet refuses to bind.
+  - [#86567](https://github.com/anthropics/claude-code/issues/86567) CLOSED — socket-dir hardening silently disables messaging in user-namespace/chroot (uid 65534).
+  - [#84945](https://github.com/anthropics/claude-code/issues/84945) OPEN — one of two identical sessions fails to bind the inbox socket.
+- Cousins (cite, not primaries) — openai/codex shared `/tmp` IPC (cross-ecosystem squat / EACCES):
+  - [openai/codex#26761](https://github.com/openai/codex/issues/26761) OPEN — `/tmp/codex-ipc` is not per-user.
+  - [openai/codex#17765](https://github.com/openai/codex/issues/17765) OPEN — VS Code Remote-SSH global `/tmp/codex-ipc`.
+  - [openai/codex#15435](https://github.com/openai/codex/issues/15435) CLOSED — EACCES on `/tmp/codex-ipc/*.sock`.

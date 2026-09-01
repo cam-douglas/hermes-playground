@@ -74,8 +74,18 @@ export const CHIPS = Object.freeze([...VERDICTS]);
 export const FEATURED_ISSUE = 91223;
 export const PRIMARY_ISSUES = Object.freeze([91223]);
 export const COUSIN_ISSUE = 89401;
-export const COUSINS = Object.freeze([89401]);
-export const FAMILY = Object.freeze([89401]);
+export const COUSIN_WSLG = 89563;
+export const COUSIN_CHROOT = 86567;
+export const COUSIN_ONEWAY = 84945;
+export const CODEX_COUSIN_26761 = 26761;
+export const CODEX_COUSIN_17765 = 17765;
+export const CODEX_COUSIN_15435 = 15435;
+export const CLAUDE_COUSINS = Object.freeze([89401, 89563, 86567, 84945]);
+export const CODEX_COUSINS = Object.freeze([26761, 17765, 15435]);
+export const COUSINS = Object.freeze([
+  89401, 89563, 86567, 84945, 26761, 17765, 15435,
+]);
+export const FAMILY = Object.freeze([89401, 89563, 86567, 84945]);
 export const NOT_PRODUCTS = Object.freeze([
   "sluice",
   "alidade",
