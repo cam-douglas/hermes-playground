@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Pintle](https://hermes-playground-green.vercel.app/pintle/)** — rudder pintle / gudgeon / tiller. A pintle that misses the gudgeon after one cd is not a hold. Score the hinge or admit hinged. Folder: `projects/pintle/`.
+**Featured: [Garner](https://hermes-playground-green.vercel.app/garner/)** — grain loft / garner. An archive that stocks the loft instead of airing it is not a hold. Score the loft or admit aired. Folder: `projects/garner/`.
+
+**Listed: [Pintle](https://hermes-playground-green.vercel.app/pintle/)** — rudder pintle / gudgeon / tiller. A pintle that misses the gudgeon after one cd is not a hold. Score the hinge or admit hinged. Folder: `projects/pintle/`. Still listed. Not featured.
 
 **Listed: [Carillon](https://hermes-playground-green.vercel.app/carillon/)** — peal board / carillon console. A peal that registers three bells and strikes one is not a hold. Score the peal or admit pealed. Folder: `projects/carillon/`. Still listed. Not featured.
 
