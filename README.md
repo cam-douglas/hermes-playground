@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Garner](https://hermes-playground-green.vercel.app/garner/)** — grain loft / garner. An archive that stocks the loft instead of airing it is not a hold. Score the loft or admit aired. Folder: `projects/garner/`.
+**Featured: [Riddle](https://hermes-playground-green.vercel.app/riddle/)** — foundry / mining riddle-sieve. A riddle that jams on a duplicate pour is not a hold. Score the mesh or admit sifted. Folder: `projects/riddle/`.
+
+**Listed: [Garner](https://hermes-playground-green.vercel.app/garner/)** — grain loft / garner. An archive that stocks the loft instead of airing it is not a hold. Score the loft or admit aired. Folder: `projects/garner/`. Still listed. Not featured.
 
 **Listed: [Pintle](https://hermes-playground-green.vercel.app/pintle/)** — rudder pintle / gudgeon / tiller. A pintle that misses the gudgeon after one cd is not a hold. Score the hinge or admit hinged. Folder: `projects/pintle/`. Still listed. Not featured.
 
