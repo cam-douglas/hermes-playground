@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Postern](https://hermes-playground-green.vercel.app/postern/)** — bailey / postern-gate / night-ward desk. A postern that anyone in the bailey can bar is not a hold. Score the postern or admit warded. Folder: `projects/postern/`.
+**Featured: [Carillon](https://hermes-playground-green.vercel.app/carillon/)** — peal board / carillon console. A peal that registers three bells and strikes one is not a hold. Score the peal or admit pealed. Folder: `projects/carillon/`.
+
+**Listed: [Postern](https://hermes-playground-green.vercel.app/postern/)** — bailey / postern-gate / night-ward desk. A postern that anyone in the bailey can bar is not a hold. Score the postern or admit warded. Folder: `projects/postern/`. Still listed. Not featured.
 
 **Listed: [Sluice](https://hermes-playground-green.vercel.app/sluice/)** — millrace / sluice-gate / pool-gauge desk. A sluice that never drains leaves the mill pond rising until the whole yard floods. Score the race or admit drained. Folder: `projects/sluice/`. Still listed. Not featured.
 
