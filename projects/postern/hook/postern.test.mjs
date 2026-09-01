@@ -9,9 +9,14 @@ import {
   CHIPS,
   CLAUDE_VERSION,
   CONTRAST_NOTE,
+  CLAUDE_COUSINS,
+  CODEX_COUSINS,
   COUSINS,
+  COUSIN_CHROOT,
   COUSIN_ISSUE,
+  COUSIN_ONEWAY,
   COUSIN_URL,
+  COUSIN_WSLG,
   DIR_MODE,
   FALLBACK_DIR_PREFIX,
   FEATURED_ISSUE,
@@ -224,7 +229,12 @@ test("constants match the issue facts only", () => {
   assert.equal(FEATURED_ISSUE, 91223);
   assert.deepEqual([...PRIMARY_ISSUES], [91223]);
   assert.equal(COUSIN_ISSUE, 89401);
-  assert.deepEqual([...COUSINS], [89401]);
+  assert.equal(COUSIN_WSLG, 89563);
+  assert.equal(COUSIN_CHROOT, 86567);
+  assert.equal(COUSIN_ONEWAY, 84945);
+  assert.deepEqual([...CLAUDE_COUSINS], [89401, 89563, 86567, 84945]);
+  assert.deepEqual([...CODEX_COUSINS], [26761, 17765, 15435]);
+  assert.deepEqual([...COUSINS], [89401, 89563, 86567, 84945, 26761, 17765, 15435]);
   assert.equal(FILED_AT, "2026-09-01T13:34:37Z");
   assert.equal(CLAUDE_VERSION, "2.1.252");
   assert.equal(SYMPTOM_FIX_VERSION, "2.1.248");
@@ -287,6 +297,9 @@ test("chips.json and fingerprints stay aligned", () => {
   const fp = readData("fingerprints.json");
   assert.equal(fp.primary, 91223);
   assert.equal(fp.cousin, 89401);
+  assert.deepEqual(fp.cousins, [89401, 89563, 86567, 84945, 26761, 17765, 15435]);
+  assert.deepEqual(fp.claudeCousins, [89401, 89563, 86567, 84945]);
+  assert.deepEqual(fp.codexCousins, [26761, 17765, 15435]);
   assert.equal(fp.claudeVersion, "2.1.252");
   assert.equal(fp.sessionUid, 501);
   assert.equal(fp.otherUid, 502);
@@ -326,6 +339,14 @@ test("cousin #89401 is not conflated with squatted", () => {
   const cousin = analyze(seedCousin());
   assert.ok(cousin.reasons.some((row) => /89401|cousin/i.test(row)));
   assert.equal(cousin.verdict, "first-come");
+});
+
+test("cite-only cousins are not primaries and do not become squatted", () => {
+  for (const issue of [89401, 89563, 86567, 84945, 26761, 17765, 15435]) {
+    assert.notEqual(classify({ issue }), "squatted", String(issue));
+    assert.notEqual(issue, FEATURED_ISSUE);
+  }
+  assert.equal(FEATURED_ISSUE, 91223);
 });
 
 test("both dirs owned by other + messaging off → squatted; session owns + messaging on → warded", () => {
@@ -385,6 +406,13 @@ test("living page is a night bailey postern desk, idle warded, seeded squatted",
   assert.match(html, /status-silent/);
   assert.match(html, /#91223/);
   assert.match(html, /#89401/);
+  assert.match(html, /#89563/);
+  assert.match(html, /#86567/);
+  assert.match(html, /#84945/);
+  assert.match(html, /26761/);
+  assert.match(html, /17765/);
+  assert.match(html, /15435/);
+  assert.match(html, /codex-ipc/);
   assert.match(html, /cousin-not-primary|cousin, not primary/i);
   assert.match(html, /03:50/);
   assert.match(html, /catalog #104/);

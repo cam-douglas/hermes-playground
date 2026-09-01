@@ -28,7 +28,7 @@ Empty stdin uses the idle **warded** ticket. Stdout is JSON: `verdict`, `chips[]
 
 This is a diagnostic scoring bench. Not an exploit, attack PoC, or remote-access how-to. No payloads. No squat cookbook. Score whether the postern is warded or squatted.
 
-Primary: [anthropics/claude-code#91223](https://github.com/anthropics/claude-code/issues/91223). Cousin (not primary): [#89401](https://github.com/anthropics/claude-code/issues/89401) CLOSED — symptom treated in 2.1.248.
+Primary: [anthropics/claude-code#91223](https://github.com/anthropics/claude-code/issues/91223). Cousins (not primaries): claude-code [#89401](https://github.com/anthropics/claude-code/issues/89401) CLOSED 2.1.248 partial fix; [#89563](https://github.com/anthropics/claude-code/issues/89563) CLOSED WSL2/WSLg 0777 inbox vet; [#86567](https://github.com/anthropics/claude-code/issues/86567) CLOSED user-namespace/chroot uid 65534; [#84945](https://github.com/anthropics/claude-code/issues/84945) OPEN one of two sessions fails to bind. openai/codex [codex#26761](https://github.com/openai/codex/issues/26761) / [codex#17765](https://github.com/openai/codex/issues/17765) / [codex#15435](https://github.com/openai/codex/issues/15435) shared `/tmp/codex-ipc` squat / EACCES.
 
 Hypothesis only (NON-BINDING): UDS messaging directory tenancy — a shared first-come primary plus a predictable per-uid postern with no third door under `$HOME`. Do not claim a root cause in Claude Code source you have not seen.
 
