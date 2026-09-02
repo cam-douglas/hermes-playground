@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Annunciator](https://hermes-playground-green.vercel.app/annunciator/)** — industrial annunciator / false-alarm panel atelier. An annunciator that lights for a helper is not a trip. Dark the board or admit the turn never ran. Folder: `projects/annunciator/`.
+**Featured: [Reliquary](https://hermes-playground-green.vercel.app/reliquary/)** — vault-latch / relic-case atelier. A reliquary that rejects the overnight session is not a vault. Score the latch or admit the relic never seated. Folder: `projects/reliquary/`.
+
+**Listed: [Annunciator](https://hermes-playground-green.vercel.app/annunciator/)** — industrial annunciator / false-alarm panel atelier. An annunciator that lights for a helper is not a trip. Dark the board or admit the turn never ran. Folder: `projects/annunciator/`. Still listed. Not featured.
 
 **Listed: [Caisson](https://hermes-playground-green.vercel.app/caisson/)** — dry-dock caisson / worktree-pool berth atelier. A caisson that reseats the wrong hull is not a hold. Score the seal or admit rebound. Folder: `projects/caisson/`. Still listed. Not featured.
 
