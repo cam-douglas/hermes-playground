@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Crimp](https://hermes-playground-green.vercel.app/crimp/)** — bench / crimping-pliers atelier. A crimp that tears under concurrent pliers is not a sealed join — it is a sheared foil. Score the swage or admit the settings already tore. Folder: `projects/crimp/`.
+**Featured: [Codicil](https://hermes-playground-green.vercel.app/codicil/)** — probate / will-chamber / codicil desk. A codicil that amends whatever will is currently on the desk is not a sealed clause — it is a rewritten legatee. Score the seal or admit the teammate's HEAD already moved. Folder: `projects/codicil/`.
+
+**Listed: [Crimp](https://hermes-playground-green.vercel.app/crimp/)** — bench / crimping-pliers atelier. A crimp that tears under concurrent pliers is not a sealed join — it is a sheared foil. Score the swage or admit the settings already tore. Folder: `projects/crimp/`. Still listed. Not featured.
 
 **Listed: [Jackfield](https://hermes-playground-green.vercel.app/jackfield/)** — studio jackfield / channel-strip atelier. A jackfield that patches Windows keystrokes onto a Mac bus is not a channel strip — it is a crossed circuit. Score the home or admit the session already left its machine. Folder: `projects/jackfield/`. Still listed. Not featured.
 
@@ -258,10 +260,13 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                123 products: Tocsin (featured), Bolter, Deadeye, Reglet, Reliquary, Annunciator, Caisson, Spindle, Knell, Tumbler, Escapement, Geneva, Scotch, Fibula, Virgule, Riddle, Garner, Pintle, Carillon, Postern, Sluice, Alidade, Parison, Cockade, Lye, Advowson, Smutch, Bitting, Puncheon, Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                126 products: Codicil (featured), Crimp, Jackfield, Tocsin, Bolter, Deadeye, Reglet, Reliquary, Annunciator, Caisson, Spindle, Knell, Tumbler, Escapement, Geneva, Scotch, Fibula, Virgule, Riddle, Garner, Pintle, Carillon, Postern, Sluice, Alidade, Parison, Cockade, Lye, Advowson, Smutch, Bitting, Puncheon, Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/tocsin/            watchhouse fire-bell atelier for #91503 subagent idle-wake miss (featured)
+projects/codicil/           probate / will-chamber / codicil desk for #91513 shared-tree git commit --amend (featured)
+projects/crimp/             bench / crimping-pliers atelier for #91520 settings.json unlocked RMW (kept, unfeatured)
+projects/jackfield/         studio jackfield / channel-strip atelier for #91511 cross-machine session (kept, unfeatured)
+projects/tocsin/            watchhouse fire-bell atelier for #91503 subagent idle-wake miss (kept, unfeatured)
 projects/bolter/            flour-mill bolting-cloth atelier for #91422 dontAsk cp/mv option-token matcher (kept, unfeatured)
 projects/deadeye/           standing-rigging / lignum-vitae deadeye for #91226 relative PreToolUse Bash deadlock (kept, unfeatured)
 projects/pintle/            rudder pintle / gudgeon / tiller for #91226 relative PreToolUse Bash deadlock (kept, unfeatured)
