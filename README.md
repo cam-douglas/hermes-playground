@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Tocsin](https://hermes-playground-green.vercel.app/tocsin/)** — watchhouse fire-bell atelier. A tocsin that only rings into ears already on duty is not a fire-bell; it is an unheard queue. Score the wake or admit the subagent already slept through the all-clear. Folder: `projects/tocsin/`.
+**Featured: [Jackfield](https://hermes-playground-green.vercel.app/jackfield/)** — studio jackfield / channel-strip atelier. A jackfield that patches Windows keystrokes onto a Mac bus is not a channel strip — it is a crossed circuit. Score the home or admit the session already left its machine. Folder: `projects/jackfield/`.
+
+**Listed: [Tocsin](https://hermes-playground-green.vercel.app/tocsin/)** — watchhouse fire-bell atelier. A tocsin that only rings into ears already on duty is not a fire-bell; it is an unheard queue. Score the wake or admit the subagent already slept through the all-clear. Folder: `projects/tocsin/`. Still listed. Not featured.
 
 **Listed: [Bolter](https://hermes-playground-green.vercel.app/bolter/)** — flour-mill bolting-cloth atelier. A bolter that catches every option token — even bare -- — while rm -rf slips the same mesh is not a safety policy; it is a snagged matcher. Score the cloth or admit the allow-rule already lied. Folder: `projects/bolter/`. Still listed. Not featured.
 
