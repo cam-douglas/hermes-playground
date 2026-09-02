@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Annunciator — false-alarm panel for #91419</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --steel: #8b939c;
+        --steel-deep: #1a1e24;
+        --steel-face: #2a3038;
+        --steel-edge: #4a525c;
+        --amber: #e8a020;
+        --amber-hot: #ffc14a;
+        --amber-glow: rgba(232, 160, 32, 0.35);
+        --dark: #0b0d10;
+        --ink: #e6e2d8;
+        --mute: #8d8678;
+        --trip: #c44a1a;
+        --ok: #4f6b4a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Barlow, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(1200px 600px at 20% -10%, rgba(232, 160, 32, 0.06), transparent 50%),
+          linear-gradient(180deg, #12161b 0%, var(--dark) 40%, #08090b 100%);
+        color: var(--ink);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--amber); }
+      .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 72px; }
+      .chrome { margin-bottom: 18px; }
+      .mark {
+        font-family: "Share Tech Mono", ui-monospace, monospace;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--amber);
+      }
+      h1 {
+        font-family: "Chakra Petch", Barlow, sans-serif;
+        font-size: clamp(36px, 6vw, 64px);
+        letter-spacing: -0.03em;
+        margin: 8px 0 10px;
+        text-transform: uppercase;
+      }
+      .lede { max-width: 48em; color: var(--mute); line-height: 1.5; }
+      .fascia {
+        margin: 22px 0;
+        padding: 18px;
+        border: 2px solid var(--steel-edge);
+        background:
+          repeating-linear-gradient(
+            90deg,
+            var(--steel-face) 0 18px,
+            #323842 18px 20px
+          );
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 16px 40px rgba(0,0,0,0.35);
+      }
+      .fascia-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        margin-bottom: 14px;
+        font-family: "Share Tech Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--steel);
+      }
+      .board {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+      }
+      .lamp {
+        min-height: 92px;
+        padding: 12px 10px;
+        border: 1px solid #111;
+        background: #0e1013;
+        box-shadow: inset 0 0 0 3px #3a414a, inset 0 18px 20px rgba(0,0,0,0.45);
+        font-family: "Chakra Petch", Barlow, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .lamp small {
+        display: block;
+        font-family: "Share Tech Mono", ui-monospace, monospace;
+        font-size: 10px;
+        color: var(--mute);
+        letter-spacing: 0.08em;
+        margin-top: 8px;
+      }
+      .lamp.on {
+        background: radial-gradient(circle at 50% 30%, var(--amber-hot), var(--amber) 55%, #8a4d00);
+        color: #1a1002;
+        box-shadow: inset 0 0 0 3px #c98618, 0 0 22px var(--amber-glow);
+      }
+      .lamp.on small { color: #3a2404; }
+      .lamp.main { border-color: #2b3a2b; }
+      .lamp.main.on { background: radial-gradient(circle at 50% 30%, #8fb88a, #4f6b4a); color: #081008; }
+      .stamp {
+        margin-top: 12px;
+        padding: 10px 12px;
+        background: #111418;
+        border: 1px dashed var(--steel-edge);
+        font-family: "Share Tech Mono", ui-monospace, monospace;
+        font-size: 13px;
+      }
+      .cascade {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .cascade b {
+        display: block;
+        font-family: "Chakra Petch", Barlow, sans-serif;
+        font-size: 28px;
+        color: var(--amber);
+      }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+      button {
+        font-family: "Chakra Petch", Barlow, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--steel-edge);
+        background: #1c2128;
+        color: var(--ink);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--amber); color: var(--amber-hot); }
+      .verdict {
+        font-family: "Chakra Petch", Barlow, sans-serif;
+        font-size: 22px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .verdict.alarm { color: var(--amber-hot); }
+      .verdict.hold { color: #9db89a; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 16px; }
+      .chip {
+        font-family: "Share Tech Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 3px 7px;
+        border: 1px solid var(--steel-edge);
+        color: var(--steel);
+      }
+      .chip.lit { border-color: var(--amber); color: var(--amber-hot); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #0e1115;
+        color: var(--ink);
+        border: 1px solid var(--steel-edge);
+        font-family: "Share Tech Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .cousin, .stayoff, .facts {
+        margin: 18px 0;
+        padding: 12px 14px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(18, 20, 24, 0.7);
+        font-size: 14px;
+        color: var(--mute);
+      }
+      .facts dt { font-family: "Share Tech Mono", ui-monospace, monospace; color: var(--steel); }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed var(--steel-edge);
+        color: var(--mute);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <p class="mark">17:50 / hermes catalog #118 / #91419 · #hermes-catalog</p>
+        <h1>Annunciator</h1>
+        <p class="lede">
+          Industrial annunciator / false-alarm panel. A lamp board that should stay
+          <strong>dark</strong> until the <strong>main turn</strong> dies on an API error,
+          but instead lights for every internal helper fork and every background
+          subagent 429, always stamped with the <strong>parent session_id</strong>.
+          An annunciator that lights for a helper is not a trip. Dark the board or
+          admit the turn never ran.
+        </p>
+        <p class="lede">Idle word: dark. Seeded word: spurious / #91419.</p>
+      </header>
+
+      <section class="fascia" aria-label="lamp board">
+        <div class="fascia-head">
+          <span>steel fascia · ISA window boxes</span>
+          <span id="mark">17:50 / hermes catalog #118 / #91419</span>
+        </div>
+        <div class="board" id="board">
+          <div class="lamp main" data-lamp="main"><span>Main turn</span><small>API error only</small></div>
+          <div class="lamp" data-lamp="prompt_suggestion"><span>prompt_suggestion</span><small>skipTranscript</small></div>
+          <div class="lamp" data-lamp="away_summary"><span>away_summary</span><small>skipTranscript</small></div>
+          <div class="lamp" data-lamp="extract_memories"><span>extract_memories</span><small>skipTranscript</small></div>
+          <div class="lamp" data-lamp="agent_summary"><span>agent_summary</span><small>skipTranscript</small></div>
+          <div class="lamp" data-lamp="subagent"><span>subagent 429</span><small>parent session_id</small></div>
+          <div class="lamp" data-lamp="drip"><span>low-priority drip</span><small>/low-priority 20–30s</small></div>
+          <div class="lamp" data-lamp="cascade"><span>cascade 14/~1min</span><small>9 agents · 7 × 429</small></div>
+        </div>
+        <div class="stamp" id="stamp">PARENT SESSION_ID — unstamped while dark</div>
+        <div class="cascade">
+          <div><b id="c9">0</b><span>background agents</span></div>
+          <div><b id="c7">0</b><span>429 deaths</span></div>
+          <div><b id="c14">0</b><span>StopFailure hooks</span></div>
+          <div><b id="cdrip">—</b><span>idle drip</span></div>
+        </div>
+      </section>
+
+      <p class="verdict hold" id="verdict">dark</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">Board stays dark until the real main turn ends on an API error.</p>
+
+      <div class="actions">
+        <button type="button" data-act="score">Dark the board</button>
+        <button type="button" data-act="idle">Pin idle dark</button>
+        <button type="button" data-act="seed">Pin seeded spurious</button>
+        <button type="button" data-act="admit">Admit the turn never ran</button>
+        <button type="button" data-act="fixtures">Load fixtures</button>
+        <button type="button" data-act="reset">Reset to dark</button>
+      </div>
+
+      <textarea id="probe" spellcheck="false" aria-label="probe ticket"></textarea>
+      <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe.</div>
+
+      <dl class="facts">
+        <dt>Documented StopFailure</dt>
+        <dd>the turn ended on an API error</dd>
+        <dt>Also fires for</dt>
+        <dd>internal helper queries and background subagent failures, always with parent session_id</dd>
+        <dt>Helpers</dt>
+        <dd>prompt_suggestion, away_summary, extract_memories, agent_summary (skipTranscript: true)</dd>
+        <dt>Measured cascade</dt>
+        <dd>nine background agents; seven died on 429; fourteen StopFailure hooks in about a minute</dd>
+        <dt>/low-priority idle drip</dt>
+        <dd>parked, no user input; further StopFailure ~20–30s apart (error: rate_limit); no transcript line</dd>
+        <dt>Payload</dt>
+        <dd>error, error_details, last_assistant_message — no querySource / query_source / agent_id</dd>
+        <dt>Ask</dt>
+        <dd>do not fire from skipTranscript forks / non-main querySources; OR add query_source (+ agent_id); look at the 2N cascade</dd>
+        <dt>Environment</dt>
+        <dd>Claude Code 2.1.258, Windows 11; Interactive REPL, bypassPermissions, /low-priority. Reporter KamilDev. Filed 2026-09-02T07:17:32Z. OPEN, has repro, area:hooks, area:agents.</dd>
+        <dt>STOPFAILURE FALSELY FIRES</dt>
+        <dd>helper forks and background subagent 429s on the parent session_id; 14 hooks/~1min; 2.1.258 Windows.</dd>
+      </dl>
+
+      <section class="chips" aria-label="verdict chips">
+        <span class="chip">dark</span>
+        <span class="chip">spurious</span>
+        <span class="chip">helper-fork-stopfailure</span>
+        <span class="chip">subagent-429-parent</span>
+        <span class="chip">low-priority-idle-drip</span>
+        <span class="chip">fourteen-hooks-cascade</span>
+        <span class="chip">missing-query-source</span>
+        <span class="chip">skip-transcript-fork</span>
+        <span class="chip">rate-limit-null-retry</span>
+        <span class="chip">delegated-observation-skip</span>
+        <span class="chip">has-clear-repro</span>
+        <span class="chip">hold</span>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #91419):
+        <a href="https://github.com/anthropics/claude-code/issues/87972">#87972</a>
+        stall→StopFailure decision ignored ·
+        <a href="https://github.com/anthropics/claude-code/issues/91414">#91414</a>
+        MCP listen stall ·
+        <a href="https://github.com/anthropics/claude-code/issues/91408">#91408</a>
+        approve&&merge interrupt ·
+        <a href="https://github.com/anthropics/claude-code/issues/91396">#91396</a>
+        fabricated authorization.
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF caisson dry-dock · spindle chip-sweep · knell mute-bell · tumbler keyway ·
+        escapement pallet · carillon peal · sluice millrace · berth-card clone · bollard clone.
+        Not leftover woodworking / mm-slider / millrace / locksmith / campanology.
+      </aside>
+    </main>
+    <script>
+      const HELPERS = ["prompt_suggestion", "away_summary", "extract_memories", "agent_summary"];
+      const idle = {
+        seed: "dark",
+        boardDark: true,
+        mainTurnOnly: true,
+        helperForkStopFailure: false,
+        skipTranscript: true,
+        parentSessionStamp: false,
+        subagent429Parent: false,
+        lowPriorityIdleDrip: false,
+        fourteenHooksCascade: false,
+        missingQuerySource: false,
+        querySourcePresent: true,
+        backgroundAgents: 0,
+        diedOn429: 0,
+        stopFailureHooks: 0,
+        outputText: "dark; board stays dark until the real main turn ends on an API error"
+      };
+      const seeded = {
+        seed: "spurious",
+        issue: 91419,
+        helperForkStopFailure: true,
+        skipTranscript: true,
+        parentSessionStamp: true,
+        subagent429Parent: true,
+        lowPriorityIdleDrip: true,
+        fourteenHooksCascade: true,
+        missingQuerySource: true,
+        querySourcePresent: false,
+        helpers: HELPERS,
+        backgroundAgents: 9,
+        diedOn429: 7,
+        stopFailureHooks: 14,
+        dripSecondsMin: 20,
+        dripSecondsMax: 30,
+        version: "Claude Code 2.1.258",
+        platform: "Windows 11",
+        reporter: "KamilDev",
+        outputText: "spurious; #91419; StopFailure; parent session_id; 9/7/14"
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...idle }; }
+      }
+
+      function scoreTicket(t) {
+        const text = JSON.stringify(t);
+        const named = String(t.seed || "");
+        const helper = t.helperForkStopFailure === true || /prompt_suggestion|helper-fork/.test(text);
+        const parent = t.parentSessionStamp === true || /parent session_id/.test(text);
+        const cascade = t.fourteenHooksCascade === true || t.stopFailureHooks === 14;
+        const drip = t.lowPriorityIdleDrip === true || /low-priority/.test(text);
+        const missing = t.missingQuerySource === true || t.querySourcePresent === false;
+        const holdish = named === "dark" || named === "hold" || (t.boardDark === true && t.mainTurnOnly === true && !helper);
+        const spurious = named === "spurious" || t.issue === 91419 || (helper && parent) || cascade;
+        const verdict = named && named !== "dark" && named !== "hold" && named !== "spurious"
+          ? named
+          : spurious && !holdish
+            ? "spurious"
+            : named === "hold"
+              ? "hold"
+              : "dark";
+        const chips = [];
+        if (verdict === "dark" || holdish) chips.push("dark", "hold");
+        if (spurious && !holdish) {
+          chips.push("spurious");
+          if (helper) chips.push("helper-fork-stopfailure", "skip-transcript-fork");
+          if (t.subagent429Parent) chips.push("subagent-429-parent");
+          if (drip) chips.push("low-priority-idle-drip");
+          if (cascade) chips.push("fourteen-hooks-cascade");
+          if (missing) chips.push("missing-query-source");
+          if (t.rateLimitNullRetry !== false && spurious) chips.push("rate-limit-null-retry");
+          if (t.delegatedObservationSkip !== false && spurious) chips.push("delegated-observation-skip");
+          if (t.hasClearRepro !== false && spurious) chips.push("has-clear-repro");
+        }
+        if (named && !chips.includes(named)) chips.push(named);
+        return { verdict, chips: [...new Set(chips)], hold: verdict === "dark" || verdict === "hold", ticket: t };
+      }
+
+      function paint(result) {
+        const alarm = !result.hold;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "StopFailure lit for helper forks and background subagent 429s on the parent session_id. Admit the turn never ran."
+          : "Board stays dark until the real main turn ends on an API error.";
+        document.getElementById("stamp").textContent = alarm
+          ? "PARENT SESSION_ID — stamped on every helper and 429 window"
+          : "PARENT SESSION_ID — unstamped while dark";
+        document.getElementById("c9").textContent = alarm ? "9" : "0";
+        document.getElementById("c7").textContent = alarm ? "7" : "0";
+        document.getElementById("c14").textContent = alarm ? "14" : "0";
+        document.getElementById("cdrip").textContent = alarm ? "20–30s" : "—";
+        const on = {
+          main: result.hold,
+          prompt_suggestion: alarm,
+          away_summary: alarm,
+          extract_memories: alarm,
+          agent_summary: alarm,
+          subagent: alarm,
+          drip: alarm,
+          cascade: alarm,
+        };
+        document.querySelectorAll("[data-lamp]").forEach((el) => {
+          el.classList.toggle("on", Boolean(on[el.dataset.lamp]));
+        });
+        const box = document.getElementById("chips");
+        box.innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(`./data/${name}`);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return apply({ ...idle });
+          if (act === "seed" || act === "admit") {
+            try { apply(await loadNamed("spurious.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("91419.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") apply(parseProbe(document.getElementById("probe").value || "{}"));
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
