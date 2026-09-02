@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reglet — letterpress CRLF strip for #91443</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Hanken+Grotesk:wght@400;500;600;700&family=Noto+Sans+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --cream: #f4ead4;
+        --paper: #efe2c8;
+        --ink: #2a1c14;
+        --warm: #6b3a22;
+        --mute: #7a6554;
+        --rule: #b08a4a;
+        --rule-hot: #d4a85a;
+        --bleed: #9b2d2d;
+        --flush: #3f6b48;
+        --strip: #e8d7b4;
+        --galley: #f7f0de;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Hanken Grotesk", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(800px 380px at 12% -8%, rgba(176, 138, 74, 0.14), transparent 52%),
+          linear-gradient(180deg, #f8f1df 0%, var(--cream) 46%, #e6d5b4 100%);
+        color: var(--ink);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--warm); }
+      .wrap { width: min(1080px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 72px; }
+      .chrome { margin-bottom: 18px; }
+      .mark {
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--rule);
+      }
+      h1 {
+        font-family: "EB Garamond", Georgia, serif;
+        font-size: clamp(42px, 7vw, 76px);
+        letter-spacing: -0.02em;
+        margin: 8px 0 10px;
+        font-weight: 600;
+      }
+      .lede { max-width: 52em; color: var(--mute); line-height: 1.6; }
+      .galley {
+        margin: 22px 0;
+        padding: 22px;
+        border: 1px solid var(--rule);
+        background:
+          repeating-linear-gradient(
+            180deg,
+            var(--galley) 0 28px,
+            rgba(176, 138, 74, 0.08) 28px 29px
+          );
+        box-shadow: 0 14px 36px rgba(42, 28, 20, 0.08);
+      }
+      .galley-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        margin-bottom: 16px;
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--rule);
+      }
+      .strip-row {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 760px) {
+        .strip-row { grid-template-columns: 1fr; }
+      }
+      .reglet {
+        min-height: 148px;
+        padding: 14px 16px 12px;
+        border: 1px solid var(--rule);
+        background: var(--strip);
+        box-shadow: inset 0 10px 0 var(--rule-hot);
+      }
+      .reglet h2 {
+        font-family: "EB Garamond", Georgia, serif;
+        font-size: 24px;
+        margin: 8px 0 8px;
+      }
+      .reglet.bled {
+        background: #f3d4c4;
+        box-shadow: inset 0 10px 0 var(--bleed);
+        color: var(--warm);
+      }
+      .reglet .slot {
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+      .dial {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .step {
+        padding: 10px;
+        border: 1px solid #cbb58a;
+        background: #fff8ea;
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .step b {
+        display: block;
+        font-family: "EB Garamond", Georgia, serif;
+        font-size: 17px;
+        color: var(--warm);
+        margin-bottom: 4px;
+      }
+      .step.fault b { color: var(--bleed); }
+      .lamp-row {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .lamp {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1px solid var(--rule);
+        background: var(--flush);
+      }
+      .lamp.lit { background: var(--bleed); border-color: var(--bleed); }
+      .fault {
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        font-size: 13px;
+        color: var(--flush);
+      }
+      .fault.lit { color: var(--bleed); }
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 760px) {
+        .split { grid-template-columns: 1fr; }
+      }
+      .split article {
+        padding: 12px;
+        border: 1px dashed var(--rule);
+        background: rgba(255, 248, 234, 0.7);
+      }
+      .split h3 {
+        font-family: "EB Garamond", Georgia, serif;
+        margin: 0 0 6px;
+        font-size: 20px;
+      }
+      .rail {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .rail b {
+        display: block;
+        font-family: "EB Garamond", Georgia, serif;
+        font-size: 26px;
+        color: var(--warm);
+      }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+      button {
+        font-family: "Hanken Grotesk", sans-serif;
+        letter-spacing: 0.02em;
+        border: 1px solid var(--rule);
+        background: #fff8ea;
+        color: var(--ink);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--warm); color: var(--warm); }
+      .verdict {
+        font-family: "EB Garamond", Georgia, serif;
+        font-size: 28px;
+      }
+      .verdict.alarm { color: var(--bleed); }
+      .verdict.hold { color: var(--flush); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 16px; }
+      .chip {
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 3px 7px;
+        border: 1px solid #cbb58a;
+        color: var(--mute);
+      }
+      .chip.lit { border-color: var(--warm); color: var(--warm); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #fff8ea;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .cousin, .stayoff, .facts {
+        margin: 18px 0;
+        padding: 12px 14px;
+        border: 1px solid rgba(176, 138, 74, 0.35);
+        background: rgba(255, 248, 234, 0.85);
+        font-size: 14px;
+        color: var(--mute);
+      }
+      .facts dt {
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        color: var(--warm);
+      }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed var(--rule);
+        color: var(--mute);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <p class="mark">19:50 / hermes catalog #120 / #91443 · #hermes-catalog</p>
+        <h1>Reglet</h1>
+        <p class="lede">
+          Letterpress line-spacing strip / galley. A reglet that should seat
+          <strong>LF</strong> line-ending rules (<code>.gitattributes</code>)
+          before any agent-file type is set, but Desktop
+          <code>createWorktree</code> → <code>stageCheckout</code> runs a
+          selective checkout of <code>.claude/**</code> and
+          <code>CLAUDE.md</code> while the worktree <strong>index is still empty</strong>
+          (after <code>git worktree add --no-checkout</code>), so git never sees
+          attributes. With Windows default <code>core.autocrlf=true</code>, those
+          paths are written <strong>CRLF</strong>. The later full checkout uses
+          <code>:(exclude).claude</code> and leaves the bleed. Symptom:
+          <code>prettier --check .</code> (<code>endOfLine: lf</code>) fails on
+          untouched <code>.claude/launch.json</code> while <code>git status</code>
+          is clean. CLI <code>EnterWorktree</code> / Agent
+          <code>isolation:"worktree"</code> stay LF. A reglet that seats type
+          before the attributes rule is not spacing — it is bleed. Score the
+          strip or admit the CRLF already set.
+        </p>
+        <p class="lede">Idle word: creased. Seeded word: bled / #91443.</p>
+      </header>
+
+      <section class="galley" aria-label="letterpress galley">
+        <div class="galley-head">
+          <span>spacing-strip plaque · empty-index stageCheckout dial</span>
+          <span id="mark">19:50 / hermes catalog #120 / #91443</span>
+        </div>
+        <div class="strip-row">
+          <article class="reglet" id="reglet">
+            <h2 id="reglet-title">Thin spacing strip</h2>
+            <p id="reglet-body">Seated flat. LF flush across the galley. Agent files uncreased.</p>
+            <p class="slot" id="reglet-slot">.gitattributes · * text=auto eol=lf</p>
+          </article>
+          <div class="dial" aria-label="empty-index stageCheckout dial">
+            <div class="step" id="step-index">
+              <b>--no-checkout</b>
+              empty index · attributes not yet in the worktree
+            </div>
+            <div class="step" id="step-stage">
+              <b>stageCheckout</b>
+              selective HEAD -- .claude/** + CLAUDE.md
+            </div>
+          </div>
+        </div>
+        <div class="lamp-row">
+          <div class="lamp" id="lamp" aria-hidden="true"></div>
+          <span class="fault" id="fault">.gitattributes seated in stage-1 · no CRLF</span>
+        </div>
+        <div class="split">
+          <article>
+            <h3>.claude/** bled</h3>
+            <p id="agent-eol">LF on .claude/launch.json and CLAUDE.md</p>
+          </article>
+          <article>
+            <h3>tree LF</h3>
+            <p id="tree-eol">Rest of tree LF per .gitattributes (* text=auto eol=lf)</p>
+          </article>
+        </div>
+        <div class="rail">
+          <div><b id="c-eol">LF</b><span>agent eol</span></div>
+          <div><b id="c-auto">—</b><span>core.autocrlf</span></div>
+          <div><b id="c-pre">ok</b><span>prettier --check</span></div>
+          <div><b id="c-git">clean</b><span>git status</span></div>
+        </div>
+      </section>
+
+      <p class="verdict hold" id="verdict">creased</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">Reglet seated flat. LF flush across the galley. Agent files uncreased.</p>
+
+      <div class="actions">
+        <button type="button" data-act="score">Seat the reglet</button>
+        <button type="button" data-act="idle">Pin idle creased</button>
+        <button type="button" data-act="seed">Pin seeded bled</button>
+        <button type="button" data-act="admit">Admit the CRLF already set</button>
+        <button type="button" data-act="fixtures">Load fixtures</button>
+        <button type="button" data-act="reset">Reset to creased</button>
+      </div>
+
+      <textarea id="probe" spellcheck="false" aria-label="probe ticket"></textarea>
+      <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe.</div>
+
+      <dl class="facts">
+        <dt>Staged checkout</dt>
+        <dd>createWorktree → stageCheckout so the CLI can spawn early. Desktop log line: Created worktree "…" … stage1=…</dd>
+        <dt>Empty index</dt>
+        <dd>git worktree add --no-checkout leaves the new worktree index empty</dd>
+        <dt>Selective paths</dt>
+        <dd>checkout HEAD -- includes .claude/** and CLAUDE.md but not .gitattributes</dd>
+        <dt>Windows default</dt>
+        <dd>core.autocrlf=true (Git for Windows installer default). With no attributes, those paths are written CRLF</dd>
+        <dt>Full checkout bleed</dt>
+        <dd>background checkout HEAD -- . :(exclude).claude sees .gitattributes and writes LF for everything else; does not rewrite already-checked-out files</dd>
+        <dt>prettier vs git status</dt>
+        <dd>prettier --check . (endOfLine: lf) fails on untouched .claude/launch.json while git status is clean</dd>
+        <dt>CLI contrast</dt>
+        <dd>EnterWorktree / Agent isolation:"worktree" stay LF throughout</dd>
+        <dt>plain-git repro</dt>
+        <dd>worktree add --no-checkout, checkout HEAD -- .claude/launch.json CLAUDE.md, ls-files --eol shows w/crlf attr/; full checkout still leaves those CRLF</dd>
+        <dt>Fixes that make step 2 LF</dt>
+        <dd>-c core.autocrlf=false; include .gitattributes in the same selective checkout; or -c core.attributesFile=…</dd>
+        <dt>Workaround</dt>
+        <dd>.git/info/attributes with * text=auto eol=lf in the base repo</dd>
+        <dt>Environment</dt>
+        <dd>Claude Desktop 1.40609.1.0 (MSIX), Windows 11, CLI 2.1.255, git 2.55.0 for Windows. Observed 2026-08-31 and 2026-09-02. Reporter mortenklungland-ai. Filed 2026-09-02T09:12:57Z. OPEN, has repro, platform:windows, area:desktop.</dd>
+        <dt>DESKTOP WINDOWS</dt>
+        <dd>staged worktree checkout before .gitattributes is in the index → .claude/** and CLAUDE.md get CRLF under core.autocrlf=true.</dd>
+      </dl>
+
+      <section class="chips" aria-label="verdict chips">
+        <span class="chip">creased</span>
+        <span class="chip">bled</span>
+        <span class="chip">crlf-bleed</span>
+        <span class="chip">empty-index</span>
+        <span class="chip">stage-checkout</span>
+        <span class="chip">autocrlf-true</span>
+        <span class="chip">gitattributes-missing</span>
+        <span class="chip">prettier-fails</span>
+        <span class="chip">git-status-clean</span>
+        <span class="chip">cli-worktree-lf</span>
+        <span class="chip">exclude-claude</span>
+        <span class="chip">plain-git-repro</span>
+        <span class="chip">attributes-in-stage1-fix</span>
+        <span class="chip">autocrlf-false-fix</span>
+        <span class="chip">has-clear-repro</span>
+        <span class="chip">hold</span>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #91443):
+        <a href="https://github.com/anthropics/claude-code/issues/91405">#91405</a>
+        Caisson worktree pool wrong rebind ·
+        <a href="https://github.com/anthropics/claude-code/issues/88747">#88747</a>
+        absolute hooksPath ·
+        <a href="https://github.com/anthropics/claude-code/issues/86010">#86010</a>
+        detached window image viewer ·
+        <a href="https://github.com/anthropics/claude-code/issues/91438">#91438</a>
+        detached preview dead-click (Platen backup).
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF reliquary vault-latch · annunciator lamps · caisson berth · spindle chip-sweep · knell mute-bell · tumbler keyway ·
+        escapement pallet · carillon peal · sluice millrace · reveille muster · callboard roster ·
+        berth-card clone · bollard clone.
+        Not leftover woodworking / mm-slider / millrace / locksmith / campanology.
+      </aside>
+    </main>
+    <script>
+      const idle = {
+        seed: "creased",
+        regletSeated: true,
+        lfFlush: true,
+        agentFilesUncreased: true,
+        crlfBleed: false,
+        emptyIndex: false,
+        prettierFails: false,
+        gitStatusClean: true,
+        outputText: "creased; reglet seated flat; LF flush across the galley; agent files uncreased"
+      };
+      const seeded = {
+        seed: "bled",
+        issue: 91443,
+        crlfBleed: true,
+        emptyIndex: true,
+        stageCheckout: true,
+        autocrlfTrue: true,
+        gitattributesMissing: true,
+        prettierFails: true,
+        gitStatusClean: true,
+        cliWorktreeLf: true,
+        excludeClaude: true,
+        plainGitRepro: true,
+        hasClearRepro: true,
+        createWorktree: true,
+        noCheckout: true,
+        eolClaude: "CRLF",
+        eolTree: "LF",
+        reporter: "mortenklungland-ai",
+        outputText: "bled; #91443; CRLF; stageCheckout; createWorktree; --no-checkout; empty index; .claude/launch.json"
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...idle }; }
+      }
+
+      function scoreTicket(t) {
+        const text = JSON.stringify(t);
+        const named = String(t.seed || "");
+        const crlf = t.crlfBleed === true || t.eolClaude === "CRLF" || /CRLF/.test(text);
+        const empty = t.emptyIndex === true || t.noCheckout === true || /empty index|--no-checkout/.test(text);
+        const staged = t.stageCheckout === true || t.createWorktree === true || /stageCheckout/.test(text);
+        const holdish = named === "creased" || named === "hold" || (t.regletSeated === true && t.lfFlush === true && !crlf);
+        const bled = named === "bled" || t.issue === 91443 || (crlf && empty) || (staged && t.gitattributesMissing === true);
+        const verdict = named && named !== "creased" && named !== "hold" && named !== "bled"
+          ? named
+          : bled && !holdish
+            ? "bled"
+            : named === "hold"
+              ? "hold"
+              : "creased";
+        const chips = [];
+        if (verdict === "creased" || holdish) chips.push("creased", "hold");
+        if (bled && !holdish) {
+          chips.push("bled");
+          if (crlf) chips.push("crlf-bleed");
+          if (empty) chips.push("empty-index");
+          if (staged) chips.push("stage-checkout");
+          if (t.autocrlfTrue !== false) chips.push("autocrlf-true");
+          if (t.gitattributesMissing !== false) chips.push("gitattributes-missing");
+          if (t.prettierFails !== false) chips.push("prettier-fails");
+          if (t.gitStatusClean !== false) chips.push("git-status-clean");
+          if (t.cliWorktreeLf !== false) chips.push("cli-worktree-lf");
+          if (t.excludeClaude !== false) chips.push("exclude-claude");
+          if (t.plainGitRepro !== false) chips.push("plain-git-repro");
+          if (t.hasClearRepro !== false) chips.push("has-clear-repro");
+        }
+        if (named && !chips.includes(named)) chips.push(named);
+        return { verdict, chips: [...new Set(chips)], hold: verdict === "creased" || verdict === "hold", ticket: t };
+      }
+
+      function paint(result) {
+        const alarm = !result.hold;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "CRLF already set on the agent strip. Admit the CRLF already set."
+          : "Reglet seated flat. LF flush across the galley. Agent files uncreased.";
+        const plate = document.getElementById("reglet");
+        plate.classList.toggle("bled", alarm);
+        document.getElementById("reglet-title").textContent = alarm
+          ? "Thin spacing strip — bled"
+          : "Thin spacing strip";
+        document.getElementById("reglet-body").textContent = alarm
+          ? "Type seated before the attributes rule. .claude/** and CLAUDE.md written CRLF."
+          : "Seated flat. LF flush across the galley. Agent files uncreased.";
+        document.getElementById("reglet-slot").textContent = alarm
+          ? ".gitattributes missing from stage-1 · empty index · core.autocrlf=true"
+          : ".gitattributes · * text=auto eol=lf";
+        document.getElementById("lamp").classList.toggle("lit", alarm);
+        const fault = document.getElementById("fault");
+        fault.classList.toggle("lit", alarm);
+        fault.textContent = alarm
+          ? ".gitattributes missing-from-stage-1 fault lamp · CRLF bleed"
+          : ".gitattributes seated in stage-1 · no CRLF";
+        document.getElementById("step-index").classList.toggle("fault", alarm);
+        document.getElementById("step-stage").classList.toggle("fault", alarm);
+        document.getElementById("agent-eol").textContent = alarm
+          ? "CRLF on .claude/launch.json and CLAUDE.md (w/crlf attr/)"
+          : "LF on .claude/launch.json and CLAUDE.md";
+        document.getElementById("tree-eol").textContent = "Rest of tree LF per .gitattributes (* text=auto eol=lf)";
+        document.getElementById("c-eol").textContent = alarm ? "CRLF" : "LF";
+        document.getElementById("c-auto").textContent = alarm ? "true" : "—";
+        document.getElementById("c-pre").textContent = alarm ? "fail" : "ok";
+        document.getElementById("c-git").textContent = "clean";
+        const box = document.getElementById("chips");
+        box.innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(`./data/${name}`);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return apply({ ...idle });
+          if (act === "seed" || act === "admit") {
+            try { apply(await loadNamed("bled.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("91443.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") apply(parseProbe(document.getElementById("probe").value || "{}"));
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
