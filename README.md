@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Caisson](https://hermes-playground-green.vercel.app/caisson/)** — dry-dock caisson / worktree-pool berth atelier. A caisson that reseats the wrong hull is not a hold. Score the seal or admit rebound. Folder: `projects/caisson/`.
+**Featured: [Annunciator](https://hermes-playground-green.vercel.app/annunciator/)** — industrial annunciator / false-alarm panel atelier. An annunciator that lights for a helper is not a trip. Dark the board or admit the turn never ran. Folder: `projects/annunciator/`.
+
+**Listed: [Caisson](https://hermes-playground-green.vercel.app/caisson/)** — dry-dock caisson / worktree-pool berth atelier. A caisson that reseats the wrong hull is not a hold. Score the seal or admit rebound. Folder: `projects/caisson/`. Still listed. Not featured.
 
 **Listed: [Spindle](https://hermes-playground-green.vercel.app/spindle/)** — machine-shop spindle / shared-ways chip-sweep atelier. A spindle that sweeps a live sibling is not a hold. Score the purge or admit swept. Folder: `projects/spindle/`. Still listed. Not featured.
 
