@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Bolter](https://hermes-playground-green.vercel.app/bolter/)** — flour-mill bolting-cloth atelier. A bolter that catches every option token — even bare -- — while rm -rf slips the same mesh is not a safety policy; it is a snagged matcher. Score the cloth or admit the allow-rule already lied. Folder: `projects/bolter/`.
+**Featured: [Tocsin](https://hermes-playground-green.vercel.app/tocsin/)** — watchhouse fire-bell atelier. A tocsin that only rings into ears already on duty is not a fire-bell; it is an unheard queue. Score the wake or admit the subagent already slept through the all-clear. Folder: `projects/tocsin/`.
+
+**Listed: [Bolter](https://hermes-playground-green.vercel.app/bolter/)** — flour-mill bolting-cloth atelier. A bolter that catches every option token — even bare -- — while rm -rf slips the same mesh is not a safety policy; it is a snagged matcher. Score the cloth or admit the allow-rule already lied. Folder: `projects/bolter/`. Still listed. Not featured.
 
 **Listed: [Deadeye](https://hermes-playground-green.vercel.app/deadeye/)** — standing-rigging / lignum-vitae deadeye atelier. A deadeye that reeves the hook lanyard against the moving block is not standing rigging — it is foul. Score the reeve or admit the Bash already seized. Folder: `projects/deadeye/`. Still listed. Not featured.
 
@@ -252,10 +254,11 @@ Hub: `/` on the Vercel host. Projects: one folder each under `projects/`.
 
 ```
 README.md                   catalog index (this file)
-catalog.json                122 products: Bolter (featured), Deadeye, Reglet, Reliquary, Annunciator, Caisson, Spindle, Knell, Tumbler, Escapement, Geneva, Scotch, Fibula, Virgule, Riddle, Garner, Pintle, Carillon, Postern, Sluice, Alidade, Parison, Cockade, Lye, Advowson, Smutch, Bitting, Puncheon, Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
+catalog.json                123 products: Tocsin (featured), Bolter, Deadeye, Reglet, Reliquary, Annunciator, Caisson, Spindle, Knell, Tumbler, Escapement, Geneva, Scotch, Fibula, Virgule, Riddle, Garner, Pintle, Carillon, Postern, Sluice, Alidade, Parison, Cockade, Lye, Advowson, Smutch, Bitting, Puncheon, Gnomon, Spoil, Trammel, Soundpost, Flong, Bulla, Trompe, Davy, Moviola, Carcase, Callboard, Leaven, Hydra, Limpet, Scion, Almanac, Voucher, Kindling, Deadband, Pawl, Cenotaph, Fetch, Livery, Pinfold, Palimpsest, Escutcheon, Lacuna, Ambo, Slype, Tally, Pale, Chatelaine, Waif, Berth, Carrel, Byline, Datum, Calque, Fascia, Quoin, Gaff, Sear, Cubby, Grille, Spile, Bollard, Clew, Sounder, Binnacle, Pirn, Cotter, Fob, Ordo, Cinch, Ullage, Visa, Sprag, Lazaret, Fusee, Iota, Leat, Shunt, Sump, Pleat, Scant, Chad, Kist, Wraith, Gasket, Damper, Cote, Larder, Tappet, Aside, Chute, Tain, Husk, Snib, Veto, Assay, Wicket, Sigil, Stencil, Suture, Blot, Coda, Reed, Fathom, Hasp, Parity, Reveille, Quench, Scrim, Knock
 index.html                  hub page at `/` (filesystem hit; not a product)
 hub/                        same catalog page at `/hub/`
-projects/bolter/            flour-mill bolting-cloth atelier for #91422 dontAsk cp/mv option-token matcher (featured)
+projects/tocsin/            watchhouse fire-bell atelier for #91503 subagent idle-wake miss (featured)
+projects/bolter/            flour-mill bolting-cloth atelier for #91422 dontAsk cp/mv option-token matcher (kept, unfeatured)
 projects/deadeye/           standing-rigging / lignum-vitae deadeye for #91226 relative PreToolUse Bash deadlock (kept, unfeatured)
 projects/pintle/            rudder pintle / gudgeon / tiller for #91226 relative PreToolUse Bash deadlock (kept, unfeatured)
 projects/carillon/          peal board / carillon console for #91250 plugin SessionStart first-wins (kept, unfeatured)
