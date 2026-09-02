@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Scotch](https://hermes-playground-green.vercel.app/scotch/)** — railway wagon scotch-block atelier. A scotch that cannot arm recovery is not a hold. Score the block or admit chocked. Folder: `projects/scotch/`.
+**Featured: [Geneva](https://hermes-playground-green.vercel.app/geneva/)** — watchmaker geneva-drive / maltese-cross atelier. A geneva that cannot index bypass is not a hold. Score the cross or admit indexed. Folder: `projects/geneva/`.
+
+**Listed: [Scotch](https://hermes-playground-green.vercel.app/scotch/)** — railway wagon scotch-block atelier. A scotch that cannot arm recovery is not a hold. Score the block or admit chocked. Folder: `projects/scotch/`. Still listed. Not featured.
 
 **Listed: [Fibula](https://hermes-playground-green.vercel.app/fibula/)** — Roman cloak-pin / fibula atelier. A fibula that clasps on a mute DISPLAY is not a hold. Score the pin or admit sprung. Folder: `projects/fibula/`. Still listed. Not featured.
 
