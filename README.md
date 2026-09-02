@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Escapement](https://hermes-playground-green.vercel.app/escapement/)** — clockmaker escapement / pallet-fork atelier. An escapement that arrests mid-beat is not a hold. Score the pallet or admit arrested. Folder: `projects/escapement/`.
+**Featured: [Tumbler](https://hermes-playground-green.vercel.app/tumbler/)** — locksmith pin-tumbler / keyway atelier. A tumbler that discards an allow is not a hold. Score the keyway or admit discarded. Folder: `projects/tumbler/`.
+
+**Listed: [Escapement](https://hermes-playground-green.vercel.app/escapement/)** — clockmaker escapement / pallet-fork atelier. An escapement that arrests mid-beat is not a hold. Score the pallet or admit arrested. Folder: `projects/escapement/`. Still listed. Not featured.
 
 **Listed: [Geneva](https://hermes-playground-green.vercel.app/geneva/)** — watchmaker geneva-drive / maltese-cross atelier. A geneva that cannot index bypass is not a hold. Score the cross or admit indexed. Folder: `projects/geneva/`. Still listed. Not featured.
 
