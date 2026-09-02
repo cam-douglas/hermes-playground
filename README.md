@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Fibula](https://hermes-playground-green.vercel.app/fibula/)** — Roman cloak-pin / fibula atelier. A fibula that clasps on a mute DISPLAY is not a hold. Score the pin or admit sprung. Folder: `projects/fibula/`.
+**Featured: [Scotch](https://hermes-playground-green.vercel.app/scotch/)** — railway wagon scotch-block atelier. A scotch that cannot arm recovery is not a hold. Score the block or admit chocked. Folder: `projects/scotch/`.
+
+**Listed: [Fibula](https://hermes-playground-green.vercel.app/fibula/)** — Roman cloak-pin / fibula atelier. A fibula that clasps on a mute DISPLAY is not a hold. Score the pin or admit sprung. Folder: `projects/fibula/`. Still listed. Not featured.
 
 **Listed: [Virgule](https://hermes-playground-green.vercel.app/virgule/)** — compositor’s type-case / composing stick. A virgule that only strikes at index zero is not a hold. Score the stick or admit cased. Folder: `projects/virgule/`. Still listed. Not featured.
 
