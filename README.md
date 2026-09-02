@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Geneva](https://hermes-playground-green.vercel.app/geneva/)** — watchmaker geneva-drive / maltese-cross atelier. A geneva that cannot index bypass is not a hold. Score the cross or admit indexed. Folder: `projects/geneva/`.
+**Featured: [Escapement](https://hermes-playground-green.vercel.app/escapement/)** — clockmaker escapement / pallet-fork atelier. An escapement that arrests mid-beat is not a hold. Score the pallet or admit arrested. Folder: `projects/escapement/`.
+
+**Listed: [Geneva](https://hermes-playground-green.vercel.app/geneva/)** — watchmaker geneva-drive / maltese-cross atelier. A geneva that cannot index bypass is not a hold. Score the cross or admit indexed. Folder: `projects/geneva/`. Still listed. Not featured.
 
 **Listed: [Scotch](https://hermes-playground-green.vercel.app/scotch/)** — railway wagon scotch-block atelier. A scotch that cannot arm recovery is not a hold. Score the block or admit chocked. Folder: `projects/scotch/`. Still listed. Not featured.
 
