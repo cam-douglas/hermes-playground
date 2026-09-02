@@ -257,8 +257,12 @@ test("CLI scores fixture strings and data files", () => {
 test("constants match the issue facts only", () => {
   assert.equal(FEATURED_ISSUE, 91571);
   assert.deepEqual([...PRIMARY_ISSUES], [91571]);
-  assert.equal(COUSIN_ISSUE, 88583);
-  assert.deepEqual([...COUSINS], [88583, 90688, 89490, 43392, 90860]);
+  assert.equal(COUSIN_ISSUE, 83464);
+  assert.deepEqual(
+    [...COUSINS],
+    [83464, 68398, 88054, 91158, 90010, 88124, 91436, 88583, 90688, 89490, 43392, 90860],
+  );
+  assert.ok(!COUSINS.includes(91469));
   assert.equal(FILED_AT, "2026-09-02T18:31:43Z");
   assert.equal(REPORTER, "peterzirkle-cmyk");
   assert.equal(VERSION, "2.1.220");
@@ -319,6 +323,15 @@ test("page is a vault night-safe, not a probate or crimp clone", () => {
   assert.match(page, /Pin seeded blanked/);
   assert.match(page, /admit the store already voided/i);
   assert.match(page, /embed=1/);
+  assert.match(page, /#83464/);
+  assert.match(page, /#68398/);
+  assert.match(page, /#88054/);
+  assert.match(page, /#91158/);
+  assert.match(page, /#90010/);
+  assert.match(page, /#88124/);
+  assert.match(page, /#91436/);
+  assert.match(page, /skip #91469 SOLVED/i);
+  assert.doesNotMatch(page, /issues\/91469/);
   assert.doesNotMatch(page, /Cormorant Garamond|Figtree|Azeret Mono/);
   assert.doesNotMatch(page, /Newsreader|Manrope|JetBrains Mono|Public Sans/);
   assert.doesNotMatch(page, /Brygada 1918|Atkinson Hyperlegible|DM Mono/);
@@ -357,8 +370,28 @@ test("README is the locked Coffer thesis, not a leftover clone", () => {
 
 test("cousin isolation stays sealed / cite-only", () => {
   assert.equal(decideSeed("cousin").verdict, "sealed");
-  assert.equal(decideSeed(88583).verdict, "sealed");
+  assert.equal(decideSeed(83464).verdict, "sealed");
+  assert.equal(decideSeed(68398).verdict, "sealed");
+  assert.equal(decideSeed(88054).verdict, "sealed");
+  assert.equal(classify({ issue: 91158 }), "sealed");
+  assert.equal(classify({ issue: 90010 }), "sealed");
+  assert.equal(classify({ issue: 88124 }), "sealed");
+  assert.equal(classify({ issue: 91436 }), "sealed");
+  assert.equal(classify({ issue: 88583 }), "sealed");
   assert.equal(classify({ issue: 90688 }), "sealed");
+});
+
+test("README and cousins.json cite executor-confirmed URLs; skip 91469", () => {
+  const readme = readReadme();
+  const cousins = readData("cousins.json");
+  for (const issue of [83464, 68398, 88054, 91158, 90010, 88124, 91436]) {
+    assert.match(readme, new RegExp(`#${issue}`));
+    assert.ok(cousins.rows.some((row) => row.issue === issue));
+  }
+  assert.match(readme, /Skip.*#91469.*SOLVED/i);
+  assert.equal(cousins.primary, 91571);
+  assert.ok(!cousins.rows.some((row) => row.issue === 91469));
+  assert.ok(cousins.skipped.some((row) => row.issue === 91469));
 });
 
 test("no real credentials in fixtures or page", () => {

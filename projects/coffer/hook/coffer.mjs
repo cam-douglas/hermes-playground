@@ -63,8 +63,11 @@ export const ALARM_VERDICTS = Object.freeze(
 export const CHIPS = Object.freeze([...VERDICTS]);
 export const FEATURED_ISSUE = 91571;
 export const PRIMARY_ISSUES = Object.freeze([91571]);
-export const COUSINS = Object.freeze([88583, 90688, 89490, 43392, 90860]);
-export const COUSIN_ISSUE = 88583;
+export const COUSINS = Object.freeze([
+  83464, 68398, 88054, 91158, 90010, 88124, 91436, 88583, 90688, 89490, 43392,
+  90860,
+]);
+export const COUSIN_ISSUE = 83464;
 export const BACKUPS = Object.freeze([
   { name: "Solecism", issue: 91558 },
   { name: "Buoy", issue: 91569 },
@@ -449,7 +452,7 @@ export function seedCousin() {
     isolation: "cousin",
     cousin: String(COUSIN_ISSUE),
     outputText:
-      "cousin-not-primary; #88583 Keychain empty-token wipe on failed refresh — cite only, not the #91571 Windows file-store never-restamped blank",
+      "cousin-not-primary; #83464 clears OAuth before refreshTokenExpiresAt — cite only, not the #91571 Windows file-store never-restamped blank",
   };
 }
 
@@ -563,7 +566,7 @@ const SEED_FNS = {
   "has-clear-repro": seedHasClearRepro,
   hold: seedHold,
   cousin: seedCousin,
-  88583: seedCousin,
+  83464: seedCousin,
 };
 
 export function normalize(input) {
@@ -671,7 +674,9 @@ export function flagsOf(ticket) {
   const named = canonicalSeed(row.seed);
   const cousinOnly =
     (COUSINS.includes(row.issue) ||
-      /cousin-not-primary|#88583|#90688|#89490|#43392|#90860/i.test(text)) &&
+      /cousin-not-primary|#83464|#68398|#88054|#91158|#90010|#88124|#91436|#88583|#90688|#89490|#43392|#90860/i.test(
+        text,
+      )) &&
     named !== SEEDED_WORD &&
     row.issue !== FEATURED_ISSUE;
   const blankedNow = !cousinOnly && isBlanked(row);
@@ -851,7 +856,7 @@ function reasonsOf(ticket, flags, verdict) {
   }
   if (flags.cousinOnly) {
     reasons.push(
-      "cousin is not Coffer; cite-only #88583 Keychain empty-token wipe / #90688 Windows VS Code refresh 400 after wake / #89490 mid-session expire / #43392 MCP credential race / #90860 Desktop Windows 24h re-auth — not the #91571 Windows file-store never-restamped blank",
+      "cousin is not Coffer; cite-only #83464 clears OAuth before refreshTokenExpiresAt / #68398 Windows refresh unused / #88054 remote-control 401 at 24h / #91158 plaintext refresh / #90010 security-guidance echoes tokens / #88124 Windows auto-update relogin / #91436 VS Code idle logout / #88583 Keychain wipe / #90688 wake 400 / #89490 mid-session expire / #43392 MCP race / #90860 Desktop 24h — not the #91571 Windows file-store never-restamped blank",
     );
   }
   if (verdict === "blanked" || flags.blanked) {
@@ -975,9 +980,23 @@ export function decideSeed(name) {
     return analyze(seedSealed());
   }
   if (
+    name === "cousin" ||
+    name === 83464 ||
+    name === "83464" ||
+    name === 68398 ||
+    name === "68398" ||
+    name === 88054 ||
+    name === "88054" ||
+    name === 91158 ||
+    name === "91158" ||
+    name === 90010 ||
+    name === "90010" ||
+    name === 88124 ||
+    name === "88124" ||
+    name === 91436 ||
+    name === "91436" ||
     name === 88583 ||
     name === "88583" ||
-    name === "cousin" ||
     name === 90688 ||
     name === "90688" ||
     name === 89490 ||
