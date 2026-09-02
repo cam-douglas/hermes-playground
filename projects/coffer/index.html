@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coffer — vault night-safe for #91571</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Karla:ital,wght@0,400;0,600;1,400&family=Spectral:ital,wght@0,500;0,700;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --safe: #12151a;
+        --plate: #1c222c;
+        --steel: #8a96a6;
+        --ink: #d6dde6;
+        --muted: #7a8492;
+        --brass: #c4a056;
+        --brass-lit: #e0c06a;
+        --ledger: #9eb4c8;
+        --ok: #6a8f7a;
+        --ok-lit: #8fb89a;
+        --till: #c45a4a;
+        --till-lit: #e87868;
+        --void: #3a1c1c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Karla", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(620px 380px at 90% -8%, rgba(196, 160, 86, 0.14), transparent 56%),
+          radial-gradient(480px 320px at 4% 12%, rgba(158, 180, 200, 0.08), transparent 52%),
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 22px,
+            rgba(138, 150, 166, 0.04) 22px 23px
+          ),
+          linear-gradient(180deg, #181c24 0%, var(--safe) 48%, #0c0e12 100%);
+        color: var(--ink);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass); }
+      .wrap { width: min(1140px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 72px; }
+      .chrome { margin-bottom: 18px; }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--brass);
+      }
+      h1 {
+        font-family: "Spectral", Georgia, serif;
+        font-size: clamp(46px, 7vw, 82px);
+        letter-spacing: -0.03em;
+        margin: 8px 0 10px;
+        font-weight: 700;
+        color: var(--brass-lit);
+      }
+      .lede { max-width: 56em; color: var(--muted); line-height: 1.65; }
+      .vault {
+        margin: 22px 0;
+        padding: 22px;
+        border: 1px solid rgba(196, 160, 86, 0.28);
+        background:
+          linear-gradient(180deg, rgba(28, 34, 44, 0.96), rgba(18, 21, 26, 0.98));
+        box-shadow:
+          0 18px 40px rgba(0, 0, 0, 0.42),
+          inset 0 0 0 1px rgba(138, 150, 166, 0.08);
+      }
+      .vault-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        margin-bottom: 16px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .safe-row {
+        display: grid;
+        grid-template-columns: 200px 1fr 200px;
+        gap: 16px;
+        align-items: stretch;
+      }
+      @media (max-width: 860px) {
+        .safe-row { grid-template-columns: 1fr; }
+      }
+      .door {
+        position: relative;
+        min-height: 188px;
+        border-radius: 4px;
+        background:
+          radial-gradient(80px 80px at 50% 48%, rgba(196, 160, 86, 0.16), transparent 62%),
+          linear-gradient(180deg, #2a3240, #141820);
+        border: 1px solid rgba(196, 160, 86, 0.36);
+        overflow: hidden;
+      }
+      .door svg { width: 100%; height: 188px; display: block; }
+      .door.voided { border-color: var(--till); }
+      .seal-dial {
+        padding: 12px;
+        border: 1px solid rgba(196, 160, 86, 0.24);
+        background: #161a22;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .seal-dial b {
+        display: block;
+        font-family: "Spectral", Georgia, serif;
+        font-size: 28px;
+        color: var(--ok-lit);
+        margin: 4px 0 2px;
+      }
+      .seal-dial.fault b { color: var(--till-lit); }
+      .ledger {
+        position: relative;
+        min-height: 188px;
+        padding: 12px 14px;
+        background:
+          linear-gradient(180deg, #2a3340 0%, #1a2028 100%);
+        color: var(--ledger);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        line-height: 1.5;
+        box-shadow:
+          inset 0 0 0 1px rgba(158, 180, 200, 0.18),
+          0 8px 18px rgba(0, 0, 0, 0.28);
+        overflow: hidden;
+      }
+      .ledger::before {
+        content: "credentials ledger · .credentials.json";
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--steel);
+        margin-bottom: 8px;
+      }
+      .ledger.ok { box-shadow: inset 0 0 0 3px var(--ok), 0 8px 18px rgba(0, 0, 0, 0.28); }
+      .ledger.void {
+        background: linear-gradient(180deg, #3a2424 0%, #241414 100%);
+        box-shadow: inset 0 0 0 3px var(--till), 0 8px 18px rgba(0, 0, 0, 0.28);
+      }
+      .ledger .blank { color: var(--till-lit); font-weight: 600; }
+      .strips {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      @media (max-width: 760px) {
+        .strips { grid-template-columns: 1fr; }
+      }
+      .strip {
+        padding: 10px 12px;
+        border: 1px dashed rgba(138, 150, 166, 0.28);
+        background: rgba(22, 26, 34, 0.8);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+      }
+      .strip span {
+        display: block;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .strip b { color: var(--ok-lit); }
+      .strip.fault b { color: var(--till-lit); }
+      .strip.live.ok { border-color: rgba(111, 143, 122, 0.5); }
+      .lamp-row {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .lamp {
+        width: 28px;
+        height: 16px;
+        border-radius: 2px;
+        border: 2px solid var(--brass);
+        background: linear-gradient(180deg, #3a4230, #1c2218);
+        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
+      }
+      .lamp.lit {
+        border-color: var(--till-lit);
+        background: linear-gradient(180deg, #e87868, #8a3028);
+        box-shadow: 0 0 18px rgba(232, 120, 104, 0.45);
+      }
+      .lamp-copy {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--ok);
+      }
+      .lamp-copy.lit { color: var(--till-lit); }
+      .rail {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .rail b {
+        display: block;
+        font-family: "Spectral", Georgia, serif;
+        font-size: 24px;
+        color: var(--brass);
+      }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+      button {
+        font-family: "Karla", sans-serif;
+        letter-spacing: 0.02em;
+        border: 1px solid rgba(196, 160, 86, 0.36);
+        background: #1c222c;
+        color: var(--ink);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--till); color: var(--brass-lit); }
+      .verdict {
+        font-family: "Spectral", Georgia, serif;
+        font-size: 28px;
+      }
+      .verdict.alarm { color: var(--till-lit); }
+      .verdict.hold { color: var(--ok-lit); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 16px; }
+      .chip {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 3px 7px;
+        border: 1px solid rgba(122, 132, 146, 0.3);
+        color: var(--muted);
+        background: transparent;
+        cursor: pointer;
+      }
+      .chip.lit { border-color: var(--brass); color: var(--brass-lit); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #0c0e12;
+        color: var(--ink);
+        border: 1px solid rgba(196, 160, 86, 0.24);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .cousin, .stayoff, .facts {
+        margin: 18px 0;
+        padding: 12px 14px;
+        border: 1px solid rgba(196, 160, 86, 0.18);
+        background: rgba(28, 34, 44, 0.8);
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .facts dt {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        color: var(--brass);
+      }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed rgba(196, 160, 86, 0.36);
+        color: var(--muted);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <p class="mark">04:50 / hermes catalog #127 / #91571 · #hermes-catalog</p>
+        <h1>Coffer</h1>
+        <p class="lede">
+          Vault-coffer / strongroom-ledger atelier. A coffer should restamp
+          a rotated refresh key into
+          <code>%USERPROFILE%\.claude\.credentials.json</code>
+          so a fresh process inherits a live seal. On Windows the file store
+          is never updated — <code>refreshTokenExpiresAt</code> stays at
+          login+~24h — while long-running interactive sessions keep working
+          in memory. After that horizon a scheduled
+          <code>claude --print</code> fails auth and the CLI rewrites empty
+          <code>accessToken</code>/<code>refreshToken</code>, locking out
+          every subsequent fresh process until manual
+          <code>claude auth login</code>. A refresh key that is never
+          restamped into the ledger is not a sealed vault — it is a till
+          that blanks itself on the next cash-out. Score the seal or admit
+          the store already voided.
+        </p>
+        <p class="lede">Idle word: sealed. Seeded word: blanked / #91571.</p>
+      </header>
+
+      <section class="vault" aria-label="vault coffer night-safe desk">
+        <div class="vault-head">
+          <span>steel plate · brass bolt · night-safe ledger</span>
+          <span id="mark">04:50 / hermes catalog #127 / #91571</span>
+        </div>
+        <div class="safe-row">
+          <div class="door" id="door" aria-hidden="true">
+            <svg viewBox="0 0 200 188" role="img" aria-label="night-safe vault door">
+              <rect x="18" y="16" width="164" height="156" rx="6" fill="#1c2430" stroke="#c4a056" stroke-width="3"/>
+              <rect x="28" y="26" width="144" height="136" rx="3" fill="#141820" stroke="#8a96a6" stroke-width="1"/>
+              <circle id="bolt" cx="100" cy="94" r="22" fill="#c4a056" stroke="#e0c06a" stroke-width="3"/>
+              <circle cx="100" cy="94" r="8" fill="#12151a"/>
+              <rect x="22" y="36" width="8" height="8" fill="#8a96a6"/>
+              <rect x="170" y="36" width="8" height="8" fill="#8a96a6"/>
+              <rect x="22" y="144" width="8" height="8" fill="#8a96a6"/>
+              <rect x="170" y="144" width="8" height="8" fill="#8a96a6"/>
+            </svg>
+          </div>
+          <pre class="ledger ok" id="ledger">refreshTokenExpiresAt: restamped
+accessToken: [held]
+refreshToken: [held]
+expiresAt: future
+store: file · no keychain</pre>
+          <div class="seal-dial" id="dial">
+            <span>seal score</span>
+            <b id="seal-word">sealed</b>
+            <span id="dial-note">night-safe restamped · fresh process inherits the key</span>
+          </div>
+        </div>
+        <div class="strips">
+          <div class="strip live ok" id="strip-live">
+            <span>long-lived interactive session</span>
+            <b id="live-copy">in-memory tokens healthy · 0 h on a restamped ledger</b>
+          </div>
+          <div class="strip" id="strip-fresh">
+            <span>fresh headless process</span>
+            <b id="fresh-copy">claude --print would authenticate from the restamped store</b>
+          </div>
+        </div>
+        <div class="lamp-row">
+          <div class="lamp" id="lamp" aria-hidden="true"></div>
+          <span class="lamp-copy" id="lamp-copy">till lamp quiet · store not blanked · no lockout</span>
+        </div>
+        <div class="rail">
+          <div><b id="c-seal">sealed</b><span>vault hold</span></div>
+          <div><b id="c-horizon">restamped</b><span>refresh horizon</span></div>
+          <div><b id="c-till">held</b><span>token till</span></div>
+          <div><b id="c-fresh">open</b><span>fresh process</span></div>
+        </div>
+      </section>
+
+      <p class="verdict hold" id="verdict">sealed</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">rotated refresh tokens restamped into .credentials.json; a fresh process inherits a live key.</p>
+
+      <div class="actions">
+        <button type="button" data-act="score">Score the seal</button>
+        <button type="button" data-act="idle">Pin idle sealed</button>
+        <button type="button" data-act="seed">Pin seeded blanked</button>
+        <button type="button" data-act="admit">Admit the store already voided</button>
+        <button type="button" data-act="fixtures">Load fixtures</button>
+        <button type="button" data-act="reset">Reset to sealed</button>
+      </div>
+
+      <textarea id="probe" spellcheck="false" aria-label="probe ticket"></textarea>
+      <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe. Score the seal.</div>
+
+      <dl class="facts">
+        <dt>File store</dt>
+        <dd>%USERPROFILE%\.claude\.credentials.json — Windows file store only; no API key; no keychain / Credential Manager (2.1.220)</dd>
+        <dt>Stale horizon</dt>
+        <dd>Aug 31 ~16:49 last interactive claude auth login. Sep 1 16:49 refreshTokenExpiresAt (login+~24h). File never rewritten while live sessions kept working.</dd>
+        <dt>Empty-token rewrite</dt>
+        <dd>Sep 2 00:05:04 mtime update: accessToken and refreshToken empty strings, expiresAt: 0; other fields retained</dd>
+        <dt>Headless lockout</dt>
+        <dd>Sep 2 00:05:10 scheduled claude --print logs 401 on every model; every subsequent fresh process locked out until manual claude auth login</dd>
+        <dt>Live session</dt>
+        <dd>Long-running interactive sessions from before the horizon continued working throughout (one ran 40+ hours). 2–3 concurrent interactive sessions plus one nightly headless task.</dd>
+        <dt>Environment</dt>
+        <dd>Claude Code 2.1.220 native install; Windows 11 Pro always-on (no sleep/wake); Claude Max OAuth. Reporter peterzirkle-cmyk. Filed 2026-09-02T18:31:43Z. OPEN, has repro, platform:windows, area:auth.</dd>
+        <dt>WINDOWS OAUTH FILE-STORE</dt>
+        <dd>REFRESH ROTATION NEVER PERSISTED; FAILED REFRESH BLANKS TOKENS; LOCKS OUT ALL FRESH PROCESSES; AREA:AUTH; PLATFORM:WINDOWS.</dd>
+      </dl>
+
+      <section class="chips" aria-label="verdict chips" id="chip-switch">
+        <button type="button" class="chip" data-chip="sealed">sealed</button>
+        <button type="button" class="chip" data-chip="restamped">restamped</button>
+        <button type="button" class="chip" data-chip="blanked">blanked</button>
+        <button type="button" class="chip" data-chip="voided">voided</button>
+        <button type="button" class="chip" data-chip="stale-refresh-horizon">stale-refresh-horizon</button>
+        <button type="button" class="chip" data-chip="empty-token-rewrite">empty-token-rewrite</button>
+        <button type="button" class="chip" data-chip="lockout-all-fresh">lockout-all-fresh</button>
+        <button type="button" class="chip" data-chip="live-session-ok-memory">live-session-ok-memory</button>
+        <button type="button" class="chip" data-chip="headless-scheduled-print">headless-scheduled-print</button>
+        <button type="button" class="chip" data-chip="windows-file-store">windows-file-store</button>
+        <button type="button" class="chip" data-chip="no-keychain">no-keychain</button>
+        <button type="button" class="chip" data-chip="has-clear-repro">has-clear-repro</button>
+        <button type="button" class="chip" data-chip="hold">hold</button>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #91571):
+        <a href="https://github.com/anthropics/claude-code/issues/88583">#88583</a>
+        Keychain empty-token wipe ·
+        <a href="https://github.com/anthropics/claude-code/issues/90688">#90688</a>
+        Windows VS Code refresh 400 after wake ·
+        <a href="https://github.com/anthropics/claude-code/issues/89490">#89490</a>
+        mid-session expire ·
+        <a href="https://github.com/anthropics/claude-code/issues/43392">#43392</a>
+        MCP credential race ·
+        <a href="https://github.com/anthropics/claude-code/issues/90860">#90860</a>
+        Desktop Windows 24h re-auth.
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF probate will-chamber · crimp pliers/foil · jackfield channel-strip · tocsin watchhouse · bolter flour-mill · deadeye standing-rigging · reglet letterpress · reliquary vault-latch · annunciator lamps · caisson berth · spindle chip-sweep · knell mute-bell · tumbler keyway · escapement pallet · geneva drive · scotch-block · pintle gudgeon.
+      </aside>
+    </main>
+    <script>
+      const HOLD = new Set(["sealed", "restamped", "hold"]);
+      const idle = {
+        seed: "sealed",
+        persistRefresh: true,
+        restamped: true,
+        sealed: true,
+        staleHorizon: false,
+        emptyTokenRewrite: false,
+        blanked: false,
+        lockoutAllFresh: false,
+        voided: false,
+        refreshTokenExpiresAt: "restamped",
+        accessTokenPresent: true,
+        refreshTokenPresent: true,
+        expiresAt: "future",
+        outputText: "sealed; rotated refresh tokens restamped into .credentials.json; a fresh process inherits a live key"
+      };
+      const seeded = {
+        seed: "blanked",
+        issue: 91571,
+        persistRefresh: false,
+        restamped: false,
+        sealed: false,
+        staleHorizon: true,
+        emptyTokenRewrite: true,
+        blanked: true,
+        lockoutAllFresh: true,
+        voided: true,
+        liveSessionOkMemory: true,
+        headlessScheduledPrint: true,
+        windowsFileStore: true,
+        noKeychain: true,
+        hasClearRepro: true,
+        refreshTokenExpiresAt: "2026-09-01T16:49",
+        accessTokenPresent: false,
+        refreshTokenPresent: false,
+        expiresAt: "0",
+        loginAt: "2026-08-31T16:49",
+        blankedAt: "2026-09-02T00:05:04",
+        headlessAt: "2026-09-02T00:05:10",
+        liveSessionHours: "40+",
+        reporter: "peterzirkle-cmyk",
+        outputText: "blanked; #91571; Windows file-store never restamped; empty-token rewrite; lockout all fresh"
+      };
+
+      const ledgerOk = `refreshTokenExpiresAt: restamped
+accessToken: [held]
+refreshToken: [held]
+expiresAt: future
+store: file · no keychain`;
+      const ledgerBlank = `refreshTokenExpiresAt: 2026-09-01T16:49
+<span class="blank">accessToken: ""</span>
+<span class="blank">refreshToken: ""</span>
+<span class="blank">expiresAt: 0</span>
+store: file · never restamped`;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...idle }; }
+      }
+
+      function scoreTicket(t) {
+        const text = JSON.stringify(t);
+        const named = String(t.seed || "");
+        const blankish = named === "blanked" || t.issue === 91571 || t.blanked === true
+          || t.emptyTokenRewrite === true
+          || (t.staleHorizon === true && t.persistRefresh === false)
+          || /#91571|empty-token-rewrite|never restamped/.test(text);
+        const holdish = HOLD.has(named)
+          || (t.persistRefresh === true && t.blanked !== true && !blankish);
+        const verdict = named && !HOLD.has(named) && named !== "blanked"
+          ? named
+          : blankish && !holdish
+            ? "blanked"
+            : named === "restamped"
+              ? "restamped"
+              : named === "hold"
+                ? "hold"
+                : "sealed";
+        const chips = [];
+        if (HOLD.has(verdict) || holdish) chips.push("sealed", "restamped", "hold");
+        if (blankish && !holdish) {
+          chips.push("blanked", "voided", "stale-refresh-horizon", "empty-token-rewrite",
+            "lockout-all-fresh", "live-session-ok-memory", "headless-scheduled-print",
+            "windows-file-store", "no-keychain", "has-clear-repro");
+        }
+        if (named && !chips.includes(named)) chips.push(named);
+        return {
+          verdict,
+          chips: [...new Set(chips)],
+          hold: HOLD.has(verdict),
+          ticket: t,
+        };
+      }
+
+      function paint(result) {
+        const alarm = !result.hold;
+        const t = result.ticket || {};
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "Till blanked. Admit the store already voided."
+          : "rotated refresh tokens restamped into .credentials.json; a fresh process inherits a live key.";
+        document.getElementById("door").classList.toggle("voided", alarm);
+        document.getElementById("bolt").setAttribute("fill", alarm ? "#c45a4a" : "#c4a056");
+        const ledger = document.getElementById("ledger");
+        ledger.className = "ledger " + (alarm ? "void" : "ok");
+        if (alarm) ledger.innerHTML = ledgerBlank;
+        else ledger.textContent = ledgerOk;
+        document.getElementById("seal-word").textContent = alarm ? (result.verdict === "voided" ? "voided" : "blanked") : result.verdict;
+        document.getElementById("dial").classList.toggle("fault", alarm);
+        document.getElementById("dial-note").textContent = alarm
+          ? "horizon stale · till blanked · fresh process locked out"
+          : "night-safe restamped · fresh process inherits the key";
+        document.getElementById("strip-live").classList.toggle("fault", alarm);
+        document.getElementById("strip-live").classList.toggle("ok", !alarm);
+        document.getElementById("strip-fresh").classList.toggle("fault", alarm);
+        document.getElementById("live-copy").textContent = alarm
+          ? "in-memory tokens still healthy · one session ran 40+ hours after login"
+          : "in-memory tokens healthy · 0 h on a restamped ledger";
+        document.getElementById("fresh-copy").textContent = alarm
+          ? "claude --print 401 at 00:05:10 · every subsequent fresh process locked out"
+          : "claude --print would authenticate from the restamped store";
+        document.getElementById("lamp").className = "lamp" + (alarm ? " lit" : "");
+        const lampCopy = document.getElementById("lamp-copy");
+        lampCopy.classList.toggle("lit", alarm);
+        lampCopy.textContent = alarm
+          ? "till lamp lit · empty-token rewrite · store voided"
+          : "till lamp quiet · store not blanked · no lockout";
+        document.getElementById("c-seal").textContent = alarm ? "blanked" : "sealed";
+        document.getElementById("c-horizon").textContent = alarm ? "stale +24h" : "restamped";
+        document.getElementById("c-till").textContent = alarm ? '""' : "held";
+        document.getElementById("c-fresh").textContent = alarm ? "401" : "open";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(`./data/${name}`);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return apply({ ...idle });
+          if (act === "seed" || act === "admit") {
+            try { apply(await loadNamed("blanked.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("91571.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") apply(parseProbe(document.getElementById("probe").value || "{}"));
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const chip = btn.dataset.chip;
+          if (chip === "sealed" || chip === "hold" || chip === "restamped") {
+            apply({ ...idle, seed: chip });
+            return;
+          }
+          if (chip === "blanked") {
+            apply({ ...seeded });
+            return;
+          }
+          apply({ seed: chip, blanked: chip !== "windows-file-store" && chip !== "no-keychain" ? true : undefined });
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      // ?embed=1 hides chrome for the hub living featured well
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
