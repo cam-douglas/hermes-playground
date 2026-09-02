@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Tumbler](https://hermes-playground-green.vercel.app/tumbler/)** — locksmith pin-tumbler / keyway atelier. A tumbler that discards an allow is not a hold. Score the keyway or admit discarded. Folder: `projects/tumbler/`.
+**Featured: [Knell](https://hermes-playground-green.vercel.app/knell/)** — campanology death-knell / funeral-bell atelier. A knell that never tolls is not a hold. Score the mute or admit mute. Folder: `projects/knell/`.
+
+**Listed: [Tumbler](https://hermes-playground-green.vercel.app/tumbler/)** — locksmith pin-tumbler / keyway atelier. A tumbler that discards an allow is not a hold. Score the keyway or admit discarded. Folder: `projects/tumbler/`. Still listed. Not featured.
 
 **Listed: [Escapement](https://hermes-playground-green.vercel.app/escapement/)** — clockmaker escapement / pallet-fork atelier. An escapement that arrests mid-beat is not a hold. Score the pallet or admit arrested. Folder: `projects/escapement/`. Still listed. Not featured.
 
