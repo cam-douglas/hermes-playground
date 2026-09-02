@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Jackfield](https://hermes-playground-green.vercel.app/jackfield/)** — studio jackfield / channel-strip atelier. A jackfield that patches Windows keystrokes onto a Mac bus is not a channel strip — it is a crossed circuit. Score the home or admit the session already left its machine. Folder: `projects/jackfield/`.
+**Featured: [Crimp](https://hermes-playground-green.vercel.app/crimp/)** — bench / crimping-pliers atelier. A crimp that tears under concurrent pliers is not a sealed join — it is a sheared foil. Score the swage or admit the settings already tore. Folder: `projects/crimp/`.
+
+**Listed: [Jackfield](https://hermes-playground-green.vercel.app/jackfield/)** — studio jackfield / channel-strip atelier. A jackfield that patches Windows keystrokes onto a Mac bus is not a channel strip — it is a crossed circuit. Score the home or admit the session already left its machine. Folder: `projects/jackfield/`. Still listed. Not featured.
 
 **Listed: [Tocsin](https://hermes-playground-green.vercel.app/tocsin/)** — watchhouse fire-bell atelier. A tocsin that only rings into ears already on duty is not a fire-bell; it is an unheard queue. Score the wake or admit the subagent already slept through the all-clear. Folder: `projects/tocsin/`. Still listed. Not featured.
 

@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crimp — crimping-bench atelier for #91520</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=Spectral:ital,wght@0,500;0,700;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bench: #1a1612;
+        --plank: #241e18;
+        --ink: #efe6d6;
+        --muted: #9a8d7a;
+        --copper: #c47a3a;
+        --bronze: #e0a05a;
+        --teal: #2a8a7a;
+        --teal-lit: #4ec4ae;
+        --shear: #c43a3a;
+        --shear-lit: #e85a4a;
+        --foil: #c8cfd6;
+        --oxide: #1e4a46;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Public Sans", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(680px 400px at 88% -6%, rgba(196, 122, 58, 0.18), transparent 56%),
+          radial-gradient(540px 360px at 8% 8%, rgba(42, 138, 122, 0.12), transparent 50%),
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 28px,
+            rgba(196, 122, 58, 0.03) 28px 29px
+          ),
+          linear-gradient(180deg, #221c16 0%, var(--bench) 46%, #120f0c 100%);
+        color: var(--ink);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--bronze); }
+      .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 72px; }
+      .chrome { margin-bottom: 18px; }
+      .mark {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--copper);
+      }
+      h1 {
+        font-family: "Spectral", Georgia, serif;
+        font-size: clamp(46px, 7vw, 82px);
+        letter-spacing: -0.03em;
+        margin: 8px 0 10px;
+        font-weight: 700;
+        color: var(--bronze);
+      }
+      .lede { max-width: 56em; color: var(--muted); line-height: 1.65; }
+      .atelier {
+        margin: 22px 0;
+        padding: 22px;
+        border: 1px solid rgba(196, 122, 58, 0.32);
+        background:
+          linear-gradient(180deg, rgba(36, 30, 24, 0.96), rgba(26, 22, 18, 0.98));
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.36);
+      }
+      .atelier-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        margin-bottom: 16px;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--copper);
+      }
+      .bench-row {
+        display: grid;
+        grid-template-columns: 210px 1fr 180px;
+        gap: 16px;
+        align-items: stretch;
+      }
+      @media (max-width: 860px) {
+        .bench-row { grid-template-columns: 1fr; }
+      }
+      .pliers {
+        position: relative;
+        min-height: 168px;
+        border-radius: 8px;
+        background:
+          radial-gradient(120px 80px at 50% 30%, rgba(224, 160, 90, 0.18), transparent 70%),
+          linear-gradient(180deg, #3a2c1c, #1c1610);
+        border: 1px solid rgba(196, 122, 58, 0.4);
+        overflow: hidden;
+      }
+      .pliers svg { width: 100%; height: 168px; display: block; }
+      .pliers.torn { border-color: var(--shear); }
+      .jaw-dial {
+        padding: 12px;
+        border: 1px solid rgba(196, 122, 58, 0.28);
+        background: #1c1814;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .jaw-dial b {
+        display: block;
+        font-family: "Spectral", Georgia, serif;
+        font-size: 28px;
+        color: var(--teal-lit);
+        margin: 4px 0 2px;
+      }
+      .jaw-dial.fault b { color: var(--shear-lit); }
+      .foil {
+        position: relative;
+        min-height: 168px;
+        padding: 12px 14px;
+        background:
+          linear-gradient(180deg, #dfe4ea 0%, #b8c0c8 48%, #9aa3ac 100%);
+        color: #1a1e22;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        line-height: 1.45;
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+          0 8px 18px rgba(0, 0, 0, 0.28);
+        overflow: hidden;
+      }
+      .foil::before {
+        content: "settings.json foil strip";
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #5a6270;
+        margin-bottom: 8px;
+      }
+      .foil.ok { box-shadow: inset 0 0 0 3px var(--teal), 0 8px 18px rgba(0, 0, 0, 0.28); }
+      .foil.shear {
+        background: linear-gradient(180deg, #e8d4c8 0%, #c8b0a4 60%, #8a6a62 100%);
+        box-shadow: inset 0 0 0 3px var(--shear), 0 8px 18px rgba(0, 0, 0, 0.28);
+      }
+      .foil .tail { color: var(--shear); font-weight: 700; }
+      .foil.empty {
+        color: #6a7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .shape-row {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .lamp {
+        width: 16px;
+        height: 16px;
+        border-radius: 2px;
+        border: 1px solid var(--copper);
+        background: var(--oxide);
+        transform: rotate(45deg);
+      }
+      .lamp.lit { background: var(--shear); border-color: var(--shear-lit); }
+      .lamp.teal { background: var(--teal); border-color: var(--teal-lit); }
+      .shape {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--teal-lit);
+      }
+      .shape.lit { color: var(--shear-lit); }
+      .banner {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-left: 4px solid var(--teal);
+        background: rgba(30, 74, 70, 0.28);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .banner.drop {
+        border-left-color: var(--shear);
+        background: rgba(196, 58, 58, 0.14);
+        color: var(--bronze);
+      }
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 760px) {
+        .split { grid-template-columns: 1fr; }
+      }
+      .split article {
+        padding: 12px;
+        border: 1px dashed rgba(196, 122, 58, 0.32);
+        background: rgba(36, 30, 24, 0.7);
+      }
+      .split h3 {
+        font-family: "Spectral", Georgia, serif;
+        margin: 0 0 6px;
+        font-size: 20px;
+        color: var(--copper);
+      }
+      .rail {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .rail b {
+        display: block;
+        font-family: "Spectral", Georgia, serif;
+        font-size: 26px;
+        color: var(--copper);
+      }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+      button {
+        font-family: "Public Sans", sans-serif;
+        letter-spacing: 0.02em;
+        border: 1px solid rgba(196, 122, 58, 0.4);
+        background: #2a221a;
+        color: var(--ink);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--shear); color: var(--bronze); }
+      .verdict {
+        font-family: "Spectral", Georgia, serif;
+        font-size: 28px;
+      }
+      .verdict.alarm { color: var(--shear-lit); }
+      .verdict.hold { color: var(--teal-lit); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 16px; }
+      .chip {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 3px 7px;
+        border: 1px solid rgba(154, 141, 122, 0.3);
+        color: var(--muted);
+      }
+      .chip.lit { border-color: var(--copper); color: var(--bronze); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #120f0c;
+        color: var(--ink);
+        border: 1px solid rgba(196, 122, 58, 0.28);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .cousin, .stayoff, .facts {
+        margin: 18px 0;
+        padding: 12px 14px;
+        border: 1px solid rgba(196, 122, 58, 0.2);
+        background: rgba(36, 30, 24, 0.8);
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .facts dt {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        color: var(--copper);
+      }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed rgba(196, 122, 58, 0.4);
+        color: var(--muted);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <p class="mark">02:50 / hermes catalog #125 / #91520 · #hermes-catalog</p>
+        <h1>Crimp</h1>
+        <p class="lede">
+          Bench / crimping-pliers atelier. A crimp should swage
+          <code>~/.claude/settings.json</code> into an atomic hold:
+          write a sibling, <code>rename(2)</code> over the target, hold
+          a lock across the read-modify-write.
+          <code>writeUserSettingsAndPush</code> instead does read →
+          mutate → <code>writeFile</code> with no lock and no
+          tmp+rename. Concurrent sessions tear the foil — a reader
+          sees a 0-byte mid-truncate <em>or</em> valid JSON plus the
+          stale tail of a longer earlier write — and a later writer
+          silently discards the other session's keys. Parse failure
+          falls back to defaults and drops permissions and hooks
+          behind a dismissable banner. A crimp that tears under
+          concurrent pliers is not a sealed join — it is a sheared
+          foil. Score the swage or admit the settings already tore.
+        </p>
+        <p class="lede">Idle word: swaged. Seeded word: torn / #91520.</p>
+      </header>
+
+      <section class="atelier" aria-label="crimping-bench pliers atelier">
+        <div class="atelier-head">
+          <span>brass jaws · copper foil · concurrent pliers</span>
+          <span id="mark">02:50 / hermes catalog #125 / #91520</span>
+        </div>
+        <div class="bench-row">
+          <div class="pliers" id="pliers" aria-hidden="true">
+            <svg viewBox="0 0 200 168" role="img" aria-label="brass crimp pliers">
+              <path id="jaw-upper" d="M28 78 L86 52 L118 68 L92 82 Z" fill="#c47a3a" stroke="#e0a05a" stroke-width="2"/>
+              <path id="jaw-lower" d="M28 90 L86 116 L118 100 L92 86 Z" fill="#a8622c" stroke="#e0a05a" stroke-width="2"/>
+              <rect x="88" y="78" width="28" height="12" rx="2" fill="#4ec4ae" id="ferrule"/>
+              <path d="M116 74 L168 38" stroke="#8a6a3a" stroke-width="8" stroke-linecap="round"/>
+              <path d="M116 94 L168 130" stroke="#8a6a3a" stroke-width="8" stroke-linecap="round"/>
+              <circle cx="108" cy="84" r="5" fill="#e0a05a"/>
+            </svg>
+          </div>
+          <pre class="foil ok" id="foil">{
+  "permissions": { "allow": ["Bash"] },
+  "hooks": { "PreToolUse": [] }
+}</pre>
+          <div class="jaw-dial" id="dial">
+            <span>concurrent pliers</span>
+            <b id="pliers-count">0</b>
+            <span id="dial-note">idle bench · no overlapping writes</span>
+          </div>
+        </div>
+        <div class="shape-row">
+          <div class="lamp teal" id="lamp-ok" aria-hidden="true"></div>
+          <div class="lamp" id="lamp-trunc" aria-hidden="true"></div>
+          <div class="lamp" id="lamp-tail" aria-hidden="true"></div>
+          <span class="shape" id="shape">shape lamps quiet · parse OK · no truncate · no stale tail</span>
+        </div>
+        <div class="banner" id="banner">permission / hooks drop banner quiet · defaults are not in force</div>
+        <div class="split">
+          <article>
+            <h3>truncate lamp</h3>
+            <p id="trunc-copy">No 0-byte window. A reader never sees the mid-truncate hole.</p>
+          </article>
+          <article>
+            <h3>stale-tail lamp</h3>
+            <p id="tail-copy">No leftover bytes after a valid object. The foil ends where the write ends.</p>
+          </article>
+        </div>
+        <div class="rail">
+          <div><b id="c-join">swaged</b><span>atomic hold</span></div>
+          <div><b id="c-rate">0%</b><span>torn reads</span></div>
+          <div><b id="c-lock">flock</b><span>RMW lock</span></div>
+          <div><b id="c-rename">rename</b><span>tmp+rename</span></div>
+        </div>
+      </section>
+
+      <p class="verdict hold" id="verdict">swaged</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">writeUserSettingsAndPush uses tmp+rename + lock; concurrent sessions cannot tear settings.json or silently drop keys.</p>
+
+      <div class="actions">
+        <button type="button" data-act="score">Crimp the join</button>
+        <button type="button" data-act="idle">Pin idle swaged</button>
+        <button type="button" data-act="seed">Pin seeded torn</button>
+        <button type="button" data-act="admit">Admit the settings already tore</button>
+        <button type="button" data-act="fixtures">Load fixtures</button>
+        <button type="button" data-act="reset">Reset to swaged</button>
+      </div>
+
+      <textarea id="probe" spellcheck="false" aria-label="probe ticket"></textarea>
+      <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe. Score the swage.</div>
+
+      <dl class="facts">
+        <dt>Write site</dt>
+        <dd>writeUserSettingsAndPush — read → mutate → writeFile; no lock; no tmp+rename (2.1.258)</dd>
+        <dt>Torn file</dt>
+        <dd>reader sees a partial write: 0-byte mid-truncate OR valid JSON + stale trailing bytes</dd>
+        <dt>Lost update</dt>
+        <dd>later writer silently discards the other session's keys</dd>
+        <dt>Repro under load</dt>
+        <dd>reads=213861 torn=2791 (0-byte: 2498); 293 × valid JSON + 313 stale trailing bytes — 1.3% torn. write-to-sibling+rename → 0 torn of 162217</dd>
+        <dt>Wild evidence</dt>
+        <dd>nine occurrences; banked 131 B / 10-byte stale tail and 0 B mid-truncate</dd>
+        <dt>Impact</dt>
+        <dd>Settings file is not valid JSON → fallback to defaults → silently drops permissions and hooks behind a dismissable banner</dd>
+        <dt>Environment</dt>
+        <dd>Claude Code CLI 2.1.258; VS Code extension 2.1.246→2.1.258; Ubuntu 24.04.4 LTS on WSL2; up to ten concurrent processes. Reporter Lukasmolvaer. Filed 2026-09-02T14:21:59Z. OPEN, has repro, area:core, platform:vscode, platform:wsl.</dd>
+        <dt>SETTINGS.JSON UNLOCKED NON-ATOMIC RMW</dt>
+        <dd>CONCURRENT SESSIONS TEAR FILE + LOST UPDATE; SILENT PERMISSION/HOOK DROP; AREA:CORE.</dd>
+      </dl>
+
+      <section class="chips" aria-label="verdict chips">
+        <span class="chip">swaged</span>
+        <span class="chip">torn</span>
+        <span class="chip">truncate</span>
+        <span class="chip">stale-tail</span>
+        <span class="chip">lost-update</span>
+        <span class="chip">permissions-drop</span>
+        <span class="chip">hooks-drop</span>
+        <span class="chip">has-clear-repro</span>
+        <span class="chip">hold</span>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #91520):
+        <a href="https://github.com/anthropics/claude-code/issues/79403">#79403</a>
+        VS Code model toggle corrupts settings ·
+        <a href="https://github.com/anthropics/claude-code/issues/82167">#82167</a>
+        /
+        <a href="https://github.com/anthropics/claude-code/issues/76749">#76749</a>
+        lost update / stale in-memory config ·
+        <a href="https://github.com/anthropics/claude-code/issues/2810">#2810</a>
+        ·
+        <a href="https://github.com/anthropics/claude-code/issues/78764">#78764</a>
+        impact cousin for permission posture.
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF jackfield channel-strip · tocsin watchhouse · bolter flour-mill · deadeye standing-rigging · reglet letterpress · reliquary vault-latch · annunciator lamps · caisson berth · spindle chip-sweep · knell mute-bell · tumbler keyway · escapement pallet · geneva drive · scotch-block · pintle gudgeon.
+      </aside>
+    </main>
+    <script>
+      const idle = {
+        seed: "swaged",
+        atomicWrite: true,
+        lockedRmw: true,
+        unlockedRmw: false,
+        tmpRename: true,
+        torn: false,
+        truncate: false,
+        staleTail: false,
+        lostUpdate: false,
+        permissionsDrop: false,
+        hooksDrop: false,
+        concurrentSessions: 0,
+        foilShape: "parse-ok",
+        outputText: "swaged; writeUserSettingsAndPush uses tmp+rename + lock; concurrent sessions cannot tear settings.json"
+      };
+      const seeded = {
+        seed: "torn",
+        issue: 91520,
+        atomicWrite: false,
+        lockedRmw: false,
+        unlockedRmw: true,
+        tmpRename: false,
+        torn: true,
+        truncate: true,
+        staleTail: true,
+        lostUpdate: true,
+        permissionsDrop: true,
+        hooksDrop: true,
+        hasClearRepro: true,
+        concurrentSessions: 10,
+        tornRate: "1.3%",
+        foilShape: "torn",
+        reporter: "Lukasmolvaer",
+        outputText: "torn; #91520; writeUserSettingsAndPush read → mutate → writeFile; no lock; no tmp+rename"
+      };
+
+      const foilOk = `{
+  "permissions": { "allow": ["Bash"] },
+  "hooks": { "PreToolUse": [] }
+}`;
+      const foilTail = `{
+  "effortLevel": "xhigh",
+  "syntaxHighlightingDisabled": true,
+  "model": "opus[1m]",
+  "switchModelsOnFlag": false
+}
+<span class="tail"> false
+}</span>`;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...idle }; }
+      }
+
+      function scoreTicket(t) {
+        const text = JSON.stringify(t);
+        const named = String(t.seed || "");
+        const tornish = named === "torn" || t.issue === 91520 || t.torn === true || t.unlockedRmw === true
+          || (t.truncate === true && t.staleTail === true)
+          || /#91520|unlocked|non-atomic/.test(text);
+        const holdish = named === "swaged" || named === "hold"
+          || (t.atomicWrite === true && t.tmpRename === true && !tornish);
+        const verdict = named && named !== "swaged" && named !== "hold" && named !== "torn"
+          ? named
+          : tornish && !holdish
+            ? "torn"
+            : named === "hold"
+              ? "hold"
+              : "swaged";
+        const chips = [];
+        if (verdict === "swaged" || holdish) chips.push("swaged", "hold");
+        if (tornish && !holdish) {
+          chips.push("torn");
+          if (t.truncate !== false) chips.push("truncate");
+          if (t.staleTail !== false) chips.push("stale-tail");
+          if (t.lostUpdate !== false) chips.push("lost-update");
+          if (t.permissionsDrop !== false) chips.push("permissions-drop");
+          if (t.hooksDrop !== false) chips.push("hooks-drop");
+          if (t.hasClearRepro !== false) chips.push("has-clear-repro");
+        }
+        if (named && !chips.includes(named)) chips.push(named);
+        return { verdict, chips: [...new Set(chips)], hold: verdict === "swaged" || verdict === "hold", ticket: t };
+      }
+
+      function paint(result) {
+        const alarm = !result.hold;
+        const t = result.ticket || {};
+        const truncOnly = result.verdict === "truncate";
+        const tailOnly = result.verdict === "stale-tail";
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "Sheared foil. Admit the settings already tore."
+          : "writeUserSettingsAndPush uses tmp+rename + lock; concurrent sessions cannot tear settings.json or silently drop keys.";
+        document.getElementById("pliers").classList.toggle("torn", alarm);
+        document.getElementById("ferrule").setAttribute("fill", alarm ? "#c43a3a" : "#4ec4ae");
+        const foil = document.getElementById("foil");
+        foil.className = "foil " + (alarm ? (truncOnly ? "empty" : "shear") : "ok");
+        if (alarm && truncOnly) {
+          foil.className = "foil empty shear";
+          foil.textContent = "0-byte · mid-truncate";
+        } else if (alarm) {
+          foil.innerHTML = foilTail;
+        } else {
+          foil.textContent = foilOk;
+        }
+        document.getElementById("pliers-count").textContent = alarm ? (t.concurrentSessions || 10) : 0;
+        document.getElementById("dial").classList.toggle("fault", alarm);
+        document.getElementById("dial-note").textContent = alarm
+          ? "ten concurrent pliers on one foil"
+          : "idle bench · no overlapping writes";
+        document.getElementById("lamp-ok").className = "lamp" + (alarm ? "" : " teal");
+        document.getElementById("lamp-trunc").className = "lamp" + (alarm && !tailOnly ? " lit" : "");
+        document.getElementById("lamp-tail").className = "lamp" + (alarm && !truncOnly ? " lit" : "");
+        const shape = document.getElementById("shape");
+        shape.classList.toggle("lit", alarm);
+        shape.textContent = alarm
+          ? (truncOnly
+            ? "truncate lamp lit · 0-byte mid-truncate"
+            : tailOnly
+              ? "stale-tail lamp lit · valid JSON + trailing bytes"
+              : "shape lamps lit · truncate and stale-tail both banked")
+          : "shape lamps quiet · parse OK · no truncate · no stale tail";
+        const banner = document.getElementById("banner");
+        banner.classList.toggle("drop", alarm);
+        banner.textContent = alarm
+          ? "Settings file is not valid JSON · fallback to defaults · permissions and hooks dropped behind a dismissable banner"
+          : "permission / hooks drop banner quiet · defaults are not in force";
+        document.getElementById("trunc-copy").textContent = alarm
+          ? "0-byte mid-truncate. Banked settings.json.corrupt.20260830T211332 is 0 B. 2498 empty reads under load."
+          : "No 0-byte window. A reader never sees the mid-truncate hole.";
+        document.getElementById("tail-copy").textContent = alarm
+          ? "Valid object + stale tail. 293 × 313 trailing bytes under load; banked 131 B / 10-byte tail."
+          : "No leftover bytes after a valid object. The foil ends where the write ends.";
+        document.getElementById("c-join").textContent = alarm ? "torn" : "swaged";
+        document.getElementById("c-rate").textContent = alarm ? "1.3%" : "0%";
+        document.getElementById("c-lock").textContent = alarm ? "none" : "flock";
+        document.getElementById("c-rename").textContent = alarm ? "writeFile" : "rename";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(`./data/${name}`);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return apply({ ...idle });
+          if (act === "seed" || act === "admit") {
+            try { apply(await loadNamed("torn.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("91520.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") apply(parseProbe(document.getElementById("probe").value || "{}"));
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      // ?embed=1 hides chrome for the hub living featured well
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
