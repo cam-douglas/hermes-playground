@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tocsin — watchhouse idle-wake for #91503</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --navy: #0b1220;
+        --night: #121a2c;
+        --ink: #e8e4d8;
+        --muted: #8b93a7;
+        --brass: #c9a227;
+        --brass-lit: #e0c36a;
+        --ember: #e85d04;
+        --ember-deep: #9a2c08;
+        --pass: #3d7a5a;
+        --pass-lit: #5aa87a;
+        --plaque: #1a2438;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Source Sans 3", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(720px 420px at 88% -10%, rgba(232, 93, 4, 0.14), transparent 54%),
+          radial-gradient(640px 380px at 8% 0%, rgba(201, 162, 39, 0.12), transparent 50%),
+          linear-gradient(180deg, #0e1626 0%, var(--navy) 48%, #080d16 100%);
+        color: var(--ink);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass-lit); }
+      .wrap { width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 72px; }
+      .chrome { margin-bottom: 18px; }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--brass);
+      }
+      h1 {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: clamp(44px, 7vw, 78px);
+        letter-spacing: -0.03em;
+        margin: 8px 0 10px;
+        font-weight: 700;
+        color: var(--brass-lit);
+      }
+      .lede { max-width: 54em; color: var(--muted); line-height: 1.65; }
+      .atelier {
+        margin: 22px 0;
+        padding: 22px;
+        border: 1px solid rgba(201, 162, 39, 0.28);
+        background:
+          linear-gradient(180deg, rgba(18, 26, 44, 0.94), rgba(11, 18, 32, 0.96));
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+      }
+      .atelier-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        margin-bottom: 16px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .mill-row {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 16px;
+        align-items: center;
+      }
+      @media (max-width: 760px) {
+        .mill-row { grid-template-columns: 1fr; }
+      }
+      .tocsin-plaque {
+        width: 168px;
+        height: 168px;
+        margin: 0 auto;
+        border-radius: 50%;
+        position: relative;
+        background:
+          radial-gradient(circle at 38% 32%, #f0d36a 0 12%, #c9a227 28%, #8a6e14 70%, #4a3a0c 100%);
+        box-shadow:
+          inset 0 0 0 10px #3a2c0c,
+          inset 0 0 0 14px #e0c36a,
+          0 10px 22px rgba(0, 0, 0, 0.45);
+      }
+      .tocsin-plaque.unheard {
+        box-shadow:
+          inset 0 0 0 10px #3a1208,
+          inset 0 0 0 14px var(--ember),
+          0 10px 22px rgba(0, 0, 0, 0.45);
+      }
+      .clapper {
+        position: absolute;
+        inset: 58px;
+        border-radius: 50%;
+        background: #2a2210;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.55);
+      }
+      .rim {
+        position: absolute;
+        inset: 18px;
+        border-radius: 50%;
+        border: 2px dashed rgba(11, 18, 32, 0.35);
+        pointer-events: none;
+      }
+      .tocsin-plaque.unheard .rim {
+        border-color: rgba(232, 93, 4, 0.55);
+      }
+      .dial {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .block {
+        padding: 12px;
+        border: 1px solid rgba(201, 162, 39, 0.22);
+        background: var(--plaque);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .block b {
+        display: block;
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 18px;
+        color: var(--pass-lit);
+        margin-bottom: 4px;
+      }
+      .block.fault b { color: var(--ember); }
+      .lamp-row {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .lamp {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1px solid var(--brass);
+        background: var(--pass);
+      }
+      .lamp.lit { background: var(--ember); border-color: var(--ember); }
+      .fault {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 13px;
+        color: var(--pass-lit);
+      }
+      .fault.lit { color: var(--ember); }
+      .strip {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-left: 4px solid var(--pass);
+        background: rgba(18, 26, 44, 0.85);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .strip.unheard { border-left-color: var(--ember); color: var(--brass-lit); }
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 760px) {
+        .split { grid-template-columns: 1fr; }
+      }
+      .split article {
+        padding: 12px;
+        border: 1px dashed rgba(201, 162, 39, 0.28);
+        background: rgba(18, 26, 44, 0.7);
+      }
+      .split h3 {
+        font-family: "Fraunces", Georgia, serif;
+        margin: 0 0 6px;
+        font-size: 20px;
+        color: var(--brass);
+      }
+      .hatch {
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid rgba(61, 122, 90, 0.4);
+        background: rgba(61, 122, 90, 0.08);
+      }
+      .hatch h3 {
+        font-family: "Fraunces", Georgia, serif;
+        margin: 0 0 6px;
+        font-size: 18px;
+        color: var(--pass-lit);
+      }
+      .ledger {
+        margin-top: 12px;
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .ledger th, .ledger td {
+        text-align: left;
+        padding: 6px 8px;
+        border-bottom: 1px solid rgba(201, 162, 39, 0.16);
+      }
+      .ledger th { color: var(--brass); font-weight: 700; }
+      .rail {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .rail b {
+        display: block;
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 26px;
+        color: var(--brass);
+      }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+      button {
+        font-family: "Source Sans 3", sans-serif;
+        letter-spacing: 0.02em;
+        border: 1px solid rgba(201, 162, 39, 0.35);
+        background: #1a2438;
+        color: var(--ink);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--ember); color: var(--brass-lit); }
+      .verdict {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 28px;
+      }
+      .verdict.alarm { color: var(--ember); }
+      .verdict.hold { color: var(--pass-lit); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 16px; }
+      .chip {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 3px 7px;
+        border: 1px solid rgba(139, 147, 167, 0.28);
+        color: var(--muted);
+      }
+      .chip.lit { border-color: var(--brass); color: var(--brass-lit); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #0e1626;
+        color: var(--ink);
+        border: 1px solid rgba(201, 162, 39, 0.22);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .cousin, .stayoff, .facts {
+        margin: 18px 0;
+        padding: 12px 14px;
+        border: 1px solid rgba(201, 162, 39, 0.18);
+        background: rgba(18, 26, 44, 0.8);
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .facts dt {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        color: var(--brass);
+      }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed rgba(201, 162, 39, 0.35);
+        color: var(--muted);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <p class="mark">23:50 / hermes catalog #123 / #91503 · #hermes-catalog</p>
+        <h1>Tocsin</h1>
+        <p class="lede">
+          Watchhouse fire-bell atelier. A tocsin should wake a sleeping
+          watch when a background task completes. When a
+          <strong>subagent</strong> starts
+          <code>Bash(run_in_background: true)</code> and then ends its
+          turn, the script's completion notification is created and
+          queued, but nothing delivers it to the idle subagent — there
+          is <strong>no idle-wake consumer</strong>. The subagent hangs
+          until a human nudge puts it in a turn. The identical mechanism
+          wakes the <strong>main session</strong> within milliseconds.
+          A tocsin that only rings into ears already on duty is not a
+          fire-bell; it is an unheard queue. Score the wake or admit
+          the subagent already slept through the all-clear.
+        </p>
+        <p class="lede">Idle word: armed. Seeded word: unheard / #91503.</p>
+      </header>
+
+      <section class="atelier" aria-label="watchhouse fire-bell atelier">
+        <div class="atelier-head">
+          <span>brass tocsin plaque · main-session idle-wake vs subagent queue-only dial</span>
+          <span id="mark">23:50 / hermes catalog #123 / #91503</span>
+        </div>
+        <div class="mill-row">
+          <div class="tocsin-plaque" id="plaque" aria-hidden="true">
+            <span class="rim"></span>
+            <span class="clapper"></span>
+          </div>
+          <div class="dial" aria-label="main-session idle-wake vs subagent queue-only dial">
+            <div class="block" id="block-main">
+              <b>main-session idle-wake</b>
+              dequeue in milliseconds · starts a new turn
+            </div>
+            <div class="block" id="block-sub">
+              <b>subagent queue-only</b>
+              queued · no idle-wake consumer
+            </div>
+          </div>
+        </div>
+        <div class="lamp-row">
+          <div class="lamp" id="lamp" aria-hidden="true"></div>
+          <span class="fault" id="fault">background Bash(run_in_background:true) completion lamp quiet · idle subagent would wake</span>
+        </div>
+        <div class="strip" id="strip">human-nudge rescue strip quiet · idle-wake consumer present for subagent and main session</div>
+        <div class="split">
+          <article>
+            <h3>queued, not lost</h3>
+            <p id="queued">Completion notification is created and queued on exit. The all-clear is not discarded.</p>
+          </article>
+          <article>
+            <h3>hang until a turn</h3>
+            <p id="hang">Subagent stays idle only until the wake path fires. Parent is not waiting on a silent report.</p>
+          </article>
+        </div>
+        <div class="hatch" id="hatch">
+          <h3>no idle-wake consumer</h3>
+          <p id="hatch-body">Idle watch: background-task completion wakes an idle subagent the same way it wakes the main session.</p>
+        </div>
+        <table class="ledger" aria-label="queue-operation ledger">
+          <thead>
+            <tr>
+              <th>run</th>
+              <th>owner</th>
+              <th>how</th>
+              <th>wake</th>
+            </tr>
+          </thead>
+          <tbody id="ledger">
+            <tr><td>A</td><td>subagent (idle)</td><td>queue-operation</td><td>armed</td></tr>
+            <tr><td>B</td><td>subagent (idle)</td><td>queue-operation</td><td>armed</td></tr>
+            <tr><td>C</td><td>subagent (kept active)</td><td>queue-operation</td><td>armed</td></tr>
+            <tr><td>control</td><td>main session</td><td>dequeue</td><td>ms</td></tr>
+          </tbody>
+        </table>
+        <div class="rail">
+          <div><b id="c-queue">held</b><span>queued-not-lost</span></div>
+          <div><b id="c-wake">present</b><span>idle-wake</span></div>
+          <div><b id="c-main">ms</b><span>main-wakes</span></div>
+          <div><b id="c-nudge">quiet</b><span>human-nudge</span></div>
+        </div>
+      </section>
+
+      <p class="verdict hold" id="verdict">armed</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">Background-task completion wakes an idle subagent the same way it wakes the main session.</p>
+
+      <div class="actions">
+        <button type="button" data-act="score">Sound the tocsin</button>
+        <button type="button" data-act="idle">Pin idle armed</button>
+        <button type="button" data-act="seed">Pin seeded unheard</button>
+        <button type="button" data-act="admit">Admit the subagent already slept through the all-clear</button>
+        <button type="button" data-act="fixtures">Load fixtures</button>
+        <button type="button" data-act="reset">Reset to armed</button>
+      </div>
+
+      <textarea id="probe" spellcheck="false" aria-label="probe ticket"></textarea>
+      <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe.</div>
+
+      <dl class="facts">
+        <dt>Shape</dt>
+        <dd>Bash(run_in_background: true)</dd>
+        <dt>Subagent</dt>
+        <dd>starts the shell, then ends its turn</dd>
+        <dt>Queued, not lost</dt>
+        <dd>script completion notification is created and queued on exit</dd>
+        <dt>No idle-wake consumer</dt>
+        <dd>nothing delivers that notification to an idle subagent</dd>
+        <dt>Hang until a turn</dt>
+        <dd>subagent stays idle indefinitely; parent waiting on its report hangs</dd>
+        <dt>Human nudge</dt>
+        <dd>delivery happens the moment the subagent is already in a turn</dd>
+        <dt>Main session</dt>
+        <dd>identical background-task completions dequeue within milliseconds and start a new turn</dd>
+        <dt>Evidence</dt>
+        <dd>queue-operation records across three instrumented runs in one session</dd>
+        <dt>Environment</dt>
+        <dd>Claude Code 2.1.258 / Windows 11. Reporter ManufactoryOfCode. Filed 2026-09-02T13:15:54Z. OPEN, has repro, platform:windows, area:agents.</dd>
+        <dt>SUBAGENT BASH(RUN_IN_BACKGROUND:TRUE)</dt>
+        <dd>COMPLETION NOTIFICATION QUEUED WITH NO IDLE-WAKE CONSUMER; MAIN SESSION WAKES IN MS; HANGS UNTIL HUMAN NUDGE; AREA:AGENTS+WINDOWS.</dd>
+      </dl>
+
+      <section class="chips" aria-label="verdict chips">
+        <span class="chip">armed</span>
+        <span class="chip">unheard</span>
+        <span class="chip">subagent</span>
+        <span class="chip">main-wakes</span>
+        <span class="chip">queued-not-lost</span>
+        <span class="chip">no-idle-wake</span>
+        <span class="chip">human-nudge</span>
+        <span class="chip">run-in-background</span>
+        <span class="chip">queue-operation</span>
+        <span class="chip">hang-until-turn</span>
+        <span class="chip">has-clear-repro</span>
+        <span class="chip">hold</span>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #91503):
+        <a href="https://github.com/anthropics/claude-code/issues/78338">#78338</a>
+        closed — Linux; passively queued command with no idle-wake consumer ·
+        <a href="https://github.com/anthropics/claude-code/issues/21048">#21048</a>
+        closed — Windows, run_in_background completion does not wake Claude from idle (main-agent variant) ·
+        <a href="https://github.com/anthropics/claude-code/issues/29163">#29163</a>
+        closed as duplicate — macOS; team agents go idle without responding; SendMessage did not revive.
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF bolter flour-mill · deadeye standing-rigging · reglet letterpress · reliquary vault-latch · annunciator lamps · caisson berth · spindle chip-sweep · knell mute-bell · tumbler keyway ·
+        escapement pallet · carillon peal · sluice millrace · reveille muster.
+        Not leftover woodworking / mm-slider / millrace / locksmith / campanology.
+      </aside>
+    </main>
+    <script>
+      const idle = {
+        seed: "armed",
+        wakeFair: true,
+        subagentWakesOnIdle: true,
+        idleWakeConsumer: true,
+        noIdleWake: false,
+        outputText: "armed; background-task completion wakes an idle subagent the same way it wakes the main session"
+      };
+      const seeded = {
+        seed: "unheard",
+        issue: 91503,
+        subagent: true,
+        mainWakes: true,
+        notificationQueued: true,
+        queuedNotLost: true,
+        noIdleWake: true,
+        idleWakeConsumer: false,
+        humanNudge: true,
+        runInBackground: true,
+        queueOperation: true,
+        hangUntilTurn: true,
+        hasClearRepro: true,
+        bashShape: "Bash(run_in_background: true)",
+        reporter: "ManufactoryOfCode",
+        outputText: "unheard; #91503; Bash(run_in_background: true); completion notification queued; no idle-wake consumer; human nudge"
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...idle }; }
+      }
+
+      function scoreTicket(t) {
+        const text = JSON.stringify(t);
+        const named = String(t.seed || "");
+        const miss = t.noIdleWake === true || t.idleWakeConsumer === false || /no-idle-wake|no idle-wake consumer/.test(text);
+        const queued = t.notificationQueued === true || t.queuedNotLost === true || /queued-not-lost|notification queued/.test(text);
+        const holdish = named === "armed" || named === "hold" || (t.wakeFair === true && t.subagentWakesOnIdle === true && !miss);
+        const unheard = named === "unheard" || t.issue === 91503 || (miss && queued) || (t.hangUntilTurn === true && t.humanNudge === true);
+        const verdict = named && named !== "armed" && named !== "hold" && named !== "unheard"
+          ? named
+          : unheard && !holdish
+            ? "unheard"
+            : named === "hold"
+              ? "hold"
+              : "armed";
+        const chips = [];
+        if (verdict === "armed" || holdish) chips.push("armed", "hold");
+        if (unheard && !holdish) {
+          chips.push("unheard");
+          if (t.subagent !== false) chips.push("subagent");
+          if (t.mainWakes !== false) chips.push("main-wakes");
+          if (queued || t.queuedNotLost !== false) chips.push("queued-not-lost");
+          if (miss || t.noIdleWake !== false) chips.push("no-idle-wake");
+          if (t.humanNudge !== false) chips.push("human-nudge");
+          if (t.runInBackground !== false) chips.push("run-in-background");
+          if (t.queueOperation !== false) chips.push("queue-operation");
+          if (t.hangUntilTurn !== false) chips.push("hang-until-turn");
+          if (t.hasClearRepro !== false) chips.push("has-clear-repro");
+        }
+        if (named && !chips.includes(named)) chips.push(named);
+        return { verdict, chips: [...new Set(chips)], hold: verdict === "armed" || verdict === "hold", ticket: t };
+      }
+
+      function paint(result) {
+        const alarm = !result.hold;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "Queued all-clear. No idle-wake consumer. Admit the subagent already slept through the all-clear."
+          : "Background-task completion wakes an idle subagent the same way it wakes the main session.";
+        const plate = document.getElementById("plaque");
+        plate.classList.toggle("unheard", alarm);
+        document.getElementById("lamp").classList.toggle("lit", alarm);
+        const fault = document.getElementById("fault");
+        fault.classList.toggle("lit", alarm);
+        fault.textContent = alarm
+          ? "background Bash(run_in_background:true) completion lamp lit · notification queued; idle subagent never woken"
+          : "background Bash(run_in_background:true) completion lamp quiet · idle subagent would wake";
+        document.getElementById("block-sub").classList.toggle("fault", alarm);
+        const strip = document.getElementById("strip");
+        strip.classList.toggle("unheard", alarm);
+        strip.textContent = alarm
+          ? "human-nudge rescue strip · delivery only after a turn is already open; no idle-wake consumer"
+          : "human-nudge rescue strip quiet · idle-wake consumer present for subagent and main session";
+        document.getElementById("queued").textContent = alarm
+          ? "Completion notification is created and queued on exit (not lost). Nothing delivers it to an idle subagent."
+          : "Completion notification is created and queued on exit. The all-clear is not discarded.";
+        document.getElementById("hang").textContent = alarm
+          ? "Subagent stays idle indefinitely; parent waiting on its report hangs until a human nudge."
+          : "Subagent stays idle only until the wake path fires. Parent is not waiting on a silent report.";
+        document.getElementById("hatch-body").textContent = alarm
+          ? "No idle-wake consumer. Main session dequeues within milliseconds. Score the wake or admit the subagent already slept through the all-clear."
+          : "Idle watch: background-task completion wakes an idle subagent the same way it wakes the main session.";
+        document.getElementById("c-queue").textContent = alarm ? "queued" : "held";
+        document.getElementById("c-wake").textContent = alarm ? "missing" : "present";
+        document.getElementById("c-main").textContent = alarm ? "ms" : "ms";
+        document.getElementById("c-nudge").textContent = alarm ? "needed" : "quiet";
+        document.getElementById("ledger").innerHTML = alarm
+          ? "<tr><td>A</td><td>subagent (idle)</td><td>queue-operation</td><td>human nudge</td></tr><tr><td>B</td><td>subagent (idle)</td><td>queue-operation</td><td>human nudge</td></tr><tr><td>C</td><td>subagent (kept active)</td><td>absorbed_mid_turn</td><td>already in a turn</td></tr><tr><td>control</td><td>main session</td><td>dequeue</td><td>ms</td></tr>"
+          : "<tr><td>A</td><td>subagent (idle)</td><td>queue-operation</td><td>armed</td></tr><tr><td>B</td><td>subagent (idle)</td><td>queue-operation</td><td>armed</td></tr><tr><td>C</td><td>subagent (kept active)</td><td>queue-operation</td><td>armed</td></tr><tr><td>control</td><td>main session</td><td>dequeue</td><td>ms</td></tr>";
+        const box = document.getElementById("chips");
+        box.innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(`./data/${name}`);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return apply({ ...idle });
+          if (act === "seed" || act === "admit") {
+            try { apply(await loadNamed("unheard.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("91503.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") apply(parseProbe(document.getElementById("probe").value || "{}"));
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
