@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 /**
  * Codicil — probate / will-chamber / codicil-desk classifier.
- * A codicil that amends whatever will is currently on the desk
- * is not a sealed clause — it is a rewritten legatee. Score
- * the seal or admit the teammate's HEAD already moved.
+ * A codicil that amends whichever deed sits on the desk is
+ * not a lawful addendum — it is a silent rewrite of a
+ * teammate's will. Score the attestation or admit the HEAD
+ * already moved.
  *
- *   echo '{"rewritten":true,"amendBlind":true}' | node codicil.mjs
+ *   echo '{"usurped":true,"amendBlind":true}' | node codicil.mjs
  *   node codicil.mjs ticket.json
  *
- * Idle word is sealed (HOLD: HEAD still agent's own SHA;
+ * Idle word is attested (HOLD: HEAD still agent's own SHA;
  * git rev-parse HEAD matches the SHA from the agent's own
- * prior commit; amend is safe). Seeded state is rewritten
+ * prior commit; amend is safe). Seeded state is usurped
  * / #91513 (shared multi-agent non-worktree-isolated tree;
  * git commit --amend does not re-check HEAD; silently
  * rewrites concurrent teammate C2's message while keeping
@@ -18,7 +19,7 @@
  *
  * This is a diagnostic scoring desk. NOT an exploit.
  * No payloads. No attack procedures. Score fixture strings
- * for whether the shared-tree amend is sealed or rewritten.
+ * for whether the shared-tree amend is attested or usurped.
  *
  * Primary #91513: In a shared multi-agent working tree,
  * `git commit --amend` doesn't re-check HEAD, so it can
@@ -37,18 +38,20 @@ import { stdin } from "node:process";
 import { pathToFileURL } from "node:url";
 
 export const VERDICTS = Object.freeze([
-  "sealed",
-  "rewritten",
+  "attested",
+  "usurped",
   "head-moved",
-  "message-usurp",
+  "teammate-rewrite",
+  "message-discard",
   "tree-identical",
-  "shared-tree",
+  "no-rev-parse-guard",
+  "shared-worktree",
   "has-clear-repro",
   "hold",
 ]);
-export const IDLE_WORD = "sealed";
-export const SEEDED_WORD = "rewritten";
-export const HOLD_VERDICTS = Object.freeze(["sealed", "hold"]);
+export const IDLE_WORD = "attested";
+export const SEEDED_WORD = "usurped";
+export const HOLD_VERDICTS = Object.freeze(["attested", "hold"]);
 export const ALARM_VERDICTS = Object.freeze(
   VERDICTS.filter((name) => !HOLD_VERDICTS.includes(name)),
 );
@@ -82,18 +85,21 @@ export const AGENT_A_MESSAGE =
 export const AGENT_B_MESSAGE =
   "C2: Agent B legatee — concurrent commit on shared tree";
 export const HUB_LINE =
-  "03:50 codicil: a codicil that amends whatever will is currently on the desk is not a sealed clause — it is a rewritten legatee. Score the seal or admit the teammate's HEAD already moved.";
+  "03:50 codicil: a codicil that amends whichever deed sits on the desk is not a lawful addendum — it is a silent rewrite of a teammate's will. Score the attestation or admit the HEAD already moved.";
 export const MARK = "03:50 / hermes catalog #126 / #91513";
 export const PHRASE =
-  "a codicil that amends whatever will is currently on the desk is not a sealed clause — it is a rewritten legatee. Score the seal or admit the teammate's HEAD already moved.";
+  "a codicil that amends whichever deed sits on the desk is not a lawful addendum — it is a silent rewrite of a teammate's will. Score the attestation or admit the HEAD already moved.";
 export const HYPOTHESIS_NOTE =
   "NON-BINDING: product-level guardrail should refuse amend when HEAD ≠ agent's last commit SHA in shared trees; discard if issue evidence disagrees.";
 export const CONTRAST_NOTE =
   "This is SHARED MULTI-AGENT WORKTREE — `git commit --amend` DOES NOT RE-CHECK HEAD; SILENTLY REWRITES CONCURRENT TEAMMATE COMMIT MESSAGE; AREA:AGENTS. Agent A creates C1. Before A's follow-up amend, Agent B commits C2 on top of C1 (shared non-worktree-isolated tree). A's `git commit --amend` does not re-check HEAD; it rewrites Agent B's C2 — keeps C2's tree byte-identical but discards B's commit message and replaces it with A's. Expected: before amend in a possibly-shared tree, verify `git rev-parse HEAD` still equals the SHA from the agent's own prior commit; refuse/warn if HEAD moved. Impact: git history/metadata only (message + parent linkage); no working-tree file loss. Reporter KinohTaGo. Claude Code 2.1.239. Filed 2026-09-02. OPEN, has repro, area:agents.";
 export const FORBIDDEN_IDLE = Object.freeze([
+  "sealed",
+  "rewritten",
   "swaged",
   "torn",
   "homed",
+  "crossed",
   "armed",
   "unheard",
   "unbolted",
@@ -119,7 +125,6 @@ export const FORBIDDEN_IDLE = Object.freeze([
   "sprung",
   "hinged",
   "pealed",
-  "crossed",
 ]);
 export const BANNED_NAMES = Object.freeze([
   "Crimp",
@@ -140,6 +145,8 @@ export const BANNED_NAMES = Object.freeze([
   "Pintle",
 ]);
 export const FORBIDDEN_UI = Object.freeze([
+  "Literata",
+  "Fragment Mono",
   "Spectral",
   "Public Sans",
   "JetBrains Mono",
@@ -205,10 +212,12 @@ function blankTicket() {
     recheckHead: null,
     headMoved: null,
     amendBlind: null,
-    rewritten: null,
-    messageUsurp: null,
+    noRevParseGuard: null,
+    usurped: null,
+    teammateRewrite: null,
+    messageDiscard: null,
     treeIdentical: null,
-    sharedTree: null,
+    sharedWorktree: null,
     worktreeIsolated: null,
     hasClearRepro: null,
     agentSha: "",
@@ -227,7 +236,7 @@ function blankTicket() {
   };
 }
 
-export function seedSealed() {
+export function seedAttested() {
   return {
     ...blankTicket(),
     seed: IDLE_WORD,
@@ -235,10 +244,12 @@ export function seedSealed() {
     recheckHead: true,
     headMoved: false,
     amendBlind: false,
-    rewritten: false,
-    messageUsurp: false,
+    noRevParseGuard: false,
+    usurped: false,
+    teammateRewrite: false,
+    messageDiscard: false,
     treeIdentical: false,
-    sharedTree: false,
+    sharedWorktree: false,
     worktreeIsolated: true,
     hasClearRepro: false,
     agentSha: AGENT_SHA,
@@ -253,11 +264,11 @@ export function seedSealed() {
     evidence: EVIDENCE,
     cliVersion: VERSION,
     outputText:
-      "sealed; git rev-parse HEAD still equals Agent A's own C1 SHA; amend is safe; idle word sealed",
+      "attested; git rev-parse HEAD still equals Agent A's own C1 SHA; amend is safe; idle word attested",
   };
 }
 
-export function seedRewritten() {
+export function seedUsurped() {
   return {
     ...blankTicket(),
     seed: SEEDED_WORD,
@@ -268,10 +279,12 @@ export function seedRewritten() {
     recheckHead: false,
     headMoved: true,
     amendBlind: true,
-    rewritten: true,
-    messageUsurp: true,
+    noRevParseGuard: true,
+    usurped: true,
+    teammateRewrite: true,
+    messageDiscard: true,
     treeIdentical: true,
-    sharedTree: true,
+    sharedWorktree: true,
     worktreeIsolated: false,
     hasClearRepro: true,
     agentSha: AGENT_SHA,
@@ -287,7 +300,7 @@ export function seedRewritten() {
     cliVersion: VERSION,
     reporter: REPORTER,
     outputText:
-      "rewritten; #91513; shared multi-agent worktree; git commit --amend does not re-check HEAD; Agent A C1 then Agent B C2 then A amends C2; C2 tree byte-identical; B's message discarded and replaced with A's; KinohTaGo; Claude Code 2.1.239; area:agents",
+      "usurped; #91513; shared multi-agent worktree; git commit --amend does not re-check HEAD; Agent A C1 then Agent B C2 then A amends C2; C2 tree byte-identical; B's message discarded and replaced with A's; KinohTaGo; Claude Code 2.1.239; area:agents",
   };
 }
 
@@ -297,7 +310,7 @@ export function seedHeadMoved() {
     seed: "head-moved",
     source: "atelier",
     headMoved: true,
-    rewritten: true,
+    usurped: true,
     agentSha: AGENT_SHA,
     currentHead: TEAMMATE_SHA,
     outputText:
@@ -305,17 +318,29 @@ export function seedHeadMoved() {
   };
 }
 
-export function seedMessageUsurp() {
+export function seedTeammateRewrite() {
   return {
     ...blankTicket(),
-    seed: "message-usurp",
+    seed: "teammate-rewrite",
     source: "atelier",
-    messageUsurp: true,
-    rewritten: true,
+    teammateRewrite: true,
+    usurped: true,
+    outputText:
+      "teammate-rewrite; Agent A's --amend rewrites Agent B's C2 instead of A's own C1",
+  };
+}
+
+export function seedMessageDiscard() {
+  return {
+    ...blankTicket(),
+    seed: "message-discard",
+    source: "atelier",
+    messageDiscard: true,
+    usurped: true,
     agentAMessage: AGENT_A_MESSAGE,
     agentBMessage: AGENT_B_MESSAGE,
     outputText:
-      "message-usurp; Agent B's C2 commit message discarded and replaced with Agent A's intended amend",
+      "message-discard; Agent B's C2 commit message discarded and replaced with Agent A's intended amend",
   };
 }
 
@@ -325,23 +350,37 @@ export function seedTreeIdentical() {
     seed: "tree-identical",
     source: "atelier",
     treeIdentical: true,
-    rewritten: true,
+    usurped: true,
     treeSha: TREE_SHA,
     outputText:
       "tree-identical; amended commit's tree is byte-identical to C2; no working-tree file loss; history/metadata only",
   };
 }
 
-export function seedSharedTree() {
+export function seedNoRevParseGuard() {
   return {
     ...blankTicket(),
-    seed: "shared-tree",
+    seed: "no-rev-parse-guard",
     source: "atelier",
-    sharedTree: true,
-    worktreeIsolated: false,
-    rewritten: true,
+    noRevParseGuard: true,
+    amendBlind: true,
+    recheckHead: false,
+    usurped: true,
     outputText:
-      "shared-tree; Agent Teams teammates share one plain git working tree; no worktree isolation",
+      "no-rev-parse-guard; git commit --amend does not re-check git rev-parse HEAD against the agent's own prior SHA",
+  };
+}
+
+export function seedSharedWorktree() {
+  return {
+    ...blankTicket(),
+    seed: "shared-worktree",
+    source: "atelier",
+    sharedWorktree: true,
+    worktreeIsolated: false,
+    usurped: true,
+    outputText:
+      "shared-worktree; Agent Teams teammates share one plain git working tree; no worktree isolation",
   };
 }
 
@@ -361,16 +400,16 @@ export function seedHasClearRepro() {
 
 export function seedHold() {
   return {
-    ...seedSealed(),
+    ...seedAttested(),
     seed: "hold",
     outputText:
-      "hold; HEAD still Agent A's own SHA; the seal holds; idle word sealed",
+      "hold; HEAD still Agent A's own SHA; the attestation holds; idle word attested",
   };
 }
 
 export function seedCousin() {
   return {
-    ...seedSealed(),
+    ...seedAttested(),
     seed: IDLE_WORD,
     issue: COUSIN_ISSUE,
     isolation: "cousin",
@@ -381,7 +420,7 @@ export function seedCousin() {
 }
 
 export function emptyTicket() {
-  return seedSealed();
+  return seedAttested();
 }
 
 export function cloneTicket(input) {
@@ -399,10 +438,22 @@ export function cloneTicket(input) {
     recheckHead: firstBool(nested.recheckHead, src.recheckHead),
     headMoved: firstBool(nested.headMoved, src.headMoved),
     amendBlind: firstBool(nested.amendBlind, src.amendBlind),
-    rewritten: firstBool(nested.rewritten, src.rewritten),
-    messageUsurp: firstBool(nested.messageUsurp, src.messageUsurp),
+    noRevParseGuard: firstBool(nested.noRevParseGuard, src.noRevParseGuard),
+    usurped: firstBool(nested.usurped, src.usurped, nested.rewritten, src.rewritten),
+    teammateRewrite: firstBool(nested.teammateRewrite, src.teammateRewrite),
+    messageDiscard: firstBool(
+      nested.messageDiscard,
+      src.messageDiscard,
+      nested.messageUsurp,
+      src.messageUsurp,
+    ),
     treeIdentical: firstBool(nested.treeIdentical, src.treeIdentical),
-    sharedTree: firstBool(nested.sharedTree, src.sharedTree),
+    sharedWorktree: firstBool(
+      nested.sharedWorktree,
+      src.sharedWorktree,
+      nested.sharedTree,
+      src.sharedTree,
+    ),
     worktreeIsolated: firstBool(nested.worktreeIsolated, src.worktreeIsolated),
     hasClearRepro: firstBool(nested.hasClearRepro, src.hasClearRepro),
     agentSha: firstText(nested.agentSha, src.agentSha),
@@ -440,20 +491,27 @@ function missingCore(input) {
     row.recheckHead == null &&
     row.headMoved == null &&
     row.amendBlind == null &&
+    row.noRevParseGuard == null &&
+    row.usurped == null &&
     row.rewritten == null &&
+    row.teammateRewrite == null &&
+    row.messageDiscard == null &&
     row.messageUsurp == null &&
     row.treeIdentical == null &&
+    row.sharedWorktree == null &&
     row.sharedTree == null
   );
 }
 
 const SEED_FNS = {
-  [IDLE_WORD]: seedSealed,
-  [SEEDED_WORD]: seedRewritten,
+  [IDLE_WORD]: seedAttested,
+  [SEEDED_WORD]: seedUsurped,
   "head-moved": seedHeadMoved,
-  "message-usurp": seedMessageUsurp,
+  "teammate-rewrite": seedTeammateRewrite,
+  "message-discard": seedMessageDiscard,
   "tree-identical": seedTreeIdentical,
-  "shared-tree": seedSharedTree,
+  "no-rev-parse-guard": seedNoRevParseGuard,
+  "shared-worktree": seedSharedWorktree,
   "has-clear-repro": seedHasClearRepro,
   hold: seedHold,
   cousin: seedCousin,
@@ -480,7 +538,7 @@ export function normalize(input) {
   const issue = cloned.issue ?? raw.issue;
   const coreMissing = missingCore(input) && missingCore(cloned);
   if ((issue === FEATURED_ISSUE || raw.issue === FEATURED_ISSUE) && coreMissing) {
-    return { ...seedRewritten(), ...cloned, ...raw };
+    return { ...seedUsurped(), ...cloned, ...raw };
   }
   if (COUSINS.includes(issue) && coreMissing) {
     return {
@@ -521,7 +579,7 @@ function canonicalSeed(seed) {
   return VERDICTS.find((name) => name.toLowerCase() === lower) || lower;
 }
 
-export function isSealed(ticket) {
+export function isAttested(ticket) {
   const row = cloneTicket(ticket);
   if (row.isolation === "cousin") return true;
   if (canonicalSeed(row.seed) === IDLE_WORD) return true;
@@ -529,15 +587,16 @@ export function isSealed(ticket) {
   if (
     row.recheckHead === true &&
     row.headMoved !== true &&
-    row.rewritten !== true &&
-    row.amendBlind !== true
+    row.usurped !== true &&
+    row.amendBlind !== true &&
+    row.noRevParseGuard !== true
   ) {
     return true;
   }
   return false;
 }
 
-export function isRewritten(ticket) {
+export function isUsurped(ticket) {
   const row = cloneTicket(ticket);
   const named = canonicalSeed(row.seed);
   if (named === IDLE_WORD || named === "hold") return false;
@@ -545,10 +604,11 @@ export function isRewritten(ticket) {
   if (named === SEEDED_WORD) return true;
   if (row.issue === FEATURED_ISSUE && named !== IDLE_WORD) return true;
   if (
-    row.rewritten === true ||
+    row.usurped === true ||
     row.amendBlind === true ||
+    row.noRevParseGuard === true ||
     (row.headMoved === true && row.recheckHead === false) ||
-    (row.messageUsurp === true && row.treeIdentical === true)
+    (row.teammateRewrite === true && row.messageDiscard === true)
   ) {
     return true;
   }
@@ -564,61 +624,74 @@ export function flagsOf(ticket) {
       /cousin-not-primary|#90943|#91349|#90146|#83311|#88967/i.test(text)) &&
     named !== SEEDED_WORD &&
     row.issue !== FEATURED_ISSUE;
-  const rewrittenNow = !cousinOnly && isRewritten(row);
-  const sealedNow = !rewrittenNow && isSealed(row);
+  const usurpedNow = !cousinOnly && isUsurped(row);
+  const attestedNow = !usurpedNow && isAttested(row);
   const headMoved =
     row.headMoved === true ||
     named === "head-moved" ||
     /head-moved|HEAD moved|HEAD is Agent B|rev-parse HEAD is Agent B/i.test(text);
-  const messageUsurp =
-    row.messageUsurp === true ||
-    named === "message-usurp" ||
-    /message-usurp|message discarded|replaced with Agent A/i.test(text);
+  const teammateRewrite =
+    row.teammateRewrite === true ||
+    named === "teammate-rewrite" ||
+    /teammate-rewrite|rewrites Agent B|rewrites concurrent teammate/i.test(text);
+  const messageDiscard =
+    row.messageDiscard === true ||
+    named === "message-discard" ||
+    /message-discard|message discarded|replaced with Agent A/i.test(text);
   const treeIdentical =
     row.treeIdentical === true ||
     named === "tree-identical" ||
     /tree-identical|byte-identical|tree is byte-identical/i.test(text);
-  const sharedTree =
-    row.sharedTree === true ||
-    named === "shared-tree" ||
-    /shared-tree|shared multi-agent|no worktree isolation/i.test(text);
+  const noRevParseGuard =
+    row.noRevParseGuard === true ||
+    row.amendBlind === true ||
+    named === "no-rev-parse-guard" ||
+    /no-rev-parse-guard|does not re-check|does not re-check HEAD/i.test(text);
+  const sharedWorktree =
+    row.sharedWorktree === true ||
+    named === "shared-worktree" ||
+    /shared-worktree|shared multi-agent|no worktree isolation/i.test(text);
   const hasClearRepro =
     row.hasClearRepro === true ||
     named === "has-clear-repro" ||
     /has-clear-repro|KinohTaGo|has repro|area:agents/i.test(text);
-  const rewritten =
+  const usurped =
     named !== IDLE_WORD &&
     named !== "hold" &&
     !cousinOnly &&
-    (rewrittenNow || named === SEEDED_WORD || /rewritten|#91513/i.test(text));
-  const sealed =
-    named === IDLE_WORD || named === "hold" || (sealedNow && !rewritten);
+    (usurpedNow || named === SEEDED_WORD || /usurped|#91513/i.test(text));
+  const attested =
+    named === IDLE_WORD || named === "hold" || (attestedNow && !usurped);
   return {
     named,
     cousinOnly,
-    rewrittenNow,
-    sealedNow,
+    usurpedNow,
+    attestedNow,
     headMoved,
-    messageUsurp,
+    teammateRewrite,
+    messageDiscard,
     treeIdentical,
-    sharedTree,
+    noRevParseGuard,
+    sharedWorktree,
     hasClearRepro,
-    rewritten,
-    sealed,
+    usurped,
+    attested,
   };
 }
 
 export function chipsOf(ticket) {
   const flags = flagsOf(ticket);
   const chips = [];
-  if (flags.sealed && !flags.rewritten) chips.push("sealed");
-  if (flags.rewritten) chips.push("rewritten");
-  if (flags.headMoved && flags.rewritten) chips.push("head-moved");
-  if (flags.messageUsurp && flags.rewritten) chips.push("message-usurp");
-  if (flags.treeIdentical && flags.rewritten) chips.push("tree-identical");
-  if (flags.sharedTree && flags.rewritten) chips.push("shared-tree");
-  if (flags.hasClearRepro && flags.rewritten) chips.push("has-clear-repro");
-  if ((flags.sealed || flags.named === "hold") && !flags.rewritten) {
+  if (flags.attested && !flags.usurped) chips.push("attested");
+  if (flags.usurped) chips.push("usurped");
+  if (flags.headMoved && flags.usurped) chips.push("head-moved");
+  if (flags.teammateRewrite && flags.usurped) chips.push("teammate-rewrite");
+  if (flags.messageDiscard && flags.usurped) chips.push("message-discard");
+  if (flags.treeIdentical && flags.usurped) chips.push("tree-identical");
+  if (flags.noRevParseGuard && flags.usurped) chips.push("no-rev-parse-guard");
+  if (flags.sharedWorktree && flags.usurped) chips.push("shared-worktree");
+  if (flags.hasClearRepro && flags.usurped) chips.push("has-clear-repro");
+  if ((flags.attested || flags.named === "hold") && !flags.usurped) {
     chips.push("hold");
   }
   if (ticket.seed && VERDICTS.includes(ticket.seed)) chips.push(ticket.seed);
@@ -627,20 +700,20 @@ export function chipsOf(ticket) {
 
 function reasonsOf(ticket, flags, verdict) {
   const reasons = [];
-  if (verdict === "sealed") {
+  if (verdict === "attested") {
     reasons.push(
-      "sealed; git rev-parse HEAD still equals Agent A's own C1 SHA; amend is safe",
+      "attested; git rev-parse HEAD still equals Agent A's own C1 SHA; amend is safe",
     );
-    reasons.push("hold: the will is a sealed clause; idle word sealed");
+    reasons.push("hold: the deed is an attested clause; idle word attested");
   }
   if (verdict === "hold") {
     reasons.push(
-      "hold; HEAD still Agent A's own SHA; the seal holds",
+      "hold; HEAD still Agent A's own SHA; the attestation holds",
     );
   }
-  if (verdict === "rewritten" || flags.rewritten) {
+  if (verdict === "usurped" || flags.usurped) {
     reasons.push(
-      "rewritten; #91513; git commit --amend does not re-check HEAD; silently rewrites concurrent teammate C2",
+      "usurped; #91513; git commit --amend does not re-check HEAD; silently rewrites concurrent teammate C2",
     );
   }
   if (flags.headMoved || verdict === "head-moved") {
@@ -648,9 +721,14 @@ function reasonsOf(ticket, flags, verdict) {
       "head-moved; git rev-parse HEAD is Agent B's C2, not Agent A's C1 SHA from the prior commit",
     );
   }
-  if (flags.messageUsurp || verdict === "message-usurp") {
+  if (flags.teammateRewrite || verdict === "teammate-rewrite") {
     reasons.push(
-      "message-usurp; Agent B's C2 commit message discarded and replaced with Agent A's intended amend",
+      "teammate-rewrite; Agent A's --amend rewrites Agent B's C2 instead of A's own C1",
+    );
+  }
+  if (flags.messageDiscard || verdict === "message-discard") {
+    reasons.push(
+      "message-discard; Agent B's C2 commit message discarded and replaced with Agent A's intended amend",
     );
   }
   if (flags.treeIdentical || verdict === "tree-identical") {
@@ -658,9 +736,14 @@ function reasonsOf(ticket, flags, verdict) {
       "tree-identical; amended commit's tree is byte-identical to C2; no working-tree file loss; history/metadata only",
     );
   }
-  if (flags.sharedTree || verdict === "shared-tree") {
+  if (flags.noRevParseGuard || verdict === "no-rev-parse-guard") {
     reasons.push(
-      "shared-tree; Agent Teams teammates share one plain git working tree; no worktree isolation",
+      "no-rev-parse-guard; git commit --amend does not re-check git rev-parse HEAD against the agent's own prior SHA",
+    );
+  }
+  if (flags.sharedWorktree || verdict === "shared-worktree") {
+    reasons.push(
+      "shared-worktree; Agent Teams teammates share one plain git working tree; no worktree isolation",
     );
   }
   if (flags.hasClearRepro || verdict === "has-clear-repro") {
@@ -673,11 +756,11 @@ function reasonsOf(ticket, flags, verdict) {
       "cousin is not Codicil; cite-only #90943 concurrent stale git index / #91349 worktree add falls through to shared main / #90146 shared worktree path clobber / #83311 isolation agents commit across branches / #88967 worktree from stale commit — not the #91513 amend-no-recheck-HEAD rewrite",
     );
   }
-  if (verdict === "rewritten" || flags.rewritten) {
+  if (verdict === "usurped" || flags.usurped) {
     reasons.push(HYPOTHESIS_NOTE);
     reasons.push(CONTRAST_NOTE);
   }
-  if (verdict !== "sealed" && verdict !== "hold") {
+  if (verdict !== "attested" && verdict !== "hold") {
     reasons.push(PHRASE);
   }
   return reasons;
@@ -685,46 +768,46 @@ function reasonsOf(ticket, flags, verdict) {
 
 function pickVerdict(seed, flags) {
   const named = canonicalSeed(seed);
-  if (named === IDLE_WORD && (flags.sealed || !flags.rewritten)) return "sealed";
-  if (named === "hold" && !flags.rewritten) return "hold";
-  if (named === SEEDED_WORD) return "rewritten";
+  if (named === IDLE_WORD && (flags.attested || !flags.usurped)) return "attested";
+  if (named === "hold" && !flags.usurped) return "hold";
+  if (named === SEEDED_WORD) return "usurped";
   if (VERDICTS.includes(named) && named !== IDLE_WORD && named !== "hold") {
     return named;
   }
-  if (flags.cousinOnly) return "sealed";
-  if (flags.rewritten) return "rewritten";
-  if (flags.sealed) return "sealed";
-  return "sealed";
+  if (flags.cousinOnly) return "attested";
+  if (flags.usurped) return "usurped";
+  if (flags.attested) return "attested";
+  return "attested";
 }
 
 function benchOf(flags, ticket, verdict) {
-  if (verdict === "rewritten" || flags.rewritten) {
+  if (verdict === "usurped" || flags.usurped) {
     return {
-      case: "rewritten — blind amend; usurped legatee",
+      case: "usurped — blind amend; silent rewrite of a teammate's will",
       jaw: "git commit --amend operates on whatever HEAD is, not the commit Agent A just made",
       shear: "HEAD moved from C1 to teammate C2; no git rev-parse re-check",
       drop: "C2 tree kept byte-identical; B's message discarded and replaced with A's",
-      mark: "codicil rewritten; admit the teammate's HEAD already moved",
+      mark: "codicil usurped; admit the HEAD already moved",
       note: PHRASE,
     };
   }
   if (verdict === "hold") {
     return {
-      case: "sealed — HEAD still agent's own SHA; amend safe",
+      case: "attested — HEAD still agent's own SHA; amend safe",
       jaw: "git rev-parse HEAD equals the SHA from Agent A's own prior commit",
       shear: "HEAD has not moved; no concurrent C2",
-      drop: "the clause on the desk is still A's will",
-      mark: "codicil sealed; the clause holds",
-      note: "Hold: the will is sealed.",
+      drop: "the deed on the desk is still A's will",
+      mark: "codicil attested; the deed holds",
+      note: "Hold: the deed is attested.",
     };
   }
   return {
-    case: "sealed — HEAD still agent's own SHA; amend safe",
+    case: "attested — HEAD still agent's own SHA; amend safe",
     jaw: "before amend, verify git rev-parse HEAD still equals the agent's own SHA",
     shear: "no mid-desk rewrite; no usurped legatee",
-    drop: "concurrent clerks cannot rewrite the sealed clause",
-    mark: "codicil sealed; idle word sealed",
-    note: "Sealed: the clause holds.",
+    drop: "concurrent clerks cannot rewrite the attested deed",
+    mark: "codicil attested; idle word attested",
+    note: "Attested: the deed holds.",
   };
 }
 
@@ -735,13 +818,13 @@ export function analyze(input) {
   const seed = String(ticket.seed || "");
   const verdict = pickVerdict(seed, flags);
   const hold = HOLD_VERDICTS.includes(verdict);
-  const rewritten = verdict === "rewritten" || flags.rewritten;
+  const usurped = verdict === "usurped" || flags.usurped;
   return {
     verdict,
     chips,
     reasons: reasonsOf(ticket, flags, verdict),
-    sealed: verdict === "sealed" || (flags.sealed && !rewritten),
-    rewritten,
+    attested: verdict === "attested" || (flags.attested && !usurped),
+    usurped,
     hold,
     alarm: !hold,
     idleWord: IDLE_WORD,
@@ -768,16 +851,18 @@ export function decide(input) {
 
 export function decideSeed(name) {
   if (name === SEEDED_WORD || name === 91513 || name === "91513") {
-    return analyze(seedRewritten());
+    return analyze(seedUsurped());
   }
   if (name === "head-moved") return analyze(seedHeadMoved());
-  if (name === "message-usurp") return analyze(seedMessageUsurp());
+  if (name === "teammate-rewrite") return analyze(seedTeammateRewrite());
+  if (name === "message-discard") return analyze(seedMessageDiscard());
   if (name === "tree-identical") return analyze(seedTreeIdentical());
-  if (name === "shared-tree") return analyze(seedSharedTree());
+  if (name === "no-rev-parse-guard") return analyze(seedNoRevParseGuard());
+  if (name === "shared-worktree") return analyze(seedSharedWorktree());
   if (name === "has-clear-repro") return analyze(seedHasClearRepro());
   if (name === "hold") return analyze(seedHold());
-  if (name === IDLE_WORD || name === "sealed" || name === "open") {
-    return analyze(seedSealed());
+  if (name === IDLE_WORD || name === "attested" || name === "open") {
+    return analyze(seedAttested());
   }
   if (
     name === 90943 ||
@@ -793,7 +878,7 @@ export function decideSeed(name) {
     return analyze(seedCousin());
   }
   if (SEED_FNS[name]) return analyze(SEED_FNS[name]());
-  return analyze(seedSealed());
+  return analyze(seedAttested());
 }
 
 export function handle(input) {
@@ -802,11 +887,11 @@ export function handle(input) {
     ...result,
     hookSpecificOutput: {
       additionalContext:
-        result.verdict === "rewritten" || (result.rewritten && result.alarm)
-          ? `rewritten codicil #${FEATURED_ISSUE}: git commit --amend does not re-check HEAD; silently rewrites concurrent teammate C2. ${HYPOTHESIS_NOTE}`
+        result.verdict === "usurped" || (result.usurped && result.alarm)
+          ? `usurped codicil #${FEATURED_ISSUE}: git commit --amend does not re-check HEAD; silently rewrites concurrent teammate C2. ${HYPOTHESIS_NOTE}`
           : result.verdict === "hold"
-            ? "hold. HEAD still Agent A's own SHA. Score the seal."
-            : `sealed codicil. Idle word ${IDLE_WORD}. git rev-parse HEAD still equals Agent A's own C1 SHA; amend is safe.`,
+            ? "hold. HEAD still Agent A's own SHA. Score the attestation."
+            : `attested codicil. Idle word ${IDLE_WORD}. git rev-parse HEAD still equals Agent A's own C1 SHA; amend is safe.`,
     },
   };
 }
