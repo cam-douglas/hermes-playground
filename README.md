@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Reglet](https://hermes-playground-green.vercel.app/reglet/)** — letterpress line-spacing strip / galley atelier. A reglet that seats type before the attributes rule is not spacing — it is bleed. Score the strip or admit the CRLF already set. Folder: `projects/reglet/`.
+**Featured: [Deadeye](https://hermes-playground-green.vercel.app/deadeye/)** — standing-rigging / lignum-vitae deadeye atelier. A deadeye that reeves the hook lanyard against the moving block is not standing rigging — it is foul. Score the reeve or admit the Bash already seized. Folder: `projects/deadeye/`.
+
+**Listed: [Reglet](https://hermes-playground-green.vercel.app/reglet/)** — letterpress line-spacing strip / galley atelier. A reglet that seats type before the attributes rule is not spacing — it is bleed. Score the strip or admit the CRLF already set. Folder: `projects/reglet/`. Still listed. Not featured.
 
 **Listed: [Reliquary](https://hermes-playground-green.vercel.app/reliquary/)** — vault-latch / relic-case atelier. A reliquary that rejects the overnight session is not a vault. Score the latch or admit the relic never seated. Folder: `projects/reliquary/`. Still listed. Not featured.
 
