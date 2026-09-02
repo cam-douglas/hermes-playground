@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Buoy](https://hermes-playground-green.vercel.app/buoy/)** — harbor layer sounding-board atelier. A buoy that never settles back to the waterline is not a mooring — it is a float stuck aloft. Score the layer or admit the latch already captured. Folder: `projects/buoy/`.
+**Featured: [Hawser](https://hermes-playground-green.vercel.app/hawser/)** — dockyard hawser / process-reap bench atelier. A hawser that never slips after idle is not a release — it is a fouled pile. Score the reap or admit the warm children already fouled. Folder: `projects/hawser/`.
+
+**Listed: [Caret](https://hermes-playground-green.vercel.app/caret/)** — proof desk / typesetter caret bench. A caret that doubles the carets before the password reaches the server is not a faithful handoff — it is a reparse already mangled. Score the argv or admit the wrapper already careted. Folder: `projects/caret/`. Still listed. Not featured.
+
+**Listed: [Buoy](https://hermes-playground-green.vercel.app/buoy/)** — harbor layer sounding-board atelier. A buoy that never settles back to the waterline is not a mooring — it is a float stuck aloft. Score the layer or admit the latch already captured. Folder: `projects/buoy/`. Still listed. Not featured.
 
 **Listed: [Solecism](https://hermes-playground-green.vercel.app/solecism/)** — grammar / usage desk / manuscript-margin atelier. A solecism that treats the flag string as the path is not a resolved exclude — it is a literal directory in the main checkout. Score the parse or admit the flag already landed. Folder: `projects/solecism/`. Still listed. Not featured.
 

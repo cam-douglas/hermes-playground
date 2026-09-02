@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hawser — process-reap bench for #91578</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --tar: #1a1612;
+        --plank: #2a2218;
+        --hemp: #c4a36a;
+        --hemp-dark: #8a6e3e;
+        --iron: #6e6860;
+        --iron-dark: #3d3834;
+        --fog: #d6d0c6;
+        --fog-soft: #b8b2a8;
+        --amber: #d9a21b;
+        --amber-lit: #f0bc3a;
+        --ok: #6b8f5a;
+        --ok-lit: #86ad72;
+        --rule: rgba(196, 163, 106, 0.18);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Outfit, "Segoe UI", sans-serif;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 47px,
+            rgba(196, 163, 106, 0.03) 47px 48px
+          ),
+          radial-gradient(640px 280px at 8% 100%, rgba(217, 162, 27, 0.08), transparent 58%),
+          linear-gradient(180deg, #241c14 0%, var(--tar) 46%, #12100d 100%);
+        color: var(--fog);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--amber-lit); }
+      .wrap { width: min(1220px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 72px; }
+      .chrome { margin-bottom: 18px; }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--amber);
+      }
+      h1 {
+        font-family: Fraunces, Georgia, serif;
+        font-size: clamp(54px, 8vw, 96px);
+        letter-spacing: -0.03em;
+        margin: 6px 0 10px;
+        font-weight: 700;
+        color: var(--hemp);
+        line-height: 0.92;
+      }
+      h1 .eye { color: var(--amber); font-style: italic; font-weight: 500; }
+      .lede { max-width: 64em; color: var(--fog-soft); line-height: 1.65; }
+      .yard {
+        margin: 22px 0;
+        padding: 18px;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(42, 34, 24, 0.94), rgba(26, 22, 18, 0.96));
+        box-shadow:
+          0 22px 44px rgba(8, 6, 4, 0.45),
+          inset 0 1px 0 rgba(196, 163, 106, 0.08);
+      }
+      .yard-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        margin-bottom: 14px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      .stations {
+        display: grid;
+        grid-template-columns: 0.72fr 1.15fr 0.85fr;
+        gap: 12px;
+      }
+      @media (max-width: 920px) {
+        .stations { grid-template-columns: 1fr; }
+      }
+      .station {
+        border: 1px solid var(--rule);
+        background: #211b14;
+        padding: 12px;
+        min-height: 280px;
+      }
+      .station em {
+        font-style: normal;
+        display: block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--iron);
+        margin-bottom: 10px;
+      }
+      .bitts {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      .posts {
+        display: flex;
+        gap: 28px;
+        align-items: flex-end;
+        height: 168px;
+      }
+      .post {
+        width: 28px;
+        height: 150px;
+        border-radius: 6px 6px 2px 2px;
+        background:
+          linear-gradient(90deg, #4a4540, var(--iron), #3a3530);
+        box-shadow: inset -4px 0 0 rgba(0, 0, 0, 0.25);
+        position: relative;
+      }
+      .post::after {
+        content: "";
+        position: absolute;
+        top: 14px;
+        left: -6px;
+        right: -6px;
+        height: 10px;
+        border-radius: 6px;
+        background: #7a746c;
+      }
+      .coil {
+        width: 100%;
+        height: 92px;
+        border-radius: 50%;
+        border: 10px solid var(--hemp-dark);
+        box-shadow:
+          inset 0 0 0 8px #a8884e,
+          0 0 0 6px #6a542c;
+        position: relative;
+      }
+      .coil::before {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        border-radius: 50%;
+        border: 7px solid var(--hemp);
+        opacity: 0.7;
+      }
+      .yard.fault .coil {
+        height: 132px;
+        border-width: 16px;
+        box-shadow:
+          inset 0 0 0 10px #a8884e,
+          0 0 0 8px #6a542c,
+          0 18px 0 #5a4624,
+          0 28px 0 #8a6e3e;
+      }
+      .slip-word {
+        font-family: Fraunces, Georgia, serif;
+        font-size: 22px;
+        color: var(--ok);
+      }
+      .yard.fault .slip-word { color: var(--amber-lit); }
+      .ladder {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .rung {
+        display: grid;
+        grid-template-columns: 52px 1fr 72px;
+        gap: 8px;
+        align-items: center;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 5px 8px;
+        background: #2c261c;
+        border-left: 3px solid var(--iron-dark);
+        color: var(--fog-soft);
+      }
+      .rung b { color: var(--hemp); font-weight: 500; }
+      .rung .bar {
+        height: 6px;
+        background: #3a3226;
+        overflow: hidden;
+      }
+      .rung .bar i {
+        display: block;
+        height: 100%;
+        background: var(--ok);
+        width: 4%;
+      }
+      .yard.fault .rung {
+        border-left-color: var(--amber);
+      }
+      .yard.fault .rung .bar i { background: var(--amber); }
+      .yard.fault .rung:last-child {
+        background: #3a2c12;
+        color: var(--fog);
+      }
+      .well {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .tank {
+        height: 160px;
+        border: 2px solid var(--iron);
+        background: #16120e;
+        position: relative;
+        overflow: hidden;
+      }
+      .tank .fill {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 8%;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            #3a2c14 0 8px,
+            #2a2010 8px 16px
+          );
+      }
+      .yard.fault .tank .fill {
+        height: 96%;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            #6a4a12 0 8px,
+            #d9a21b 8px 16px
+          );
+      }
+      .tank .cap {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--fog);
+      }
+      .plaque {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 10px;
+        line-height: 1.45;
+        color: var(--fog-soft);
+        border: 1px dashed rgba(217, 162, 27, 0.28);
+        padding: 8px;
+        min-height: 72px;
+      }
+      .yard.fault .plaque { color: var(--amber-lit); border-color: var(--amber); }
+      .coils {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 6px;
+      }
+      @media (max-width: 700px) {
+        .coils { grid-template-columns: repeat(5, 1fr); }
+      }
+      .kid {
+        aspect-ratio: 1;
+        border-radius: 50%;
+        border: 4px solid var(--hemp-dark);
+        background: #2a2218;
+        display: grid;
+        place-items: center;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 9px;
+        color: var(--iron);
+      }
+      .yard.fault .kid {
+        border-color: var(--amber);
+        color: var(--amber);
+        box-shadow: 0 8px 0 #5a4624;
+      }
+      .rail {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        color: var(--iron);
+      }
+      .rail b {
+        display: block;
+        font-family: Fraunces, Georgia, serif;
+        font-size: 22px;
+        color: var(--fog);
+      }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+      button {
+        font-family: Outfit, sans-serif;
+        letter-spacing: 0.02em;
+        border: 1px solid rgba(196, 163, 106, 0.28);
+        background: #2a2218;
+        color: var(--fog);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--amber); color: var(--amber-lit); }
+      .verdict {
+        font-family: Fraunces, Georgia, serif;
+        font-size: 30px;
+      }
+      .verdict.alarm { color: var(--amber-lit); }
+      .verdict.hold { color: var(--ok-lit); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 16px; }
+      .chip {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 3px 7px;
+        border: 1px solid rgba(110, 104, 96, 0.4);
+        color: var(--iron);
+        background: transparent;
+        cursor: pointer;
+      }
+      .chip.lit { border-color: var(--amber); color: var(--amber-lit); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #16120e;
+        color: var(--fog);
+        border: 1px solid var(--rule);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .cousin, .stayoff, .facts {
+        margin: 18px 0;
+        padding: 12px 14px;
+        border: 1px solid var(--rule);
+        background: rgba(33, 27, 20, 0.72);
+        font-size: 14px;
+        color: var(--fog-soft);
+      }
+      .facts dt {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        color: var(--amber);
+      }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed rgba(217, 162, 27, 0.36);
+        color: var(--iron);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <p class="mark">08:50 / hermes catalog #131 / #91578 · #hermes-catalog</p>
+        <h1>Hawser<span class="eye" aria-hidden="true"> ∿</span></h1>
+        <p class="lede">
+          Dockyard hawser / process-reap bench. A hawser should slip
+          the bitts when WarmLifecycle logs
+          <code>Idle timeout reached, disconnecting</code>
+          — the per-session <code>claude.exe</code> and MCP children
+          go with it. On Windows desktop, every warmed local session
+          lays another copy of ~10 MCP servers (toolCount=92) and the
+          idle disconnect never reaps them. A hawser that never slips
+          after idle is not a release — it is a fouled pile. Score
+          the reap or admit the warm children already fouled.
+        </p>
+        <p class="lede">Idle word: slipped. Seeded word: fouled / #91578. Diagnostic only. No credentials.</p>
+      </header>
+
+      <section class="yard" id="yard" aria-label="dockyard hawser process-reap bench">
+        <div class="yard-head">
+          <span>hemp · tar · iron · fog · signal amber</span>
+          <span id="mark">08:50 / hermes catalog #131 / #91578</span>
+        </div>
+        <div class="stations">
+          <div class="station bitts" aria-label="mooring bitts and hawser coil">
+            <em>bitts · slip or foul</em>
+            <div class="posts" aria-hidden="true">
+              <div class="post"></div>
+              <div class="post"></div>
+            </div>
+            <div class="coil" id="coil" aria-hidden="true"></div>
+            <div class="slip-word" id="slip-word">slipped</div>
+          </div>
+          <div class="station" aria-label="process-tree step ladder">
+            <em>step ladder · children 1 → 1182</em>
+            <div class="ladder" id="ladder"></div>
+          </div>
+          <div class="station well" aria-label="RSS sounding well and WarmLifecycle plaque">
+            <em>sounding well · children RSS</em>
+            <div class="tank">
+              <div class="fill" id="rss-fill"></div>
+              <div class="cap" id="rss-cap">38 MB</div>
+            </div>
+            <div class="plaque" id="plaque">
+              idle disconnect reaped the hawser · children returned to 1
+            </div>
+          </div>
+        </div>
+        <div class="coils" id="coils" aria-label="MCP-child rope coils"></div>
+        <div class="rail">
+          <div><b id="c-word">slipped</b><span>hawser hold</span></div>
+          <div><b id="c-kids">1</b><span>children</span></div>
+          <div><b id="c-rss">38 MB</b><span>children RSS</span></div>
+          <div><b id="c-reap">reaped</b><span>idle disconnect</span></div>
+        </div>
+      </section>
+
+      <p class="verdict hold" id="verdict">slipped</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">idle disconnect reaped the hawser; children returned to 1 / 38 MB; idle word slipped.</p>
+
+      <div class="actions">
+        <button type="button" data-act="score">Score the reap</button>
+        <button type="button" data-act="idle">Pin idle slipped</button>
+        <button type="button" data-act="seed">Pin seeded fouled</button>
+        <button type="button" data-act="admit">Admit the warm children already fouled</button>
+        <button type="button" data-act="fixtures">Load fixtures</button>
+        <button type="button" data-act="reset">Reset to slipped</button>
+      </div>
+
+      <textarea id="probe" spellcheck="false" aria-label="probe ticket"></textarea>
+      <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe. Score the reap.</div>
+
+      <dl class="facts">
+        <dt>Telemetry (2026-09-02, one run)</dt>
+        <dd>08:49 → 1 child / 38 MB / 17.7 GB free. 09:49 → 138 / 4.6 GB. 10:49 → 226 / 7.1 GB. 11:48 → 369 / 10.6 GB. 12:48 → 425 / 12.2 GB. 14:48 → 534 / 14.5 GB. 15:48 → 753 / 21.3 GB. 18:48 → 1014 / 28.4 GB. 20:30 → <strong>1182 / 32.9 GB / 4.5 GB free</strong>.</dd>
+        <dt>WarmLifecycle disconnect that fails to slip</dt>
+        <dd>20:30:13 Starting idle timeout for local_81866749-...: 900s. 20:30:15 Idle timeout reached, disconnecting local_d3800dbc-.... Child count still 1182 immediately after.</dd>
+        <dt>How the run ends</dt>
+        <dd>20:30:22 GPU process gone: type GPU, reason crashed, exitCode 101457950. The whole app exits with it. A later comment names in-app browser screenshot as a GPU trigger; that is not the unreaped-child mechanism.</dd>
+        <dt>Per-session cost</dt>
+        <dd>After a clean restart, warming ~5 restored sessions produced 50 children (~2 GB) within 90 seconds — about 10 processes per warm session with ~10 MCP servers / toolCount=92.</dd>
+        <dt>Likely reap path (NON-BINDING)</dt>
+        <dd>WarmLifecycle disconnects the session IPC but does not terminate the per-session claude.exe + MCP child tree on Windows (no Job Object / no cascading kill). Each subsequent warm adds another unreaped copy. Discard if issue evidence disagrees. Do not claim Claude Code source you have not seen.</dd>
+        <dt>Environment</dt>
+        <dd>Claude Desktop for Windows 1.40609.1 (Microsoft Store / MSIX). Bundled Claude Code 2.1.255. Windows 11 Pro, build 10.0.26200, x64, 28 GB RAM. Reporter megzieberr. Filed 2026-09-02T19:08:38Z. OPEN, bug, has-repro, platform:windows, area:mcp, area:desktop.</dd>
+      </dl>
+
+      <section class="chips" aria-label="verdict chips" id="chip-switch">
+        <button type="button" class="chip" data-chip="slipped">slipped</button>
+        <button type="button" class="chip" data-chip="fouled">fouled</button>
+        <button type="button" class="chip" data-chip="unreaped">unreaped</button>
+        <button type="button" class="chip" data-chip="idle-timeout">idle-timeout</button>
+        <button type="button" class="chip" data-chip="warmlifecycle">warmlifecycle</button>
+        <button type="button" class="chip" data-chip="process-tree">process-tree</button>
+        <button type="button" class="chip" data-chip="rss-climb">rss-climb</button>
+        <button type="button" class="chip" data-chip="gpu-crash">gpu-crash</button>
+        <button type="button" class="chip" data-chip="monotonic">monotonic</button>
+        <button type="button" class="chip" data-chip="per-session-cost">per-session-cost</button>
+        <button type="button" class="chip" data-chip="hold">hold</button>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #91578):
+        <a href="https://github.com/anthropics/claude-code/issues/77593">#77593</a>
+        Windows background Bash orphans (no Job Object) — same symptom class
+        (non-reaped children on Windows), different mechanism from WarmLifecycle
+        MCP-child reap.
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF proof-desk caret · harbor-buoy layer board · usage-desk solecism · vault-coffer · probate will-chamber · crimp pliers/foil · jackfield channel-strip · tocsin fire-bell · bolter flour-mill · deadeye standing-rigging · reglet letterpress.
+      </aside>
+    </main>
+    <script>
+      const HOLD = new Set(["slipped", "hold"]);
+      const STEPS = [
+        { time: "08:49", children: 1, rss: "38 MB", pct: 4 },
+        { time: "09:49", children: 138, rss: "4.6 GB", pct: 12 },
+        { time: "10:49", children: 226, rss: "7.1 GB", pct: 19 },
+        { time: "11:48", children: 369, rss: "10.6 GB", pct: 31 },
+        { time: "12:48", children: 425, rss: "12.2 GB", pct: 36 },
+        { time: "14:48", children: 534, rss: "14.5 GB", pct: 45 },
+        { time: "15:48", children: 753, rss: "21.3 GB", pct: 64 },
+        { time: "18:48", children: 1014, rss: "28.4 GB", pct: 86 },
+        { time: "20:30", children: 1182, rss: "32.9 GB", pct: 100 },
+      ];
+      const idle = {
+        seed: "slipped",
+        persistReap: true,
+        slipped: true,
+        fouled: false,
+        children: 1,
+        childrenAfterIdle: 1,
+        childrenRssMb: 38,
+        reaped: true,
+        idleDisconnect: true,
+        outputText: "slipped; idle disconnect reaped the hawser; children returned to 1 / 38 MB"
+      };
+      const seeded = {
+        seed: "fouled",
+        issue: 91578,
+        persistReap: false,
+        slipped: false,
+        fouled: true,
+        children: 1182,
+        childrenAfterIdle: 1182,
+        childrenRssGb: 32.9,
+        reaped: false,
+        idleDisconnect: true,
+        unreaped: true,
+        idleTimeout: true,
+        warmlifecycle: true,
+        processTree: true,
+        rssClimb: true,
+        gpuCrash: true,
+        monotonic: true,
+        perSessionCost: true,
+        gpuExit: 101457950,
+        reporter: "megzieberr",
+        outputText: "fouled; #91578; WarmLifecycle Idle timeout reached, disconnecting but children never reaped; 1 → 1182 / 32.9 GB RSS"
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...idle }; }
+      }
+
+      function scoreTicket(t) {
+        const text = JSON.stringify(t);
+        const named = String(t.seed || "");
+        const piled = (t.childrenAfterIdle != null && t.childrenAfterIdle > 1)
+          || (t.children != null && t.children > 1 && t.reaped === false)
+          || (t.childrenRssGb != null && t.childrenRssGb >= 10);
+        const fouledish = named === "fouled" || t.issue === 91578 || t.fouled === true
+          || t.unreaped === true
+          || t.reaped === false
+          || piled
+          || (t.persistReap === false && t.idleDisconnect === true)
+          || /#91578|fouled|never reaped/.test(text);
+        const holdish = HOLD.has(named)
+          || (t.persistReap === true && t.fouled !== true && !fouledish);
+        const verdict = named && !HOLD.has(named) && named !== "fouled"
+          ? named
+          : fouledish && !holdish
+            ? "fouled"
+            : named === "hold"
+              ? "hold"
+              : "slipped";
+        const chips = [];
+        if (HOLD.has(verdict) || holdish) chips.push("slipped", "hold");
+        if (fouledish && !holdish) {
+          chips.push("fouled", "unreaped", "idle-timeout",
+            "warmlifecycle", "process-tree", "rss-climb",
+            "gpu-crash", "monotonic", "per-session-cost");
+        }
+        if (named && !chips.includes(named)) chips.push(named);
+        return {
+          verdict,
+          chips: [...new Set(chips)],
+          hold: HOLD.has(verdict),
+          ticket: t,
+        };
+      }
+
+      function paintLadder(alarm) {
+        const host = document.getElementById("ladder");
+        host.innerHTML = STEPS.map((step, i) => {
+          const live = alarm || i === 0;
+          const width = alarm ? step.pct : (i === 0 ? 4 : 0);
+          return `<div class="rung">
+            <span>${step.time}</span>
+            <span class="bar"><i style="width:${width}%"></i></span>
+            <b>${live ? step.children : "—"}</b>
+          </div>`;
+        }).join("");
+      }
+
+      function paintCoils(alarm) {
+        const host = document.getElementById("coils");
+        host.innerHTML = Array.from({ length: 10 }, (_, i) =>
+          `<div class="kid">${alarm ? "mcp" : String(i + 1)}</div>`
+        ).join("");
+      }
+
+      function paint(result) {
+        const alarm = !result.hold;
+        const t = result.ticket;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "Warm children already fouled. Admit the warm children already fouled."
+          : "idle disconnect reaped the hawser; children returned to 1 / 38 MB; idle word slipped.";
+        document.getElementById("yard").classList.toggle("fault", alarm);
+        document.getElementById("slip-word").textContent = alarm ? "fouled" : "slipped";
+        document.getElementById("rss-cap").textContent = alarm ? "32.9 GB" : "38 MB";
+        document.getElementById("plaque").textContent = alarm
+          ? "20:30:15 Idle timeout reached, disconnecting local_d3800dbc-... · children still 1182"
+          : "idle disconnect reaped the hawser · children returned to 1";
+        document.getElementById("c-word").textContent = alarm ? "fouled" : "slipped";
+        document.getElementById("c-kids").textContent = alarm ? (t.children || 1182) : 1;
+        document.getElementById("c-rss").textContent = alarm ? "32.9 GB" : "38 MB";
+        document.getElementById("c-reap").textContent = alarm ? "unreaped" : "reaped";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintLadder(alarm);
+        paintCoils(alarm);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(`./data/${name}`);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return apply({ ...idle });
+          if (act === "seed" || act === "admit") {
+            try { apply(await loadNamed("fouled.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("91578.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") apply(parseProbe(document.getElementById("probe").value || "{}"));
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const chip = btn.dataset.chip;
+          if (chip === "slipped" || chip === "hold") {
+            apply({ ...idle, seed: chip });
+            return;
+          }
+          if (chip === "fouled") {
+            apply({ ...seeded });
+            return;
+          }
+          apply({ seed: chip, fouled: true, persistReap: false, reaped: false });
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      // ?embed=1 hides chrome for the hub living featured well
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
