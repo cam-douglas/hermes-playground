@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deadeye — standing-rigging Bash deadlock for #91226</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,500;0,7..72,700;1,7..72,500&family=Red+Hat+Text:wght@400;500;600;700&family=Red+Hat+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --indigo: #071526;
+        --sea: #0b1f3a;
+        --deep: #12304f;
+        --foam: #c9d8e6;
+        --rope: #c4a574;
+        --rope-dark: #8b6f47;
+        --copper: #b87333;
+        --oxide: #2d6a5a;
+        --oxide-lit: #4a9a7e;
+        --seize: #c45c3a;
+        --plank: #12263d;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Red Hat Text", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(720px 420px at 88% -10%, rgba(184, 115, 51, 0.16), transparent 54%),
+          radial-gradient(640px 380px at 8% 0%, rgba(45, 106, 90, 0.18), transparent 50%),
+          linear-gradient(180deg, #0a1a30 0%, var(--sea) 48%, #061018 100%);
+        color: var(--foam);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--rope); }
+      .wrap { width: min(1100px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 72px; }
+      .chrome { margin-bottom: 18px; }
+      .mark {
+        font-family: "Red Hat Mono", ui-monospace, monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--copper);
+      }
+      h1 {
+        font-family: "Literata", Georgia, serif;
+        font-size: clamp(44px, 7vw, 78px);
+        letter-spacing: -0.03em;
+        margin: 8px 0 10px;
+        font-weight: 700;
+        color: #e8eef4;
+      }
+      .lede { max-width: 54em; color: #9fb0c2; line-height: 1.65; }
+      .atelier {
+        margin: 22px 0;
+        padding: 22px;
+        border: 1px solid rgba(196, 165, 116, 0.28);
+        background:
+          linear-gradient(180deg, rgba(18, 48, 79, 0.72), rgba(7, 21, 38, 0.88));
+        box-shadow: 0 18px 40px rgba(3, 10, 18, 0.45);
+      }
+      .atelier-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        margin-bottom: 16px;
+        font-family: "Red Hat Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--rope);
+      }
+      .rig-row {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 16px;
+        align-items: center;
+      }
+      @media (max-width: 760px) {
+        .rig-row { grid-template-columns: 1fr; }
+      }
+      .deadeye {
+        width: 168px;
+        height: 168px;
+        margin: 0 auto;
+        border-radius: 50%;
+        position: relative;
+        background:
+          radial-gradient(circle at 38% 30%, #6b4a2a 0 18%, #3d2a18 46%, #24180e 100%);
+        box-shadow:
+          inset 0 0 0 10px #2a1c10,
+          inset 0 0 0 14px var(--rope-dark),
+          0 10px 22px rgba(0, 0, 0, 0.45);
+      }
+      .deadeye.fouled {
+        box-shadow:
+          inset 0 0 0 10px #3a140c,
+          inset 0 0 0 14px var(--seize),
+          0 10px 22px rgba(0, 0, 0, 0.45);
+      }
+      .hole {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #061018;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 0 3px #1a120a;
+      }
+      .hole.a { top: 28px; left: 70px; }
+      .hole.b { bottom: 36px; left: 36px; }
+      .hole.c { bottom: 36px; right: 36px; }
+      .lanyard {
+        position: absolute;
+        inset: 18px;
+        border-radius: 50%;
+        border: 2px dashed rgba(196, 165, 116, 0.45);
+        pointer-events: none;
+      }
+      .deadeye.fouled .lanyard { border-color: rgba(196, 92, 58, 0.7); }
+      .dial {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .block {
+        padding: 12px;
+        border: 1px solid rgba(196, 165, 116, 0.24);
+        background: var(--plank);
+        font-family: "Red Hat Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .block b {
+        display: block;
+        font-family: "Literata", Georgia, serif;
+        font-size: 18px;
+        color: var(--oxide-lit);
+        margin-bottom: 4px;
+      }
+      .block.fault b { color: var(--seize); }
+      .lamp-row {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .lamp {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1px solid var(--rope-dark);
+        background: var(--oxide);
+      }
+      .lamp.lit { background: var(--seize); border-color: var(--seize); }
+      .fault {
+        font-family: "Red Hat Mono", ui-monospace, monospace;
+        font-size: 13px;
+        color: var(--oxide-lit);
+      }
+      .fault.lit { color: var(--seize); }
+      .ratchet {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-left: 4px solid var(--oxide);
+        background: rgba(7, 21, 38, 0.7);
+        font-family: "Red Hat Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .ratchet.seized { border-left-color: var(--seize); color: #f0c8b8; }
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      @media (max-width: 760px) {
+        .split { grid-template-columns: 1fr; }
+      }
+      .split article {
+        padding: 12px;
+        border: 1px dashed rgba(196, 165, 116, 0.28);
+        background: rgba(11, 31, 58, 0.55);
+      }
+      .split h3 {
+        font-family: "Literata", Georgia, serif;
+        margin: 0 0 6px;
+        font-size: 20px;
+        color: var(--rope);
+      }
+      .hatch {
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid rgba(45, 106, 90, 0.45);
+        background: rgba(45, 106, 90, 0.12);
+      }
+      .hatch h3 {
+        font-family: "Literata", Georgia, serif;
+        margin: 0 0 6px;
+        font-size: 18px;
+        color: var(--oxide-lit);
+      }
+      .rail {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        font-family: "Red Hat Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .rail b {
+        display: block;
+        font-family: "Literata", Georgia, serif;
+        font-size: 26px;
+        color: var(--copper);
+      }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+      button {
+        font-family: "Red Hat Text", sans-serif;
+        letter-spacing: 0.02em;
+        border: 1px solid rgba(196, 165, 116, 0.4);
+        background: #10243a;
+        color: var(--foam);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--copper); color: var(--rope); }
+      .verdict {
+        font-family: "Literata", Georgia, serif;
+        font-size: 28px;
+      }
+      .verdict.alarm { color: var(--seize); }
+      .verdict.hold { color: var(--oxide-lit); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 16px; }
+      .chip {
+        font-family: "Red Hat Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 3px 7px;
+        border: 1px solid rgba(196, 165, 116, 0.28);
+        color: #8aa0b4;
+      }
+      .chip.lit { border-color: var(--copper); color: var(--rope); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #0a1a2c;
+        color: var(--foam);
+        border: 1px solid rgba(196, 165, 116, 0.28);
+        font-family: "Red Hat Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .cousin, .stayoff, .facts {
+        margin: 18px 0;
+        padding: 12px 14px;
+        border: 1px solid rgba(196, 165, 116, 0.22);
+        background: rgba(11, 31, 58, 0.7);
+        font-size: 14px;
+        color: #9fb0c2;
+      }
+      .facts dt {
+        font-family: "Red Hat Mono", ui-monospace, monospace;
+        color: var(--copper);
+      }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed rgba(196, 165, 116, 0.35);
+        color: #8aa0b4;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <p class="mark">20:50 / hermes catalog #121 / #91226 · #hermes-catalog</p>
+        <h1>Deadeye</h1>
+        <p class="lede">
+          Standing-rigging / lignum-vitae deadeye. A deadeye that should reeve
+          the PreToolUse hook lanyard against the <strong>mast</strong>
+          (stable project root / <code>$CLAUDE_PROJECT_DIR</code>), but a
+          <strong>relative</strong> hook command path is resolved against the
+          Bash tool's <strong>mutable, cd-able working directory</strong>.
+          After any <code>cd some/subdirectory &amp;&amp; ...</code>, hook
+          spawn fails <code>ENOENT</code> on
+          <code>&lt;drifted_cwd&gt;/scripts/...</code> — and because
+          PreToolUse runs before the user command, every subsequent Bash call
+          (including <code>pwd</code>, <code>echo</code>, corrective
+          <code>cd</code>) fails the same way. Session Bash is permanently
+          deadlocked. Subagents without worktree isolation inherit the broken
+          cwd; <code>isolation: "worktree"</code> resets cwd and escapes.
+          A deadeye that reeves the hook lanyard against the moving block is
+          not standing rigging — it is foul. Score the reeve or admit the
+          Bash already seized.
+        </p>
+        <p class="lede">Idle word: reeved. Seeded word: fouled / #91226.</p>
+      </header>
+
+      <section class="atelier" aria-label="standing-rigging deadeye atelier">
+        <div class="atelier-head">
+          <span>three-hole lignum-vitae plaque · mast vs moving-block dial</span>
+          <span id="mark">20:50 / hermes catalog #121 / #91226</span>
+        </div>
+        <div class="rig-row">
+          <div class="deadeye" id="deadeye" aria-hidden="true">
+            <span class="lanyard"></span>
+            <span class="hole a"></span>
+            <span class="hole b"></span>
+            <span class="hole c"></span>
+          </div>
+          <div class="dial" aria-label="project-root mast vs Bash-cwd moving-block dial">
+            <div class="block" id="block-mast">
+              <b>mast</b>
+              project root · $CLAUDE_PROJECT_DIR
+            </div>
+            <div class="block" id="block-cwd">
+              <b>moving block</b>
+              Bash cwd · persists across tool calls
+            </div>
+          </div>
+        </div>
+        <div class="lamp-row">
+          <div class="lamp" id="lamp" aria-hidden="true"></div>
+          <span class="fault" id="fault">relative-path lanyard reeved against mast · no ENOENT</span>
+        </div>
+        <div class="ratchet" id="ratchet">ENOENT seize ratchet quiet · hook spawn finds &lt;repo_root&gt;/scripts/...</div>
+        <div class="split">
+          <article>
+            <h3>PreToolUse-before-command paradox</h3>
+            <p id="paradox">PreToolUse finds the hook. pwd and echo still run.</p>
+          </article>
+          <article>
+            <h3>$CLAUDE_PROJECT_DIR absolute-reeve</h3>
+            <p id="reeve-callout">Relative hook paths resolve against the mast. Bash free.</p>
+          </article>
+        </div>
+        <div class="hatch" id="hatch">
+          <h3>worktree-isolation escape hatch</h3>
+          <p id="hatch-body">isolation: "worktree" is available; idle session does not need it.</p>
+        </div>
+        <div class="rail">
+          <div><b id="c-cwd">root</b><span>Bash cwd</span></div>
+          <div><b id="c-hook">ok</b><span>PreToolUse spawn</span></div>
+          <div><b id="c-pwd">ok</b><span>pwd / echo</span></div>
+          <div><b id="c-iso">—</b><span>isolation</span></div>
+        </div>
+      </section>
+
+      <p class="verdict hold" id="verdict">reeved</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">Lanyard reeved against mast / $CLAUDE_PROJECT_DIR. Bash free.</p>
+
+      <div class="actions">
+        <button type="button" data-act="score">Reeve the deadeye</button>
+        <button type="button" data-act="idle">Pin idle reeved</button>
+        <button type="button" data-act="seed">Pin seeded fouled</button>
+        <button type="button" data-act="admit">Admit the Bash already seized</button>
+        <button type="button" data-act="fixtures">Load fixtures</button>
+        <button type="button" data-act="reset">Reset to reeved</button>
+      </div>
+
+      <textarea id="probe" spellcheck="false" aria-label="probe ticket"></textarea>
+      <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe.</div>
+
+      <dl class="facts">
+        <dt>Hook config</dt>
+        <dd>PreToolUse Bash matcher, type: command, relative command e.g. python3 scripts/harness_health_dashboard/guard-deploy-commands.py, optional timeout/statusMessage in .claude/settings.json</dd>
+        <dt>Persistent Bash cwd</dt>
+        <dd>Bash tool cwd persists across tool calls (documented behavior)</dd>
+        <dt>Drift after cd</dt>
+        <dd>After cd some/subdirectory &amp;&amp; ..., further Bash fails with PreToolUse:Bash hook error ENOENT resolving the relative path against the subdirectory</dd>
+        <dt>Hook still exists</dt>
+        <dd>Hook script still exists at &lt;repo_root&gt;/scripts/... — resolution is against drifted cwd, not project root</dd>
+        <dt>PreToolUse-before-command</dt>
+        <dd>Because PreToolUse runs before the user command, every subsequent Bash call (pwd, echo, corrective cd) fails the same way</dd>
+        <dt>No in-session recovery</dt>
+        <dd>Corrective cd also goes through the broken hook and is rejected</dd>
+        <dt>Subagent inherit</dt>
+        <dd>Fresh non-worktree subagent inherits broken state</dd>
+        <dt>Worktree isolation escape</dt>
+        <dd>isolation: "worktree" subagent gets working Bash (fresh cwd)</dd>
+        <dt>$CLAUDE_PROJECT_DIR</dt>
+        <dd>Documented mitigation: relative hook paths should resolve against a stable root. Bare relative paths still ship.</dd>
+        <dt>Expected</dt>
+        <dd>Relative hook paths resolve against $CLAUDE_PROJECT_DIR; hook spawn failure (ENOENT) must not permanently deadlock Bash for the session</dd>
+        <dt>Impact</dt>
+        <dd>Unrecoverable without ending the session; mid-task Bash-based work silently dies</dd>
+        <dt>Environment</dt>
+        <dd>Claude Code 2.1.252; macOS Darwin 25.6.0. Reporter hamazinger. Filed 2026-09-01T13:40:21Z. OPEN, has repro, platform:macos, area:bash, area:hooks.</dd>
+        <dt>RELATIVE PRETOOLUSE</dt>
+        <dd>BASH HOOK PATH RESOLVES AGAINST DRIFTED BASH CWD → PERMANENT BASH DEADLOCK; WORKTREE ISOLATION ESCAPES; RECURRENCE OF #32361/#5176/#50960; AREA:BASH+HOOKS.</dd>
+      </dl>
+
+      <section class="chips" aria-label="verdict chips">
+        <span class="chip">reeved</span>
+        <span class="chip">fouled</span>
+        <span class="chip">relative-path</span>
+        <span class="chip">drifted-cwd</span>
+        <span class="chip">enoent-seize</span>
+        <span class="chip">pretooluse-before-command</span>
+        <span class="chip">persistent-bash-cwd</span>
+        <span class="chip">corrective-cd-fails</span>
+        <span class="chip">subagent-inherit</span>
+        <span class="chip">isolation-worktree-escape</span>
+        <span class="chip">claude-project-dir-fix</span>
+        <span class="chip">recurrence</span>
+        <span class="chip">has-clear-repro</span>
+        <span class="chip">hold</span>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #91226):
+        <a href="https://github.com/anthropics/claude-code/issues/32361">#32361</a>
+        closed — same relative PreToolUse × cd CWD class ·
+        <a href="https://github.com/anthropics/claude-code/issues/5176">#5176</a>
+        closed — hooks not found after cd ·
+        <a href="https://github.com/anthropics/claude-code/issues/50960">#50960</a>
+        closed — process CWD drifts; bare-relative hooks ·
+        <a href="https://github.com/anthropics/claude-code/issues/88830">#88830</a>
+        open — hook failures invisible in desktop ·
+        <a href="https://github.com/anthropics/claude-code/issues/87890">#87890</a>
+        open — EnterWorktree does not propagate to PreToolUse (opposite polarity) ·
+        <a href="https://github.com/openai/codex/issues/26675">openai/codex#26675</a>
+        Codex plugin PostToolUse relative command.
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF reglet letterpress · reliquary vault-latch · annunciator lamps · caisson berth · spindle chip-sweep · knell mute-bell · tumbler keyway ·
+        escapement pallet · carillon peal · sluice millrace · reveille muster · callboard roster ·
+        berth-card clone · bollard clone.
+        Not leftover woodworking / mm-slider / millrace / locksmith / campanology.
+      </aside>
+    </main>
+    <script>
+      const idle = {
+        seed: "reeved",
+        lanyardReevedAgainstMast: true,
+        projectRootStable: true,
+        bashFree: true,
+        relativePath: false,
+        driftedCwd: false,
+        enoentSeize: false,
+        outputText: "reeved; lanyard reeved against mast / $CLAUDE_PROJECT_DIR; Bash free"
+      };
+      const seeded = {
+        seed: "fouled",
+        issue: 91226,
+        relativePath: true,
+        driftedCwd: true,
+        enoentSeize: true,
+        pretooluseBeforeCommand: true,
+        persistentBashCwd: true,
+        correctiveCdFails: true,
+        subagentInherit: true,
+        isolationWorktreeEscape: true,
+        recurrence: true,
+        hasClearRepro: true,
+        hookCommand: "python3 scripts/harness_health_dashboard/guard-deploy-commands.py",
+        reporter: "hamazinger",
+        outputText: "fouled; #91226; PreToolUse; Bash; ENOENT; cd some/subdirectory; python3 scripts/harness_health_dashboard/guard-deploy-commands.py"
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...idle }; }
+      }
+
+      function scoreTicket(t) {
+        const text = JSON.stringify(t);
+        const named = String(t.seed || "");
+        const relative = t.relativePath === true || /relative-path|python3 scripts\//.test(text);
+        const drifted = t.driftedCwd === true || /drifted-cwd|cd some\/subdirectory/.test(text);
+        const enoent = t.enoentSeize === true || /ENOENT|pwd fails/.test(text);
+        const holdish = named === "reeved" || named === "hold" || (t.lanyardReevedAgainstMast === true && t.projectRootStable === true && !relative);
+        const fouled = named === "fouled" || t.issue === 91226 || (relative && drifted) || (enoent && t.pretooluseBeforeCommand === true);
+        const verdict = named && named !== "reeved" && named !== "hold" && named !== "fouled"
+          ? named
+          : fouled && !holdish
+            ? "fouled"
+            : named === "hold"
+              ? "hold"
+              : "reeved";
+        const chips = [];
+        if (verdict === "reeved" || holdish) chips.push("reeved", "hold");
+        if (fouled && !holdish) {
+          chips.push("fouled");
+          if (relative) chips.push("relative-path");
+          if (drifted) chips.push("drifted-cwd");
+          if (enoent) chips.push("enoent-seize");
+          if (t.pretooluseBeforeCommand !== false) chips.push("pretooluse-before-command");
+          if (t.persistentBashCwd !== false) chips.push("persistent-bash-cwd");
+          if (t.correctiveCdFails !== false) chips.push("corrective-cd-fails");
+          if (t.subagentInherit !== false) chips.push("subagent-inherit");
+          if (t.isolationWorktreeEscape !== false) chips.push("isolation-worktree-escape");
+          if (t.recurrence !== false) chips.push("recurrence");
+          if (t.hasClearRepro !== false) chips.push("has-clear-repro");
+        }
+        if (named && !chips.includes(named)) chips.push(named);
+        return { verdict, chips: [...new Set(chips)], hold: verdict === "reeved" || verdict === "hold", ticket: t };
+      }
+
+      function paint(result) {
+        const alarm = !result.hold;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "Relative hook lanyard fouled against the moving block. Admit the Bash already seized."
+          : "Lanyard reeved against mast / $CLAUDE_PROJECT_DIR. Bash free.";
+        const plate = document.getElementById("deadeye");
+        plate.classList.toggle("fouled", alarm);
+        document.getElementById("lamp").classList.toggle("lit", alarm);
+        const fault = document.getElementById("fault");
+        fault.classList.toggle("lit", alarm);
+        fault.textContent = alarm
+          ? "relative-path lanyard foul lamp · ENOENT against drifted cwd"
+          : "relative-path lanyard reeved against mast · no ENOENT";
+        document.getElementById("block-cwd").classList.toggle("fault", alarm);
+        const ratchet = document.getElementById("ratchet");
+        ratchet.classList.toggle("seized", alarm);
+        ratchet.textContent = alarm
+          ? "ENOENT seize ratchet locked · <drifted_cwd>/scripts/harness_health_dashboard/guard-deploy-commands.py"
+          : "ENOENT seize ratchet quiet · hook spawn finds <repo_root>/scripts/...";
+        document.getElementById("paradox").textContent = alarm
+          ? "PreToolUse runs before the user command. pwd, echo, and corrective cd all fail the same way."
+          : "PreToolUse finds the hook. pwd and echo still run.";
+        document.getElementById("reeve-callout").textContent = alarm
+          ? "$CLAUDE_PROJECT_DIR is documented mitigation, but the relative command shipped bare."
+          : "Relative hook paths resolve against the mast. Bash free.";
+        document.getElementById("hatch-body").textContent = alarm
+          ? "isolation: \"worktree\" subagent gets working Bash (fresh cwd). Non-worktree subagents inherit the seize."
+          : "isolation: \"worktree\" is available; idle session does not need it.";
+        document.getElementById("c-cwd").textContent = alarm ? "subdir" : "root";
+        document.getElementById("c-hook").textContent = alarm ? "ENOENT" : "ok";
+        document.getElementById("c-pwd").textContent = alarm ? "fail" : "ok";
+        document.getElementById("c-iso").textContent = alarm ? "worktree" : "—";
+        const box = document.getElementById("chips");
+        box.innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(`./data/${name}`);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return apply({ ...idle });
+          if (act === "seed" || act === "admit") {
+            try { apply(await loadNamed("fouled.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("91226.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") apply(parseProbe(document.getElementById("probe").value || "{}"));
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
