@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Buoy — layer sounding board for #91569</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Petrona:ital,wght@0,500;0,700;1,500&family=Sora:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --harbor: #0b1c2c;
+        --depth: #06141f;
+        --foam: #e8f1f4;
+        --foam-soft: #c5d5dc;
+        --navy: #123047;
+        --waterline: #1a3a4a;
+        --buoy: #e85d04;
+        --buoy-lit: #ff7a1a;
+        --graphite: #8a96a0;
+        --ok: #3d8a7a;
+        --ok-lit: #54b09c;
+        --rule: rgba(200, 220, 228, 0.16);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Sora", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(720px 280px at 50% 108%, rgba(232, 93, 4, 0.08), transparent 58%),
+          radial-gradient(540px 360px at 88% 0%, rgba(61, 138, 122, 0.1), transparent 52%),
+          linear-gradient(180deg, #0e2436 0%, var(--harbor) 46%, var(--depth) 100%);
+        color: var(--foam);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--buoy-lit); }
+      .wrap { width: min(1160px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 72px; }
+      .chrome { margin-bottom: 18px; }
+      .mark {
+        font-family: "Fira Code", ui-monospace, monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--buoy);
+      }
+      h1 {
+        font-family: "Petrona", Georgia, serif;
+        font-size: clamp(52px, 8vw, 92px);
+        letter-spacing: -0.03em;
+        margin: 8px 0 10px;
+        font-weight: 700;
+        color: var(--foam);
+      }
+      .lede { max-width: 58em; color: var(--foam-soft); line-height: 1.65; }
+      .board {
+        margin: 22px 0;
+        padding: 22px;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(18, 48, 71, 0.72), rgba(6, 20, 31, 0.86));
+        box-shadow:
+          0 24px 48px rgba(6, 20, 31, 0.45),
+          inset 0 1px 0 rgba(232, 241, 244, 0.06);
+        position: relative;
+        overflow: hidden;
+      }
+      .board::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 10px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            rgba(232, 241, 244, 0.08) 0 18px,
+            transparent 18px 28px
+          );
+      }
+      .board-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        margin-bottom: 16px;
+        font-family: "Fira Code", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--buoy);
+      }
+      .sound-row {
+        display: grid;
+        grid-template-columns: 220px 1fr 200px;
+        gap: 16px;
+        align-items: stretch;
+      }
+      @media (max-width: 900px) {
+        .sound-row { grid-template-columns: 1fr; }
+      }
+      .stack {
+        position: relative;
+        min-height: 220px;
+        border: 1px solid var(--rule);
+        background: linear-gradient(180deg, #16344a, #0b1c2c);
+        padding: 10px 12px 14px;
+      }
+      .stack svg { width: 100%; height: 196px; display: block; }
+      .stack.aloft { border-color: var(--buoy); }
+      .timeline {
+        position: relative;
+        min-height: 220px;
+        padding: 12px 14px;
+        background: linear-gradient(180deg, #102838 0%, #0a1a28 100%);
+        color: var(--foam-soft);
+        font-family: "Fira Code", ui-monospace, monospace;
+        font-size: 11px;
+        line-height: 1.5;
+        box-shadow: inset 0 0 0 1px rgba(200, 220, 228, 0.08);
+      }
+      .timeline::before {
+        content: "dock → restore · cu-side-panel pairs";
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--graphite);
+        margin-bottom: 8px;
+      }
+      .timeline.ok { box-shadow: inset 0 0 0 3px var(--ok); }
+      .timeline.fault {
+        background: linear-gradient(180deg, #2a1a12 0%, #1a120e 100%);
+        box-shadow: inset 0 0 0 3px var(--buoy);
+      }
+      .timeline .sic { color: var(--buoy-lit); font-weight: 700; }
+      .pair {
+        display: grid;
+        grid-template-columns: 14px 1fr;
+        gap: 8px;
+        align-items: center;
+        margin: 6px 0;
+      }
+      .pair i {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--ok);
+        display: inline-block;
+      }
+      .timeline.fault .pair i { background: var(--buoy); }
+      .gauge {
+        padding: 12px;
+        border: 1px solid var(--rule);
+        background: #102838;
+        font-family: "Fira Code", ui-monospace, monospace;
+        font-size: 12px;
+        text-align: center;
+      }
+      .gauge b {
+        display: block;
+        font-family: "Petrona", Georgia, serif;
+        font-size: 28px;
+        color: var(--ok-lit);
+        margin: 4px 0 2px;
+      }
+      .gauge.fault b { color: var(--buoy-lit); }
+      .lead {
+        width: 92px;
+        height: 92px;
+        margin: 8px auto 6px;
+        border-radius: 50%;
+        border: 2px solid var(--graphite);
+        background:
+          radial-gradient(circle at 50% 58%, rgba(232, 93, 4, 0.08), transparent 62%),
+          conic-gradient(from 210deg, #1a3a4a, #0b1c2c 60%, #1a3a4a);
+        position: relative;
+      }
+      .lead::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 16px;
+        width: 3px;
+        height: 34px;
+        background: var(--ok-lit);
+        transform-origin: bottom center;
+        transform: translateX(-50%) rotate(-28deg);
+      }
+      .gauge.fault .lead { border-color: var(--buoy); }
+      .gauge.fault .lead::after {
+        background: var(--buoy-lit);
+        transform: translateX(-50%) rotate(36deg);
+      }
+      .waterline {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      @media (max-width: 760px) {
+        .waterline { grid-template-columns: 1fr; }
+      }
+      .strip {
+        padding: 10px 12px;
+        border: 1px dashed rgba(200, 220, 228, 0.18);
+        background: rgba(16, 40, 56, 0.72);
+        font-family: "Fira Code", ui-monospace, monospace;
+        font-size: 11px;
+      }
+      .strip span {
+        display: block;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--graphite);
+        margin-bottom: 4px;
+      }
+      .strip b { color: var(--ok-lit); }
+      .strip.fault b { color: var(--buoy-lit); }
+      .strip.ok { border-color: rgba(61, 138, 122, 0.45); }
+      .rail {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        font-family: "Fira Code", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--graphite);
+      }
+      .rail b {
+        display: block;
+        font-family: "Petrona", Georgia, serif;
+        font-size: 24px;
+        color: var(--foam);
+      }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+      button {
+        font-family: "Sora", sans-serif;
+        letter-spacing: 0.02em;
+        border: 1px solid rgba(200, 220, 228, 0.2);
+        background: var(--navy);
+        color: var(--foam);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--buoy); color: var(--buoy-lit); }
+      .verdict {
+        font-family: "Petrona", Georgia, serif;
+        font-size: 28px;
+      }
+      .verdict.alarm { color: var(--buoy-lit); }
+      .verdict.hold { color: var(--ok-lit); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 16px; }
+      .chip {
+        font-family: "Fira Code", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 3px 7px;
+        border: 1px solid rgba(138, 150, 160, 0.35);
+        color: var(--graphite);
+        background: transparent;
+        cursor: pointer;
+      }
+      .chip.lit { border-color: var(--buoy); color: var(--buoy-lit); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #102838;
+        color: var(--foam);
+        border: 1px solid var(--rule);
+        font-family: "Fira Code", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .cousin, .stayoff, .facts {
+        margin: 18px 0;
+        padding: 12px 14px;
+        border: 1px solid var(--rule);
+        background: rgba(16, 40, 56, 0.72);
+        font-size: 14px;
+        color: var(--foam-soft);
+      }
+      .facts dt {
+        font-family: "Fira Code", ui-monospace, monospace;
+        color: var(--buoy);
+      }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed rgba(232, 93, 4, 0.36);
+        color: var(--graphite);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <p class="mark">06:50 / hermes catalog #129 / #91569 · #hermes-catalog</p>
+        <h1>Buoy</h1>
+        <p class="lede">
+          Harbor layer sounding board. A buoy should settle back to the
+          waterline — <code>kCGWindowLayer=0</code>, normal document
+          z-order — after Computer Use releases the desktop-control lock.
+          After a stealth-relaunch and four balanced
+          <code>cu-side-panel</code> dock/restore pairs the main window
+          stayed at <code>layer=3</code> (<code>NSFloatingWindowLevel</code>)
+          the next day, idle, no CU session, full-size bounds. A buoy that
+          never settles back to the waterline is not a mooring — it is a
+          float stuck aloft. Score the layer or admit the latch already
+          captured.
+        </p>
+        <p class="lede">Idle word: moored. Seeded word: aloft / #91569.</p>
+      </header>
+
+      <section class="board" aria-label="harbor layer sounding board">
+        <div class="board-head">
+          <span>harbor navy · foam · buoy orange · graphite</span>
+          <span id="mark">06:50 / hermes catalog #129 / #91569</span>
+        </div>
+        <div class="sound-row">
+          <div class="stack" id="stack" aria-hidden="true">
+            <svg viewBox="0 0 196 196" role="img" aria-label="layer stack layer 0 vs layer 3">
+              <rect x="8" y="8" width="180" height="180" fill="#0b1c2c" stroke="#1a3a4a"/>
+              <text x="16" y="26" font-family="Fira Code, monospace" font-size="9" fill="#8a96a0">LAYER STACK</text>
+              <rect id="plane-3" x="28" y="36" width="140" height="28" fill="#123047" stroke="#8a96a0" stroke-width="1"/>
+              <text x="36" y="54" font-family="Fira Code, monospace" font-size="10" fill="#c5d5dc">L3 floating</text>
+              <rect x="36" y="72" width="124" height="22" fill="#102838" stroke="#1a3a4a"/>
+              <text x="44" y="87" font-family="Fira Code, monospace" font-size="9" fill="#8a96a0">L2</text>
+              <rect x="44" y="102" width="108" height="22" fill="#102838" stroke="#1a3a4a"/>
+              <text x="52" y="117" font-family="Fira Code, monospace" font-size="9" fill="#8a96a0">L1</text>
+              <rect id="plane-0" x="20" y="136" width="156" height="36" fill="#1a3a4a" stroke="#54b09c" stroke-width="2"/>
+              <text x="28" y="158" font-family="Petrona, Georgia, serif" font-size="13" fill="#e8f1f4">L0 waterline</text>
+            </svg>
+          </div>
+          <div class="timeline ok" id="timeline">
+            <div class="pair"><i></i><span>12:15 stealth-relaunch · update 1.40609.0 → 1.40609.1</span></div>
+            <div class="pair"><i></i><span>17:05:45 docked → 17:09:35 restored</span></div>
+            <div class="pair"><i></i><span>17:11:13 docked → 17:12:12 restored</span></div>
+            <div class="pair"><i></i><span>17:13:59 docked → 17:17:47 restored</span></div>
+            <div class="pair"><i></i><span>17:18:06 docked → 17:22:34 restored</span></div>
+            <div>pairs balanced · layer returned to 0</div>
+          </div>
+          <div class="gauge" id="gauge">
+            <span>wasAlwaysOnTop latch</span>
+            <div class="lead" id="lead" aria-hidden="true"></div>
+            <b id="latch-word">clear</b>
+            <span id="gauge-note">stealth-relaunch cleared on focus · CU dock saw false</span>
+          </div>
+        </div>
+        <div class="waterline">
+          <div class="strip ok" id="strip-layer">
+            <span>layer sounding</span>
+            <b id="layer-copy">kCGWindowLayer=0 · normal document z-order</b>
+          </div>
+          <div class="strip ok" id="strip-quit">
+            <span>settle / quit</span>
+            <b id="quit-copy">moored at the waterline · no full-quit needed</b>
+          </div>
+        </div>
+        <div class="rail">
+          <div><b id="c-word">moored</b><span>sounding hold</span></div>
+          <div><b id="c-layer">0</b><span>kCGWindowLayer</span></div>
+          <div><b id="c-latch">clear</b><span>wasAlwaysOnTop</span></div>
+          <div><b id="c-pairs">idle</b><span>cu-side-panel</span></div>
+        </div>
+      </section>
+
+      <p class="verdict hold" id="verdict">moored</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">kCGWindowLayer=0; normal document z-order; wasAlwaysOnTop latch clear.</p>
+
+      <div class="actions">
+        <button type="button" data-act="score">Score the layer</button>
+        <button type="button" data-act="idle">Pin idle moored</button>
+        <button type="button" data-act="seed">Pin seeded aloft</button>
+        <button type="button" data-act="admit">Admit the latch already captured</button>
+        <button type="button" data-act="fixtures">Load fixtures</button>
+        <button type="button" data-act="reset">Reset to moored</button>
+      </div>
+
+      <textarea id="probe" spellcheck="false" aria-label="probe ticket"></textarea>
+      <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe. Score the layer.</div>
+
+      <dl class="facts">
+        <dt>Measured layer</dt>
+        <dd>CGWindowListCopyWindowInfo while idle (no CU session): num=26927 layer=3 alpha=1 name= bounds={Height=869; Width=1512; X=49; Y=38;}. layer=3 is NSFloatingWindowLevel. Normal document window is layer=0. Bounds are the full-size main window, not the small docked side panel.</dd>
+        <dt>No preference</dt>
+        <dd>No user-facing setting to turn this off; the app's own preference files contain no always-on-top key.</dd>
+        <dt>Stealth-relaunch then four pairs</dt>
+        <dd>2026-09-01 12:15:36 [stealth-relaunch]; 12:15:57 update 1.40609.0 → 1.40609.1. Then four balanced cu-side-panel docked/restored pairs (17:05:45/17:09:35, 17:11:13/17:12:12, 17:13:59/17:17:47, 17:18:06/17:22:34). No further [cu-side-panel] entries on 2026-09-02, when the floating level was measured.</dd>
+        <dt>Workaround</dt>
+        <dd>Fully quit the app (Cmd+Q) and relaunch. Merely closing the window does not help.</dd>
+        <dt>Likely latch (NON-BINDING)</dt>
+        <dd>stealth-relaunch setAlwaysOnTop(true, 'normal', -1) until once('focus'). If CU docks before that clear, dock saves wasAlwaysOnTop: e.isAlwaysOnTop() as true, then setAlwaysOnTop(true, 'floating'). Restore writes the captured value back. Sticky across further dock/restore cycles until the process exits.</dd>
+        <dt>Environment</dt>
+        <dd>Desktop app 1.40609.1 (bundled CLI 2.1.255); macOS Darwin 25.5.0; Claude Desktop app. Reporter junqiu-lei. Filed 2026-09-02T18:18:25Z. OPEN, bug, has-repro, platform:macos, area:desktop.</dd>
+      </dl>
+
+      <section class="chips" aria-label="verdict chips" id="chip-switch">
+        <button type="button" class="chip" data-chip="moored">moored</button>
+        <button type="button" class="chip" data-chip="aloft">aloft</button>
+        <button type="button" class="chip" data-chip="floating">floating</button>
+        <button type="button" class="chip" data-chip="latch-captured">latch-captured</button>
+        <button type="button" class="chip" data-chip="stealth-relaunch">stealth-relaunch</button>
+        <button type="button" class="chip" data-chip="cu-side-panel">cu-side-panel</button>
+        <button type="button" class="chip" data-chip="docked-restored">docked-restored</button>
+        <button type="button" class="chip" data-chip="layer-3-sticky">layer-3-sticky</button>
+        <button type="button" class="chip" data-chip="no-always-on-top-pref">no-always-on-top-pref</button>
+        <button type="button" class="chip" data-chip="full-quit-clears">full-quit-clears</button>
+        <button type="button" class="chip" data-chip="hold">hold</button>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #91569):
+        <a href="https://github.com/anthropics/claude-code/issues/89467">#89467</a>
+        Windows WS_EX_TOPMOST left set;
+        <a href="https://github.com/anthropics/claude-code/issues/66516">#66516</a>
+        closed-as-invalid same macOS symptom;
+        <a href="https://github.com/anthropics/claude-code/issues/91230">#91230</a>
+        CU window move/maximize same subsystem.
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF usage-desk solecism · vault-coffer · probate will-chamber · crimp pliers/foil · jackfield channel-strip · tocsin fire-bell · bolter flour-mill · deadeye standing-rigging · reglet letterpress.
+      </aside>
+    </main>
+    <script>
+      const HOLD = new Set(["moored", "hold"]);
+      const idle = {
+        seed: "moored",
+        persistLayer: true,
+        moored: true,
+        aloft: false,
+        layer: 0,
+        windowLevel: "normal",
+        wasAlwaysOnTop: false,
+        latchCaptured: false,
+        outputText: "moored; kCGWindowLayer=0; normal document z-order; wasAlwaysOnTop latch clear"
+      };
+      const seeded = {
+        seed: "aloft",
+        issue: 91569,
+        persistLayer: false,
+        moored: false,
+        aloft: true,
+        layer: 3,
+        windowLevel: "NSFloatingWindowLevel",
+        wasAlwaysOnTop: true,
+        latchCaptured: true,
+        stealthRelaunch: true,
+        cuSidePanel: true,
+        dockedRestored: true,
+        layer3Sticky: true,
+        noAlwaysOnTopPref: true,
+        fullQuitClears: true,
+        idleNoCuSession: true,
+        fullSizeMainWindow: true,
+        measured: "num=26927 layer=3 alpha=1 name= bounds={Height=869; Width=1512; X=49; Y=38;}",
+        measuredAt: "2026-09-02",
+        reporter: "junqiu-lei",
+        outputText: "aloft; #91569; kCGWindowLayer=3 NSFloatingWindowLevel; wasAlwaysOnTop latch true"
+      };
+
+      const timelineOk = [
+        ["12:15 stealth-relaunch · update 1.40609.0 → 1.40609.1", false],
+        ["17:05:45 docked → 17:09:35 restored", false],
+        ["17:11:13 docked → 17:12:12 restored", false],
+        ["17:13:59 docked → 17:17:47 restored", false],
+        ["17:18:06 docked → 17:22:34 restored", false],
+        ["pairs balanced · layer returned to 0", false],
+      ];
+      const timelineFault = [
+        ["12:15 stealth-relaunch · setAlwaysOnTop(true) until focus", true],
+        ["17:05:45 docked → 17:09:35 restored", true],
+        ["17:11:13 docked → 17:12:12 restored", true],
+        ["17:13:59 docked → 17:17:47 restored", true],
+        ["17:18:06 docked → 17:22:34 restored", true],
+        ["pairs balanced · still floating next day (2026-09-02)", true],
+      ];
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...idle }; }
+      }
+
+      function scoreTicket(t) {
+        const text = JSON.stringify(t);
+        const named = String(t.seed || "");
+        const aloftish = named === "aloft" || t.issue === 91569 || t.aloft === true
+          || t.layer === 3
+          || t.wasAlwaysOnTop === true
+          || (t.persistLayer === false && t.latchCaptured === true)
+          || /#91569|layer=3|wasAlwaysOnTop/.test(text);
+        const holdish = HOLD.has(named)
+          || (t.persistLayer === true && t.aloft !== true && !aloftish);
+        const verdict = named && !HOLD.has(named) && named !== "aloft"
+          ? named
+          : aloftish && !holdish
+            ? "aloft"
+            : named === "hold"
+              ? "hold"
+              : "moored";
+        const chips = [];
+        if (HOLD.has(verdict) || holdish) chips.push("moored", "hold");
+        if (aloftish && !holdish) {
+          chips.push("aloft", "floating", "latch-captured",
+            "stealth-relaunch", "cu-side-panel", "docked-restored",
+            "layer-3-sticky", "no-always-on-top-pref", "full-quit-clears");
+        }
+        if (named && !chips.includes(named)) chips.push(named);
+        return {
+          verdict,
+          chips: [...new Set(chips)],
+          hold: HOLD.has(verdict),
+          ticket: t,
+        };
+      }
+
+      function paintTimeline(rows) {
+        const host = document.getElementById("timeline");
+        const head = host.querySelectorAll(".pair, div:last-child");
+        head.forEach((n) => n.remove());
+        rows.slice(0, 5).forEach(([copy]) => {
+          const row = document.createElement("div");
+          row.className = "pair";
+          row.innerHTML = `<i></i><span${copy.includes("still floating") ? ' class="sic"' : ""}>${copy}</span>`;
+          host.appendChild(row);
+        });
+        const foot = document.createElement("div");
+        const last = rows[5];
+        foot.innerHTML = last[1] ? `<span class="sic">${last[0]}</span>` : last[0];
+        host.appendChild(foot);
+      }
+
+      function paint(result) {
+        const alarm = !result.hold;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "Latch already captured. Admit the latch already captured."
+          : "kCGWindowLayer=0; normal document z-order; wasAlwaysOnTop latch clear.";
+        document.getElementById("stack").classList.toggle("aloft", alarm);
+        document.getElementById("plane-3").setAttribute("fill", alarm ? "#e85d04" : "#123047");
+        document.getElementById("plane-3").setAttribute("stroke", alarm ? "#ff7a1a" : "#8a96a0");
+        document.getElementById("plane-0").setAttribute("stroke", alarm ? "#8a96a0" : "#54b09c");
+        document.getElementById("plane-0").setAttribute("stroke-width", alarm ? "1" : "2");
+        const timeline = document.getElementById("timeline");
+        timeline.className = "timeline " + (alarm ? "fault" : "ok");
+        paintTimeline(alarm ? timelineFault : timelineOk);
+        document.getElementById("latch-word").textContent = alarm ? "captured" : "clear";
+        document.getElementById("gauge").classList.toggle("fault", alarm);
+        document.getElementById("gauge-note").textContent = alarm
+          ? "CU docked before focus clear · restore re-applies floating"
+          : "stealth-relaunch cleared on focus · CU dock saw false";
+        document.getElementById("strip-layer").classList.toggle("fault", alarm);
+        document.getElementById("strip-layer").classList.toggle("ok", !alarm);
+        document.getElementById("strip-quit").classList.toggle("fault", alarm);
+        document.getElementById("strip-quit").classList.toggle("ok", !alarm);
+        document.getElementById("layer-copy").textContent = alarm
+          ? "kCGWindowLayer=3 · NSFloatingWindowLevel sticky"
+          : "kCGWindowLayer=0 · normal document z-order";
+        document.getElementById("quit-copy").textContent = alarm
+          ? "still floating next day · full quit (Cmd+Q) clears it"
+          : "moored at the waterline · no full-quit needed";
+        document.getElementById("c-word").textContent = alarm ? "aloft" : "moored";
+        document.getElementById("c-layer").textContent = alarm ? "3" : "0";
+        document.getElementById("c-latch").textContent = alarm ? "true" : "clear";
+        document.getElementById("c-pairs").textContent = alarm ? "4 sticky" : "idle";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(`./data/${name}`);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return apply({ ...idle });
+          if (act === "seed" || act === "admit") {
+            try { apply(await loadNamed("aloft.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("91569.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") apply(parseProbe(document.getElementById("probe").value || "{}"));
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const chip = btn.dataset.chip;
+          if (chip === "moored" || chip === "hold") {
+            apply({ ...idle, seed: chip });
+            return;
+          }
+          if (chip === "aloft") {
+            apply({ ...seeded });
+            return;
+          }
+          apply({ seed: chip, aloft: true, persistLayer: false });
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      // ?embed=1 hides chrome for the hub living featured well
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>

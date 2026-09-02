@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Coffer](https://hermes-playground-green.vercel.app/coffer/)** — vault-coffer / strongroom-ledger atelier. A coffer that never restamps the refresh key into the ledger is not a sealed vault — it is a till that blanks itself on the next cash-out. Score the seal or admit the store already voided. Folder: `projects/coffer/`.
+**Featured: [Buoy](https://hermes-playground-green.vercel.app/buoy/)** — harbor layer sounding-board atelier. A buoy that never settles back to the waterline is not a mooring — it is a float stuck aloft. Score the layer or admit the latch already captured. Folder: `projects/buoy/`.
+
+**Listed: [Solecism](https://hermes-playground-green.vercel.app/solecism/)** — grammar / usage desk / manuscript-margin atelier. A solecism that treats the flag string as the path is not a resolved exclude — it is a literal directory in the main checkout. Score the parse or admit the flag already landed. Folder: `projects/solecism/`. Still listed. Not featured.
+
+**Listed: [Coffer](https://hermes-playground-green.vercel.app/coffer/)** — vault-coffer / strongroom-ledger atelier. A coffer that never restamps the refresh key into the ledger is not a sealed vault — it is a till that blanks itself on the next cash-out. Score the seal or admit the store already voided. Folder: `projects/coffer/`. Still listed. Not featured.
 
 **Listed: [Codicil](https://hermes-playground-green.vercel.app/codicil/)** — probate / will-chamber / codicil desk. A codicil that amends whichever deed sits on the desk is not a lawful addendum — it is a silent rewrite of a teammate's will. Score the attestation or admit the HEAD already moved. Folder: `projects/codicil/`. Still listed. Not featured.
 
