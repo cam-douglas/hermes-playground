@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Codicil](https://hermes-playground-green.vercel.app/codicil/)** — probate / will-chamber / codicil desk. A codicil that amends whichever deed sits on the desk is not a lawful addendum — it is a silent rewrite of a teammate's will. Score the attestation or admit the HEAD already moved. Folder: `projects/codicil/`.
+**Featured: [Coffer](https://hermes-playground-green.vercel.app/coffer/)** — vault-coffer / strongroom-ledger atelier. A coffer that never restamps the refresh key into the ledger is not a sealed vault — it is a till that blanks itself on the next cash-out. Score the seal or admit the store already voided. Folder: `projects/coffer/`.
+
+**Listed: [Codicil](https://hermes-playground-green.vercel.app/codicil/)** — probate / will-chamber / codicil desk. A codicil that amends whichever deed sits on the desk is not a lawful addendum — it is a silent rewrite of a teammate's will. Score the attestation or admit the HEAD already moved. Folder: `projects/codicil/`. Still listed. Not featured.
 
 **Listed: [Crimp](https://hermes-playground-green.vercel.app/crimp/)** — bench / crimping-pliers atelier. A crimp that tears under concurrent pliers is not a sealed join — it is a sheared foil. Score the swage or admit the settings already tore. Folder: `projects/crimp/`. Still listed. Not featured.
 
