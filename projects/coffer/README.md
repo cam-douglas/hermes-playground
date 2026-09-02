@@ -43,7 +43,19 @@ NOT Tocsin ([#91503](https://github.com/anthropics/claude-code/issues/91503)) �
 NOT Bolter / Deadeye / Reglet / Reliquary / Annunciator / Caisson / Spindle / Knell / Tumbler / Escapement / Geneva / Scotch / Pintle paradigms.
 NOT leftover probate will-chamber / crimp pliers/foil / jackfield channel-strip / tocsin watchhouse / bolter flour-mill / deadeye standing-rigging / reglet letterpress / vault-latch / annunciator lamps.
 
-Cousins are cite-only on a cousin strip; primary stays #91571.
+Cousins are cite-only on a cousin strip; primary stays #91571. Skip [#91469](https://github.com/anthropics/claude-code/issues/91469) (SOLVED).
+
+Executor-confirmed (cite-only):
+
+- [#83464](https://github.com/anthropics/claude-code/issues/83464) — clears OAuth before `refreshTokenExpiresAt` (empty tokens, `expiresAt: 0`, horizon still future) — cite-only.
+- [#68398](https://github.com/anthropics/claude-code/issues/68398) — Windows refresh token unused; daily re-login after ~8h access-token expiry — cite-only.
+- [#88054](https://github.com/anthropics/claude-code/issues/88054) — `claude remote-control` 401 at 24h; no OAuth refresh and does not re-read restamped disk credentials — cite-only.
+- [#91158](https://github.com/anthropics/claude-code/issues/91158) — plaintext refresh token in `.credentials.json` / Keychain items accumulate without bound — cite-only.
+- [#90010](https://github.com/anthropics/claude-code/issues/90010) — security-guidance stop-time review echoes raw `.credentials.json` OAuth tokens into the transcript — cite-only.
+- [#88124](https://github.com/anthropics/claude-code/issues/88124) — Windows auto-update at boot invalidates session / forces relogin while refreshToken is still valid — cite-only.
+- [#91436](https://github.com/anthropics/claude-code/issues/91436) — VS Code idle/overnight logout; full re-login despite being logged in on claude.ai — cite-only.
+
+Also cite-only:
 
 - [#88583](https://github.com/anthropics/claude-code/issues/88583) — macOS Keychain wiped with empty tokens on a failed concurrent refresh — cite-only.
 - [#90688](https://github.com/anthropics/claude-code/issues/90688) — Windows/VS Code OAuth refresh 400 after sleep/wake — cite-only.
@@ -68,7 +80,7 @@ Different idle: **sealed**.
 1. Idle demo loads **sealed** — rotated refresh tokens restamped into `.credentials.json`; a fresh process inherits a live key.
 2. Seed **blanked** → #91571: Windows file-store never restamped; `refreshTokenExpiresAt` stayed at login+~24h; failed refresh rewrote empty tokens; lockout all fresh; live sessions ok in memory; scheduled `claude --print` 401.
 3. Atelier UI: steel-plate credentials ledger / live-session strip vs fresh-headless strip / till-blanked alarm lamp / seal score. Sealed = restamped hold. Blanked = voided till.
-4. Cousin cite strip labeled cousin-not-primary: [#88583](https://github.com/anthropics/claude-code/issues/88583) / [#90688](https://github.com/anthropics/claude-code/issues/90688) / [#89490](https://github.com/anthropics/claude-code/issues/89490) / [#43392](https://github.com/anthropics/claude-code/issues/43392) / [#90860](https://github.com/anthropics/claude-code/issues/90860). Cite only. Primary stays #91571.
+4. Cousin cite strip labeled cousin-not-primary: [#83464](https://github.com/anthropics/claude-code/issues/83464) / [#68398](https://github.com/anthropics/claude-code/issues/68398) / [#88054](https://github.com/anthropics/claude-code/issues/88054) / [#91158](https://github.com/anthropics/claude-code/issues/91158) / [#90010](https://github.com/anthropics/claude-code/issues/90010) / [#88124](https://github.com/anthropics/claude-code/issues/88124) / [#91436](https://github.com/anthropics/claude-code/issues/91436) / [#88583](https://github.com/anthropics/claude-code/issues/88583) / [#90688](https://github.com/anthropics/claude-code/issues/90688) / [#89490](https://github.com/anthropics/claude-code/issues/89490) / [#43392](https://github.com/anthropics/claude-code/issues/43392) / [#90860](https://github.com/anthropics/claude-code/issues/90860). Cite only. Skip #91469 (SOLVED). Primary stays #91571.
 5. **Score the seal** walks the probe ticket and lights chips on the desk. Chip-switch every verdict. Paste or drop JSON.
 
 ## How to score
