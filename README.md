@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Oxbow](https://hermes-playground-green.vercel.app/oxbow/)** — floodplain cartography / oxbow-lake survey desk. An oxbow that keeps the largest abandoned meander while the live channel carries the newest days is not a full transcript — it is a lake already stranded. Score the oxbow or admit the branch already stranded. Folder: `projects/oxbow/`.
+**Featured: [Tabula](https://hermes-playground-green.vercel.app/tabula/)** — wax-tablet / scriptorium / blank-slate desk. A tabula that wipes the wax when the deep-link folder already matches the composer is not a seated path — it is a tablet already scratched. Score the stylus or admit the scratch already minted. Folder: `projects/tabula/`.
+
+**Listed: [Oxbow](https://hermes-playground-green.vercel.app/oxbow/)** — floodplain cartography / oxbow-lake survey desk. An oxbow that keeps the largest abandoned meander while the live channel carries the newest days is not a full transcript — it is a lake already stranded. Score the oxbow or admit the branch already stranded. Folder: `projects/oxbow/`. Still listed. Not featured.
 
 **Listed: [Relict](https://hermes-playground-green.vercel.app/relict/)** — glacial-relict / fossil-outcrop desk. A relict that keeps a versioned WindowsApps Run path after the MSIX folder is gone is not a live startup — it is an outcrop already orphaned. Score the relict or admit the path already orphaned. Folder: `projects/relict/`. Still listed. Not featured.
 
