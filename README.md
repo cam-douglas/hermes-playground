@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Ephemera](https://hermes-playground-green.vercel.app/ephemera/)** — archive / wick-lit folio atelier. A ephemera that rewrites the whole folio when the five-minute wick burns out mid-turn is not a warm cache — it is a bank already rewritten. Score the wick or admit the folio already rewritten. Folder: `projects/ephemera/`.
+**Featured: [Oubliette](https://hermes-playground-green.vercel.app/oubliette/)** — stone-pit / trapdoor dungeon desk. A oubliette that drops a finished child's notice into the pit under a cold parent is not a push — it is a queue already forgotten. Score the trapdoor or admit the void already drained. Folder: `projects/oubliette/`.
+
+**Listed: [Ephemera](https://hermes-playground-green.vercel.app/ephemera/)** — archive / wick-lit folio atelier. A ephemera that rewrites the whole folio when the five-minute wick burns out mid-turn is not a warm cache — it is a bank already rewritten. Score the wick or admit the folio already rewritten. Folder: `projects/ephemera/`. Still listed. Not featured.
 
 **Listed: [Commutator](https://hermes-playground-green.vercel.app/commutator/)** — rotary brush-gear / segment drum atelier. A commutator that seats a late reply on a sibling segment is not a timeout — it is a brush already strayed. Score the drum or admit the batch already lied. Folder: `projects/commutator/`. Still listed. Not featured.
 
