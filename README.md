@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Cupel](https://hermes-playground-green.vercel.app/cupel/)** — bone-ash assay office. A cupel that scorches draft-07 MCP alloy after the era probe marks the sibling exchange legacy is not a clean assay — it is a charge already scorched. Score the cupel or admit the charge already scorched. Folder: `projects/cupel/`.
+**Featured: [Hellbox](https://hermes-playground-green.vercel.app/hellbox/)** — letterpress composing-room desk. A hellbox that melts the standing line when sticky CLAUDE_PROJECT_DIR ENOENT exits 2 is read as deny — it is type already scrapped. Score the form or admit the line already scrapped. Folder: `projects/hellbox/`.
+
+**Listed: [Cupel](https://hermes-playground-green.vercel.app/cupel/)** — bone-ash assay office. A cupel that scorches draft-07 MCP alloy after the era probe marks the sibling exchange legacy is not a clean assay — it is a charge already scorched. Score the cupel or admit the charge already scorched. Folder: `projects/cupel/`. Still listed. Not featured.
 
 **Listed: [Oubliette](https://hermes-playground-green.vercel.app/oubliette/)** — stone-pit / trapdoor dungeon desk. A oubliette that drops a finished child's notice into the pit under a cold parent is not a push — it is a queue already forgotten. Score the trapdoor or admit the void already drained. Folder: `projects/oubliette/`. Still listed. Not featured.
 
