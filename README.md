@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Tangent](https://hermes-playground-green.vercel.app/tangent/)** — clavichord / keyboard-protocol sounding-board atelier. A tangent that never strikes the shifted pitch is not a keyed note — it is a muted string. Score the strike or admit the alternate field already muted. Folder: `projects/tangent/`.
+**Featured: [Placet](https://hermes-playground-green.vercel.app/placet/)** — congregation chamber / placet desk. A placet that stamps coding when the chamber only assented to the plan is not assent — it is a fiat already enacted. Score the chamber or admit implementation already started. Folder: `projects/placet/`.
+
+**Listed: [Frisket](https://hermes-playground-green.vercel.app/frisket/)** — print-shop / frisket-resist scoring desk. A frisket that never seats before the press is not a resist — it is a bleed already printed. Score the mask or admit the plate already bled. Folder: `projects/frisket/`. Still listed. Not featured.
+
+**Listed: [Tangent](https://hermes-playground-green.vercel.app/tangent/)** — clavichord / keyboard-protocol sounding-board atelier. A tangent that never strikes the shifted pitch is not a keyed note — it is a muted string. Score the strike or admit the alternate field already muted. Folder: `projects/tangent/`. Still listed. Not featured.
 
 **Listed: [Hawser](https://hermes-playground-green.vercel.app/hawser/)** — dockyard hawser / process-reap bench atelier. A hawser that never slips after idle is not a release — it is a fouled pile. Score the reap or admit the warm children already fouled. Folder: `projects/hawser/`. Still listed. Not featured.
 
