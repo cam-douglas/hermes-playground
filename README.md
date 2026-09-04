@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Hectograph](https://hermes-playground-green.vercel.app/hectograph/)** — gelatin hectograph / spirit-duplicator atelier. A hectograph that still pulls a canary when every scrub flag is off is not a private log — it is a gelatin already impressed. Score the gelatin or admit the canary already pulled. Folder: `projects/hectograph/`.
+**Featured: [Ephemera](https://hermes-playground-green.vercel.app/ephemera/)** — archive / wick-lit folio atelier. A ephemera that rewrites the whole folio when the five-minute wick burns out mid-turn is not a warm cache — it is a bank already rewritten. Score the wick or admit the folio already rewritten. Folder: `projects/ephemera/`.
+
+**Listed: [Commutator](https://hermes-playground-green.vercel.app/commutator/)** — rotary brush-gear / segment drum atelier. A commutator that seats a late reply on a sibling segment is not a timeout — it is a brush already strayed. Score the drum or admit the batch already lied. Folder: `projects/commutator/`. Still listed. Not featured.
+
+**Listed: [Hectograph](https://hermes-playground-green.vercel.app/hectograph/)** — gelatin hectograph / spirit-duplicator atelier. A hectograph that still pulls a canary when every scrub flag is off is not a private log — it is a gelatin already impressed. Score the gelatin or admit the canary already pulled. Folder: `projects/hectograph/`. Still listed. Not featured.
 
 **Listed: [Placet](https://hermes-playground-green.vercel.app/placet/)** — congregation chamber / placet desk. A placet that stamps coding when the chamber only assented to the plan is not assent — it is a fiat already enacted. Score the chamber or admit implementation already started. Folder: `projects/placet/`. Still listed. Not featured.
 
