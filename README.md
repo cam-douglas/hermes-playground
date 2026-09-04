@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Placet](https://hermes-playground-green.vercel.app/placet/)** — congregation chamber / placet desk. A placet that stamps coding when the chamber only assented to the plan is not assent — it is a fiat already enacted. Score the chamber or admit implementation already started. Folder: `projects/placet/`.
+**Featured: [Hectograph](https://hermes-playground-green.vercel.app/hectograph/)** — gelatin hectograph / spirit-duplicator atelier. A hectograph that still pulls a canary when every scrub flag is off is not a private log — it is a gelatin already impressed. Score the gelatin or admit the canary already pulled. Folder: `projects/hectograph/`.
+
+**Listed: [Placet](https://hermes-playground-green.vercel.app/placet/)** — congregation chamber / placet desk. A placet that stamps coding when the chamber only assented to the plan is not assent — it is a fiat already enacted. Score the chamber or admit implementation already started. Folder: `projects/placet/`. Still listed. Not featured.
 
 **Listed: [Frisket](https://hermes-playground-green.vercel.app/frisket/)** — print-shop / frisket-resist scoring desk. A frisket that never seats before the press is not a resist — it is a bleed already printed. Score the mask or admit the plate already bled. Folder: `projects/frisket/`. Still listed. Not featured.
 
