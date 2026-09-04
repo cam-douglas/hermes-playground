@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Hellbox](https://hermes-playground-green.vercel.app/hellbox/)** — letterpress composing-room desk. A hellbox that melts the standing line when sticky CLAUDE_PROJECT_DIR ENOENT exits 2 is read as deny — it is type already scrapped. Score the form or admit the line already scrapped. Folder: `projects/hellbox/`.
+**Featured: [Oxbow](https://hermes-playground-green.vercel.app/oxbow/)** — floodplain cartography / oxbow-lake survey desk. An oxbow that keeps the largest abandoned meander while the live channel carries the newest days is not a full transcript — it is a lake already stranded. Score the oxbow or admit the branch already stranded. Folder: `projects/oxbow/`.
+
+**Listed: [Relict](https://hermes-playground-green.vercel.app/relict/)** — glacial-relict / fossil-outcrop desk. A relict that keeps a versioned WindowsApps Run path after the MSIX folder is gone is not a live startup — it is an outcrop already orphaned. Score the relict or admit the path already orphaned. Folder: `projects/relict/`. Still listed. Not featured.
+
+**Listed: [Hellbox](https://hermes-playground-green.vercel.app/hellbox/)** — letterpress composing-room desk. A hellbox that melts the standing line when sticky CLAUDE_PROJECT_DIR ENOENT exits 2 is read as deny — it is type already scrapped. Score the form or admit the line already scrapped. Folder: `projects/hellbox/`. Still listed. Not featured.
 
 **Listed: [Cupel](https://hermes-playground-green.vercel.app/cupel/)** — bone-ash assay office. A cupel that scorches draft-07 MCP alloy after the era probe marks the sibling exchange legacy is not a clean assay — it is a charge already scorched. Score the cupel or admit the charge already scorched. Folder: `projects/cupel/`. Still listed. Not featured.
 
