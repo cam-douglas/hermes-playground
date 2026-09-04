@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Hawser](https://hermes-playground-green.vercel.app/hawser/)** — dockyard hawser / process-reap bench atelier. A hawser that never slips after idle is not a release — it is a fouled pile. Score the reap or admit the warm children already fouled. Folder: `projects/hawser/`.
+**Featured: [Tangent](https://hermes-playground-green.vercel.app/tangent/)** — clavichord / keyboard-protocol sounding-board atelier. A tangent that never strikes the shifted pitch is not a keyed note — it is a muted string. Score the strike or admit the alternate field already muted. Folder: `projects/tangent/`.
+
+**Listed: [Hawser](https://hermes-playground-green.vercel.app/hawser/)** — dockyard hawser / process-reap bench atelier. A hawser that never slips after idle is not a release — it is a fouled pile. Score the reap or admit the warm children already fouled. Folder: `projects/hawser/`. Still listed. Not featured.
 
 **Listed: [Caret](https://hermes-playground-green.vercel.app/caret/)** — proof desk / typesetter caret bench. A caret that doubles the carets before the password reaches the server is not a faithful handoff — it is a reparse already mangled. Score the argv or admit the wrapper already careted. Folder: `projects/caret/`. Still listed. Not featured.
 
