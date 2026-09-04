@@ -28,7 +28,7 @@ Given `{ persistHold, scrubbed, pulled, scrubFlagsOff, canaryPresent, flags, att
 
 This is a diagnostic scoring desk. Not an exploit. No payloads. No real credentials. Score whether the gelatin scrubbed or already pulled a canary. Fixtures use `HECTOGRAPH_CANARY_DO_NOT_EXPORT`.
 
-Primary: [anthropics/claude-code#92056](https://github.com/anthropics/claude-code/issues/92056). Cousins (cite only, not primary): [#92057](https://github.com/anthropics/claude-code/issues/92057) query_source embeds outputStyle, [#91766](https://github.com/anthropics/claude-code/issues/91766) OTEL_LOG_RAW_API_BODIES ignored in project settings.
+Primary: [anthropics/claude-code#92056](https://github.com/anthropics/claude-code/issues/92056). Cousins (cite only, not primary): [#91766](https://github.com/anthropics/claude-code/issues/91766) OTEL_LOG_RAW_API_BODIES ignored in project settings, [#92057](https://github.com/anthropics/claude-code/issues/92057) query_source embeds outputStyle, [#91165](https://github.com/anthropics/claude-code/issues/91165) OTLP metrics exporter never opens a socket, [#81991](https://github.com/anthropics/claude-code/issues/81991) stale process loops OTel metric exports.
 
 Hypothesis only (NON-BINDING): `tool_input` / `tool_parameters` may be serialised outside the `OTEL_LOG_TOOL_*` gates. Discard if issue evidence disagrees. Do not claim Claude Code source you have not seen.
 

@@ -267,7 +267,7 @@ test("constants match the issue facts only", () => {
   assert.equal(FEATURED_ISSUE, 92056);
   assert.deepEqual([...PRIMARY_ISSUES], [92056]);
   assert.equal(COUSIN_ISSUE, 92057);
-  assert.deepEqual([...COUSINS], [92057, 91766]);
+  assert.deepEqual([...COUSINS], [91766, 92057, 91165, 81991]);
   assert.deepEqual([...SKIP_BACKUPS], [92019, 92014]);
   assert.equal(FILED_AT, "2026-09-04T11:07:44Z");
   assert.equal(REPORTER, "michalszelagsonos");
@@ -373,8 +373,18 @@ test("README is the locked Hectograph thesis, not a leftover clone", () => {
 test("cousin isolation stays scrubbed / cite-only", () => {
   assert.equal(decideSeed("cousin").verdict, "scrubbed");
   assert.equal(decideSeed(92057).verdict, "scrubbed");
-  assert.equal(classify({ issue: 92057 }), "scrubbed");
   assert.equal(classify({ issue: 91766 }), "scrubbed");
+  assert.equal(classify({ issue: 92057 }), "scrubbed");
+  assert.equal(classify({ issue: 91165 }), "scrubbed");
+  assert.equal(classify({ issue: 81991 }), "scrubbed");
+  assert.equal(decideSeed(91165).verdict, "scrubbed");
+  assert.equal(decideSeed(81991).verdict, "scrubbed");
+  const cousins = readData("cousins.json");
+  assert.equal(cousins.primary, 92056);
+  assert.deepEqual(
+    cousins.rows.map((row) => row.issue),
+    [91766, 92057, 91165, 81991],
+  );
 });
 
 test("banned idle words never appear as the idle word", () => {

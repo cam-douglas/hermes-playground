@@ -58,7 +58,7 @@ export const ALARM_VERDICTS = Object.freeze(
 export const CHIPS = Object.freeze([...VERDICTS]);
 export const FEATURED_ISSUE = 92056;
 export const PRIMARY_ISSUES = Object.freeze([92056]);
-export const COUSINS = Object.freeze([92057, 91766]);
+export const COUSINS = Object.freeze([91766, 92057, 91165, 81991]);
 export const COUSIN_ISSUE = 92057;
 export const DISTANT_COST = Object.freeze([92033, 92062]);
 export const BACKUPS = Object.freeze([92062, 92061]);
@@ -521,7 +521,7 @@ export function seedCousin() {
     isolation: "cousin",
     cousin: String(COUSIN_ISSUE),
     outputText:
-      "cousin-not-primary; #92057 query_source embeds outputStyle so exact-match filters silently match nothing; #91766 OTEL_LOG_RAW_API_BODIES ignored in project settings — cite only, not the #92056 tool_input/tool_parameters scrub-flag leak",
+      "cousin-not-primary; #91766 OTEL_LOG_RAW_API_BODIES ignored in project settings; #92057 query_source embeds outputStyle; #91165 OTLP metrics exporter never opens a socket; #81991 stale process loops OTel metric exports — cite only, not the #92056 tool_input/tool_parameters scrub-flag leak",
   };
 }
 
@@ -639,8 +639,10 @@ const SEED_FNS = {
   "flags-unset": seedFlagsUnset,
   hold: seedHold,
   cousin: seedCousin,
-  92057: seedCousin,
   91766: seedCousin,
+  92057: seedCousin,
+  91165: seedCousin,
+  81991: seedCousin,
 };
 
 export function normalize(input) {
@@ -838,7 +840,7 @@ export function flagsOf(ticket) {
   const named = canonicalSeed(row.seed);
   const cousinOnly =
     (COUSINS.includes(row.issue) ||
-      /cousin-not-primary|#92057|#91766/i.test(text)) &&
+      /cousin-not-primary|#91766|#92057|#91165|#81991/i.test(text)) &&
     named !== SEEDED_WORD &&
     row.issue !== FEATURED_ISSUE;
   const pulledNow = !cousinOnly && isPulled(row);
@@ -972,7 +974,7 @@ function reasonsOf(ticket, flags, verdict) {
   }
   if (flags.cousinOnly) {
     reasons.push(
-      "cousin is not Hectograph; cite-only #92057 (query_source embeds outputStyle — related telemetry field pollution), #91766 (OTEL_LOG_RAW_API_BODIES ignored in project settings) — different surfaces from #92056 tool_input/tool_parameters scrub-flag leak; primary stays #92056",
+      "cousin is not Hectograph; cite-only #91766 (OTEL_LOG_RAW_API_BODIES ignored in project settings), #92057 (query_source embeds outputStyle — related telemetry field pollution), #91165 (OTLP metrics exporter never opens a socket), #81991 (stale process loops OTel metric exports) — different surfaces from #92056 tool_input/tool_parameters scrub-flag leak; primary stays #92056",
     );
   }
   if (verdict === "pulled" || flags.pulled) {
@@ -1093,10 +1095,14 @@ export function decideSeed(name) {
     return analyze(seedScrubbed());
   }
   if (
-    name === 92057 ||
-    name === "92057" ||
     name === 91766 ||
     name === "91766" ||
+    name === 92057 ||
+    name === "92057" ||
+    name === 91165 ||
+    name === "91165" ||
+    name === 81991 ||
+    name === "81991" ||
     name === "cousin"
   ) {
     return analyze(seedCousin());

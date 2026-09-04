@@ -44,8 +44,10 @@ Different surface: diagnostic scoring of OTEL attributes that ignore scrub flags
 
 Cousins are cite-only on a cousin strip; primary stays #92056.
 
-- [#92057](https://github.com/anthropics/claude-code/issues/92057) — OPEN — `query_source` embeds the user's outputStyle (`repl_main_thread:outputStyle:Concise`) so exact-match filters silently match nothing. Related telemetry field pollution. Cite-only.
 - [#91766](https://github.com/anthropics/claude-code/issues/91766) — OPEN — `OTEL_LOG_RAW_API_BODIES` ignored in project settings since 2.1.251. Related OTEL flag-ignore. Cite-only.
+- [#92057](https://github.com/anthropics/claude-code/issues/92057) — OPEN — `query_source` embeds the user's outputStyle (`repl_main_thread:outputStyle:Concise`) so exact-match filters silently match nothing. Related telemetry field pollution. Cite-only.
+- [#91165](https://github.com/anthropics/claude-code/issues/91165) — OPEN — OTLP metrics exporter never opens a socket on 2.1.252 (possible regression of #50567). Related OTEL export path. Cite-only.
+- [#81991](https://github.com/anthropics/claude-code/issues/81991) — OPEN — After v2.1.220, a stale process loops OTel metric exports (same cumulative counters every 60s). Related OTEL export loop. Cite-only.
 
 Distant cost cousins (mention only, not primary): [#92033](https://github.com/anthropics/claude-code/issues/92033) prompt-cache rewrite cost; [#92062](https://github.com/anthropics/claude-code/issues/92062) background wait status-probe cost.
 
@@ -66,7 +68,7 @@ Different idle: **scrubbed**.
 1. Idle demo loads **scrubbed** — every `OTEL_LOG_TOOL_*` flag off; canary absent from `tool_input` and `tool_parameters`; gelatin holds.
 2. Seed **pulled** → #92056: canary still appears in `tool_decision.tool_parameters.full_command`, `tool_result.tool_parameters`, and `tool_result.tool_input` with `OTEL_LOG_TOOL_CONTENT=false` (and `=0`, and all flags unset).
 3. Atelier UI: gelatin tray / master sheet / pull strips / flag matrix toggles / canary blot lamp / OTEL attribute path ledger. Scrubbed = gelatin holds. Pulled = the canary already left on the copy.
-4. Cousin cite strip labeled cousin-not-primary: [#92057](https://github.com/anthropics/claude-code/issues/92057), [#91766](https://github.com/anthropics/claude-code/issues/91766). Cite only. Primary stays #92056.
+4. Cousin cite strip labeled cousin-not-primary: [#91766](https://github.com/anthropics/claude-code/issues/91766), [#92057](https://github.com/anthropics/claude-code/issues/92057), [#91165](https://github.com/anthropics/claude-code/issues/91165), [#81991](https://github.com/anthropics/claude-code/issues/81991). Cite only. Primary stays #92056.
 5. **Score the gelatin** walks the probe ticket and lights chips on the desk. Chip-switch every verdict. Paste or drop JSON.
 
 ## How to score
