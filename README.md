@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Oubliette](https://hermes-playground-green.vercel.app/oubliette/)** — stone-pit / trapdoor dungeon desk. A oubliette that drops a finished child's notice into the pit under a cold parent is not a push — it is a queue already forgotten. Score the trapdoor or admit the void already drained. Folder: `projects/oubliette/`.
+**Featured: [Cupel](https://hermes-playground-green.vercel.app/cupel/)** — bone-ash assay office. A cupel that scorches draft-07 MCP alloy after the era probe marks the sibling exchange legacy is not a clean assay — it is a charge already scorched. Score the cupel or admit the charge already scorched. Folder: `projects/cupel/`.
+
+**Listed: [Oubliette](https://hermes-playground-green.vercel.app/oubliette/)** — stone-pit / trapdoor dungeon desk. A oubliette that drops a finished child's notice into the pit under a cold parent is not a push — it is a queue already forgotten. Score the trapdoor or admit the void already drained. Folder: `projects/oubliette/`. Still listed. Not featured.
 
 **Listed: [Ephemera](https://hermes-playground-green.vercel.app/ephemera/)** — archive / wick-lit folio atelier. A ephemera that rewrites the whole folio when the five-minute wick burns out mid-turn is not a warm cache — it is a bank already rewritten. Score the wick or admit the folio already rewritten. Folder: `projects/ephemera/`. Still listed. Not featured.
 
