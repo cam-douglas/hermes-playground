@@ -1,0 +1,88 @@
+{
+  "note": "Diagnostic only. No credentials. No payloads. Encoded from #92305 issue facts. claude -p piped stdin, request ≈ 1.78 × conversation + ~16k, attachment-content surplus, --bare drops OAuth, stream-json same ratio, cwd Δ ~5 only.",
+  "narrativeNotFixture": {
+    "noPayloadsInvented": true,
+    "noRealCredentials": true,
+    "noExploitScripts": true,
+    "platform": "linux",
+    "area": ["cli"],
+    "labels": ["bug", "has repro", "platform:linux", "area:cli"],
+    "filed": "OPEN",
+    "surface": "CLAUDE -P WITH PIPED STDIN COUNTS THE INPUT ~1.78× TOWARD THE CONTEXT LIMIT (ATTACHMENT CONTENT), HALVING THE USABLE WINDOW",
+    "invocation": "claude -p reading the prompt from stdin",
+    "model": "claude-opus-5",
+    "contextLimit": 1000000,
+    "auth": "OAuth Max",
+    "tools": "disallowed",
+    "cwd": "throwaway empty directory",
+    "ratio": 1.78,
+    "overheadTokens": 16000,
+    "cwdDeltaTokens": 5,
+    "measurements": [
+      { "request": 1014989, "conversation": 566880, "form": "stdin", "note": "primary ~2.26 MB pipe" },
+      { "request": 1452075, "conversation": 821184, "form": "stdin", "note": "doubled packet" },
+      { "request": 2057985, "conversation": 1153965, "form": "stdin", "note": "4.64 MB control" },
+      { "request": 2060987, "conversation": 1152395, "form": "stream-json", "note": "same input via --input-format stream-json" }
+    ],
+    "refusal": "Prompt is too long · the request is ~1,014,989 tokens (limit 1,000,000) but this conversation is only ~566,880 tokens — the rest is system prompt, tool definitions, and attachment content.",
+    "impact": "a 2.26 MB text prompt (~641k tokens by o200k, ~567k by the CLI's own count) is refused on a 1M-token model; effective window for piped input ≈ 560k",
+    "bare": "--bare avoids the ratio but drops OAuth",
+    "expected": "piped input counted once; usable window is the model's window minus the CLI's fixed overhead",
+    "environment": "Claude Code 2.1.259 and 2.1.261; Ubuntu 24.04; claude-opus-5 1M; OAuth Max; tools disallowed; empty cwd",
+    "reporter": "Versidy",
+    "not12312": "CLOSED stale — same Prompt is too long below-limit symptom, no mechanism identified — cite only",
+    "cousin": [12312],
+    "cousins": [12312]
+  },
+  "rows": [
+    {
+      "id": 1,
+      "seed": "once",
+      "verdict": "once",
+      "note": "idle hold; piped stdin composed once on the prompt path"
+    },
+    {
+      "id": 2,
+      "seed": "doubled",
+      "verdict": "doubled",
+      "note": "same stream as prompt and attachment; 1,014,989 / 566,880"
+    },
+    {
+      "id": 3,
+      "seed": "hold",
+      "verdict": "hold",
+      "note": "persistHold keeps the intake composed once"
+    },
+    {
+      "id": 4,
+      "seed": "bare",
+      "verdict": "bare",
+      "note": "--bare avoids the ratio but drops OAuth"
+    },
+    {
+      "id": 5,
+      "seed": "stream-json",
+      "verdict": "stream-json",
+      "note": "same ~1.78× ratio via --input-format stream-json"
+    },
+    {
+      "id": 6,
+      "seed": "halved",
+      "verdict": "halved",
+      "note": "halve the file; it completes; same ratio; window already ~560k"
+    },
+    {
+      "id": 7,
+      "seed": "once",
+      "verdict": "once",
+      "note": "cwd is not the cause (~5 token delta)"
+    },
+    {
+      "id": 8,
+      "seed": "doubled",
+      "issue": 92305,
+      "verdict": "doubled",
+      "note": "primary fixture"
+    }
+  ]
+}
