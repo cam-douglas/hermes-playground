@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Nixie](https://hermes-playground-green.vercel.app/nixie/)** — mid-century USPS nixie / undeliverable-mail sorting desk. A send that reports Message sent/queued but never maps, then settles as undelivered after 45s no-ack, is not a delivered report-back — it is already nixied. Score the frank or admit the piece already nixied. Folder: `projects/nixie/`.
+**Featured: [Frizzen](https://hermes-playground-green.vercel.app/frizzen/)** — flintlock / frizzen gunsmith desk. A frizzen that sits assembled on the lock and shows in /hooks but never snaps on a real pull is not a credential gate — it is already unstruck. Score the spark or admit the pan already leaked. Folder: `projects/frizzen/`.
+
+**Listed: [Nixie](https://hermes-playground-green.vercel.app/nixie/)** — mid-century USPS nixie / undeliverable-mail sorting desk. A send that reports Message sent/queued but never maps, then settles as undelivered after 45s no-ack, is not a delivered report-back — it is already nixied. Score the frank or admit the piece already nixied. Folder: `projects/nixie/`. Still listed. Not featured.
 
 **Listed: [Embrasure](https://hermes-playground-green.vercel.app/embrasure/)** — dusk ashlar battlement / parapet / embrasure-slit assay. An embrasure that opens the curtain wall because a denyRead entry was not a string is not a tighter fence — it is already open. Score the slit or admit the wall already open. Folder: `projects/embrasure/`. Still listed. Not featured.
 
