@@ -1,0 +1,74 @@
+{
+  "note": "Diagnostic only. No credentials. No payloads. Encoded from #92275 issue facts. XTVERSION CSI > 0 q, Primary DA CSI c, cooked ECHO window, VTE caret-notation leak, pty timestamps only.",
+  "narrativeNotFixture": {
+    "noPayloadsInvented": true,
+    "noRealCredentials": true,
+    "noExploitScripts": true,
+    "platform": "linux",
+    "area": ["tui"],
+    "labels": ["bug", "has repro", "platform:linux", "area:tui"],
+    "filed": "OPEN",
+    "surface": "TERMINAL ID PROBES (XTVERSION + Primary DA) EMITTED INSIDE A ~50ms COOKED ECHO WINDOW AFTER FOCUS/BRACKETED-PASTE TEARDOWN, LEAKING VTE REPLIES AS CARET-NOTATION GARBAGE ABOVE THE BANNER",
+    "queries": ["CSI > 0 q (XTVERSION)", "CSI c (Primary DA)"],
+    "environment": "Claude Code 2.1.261 (also 2.1.260; appeared in 2.1.251→2.1.259 range); Arch Linux; xfce4-terminal 1.2.0 / VTE 0.84.1; TERM=xterm-256color",
+    "fragments": ["^[[I", "^[P>|VTE(...)", "…1;22;28c"],
+    "timeline": "ECHO on→off ~0.040; ECHO ON after teardown ~0.202; XTVERSION+DA with ECHO on ~0.206 (BUG); ECHO off ~0.253; same queries with ECHO off ~0.317",
+    "vte": "replies in ~0.1–14ms median — well inside the ~47–51ms cooked window",
+    "expected": "never emit identification queries while ECHO is on; keep raw mode through the probe; no caret-notation leak above the banner",
+    "not91530": "tmux resume probe-as-input is a different symptom",
+    "not87459": "Windows Terminal mouse-tracking echo is a different symptom",
+    "cousin": [91530, 87459],
+    "cousins": [91530, 87459]
+  },
+  "rows": [
+    {
+      "id": 1,
+      "seed": "hushed",
+      "verdict": "hushed",
+      "note": "idle ECHO stays off; probes only after raw mode; clean banner"
+    },
+    {
+      "id": 2,
+      "seed": "blurted",
+      "verdict": "blurted",
+      "note": "probes fired inside cooked ECHO window; VTE replies leaked as caret notation"
+    },
+    {
+      "id": 3,
+      "seed": "cooked",
+      "verdict": "cooked",
+      "note": "ECHO re-enabled after focus/bracketed-paste teardown"
+    },
+    {
+      "id": 4,
+      "seed": "probed",
+      "verdict": "probed",
+      "note": "XTVERSION + Primary DA emitted"
+    },
+    {
+      "id": 5,
+      "seed": "leaked",
+      "verdict": "leaked",
+      "note": "kernel line discipline echoed replies above banner"
+    },
+    {
+      "id": 6,
+      "seed": "retried",
+      "verdict": "retried",
+      "note": "same probes resent ~110ms later with ECHO off (works)"
+    },
+    {
+      "id": 7,
+      "seed": "cleaned",
+      "verdict": "cleaned",
+      "note": "raw mode held through identification; no caret garbage"
+    },
+    {
+      "id": 8,
+      "seed": "blurted",
+      "issue": 92275,
+      "verdict": "blurted",
+      "note": "primary fixture"
+    }
+  ]
+}
