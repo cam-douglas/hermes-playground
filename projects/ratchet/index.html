@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ratchet — gear-tooth scoring for #92242</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fragment+Mono:wght@400&family=Outfit:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,700;1,8..60,500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --oil: #0b0c0e;
+        --gunmetal: #1a1d22;
+        --steel: #2c3138;
+        --steel-lit: #3a4048;
+        --graphite: #8b9098;
+        --amber: #e0a23a;
+        --amber-deep: #b87a1c;
+        --brass: #c9a45a;
+        --tooth: #d4b06a;
+        --ink: #e6e2d8;
+        --mute: #8b9098;
+        --hold: #7fa86a;
+        --slip: #d15a38;
+        --line: rgba(224, 162, 58, 0.28);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Outfit, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(ellipse 70% 36% at 82% -10%, rgba(224, 162, 58, 0.09), transparent 54%),
+          repeating-linear-gradient(
+            118deg,
+            transparent 0 11px,
+            rgba(201, 164, 90, 0.025) 11px 12px
+          ),
+          repeating-linear-gradient(
+            28deg,
+            transparent 0 37px,
+            rgba(139, 144, 152, 0.03) 37px 38px
+          ),
+          linear-gradient(180deg, #070809 0%, var(--oil) 46%, #0e1013 100%);
+        color: var(--ink);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--amber); }
+      .wrap { width: min(1180px, calc(100% - 28px)); margin: 0 auto; padding: 26px 0 88px; }
+      .chrome { margin-bottom: 16px; }
+      .catalog {
+        display: inline-block;
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--amber);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(224, 162, 58, 0.4);
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--amber);
+      }
+      h1 {
+        font-family: "Source Serif 4", "Times New Roman", serif;
+        font-size: clamp(56px, 11vw, 108px);
+        letter-spacing: -0.045em;
+        margin: 6px 0 10px;
+        font-weight: 700;
+        line-height: 0.82;
+      }
+      h1 .sort {
+        color: var(--amber);
+        font-style: italic;
+        font-weight: 500;
+        font-size: 0.32em;
+        letter-spacing: 0.14em;
+        vertical-align: super;
+      }
+      .lede { max-width: 64em; color: var(--mute); line-height: 1.62; }
+      .bench {
+        margin: 22px 0 0;
+        border: 1px solid rgba(201, 164, 90, 0.34);
+        border-radius: 2px;
+        background:
+          radial-gradient(circle at 78% 18%, rgba(224, 162, 58, 0.06), transparent 40%),
+          linear-gradient(180deg, var(--steel) 0%, var(--gunmetal) 100%);
+        box-shadow:
+          inset 0 1px 0 rgba(232, 210, 150, 0.08),
+          0 22px 40px rgba(0, 0, 0, 0.5);
+      }
+      .bench-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        padding: 10px 14px;
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--oil);
+        background: var(--amber);
+      }
+      .headstock {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        min-height: 360px;
+        border: 8px solid #1f2328;
+        margin: 10px;
+        background: #12151a;
+      }
+      @media (max-width: 860px) {
+        .headstock { grid-template-columns: 1fr; }
+      }
+      .wheel-bay {
+        padding: 16px 12px 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        border-right: 1px solid rgba(224, 162, 58, 0.16);
+        background:
+          radial-gradient(circle at 50% 42%, rgba(224, 162, 58, 0.08), transparent 58%),
+          #14181d;
+      }
+      .wheel-bay h2, .plaque h2 {
+        margin: 0;
+        font-family: "Source Serif 4", serif;
+        font-size: 22px;
+        font-weight: 500;
+        font-style: italic;
+        color: var(--amber);
+        align-self: flex-start;
+      }
+      .ratchet-svg { width: min(240px, 100%); height: auto; display: block; }
+      .dog { transform-origin: 118px 86px; }
+      .bench.slipping .dog { transform: rotate(-18deg); }
+      .bench.caught .dog { transform: rotate(6deg); }
+      .bench.slipping .tooth-hot { fill: var(--slip); }
+      .bench.caught .tooth-hot { fill: var(--hold); }
+      .hub-count {
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        color: var(--tooth);
+      }
+      .bench.slipping .hub-count { color: var(--slip); }
+      .bench.caught .hub-count { color: var(--hold); }
+      .plaque {
+        padding: 16px 14px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .scorecard {
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--graphite);
+        min-height: 8.4em;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.34);
+        border: 1px dashed rgba(224, 162, 58, 0.28);
+        white-space: pre-wrap;
+      }
+      .bench.slipping .scorecard.resolution {
+        background: rgba(209, 90, 56, 0.16);
+        color: #e8b0a0;
+      }
+      .bench.caught .scorecard.condition {
+        color: var(--ink);
+        border-style: solid;
+      }
+      .machine {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        border-top: 1px solid rgba(224, 162, 58, 0.22);
+        background: #262017;
+      }
+      @media (max-width: 860px) {
+        .machine { grid-template-columns: 1fr 1fr; }
+      }
+      .machine button {
+        width: 100%;
+        border: 0;
+        border-right: 1px solid rgba(224, 162, 58, 0.16);
+        background: transparent;
+        color: var(--brass);
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 12px 8px;
+        cursor: pointer;
+      }
+      .machine button b {
+        display: block;
+        font-family: "Source Serif 4", serif;
+        font-size: 15px;
+        letter-spacing: 0;
+        text-transform: none;
+        margin-top: 4px;
+        color: var(--amber);
+      }
+      .machine button.on {
+        background: var(--amber);
+        color: var(--oil);
+      }
+      .machine button.on b { color: var(--oil); }
+      .machine button.fail {
+        background: var(--slip);
+        color: #f4e6d4;
+      }
+      .machine button.fail b { color: #f4e6d4; }
+      .plates {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border-top: 1px solid rgba(224, 162, 58, 0.22);
+        background: #1e1c16;
+      }
+      @media (max-width: 860px) {
+        .plates { grid-template-columns: 1fr; }
+      }
+      .plate {
+        padding: 12px 14px;
+        border-right: 1px solid rgba(224, 162, 58, 0.12);
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 11px;
+        color: var(--brass);
+        cursor: pointer;
+        background: transparent;
+        text-align: left;
+      }
+      .plate b {
+        display: block;
+        font-family: "Source Serif 4", serif;
+        font-size: 20px;
+        color: var(--amber);
+      }
+      .plate.bad b { color: var(--slip); }
+      .plate.lit { background: rgba(224, 162, 58, 0.12); }
+      .charge {
+        margin: 0;
+        padding: 12px 16px;
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 11px;
+        color: var(--oil);
+        background: var(--amber);
+      }
+      .bench.slipping .charge { background: var(--slip); color: #f4e6d4; }
+      .log {
+        margin: 0;
+        padding: 14px 16px 18px;
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 11px;
+        color: var(--graphite);
+        background: #0c0d10;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+      .log .hit { color: var(--slip); }
+      .sim {
+        margin: 18px 0 0;
+        padding: 14px;
+        border: 1px solid var(--line);
+        background: rgba(26, 29, 34, 0.9);
+      }
+      .sim h3 {
+        margin: 0 0 8px;
+        font-family: "Source Serif 4", serif;
+        font-size: 22px;
+        font-weight: 500;
+      }
+      .uri {
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+        background: #0a0b0d;
+        border: 1px solid var(--line);
+        word-break: break-all;
+        margin: 8px 0 12px;
+        color: var(--graphite);
+      }
+      .actions, .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+      button.act, .chip, .probe-chip {
+        font-family: Outfit, sans-serif;
+        border: 1px solid var(--line);
+        background: #1c2026;
+        color: var(--ink);
+        padding: 9px 12px;
+        cursor: pointer;
+      }
+      button.act:hover, .probe-chip:hover { border-color: var(--amber); color: var(--amber); }
+      .chip, .probe-chip {
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 4px 8px;
+      }
+      .chip.lit, .probe-chip.lit {
+        background: var(--amber);
+        color: var(--oil);
+        border-color: var(--amber);
+      }
+      .verdict {
+        font-family: "Source Serif 4", serif;
+        font-size: 40px;
+        margin: 18px 0 6px;
+      }
+      .verdict.alarm { color: var(--slip); }
+      .verdict.hold { color: var(--hold); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #0a0b0d;
+        color: var(--graphite);
+        border: 1px solid var(--line);
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .cousin, .stayoff, .facts {
+        margin: 18px 0;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        background: rgba(26, 29, 34, 0.9);
+        font-size: 14px;
+        color: var(--mute);
+      }
+      .facts dt {
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        color: var(--amber);
+      }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed rgba(224, 162, 58, 0.45);
+        color: var(--mute);
+        text-align: center;
+      }
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      @media (max-width: 720px) {
+        .compare { grid-template-columns: 1fr; }
+      }
+      .compare div {
+        padding: 10px;
+        background: #0a0b0d;
+        border: 1px solid var(--line);
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--graphite);
+      }
+      .compare span {
+        display: block;
+        font-family: Outfit, sans-serif;
+        font-size: 12px;
+        color: var(--mute);
+        margin-bottom: 4px;
+      }
+      .oilstain {
+        margin-top: 10px;
+        padding: 12px 14px;
+        background: #2a2214;
+        color: var(--tooth);
+        font-family: "Source Serif 4", serif;
+        font-size: 15px;
+        border-top: 3px solid var(--amber-deep);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">09:50 / hermes catalog #145 / #92242 · #hermes-catalog</p>
+        <h1>Ratchet<span class="sort" aria-hidden="true"> tooth</span></h1>
+        <p class="lede">
+          Workshop ratchet. A ratchet that keeps slipping after the user
+          accepted the BLOCKED tooth is not a caught stop — it is already
+          slipping. Score the ratchet or admit the tooth already slipping.
+        </p>
+        <p class="lede">Idle word: caught. Seeded word: slipping / #92242. Diagnostic only. No credentials. No payloads.</p>
+      </header>
+
+      <section class="bench" id="desk" aria-label="workshop ratchet scoring bench">
+        <div class="bench-head">
+          <span>gunmetal steel · oil amber · tooth brass · graphite</span>
+          <span id="mark">09:50 / hermes catalog #145 / #92242</span>
+        </div>
+        <div class="headstock">
+          <div class="wheel-bay" aria-label="ratchet head">
+            <h2>ratchet head</h2>
+            <svg class="ratchet-svg" viewBox="0 0 240 240" role="img" aria-label="socket ratchet tooth wheel">
+              <defs>
+                <radialGradient id="oilhub" cx="50%" cy="45%" r="55%">
+                  <stop offset="0%" stop-color="#3a4048" />
+                  <stop offset="100%" stop-color="#12151a" />
+                </radialGradient>
+              </defs>
+              <circle cx="120" cy="120" r="108" fill="#1a1d22" stroke="#c9a45a" stroke-width="3" />
+              <g id="teeth" fill="#d4b06a" stroke="#0b0c0e" stroke-width="1">
+                <path class="tooth-hot" d="M120 18 L132 44 L108 44 Z" />
+                <path d="M168 32 L170 60 L148 50 Z" />
+                <path d="M208 72 L186 86 L190 62 Z" />
+                <path d="M222 120 L194 126 L200 102 Z" />
+                <path d="M208 168 L184 154 L196 178 Z" />
+                <path d="M168 208 L148 186 L172 184 Z" />
+                <path d="M120 222 L108 196 L132 196 Z" />
+                <path d="M72 208 L70 180 L92 190 Z" />
+                <path d="M32 168 L54 154 L50 178 Z" />
+                <path d="M18 120 L46 114 L40 138 Z" />
+                <path d="M32 72 L56 86 L44 62 Z" />
+                <path d="M72 32 L92 54 L68 56 Z" />
+              </g>
+              <circle cx="120" cy="120" r="46" fill="url(#oilhub)" stroke="#e0a23a" stroke-width="2" />
+              <text x="120" y="116" text-anchor="middle" fill="#e6e2d8" font-family="Fragment Mono, monospace" font-size="11">FIRES</text>
+              <text id="hub-num" x="120" y="136" text-anchor="middle" fill="#e0a23a" font-family="Fragment Mono, monospace" font-size="16">50+</text>
+              <g class="dog">
+                <path d="M118 86 L168 58 L174 68 L128 98 Z" fill="#8b9098" stroke="#e0a23a" stroke-width="1.5" />
+                <circle cx="118" cy="86" r="6" fill="#e0a23a" />
+              </g>
+              <rect x="112" y="168" width="16" height="54" rx="3" fill="#2c3138" stroke="#c9a45a" />
+            </svg>
+            <p class="hub-count" id="hub-count">50+ identical stop-hook clicks</p>
+          </div>
+          <div class="plaque" aria-label="tooth scoring plaque">
+            <h2>scoring plaque</h2>
+            <div class="scorecard condition" id="condition-text">frozen literal /goal condition</div>
+            <p class="lede" id="condition-note">Verifier still reads the original condition text.</p>
+            <div class="scorecard resolution" id="resolution-text">user accepted BLOCKED via AskUserQuestion</div>
+            <p class="lede" id="resolution-note">Stop-hook never learned of the terminal tooth.</p>
+          </div>
+        </div>
+        <div class="machine" id="machine" aria-label="catch slip state machine">
+          <button type="button" data-step="set"><b>set</b>goal-literal</button>
+          <button type="button" data-step="conflict"><b>conflict</b>policy-conflict</button>
+          <button type="button" data-step="ask"><b>ask</b>terminal-preview</button>
+          <button type="button" data-step="accept"><b>accept</b>ask-user-blocked</button>
+          <button type="button" data-step="verify"><b>verify</b>stop-hook</button>
+          <button type="button" data-step="slip"><b>slip</b>fifty-plus</button>
+        </div>
+        <div class="plates" aria-label="workshop plates">
+          <button type="button" class="plate" data-work="resume"><b>/goal resume</b>reconverges</button>
+          <button type="button" class="plate bad" data-work="clear"><b>/goal clear</b>user only</button>
+          <button type="button" class="plate bad" data-work="notool"><b>no model clear</b>no acknowledge</button>
+        </div>
+        <p class="charge" id="charge">user accepted BLOCKED · stop-hook still fires the frozen literal</p>
+        <pre class="log" id="log"></pre>
+        <p class="oilstain" id="oilstain">The dog rode the BLOCKED tooth. The ratchet is already slipping.</p>
+      </section>
+
+      <p class="verdict alarm" id="verdict">slipping</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">Ratchet already slipping. Admit the tooth already slipping.</p>
+
+      <section class="sim" aria-label="tooth simulator">
+        <h3>Tooth simulator</h3>
+        <p class="lede">Choose whether the stop-hook dog observes AskUserQuestion BLOCKED, and whether the condition stays frozen as literal text. Then click. Score whether the ratchet catches or the tooth already slipping.</p>
+        <div class="uri" id="uri">win32 · vscode · 2.1.260 · /goal stop hook · 50+ re-fires after BLOCKED</div>
+        <div class="chips" aria-label="blocked observation">
+          <button type="button" class="probe-chip" data-observe="ack">observe BLOCKED</button>
+          <button type="button" class="probe-chip lit" data-observe="ignore">ignore BLOCKED</button>
+        </div>
+        <div class="chips" aria-label="condition text">
+          <button type="button" class="probe-chip lit" data-literal="frozen">frozen literal</button>
+          <button type="button" class="probe-chip" data-literal="live">live condition</button>
+        </div>
+        <div class="compare">
+          <div><span>stop-hook</span><code id="cmp-hook">50+ identical re-fires on the original condition text</code></div>
+          <div><span>clear path</span><code id="cmp-clear">only user /goal clear · no model acknowledge</code></div>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button type="button" class="act" data-act="score">Score the ratchet</button>
+        <button type="button" class="act" data-act="idle">Pin idle caught</button>
+        <button type="button" class="act" data-act="seed">Pin seeded slipping</button>
+        <button type="button" class="act" data-act="admit">Admit the tooth already slipping</button>
+        <button type="button" class="act" data-act="fixtures">Load fixtures</button>
+        <button type="button" class="act" data-act="reset">Reset to caught</button>
+      </div>
+
+      <textarea id="probe" spellcheck="false" aria-label="probe ticket"></textarea>
+      <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe. Score the ratchet.</div>
+
+      <dl class="facts">
+        <dt>1 — The user accepted a terminal BLOCKED tooth</dt>
+        <dd>
+          A <code>/goal</code> condition was set (bring a PR to MERGEABLE,
+          resolve threads). Mid-task a policy conflict appeared. The model
+          used AskUserQuestion. One option’s preview explicitly described a
+          terminal BLOCKED / stopped-looping outcome. The user picked that
+          option — informed, explicit.
+        </dd>
+        <dt>2 — The stop hook never learned of that acceptance</dt>
+        <dd>
+          The <code>/goal</code> dynamic stop hook kept re-firing 50+ times
+          with the same automated feedback. It has no way to learn of the
+          AskUserQuestion resolution and keeps firing on the original literal
+          condition text.
+        </dd>
+        <dt>3 — Resume reconverges; only clear ends it</dt>
+        <dd>
+          <code>/goal resume</code> reconverges to the same justified terminal
+          stop and still re-fires. The model has no tool to clear or
+          acknowledge the goal. Only the user’s own <code>/goal clear</code>
+          ends the loop.
+        </dd>
+        <dt>4 — Bounded observation suggested on the issue</dt>
+        <dd>
+          A stop that the user already accepted as BLOCKED should count as
+          terminal satisfaction or cancellation. If the verifier only sees
+          the frozen literal condition, every later click is already slipping.
+        </dd>
+        <dt>Expected (from the issue)</dt>
+        <dd>
+          AskUserQuestion BLOCKED acceptance is visible to the stop-hook
+          verifier. The hook rests. The condition is cleared or satisfied as
+          terminal. The model is not trapped re-answering the same automated
+          feedback.
+        </dd>
+        <dt>Likely path (NON-BINDING)</dt>
+        <dd>
+          Stop-hook verifier only sees the frozen literal <code>/goal</code>
+          condition text and never observes AskUserQuestion terminal BLOCKED
+          acceptance as satisfaction/cancellation. Discard if evidence
+          disagrees. Do not claim unseen source.
+        </dd>
+        <dt>Environment</dt>
+        <dd>
+          Claude Code 2.1.260 · win32 · vscode. Reporter biz-dapav. Filed
+          2026-09-04T23:56:03Z, updated 2026-09-04T23:57:03Z. OPEN, bug,
+          has-repro, platform:windows, platform:vscode, area:hooks.
+        </dd>
+      </dl>
+
+      <section class="chips" aria-label="verdict chips" id="chip-switch">
+        <button type="button" class="chip" data-chip="caught">caught</button>
+        <button type="button" class="chip" data-chip="slipping">slipping</button>
+        <button type="button" class="chip" data-chip="stop-hook">stop-hook</button>
+        <button type="button" class="chip" data-chip="ask-user-blocked">ask-user-blocked</button>
+        <button type="button" class="chip" data-chip="goal-literal">goal-literal</button>
+        <button type="button" class="chip" data-chip="resume-reconverge">resume-reconverge</button>
+        <button type="button" class="chip" data-chip="clear-only">clear-only</button>
+        <button type="button" class="chip" data-chip="fifty-plus">fifty-plus</button>
+        <button type="button" class="chip" data-chip="policy-conflict">policy-conflict</button>
+        <button type="button" class="chip" data-chip="terminal-preview">terminal-preview</button>
+        <button type="button" class="chip" data-chip="no-model-clear">no-model-clear</button>
+        <button type="button" class="chip" data-chip="condition-frozen-cousin">condition-frozen-cousin</button>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #92242):
+        <a href="https://github.com/anthropics/claude-code/issues/85594">#85594</a>
+        goal loops after completion —
+        <a href="https://github.com/anthropics/claude-code/issues/86434">#86434</a>
+        stop-hook condition frozen at creation —
+        <a href="https://github.com/anthropics/claude-code/issues/69201">#69201</a>
+        stop-hook-git-check false-positive loop —
+        <a href="https://github.com/anthropics/claude-code/issues/92079">#92079</a>
+        one-time scheduled re-fire (Detent alt) —
+        <a href="https://github.com/anthropics/claude-code/issues/86438">#86438</a>
+        <code>/goal clear</code> typed while working treated as chat —
+        <a href="https://github.com/anthropics/claude-code/issues/89295">#89295</a>
+        mid-turn activation record orphans advisor.
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF Forme imposing-stone · Tabula wax tablet · Oxbow floodplain · Relict glacial fossil slab · Hellbox letterpress melt · Cupel assay office · Oubliette dungeon · Ephemera wick atelier · rotary commutator drum · heddle · gelatin hectograph · congregation placet · print-shop frisket · clavichord tangent · dockyard hawser · proof caret · harbor buoy · grammar solecism · vault coffer · probate codicil · bench crimp · studio jackfield · watchhouse tocsin · mill bolter · standing-rigging deadeye · letterpress reglet · vault reliquary · industrial annunciator · dry-dock caisson · machine-shop spindle · funeral knell · pin-tumbler · clockmaker escapement · geneva drive · wagon scotch · pintle · palimpsest · lacuna · quoin · flong · pawl · clapper · detent.
+      </aside>
+    </main>
+    <script>
+      const HOLD = new Set(["caught"]);
+      const ALARM_CHIPS = [
+        "slipping", "stop-hook", "ask-user-blocked", "goal-literal",
+        "resume-reconverge", "clear-only", "fifty-plus", "policy-conflict",
+        "terminal-preview", "no-model-clear"
+      ];
+      const GOAL = "Focus is on PR #<demo-pr>... keep looping until all conversation threads are reviewed, resolved...";
+      const JSONL = "~/.claude/projects/<demo-slug>/<session-id>.jsonl";
+
+      const idle = {
+        seed: "caught",
+        persistHold: true,
+        caught: true,
+        slipping: false,
+        askUserBlockedAccepted: true,
+        askUserBlockedAck: true,
+        stopHookObservesBlocked: true,
+        frozenLiteral: false,
+        stopHookRefire: false,
+        fireCount: 0,
+        resumeReconverge: false,
+        clearOnly: false,
+        noModelClear: false,
+        policyConflict: true,
+        terminalPreview: true,
+        conditionSatisfiedTerminal: true,
+        stopHookRests: true,
+        claudeVersion: "2.1.260",
+        platform: "win32",
+        terminal: "vscode",
+        goalText: GOAL,
+        jsonlPath: JSONL,
+        conditionText: GOAL,
+        resolutionText: "AskUserQuestion BLOCKED acceptance acknowledged; stop-hook rests",
+        hubCount: "REST",
+        log: [
+          "23:56:03 [goal] condition set: " + GOAL,
+          "23:56:10 [policy] workspace rule forbids the exact thread-resolution actions the goal required",
+          "23:56:18 [ask] AskUserQuestion preview: terminal BLOCKED / stopped-looping",
+          "23:56:22 [user] accepted BLOCKED option (informed, explicit)",
+          "23:56:23 [hook] stop-hook observed BLOCKED acceptance as terminal satisfaction",
+          "23:56:24 [hook] condition cleared / satisfied as terminal; stop-hook rests",
+          "23:56:25 [bench] ratchet dog seated in the BLOCKED tooth; idle word caught"
+        ],
+        outputText: "caught; AskUserQuestion BLOCKED acknowledged; stop-hook rests; idle word caught"
+      };
+      const seeded = {
+        seed: "slipping",
+        issue: 92242,
+        persistHold: false,
+        caught: false,
+        slipping: true,
+        askUserBlockedAccepted: true,
+        askUserBlockedAck: false,
+        stopHookObservesBlocked: false,
+        frozenLiteral: true,
+        stopHookRefire: true,
+        fireCount: 50,
+        resumeReconverge: true,
+        clearOnly: true,
+        noModelClear: true,
+        policyConflict: true,
+        terminalPreview: true,
+        conditionSatisfiedTerminal: false,
+        stopHookRests: false,
+        claudeVersion: "2.1.260",
+        platform: "win32",
+        terminal: "vscode",
+        reporter: "biz-dapav",
+        goalText: GOAL,
+        jsonlPath: JSONL,
+        conditionText: GOAL,
+        resolutionText: "user accepted BLOCKED / stopped-looping via AskUserQuestion — hook never learned it",
+        hubCount: "50+",
+        log: [
+          "23:56:03 [goal] condition set: " + GOAL,
+          "23:56:10 [policy] workspace rule forbids the exact thread-resolution actions the goal required",
+          "23:56:18 [ask] AskUserQuestion preview: terminal BLOCKED / stopped-looping",
+          "23:56:22 [user] accepted BLOCKED option (informed, explicit)",
+          "23:56:23 [hook] stop-hook did not observe AskUserQuestion resolution",
+          "23:56:24 [hook] re-fire 1 on frozen literal condition text",
+          "23:56:40 [hook] re-fire 50+ identical automated feedback",
+          "23:57:01 [goal] /goal resume reconverged to the same terminal stop",
+          "23:57:02 [goal] only user /goal clear can end the loop; no model clear tool",
+          "23:57:03 [fs] " + JSONL + " session intact; condition still the original literal"
+        ],
+        outputText: "slipping; #92242; stop-hook re-fires after user accepted BLOCKED"
+      };
+
+      let observe = "ignore";
+      let literal = "frozen";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...seeded }; }
+      }
+
+      function scoreTicket(t) {
+        const named = String(t.seed || "");
+        const accepted = t.askUserBlockedAccepted === true || named === "ask-user-blocked";
+        const ignored = t.askUserBlockedAck !== true && t.stopHookObservesBlocked !== true;
+        const frozen = t.frozenLiteral === true || named === "goal-literal";
+        const refire = t.stopHookRefire === true || Number(t.fireCount) >= 50
+          || named === "stop-hook" || named === "fifty-plus";
+        const slippingish = t.persistHold !== true && named !== "caught" && (
+          named === "slipping" || t.issue === 92242 || t.slipping === true
+          || (accepted && ignored && (frozen || refire))
+        );
+        const holdNamed = HOLD.has(named) || t.persistHold === true
+          || (!slippingish && t.caught === true);
+        const verdict = named && !HOLD.has(named) && named !== "slipping"
+          ? named
+          : slippingish && !holdNamed
+            ? "slipping"
+            : "caught";
+        const chips = [];
+        if (HOLD.has(verdict) || holdNamed) chips.push("caught");
+        if (slippingish && !holdNamed) chips.push(...ALARM_CHIPS);
+        if (t.resumeReconverge || named === "resume-reconverge") chips.push("resume-reconverge");
+        if (t.clearOnly || named === "clear-only") chips.push("clear-only");
+        if (t.noModelClear || named === "no-model-clear") chips.push("no-model-clear");
+        if (t.policyConflict || named === "policy-conflict") chips.push("policy-conflict");
+        if (t.terminalPreview || named === "terminal-preview") chips.push("terminal-preview");
+        if (named === "condition-frozen-cousin") chips.push("condition-frozen-cousin");
+        if (frozen && !chips.includes("goal-literal")) chips.push("goal-literal");
+        if (named && !chips.includes(named)) chips.push(named);
+        return { verdict, chips: [...new Set(chips)], hold: HOLD.has(verdict), ticket: t };
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm ? seeded.log : idle.log);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /slip|re-fire|never learned|frozen literal|50\+|did not observe/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintMachine(result) {
+        const t = result.ticket;
+        const alarm = !result.hold;
+        const steps = {
+          set: t.goalText || t.frozenLiteral !== undefined,
+          conflict: t.policyConflict === true,
+          ask: t.terminalPreview === true,
+          accept: t.askUserBlockedAccepted === true,
+          verify: t.stopHookRefire === true || alarm || t.seed === "stop-hook",
+          slip: alarm || t.fireCount >= 50 || t.slipping === true
+        };
+        document.querySelectorAll("#machine [data-step]").forEach((btn) => {
+          const step = btn.dataset.step;
+          btn.classList.toggle("on", steps[step] && step !== "slip" && !(step === "verify" && alarm));
+          btn.classList.toggle("fail", (step === "slip" && steps.slip && alarm) || (step === "verify" && alarm));
+          if (step === "verify") {
+            btn.innerHTML = alarm
+              ? "<b>blind</b>goal-literal"
+              : "<b>see</b>BLOCKED ack";
+          }
+          if (step === "slip") {
+            btn.innerHTML = alarm
+              ? "<b>slip</b>fifty-plus"
+              : "<b>catch</b>tooth seated";
+          }
+        });
+        document.querySelectorAll(".plate").forEach((btn) => {
+          const work = btn.dataset.work;
+          const lit = (work === "resume" && t.resumeReconverge)
+            || (work === "clear" && t.clearOnly)
+            || (work === "notool" && t.noModelClear);
+          btn.classList.toggle("lit", lit);
+        });
+      }
+
+      function paint(result) {
+        const alarm = !result.hold;
+        const t = result.ticket;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "Ratchet already slipping. Admit the tooth already slipping."
+          : "BLOCKED tooth caught. Stop-hook rests. Idle word caught.";
+        document.getElementById("desk").classList.toggle("slipping", alarm);
+        document.getElementById("desk").classList.toggle("caught", !alarm);
+        document.getElementById("condition-text").textContent = t.conditionText || GOAL;
+        document.getElementById("resolution-text").textContent = t.resolutionText || (alarm
+          ? "user accepted BLOCKED / stopped-looping via AskUserQuestion — hook never learned it"
+          : "AskUserQuestion BLOCKED acceptance acknowledged; stop-hook rests");
+        document.getElementById("condition-note").textContent = alarm
+          ? "Verifier still reads the original frozen literal condition."
+          : "Condition cleared or satisfied as terminal. The literal is no longer the only view.";
+        document.getElementById("resolution-note").textContent = alarm
+          ? "Stop-hook never learned of the terminal tooth."
+          : "The dog seated. AskUserQuestion BLOCKED counts as a caught stop.";
+        const hub = t.hubCount || (alarm ? "50+" : "REST");
+        document.getElementById("hub-num").textContent = hub;
+        document.getElementById("hub-count").textContent = alarm
+          ? "50+ identical stop-hook clicks"
+          : "stop-hook rests · tooth caught";
+        document.getElementById("uri").textContent = alarm
+          ? "win32 · vscode · 2.1.260 · /goal stop hook · 50+ re-fires after BLOCKED"
+          : "win32 · vscode · 2.1.260 · /goal stop hook · BLOCKED acknowledged · rest";
+        document.getElementById("cmp-hook").textContent = alarm
+          ? "50+ identical re-fires on the original condition text"
+          : "stop-hook rests; BLOCKED counted as terminal";
+        document.getElementById("cmp-clear").textContent = alarm
+          ? "only user /goal clear · no model acknowledge"
+          : "condition already terminal; clear not required to stop the loop";
+        document.getElementById("charge").textContent = alarm
+          ? "user accepted BLOCKED · stop-hook still fires the frozen literal"
+          : "BLOCKED acknowledged · stop-hook rests · caught tooth";
+        document.getElementById("oilstain").textContent = alarm
+          ? "The dog rode the BLOCKED tooth. The ratchet is already slipping."
+          : "The dog seated in the BLOCKED tooth. The ratchet stays caught.";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintLog(alarm, t);
+        paintMachine(result);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      function ticketFromSim() {
+        const ignored = observe === "ignore";
+        const frozen = literal === "frozen";
+        const slip = ignored && frozen;
+        return slip ? { ...seeded } : { ...idle };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-observe]").forEach((b) => {
+          b.classList.toggle("lit", b.dataset.observe === observe);
+        });
+        document.querySelectorAll("[data-literal]").forEach((b) => {
+          b.classList.toggle("lit", b.dataset.literal === literal);
+        });
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") {
+            observe = "ack";
+            literal = "live";
+            syncSimChips();
+            return apply({ ...idle });
+          }
+          if (act === "seed" || act === "admit") {
+            observe = "ignore";
+            literal = "frozen";
+            syncSimChips();
+            try { apply(await loadNamed("slipping.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("slipping.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-observe]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          observe = btn.dataset.observe;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-literal]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          literal = btn.dataset.literal;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          if (chip === "caught") {
+            apply({ ...idle, seed: chip });
+            return;
+          }
+          if (chip === "slipping") {
+            apply({ ...seeded });
+            return;
+          }
+          try { apply(await loadNamed(chip + ".json")); }
+          catch { apply({ ...seeded, seed: chip, issue: null }); }
+        });
+      });
+
+      document.querySelectorAll("#machine [data-step]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const step = btn.dataset.step;
+          if (step === "slip") {
+            observe = "ignore";
+            literal = "frozen";
+            syncSimChips();
+            apply({ ...seeded });
+            return;
+          }
+          const map = {
+            set: "goal-literal.json",
+            conflict: "policy-conflict.json",
+            ask: "terminal-preview.json",
+            accept: "ask-user-blocked.json",
+            verify: "stop-hook.json"
+          };
+          try { apply(await loadNamed(map[step])); }
+          catch { apply({ ...seeded, seed: step }); }
+        });
+      });
+
+      document.querySelectorAll(".plate").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const work = btn.dataset.work;
+          const file = work === "resume" ? "resume-reconverge.json"
+            : work === "clear" ? "clear-only.json"
+            : "no-model-clear.json";
+          try { apply(await loadNamed(file)); }
+          catch { apply({ ...seeded, seed: file.replace(".json", "") }); }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
