@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sostenuto — concert hold desk for #92360</title>
+    <meta
+      name="description"
+      content="Sostenuto — piano sostenuto pedal / ebony-ivory concert hold desk for Claude Code #92360: voice dictation permanently freezes the TUI because the main thread blocks in AudioUnitSetProperty. Idle word is released."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --ebony: #0e0c0a;
+        --ivory: #f4efe6;
+        --amber: #e6b35a;
+        --gold: #a8894a;
+        --steel: #6a727a;
+        --cyan: #7ec8c8;
+        --stage: #1a1512;
+        --mute: #8a8176;
+        --line: rgba(168, 137, 74, 0.28);
+        --ink: #f4efe6;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Outfit, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 42% 28% at 50% 0%, rgba(230, 179, 90, 0.16), transparent 58%),
+          radial-gradient(ellipse 30% 24% at 8% 80%, rgba(126, 200, 200, 0.08), transparent 50%),
+          linear-gradient(180deg, #1a1512 0%, #0e0c0a 46%, #0a0908 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--amber); }
+      .wrap { width: min(1180px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .chrome { margin-bottom: 14px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(138, 129, 118, 0.4);
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--gold);
+      }
+      h1 {
+        font-family: Fraunces, "Palatino Linotype", serif;
+        font-size: clamp(52px, 9vw, 96px);
+        letter-spacing: -0.03em;
+        margin: 4px 0 10px;
+        font-weight: 600;
+        line-height: 0.88;
+        color: var(--ivory);
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--amber);
+        font-size: 0.28em;
+        letter-spacing: 0.12em;
+        vertical-align: super;
+      }
+      .lede { max-width: 56em; color: var(--mute); line-height: 1.55; font-size: 16px; }
+      .lede code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--amber);
+      }
+
+      .fallboard {
+        margin: 22px 0 0;
+        position: relative;
+        min-height: 236px;
+        border: 1px solid rgba(168, 137, 74, 0.32);
+        background:
+          linear-gradient(180deg, #2a221c 0 18px, transparent 18px),
+          linear-gradient(180deg, #16110e, #0e0c0a);
+        box-shadow:
+          0 0 0 8px #120f0c,
+          0 24px 48px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+      }
+      .fallboard.frozen {
+        box-shadow: 0 0 0 8px #120f0c, 0 0 36px rgba(126, 200, 200, 0.28), 0 24px 48px rgba(0, 0, 0, 0.5);
+      }
+      .fallboard.released {
+        box-shadow: 0 0 0 8px #120f0c, 0 0 28px rgba(230, 179, 90, 0.18), 0 24px 48px rgba(0, 0, 0, 0.5);
+      }
+      .gold-rail {
+        height: 10px;
+        background: linear-gradient(90deg, #6e5728, #a8894a 40%, #e6b35a 50%, #a8894a 60%, #6e5728);
+        box-shadow: 0 2px 0 #3a2e16;
+      }
+      .lamp {
+        position: absolute;
+        top: 22px;
+        right: 22px;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 40% 35%, #f4efe6 0 8%, #e6b35a 18%, #6a4a18 55%, #2a1c0c 100%);
+        box-shadow: 0 0 0 3px #3a2e16;
+      }
+      .fallboard.frozen .lamp {
+        box-shadow: 0 0 0 3px #3a2e16, 0 0 28px rgba(230, 179, 90, 0.85);
+        animation: holdpulse 1.6s ease-in-out infinite;
+      }
+      .fallboard.released .lamp { filter: grayscale(0.45) brightness(0.7); }
+      @keyframes holdpulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.04); }
+      }
+      .lamp-tag {
+        position: absolute;
+        top: 98px;
+        right: 8px;
+        width: 100px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--amber);
+        text-align: right;
+      }
+      .keyboard {
+        display: flex;
+        align-items: flex-end;
+        height: 88px;
+        margin: 28px 18px 0;
+        padding: 0 8px;
+        background: #0a0908;
+        border: 1px solid rgba(244, 239, 230, 0.08);
+        position: relative;
+      }
+      .key {
+        flex: 1;
+        height: 78px;
+        margin: 0 1px;
+        background: linear-gradient(180deg, #f4efe6, #d8d0c4);
+        border-radius: 0 0 3px 3px;
+        box-shadow: inset 0 -6px 0 #c4b8a6;
+      }
+      .key.black {
+        flex: 0 0 14px;
+        height: 48px;
+        margin: 0 -8px;
+        position: relative;
+        z-index: 2;
+        background: linear-gradient(180deg, #2a2622, #0e0c0a);
+        box-shadow: inset 0 -5px 0 #000;
+      }
+      .fallboard.frozen .key {
+        filter: grayscale(0.15);
+        box-shadow: inset 0 -6px 0 #c4b8a6, 0 0 10px rgba(126, 200, 200, 0.35);
+      }
+      .fallboard.frozen .key.black { box-shadow: inset 0 -5px 0 #000, 0 0 8px rgba(126, 200, 200, 0.25); }
+      .frost {
+        display: none;
+        position: absolute;
+        inset: 0;
+        background:
+          repeating-linear-gradient(115deg, rgba(126, 200, 200, 0.08) 0 2px, transparent 2px 7px);
+        pointer-events: none;
+      }
+      .fallboard.frozen .frost { display: block; }
+      .pedal-row {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 28px;
+        height: 72px;
+        margin-top: 10px;
+      }
+      .pedal {
+        width: 22px;
+        height: 38px;
+        border-radius: 3px 3px 10px 10px;
+        background: linear-gradient(180deg, #8a9298, #6a727a 40%, #3c4248);
+        box-shadow: 0 6px 0 #1a1c1e;
+      }
+      .pedal.soft { opacity: 0.45; }
+      .pedal.damper { opacity: 0.55; }
+      .pedal.sostenuto {
+        width: 26px;
+        height: 44px;
+        background: linear-gradient(180deg, #e6b35a, #a8894a 50%, #6e5728);
+        box-shadow: 0 6px 0 #3a2e16;
+        cursor: pointer;
+      }
+      .fallboard.frozen .pedal.sostenuto {
+        height: 30px;
+        box-shadow: 0 2px 0 #3a2e16, 0 0 16px rgba(126, 200, 200, 0.55);
+      }
+      .fallboard.released .pedal.sostenuto { height: 44px; }
+      .board-label {
+        position: absolute;
+        left: 18px;
+        top: 26px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
+      .footer-stuck {
+        position: absolute;
+        left: 18px;
+        bottom: 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--cyan);
+      }
+      .fallboard.released .footer-stuck { color: var(--gold); }
+
+      .desk {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+      .ledger, .chart {
+        background: #16110e;
+        border: 1px solid var(--line);
+        padding: 16px 16px 18px;
+      }
+      .verdict {
+        display: inline-block;
+        font-family: Fraunces, serif;
+        font-size: 42px;
+        letter-spacing: -0.02em;
+        margin: 0 0 6px;
+      }
+      .verdict.hold { color: var(--amber); }
+      .verdict.alarm { color: var(--cyan); }
+      .reason { margin: 0 0 12px; color: var(--mute); line-height: 1.45; }
+      .paths {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path {
+        background: #0e0c0a;
+        border: 1px solid rgba(168, 137, 74, 0.2);
+        padding: 10px 10px 12px;
+        min-height: 104px;
+      }
+      .path b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 4px;
+      }
+      .path .face {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .path .note {
+        display: block;
+        margin-top: 4px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--mute);
+      }
+      .path.fail { border-color: rgba(126, 200, 200, 0.55); }
+      .path.fail .face { color: var(--cyan); }
+      .path.ok { border-color: rgba(230, 179, 90, 0.4); }
+      .path.ok .face { color: var(--amber); }
+      .plaques { display: grid; gap: 8px; }
+      .plaque {
+        display: grid;
+        grid-template-columns: 14px 1fr;
+        gap: 8px;
+        align-items: start;
+        font-size: 13px;
+      }
+      .plaque i {
+        width: 10px;
+        height: 10px;
+        margin-top: 4px;
+        background: #3a322c;
+      }
+      .plaque.on i { background: var(--amber); box-shadow: 0 0 8px rgba(230, 179, 90, 0.7); }
+      .plaque.hot i { background: var(--cyan); box-shadow: 0 0 8px rgba(126, 200, 200, 0.75); }
+      .plaque b { display: block; font-weight: 700; }
+      .plaque span { color: var(--mute); }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        line-height: 1.55;
+        background: #0a0908;
+        color: #d8c8b0;
+        padding: 12px;
+        min-height: 220px;
+        white-space: pre-wrap;
+      }
+      .log .hit { color: var(--cyan); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+      .chip, button.chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 9px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(14, 12, 10, 0.7);
+        color: var(--mute);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+      }
+      .chip.ice { color: var(--cyan); border-color: rgba(126, 200, 200, 0.5); background: rgba(126, 200, 200, 0.1); }
+      .chip.warm { color: var(--amber); border-color: rgba(230, 179, 90, 0.45); }
+
+      .timeline {
+        margin-top: 16px;
+        background: #16110e;
+        border: 1px solid var(--line);
+        padding: 14px;
+      }
+      .timeline h3, .stack-pane h3, .sim h3, .research h3 {
+        margin: 0 0 10px;
+        font-family: Fraunces, serif;
+        font-size: 26px;
+        font-weight: 400;
+        color: var(--ivory);
+      }
+      .lane {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .lane b {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
+      .bar {
+        min-height: 36px;
+        padding: 8px 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        background: #0e0c0a;
+        border: 1px solid rgba(168, 137, 74, 0.2);
+        color: var(--mute);
+      }
+      .bar.blocked {
+        color: var(--cyan);
+        border-color: rgba(126, 200, 200, 0.45);
+        background:
+          repeating-linear-gradient(90deg, rgba(126, 200, 200, 0.12) 0 12px, transparent 12px 24px),
+          #0e0c0a;
+      }
+      .bar.free {
+        color: var(--amber);
+        border-color: rgba(230, 179, 90, 0.4);
+      }
+
+      .stack-pane {
+        margin-top: 16px;
+        background: #16110e;
+        border: 1px solid var(--line);
+        padding: 14px;
+      }
+      .stack {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        color: #d8c8b0;
+        background: #0a0908;
+        padding: 12px;
+        overflow-x: auto;
+      }
+      .stack .frame { display: block; }
+      .stack .core { color: var(--cyan); }
+
+      .matrix {
+        margin-top: 16px;
+        overflow-x: auto;
+        background: #16110e;
+        border: 1px solid var(--line);
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(168, 137, 74, 0.12);
+      }
+      th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gold);
+        background: #1a1512;
+      }
+      td { color: var(--ivory); }
+      tr.active td { background: rgba(126, 200, 200, 0.08); }
+      .fail-cell { color: var(--cyan); font-weight: 700; }
+      .pass-cell { color: var(--amber); }
+
+      .actions, .sim-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0;
+      }
+      button.act {
+        font-family: Outfit, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border: 1px solid var(--gold);
+        background: #2a2218;
+        color: var(--ivory);
+        cursor: pointer;
+      }
+      button.act:hover { border-color: var(--amber); color: var(--amber); }
+      .sim {
+        margin-top: 8px;
+        padding: 14px 16px;
+        border: 1px dashed rgba(168, 137, 74, 0.28);
+        background: rgba(22, 17, 14, 0.7);
+      }
+      .sim p { margin: 0 0 8px; color: var(--mute); font-size: 14px; }
+      textarea, .drop {
+        width: 100%;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        background: #0a0908;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 10px;
+      }
+      textarea { min-height: 180px; resize: vertical; }
+      .drop {
+        min-height: 52px;
+        display: grid;
+        place-items: center;
+        color: var(--mute);
+        margin-bottom: 10px;
+      }
+      .stayoff {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+        border: 1px solid rgba(138, 129, 118, 0.25);
+        padding: 3px 8px;
+      }
+      .research { margin-top: 28px; color: var(--mute); line-height: 1.55; max-width: 62em; }
+      .research code { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--amber); }
+      footer { margin-top: 28px; color: var(--mute); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">03:50 / hermes catalog #163 / #92360</p>
+        <h1>Sostenuto <em>concert hold</em></h1>
+        <p class="lede">
+          03:50 sostenuto: a sostenuto that holds the whole keyboard while the mic HAL stalls is not dictation — it is already <strong>frozen</strong>.
+          Score the release or admit the main thread already sostenutoed.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92360">anthropics/claude-code#92360</a>
+          (OPEN; bug, has repro, platform:macos, area:tui).
+          Diagnostic fixtures only. No live CoreAudio. No microphone.
+        </p>
+      </div>
+
+      <section class="fallboard frozen" id="fallboard" aria-label="Sostenuto concert desk">
+        <div class="gold-rail" aria-hidden="true"></div>
+        <div class="frost" aria-hidden="true"></div>
+        <div class="lamp" aria-hidden="true"></div>
+        <div class="lamp-tag" id="lamp-tag">hold-lamp · on</div>
+        <div class="board-label" id="board-label">seeded frozen · sync HAL</div>
+        <div class="keyboard" aria-hidden="true">
+          <span class="key"></span><span class="key black"></span><span class="key"></span><span class="key black"></span>
+          <span class="key"></span><span class="key"></span><span class="key black"></span><span class="key"></span>
+          <span class="key black"></span><span class="key"></span><span class="key black"></span><span class="key"></span>
+          <span class="key"></span><span class="key black"></span><span class="key"></span><span class="key black"></span>
+          <span class="key"></span><span class="key"></span><span class="key black"></span><span class="key"></span>
+        </div>
+        <div class="pedal-row">
+          <div class="pedal soft" title="una corda" aria-hidden="true"></div>
+          <div class="pedal sostenuto" id="sostenuto-pedal" title="sostenuto / hold-to-talk" role="button" tabindex="0" aria-label="Hold-to-talk sostenuto pedal"></div>
+          <div class="pedal damper" title="damper" aria-hidden="true"></div>
+        </div>
+        <div class="footer-stuck" id="footer-stuck">keep holding…</div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Sostenuto scoring desk">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">frozen</p>
+          <p class="reason" id="reason">The sostenuto pedal holds the whole keyboard while the mic HAL stalls. Admit the main thread already sostenutoed.</p>
+          <div class="paths" id="paths"></div>
+          <div class="plaques">
+            <div class="plaque" id="p-path"><i></i><div><b>open path</b><span id="s-path">sync AudioUnitSetProperty on the input loop</span></div></div>
+            <div class="plaque" id="p-timeout"><i></i><div><b>timeout</b><span id="s-timeout">none · HAL may never return</span></div></div>
+            <div class="plaque" id="p-loop"><i></i><div><b>TUI input loop</b><span id="s-loop">same thread · no keystrokes · Ctrl+C dead</span></div></div>
+            <div class="plaque" id="p-hal"><i></i><div><b>HAL state</b><span id="s-hal">degraded coreaudiod after ~2 week mixer</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2 style="margin:0 0 10px;font-family:Fraunces,serif;font-size:28px;font-weight:400;">Hold log</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <section class="timeline" aria-label="Main thread versus audio worker">
+        <h3>Main thread vs audio worker</h3>
+        <div class="lane">
+          <b>main / TUI</b>
+          <div class="bar blocked" id="lane-main">input loop + AudioUnitSetProperty (blocked, no timeout)</div>
+        </div>
+        <div class="lane">
+          <b>audio worker</b>
+          <div class="bar" id="lane-worker">empty — shipped path never leaves the main thread</div>
+        </div>
+      </section>
+
+      <section class="stack-pane" aria-label="Issue stack sample">
+        <h3>Stack sample (issue frames only)</h3>
+        <div class="stack" id="stack"></div>
+      </section>
+
+      <div class="matrix" aria-label="Controlled reproduction A B C">
+        <table>
+          <thead>
+            <tr>
+              <th>test</th>
+              <th>conditions</th>
+              <th>result</th>
+              <th>sync HAL</th>
+              <th>async + timeout</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the release</button>
+        <button class="act" data-act="idle">Pin idle released</button>
+        <button class="act" data-act="seed">Pin seeded frozen</button>
+        <button class="act" data-act="admit">Admit the main thread already sostenutoed</button>
+        <button class="act" data-act="hold">Hold the pedal</button>
+        <button class="act" data-act="fixtures">Load #92360 fixture</button>
+        <button class="act" data-act="reset">Reset to released</button>
+      </div>
+
+      <div class="sim">
+        <h3>Pedal simulator</h3>
+        <p>Rewrite the hold without opening a microphone. Diagnostic only — no live CoreAudio.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-path="sync">open path sync</span>
+          <span class="chip" data-sim-path="async">open path async</span>
+          <span class="chip" data-sim-timeout="none">timeout none</span>
+          <span class="chip" data-sim-timeout="armed">timeout armed</span>
+          <span class="chip" data-sim-hal="degraded">HAL degraded</span>
+          <span class="chip" data-sim-hal="healthy">HAL healthy</span>
+          <span class="chip" data-sim-hal="fresh">HAL fresh</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="released">released</button>
+          <button class="chip" data-chip="frozen">frozen</button>
+          <button class="chip" data-chip="sync-hal">sync-hal</button>
+          <button class="chip" data-chip="async-worker">async-worker</button>
+          <button class="chip" data-chip="timeout-cancel">timeout-cancel</button>
+          <button class="chip" data-chip="stack-sample">stack-sample</button>
+          <button class="chip" data-chip="scenario-a">scenario A</button>
+          <button class="chip" data-chip="scenario-b">scenario B</button>
+          <button class="chip" data-chip="scenario-c">scenario C</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the desk</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this desk</h3>
+        <p>
+          Holding Space for hold-to-talk voice dictation permanently freezes the entire TUI:
+          the footer stays on <code>keep holding…</code>, no keystroke is processed, Ctrl+C does not recover,
+          and the only way out is killing the process.
+          <code>sample</code> shows the main thread blocked in a synchronous CoreAudio call with no timeout
+          while opening the microphone:
+          <code>AudioUnitSetProperty</code> → <code>AudioDeviceGetProperty</code> →
+          <code>HALPlugIn::ObjectHasProperty</code> (bundled native audio <code>.node</code> module).
+        </p>
+        <p>
+          Observed &gt;10 minutes, 0% CPU, state S. The same thread services terminal input, so the TUI dies with the HAL.
+          A long-running third-party per-app volume mixer is the trigger
+          (<code>coreaudiod</code> had accumulated 10+ hours of CPU time). The defect is Claude Code:
+          a slow or hostile audio HAL must never hang the input loop.
+        </p>
+        <p>
+          Expected: open the audio device asynchronously (or on a worker thread) with a timeout.
+          On timeout, cancel dictation, show <code>microphone unavailable</code>, and keep the TUI responsive.
+          Workarounds from the issue: <code>claude --continue</code> after kill; quit or relaunch the offending audio client.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Jetsam #92338</span>
+            <span>Priory #92345</span>
+            <span>Latchkey #92330</span>
+            <span>Stubble #92328</span>
+            <span>Intake #92305</span>
+            <span>Pasteboard #92312</span>
+            <span>Spillway</span>
+            <span>Blurt</span>
+            <span>Oubliette</span>
+            <span>Deadlight</span>
+          </span>
+        </p>
+        <p>
+          Cousin cite-only: #20476 closed duplicate “Claude Code hangs/freezes when using voice dictation input”
+          (same symptom, no stack).
+        </p>
+        <p>
+          Hypothesis only (NON-BINDING): the issue’s expected async/worker open with timeout is the encoded fix.
+          The mixer is the trigger, not the defect.
+        </p>
+      </section>
+      <footer>Living diagnostic page. No secrets. No live CoreAudio. No microphone. Idle word released. Seeded word frozen. Helper does not ship in Claude Code.</footer>
+    </main>
+    <script>
+      const ISSUE_FRAMES = [
+        "1674 Thread  DispatchQueue_1: com.apple.main-thread (serial)",
+        "  ... claude.exe frames ...",
+        "  ??? (in .5ed67dedd7cb7578-0.node)          <- bundled native audio module",
+        "  ??? (in .5ed67dedd7cb7578-0.node)",
+        "  AudioUnitSetProperty (in AudioToolboxCore) + 484",
+        "  ??? (in CoreAudio)",
+        "  ??? (in CoreAudio)",
+        "  ??? (in CoreAudio)",
+        "  AudioDeviceGetProperty (in CoreAudio) + 204",
+        "  HALPlugIn::ObjectHasProperty(HALObject const&, AudioObjectPropertyAddress const&) const + 44",
+        "  HAL_HardwarePlugIn_ObjectHasProperty(AudioHardwarePlugInInterface**, unsigned int, AudioObjectPropertyAddress const*) + 480"
+      ];
+      const CHIPS = [
+        "released",
+        "frozen",
+        "sync-hal",
+        "async-worker",
+        "timeout-cancel",
+        "stack-sample"
+      ];
+      const CHIP_FILES = {
+        released: "released.json",
+        frozen: "frozen.json",
+        "sync-hal": "sync-hal.json",
+        "async-worker": "async-worker.json",
+        "timeout-cancel": "remediation.json",
+        "stack-sample": "stack.json",
+        "scenario-a": "scenario-a.json",
+        "scenario-b": "scenario-b.json",
+        "scenario-c": "scenario-c.json"
+      };
+      const HOLD = new Set(["released", "async-worker", "timeout-cancel"]);
+      const MATRIX = [
+        { id: "A", name: "third-party audio-mixer app running for ~2 weeks", result: "permanent freeze, stack above", file: "scenario-a.json", shipped: "FAIL", suggested: "pass" },
+        { id: "B", name: "no third-party audio clients", result: "dictation works end-to-end (mic opens, transcribes, inserts)", file: "scenario-b.json", shipped: "pass", suggested: "pass" },
+        { id: "C", name: "same app freshly relaunched", result: "dictation works — the bad HAL state builds up over time", file: "scenario-c.json", shipped: "pass", suggested: "pass" }
+      ];
+
+      const idle = {
+        seed: "released",
+        persistHold: true,
+        released: true,
+        frozen: false,
+        scenario: "idle",
+        openPath: "async-worker",
+        timeout: true,
+        workerThread: true,
+        halState: "hostile-or-slow",
+        footer: "",
+        keystrokesProcessed: true,
+        ctrlCRecovers: true,
+        killOnly: false,
+        errorBanner: "microphone unavailable",
+        hubCount: "RELEASED",
+        log: ["[desk] async open + timeout · microphone unavailable · idle word released"]
+      };
+
+      const seeded = {
+        seed: "frozen",
+        persistHold: false,
+        released: false,
+        frozen: true,
+        scenario: "A",
+        openPath: "sync-main-thread",
+        timeout: false,
+        workerThread: false,
+        halState: "degraded",
+        footer: "keep holding…",
+        keystrokesProcessed: false,
+        ctrlCRecovers: false,
+        killOnly: true,
+        cpuPercent: 0,
+        processState: "S",
+        observedMinutes: ">10",
+        sampleCount: "1674/1674",
+        stackPath: "AudioUnitSetProperty → AudioDeviceGetProperty → HALPlugIn::ObjectHasProperty",
+        hubCount: "FROZEN",
+        log: [
+          "[issue] #92360 OPEN · main thread blocked in AudioUnitSetProperty while opening microphone",
+          "[hold] Space hold-to-talk · footer stays on keep holding…",
+          "[sample] 1674/1674 · 0% CPU · state S · observed >10 minutes",
+          "[desk] already frozen; seeded word frozen"
+        ]
+      };
+
+      let pathState = "sync";
+      let timeoutState = "none";
+      let halState = "degraded";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function syncChosen(t) {
+        return t.openPath === "sync-main-thread" || t.seed === "sync-hal" || t.seed === "frozen";
+      }
+
+      function alreadyFrozen(t) {
+        if (t.persistHold === true && t.frozen !== true) return false;
+        if (t.healthyHalWorks === true && t.frozen !== true) return false;
+        return t.frozen === true
+          || t.seed === "frozen"
+          || t.seed === "sync-hal"
+          || (t.openPath === "sync-main-thread"
+            && t.timeout !== true
+            && (t.halState === "degraded" || t.scenario === "A"));
+      }
+
+      function holdTicket(t) {
+        const seed = String(t.seed || "");
+        return (t.persistHold === true || t.released === true || HOLD.has(seed) || t.healthyHalWorks === true)
+          && t.frozen !== true
+          && !alreadyFrozen(t);
+      }
+
+      function scoreDesk(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const hold = holdTicket(t) && !alreadyFrozen(t);
+        const alarm = !hold && (alreadyFrozen(t) || seed === "frozen" || syncChosen(t) && !t.healthyHalWorks);
+        const chips = [];
+        if (hold && (seed === "released" || t.released === true || seed === "")) chips.push("released");
+        if (alarm || t.frozen === true || alreadyFrozen(t)) chips.push("frozen");
+        if (t.openPath === "sync-main-thread" || seed === "sync-hal") chips.push("sync-hal");
+        if (t.openPath === "async-worker" || seed === "async-worker" || t.workerThread === true) chips.push("async-worker");
+        if ((t.timeout === true && t.errorBanner) || seed === "timeout-cancel") chips.push("timeout-cancel");
+        if (seed === "stack-sample" || t.sampleCount) chips.push("stack-sample");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (hold ? "released" : "frozen");
+        if (alarm && (verdict === "released" || !CHIPS.includes(seed))) verdict = "frozen";
+        if (hold && (verdict === "frozen" || seed === "")) verdict = "released";
+        return { ticket: t, hold, alarm, chips: unique, verdict };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] sync HAL on main thread · keep holding… · already frozen"]
+            : ["[desk] async open + timeout · idle word released"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /frozen|keep holding|AudioUnit|HAL|kill|FAIL|blocked/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const shippedFail = t.openPath === "sync-main-thread" && !t.healthyHalWorks && (t.halState === "degraded" || t.scenario === "A" || t.frozen === true);
+        const rows = [
+          ["shipped sync", shippedFail ? "frozen" : (t.healthyHalWorks ? "works" : "frozen"), shippedFail ? "FAIL" : (t.healthyHalWorks ? "pass" : "FAIL"), "AudioUnitSetProperty on main"],
+          ["async worker", t.workerThread || t.openPath === "async-worker" ? "released" : "absent", (t.workerThread || t.openPath === "async-worker") ? "pass" : "FAIL", "open off the input loop"],
+          ["timeout cancel", t.timeout ? "released" : "none", t.timeout ? "pass" : "FAIL", "microphone unavailable"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, face, mk, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.id}</td>
+            <td>${row.name}</td>
+            <td>${row.result}</td>
+            ${cell(row.shipped)}${cell(row.suggested)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch { apply({ ...seeded, scenario: row.id, seed: row.id === "A" ? "frozen" : "released" }); }
+          });
+        });
+      }
+
+      function paintStack(alarm) {
+        document.getElementById("stack").innerHTML = ISSUE_FRAMES.map((line) => {
+          const core = /AudioUnit|AudioDevice|HALPlugIn|HAL_Hardware|CoreAudio/.test(line);
+          return `<span class="frame${core ? " core" : ""}">${line}</span>`;
+        }).join("\n") + (alarm
+          ? "\n\n100% of samples (1674/1674) · observed >10 minutes · 0% CPU · state S"
+          : "\n\nIssue frames remain the evidence. Idle path never calls them on the TUI thread.");
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "The sostenuto pedal holds the whole keyboard while the mic HAL stalls. Admit the main thread already sostenutoed."
+          : "Sostenuto released. Async open plus timeout. The rest of the keyboard stays free. Idle word released.";
+        const board = document.getElementById("fallboard");
+        board.classList.toggle("frozen", alarm);
+        board.classList.toggle("released", result.hold);
+        document.getElementById("board-label").textContent = alarm
+          ? "seeded frozen · sync HAL"
+          : "idle released · async + timeout";
+        document.getElementById("lamp-tag").textContent = alarm ? "hold-lamp · on" : "hold-lamp · out";
+        document.getElementById("footer-stuck").textContent = alarm
+          ? (t.footer || "keep holding…")
+          : (t.errorBanner || "microphone unavailable");
+        setPlaque("p-path", t.openPath === "async-worker", t.openPath === "sync-main-thread" && alarm);
+        setPlaque("p-timeout", t.timeout === true, t.timeout !== true && alarm);
+        setPlaque("p-loop", t.keystrokesProcessed === true, alarm);
+        setPlaque("p-hal", t.halState === "healthy" || t.halState === "fresh", t.halState === "degraded");
+        document.getElementById("s-path").textContent = t.openPath === "async-worker"
+          ? "async / worker thread open"
+          : "sync AudioUnitSetProperty on the input loop";
+        document.getElementById("s-timeout").textContent = t.timeout
+          ? "armed · cancel dictation · microphone unavailable"
+          : "none · HAL may never return";
+        document.getElementById("s-loop").textContent = alarm
+          ? "same thread · no keystrokes · Ctrl+C does not recover · kill only"
+          : "main thread still reads keys · TUI responsive";
+        document.getElementById("s-hal").textContent = t.halState === "degraded"
+          ? "degraded coreaudiod after ~2 week mixer · 10+ hours CPU"
+          : (t.halState === "fresh" ? "freshly relaunched mixer · HAL not yet hostile" : (t.halState === "healthy" ? "no third-party audio clients" : (t.halState || "hostile-or-slow")));
+        document.getElementById("lane-main").className = "bar " + (alarm ? "blocked" : "free");
+        document.getElementById("lane-main").textContent = alarm
+          ? "input loop + AudioUnitSetProperty (blocked, no timeout)"
+          : "input loop free · Space hold does not lock the keyboard";
+        document.getElementById("lane-worker").className = "bar " + (t.workerThread || t.openPath === "async-worker" ? "free" : "");
+        document.getElementById("lane-worker").textContent = (t.workerThread || t.openPath === "async-worker")
+          ? "opens the device with a timeout · cancel on stall"
+          : "empty — shipped path never leaves the main thread";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const hold = HOLD.has(c) && result.hold;
+          return `<span class="chip ${hold ? "warm" : "ice"}">${c}</span>`;
+        }).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintStack(alarm);
+        paintMatrix(t.scenario || (alarm ? "A" : "idle"));
+      }
+
+      function apply(ticket) {
+        paint(scoreDesk(ticket));
+      }
+
+      function ticketFromSim() {
+        const sync = pathState === "sync";
+        const armed = timeoutState === "armed";
+        const degraded = halState === "degraded";
+        if (!sync && armed) {
+          return {
+            ...idle,
+            seed: "released",
+            persistHold: true,
+            openPath: "async-worker",
+            timeout: true,
+            workerThread: true,
+            halState: degraded ? "hostile-or-slow" : halState,
+            hubCount: "RELEASED"
+          };
+        }
+        if (sync && !armed && degraded) {
+          return {
+            ...seeded,
+            seed: "frozen",
+            openPath: "sync-main-thread",
+            timeout: false,
+            workerThread: false,
+            halState: "degraded",
+            scenario: "A",
+            hubCount: "FROZEN"
+          };
+        }
+        if (sync) {
+          return {
+            ...seeded,
+            seed: "frozen",
+            openPath: "sync-main-thread",
+            timeout: armed,
+            workerThread: false,
+            halState: degraded ? "degraded" : halState,
+            scenario: degraded ? "A" : (halState === "fresh" ? "C" : "B"),
+            persistHold: false,
+            released: false,
+            frozen: true,
+            healthyHalWorks: false,
+            hubCount: "FROZEN",
+            log: [
+              "[sim] sync HAL path chosen · scorer returns frozen",
+              "[issue] a slow or hostile audio HAL must never hang the input loop",
+              "[desk] choosing AudioUnitSetProperty on the main thread already sostenutoed"
+            ]
+          };
+        }
+        return {
+          ...seeded,
+          seed: sync ? "frozen" : "released",
+          openPath: sync ? "sync-main-thread" : "async-worker",
+          timeout: armed,
+          workerThread: !sync,
+          halState: degraded ? "degraded" : halState,
+          persistHold: !sync && armed,
+          released: !sync && armed,
+          frozen: sync && !armed,
+          hubCount: sync ? "FROZEN" : "RELEASED"
+        };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-path]").forEach((b) => {
+          b.classList.toggle("ice", b.dataset.simPath === pathState);
+        });
+        document.querySelectorAll("[data-sim-timeout]").forEach((b) => {
+          b.classList.toggle("ice", b.dataset.simTimeout === timeoutState);
+        });
+        document.querySelectorAll("[data-sim-hal]").forEach((b) => {
+          b.classList.toggle("ice", b.dataset.simHal === halState);
+        });
+      }
+
+      function pinIdle() {
+        pathState = "async";
+        timeoutState = "armed";
+        halState = "degraded";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pathState = "sync";
+        timeoutState = "none";
+        halState = "degraded";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return pinIdle();
+          if (act === "seed" || act === "hold") {
+            pinSeed();
+            try { apply(await loadNamed("frozen.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("sync-hal.json")); }
+            catch { apply({ ...seeded, seed: "sync-hal", hubCount: "SYNC-HAL" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92360.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-path]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pathState = btn.dataset.simPath;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-sim-timeout]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          timeoutState = btn.dataset.simTimeout;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-sim-hal]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          halState = btn.dataset.simHal;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...idle, seed: chip });
+            else apply({ ...seeded, seed: chip === "scenario-a" ? "frozen" : chip, issue: 92360 });
+          }
+        });
+      });
+
+      const pedal = document.getElementById("sostenuto-pedal");
+      function pressPedal() {
+        pinSeed();
+        apply({ ...seeded });
+      }
+      pedal.addEventListener("pointerdown", pressPedal);
+      pedal.addEventListener("keydown", (e) => {
+        if (e.code === "Space" || e.key === "Enter") {
+          e.preventDefault();
+          pressPedal();
+        }
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>

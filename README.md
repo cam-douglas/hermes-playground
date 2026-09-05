@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Jetsam](https://hermes-playground-green.vercel.app/jetsam/)** — salt pier / weathered teak quay / stop-hook scoring desk. A quay that hauls a tracking-ref as cargo after the remote already jettisoned it is not an unpushed commit — it is already adrift. Score the prune or admit the branch already jetsamed. Folder: `projects/jetsam/`.
+**Featured: [Sostenuto](https://hermes-playground-green.vercel.app/sostenuto/)** — piano sostenuto pedal / ebony-ivory concert hold desk. A sostenuto that holds the whole keyboard while the mic HAL stalls is not dictation — it is already frozen. Score the release or admit the main thread already sostenutoed. Folder: `projects/sostenuto/`.
+
+**Listed: [Jetsam](https://hermes-playground-green.vercel.app/jetsam/)** — salt pier / weathered teak quay / stop-hook scoring desk. A quay that hauls a tracking-ref as cargo after the remote already jettisoned it is not an unpushed commit — it is already adrift. Score the prune or admit the branch already jetsamed. Folder: `projects/jetsam/`. Still listed. Not featured.
 
 **Listed: [Priory](https://hermes-playground-green.vercel.app/priory/)** — limestone priory / makepri scriptorium / AppX resource-index desk. A cloister that lets makepri's priconfig.xml walk into the shipped MSIX root is not an admin lockout — it is already leaked. Folder: `projects/priory/`. Still listed. Not featured.
 
