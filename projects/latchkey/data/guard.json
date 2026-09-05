@@ -1,0 +1,69 @@
+{
+  "note": "Startup guard shape from the 2.1.260 minified bundle as published in anthropics/claude-code#92330. Diagnostic names only. No credentials. No live refresh.",
+  "issue": 92330,
+  "claudeCode": "2.1.260",
+  "seed": "miskeyed",
+  "steps": [
+    {
+      "id": "ys",
+      "call": "await ys({credentials, storageV5})",
+      "role": "attempt the OAuth refresh"
+    },
+    {
+      "id": "E3t",
+      "call": "E3t()",
+      "role": "re-read credentials.expiresAt",
+      "definition": "function E3t(){ return qt()?.expiresAt ?? null }"
+    },
+    {
+      "id": "dead",
+      "call": "if (n !== null && n <= Date.now())",
+      "emit": "oauth_expired_unrefreshable",
+      "log": "[bridge:repl] Skipping: OAuth token expired and refresh failed (re-login required)",
+      "surface": "G?.(\"failed\", Hve, \"auth\")",
+      "record": ["bridgeOauthDeadExpiresAt", "bridgeOauthDeadFailCount"]
+    },
+    {
+      "id": "FAn",
+      "call": "FAn()",
+      "role": "refresh path exists",
+      "definition": "function FAn(){ return qt()?.refreshToken != null }",
+      "consulted": false
+    }
+  ],
+  "transientReasonsYsMayReturn": [
+    "OAuthRefreshLockContendedError on ~/.claude/.oauth_refresh.lock (stale window 60s)",
+    "slow or unavailable token endpoint at boot"
+  ],
+  "proactiveRefreshClasses": [
+    "oauth_rejected_after_refresh",
+    "oauth_rejected_refresh_failed",
+    "oauth_rejected_no_refresh_path"
+  ],
+  "guardCollapsesTo": "oauth_expired_unrefreshable",
+  "failCount": {
+    "predicate": "bridgeOauthDeadFailCount >= 3 && E3t() === bridgeOauthDeadExpiresAt",
+    "reset": "each morning a new stale expiresAt arrives so the counter resets to 1",
+    "silentSkip": "reaches 3 only if several sessions launch the same morning — then Remote Control is skipped with no banner"
+  },
+  "suggestedFixDocumentOnly": {
+    "ifRefreshPresentUnexpired": "transient — do not surface auth failure, do not record bridgeOauthDead*; retry or fall through to /remote-control",
+    "ifNoRefreshPath": "current behaviour is correct; /login is genuinely required",
+    "altBanner": "Remote Control couldn't start yet — run /remote-control to connect"
+  },
+  "refreshTokenPresent": true,
+  "refreshPath": true,
+  "refreshExpired": false,
+  "accessExpiredAtGuard": true,
+  "consultedFAn": false,
+  "demandsLogin": true,
+  "cheapRetryWorks": true,
+  "miskeyed": true,
+  "waiting": false,
+  "oauthExpiredUnrefreshable": true,
+  "bridgeOauthDeadExpiresAt": 1788573991415,
+  "accessTokenExpiresAt": 1788642627089,
+  "refreshTokenExpiresAt": 1791042620089,
+  "hubCount": "MISKEYED",
+  "outputText": "guard; ys then E3t; never FAn"
+}
