@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Graft — orchard cambium desk for #92354</title>
+    <meta
+      name="description"
+      content="Graft — orchard grafting bench / scion-stock / cambium desk for Claude Code #92354: a new plugin cache version dir inherits the previous one's untracked files. Idle word is cleared."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400;1,7..72,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bark: #4a3220;
+        --bark-deep: #2a1c12;
+        --bark-lit: #6b4a2e;
+        --sap: #3d6a28;
+        --sap-lit: #5a8a3a;
+        --leaf: #8fbf4a;
+        --cambium: #f3e6c8;
+        --cream: #e8d4a8;
+        --steel: #8a9298;
+        --steel-deep: #5a6268;
+        --knife: #c8d0d4;
+        --ink: #24180e;
+        --mute: #6a5a48;
+        --dead: #3a2214;
+        --wax: #c45a28;
+        --line: rgba(74, 50, 32, 0.22);
+        --canopy: #dce8c4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "DM Sans", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 28% 18% at 12% 8%, rgba(143, 191, 74, 0.35), transparent 62%),
+          radial-gradient(ellipse 22% 16% at 78% 4%, rgba(243, 230, 200, 0.55), transparent 58%),
+          radial-gradient(ellipse 18% 14% at 52% 0%, rgba(90, 138, 58, 0.22), transparent 50%),
+          linear-gradient(180deg, #e8f0d4 0%, #c8d4a8 18%, #b8c490 42%, #8a9a68 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--sap); }
+      .wrap { width: min(1240px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .chrome { margin-bottom: 12px; }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(106, 90, 72, 0.4);
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--sap);
+      }
+      h1 {
+        font-family: Literata, "Palatino Linotype", serif;
+        font-size: clamp(56px, 10vw, 104px);
+        letter-spacing: -0.03em;
+        margin: 2px 0 8px;
+        font-weight: 600;
+        line-height: 0.84;
+        color: var(--bark-deep);
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--sap-lit);
+        font-size: 0.26em;
+        letter-spacing: 0.1em;
+        vertical-align: super;
+      }
+      .lede { max-width: 56em; color: var(--mute); line-height: 1.55; font-size: 16px; }
+      .lede code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--bark-lit);
+      }
+
+      .orchard {
+        margin: 22px 0 0;
+        position: relative;
+        min-height: 280px;
+        border: 1px solid rgba(74, 50, 32, 0.28);
+        box-shadow:
+          0 0 0 10px #3a2a18,
+          0 28px 48px rgba(42, 28, 18, 0.28);
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse 40% 30% at 20% 0%, rgba(143, 191, 74, 0.35), transparent 60%),
+          radial-gradient(ellipse 30% 24% at 80% 8%, rgba(243, 230, 200, 0.4), transparent 55%),
+          linear-gradient(180deg, #8fbf4a 0 28%, #5a8a3a 28% 36%, #6b4a2e 36% 42%, #4a3220 42% 100%);
+      }
+      .orchard.grafted { box-shadow: 0 0 0 10px #3a2a18, 0 0 40px rgba(196, 90, 40, 0.28), 0 28px 48px rgba(42, 28, 18, 0.28); }
+      .orchard.cleared { box-shadow: 0 0 0 10px #3a2a18, 0 0 40px rgba(90, 138, 58, 0.28), 0 28px 48px rgba(42, 28, 18, 0.28); }
+      .canopy {
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 28%;
+        background:
+          repeating-radial-gradient(circle at 18% 20%, rgba(61, 106, 40, 0.35) 0 8px, transparent 8px 22px),
+          repeating-radial-gradient(circle at 62% 40%, rgba(143, 191, 74, 0.4) 0 10px, transparent 10px 26px),
+          repeating-radial-gradient(circle at 88% 10%, rgba(42, 28, 18, 0.18) 0 6px, transparent 6px 20px),
+          linear-gradient(180deg, #6a8a3a, #3d6a28);
+      }
+      .dapple {
+        position: absolute;
+        inset: 28% 0 58% 0;
+        background:
+          repeating-linear-gradient(115deg, rgba(243, 230, 200, 0.18) 0 3px, transparent 3px 11px);
+        pointer-events: none;
+      }
+      .bench {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 18%;
+        background:
+          repeating-linear-gradient(90deg, #6b4a2e 0 28px, #4a3220 28px 30px, #5a3a22 30px 56px);
+        box-shadow: inset 0 6px 0 rgba(243, 230, 200, 0.12);
+      }
+      .stocks {
+        position: absolute;
+        left: 18px;
+        right: 150px;
+        bottom: 18%;
+        height: 44%;
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+      }
+      .stock {
+        flex: 1;
+        min-width: 0;
+        height: 72%;
+        border-radius: 6px 6px 2px 2px;
+        background:
+          repeating-linear-gradient(90deg, #5a3a22 0 6px, #4a3220 6px 8px, #3a2416 8px 14px);
+        border: 2px solid #2a1c12;
+        position: relative;
+        cursor: pointer;
+        transition: height 0.35s ease, box-shadow 0.3s ease, filter 0.3s ease;
+      }
+      .stock::after {
+        content: "";
+        position: absolute;
+        top: 8px;
+        left: 18%;
+        right: 18%;
+        height: 7px;
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--cambium) 0 35%, #c4a06a 70%, transparent 71%);
+        opacity: 0.85;
+      }
+      .stock .knot {
+        position: absolute;
+        left: 22%;
+        right: 22%;
+        bottom: 18%;
+        height: 22%;
+        border-radius: 50%;
+        background: radial-gradient(circle at 40% 40%, #2a140c, #1a0c08 70%);
+        box-shadow: inset 0 0 0 2px #1a1008;
+        opacity: 0;
+        transform: scale(0.4);
+        transition: opacity 0.35s ease, transform 0.35s ease;
+      }
+      .orchard.grafted .stock .knot { opacity: 1; transform: scale(1); }
+      .orchard.cleared .stock .knot { opacity: 0; }
+      .orchard.cleared .stock { filter: saturate(0.85); height: 58%; }
+      .orchard.cleared .stock.scion-stock {
+        height: 92%;
+        box-shadow: 0 0 16px rgba(143, 191, 74, 0.55);
+        background:
+          repeating-linear-gradient(90deg, #6b8a3a 0 6px, #5a8a3a 6px 8px, #3d6a28 8px 14px);
+      }
+      .stock.active {
+        height: 96%;
+        box-shadow: 0 0 0 2px var(--cambium), 0 0 18px rgba(196, 90, 40, 0.45);
+      }
+      .stock .sha {
+        position: absolute;
+        left: -2px;
+        right: -2px;
+        top: -18px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 8px;
+        letter-spacing: 0.02em;
+        color: var(--cambium);
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cambium-tape {
+        position: absolute;
+        left: 28px;
+        right: 168px;
+        bottom: 40%;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, #c45a28 8%, #c45a28 92%, transparent);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .orchard.grafted .cambium-tape { opacity: 0.85; animation: sapflow 2.4s linear infinite; }
+      .orchard.cleared .cambium-tape { opacity: 0; }
+      @keyframes sapflow {
+        0% { filter: hue-rotate(0deg); }
+        50% { filter: hue-rotate(-12deg) brightness(1.15); }
+        100% { filter: hue-rotate(0deg); }
+      }
+      .tools {
+        position: absolute;
+        right: 16px;
+        bottom: 22%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+      }
+      .knife {
+        width: 86px;
+        height: 18px;
+        background: linear-gradient(90deg, #2a1c12 0 22px, #c8d0d4 22px 100%);
+        clip-path: polygon(0 30%, 24% 10%, 100% 40%, 100% 60%, 24% 90%, 0 70%);
+        box-shadow: 0 2px 0 #1a1008;
+      }
+      .orchard.cleared .knife { box-shadow: 0 0 14px rgba(200, 208, 212, 0.7); }
+      .wax {
+        width: 28px;
+        height: 22px;
+        border-radius: 6px 6px 3px 3px;
+        background: radial-gradient(circle at 40% 30%, #e87a3a, #c45a28 60%, #8a3010);
+        box-shadow: 0 3px 0 #3a1c10;
+      }
+      .orchard.cleared .wax { box-shadow: 0 3px 0 #3a1c10, 0 0 12px rgba(196, 90, 40, 0.55); }
+      .whip {
+        width: 10px;
+        height: 54px;
+        border-radius: 8px 8px 2px 2px;
+        background: linear-gradient(180deg, #8fbf4a, #3d6a28);
+        box-shadow: 0 0 0 2px #2a1c12;
+        transform-origin: bottom center;
+      }
+      .orchard.grafted .whip { height: 36px; filter: grayscale(0.35) brightness(0.7); }
+      .orchard.cleared .whip { height: 62px; box-shadow: 0 0 0 2px #2a1c12, 0 0 14px rgba(143, 191, 74, 0.7); }
+      .orchard-label {
+        position: absolute;
+        left: 18px;
+        top: 12px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--cambium);
+      }
+      .size-tag {
+        position: absolute;
+        right: 16px;
+        top: 12px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--cambium);
+        text-align: right;
+      }
+      .orchard.grafted .size-tag { color: #f3c4a0; }
+
+      .desk {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+      .ledger, .chart {
+        background: var(--cambium);
+        border: 1px solid var(--line);
+        padding: 16px 16px 18px;
+        box-shadow: 0 10px 24px rgba(42, 28, 18, 0.08);
+      }
+      .verdict {
+        display: inline-block;
+        font-family: Literata, serif;
+        font-size: 44px;
+        letter-spacing: -0.02em;
+        margin: 0 0 6px;
+      }
+      .verdict.hold { color: var(--sap); }
+      .verdict.alarm { color: var(--wax); }
+      .reason { margin: 0 0 12px; color: var(--mute); line-height: 1.45; }
+      .paths {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path {
+        background: #f8f0dc;
+        border: 1px solid rgba(74, 50, 32, 0.16);
+        padding: 10px 10px 12px;
+        min-height: 108px;
+      }
+      .path b {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 4px;
+      }
+      .path .face {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .path .note {
+        display: block;
+        margin-top: 4px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        color: var(--mute);
+      }
+      .path.fail { border-color: rgba(196, 90, 40, 0.55); }
+      .path.fail .face { color: var(--wax); }
+      .path.ok { border-color: rgba(61, 106, 40, 0.4); }
+      .path.ok .face { color: var(--sap); }
+      .plaques { display: grid; gap: 8px; }
+      .plaque {
+        display: grid;
+        grid-template-columns: 14px 1fr;
+        gap: 8px;
+        align-items: start;
+        font-size: 13px;
+      }
+      .plaque i {
+        width: 10px;
+        height: 10px;
+        margin-top: 4px;
+        background: #c4b090;
+      }
+      .plaque.on i { background: var(--sap-lit); box-shadow: 0 0 8px rgba(143, 191, 74, 0.7); }
+      .plaque.hot i { background: var(--wax); box-shadow: 0 0 8px rgba(196, 90, 40, 0.75); }
+      .plaque b { display: block; font-weight: 700; }
+      .plaque span { color: var(--mute); }
+      .log {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        line-height: 1.55;
+        background: var(--bark-deep);
+        color: var(--cream);
+        padding: 12px;
+        min-height: 240px;
+        white-space: pre-wrap;
+      }
+      .log .hit { color: #f0a070; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+      .chip, button.chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 9px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(248, 240, 220, 0.8);
+        color: var(--mute);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+      }
+      .chip.dead { color: var(--wax); border-color: rgba(196, 90, 40, 0.5); background: rgba(196, 90, 40, 0.1); }
+      .chip.live { color: var(--sap); border-color: rgba(61, 106, 40, 0.45); }
+
+      .balloon {
+        margin-top: 16px;
+        background: var(--cambium);
+        border: 1px solid var(--line);
+        padding: 14px;
+      }
+      .balloon h3, .chain-pane h3, .sim h3, .research h3 {
+        margin: 0 0 10px;
+        font-family: Literata, serif;
+        font-size: 26px;
+        font-weight: 400;
+        color: var(--bark-deep);
+      }
+      .gauge {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .gauge b {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--bark-lit);
+      }
+      .bar {
+        min-height: 36px;
+        padding: 8px 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: #f8f0dc;
+        border: 1px solid rgba(74, 50, 32, 0.16);
+        color: var(--mute);
+        position: relative;
+        overflow: hidden;
+      }
+      .bar .fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 8%;
+        background: rgba(90, 138, 58, 0.28);
+      }
+      .bar.bloated .fill {
+        width: 96%;
+        background: rgba(196, 90, 40, 0.28);
+      }
+      .bar.bloated { color: var(--wax); border-color: rgba(196, 90, 40, 0.4); }
+      .bar.slim { color: var(--sap); border-color: rgba(61, 106, 40, 0.4); }
+
+      .chain-pane {
+        margin-top: 16px;
+        background: var(--cambium);
+        border: 1px solid var(--line);
+        padding: 14px;
+      }
+      .matrix {
+        margin-top: 16px;
+        overflow-x: auto;
+        background: var(--cambium);
+        border: 1px solid var(--line);
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(74, 50, 32, 0.1);
+      }
+      th {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--bark-lit);
+        background: #efe4c4;
+      }
+      td { color: var(--ink); font-family: "JetBrains Mono", monospace; font-size: 12px; }
+      tr.active td { background: rgba(196, 90, 40, 0.08); }
+      tr.chain td:last-child { color: var(--wax); font-weight: 700; }
+      .fail-cell { color: var(--wax); font-weight: 700; }
+      .pass-cell { color: var(--sap); }
+
+      .actions, .sim-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0;
+      }
+      button.act {
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border: 1px solid var(--bark);
+        background: #efe4c4;
+        color: var(--bark-deep);
+        cursor: pointer;
+      }
+      button.act:hover { border-color: var(--sap); color: var(--sap); }
+      .sim {
+        margin-top: 8px;
+        padding: 14px 16px;
+        border: 1px dashed rgba(74, 50, 32, 0.28);
+        background: rgba(243, 230, 200, 0.7);
+      }
+      .sim p { margin: 0 0 8px; color: var(--mute); font-size: 14px; }
+      textarea, .drop {
+        width: 100%;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: #f8f0dc;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 10px;
+      }
+      textarea { min-height: 180px; resize: vertical; }
+      .drop {
+        min-height: 52px;
+        display: grid;
+        place-items: center;
+        color: var(--mute);
+        margin-bottom: 10px;
+      }
+      .stayoff {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .stayoff span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+        border: 1px solid rgba(106, 90, 72, 0.25);
+        padding: 3px 8px;
+      }
+      .research { margin-top: 28px; color: var(--mute); line-height: 1.55; max-width: 62em; }
+      .research code { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--bark-lit); }
+      footer { margin-top: 28px; color: var(--mute); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">04:50 / hermes catalog #164 / #92354</p>
+        <h1>Graft <em>cambium desk</em></h1>
+        <p class="lede">
+          04:50 graft: a scion that carries the previous trunk's dead wood into every new stock is not a clean update — it is already <strong>grafted</strong>.
+          Score the cambium or admit the cache already grafted.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92354">anthropics/claude-code#92354</a>
+          (OPEN; bug, has repro, platform:macos, area:plugins).
+          Diagnostic fixtures only. No live plugin cache.
+        </p>
+      </div>
+
+      <section class="orchard grafted" id="orchard" aria-label="Orchard grafting bench">
+        <div class="canopy" aria-hidden="true"></div>
+        <div class="dapple" aria-hidden="true"></div>
+        <div class="orchard-label" id="orchard-label">seeded grafted · seed-from-previous</div>
+        <div class="size-tag" id="size-tag">1.2 GB / ~100 MB plugin</div>
+        <div class="cambium-tape" aria-hidden="true"></div>
+        <div class="stocks" id="stocks" aria-label="Version directory stocks"></div>
+        <div class="tools" aria-hidden="true">
+          <div class="whip" title="scion whip"></div>
+          <div class="knife" title="pruning knife"></div>
+          <div class="wax" title="grafting wax"></div>
+        </div>
+        <div class="bench" aria-hidden="true"></div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Graft scoring desk">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">grafted</p>
+          <p class="reason" id="reason">The scion carries the previous trunk's dead wood. Admit the cache already grafted.</p>
+          <div class="paths" id="paths"></div>
+          <div class="plaques">
+            <div class="plaque" id="p-populate"><i></i><div><b>populate</b><span id="s-populate">seed-from-previous then overlay fetch</span></div></div>
+            <div class="plaque" id="p-dead"><i></i><div><b>dead wood</b><span id="s-dead">node_modules from one August npm install</span></div></div>
+            <div class="plaque" id="p-remote"><i></i><div><b>plugin remote</b><span id="s-remote">clean · gitignored · no hooks · no install scripts</span></div></div>
+            <div class="plaque" id="p-copy"><i></i><div><b>copies</b><span id="s-copy">real copies · distinct inodes · st_nlink=1</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2 style="margin:0 0 10px;font-family:Literata,serif;font-size:28px;font-weight:400;">Cambium log</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <section class="balloon" aria-label="Size balloon">
+        <h3>Size balloon</h3>
+        <div class="gauge">
+          <b>plugin</b>
+          <div class="bar slim" id="bar-plugin"><span class="fill"></span>~100 MB fetched content</div>
+        </div>
+        <div class="gauge">
+          <b>cache</b>
+          <div class="bar bloated" id="bar-cache"><span class="fill"></span>1.2 GB across 13 version dirs</div>
+        </div>
+      </section>
+
+      <section class="chain-pane" aria-label="Mtime chain">
+        <h3>Mtime chain (issue rows only)</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Nine of thirteen chain exactly. Four unlisted hashes are not invented.
+          Click a row or a stock to inspect that version dir.
+        </p>
+        <div class="matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>dir</th>
+                <th>dir mtime</th>
+                <th>node_modules mtime</th>
+                <th>prior dir</th>
+                <th>chain</th>
+              </tr>
+            </thead>
+            <tbody id="chain-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="matrix" aria-label="Populate path matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>scenario</th>
+              <th>shipped seed-from-previous</th>
+              <th>clean fetch</th>
+              <th>declare-only carry</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the cambium</button>
+        <button class="act" data-act="idle">Pin idle cleared</button>
+        <button class="act" data-act="seed">Pin seeded grafted</button>
+        <button class="act" data-act="admit">Admit the cache already grafted</button>
+        <button class="act" data-act="knife">Clear the scion</button>
+        <button class="act" data-act="fixtures">Load #92354 fixture</button>
+        <button class="act" data-act="reset">Reset to cleared</button>
+      </div>
+
+      <div class="sim">
+        <h3>Bench simulator</h3>
+        <p>Rewrite the populate path without touching a live plugin cache. Diagnostic only.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-pop="seed">populate seed-from-previous</span>
+          <span class="chip" data-sim-pop="clean">populate clean-fetch</span>
+          <span class="chip" data-sim-pop="declare">populate declare-only</span>
+          <span class="chip" data-sim-wood="yes">dead wood present</span>
+          <span class="chip" data-sim-wood="no">dead wood absent</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="cleared">cleared</button>
+          <button class="chip" data-chip="grafted">grafted</button>
+          <button class="chip" data-chip="copy-forward">copy-forward</button>
+          <button class="chip" data-chip="clean-fetch">clean-fetch</button>
+          <button class="chip" data-chip="declare-only">declare-only</button>
+          <button class="chip" data-chip="mtime-chain">mtime-chain</button>
+          <button class="chip" data-chip="inode-copy">inode-copy</button>
+          <button class="chip" data-chip="remote-clean">remote-clean</button>
+          <button class="chip" data-chip="pollution">pollution</button>
+          <button class="chip" data-chip="clean-populate">clean-populate</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the bench</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this desk</h3>
+        <p>
+          When a plugin updates, the new cache version directory appears to be seeded from the previous
+          version directory before the fetched content is overlaid. Files that are not part of the plugin
+          at all — untracked, gitignored, or written by a session — are carried into every subsequent
+          version and never collected.
+        </p>
+        <p>
+          One <code>npm install</code>, run once inside a plugin cache directory in August, had been
+          replicated into 13 version directories by early September:
+          <strong>1.2 GB for a plugin whose actual content is ~100 MB.</strong>
+          Each version directory's stray <code>node_modules</code> carries the previous version
+          directory's mtime. Nine of thirteen listed rows chain exactly. The copies are real, not
+          hardlinks — distinct inodes, <code>st_nlink = 1</code>.
+        </p>
+        <p>
+          The plugin's own remote is clean: <code>node_modules</code> is gitignored, untracked, and
+          absent from the default branch (contents API). The plugin declares no hooks and no install
+          scripts. Nothing about the plugin explains the directory's presence — only the copy-forward does.
+          Anything written once — scratch, a log, a credential — becomes permanent self-replicating
+          accumulation. The cache stops being a cache.
+        </p>
+        <p>
+          Expected: a new version directory contains the plugin's fetched content and nothing else.
+          Either populate it from a clean fetch, or carry forward only paths the plugin declares.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Jetsam #92338</span>
+            <span>Sostenuto #92360</span>
+            <span>Priory #92345</span>
+            <span>Latchkey #92330</span>
+            <span>Stubble #92328</span>
+            <span>Intake #92305</span>
+            <span>Kindling</span>
+            <span>Clew</span>
+            <span>Limpet</span>
+            <span>Scion</span>
+          </span>
+        </p>
+        <p>
+          Cousins cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/15642">#15642</a> closed CLAUDE_PLUGIN_ROOT stale ·
+          <a href="https://github.com/anthropics/claude-code/issues/14061">#14061</a> /plugin update cache ·
+          <a href="https://github.com/anthropics/claude-code/issues/69020">#69020</a> Cowork stale cache ·
+          <a href="https://github.com/anthropics/claude-code/issues/80042">#80042</a> duplicate SHA dirs ·
+          <a href="https://github.com/anthropics/claude-code/issues/75094">#75094</a> unknown version ·
+          <a href="https://github.com/anthropics/claude-code/issues/90781">#90781</a> temp_git_* leftover.
+        </p>
+      </section>
+      <footer>
+        Catalog #164 · idle word cleared · seeded grafted · no live plugin cache ·
+        fonts Literata / DM Sans / JetBrains Mono · orchard grafting bench
+      </footer>
+    </main>
+    <script>
+      const HOLD = new Set(["cleared", "clean-fetch", "declare-only", "clean-populate"]);
+      const CHIPS = [
+        "cleared", "grafted", "copy-forward", "clean-fetch", "declare-only",
+        "mtime-chain", "inode-copy", "remote-clean", "pollution", "clean-populate"
+      ];
+      const CHIP_FILES = {
+        cleared: "cleared.json",
+        grafted: "grafted.json",
+        "copy-forward": "scenario-copy-forward.json",
+        "clean-fetch": "scenario-clean-fetch.json",
+        "declare-only": "remediation-declare.json",
+        "mtime-chain": "mtime-chain.json",
+        "inode-copy": "inodes.json",
+        "remote-clean": "remote-clean.json",
+        pollution: "pollution.json",
+        "clean-populate": "remediation-clean.json"
+      };
+      const CHAIN = [
+        { dir: "0ad050c57d55", dirMtime: "2026-09-03 21:03", nm: "2026-09-03 20:12", prior: "9293c4174301", chain: true },
+        { dir: "9293c4174301", dirMtime: "2026-09-03 20:12", nm: "2026-09-02 19:50", prior: null, chain: false },
+        { dir: "18305c8e2988", dirMtime: "2026-09-02 20:24", nm: "2026-09-02 10:50", prior: "afa75660303d", chain: true },
+        { dir: "afa75660303d", dirMtime: "2026-09-02 10:50", nm: "2026-09-01 16:24", prior: "8da88c0b75c8", chain: true },
+        { dir: "8da88c0b75c8", dirMtime: "2026-09-01 16:24", nm: "2026-09-01 15:52", prior: null, chain: false },
+        { dir: "dcf0e39243ff", dirMtime: "2026-09-01 16:21", nm: "2026-08-29 15:15", prior: "55e352c658c7", chain: true },
+        { dir: "55e352c658c7", dirMtime: "2026-08-29 15:15", nm: "2026-08-28 08:55", prior: "cdd94257f637", chain: true },
+        { dir: "cdd94257f637", dirMtime: "2026-08-28 08:55", nm: "2026-08-25 18:59", prior: "b1659cee6616", chain: true, note: "19:12" },
+        { dir: "b1659cee6616", dirMtime: "2026-08-25 19:12", nm: "2026-08-23 16:06", prior: "1699ab277632", chain: true }
+      ];
+      const MATRIX = [
+        { id: "copy-forward", name: "copy-forward chain (one August npm install)", shipped: "FAIL", clean: "pass", declare: "pass", file: "scenario-copy-forward.json" },
+        { id: "clean-fetch", name: "clean fetch only", shipped: "pass", clean: "pass", declare: "pass", file: "scenario-clean-fetch.json" },
+        { id: "declare-only", name: "declare-only carry (no hooks / no install)", shipped: "pass", clean: "pass", declare: "pass", file: "remediation-declare.json" },
+        { id: "pollution", name: "scratch / logs / credentials written once", shipped: "FAIL", clean: "pass", declare: "pass", file: "pollution.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92354,
+        seed: "cleared",
+        persistHold: true,
+        cleared: true,
+        grafted: false,
+        populateMode: "clean-fetch",
+        previousDirPresent: true,
+        untrackedCarried: false,
+        gitignoredCarried: false,
+        sessionWrittenCarried: false,
+        nodeModulesPresent: false,
+        nodeModulesFromRemote: false,
+        remoteGitignoresNodeModules: true,
+        pluginDeclaresHooks: false,
+        pluginDeclaresInstall: false,
+        copiesAreHardlinks: false,
+        stNlink: 1,
+        distinctInodes: true,
+        versionDirCount: 1,
+        pluginContentBytes: 100000000,
+        cacheBytes: 100000000,
+        cleanFetch: true,
+        declaredPathsOnly: false,
+        shippedMark: "pass",
+        cleanFetchMark: "pass",
+        declareOnlyMark: "pass",
+        hubCount: "CLEARED",
+        log: [
+          "[hold] new version directory contains the plugin's fetched content and nothing else",
+          "[desk] graft cleared; idle word cleared"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92354,
+        seed: "grafted",
+        persistHold: false,
+        cleared: false,
+        grafted: true,
+        populateMode: "seed-from-previous",
+        previousDirPresent: true,
+        untrackedCarried: true,
+        gitignoredCarried: true,
+        sessionWrittenCarried: true,
+        nodeModulesPresent: true,
+        nodeModulesFromRemote: false,
+        remoteGitignoresNodeModules: true,
+        pluginDeclaresHooks: false,
+        pluginDeclaresInstall: false,
+        copiesAreHardlinks: false,
+        stNlink: 1,
+        distinctInodes: true,
+        versionDirCount: 13,
+        listedChainRows: 9,
+        chainExactCount: 9,
+        pluginContentBytes: 100000000,
+        cacheBytes: 1200000000,
+        cleanFetch: false,
+        declaredPathsOnly: false,
+        npmInstallOnce: true,
+        shippedMark: "FAIL",
+        cleanFetchMark: "pass",
+        declareOnlyMark: "pass",
+        banner: "1.2 GB for a plugin whose actual content is ~100 MB",
+        hubCount: "GRAFTED",
+        log: [
+          "[issue] #92354 OPEN · new version dir inherits prior untracked tree",
+          "[seed] seed-from-previous before fetched content is overlaid",
+          "[size] 1.2 GB for a ~100 MB plugin · 13 dirs",
+          "[desk] already grafted; seeded word grafted"
+        ]
+      };
+
+      let popState = "seed";
+      let woodState = "yes";
+      let activeDir = "0ad050c57d55";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function shippedCarry(t) {
+        if (t.cleared === true && t.grafted !== true && t.populateMode !== "seed-from-previous") return false;
+        if (t.populateMode === "seed-from-previous" && t.previousDirPresent !== false) {
+          return t.untrackedCarried !== false && t.nodeModulesPresent !== false
+            ? true
+            : (t.untrackedCarried === true || t.nodeModulesPresent === true || t.sessionWrittenCarried === true);
+        }
+        return t.untrackedCarried === true || t.grafted === true;
+      }
+
+      function cleanFetchCarry(t) {
+        return false;
+      }
+
+      function declareOnlyCarry(t) {
+        if (t.pluginDeclaresHooks === true || t.pluginDeclaresInstall === true) {
+          return t.declaredPathsOnly === true;
+        }
+        return false;
+      }
+
+      function alreadyGrafted(t) {
+        return t.grafted === true
+          || t.seed === "grafted"
+          || t.seed === "copy-forward"
+          || t.seed === "mtime-chain"
+          || t.seed === "inode-copy"
+          || t.seed === "pollution"
+          || (t.populateMode === "seed-from-previous"
+            && t.previousDirPresent !== false
+            && (t.untrackedCarried === true || t.nodeModulesPresent === true || t.sessionWrittenCarried === true)
+            && t.cleared !== true);
+      }
+
+      function holdTicket(t) {
+        const seed = String(t.seed || "");
+        return (t.persistHold === true || t.cleared === true || HOLD.has(seed))
+          && t.grafted !== true
+          && !alreadyGrafted(t);
+      }
+
+      function scoreCambium(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const shipped = t.shippedCarry === true || (t.shippedCarry !== false && shippedCarry(t));
+        const clean = t.cleanFetchCarry === true ? true : cleanFetchCarry(t);
+        const declare = t.declareOnlyCarry === true ? true : declareOnlyCarry(t);
+        t.shippedCarry = shipped;
+        t.cleanFetchCarry = clean;
+        t.declareOnlyCarry = declare;
+        t.expectedCarry = false;
+        t.shippedMark = t.shippedMark || (shipped === t.expectedCarry ? "pass" : "FAIL");
+        t.cleanFetchMark = t.cleanFetchMark || (clean === t.expectedCarry ? "pass" : "FAIL");
+        t.declareOnlyMark = t.declareOnlyMark || (declare === t.expectedCarry ? "pass" : "FAIL");
+        const hold = holdTicket(t) && !alreadyGrafted(t);
+        const alarm = !hold && alreadyGrafted(t);
+        const chips = [];
+        if (hold && (seed === "cleared" || t.cleared === true || seed === "")) chips.push("cleared");
+        if (alarm || t.grafted === true || alreadyGrafted(t)) chips.push("grafted");
+        if (t.populateMode === "seed-from-previous" || seed === "copy-forward") chips.push("copy-forward");
+        if (t.populateMode === "clean-fetch" || t.cleanFetch === true || seed === "clean-fetch") chips.push("clean-fetch");
+        if (t.populateMode === "declare-only" || t.declaredPathsOnly === true || seed === "declare-only") chips.push("declare-only");
+        if (t.chainExactCount > 0 || seed === "mtime-chain") chips.push("mtime-chain");
+        if (t.distinctInodes === true && t.stNlink === 1 && (t.nodeModulesPresent === true || seed === "inode-copy")) chips.push("inode-copy");
+        if (t.remoteGitignoresNodeModules === true || seed === "remote-clean") chips.push("remote-clean");
+        if (t.sessionWrittenCarried === true || seed === "pollution") chips.push("pollution");
+        if (seed === "clean-populate") chips.push("clean-populate");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (hold ? "cleared" : "grafted");
+        return { ticket: t, hold, alarm, chips: unique, verdict, shipped, clean, declare };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] seed-from-previous · dead wood copy-forward · already grafted"]
+            : ["[desk] clean scion · no copy-forward dead wood · idle word cleared"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /grafted|copy-forward|1\.2 GB|FAIL|dead wood|pollution|inode/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, t.shippedCarry ? "carries dead wood" : "no undeclared carry", "seed-from-previous"],
+          ["clean-fetch", t.cleanFetchMark, t.cleanFetchCarry ? "would carry" : "fetched content only", "populate from fetch"],
+          ["declare-only", t.declareOnlyMark, t.declareOnlyCarry ? "declared paths only" : "no undeclared carry", "plugin-declared paths"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintStocks(alarm) {
+        const show = alarm ? CHAIN : [CHAIN[0]];
+        document.getElementById("stocks").innerHTML = show.map((row, i) => {
+          const cls = [
+            "stock",
+            row.dir === activeDir ? "active" : "",
+            !alarm && i === 0 ? "scion-stock" : ""
+          ].filter(Boolean).join(" ");
+          return `<button type="button" class="${cls}" data-dir="${row.dir}" title="${row.dir}">
+            <span class="sha">${row.dir.slice(0, 6)}</span>
+            <span class="knot" aria-hidden="true"></span>
+          </button>`;
+        }).join("");
+        document.querySelectorAll("#stocks .stock").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            activeDir = btn.dataset.dir;
+            paintChain(activeDir);
+            document.querySelectorAll("#stocks .stock").forEach((el) => {
+              el.classList.toggle("active", el.dataset.dir === activeDir);
+            });
+          });
+        });
+      }
+
+      function paintChain(active) {
+        document.getElementById("chain-body").innerHTML = CHAIN.map((row) => {
+          const on = row.dir === active ? "active" : "";
+          const chain = row.chain ? "chain" : "";
+          const prior = row.prior ? row.prior + (row.note ? " (" + row.note + ")" : "") : "—";
+          return `<tr class="${on} ${chain}" data-dir="${row.dir}">
+            <td>${row.dir}</td>
+            <td>${row.dirMtime}</td>
+            <td>${row.nm}</td>
+            <td>${prior}</td>
+            <td>${row.chain ? "exact" : "listed"}</td>
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#chain-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", () => {
+            activeDir = tr.dataset.dir;
+            paintChain(activeDir);
+            document.querySelectorAll("#stocks .stock").forEach((el) => {
+              el.classList.toggle("active", el.dataset.dir === activeDir);
+            });
+          });
+        });
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.clean)}${cell(row.declare)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.id === "copy-forward" || row.id === "pollution"
+                ? { ...seeded, seed: row.id, scenario: row.id }
+                : { ...idle, seed: row.id, scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function fmtBytes(n) {
+        if (!n) return "—";
+        if (n >= 1000000000) return (n / 1000000000).toFixed(1) + " GB";
+        if (n >= 1000000) return Math.round(n / 1000000) + " MB";
+        return n + " B";
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "The scion carries the previous trunk's dead wood. Admit the cache already grafted."
+          : "Graft cleared. Clean scion — fetched content only, or only declared paths. Idle word cleared.";
+        const orchard = document.getElementById("orchard");
+        orchard.classList.toggle("grafted", alarm);
+        orchard.classList.toggle("cleared", result.hold);
+        document.getElementById("orchard-label").textContent = alarm
+          ? "seeded grafted · " + (t.populateMode || "seed-from-previous")
+          : "idle cleared · clean scion";
+        const cache = fmtBytes(t.cacheBytes || (alarm ? 1200000000 : 100000000));
+        const plugin = fmtBytes(t.pluginContentBytes || 100000000);
+        const dirs = t.versionDirCount || (alarm ? 13 : 1);
+        document.getElementById("size-tag").textContent = cache + " / " + plugin + " plugin · " + dirs + " dir" + (dirs === 1 ? "" : "s");
+        setPlaque("p-populate", t.populateMode === "clean-fetch" || t.populateMode === "declare-only", t.populateMode === "seed-from-previous");
+        setPlaque("p-dead", t.nodeModulesPresent !== true && t.untrackedCarried !== true, t.nodeModulesPresent === true || t.untrackedCarried === true);
+        setPlaque("p-remote", t.remoteGitignoresNodeModules === true && t.nodeModulesFromRemote !== true, t.nodeModulesFromRemote === true);
+        setPlaque("p-copy", result.hold, t.distinctInodes === true && t.nodeModulesPresent === true);
+        document.getElementById("s-populate").textContent = t.populateMode === "clean-fetch"
+          ? "clean fetch · previous trunk is not a stock"
+          : (t.populateMode === "declare-only"
+            ? "declare-only carry · plugin declares no hooks and no install scripts"
+            : "seed-from-previous then overlay fetch");
+        document.getElementById("s-dead").textContent = t.nodeModulesPresent
+          ? (t.npmInstallOnce ? "node_modules from one August npm install · copy-forward" : "untracked / gitignored / session files present")
+          : "no node_modules · no scratch · no logs copied forward";
+        document.getElementById("s-remote").textContent = t.remoteGitignoresNodeModules
+          ? "clean · gitignored · no hooks · no install scripts · only copy-forward explains the dir"
+          : "remote state not on this ticket";
+        document.getElementById("s-copy").textContent = t.distinctInodes && t.nodeModulesPresent
+          ? "real copies · distinct inodes · st_nlink=" + (t.stNlink || 1) + " · not hardlinks"
+          : (result.hold ? "no copy-forward · nothing to inode-compare" : "copy evidence not on this ticket");
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const hold = HOLD.has(c) && result.hold;
+          return `<span class="chip ${hold ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        const barCache = document.getElementById("bar-cache");
+        barCache.className = "bar " + (alarm ? "bloated" : "slim");
+        barCache.innerHTML = `<span class="fill"></span>${cache} across ${dirs} version dir${dirs === 1 ? "" : "s"}`;
+        document.getElementById("bar-plugin").innerHTML = `<span class="fill"></span>${plugin} fetched content`;
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintStocks(alarm);
+        paintChain(activeDir);
+        paintMatrix(t.scenario || (alarm ? "copy-forward" : "clean-fetch"));
+      }
+
+      function apply(ticket) {
+        paint(scoreCambium(ticket));
+      }
+
+      function ticketFromSim() {
+        if (popState === "clean" && woodState === "no") {
+          return { ...idle, seed: "cleared", persistHold: true, hubCount: "CLEARED" };
+        }
+        if (popState === "clean") {
+          return {
+            ...idle,
+            seed: "clean-fetch",
+            populateMode: "clean-fetch",
+            cleanFetch: true,
+            previousDirPresent: true,
+            hubCount: "CLEAN-FETCH"
+          };
+        }
+        if (popState === "declare") {
+          return {
+            ...idle,
+            seed: "declare-only",
+            populateMode: "declare-only",
+            declaredPathsOnly: true,
+            cleanFetch: false,
+            previousDirPresent: true,
+            hubCount: "DECLARE-ONLY"
+          };
+        }
+        if (popState === "seed" && woodState === "yes") {
+          return { ...seeded, seed: "grafted", hubCount: "GRAFTED" };
+        }
+        return {
+          ...idle,
+          seed: "cleared",
+          populateMode: "seed-from-previous",
+          previousDirPresent: true,
+          untrackedCarried: false,
+          nodeModulesPresent: false,
+          persistHold: true,
+          cleared: true,
+          grafted: false,
+          hubCount: "CLEARED",
+          log: ["[sim] seed-from-previous but no dead wood on the prior stock · scion stays cleared"]
+        };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pop]").forEach((b) => {
+          b.classList.toggle("dead", b.dataset.simPop === popState && popState === "seed");
+          b.classList.toggle("live", b.dataset.simPop === popState && popState !== "seed");
+        });
+        document.querySelectorAll("[data-sim-wood]").forEach((b) => {
+          b.classList.toggle("dead", b.dataset.simWood === woodState && woodState === "yes");
+          b.classList.toggle("live", b.dataset.simWood === woodState && woodState === "no");
+        });
+      }
+
+      function pinIdle() {
+        popState = "clean";
+        woodState = "no";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        popState = "seed";
+        woodState = "yes";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return pinIdle();
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("grafted.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("mtime-chain.json")); }
+            catch { apply({ ...seeded, seed: "mtime-chain", hubCount: "MTIME-CHAIN" }); }
+            return;
+          }
+          if (act === "knife") {
+            popState = "clean";
+            woodState = "no";
+            syncSimChips();
+            try { apply(await loadNamed("remediation-clean.json")); }
+            catch { apply({ ...idle, seed: "clean-populate", hubCount: "CLEAN-POPULATE" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92354.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pop]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          popState = btn.dataset.simPop;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-sim-wood]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          woodState = btn.dataset.simWood;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...idle, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92354 });
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
