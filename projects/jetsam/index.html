@@ -1,0 +1,1119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jetsam — stop-hook quay for #92338</title>
+    <meta
+      name="description"
+      content="Jetsam — salt pier / weathered teak quay / stale remote-tracking desk for Claude Code #92338: Stop hook reports phantom unpushed after a squash-merged PR whose branch was auto-deleted. Idle word is pruned."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --teak: #6b4226;
+        --teak-wet: #3d2414;
+        --teak-lit: #8d5a32;
+        --plank: #c4a06a;
+        --plank-edge: #9a7340;
+        --salt: #f3efe6;
+        --seafoam: #6fb8a8;
+        --seafoam-deep: #1f4f4a;
+        --tide: #2a7a72;
+        --horizon: #8ec4b8;
+        --rust: #b44a28;
+        --rust-deep: #7a2e18;
+        --rust-glow: #e07a4a;
+        --iron: #2c2624;
+        --iron-lit: #4a423e;
+        --foam: #d8efe8;
+        --ink: #f3efe6;
+        --mute: #9a8c7e;
+        --water: #163834;
+        --line: rgba(196, 160, 106, 0.28);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Manrope, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 48% 30% at 18% 0%, rgba(142, 196, 184, 0.28), transparent 62%),
+          radial-gradient(ellipse 32% 22% at 88% 10%, rgba(180, 74, 40, 0.12), transparent 55%),
+          linear-gradient(180deg, #244844 0%, #163834 28%, #0e1c1a 72%, #0a1210 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--seafoam); }
+      .wrap { width: min(1220px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .chrome { margin-bottom: 12px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(154, 140, 126, 0.4);
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--seafoam);
+      }
+      h1 {
+        font-family: "Instrument Serif", "Palatino Linotype", serif;
+        font-size: clamp(56px, 10vw, 104px);
+        letter-spacing: -0.03em;
+        margin: 2px 0 8px;
+        font-weight: 400;
+        line-height: 0.82;
+        color: var(--salt);
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--horizon);
+        font-size: 0.26em;
+        letter-spacing: 0.1em;
+        vertical-align: super;
+      }
+      .lede { max-width: 54em; color: var(--mute); line-height: 1.55; font-size: 16px; }
+      .lede code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--plank);
+      }
+
+      .pier {
+        margin: 22px 0 0;
+        position: relative;
+        min-height: 168px;
+        border: 1px solid rgba(196, 160, 106, 0.28);
+        box-shadow:
+          0 0 0 10px #1a1410,
+          0 28px 48px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(142, 196, 184, 0.18) 0 38%, transparent 38%),
+          repeating-linear-gradient(
+            180deg,
+            #5a341c 0 18px,
+            #6b4226 18px 20px,
+            #4a2c16 20px 38px
+          );
+      }
+      .pier.adrift { box-shadow: 0 0 0 10px #1a1410, 0 0 40px rgba(180, 74, 40, 0.28), 0 28px 48px rgba(0, 0, 0, 0.45); }
+      .pier.pruned { box-shadow: 0 0 0 10px #1a1410, 0 0 40px rgba(47, 127, 114, 0.22), 0 28px 48px rgba(0, 0, 0, 0.45); }
+      .horizon {
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 38%;
+        background:
+          radial-gradient(ellipse 80% 120% at 70% 120%, rgba(110, 184, 168, 0.35), transparent 60%),
+          linear-gradient(180deg, #3a6a64, #1f4f4a);
+      }
+      .water {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 34%;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            rgba(216, 239, 232, 0.08) 0 28px,
+            transparent 28px 56px
+          ),
+          linear-gradient(180deg, #1a4a46, #0e2422);
+      }
+      .pier.adrift .water { height: 42%; background: linear-gradient(180deg, #2a5a50, #12332e); }
+      .crate {
+        position: absolute;
+        width: 54px;
+        height: 36px;
+        right: 18%;
+        bottom: 28%;
+        background:
+          repeating-linear-gradient(90deg, #8d5a32 0 8px, #6b4226 8px 10px);
+        border: 2px solid #3d2414;
+        box-shadow: 2px 3px 0 #2a1810;
+        transition: transform 0.6s ease, opacity 0.4s ease, bottom 0.6s ease;
+      }
+      .crate::after {
+        content: "REF";
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.14em;
+        color: var(--salt);
+      }
+      .pier.adrift .crate { bottom: 38%; animation: drift 3.2s ease-in-out infinite; }
+      .pier.pruned .crate { opacity: 0.15; bottom: 22%; filter: grayscale(0.6); }
+      @keyframes drift {
+        0%, 100% { transform: translateY(0) rotate(-2deg); }
+        50% { transform: translateY(-8px) rotate(3deg); }
+      }
+      .bollards {
+        position: absolute;
+        left: 28px;
+        bottom: 22%;
+        display: flex;
+        gap: 22px;
+      }
+      .bollard {
+        width: 28px;
+        height: 52px;
+        border-radius: 8px 8px 3px 3px;
+        background:
+          linear-gradient(90deg, #8c3a1e, #b44a28 40%, #7a2e18);
+        box-shadow: inset 0 8px 0 rgba(255, 200, 160, 0.18), 0 8px 0 #2a1810;
+        position: relative;
+      }
+      .bollard::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 4px;
+        right: 4px;
+        height: 6px;
+        border-radius: 3px;
+        background: #2a1810;
+      }
+      .bollard.pin {
+        box-shadow: inset 0 8px 0 rgba(255, 200, 160, 0.18), 0 8px 0 #2a1810, 0 0 16px rgba(224, 122, 74, 0.7);
+      }
+      .bollard.ebb {
+        background: linear-gradient(90deg, #2a7a72, #6fb8a8 40%, #1f4f4a);
+        box-shadow: inset 0 8px 0 rgba(216, 239, 232, 0.2), 0 8px 0 #0e2422, 0 0 16px rgba(111, 184, 168, 0.55);
+      }
+      .pier-label {
+        position: absolute;
+        left: 28px;
+        top: 12px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--foam);
+      }
+      .tide-face {
+        position: absolute;
+        right: 16px;
+        top: 10px;
+        width: 150px;
+        padding: 8px 10px;
+        background: rgba(14, 36, 34, 0.72);
+        border: 1px solid rgba(111, 184, 168, 0.35);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--foam);
+      }
+      .tide-face b { display: block; color: var(--salt); font-size: 16px; letter-spacing: 0.04em; margin-top: 2px; }
+      .wave {
+        height: 18px;
+        margin-top: 6px;
+        background:
+          radial-gradient(circle at 10% 50%, var(--seafoam) 2px, transparent 3px),
+          radial-gradient(circle at 30% 40%, var(--horizon) 2px, transparent 3px),
+          radial-gradient(circle at 55% 60%, var(--seafoam) 2px, transparent 3px),
+          radial-gradient(circle at 80% 45%, var(--horizon) 2px, transparent 3px);
+      }
+
+      .quay {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) {
+        .quay { grid-template-columns: 1fr; }
+      }
+      .ledger, .chart {
+        background: #1c1612;
+        border: 1px solid var(--line);
+        padding: 16px 16px 18px;
+      }
+      .verdict {
+        display: inline-block;
+        font-family: "Instrument Serif", serif;
+        font-size: 40px;
+        letter-spacing: -0.02em;
+        margin: 0 0 6px;
+      }
+      .verdict.hold { color: var(--seafoam); }
+      .verdict.alarm { color: var(--rust-glow); }
+      .reason { margin: 0 0 12px; color: var(--mute); line-height: 1.45; }
+      .exits {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      @media (max-width: 720px) { .exits { grid-template-columns: 1fr; } }
+      .exit {
+        background: var(--iron);
+        border: 1px solid rgba(196, 160, 106, 0.2);
+        padding: 10px 10px 12px;
+        min-height: 104px;
+      }
+      .exit b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 4px;
+      }
+      .exit .face {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .exit .mark {
+        display: block;
+        margin-top: 4px;
+        letter-spacing: 0.08em;
+      }
+      .exit.fail { border-color: rgba(180, 74, 40, 0.55); }
+      .exit.fail .face { color: var(--rust-glow); }
+      .exit.ok { border-color: rgba(111, 184, 168, 0.4); }
+      .exit.ok .face { color: var(--seafoam); }
+      .plaques { display: grid; gap: 8px; }
+      .plaque {
+        display: grid;
+        grid-template-columns: 14px 1fr;
+        gap: 8px;
+        align-items: start;
+        font-size: 13px;
+      }
+      .plaque i {
+        width: 10px;
+        height: 10px;
+        margin-top: 4px;
+        background: #5a4a3c;
+      }
+      .plaque.on i { background: var(--seafoam); box-shadow: 0 0 8px rgba(111, 184, 168, 0.7); }
+      .plaque.hot i { background: var(--rust-glow); box-shadow: 0 0 8px rgba(224, 122, 74, 0.75); }
+      .plaque b { display: block; font-weight: 700; }
+      .plaque span { color: var(--mute); }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        line-height: 1.55;
+        background: #0e1210;
+        color: #d8c8b0;
+        padding: 12px;
+        min-height: 220px;
+        white-space: pre-wrap;
+      }
+      .log .hit { color: var(--rust-glow); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+      .chip, button.chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 9px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(28, 22, 18, 0.7);
+        color: var(--mute);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+      }
+      .chip.haul { color: var(--rust-glow); border-color: rgba(180, 74, 40, 0.5); background: rgba(180, 74, 40, 0.12); }
+      .chip.ebb { color: var(--seafoam); border-color: rgba(111, 184, 168, 0.45); }
+
+      .panes {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 860px) { .panes { grid-template-columns: 1fr; } }
+      .pane {
+        background: #161210;
+        border: 1px solid var(--line);
+        padding: 12px;
+        min-height: 132px;
+      }
+      .pane h3 {
+        margin: 0 0 8px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--plank);
+      }
+      .pane p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+      .pane code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        color: var(--foam);
+      }
+      .pane.hot { border-color: rgba(180, 74, 40, 0.45); }
+      .pane.ok { border-color: rgba(111, 184, 168, 0.4); }
+
+      .matrix {
+        margin-top: 16px;
+        overflow-x: auto;
+        background: #161210;
+        border: 1px solid var(--line);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th, td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(196, 160, 106, 0.12);
+      }
+      th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--plank);
+        background: #1c1612;
+      }
+      td { color: var(--salt); }
+      tr.active td { background: rgba(180, 74, 40, 0.1); }
+      .fail-cell { color: var(--rust-glow); font-weight: 700; }
+      .pass-cell { color: var(--seafoam); }
+
+      .actions, .sim-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0;
+      }
+      button.act {
+        font-family: Manrope, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border: 1px solid var(--plank-edge);
+        background: #2a1c12;
+        color: var(--salt);
+        cursor: pointer;
+      }
+      button.act:hover { border-color: var(--seafoam); color: var(--seafoam); }
+      .sim {
+        margin-top: 8px;
+        padding: 14px 16px;
+        border: 1px dashed rgba(196, 160, 106, 0.28);
+        background: rgba(28, 22, 18, 0.7);
+      }
+      .sim h3, .research h3 {
+        margin: 0 0 8px;
+        font-family: "Instrument Serif", serif;
+        font-size: 28px;
+        font-weight: 400;
+      }
+      .sim p { margin: 0 0 8px; color: var(--mute); font-size: 14px; }
+      textarea, .drop {
+        width: 100%;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        background: #12100e;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 10px;
+      }
+      textarea { min-height: 180px; resize: vertical; }
+      .drop {
+        min-height: 52px;
+        display: grid;
+        place-items: center;
+        color: var(--mute);
+        margin-bottom: 10px;
+      }
+      .stayoff {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+        border: 1px solid rgba(154, 140, 126, 0.25);
+        padding: 3px 8px;
+      }
+      .research { margin-top: 28px; color: var(--mute); line-height: 1.55; max-width: 62em; }
+      .research h3 { color: var(--salt); }
+      .research code { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--plank); }
+      footer { margin-top: 28px; color: var(--mute); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">02:50 / hermes catalog #162 / #92338</p>
+        <h1>Jetsam <em>stop-hook quay</em></h1>
+        <p class="lede">
+          A quay that hauls a tracking-ref as cargo after the remote already jettisoned it is not an unpushed commit — it is already <strong>adrift</strong>.
+          Score the prune or admit the branch already jetsamed.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92338">anthropics/claude-code#92338</a>
+          (OPEN; bug, has repro, area:hooks, area:claude-code-web).
+          Diagnostic fixtures only. No live git remote.
+        </p>
+      </div>
+
+      <section class="pier adrift" id="pier" aria-label="Jetsam pier">
+        <div class="horizon" aria-hidden="true"></div>
+        <div class="water" aria-hidden="true"></div>
+        <div class="crate" id="crate" aria-hidden="true"></div>
+        <div class="bollards" aria-hidden="true">
+          <div class="bollard" id="bollard-idle"></div>
+          <div class="bollard pin" id="bollard-seed"></div>
+        </div>
+        <div class="pier-label" id="pier-label">seeded adrift · stale origin/feature</div>
+        <div class="tide-face">
+          Tide
+          <b id="tide-word">high · adrift</b>
+          <div class="wave" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <section class="quay" id="desk" aria-label="Jetsam scoring desk">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">adrift</p>
+          <p class="reason" id="reason">The tracking-ref still floats after the remote jettisoned it. Admit the branch already jetsamed.</p>
+          <div class="exits" id="exits"></div>
+          <div class="plaques">
+            <div class="plaque" id="p-rev"><i></i><div><b>rev-parse origin/$branch</b><span id="s-rev">local-ref existence, not remote existence</span></div></div>
+            <div class="plaque" id="p-contain"><i></i><div><b>merge-base --is-ancestor</b><span id="s-contain">HEAD vs default_ref</span></div></div>
+            <div class="plaque" id="p-fetch"><i></i><div><b>fetch --prune</b><span id="s-fetch">scoped fetch survives; full fetch prunes</span></div></div>
+            <div class="plaque" id="p-hook"><i></i><div><b>Stop hook exit</b><span id="s-hook">shipped exit 2 · phantom unpushed</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2 style="margin:0 0 10px;font-family:'Instrument Serif',serif;font-size:28px;font-weight:400;">Quay log</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <div class="panes">
+        <article class="pane hot" id="pane-rev">
+          <h3>rev-parse</h3>
+          <p id="pane-rev-copy"><code>git rev-parse "origin/$current_branch"</code> answers whether the local tracking-ref exists. After GitHub auto-delete it still resolves.</p>
+        </article>
+        <article class="pane" id="pane-mb">
+          <h3>merge-base --is-ancestor</h3>
+          <p id="pane-mb-copy">Suggested: try <code>origin/HEAD</code> then <code>origin/main</code> then <code>origin/master</code>. If HEAD is an ancestor of <code>default_ref</code>, exit 0 before <code>unpushed=</code>.</p>
+        </article>
+        <article class="pane" id="pane-fetch">
+          <h3>fetch --prune</h3>
+          <p id="pane-fetch-copy"><code>git fetch origin main</code> + <code>fetch.prune=true</code> leaves the stale ref. <code>git fetch origin</code> + prune clears it. Prune applies only to the refspec being fetched.</p>
+        </article>
+      </div>
+
+      <div class="matrix" aria-label="Issue test matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>scenario</th>
+              <th>shipped</th>
+              <th>naive</th>
+              <th>suggested</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the quay</button>
+        <button class="act" data-act="idle">Pin idle pruned</button>
+        <button class="act" data-act="seed">Pin seeded adrift</button>
+        <button class="act" data-act="admit">Admit the branch already jetsamed</button>
+        <button class="act" data-act="prune">Score the prune</button>
+        <button class="act" data-act="fixtures">Load #92338 fixture</button>
+        <button class="act" data-act="reset">Reset to pruned</button>
+      </div>
+
+      <div class="sim">
+        <h3>Quay simulator</h3>
+        <p>Rewrite the tide without leaving the pier. Diagnostic only — no live git remote is contacted.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-ref="stale">tracking-ref stale</span>
+          <span class="chip" data-sim-ref="pruned">tracking-ref pruned</span>
+          <span class="chip" data-sim-contain="yes">contained in default</span>
+          <span class="chip" data-sim-contain="no">not contained</span>
+          <span class="chip" data-sim-ahead="0">ahead-of-main 0</span>
+          <span class="chip" data-sim-ahead="2">ahead-of-main 2</span>
+          <span class="chip" data-sim-fetch="scoped">scoped fetch</span>
+          <span class="chip" data-sim-fetch="full">full fetch</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="pruned">pruned</button>
+          <button class="chip" data-chip="adrift">adrift</button>
+          <button class="chip" data-chip="stale-ref">stale-ref</button>
+          <button class="chip" data-chip="containment">containment</button>
+          <button class="chip" data-chip="naive-sub">naive-sub</button>
+          <button class="chip" data-chip="phantom-unpushed">phantom-unpushed</button>
+          <button class="chip" data-chip="force-lease-stale">force-lease-stale</button>
+          <button class="chip" data-chip="scoped-fetch-survives">scoped-fetch-survives</button>
+          <button class="chip" data-chip="full-fetch-prunes">full-fetch-prunes</button>
+          <button class="chip" data-chip="re-provision-overwrite">re-provision-overwrite</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the quay</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this quay</h3>
+        <p>
+          <code>~/.claude/stop-hook-git-check.sh</code> picks its comparison ref with
+          <code>git rev-parse "origin/$current_branch"</code>.
+          That answers “does this local ref exist”, not “does this branch still exist on the remote”.
+          After GitHub auto-deletes a squash-merged head branch, the local <code>origin/&lt;branch&gt;</code>
+          tracking ref survives until pruned, still resolves, and <code>origin/&lt;stale&gt;..HEAD</code>
+          counts the squash commit as unpushed. The Stop hook then blocks every stop indefinitely
+          and tells the agent to push to a branch that no longer exists.
+        </p>
+        <p>
+          Substituting the default branch as upstream silences this case and then reports every commit
+          on a fully pushed feature branch as unpushed. The suggested fix is a containment check
+          against <code>origin/HEAD</code> then <code>origin/main</code> then <code>origin/master</code>
+          before the <code>unpushed=</code> line. Workaround: <code>git fetch --prune</code> after a merge.
+          <code>fetch.prune=true</code> does not help a scoped <code>git fetch origin main</code>.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Priory #92345</span>
+            <span>Latchkey #92330</span>
+            <span>Stubble #92328</span>
+            <span>Intake #92305</span>
+            <span>Pasteboard #92312</span>
+            <span>Spillway #92311</span>
+            <span>Lagan</span>
+            <span>Snub</span>
+            <span>Hawser</span>
+          </span>
+        </p>
+        <p>
+          Cousins cite-only: #83924 Stop hook false unpushed after PR merge when head auto-deleted ·
+          #86018 Stop hook fabricates ahead count when origin/HEAD unset after squash-merge ·
+          #83490 Stop hook tells agent to rewrite published history after PR ·
+          #82624 Web/CCR git stop hook two false positives ·
+          #86379 Stop hook blocks on dirty/untracked and is reprovisioned.
+        </p>
+        <p>
+          Hypothesis only (NON-BINDING): the issue’s containment check is the encoded fix.
+          The reporter’s separate observation — when <code>origin/HEAD</code> is unset,
+          <code>|| unpushed=0</code> can swallow genuine work on a never-pushed branch — is cite-only,
+          not this product’s primary.
+        </p>
+      </section>
+      <footer>Living diagnostic page. No secrets. No live git remote. Idle word pruned. Seeded word adrift. Hook does not ship in Claude Code.</footer>
+    </main>
+    <script>
+      const CHIPS = [
+        "pruned",
+        "adrift",
+        "stale-ref",
+        "containment",
+        "naive-sub",
+        "phantom-unpushed",
+        "force-lease-stale",
+        "scoped-fetch-survives",
+        "full-fetch-prunes",
+        "re-provision-overwrite"
+      ];
+      const CHIP_FILES = {
+        pruned: "pruned.json",
+        adrift: "adrift.json",
+        "stale-ref": "stale-ref.json",
+        containment: "containment.json",
+        "naive-sub": "naive-sub.json",
+        "phantom-unpushed": "phantom-unpushed.json",
+        "force-lease-stale": "force-lease-stale.json",
+        "scoped-fetch-survives": "scoped-fetch.json",
+        "full-fetch-prunes": "full-fetch.json",
+        "re-provision-overwrite": "re-provision.json"
+      };
+      const HOLD = new Set(["pruned", "containment", "full-fetch-prunes"]);
+      const MATRIX = [
+        { id: 1, name: "squash-merged, stale ref, nothing to push", file: "scenario-1.json", shipped: "FAIL", naive: "pass", suggested: "pass" },
+        { id: 2, name: "genuinely unpushed commit on a tracked branch", file: "scenario-2.json", shipped: "pass", naive: "pass", suggested: "pass" },
+        { id: 3, name: "fully pushed feature branch, 2 ahead of main", file: "scenario-3.json", shipped: "pass", naive: "FAIL", suggested: "pass" },
+        { id: 4, name: "never-pushed branch with work", file: "scenario-4.json", shipped: "pass", naive: "pass", suggested: "pass" },
+        { id: 5, name: "on the default branch, in sync", file: "scenario-5.json", shipped: "pass", naive: "pass", suggested: "pass" }
+      ];
+
+      const idle = {
+        seed: "pruned",
+        persistHold: true,
+        pruned: true,
+        adrift: false,
+        scenario: 0,
+        currentBranch: "feature",
+        trackingRef: "origin/feature",
+        trackingRefExistsLocally: false,
+        trackingRefExistsOnRemote: false,
+        commitsAheadOfTracking: 0,
+        commitsAheadOfDefault: 0,
+        headContainedInDefault: true,
+        hasUnpushedWork: false,
+        originHeadUnset: false,
+        staleRef: false,
+        phantomUnpushed: false,
+        forceLeaseStale: false,
+        scopedFetchPrune: false,
+        fullFetchPrunes: true,
+        reprovisionOverwrite: false,
+        hubCount: "PRUNED",
+        log: ["[desk] tracking-ref pruned · HEAD contained in origin/main · idle word pruned"]
+      };
+
+      const seeded = {
+        seed: "adrift",
+        persistHold: false,
+        pruned: false,
+        adrift: true,
+        scenario: 1,
+        currentBranch: "feature",
+        trackingRef: "origin/feature",
+        trackingRefExistsLocally: true,
+        trackingRefExistsOnRemote: false,
+        commitsAheadOfTracking: 1,
+        commitsAheadOfDefault: 0,
+        headContainedInDefault: true,
+        hasUnpushedWork: false,
+        originHeadUnset: false,
+        staleRef: true,
+        phantomUnpushed: true,
+        forceLeaseStale: true,
+        scopedFetchPrune: true,
+        fullFetchPrunes: true,
+        reprovisionOverwrite: true,
+        banner: "There are 1 unpushed commit(s) on branch 'feature'. Please push these changes to the remote repository.",
+        hubCount: "ADRIFT",
+        log: [
+          "[issue] #92338 OPEN · stale origin/feature still resolves after remote head deleted",
+          "[pick] git rev-parse origin/$current_branch · local-ref existence, not remote existence",
+          "[hook] There are 1 unpushed commit(s) · exit 2 · every stop",
+          "[desk] already adrift; seeded word adrift"
+        ]
+      };
+
+      let refState = "stale";
+      let containState = "yes";
+      let aheadState = "0";
+      let fetchState = "scoped";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function shippedExit(t) {
+        if (t.trackingRefExistsLocally) return t.commitsAheadOfTracking > 0 ? 2 : 0;
+        if (t.originHeadUnset) return 0;
+        return t.hasUnpushedWork ? 2 : 0;
+      }
+
+      function naiveExit(t) {
+        return t.commitsAheadOfDefault > 0 ? 2 : 0;
+      }
+
+      function suggestedExit(t) {
+        if (t.headContainedInDefault) return 0;
+        return shippedExit(t);
+      }
+
+      function expectedExit(t) {
+        if (t.headContainedInDefault) return 0;
+        if (t.trackingRefExistsLocally && t.commitsAheadOfTracking > 0) return 2;
+        if (!t.trackingRefExistsLocally && t.hasUnpushedWork) return 2;
+        return 0;
+      }
+
+      function mark(got, want) {
+        return got === want ? "pass" : "FAIL";
+      }
+
+      function alreadyAdrift(t) {
+        return t.adrift === true
+          || t.seed === "adrift"
+          || (t.trackingRefExistsLocally === true
+            && t.trackingRefExistsOnRemote === false
+            && t.commitsAheadOfTracking > 0
+            && t.headContainedInDefault === true
+            && t.pruned !== true);
+      }
+
+      function holdTicket(t) {
+        const seed = String(t.seed || "");
+        return (t.persistHold === true || t.pruned === true || HOLD.has(seed))
+          && t.adrift !== true
+          && !alreadyAdrift(t);
+      }
+
+      function scoreQuay(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const shipped = Number.isInteger(t.shippedExit) ? t.shippedExit : shippedExit(t);
+        const naive = Number.isInteger(t.naiveExit) ? t.naiveExit : naiveExit(t);
+        const suggested = Number.isInteger(t.suggestedExit) ? t.suggestedExit : suggestedExit(t);
+        const expected = Number.isInteger(t.expectedExit) ? t.expectedExit : expectedExit(t);
+        t.shippedExit = shipped;
+        t.naiveExit = naive;
+        t.suggestedExit = suggested;
+        t.expectedExit = expected;
+        t.shippedMark = t.shippedMark || mark(shipped, expected);
+        t.naiveMark = t.naiveMark || mark(naive, expected);
+        t.suggestedMark = t.suggestedMark || mark(suggested, expected);
+        const hold = holdTicket(t) && !alreadyAdrift(t);
+        const alarm = !hold && (alreadyAdrift(t) || seed === "adrift" || (shipped === 2 && t.headContainedInDefault === true));
+        const chips = [];
+        if (hold && (seed === "pruned" || t.pruned === true || seed === "")) chips.push("pruned");
+        if (alarm || t.adrift === true || alreadyAdrift(t)) chips.push("adrift");
+        if (t.staleRef === true || t.revParseSucceeds === true || seed === "stale-ref") chips.push("stale-ref");
+        if (t.headContainedInDefault === true || seed === "containment") chips.push("containment");
+        if (t.naiveSub === true || seed === "naive-sub" || t.naiveMark === "FAIL") chips.push("naive-sub");
+        if (t.phantomUnpushed === true || seed === "phantom-unpushed" || (alarm && shipped === 2)) chips.push("phantom-unpushed");
+        if (t.forceLeaseStale === true || seed === "force-lease-stale") chips.push("force-lease-stale");
+        if (t.scopedFetchPrune === true || seed === "scoped-fetch-survives") chips.push("scoped-fetch-survives");
+        if (t.fullFetchPrunes === true || seed === "full-fetch-prunes") chips.push("full-fetch-prunes");
+        if (t.reprovisionOverwrite === true || seed === "re-provision-overwrite") chips.push("re-provision-overwrite");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (hold ? "pruned" : "adrift");
+        return { ticket: t, hold, alarm, chips: unique, verdict, shipped, naive, suggested, expected };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] stale tracking-ref still floats · shipped exit 2 · already adrift"]
+            : ["[desk] tracking-ref pruned · idle word pruned"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /adrift|exit 2|stale|unpushed|FAIL|overwrite|jetsam/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintExits(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedExit, t.shippedMark, "rev-parse origin/$branch"],
+          ["naive", t.naiveExit, t.naiveMark, "upstream = origin/main"],
+          ["suggested", t.suggestedExit, t.suggestedMark, "containment then shipped"]
+        ];
+        document.getElementById("exits").innerHTML = rows.map(([name, code, mk, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="exit ${cls}"><b>${name}</b><div class="face">exit ${code}</div><span class="mark">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.id}. ${row.name}</td>
+            ${cell(row.shipped)}${cell(row.naive)}${cell(row.suggested)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => String(r.id) === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch { apply({ ...seeded, scenario: row.id, seed: row.id === 1 ? "adrift" : "pruned" }); }
+          });
+        });
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "The tracking-ref still floats after the remote jettisoned it. Admit the branch already jetsamed."
+          : "Jetsam pruned. Tracking-ref gone or HEAD already contained. Idle word pruned.";
+        const pier = document.getElementById("pier");
+        pier.classList.toggle("adrift", alarm);
+        pier.classList.toggle("pruned", result.hold);
+        document.getElementById("pier-label").textContent = alarm
+          ? "seeded adrift · stale origin/" + (t.currentBranch || "feature")
+          : "idle pruned · tracking-ref gone";
+        document.getElementById("tide-word").textContent = alarm ? "high · adrift" : "ebb · pruned";
+        document.getElementById("bollard-idle").className = "bollard" + (result.hold ? " ebb" : "");
+        document.getElementById("bollard-seed").className = "bollard" + (alarm ? " pin" : "");
+        setPlaque("p-rev", !t.revParseSucceeds && !t.staleRef, t.staleRef === true || t.revParseSucceeds === true);
+        setPlaque("p-contain", t.headContainedInDefault === true, t.headContainedInDefault === false);
+        setPlaque("p-fetch", t.fullFetchPrunes === true && !t.scopedFetchPrune, t.scopedFetchPrune === true);
+        setPlaque("p-hook", result.shipped === 0, result.shipped === 2 && alarm);
+        document.getElementById("s-rev").textContent = t.trackingRefExistsLocally
+          ? (t.trackingRefExistsOnRemote ? "origin/" + (t.currentBranch || "feature") + " still on remote" : "local origin/" + (t.currentBranch || "feature") + " still resolves · remote already jettisoned")
+          : "origin/" + (t.currentBranch || "feature") + " no longer resolves";
+        document.getElementById("s-contain").textContent = t.headContainedInDefault
+          ? "HEAD is ancestor of " + (t.defaultRef || "origin/main") + " · suggested exit 0"
+          : "HEAD is not contained in default · continue to unpushed=";
+        document.getElementById("s-fetch").textContent = t.scopedFetchPrune
+          ? "git fetch origin main + prune · stale ref survives"
+          : (t.fullFetchPrunes ? "git fetch origin + prune · debris cleared" : "no fetch measurement on this ticket");
+        document.getElementById("s-hook").textContent = alarm
+          ? (t.banner || "There are 1 unpushed commit(s) · shipped exit 2")
+          : "silent · shipped exit " + result.shipped;
+        document.getElementById("pane-rev").className = "pane" + (t.staleRef || t.revParseSucceeds ? " hot" : " ok");
+        document.getElementById("pane-mb").className = "pane" + (t.headContainedInDefault ? " ok" : "");
+        document.getElementById("pane-fetch").className = "pane" + (t.scopedFetchPrune ? " hot" : (t.fullFetchPrunes ? " ok" : ""));
+        document.getElementById("pane-rev-copy").innerHTML = t.trackingRefExistsLocally
+          ? `<code>git rev-parse "origin/${t.currentBranch || "feature"}"</code> succeeds. That is local-ref existence, not remote existence.`
+          : `<code>git rev-parse "origin/${t.currentBranch || "feature"}"</code> fails. The tracking-ref is no longer cargo.`;
+        document.getElementById("pane-mb-copy").innerHTML = t.headContainedInDefault
+          ? `Containment would exit 0: HEAD is an ancestor of <code>${t.defaultRef || "origin/main"}</code> before the <code>unpushed=</code> line.`
+          : `Containment does not fire. HEAD is not an ancestor of the default branch. Naive-sub would still compare against main.`;
+        document.getElementById("pane-fetch-copy").innerHTML = t.scopedFetchPrune
+          ? `<code>git fetch origin main</code> + <code>fetch.prune=true</code> leaves the stale ref. Prune applies only to the refspec being fetched.`
+          : (t.fullFetchPrunes
+            ? `<code>git fetch origin</code> + <code>fetch.prune=true</code> prunes the debris. Hook goes quiet.`
+            : `Workaround from the issue: <code>git fetch --prune</code> after a merge. Scoped fetch does not.`);
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const hold = HOLD.has(c) && result.hold;
+          return `<span class="chip ${hold ? "ebb" : "haul"}">${c}</span>`;
+        }).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintExits(result);
+        paintLog(alarm, t);
+        paintMatrix(t.scenario || (alarm ? 1 : 0));
+      }
+
+      function apply(ticket) {
+        paint(scoreQuay(ticket));
+      }
+
+      function ticketFromSim() {
+        const stale = refState === "stale";
+        const contained = containState === "yes";
+        const ahead = Number(aheadState);
+        const scoped = fetchState === "scoped";
+        if (!stale && contained && ahead === 0) {
+          return {
+            ...idle,
+            seed: "pruned",
+            persistHold: true,
+            fullFetchPrunes: !scoped,
+            scopedFetchPrune: scoped && stale,
+            hubCount: "PRUNED"
+          };
+        }
+        if (stale && contained && ahead === 0) {
+          return {
+            ...seeded,
+            seed: "adrift",
+            trackingRefExistsLocally: true,
+            trackingRefExistsOnRemote: false,
+            commitsAheadOfTracking: 1,
+            commitsAheadOfDefault: 0,
+            headContainedInDefault: true,
+            scopedFetchPrune: scoped,
+            fullFetchPrunes: !scoped,
+            hubCount: "ADRIFT"
+          };
+        }
+        if (!contained && ahead === 2 && stale === false) {
+          return {
+            ...idle,
+            seed: "naive-sub",
+            persistHold: false,
+            pruned: false,
+            adrift: false,
+            scenario: 3,
+            trackingRefExistsLocally: true,
+            trackingRefExistsOnRemote: true,
+            commitsAheadOfTracking: 0,
+            commitsAheadOfDefault: 2,
+            headContainedInDefault: false,
+            hasUnpushedWork: false,
+            naiveSub: true,
+            staleRef: false,
+            scopedFetchPrune: false,
+            fullFetchPrunes: false,
+            hubCount: "NAIVE-SUB",
+            log: ["[desk] fully pushed feature · 2 ahead of main · naive-sub FAIL · not the #92338 inverse"]
+          };
+        }
+        return {
+          ...seeded,
+          seed: stale && contained ? "adrift" : "stale-ref",
+          trackingRefExistsLocally: stale,
+          trackingRefExistsOnRemote: !stale,
+          commitsAheadOfTracking: stale ? 1 : 0,
+          commitsAheadOfDefault: ahead,
+          headContainedInDefault: contained,
+          hasUnpushedWork: !contained && ahead > 0,
+          scopedFetchPrune: scoped && stale,
+          fullFetchPrunes: !scoped,
+          hubCount: stale && contained ? "ADRIFT" : "SIM"
+        };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-ref]").forEach((b) => {
+          b.classList.toggle("haul", b.dataset.simRef === refState);
+        });
+        document.querySelectorAll("[data-sim-contain]").forEach((b) => {
+          b.classList.toggle("haul", b.dataset.simContain === containState);
+        });
+        document.querySelectorAll("[data-sim-ahead]").forEach((b) => {
+          b.classList.toggle("haul", b.dataset.simAhead === aheadState);
+        });
+        document.querySelectorAll("[data-sim-fetch]").forEach((b) => {
+          b.classList.toggle("haul", b.dataset.simFetch === fetchState);
+        });
+      }
+
+      function pinIdle() {
+        refState = "pruned";
+        containState = "yes";
+        aheadState = "0";
+        fetchState = "full";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        refState = "stale";
+        containState = "yes";
+        aheadState = "0";
+        fetchState = "scoped";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") return pinIdle();
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("adrift.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("containment.json")); }
+            catch { apply({ ...seeded, seed: "containment", hubCount: "CONTAINMENT" }); }
+            return;
+          }
+          if (act === "prune") {
+            refState = "pruned";
+            fetchState = "full";
+            syncSimChips();
+            try { apply(await loadNamed("full-fetch.json")); }
+            catch { apply({ ...idle, seed: "full-fetch-prunes", hubCount: "FULL-FETCH-PRUNES" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92338.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-ref]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          refState = btn.dataset.simRef;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-sim-contain]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          containState = btn.dataset.simContain;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-sim-ahead]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          aheadState = btn.dataset.simAhead;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-sim-fetch]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          fetchState = btn.dataset.simFetch;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...idle, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92338 });
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>

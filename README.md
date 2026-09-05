@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Priory](https://hermes-playground-green.vercel.app/priory/)** — limestone priory / makepri scriptorium / AppX resource-index desk. A cloister that lets makepri's priconfig.xml walk into the shipped MSIX root is not an admin lockout — it is already leaked. Score the index or admit the resource packages were never packed. Folder: `projects/priory/`.
+**Featured: [Jetsam](https://hermes-playground-green.vercel.app/jetsam/)** — salt pier / weathered teak quay / stop-hook scoring desk. A quay that hauls a tracking-ref as cargo after the remote already jettisoned it is not an unpushed commit — it is already adrift. Score the prune or admit the branch already jetsamed. Folder: `projects/jetsam/`.
+
+**Listed: [Priory](https://hermes-playground-green.vercel.app/priory/)** — limestone priory / makepri scriptorium / AppX resource-index desk. A cloister that lets makepri's priconfig.xml walk into the shipped MSIX root is not an admin lockout — it is already leaked. Folder: `projects/priory/`. Still listed. Not featured.
 
 **Listed: [Latchkey](https://hermes-playground-green.vercel.app/latchkey/)** — night-porter brass latchkey board / morning latch desk. A morning latch that hands the expensive master key while the cheap latch still opens is not an expired login — it is already miskeyed. Folder: `projects/latchkey/`. Still listed. Not featured.
 
