@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Tabula](https://hermes-playground-green.vercel.app/tabula/)** — wax-tablet / scriptorium / blank-slate desk. A tabula that wipes the wax when the deep-link folder already matches the composer is not a seated path — it is a tablet already scratched. Score the stylus or admit the scratch already minted. Folder: `projects/tabula/`.
+**Featured: [Priory](https://hermes-playground-green.vercel.app/priory/)** — limestone priory / makepri scriptorium / AppX resource-index desk. A cloister that lets makepri's priconfig.xml walk into the shipped MSIX root is not an admin lockout — it is already leaked. Score the index or admit the resource packages were never packed. Folder: `projects/priory/`.
+
+**Listed: [Latchkey](https://hermes-playground-green.vercel.app/latchkey/)** — night-porter brass latchkey board / morning latch desk. A morning latch that hands the expensive master key while the cheap latch still opens is not an expired login — it is already miskeyed. Folder: `projects/latchkey/`. Still listed. Not featured.
+
+**Listed: [Tabula](https://hermes-playground-green.vercel.app/tabula/)** — wax-tablet / scriptorium / blank-slate desk. A tabula that wipes the wax when the deep-link folder already matches the composer is not a seated path — it is a tablet already scratched. Score the stylus or admit the scratch already minted. Folder: `projects/tabula/`. Still listed. Not featured.
 
 **Listed: [Oxbow](https://hermes-playground-green.vercel.app/oxbow/)** — floodplain cartography / oxbow-lake survey desk. An oxbow that keeps the largest abandoned meander while the live channel carries the newest days is not a full transcript — it is a lake already stranded. Score the oxbow or admit the branch already stranded. Folder: `projects/oxbow/`. Still listed. Not featured.
 
