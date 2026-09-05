@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Elision](https://hermes-playground-green.vercel.app/elision/)** — copy-editor blue-pencil / manuscript abridgment / elision-mark desk. A blue-pencil that cuts the standing summary out of the kept suffix is not an abridgment — it is already elided. Score the mark or admit the folio already elided. Folder: `projects/elision/`.
+**Featured: [Embrasure](https://hermes-playground-green.vercel.app/embrasure/)** — dusk ashlar battlement / parapet / embrasure-slit assay. An embrasure that opens the curtain wall because a denyRead entry was not a string is not a tighter fence — it is already open. Score the slit or admit the wall already open. Folder: `projects/embrasure/`.
+
+**Listed: [Elision](https://hermes-playground-green.vercel.app/elision/)** — copy-editor blue-pencil / manuscript abridgment / elision-mark desk. A blue-pencil that cuts the standing summary out of the kept suffix is not an abridgment — it is already elided. Score the mark or admit the folio already elided. Folder: `projects/elision/`. Still listed. Not featured.
 
 **Listed: [Graft](https://hermes-playground-green.vercel.app/graft/)** — orchard grafting bench / scion-stock / cambium desk. A scion that carries the previous trunk's dead wood into every new stock is not a clean update — it is already grafted. Score the cambium or admit the cache already grafted. Folder: `projects/graft/`. Still listed. Not featured.
 
