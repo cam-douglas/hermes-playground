@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Alarum — night-watchtower scoring for #92283</title>
+    <meta
+      name="description"
+      content="Alarum — night watchtower / copper bell for Claude Code #92283: post-goodbye background-task kill notification wakes an ended session and spends a full turn. Idle word is stilled."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --indigo: #0b1020;
+        --dusk: #141a32;
+        --slate: #2a3040;
+        --mist: #a8b0c0;
+        --mute: #8a92a4;
+        --copper: #c4783a;
+        --bell: #e08a4a;
+        --lantern: #f0b44a;
+        --ember: #d4922a;
+        --stilled: #6a7a9a;
+        --rung: #e08a4a;
+        --line: rgba(168, 176, 192, 0.22);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Outfit, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(ellipse 42% 28% at 78% 8%, rgba(240, 180, 74, 0.1), transparent 58%),
+          radial-gradient(ellipse 50% 40% at 12% 88%, rgba(196, 120, 58, 0.08), transparent 54%),
+          radial-gradient(circle at 18% 16%, rgba(232, 236, 248, 0.16) 0 1px, transparent 2px),
+          radial-gradient(circle at 72% 22%, rgba(232, 236, 248, 0.12) 0 1px, transparent 2px),
+          radial-gradient(circle at 44% 8%, rgba(232, 236, 248, 0.1) 0 1px, transparent 2px),
+          radial-gradient(circle at 88% 48%, rgba(232, 236, 248, 0.1) 0 1px, transparent 2px),
+          linear-gradient(180deg, #080c18 0%, var(--indigo) 42%, #0e1428 100%);
+        color: var(--mist);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--lantern); }
+      .wrap { width: min(1180px, calc(100% - 28px)); margin: 0 auto; padding: 28px 0 96px; }
+      .chrome { margin-bottom: 18px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--stilled);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(106, 122, 154, 0.5);
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--lantern);
+      }
+      h1 {
+        font-family: Fraunces, Georgia, serif;
+        font-size: clamp(56px, 10vw, 108px);
+        letter-spacing: -0.04em;
+        margin: 6px 0 12px;
+        font-weight: 700;
+        line-height: 0.82;
+      }
+      h1 .sort {
+        color: var(--copper);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 0.28em;
+        letter-spacing: 0.14em;
+        vertical-align: super;
+      }
+      .lede { max-width: 68em; color: var(--mute); line-height: 1.62; }
+      .desk {
+        margin: 22px 0 0;
+        border: 1px solid rgba(196, 120, 58, 0.38);
+        background:
+          linear-gradient(180deg, rgba(20, 26, 50, 0.86), rgba(11, 16, 32, 0.96));
+        box-shadow:
+          inset 0 1px 0 rgba(240, 180, 74, 0.08),
+          0 28px 48px rgba(0, 0, 0, 0.55);
+      }
+      .desk-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        padding: 10px 16px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--indigo);
+        background: var(--stilled);
+      }
+      .desk.rung .desk-head { background: var(--rung); color: #1a1008; }
+      .belfry {
+        display: grid;
+        grid-template-columns: 220px 1fr 240px;
+        gap: 0;
+        min-height: 460px;
+      }
+      @media (max-width: 920px) {
+        .belfry { grid-template-columns: 1fr; }
+      }
+      .hours, .tower, .well { padding: 16px 14px; }
+      .hours, .well { background: rgba(8, 12, 24, 0.55); }
+      .tower { border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+      .hours h2, .tower h2, .well h2, .sim h3, .research h3 {
+        margin: 0 0 10px;
+        font-family: Fraunces, Georgia, serif;
+        font-size: 22px;
+        font-weight: 400;
+        font-style: italic;
+        color: var(--lantern);
+      }
+      .stave { display: grid; gap: 8px; }
+      .hour {
+        display: grid;
+        grid-template-columns: 14px 1fr;
+        gap: 10px;
+        align-items: start;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+      }
+      .hour i {
+        width: 10px;
+        height: 10px;
+        margin-top: 3px;
+        border-radius: 50%;
+        background: #1c2438;
+        box-shadow: inset 0 0 0 1px rgba(168, 176, 192, 0.28);
+        font-style: normal;
+      }
+      .hour.on i { background: var(--lantern); box-shadow: 0 0 10px rgba(240, 180, 74, 0.55); }
+      .hour.hot i { background: var(--copper); box-shadow: 0 0 12px rgba(196, 120, 58, 0.7); }
+      .hour b { display: block; color: var(--mist); font-weight: 500; }
+      .hour span { color: var(--mute); }
+      .tower-svg { width: 100%; height: auto; display: block; }
+      .hub-count {
+        text-align: center;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        color: var(--stilled);
+        margin: 10px 0 0;
+      }
+      .desk.rung .hub-count { color: #f0b4a4; }
+      .lantern-well {
+        min-height: 150px;
+        padding: 14px 12px;
+        background: linear-gradient(180deg, #24180e, #100c0a);
+        border: 3px solid #6a3e1c;
+      }
+      .lantern-well .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(240, 180, 74, 0.12);
+      }
+      .lantern-well .row.hot strong { color: var(--lantern); }
+      .tax {
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid rgba(196, 120, 58, 0.4);
+        background: #121018;
+      }
+      .tax label {
+        display: block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 8px;
+      }
+      .dish {
+        height: 14px;
+        background: #1a1420;
+        border: 1px solid rgba(196, 120, 58, 0.45);
+        overflow: hidden;
+      }
+      .dish i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #8a4a22, var(--lantern));
+        transition: width 0.45s ease;
+      }
+      .desk.rung .dish i { width: 10%; }
+      .tax strong {
+        display: block;
+        margin-top: 8px;
+        font-family: Fraunces, Georgia, serif;
+        font-style: italic;
+        color: var(--bell);
+      }
+      .beads {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+        padding: 0 14px 4px;
+      }
+      @media (max-width: 720px) { .beads { grid-template-columns: 1fr 1fr; } }
+      .beads button, .flags button {
+        text-align: left;
+        padding: 10px 10px;
+        border: 1px solid var(--line);
+        background: #12182a;
+        color: var(--mist);
+        cursor: pointer;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+      }
+      .beads button b, .flags button b { display: block; color: var(--lantern); }
+      .beads button.on, .flags button.on { border-color: rgba(240, 180, 74, 0.55); }
+      .beads button.fail, .flags button.fail {
+        border-color: rgba(196, 120, 58, 0.7);
+        background: #241410;
+      }
+      .flags {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 8px 14px 0;
+      }
+      @media (max-width: 720px) { .flags { grid-template-columns: 1fr; } }
+      .scorecard {
+        margin: 10px 14px 0;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .scorecard.loss { color: #f0c4a4; border-color: rgba(196, 120, 58, 0.45); }
+      .ticket {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin: 10px 14px 0;
+      }
+      @media (max-width: 720px) { .ticket { grid-template-columns: 1fr 1fr; } }
+      .ticket div {
+        padding: 10px;
+        background: #0a0c16;
+        border: 1px solid var(--line);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .ticket b {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 4px;
+      }
+      .charge, .grainline {
+        margin: 12px 14px 0;
+        font-family: Fraunces, Georgia, serif;
+        font-style: italic;
+        font-size: 18px;
+        color: var(--mist);
+      }
+      .log {
+        margin: 12px 14px 16px;
+        padding: 12px 14px;
+        background: #080c16;
+        border: 1px solid var(--line);
+        color: var(--mute);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        min-height: 8em;
+      }
+      .log .hit { color: var(--lantern); }
+      .verdict {
+        margin: 18px 0 8px;
+        font-family: Fraunces, Georgia, serif;
+        font-size: clamp(36px, 6vw, 64px);
+        letter-spacing: -0.03em;
+        line-height: 0.9;
+      }
+      .verdict.hold { color: var(--stilled); }
+      .verdict.alarm { color: var(--rung); }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 16px; }
+      .chip, .probe-chip, .act {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--line);
+        background: #12182a;
+        color: var(--mist);
+        padding: 8px 10px;
+        cursor: pointer;
+      }
+      .chip.lit, .probe-chip.lit { border-color: var(--lantern); color: var(--lantern); }
+      .acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+      .act { background: #1c1830; }
+      .act.primary { background: var(--copper); color: #1a1008; border-color: var(--copper); }
+      .sim, .research {
+        margin: 22px 0 0;
+        padding: 16px;
+        border: 1px solid var(--line);
+        background: rgba(12, 16, 32, 0.72);
+      }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        margin-top: 10px;
+        padding: 10px;
+        background: #080c16;
+        color: var(--mist);
+        border: 1px solid var(--line);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+      }
+      .uri {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--mute);
+        margin: 0 0 10px;
+      }
+      .facts { margin: 18px 0 0; color: var(--mute); }
+      .facts dt {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        color: var(--lantern);
+      }
+      .facts dd { margin: 0 0 8px; }
+      .drop {
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed rgba(168, 176, 192, 0.4);
+        color: var(--mute);
+        text-align: center;
+      }
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
+      .compare div {
+        padding: 10px;
+        background: #080c16;
+        border: 1px solid var(--line);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .compare span {
+        display: block;
+        font-family: Outfit, sans-serif;
+        font-size: 12px;
+        color: var(--mute);
+        margin-bottom: 4px;
+      }
+      .fixes li { margin: 0 0 6px; }
+      .fixes .open { color: var(--lantern); }
+      .cousin, .stayoff {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        color: var(--mute);
+        font-size: 14px;
+      }
+      .yoke { transform-origin: 200px 36px; }
+      .bell {
+        transform-origin: 200px 58px;
+        transition: transform 0.35s ease;
+      }
+      .desk.rung .bell { animation: swing 1.15s ease-in-out infinite; }
+      .desk.stilled .bell { transform: rotate(0deg); }
+      .rings { opacity: 0; transition: opacity 0.3s ease; }
+      .desk.rung .rings { opacity: 1; animation: pulse 1.4s ease-out infinite; }
+      .muffler { opacity: 1; transition: opacity 0.3s ease; }
+      .desk.rung .muffler { opacity: 0; }
+      .flame { opacity: 0.28; }
+      .desk.rung .flame { opacity: 1; animation: flare 1.6s ease-in-out infinite; }
+      @keyframes swing {
+        0%, 100% { transform: rotate(-7deg); }
+        50% { transform: rotate(8deg); }
+      }
+      @keyframes pulse {
+        0% { opacity: 0.85; }
+        100% { opacity: 0.15; }
+      }
+      @keyframes flare {
+        50% { opacity: 0.55; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">17:50 / hermes catalog #153 / #92283 · #hermes-catalog</p>
+        <h1>Alarum<span class="sort" aria-hidden="true"> night watch</span></h1>
+        <p class="lede">
+          Night watchtower. An alarum that rings after the watch has stood down
+          is not a needed call to arms — it is a bell already rung.
+          Score the tower or admit the watch already rung.
+        </p>
+        <p class="lede">Idle word: stilled. Seeded word: rung / #92283. Diagnostic only. No credentials. No payloads.</p>
+      </header>
+
+      <section class="desk rung" id="desk" aria-label="night watchtower scoring desk">
+        <div class="desk-head">
+          <span>indigo dusk · copper bell · lantern ember · night slate · muted mist</span>
+          <span id="mark">17:50 / hermes catalog #153 / #92283</span>
+        </div>
+        <div class="belfry">
+          <div class="hours" aria-label="night watch hours">
+            <h2>watch hours</h2>
+            <div class="stave" id="stave">
+              <div class="hour on" id="h-goodbye"><i></i><div><b>goodbye</b><span>conversational close</span></div></div>
+              <div class="hour on" id="h-sleep"><i></i><div><b>sleep</b><span>hours later · machine slept</span></div></div>
+              <div class="hour on" id="h-wake"><i></i><div><b>wake</b><span>machine woke · OS still holding Bash</span></div></div>
+              <div class="hour hot" id="h-kill"><i></i><div><b>lowmemkill</b><span>background Bash reaped</span></div></div>
+              <div class="hour hot" id="h-notice"><i></i><div><b>notice</b><span>informational kill cry</span></div></div>
+              <div class="hour hot" id="h-turn"><i></i><div><b>fullreread</b><span>all-day transcript reloaded</span></div></div>
+            </div>
+            <p class="hub-count" id="hub-count">watch stood down · bell already rung</p>
+          </div>
+          <div class="tower" aria-label="copper bell">
+            <h2>copper bell</h2>
+            <svg class="tower-svg" viewBox="0 0 400 280" role="img" aria-label="night watchtower with hanging copper bell">
+              <defs>
+                <linearGradient id="dusksky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#1c2444" />
+                  <stop offset="1" stop-color="#0b1020" />
+                </linearGradient>
+                <linearGradient id="copperfill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#e08a4a" />
+                  <stop offset="1" stop-color="#8a4a22" />
+                </linearGradient>
+              </defs>
+              <rect x="0" y="0" width="400" height="280" fill="url(#dusksky)" />
+              <path d="M118 268 V118 H282 V268" fill="#1a2034" stroke="#3a4258" stroke-width="3" />
+              <path d="M108 118 H292 L248 58 H152 Z" fill="#2a3048" stroke="#4a5268" stroke-width="3" />
+              <rect x="186" y="72" width="28" height="22" fill="#0b1020" />
+              <g class="yoke">
+                <path d="M150 48 H250" stroke="#6a4a28" stroke-width="8" />
+                <path d="M200 48 V58" stroke="#c4783a" stroke-width="3" />
+              </g>
+              <g class="rings" fill="none" stroke="#e08a4a" stroke-width="1.5">
+                <ellipse cx="200" cy="118" rx="46" ry="18" />
+                <ellipse cx="200" cy="118" rx="68" ry="28" />
+                <ellipse cx="200" cy="118" rx="90" ry="38" />
+              </g>
+              <g class="bell">
+                <path d="M176 62 H224 L236 128 Q200 148 164 128 Z" fill="url(#copperfill)" />
+                <ellipse cx="200" cy="128" rx="36" ry="10" fill="#c4783a" />
+                <path d="M200 88 V118" stroke="#3a2414" stroke-width="3" />
+                <circle cx="200" cy="120" r="5" fill="#3a2414" />
+                <rect class="muffler" x="192" y="110" width="16" height="18" rx="3" fill="#3a3048" />
+              </g>
+              <circle class="flame" cx="70" cy="228" r="9" fill="#f0b44a" />
+              <rect x="66" y="234" width="8" height="20" fill="#3a2418" />
+              <text x="200" y="258" text-anchor="middle" fill="#8a92a4" font-family="IBM Plex Mono, monospace" font-size="11" id="bell-label">bell already rung</text>
+            </svg>
+            <div class="scorecard loss" id="bell-text">kill notice rang the bell · full transcript re-read · reply spent with nobody present</div>
+          </div>
+          <div class="well" aria-label="lantern and tax">
+            <h2>lantern / tax</h2>
+            <div class="lantern-well" id="lantern">
+              <div class="row"><span>watch</span><strong id="c-watch">stood down</strong></div>
+              <div class="row hot"><span>event</span><strong id="c-event">lowmem-kill</strong></div>
+              <div class="row hot"><span>policy</span><strong id="c-policy">wake</strong></div>
+              <div class="row hot"><span>context</span><strong id="c-context">full-reread</strong></div>
+              <div class="row hot"><span>present</span><strong id="c-present">absent</strong></div>
+            </div>
+            <div class="tax" aria-label="usage tax dish">
+              <label>copper dish · usage since goodbye</label>
+              <div class="dish"><i id="tax-fill"></i></div>
+              <strong id="tax-label">~10% spent</strong>
+            </div>
+          </div>
+        </div>
+        <div class="beads" id="beads" aria-label="watch timeline">
+          <button type="button" data-bead="goodbye"><b>goodbye</b>close already said</button>
+          <button type="button" data-bead="lowmemkill"><b>lowmemkill</b>OS reaped Bash</button>
+          <button type="button" data-bead="coldwake"><b>coldwake</b>no pending tools</button>
+          <button type="button" data-bead="fullreread"><b>fullreread</b>all-day reload</button>
+          <button type="button" data-bead="absent"><b>absent</b>nobody to hear</button>
+          <button type="button" data-bead="taxed"><b>taxed</b>~10% drop</button>
+        </div>
+        <div class="flags" id="flags" aria-label="policy and context">
+          <button type="button" data-flag="suppress"><b>suppress</b>defer until next input</button>
+          <button type="button" data-flag="wake"><b>wake</b>ring the ended watch</button>
+          <button type="button" data-flag="notice"><b>notice-only</b>no full reread</button>
+        </div>
+        <div class="scorecard loss" id="watch-text">watch stood down · goodbye already said · hours later the machine slept then woke</div>
+        <div class="ticket" aria-label="alarum ticket">
+          <div><b>session</b><span id="t-session">ended</span></div>
+          <div><b>pending tools</b><span id="t-pending">none</span></div>
+          <div><b>notice</b><span id="t-notice">low memory kill</span></div>
+          <div><b>usage</b><span id="t-usage">~10%</span></div>
+        </div>
+        <p class="charge" id="charge">ended session · lowmem-kill · wake · full reread · already rung</p>
+        <pre class="log" id="log"></pre>
+        <p class="grainline" id="grainline">The bell rang after the watch stood down. The alarum is already rung.</p>
+      </section>
+
+      <p class="verdict alarm" id="verdict">rung</p>
+      <div class="chips" id="chips"></div>
+      <p class="lede" id="reason">Alarum already rung. Admit the watch already rung.</p>
+
+      <section class="sim" aria-label="alarum simulator">
+        <h3>Alarum simulator</h3>
+        <p class="lede">Choose whether the watch has stood down, which background event arrives, whether the tower still wakes, and whether the turn re-reads the whole night. Then score whether the bell is stilled or already rung.</p>
+        <div class="uri" id="uri">windows · ended · lowmem-kill · wake · full-reread · ~10%</div>
+        <div class="chips" aria-label="watch standing">
+          <button type="button" class="probe-chip lit" data-sim-watch="down">watch stood down</button>
+          <button type="button" class="probe-chip" data-sim-watch="up">watch still standing</button>
+        </div>
+        <div class="chips" aria-label="background event">
+          <button type="button" class="probe-chip lit" data-sim-event="lowmem-kill">lowmem kill</button>
+          <button type="button" class="probe-chip" data-sim-event="completion">task completion</button>
+          <button type="button" class="probe-chip" data-sim-event="none">no event</button>
+        </div>
+        <div class="chips" aria-label="wake policy">
+          <button type="button" class="probe-chip" data-sim-policy="suppress">suppress / defer</button>
+          <button type="button" class="probe-chip lit" data-sim-policy="wake">wake and react</button>
+          <button type="button" class="probe-chip" data-sim-policy="cost-preview">cost preview first</button>
+        </div>
+        <div class="chips" aria-label="context load">
+          <button type="button" class="probe-chip lit" data-sim-context="full-reread">full reread</button>
+          <button type="button" class="probe-chip" data-sim-context="notice-only">notice only</button>
+        </div>
+        <div class="compare">
+          <div><span>bell</span><b id="cmp-bell">kill notice · already rung</b></div>
+          <div><span>lantern</span><b id="cmp-lantern">~10% · nobody present</b></div>
+        </div>
+        <div class="acts">
+          <button type="button" class="act primary" data-act="score">Score the tower</button>
+          <button type="button" class="act" data-act="idle">pin idle stilled</button>
+          <button type="button" class="act" data-act="seed">pin seeded rung</button>
+          <button type="button" class="act" data-act="admit">admit the watch already rung</button>
+          <button type="button" class="act" data-act="fixtures">load fixtures</button>
+          <button type="button" class="act" data-act="reset">reset to stilled</button>
+        </div>
+        <textarea id="probe" spellcheck="false" aria-label="probe JSON"></textarea>
+        <div class="drop" id="drop">Drop a fixture JSON here, or paste a probe. Score the tower.</div>
+      </section>
+
+      <section class="research" aria-label="research brief">
+        <h3>Research brief</h3>
+        <p class="lede">
+          Primary OPEN issue:
+          <a href="https://github.com/anthropics/claude-code/issues/92283">anthropics/claude-code#92283</a>.
+          Title: Background task kill/completion notification wakes the session and re-reads full context -- costs a full turn with no user input.
+          Labels: enhancement, platform:windows, area:cost, area:core. Filed ~2026-09-05.
+        </p>
+        <p class="lede">
+          Cousin cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/92062">#92062</a>
+          (waiting on background tasks: repeated no-op status probes silently multiply usage — active waiting loop while still in session). Different paradigm. Cite only.
+        </p>
+      </section>
+
+      <dl class="facts">
+        <dt>1 — The watch already stood down</dt>
+        <dd>
+          Mid-session the user started a local dev server as background Bash
+          (<code>run_in_background: true</code>). The conversation then concluded
+          normally: user said goodbye; assistant said goodbye back. No further
+          input expected. No pending tool state.
+        </dd>
+        <dt>2 — Hours later, a low-memory kill</dt>
+        <dd>
+          The machine slept then woke. The OS killed the background process
+          because the system was running low on memory. The task-notification
+          still arrived: <em>…was killed because the system is running low on memory</em>.
+        </dd>
+        <dt>3 — An informational notice spent a full turn</dt>
+        <dd>
+          The notice re-invoked the model. The entire all-day conversation was
+          re-read. The model replied. Usage dropped ~10% despite zero user
+          typing since goodbye. Nobody was present to read the reply.
+        </dd>
+        <dt>4 — Why the alarum is the wrong cry</dt>
+        <dd>
+          The notification is purely informational — no pending user request.
+          Cost scales with conversation size, not notification importance.
+          There is no opt-out for a visibly-ended session from wake-and-react
+          on background-task events.
+        </dd>
+        <dt>Expected (from the issue — checklist, not implemented here)</dt>
+        <dd>
+          Ended session suppresses/defers the wake until next real user input;
+          or the informational turn does not reload the whole transcript;
+          or estimated cost is surfaced before a notification-driven turn runs.
+        </dd>
+        <dt>Likely path (NON-BINDING)</dt>
+        <dd>
+          The desk should make “post-goodbye informational kill notice ≠ a needed
+          call to arms” visceral. Discard if evidence disagrees. Do not claim
+          unseen source.
+        </dd>
+        <dt>Environment</dt>
+        <dd>
+          OPEN, enhancement, platform:windows, area:cost, area:core. Filed
+          ~2026-09-05. Diagnostic shapes only.
+        </dd>
+      </dl>
+
+      <section class="fixes" aria-label="expected alarum checklist">
+        <p class="lede">Expected from #92283 — product scores the gap; this desk does not implement a live hook.</p>
+        <ol>
+          <li class="open">Ended session (last turn conversational close, no pending tool state) suppresses/defers background-task wake turns until next real user input.</li>
+          <li class="open">Do not re-read the entire transcript for a turn that only reports an unrelated background process finishing or dying.</li>
+          <li class="open">Surface estimated cost of a notification-driven turn before it runs (related to #92062 — cite only).</li>
+        </ol>
+      </section>
+
+      <section class="chips" aria-label="verdict chips" id="chip-switch">
+        <button type="button" class="chip" data-chip="stilled">stilled</button>
+        <button type="button" class="chip" data-chip="rung">rung</button>
+        <button type="button" class="chip" data-chip="deferred">deferred</button>
+        <button type="button" class="chip" data-chip="spent">spent</button>
+        <button type="button" class="chip" data-chip="coldwake">coldwake</button>
+        <button type="button" class="chip" data-chip="fullreread">fullreread</button>
+        <button type="button" class="chip" data-chip="lowmemkill">lowmemkill</button>
+        <button type="button" class="chip" data-chip="goodbye">goodbye</button>
+        <button type="button" class="chip" data-chip="absent">absent</button>
+        <button type="button" class="chip" data-chip="taxed">taxed</button>
+      </section>
+
+      <aside class="cousin">
+        Cousin cite strip (cousin-not-primary; cite only; primary stays #92283):
+        <a href="https://github.com/anthropics/claude-code/issues/92062">#92062</a>
+        waiting on background tasks — repeated no-op status probes silently
+        multiply usage (active waiting loop while still in session). Different
+        paradigm. Do not ship #92062 as primary.
+      </aside>
+
+      <aside class="stayoff">
+        Stay OFF Portcullis castle grate · Skive leather tannery · Lagan salvage-buoy · Snub dockside snubbing post · Ward locksmith keyway · Deadlight night-cabin shutter · Oubliette stone-pit · Tocsin fire-bell · Knell passing-bell · Annunciator panel · Reveille morning call · Ephemera wick-lit folio.
+      </aside>
+    </main>
+    <script>
+      const HOLD = new Set(["stilled", "deferred", "goodbye"]);
+      const CHIP_FILES = {
+        stilled: "stilled.json",
+        rung: "rung.json",
+        deferred: "deferred.json",
+        spent: "spent.json",
+        coldwake: "coldwake.json",
+        fullreread: "fullreread.json",
+        lowmemkill: "lowmemkill.json",
+        goodbye: "goodbye.json",
+        absent: "absent.json",
+        taxed: "taxed.json"
+      };
+
+      const idle = {
+        seed: "stilled",
+        persistHold: true,
+        stilled: true,
+        rung: false,
+        sessionEnded: true,
+        goodbye: true,
+        pendingToolState: false,
+        backgroundBash: true,
+        runInBackground: true,
+        event: "none",
+        notification: false,
+        policy: "suppress",
+        wakeTurn: false,
+        fullReread: false,
+        replySpent: false,
+        userPresent: false,
+        usageDrop: 0,
+        watchText: "watch stood down · goodbye already said · no pending tool state",
+        bellText: "clapper muffled · notification banked · no model turn",
+        lanternText: "lantern banked · idle word stilled · usage unspent",
+        hubCount: "STILLED",
+        log: [
+          "[watch] last turn conversational close · user goodbye · assistant goodbye",
+          "[bash] local dev server still backgrounded · run_in_background true",
+          "[policy] ended session suppresses background-task wake turns",
+          "[event] no kill/completion notice this hold",
+          "[turn] no model invocation · transcript not re-read",
+          "[desk] watch stood down; bell stilled; idle word stilled"
+        ],
+        outputText: "stilled; session ended; background event deferred; no model turn; idle word stilled"
+      };
+      const seeded = {
+        seed: "rung",
+        issue: 92283,
+        persistHold: false,
+        stilled: false,
+        rung: true,
+        sessionEnded: true,
+        goodbye: true,
+        pendingToolState: false,
+        backgroundBash: true,
+        runInBackground: true,
+        event: "lowmem-kill",
+        notification: true,
+        notice: "...was killed because the system is running low on memory",
+        policy: "wake",
+        wakeTurn: true,
+        fullReread: true,
+        replySpent: true,
+        userPresent: false,
+        usageDrop: 10,
+        watchText: "watch stood down · goodbye already said · hours later the machine slept then woke",
+        bellText: "kill notice rang the bell · full transcript re-read · reply spent with nobody present",
+        lanternText: "lantern flared · ~10% usage drop · zero user typing since goodbye",
+        hubCount: "RUNG",
+        log: [
+          "[watch] last turn conversational close · user goodbye · assistant goodbye · no further input expected",
+          "[bash] local dev server started mid-session · run_in_background true",
+          "[later] hours later the machine slept then woke",
+          "[os] background process killed because the system is running low on memory",
+          "[notice] task-notification arrived · purely informational · no pending user request",
+          "[wake] model re-invoked · entire all-day conversation re-read · model replied",
+          "[tax] usage dropped ~10% · zero user typing since goodbye",
+          "[desk] watch stood down; bell already rung; seeded word rung"
+        ],
+        outputText: "rung; #92283; post-goodbye kill notification woke ended session; full context re-read; reply spent"
+      };
+
+      let watchState = "down";
+      let eventKind = "lowmem-kill";
+      let policyKind = "wake";
+      let contextKind = "full-reread";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); } catch { return { ...seeded }; }
+      }
+
+      function ended(t) {
+        return t.sessionEnded === true || t.goodbye === true || watchState === "down";
+      }
+
+      function hasEvent(t) {
+        const ev = String(t.event || eventKind || "none");
+        return ev === "lowmem-kill" || ev === "completion" || t.notification === true;
+      }
+
+      function wakes(t) {
+        return t.policy === "wake"
+          || t.wakeTurn === true
+          || t.rung === true
+          || (policyKind === "wake" && t.policy !== "suppress");
+      }
+
+      function suppressed(t) {
+        return t.policy === "suppress"
+          || t.persistHold === true
+          || t.stilled === true
+          || HOLD.has(String(t.seed || ""));
+      }
+
+      function scoreTicket(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const hold = t.persistHold === true
+          || t.stilled === true
+          || HOLD.has(seed)
+          || (ended(t) && (t.policy === "suppress" || (!wakes(t) && t.wakeTurn !== true)))
+          || (t.event === "none" && t.notification !== true && t.rung !== true && seed !== "rung");
+        const alarm = !hold && (
+          t.rung === true
+          || seed === "rung"
+          || seed === "spent"
+          || seed === "coldwake"
+          || seed === "fullreread"
+          || seed === "lowmemkill"
+          || seed === "absent"
+          || seed === "taxed"
+          || (ended(t) && hasEvent(t) && (t.wakeTurn === true || t.policy === "wake"))
+        );
+        const chips = [];
+        if (hold) chips.push("stilled");
+        if (alarm || t.rung === true || seed === "rung") chips.push("rung");
+        if (t.policy === "suppress" || seed === "deferred") {
+          if (hold || seed === "deferred") chips.push("deferred");
+        }
+        if (t.replySpent === true || seed === "spent") {
+          if (alarm || seed === "spent") chips.push("spent");
+        }
+        if ((ended(t) && t.pendingToolState === false && alarm) || seed === "coldwake") {
+          if (alarm || seed === "coldwake") chips.push("coldwake");
+        }
+        if (t.fullReread === true || seed === "fullreread") {
+          if (alarm || seed === "fullreread") chips.push("fullreread");
+        }
+        if (t.event === "lowmem-kill" || seed === "lowmemkill") {
+          if (alarm || seed === "lowmemkill") chips.push("lowmemkill");
+        }
+        if (t.goodbye === true || seed === "goodbye") chips.push("goodbye");
+        if (t.userPresent === false && alarm || seed === "absent") {
+          if (alarm || seed === "absent") chips.push("absent");
+        }
+        if ((Number(t.usageDrop) || 0) >= 10 || seed === "taxed") {
+          if (alarm || seed === "taxed") chips.push("taxed");
+        }
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIP_FILES[seed] ? seed : (hold ? "stilled" : "rung");
+        return { ticket: t, hold, alarm: !hold, chips: unique, verdict };
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] kill notice woke the ended session; full reread; bell rung"]
+            : ["[desk] ended session deferred the notice; idle word stilled"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /rung|kill|wake|reread|tax|spent|notice|goodbye|low mem/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintHours(result) {
+        const t = result.ticket;
+        const alarm = result.alarm;
+        const set = (id, on, hot) => {
+          const el = document.getElementById(id);
+          el.classList.toggle("on", on);
+          el.classList.toggle("hot", hot);
+        };
+        set("h-goodbye", t.goodbye === true || ended(t), false);
+        set("h-sleep", alarm || t.event === "lowmem-kill", false);
+        set("h-wake", alarm || t.event === "lowmem-kill", false);
+        set("h-kill", t.event === "lowmem-kill" || result.verdict === "lowmemkill", alarm && t.event === "lowmem-kill");
+        set("h-notice", t.notification === true || alarm, alarm);
+        set("h-turn", t.fullReread === true || t.wakeTurn === true || alarm, alarm);
+      }
+
+      function paintBeads(result) {
+        const seed = result.verdict;
+        document.querySelectorAll("#beads [data-bead]").forEach((btn) => {
+          const bead = btn.dataset.bead;
+          const on = result.chips.includes(bead) || seed === bead;
+          const fail = on && result.alarm && bead !== "goodbye";
+          btn.classList.toggle("on", on && !fail);
+          btn.classList.toggle("fail", fail);
+        });
+        document.querySelectorAll("#flags [data-flag]").forEach((btn) => {
+          const key = btn.dataset.flag;
+          const t = result.ticket;
+          const on = (key === "suppress" && (t.policy === "suppress" || result.hold))
+            || (key === "wake" && (t.policy === "wake" || result.alarm))
+            || (key === "notice" && t.fullReread === false && t.notification === true);
+          const fail = on && result.alarm && key === "wake";
+          btn.classList.toggle("on", on && !fail);
+          btn.classList.toggle("fail", fail);
+        });
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const drop = Number(t.usageDrop);
+        const tax = alarm ? (Number.isFinite(drop) && drop > 0 ? drop : 10) : 0;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "Alarum already rung. Admit the watch already rung."
+          : "Alarum stilled. Watch stood down. Idle word stilled.";
+        document.getElementById("desk").classList.toggle("rung", alarm);
+        document.getElementById("desk").classList.toggle("stilled", !alarm);
+        document.getElementById("bell-text").textContent = t.bellText || (alarm
+          ? "kill notice rang the bell · full transcript re-read · reply spent with nobody present"
+          : "clapper muffled · notification banked · no model turn");
+        document.getElementById("watch-text").textContent = t.watchText || (alarm
+          ? "watch stood down · goodbye already said · hours later the machine slept then woke"
+          : "watch stood down · goodbye already said · no pending tool state");
+        document.getElementById("bell-label").textContent = alarm
+          ? "bell already rung"
+          : "bell stays stilled";
+        document.getElementById("hub-count").textContent = alarm
+          ? "watch stood down · bell already rung"
+          : "watch stood down · bell stilled";
+        document.getElementById("c-watch").textContent = ended(t) ? "stood down" : "still standing";
+        document.getElementById("c-event").textContent = t.event || eventKind;
+        document.getElementById("c-policy").textContent = t.policy || policyKind;
+        document.getElementById("c-context").textContent = t.fullReread === false ? "notice-only" : "full-reread";
+        document.getElementById("c-present").textContent = t.userPresent ? "present" : "absent";
+        document.getElementById("tax-fill").style.width = tax + "%";
+        document.getElementById("tax-label").textContent = tax
+          ? "~" + tax + "% spent"
+          : "usage unspent";
+        document.getElementById("t-session").textContent = ended(t) ? "ended" : "open";
+        document.getElementById("t-pending").textContent = t.pendingToolState ? "pending" : "none";
+        document.getElementById("t-notice").textContent = t.event === "none" && !t.notification
+          ? "none"
+          : (t.event === "completion" ? "task completion" : "low memory kill");
+        document.getElementById("t-usage").textContent = tax ? "~" + tax + "%" : "0%";
+        document.getElementById("uri").textContent = "windows · "
+          + (ended(t) ? "ended" : "open")
+          + " · " + (t.event || eventKind)
+          + " · " + (t.policy || policyKind)
+          + " · " + (t.fullReread === false ? "notice-only" : "full-reread")
+          + " · " + (tax ? "~" + tax + "%" : "unspent");
+        document.getElementById("cmp-bell").textContent = t.bellText || (alarm
+          ? "kill notice · already rung"
+          : "muffled · stilled");
+        document.getElementById("cmp-lantern").textContent = t.lanternText || (alarm
+          ? "~10% · nobody present"
+          : "banked · idle word stilled");
+        document.getElementById("charge").textContent = alarm
+          ? "ended session · " + (t.event || "lowmem-kill")
+            + " · wake · full reread · already rung"
+          : "stilled · suppress · no model turn · not this failure";
+        document.getElementById("grainline").textContent = alarm
+          ? "The bell rang after the watch stood down. The alarum is already rung."
+          : "The clapper stayed muffled. The watch stood down; the bell is stilled.";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => `<span class="chip lit">${c}</span>`).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintLog(alarm, t);
+        paintHours(result);
+        paintBeads(result);
+      }
+
+      function apply(ticket) {
+        paint(scoreTicket(ticket));
+      }
+
+      function ticketFromSim() {
+        if (watchState === "up") {
+          return {
+            ...idle,
+            seed: "stilled",
+            sessionEnded: false,
+            goodbye: false,
+            event: eventKind,
+            notification: eventKind !== "none",
+            policy: policyKind,
+            watchText: "watch still standing · session not this failure",
+            bellText: "in-session event · not the post-goodbye alarum",
+            lanternText: "not #92283 · watch still standing",
+            hubCount: "STANDING"
+          };
+        }
+        if (eventKind === "none" || policyKind === "suppress") {
+          const seed = eventKind === "none" ? "goodbye" : "deferred";
+          return {
+            ...idle,
+            seed,
+            event: eventKind,
+            notification: eventKind !== "none",
+            policy: "suppress",
+            hubCount: seed === "goodbye" ? "GOODBYE" : "DEFERRED"
+          };
+        }
+        if (policyKind === "cost-preview") {
+          return {
+            ...idle,
+            seed: "stilled",
+            event: eventKind,
+            notification: true,
+            policy: "cost-preview",
+            watchText: "watch stood down · cost preview before any wake",
+            bellText: "estimated cost surfaced · turn not yet rung",
+            lanternText: "cost-preview · related cite #92062 only",
+            hubCount: "PREVIEW"
+          };
+        }
+        if (contextKind === "notice-only") {
+          return {
+            ...seeded,
+            seed: "coldwake",
+            event: eventKind,
+            fullReread: false,
+            usageDrop: 0,
+            replySpent: false,
+            wakeTurn: false,
+            policy: "wake",
+            persistHold: true,
+            stilled: true,
+            rung: false,
+            watchText: "watch stood down · notice-only · no full reread",
+            bellText: "informational notice without the all-day reload",
+            lanternText: "notice-only · suggested fix 2",
+            hubCount: "NOTICE"
+          };
+        }
+        const seed = eventKind === "completion" ? "rung" : "rung";
+        return {
+          ...seeded,
+          seed,
+          event: eventKind,
+          policy: "wake",
+          fullReread: true,
+          hubCount: "RUNG"
+        };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-watch]").forEach((b) => {
+          b.classList.toggle("lit", b.dataset.simWatch === watchState);
+        });
+        document.querySelectorAll("[data-sim-event]").forEach((b) => {
+          b.classList.toggle("lit", b.dataset.simEvent === eventKind);
+        });
+        document.querySelectorAll("[data-sim-policy]").forEach((b) => {
+          b.classList.toggle("lit", b.dataset.simPolicy === policyKind);
+        });
+        document.querySelectorAll("[data-sim-context]").forEach((b) => {
+          b.classList.toggle("lit", b.dataset.simContext === contextKind);
+        });
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") {
+            watchState = "down";
+            eventKind = "none";
+            policyKind = "suppress";
+            contextKind = "notice-only";
+            syncSimChips();
+            return apply({ ...idle });
+          }
+          if (act === "seed" || act === "admit") {
+            watchState = "down";
+            eventKind = "lowmem-kill";
+            policyKind = "wake";
+            contextKind = "full-reread";
+            syncSimChips();
+            try { apply(await loadNamed("rung.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "fixtures") {
+            try { apply(await loadNamed("rung.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-watch]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          watchState = btn.dataset.simWatch;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-sim-event]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          eventKind = btn.dataset.simEvent;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-sim-policy]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          policyKind = btn.dataset.simPolicy;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+      document.querySelectorAll("[data-sim-context]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          contextKind = btn.dataset.simContext;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...idle, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: chip === "rung" ? 92283 : seeded.issue });
+          }
+        });
+      });
+
+      document.querySelectorAll("#beads [data-bead]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const bead = btn.dataset.bead;
+          const file = CHIP_FILES[bead] || "rung.json";
+          if (bead === "goodbye") {
+            watchState = "down";
+            eventKind = "none";
+            policyKind = "suppress";
+          } else {
+            watchState = "down";
+            eventKind = "lowmem-kill";
+            policyKind = "wake";
+            contextKind = "full-reread";
+          }
+          syncSimChips();
+          try { apply(await loadNamed(file)); }
+          catch { apply(ticketFromSim()); }
+        });
+      });
+
+      document.querySelectorAll("#flags [data-flag]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const key = btn.dataset.flag;
+          if (key === "suppress") {
+            policyKind = "suppress";
+            try { apply(await loadNamed("deferred.json")); }
+            catch { apply({ ...idle, seed: "deferred" }); }
+          } else if (key === "notice") {
+            contextKind = "notice-only";
+            apply(ticketFromSim());
+          } else {
+            policyKind = "wake";
+            try { apply(await loadNamed("rung.json")); }
+            catch { apply({ ...seeded }); }
+          }
+          syncSimChips();
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
