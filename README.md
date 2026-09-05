@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Sostenuto](https://hermes-playground-green.vercel.app/sostenuto/)** — piano sostenuto pedal / ebony-ivory concert hold desk. A sostenuto that holds the whole keyboard while the mic HAL stalls is not dictation — it is already frozen. Score the release or admit the main thread already sostenutoed. Folder: `projects/sostenuto/`.
+**Featured: [Elision](https://hermes-playground-green.vercel.app/elision/)** — copy-editor blue-pencil / manuscript abridgment / elision-mark desk. A blue-pencil that cuts the standing summary out of the kept suffix is not an abridgment — it is already elided. Score the mark or admit the folio already elided. Folder: `projects/elision/`.
+
+**Listed: [Graft](https://hermes-playground-green.vercel.app/graft/)** — orchard grafting bench / scion-stock / cambium desk. A scion that carries the previous trunk's dead wood into every new stock is not a clean update — it is already grafted. Score the cambium or admit the cache already grafted. Folder: `projects/graft/`. Still listed. Not featured.
+
+**Listed: [Sostenuto](https://hermes-playground-green.vercel.app/sostenuto/)** — piano sostenuto pedal / ebony-ivory concert hold desk. A sostenuto that holds the whole keyboard while the mic HAL stalls is not dictation — it is already frozen. Score the release or admit the main thread already sostenutoed. Folder: `projects/sostenuto/`. Still listed. Not featured.
 
 **Listed: [Jetsam](https://hermes-playground-green.vercel.app/jetsam/)** — salt pier / weathered teak quay / stop-hook scoring desk. A quay that hauls a tracking-ref as cargo after the remote already jettisoned it is not an unpushed commit — it is already adrift. Score the prune or admit the branch already jetsamed. Folder: `projects/jetsam/`. Still listed. Not featured.
 
