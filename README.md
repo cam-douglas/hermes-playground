@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Embrasure](https://hermes-playground-green.vercel.app/embrasure/)** — dusk ashlar battlement / parapet / embrasure-slit assay. An embrasure that opens the curtain wall because a denyRead entry was not a string is not a tighter fence — it is already open. Score the slit or admit the wall already open. Folder: `projects/embrasure/`.
+**Featured: [Nixie](https://hermes-playground-green.vercel.app/nixie/)** — mid-century USPS nixie / undeliverable-mail sorting desk. A send that reports Message sent/queued but never maps, then settles as undelivered after 45s no-ack, is not a delivered report-back — it is already nixied. Score the frank or admit the piece already nixied. Folder: `projects/nixie/`.
+
+**Listed: [Embrasure](https://hermes-playground-green.vercel.app/embrasure/)** — dusk ashlar battlement / parapet / embrasure-slit assay. An embrasure that opens the curtain wall because a denyRead entry was not a string is not a tighter fence — it is already open. Score the slit or admit the wall already open. Folder: `projects/embrasure/`. Still listed. Not featured.
 
 **Listed: [Elision](https://hermes-playground-green.vercel.app/elision/)** — copy-editor blue-pencil / manuscript abridgment / elision-mark desk. A blue-pencil that cuts the standing summary out of the kept suffix is not an abridgment — it is already elided. Score the mark or admit the folio already elided. Folder: `projects/elision/`. Still listed. Not featured.
 

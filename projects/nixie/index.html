@@ -1,0 +1,1287 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nixie — undeliverable-mail desk for #92383</title>
+    <meta
+      name="description"
+      content="Nixie — mid-century USPS nixie / undeliverable-mail sorting desk for Claude Code #92383: auto-mode send_message silently drops (45s no-ack settle / no Mapping); bypassPermissions delivers. Idle word is nixied."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --oak: #6b4423;
+        --oak-lit: #8b5e34;
+        --oak-deep: #3d2614;
+        --kraft: #d4b896;
+        --kraft-lit: #ead9b8;
+        --paper: #f3e6c9;
+        --ink: #2a1f14;
+        --mute: #6a5844;
+        --amber: #f4a020;
+        --amber-hot: #ffc04a;
+        --nixie: #c41e3a;
+        --nixie-hot: #e23a52;
+        --mapped: #2d6a4f;
+        --mapped-lit: #40916c;
+        --frank: #1d3557;
+        --line: rgba(61, 38, 20, 0.16);
+        --lamp: rgba(244, 160, 32, 0.22);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "DM Sans", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 28% 20% at 12% 8%, var(--lamp), transparent 62%),
+          repeating-linear-gradient(90deg, rgba(107, 68, 35, 0.035) 0 2px, transparent 2px 14px),
+          linear-gradient(180deg, #f7eccf 0%, #e8d4b0 42%, #d8c09a 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--frank); }
+      .wrap { width: min(1180px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .chrome { margin-bottom: 12px; }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(106, 88, 68, 0.4);
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--nixie);
+      }
+      h1 {
+        font-family: "Libre Baskerville", "Palatino Linotype", serif;
+        font-size: clamp(40px, 7vw, 78px);
+        letter-spacing: -0.02em;
+        margin: 2px 0 8px;
+        font-weight: 700;
+        line-height: 0.92;
+        color: var(--oak-deep);
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--nixie);
+        font-size: 0.32em;
+        letter-spacing: 0.08em;
+        display: block;
+        margin-top: 10px;
+      }
+      .lede { max-width: 60em; color: var(--mute); line-height: 1.55; font-size: 16px; }
+      .lede code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--frank);
+      }
+
+      .stage {
+        margin: 22px 0 0;
+        position: relative;
+        min-height: 420px;
+        border: 10px solid #4a3018;
+        box-shadow:
+          inset 0 0 0 3px #8b5e34,
+          0 22px 48px rgba(61, 38, 20, 0.28);
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse 18% 16% at 14% 72%, rgba(255, 192, 74, 0.35), transparent 70%),
+          repeating-linear-gradient(90deg, #7a4e28 0 86px, #6b4423 86px 88px),
+          linear-gradient(180deg, #8b5e34 0%, #6b4423 55%, #4a3018 100%);
+      }
+      .stage.nixied {
+        box-shadow: inset 0 0 0 3px #8b5e34, 0 0 0 4px rgba(196, 30, 58, 0.28), 0 22px 48px rgba(61, 38, 20, 0.28);
+      }
+      .stage.mapped {
+        box-shadow: inset 0 0 0 3px #8b5e34, 0 0 0 4px rgba(45, 106, 79, 0.28), 0 22px 48px rgba(61, 38, 20, 0.28);
+      }
+      .stage-label, .count-tag {
+        position: absolute;
+        z-index: 8;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: rgba(243, 230, 201, 0.88);
+        padding: 4px 8px;
+        border: 1px dashed rgba(61, 38, 20, 0.25);
+      }
+      .stage-label { left: 14px; top: 12px; color: var(--nixie); }
+      .count-tag { right: 14px; top: 12px; color: var(--mapped); }
+
+      .pigeonholes {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        top: 48px;
+        height: 92px;
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 6px;
+        z-index: 3;
+      }
+      .hole {
+        background:
+          linear-gradient(180deg, #3d2614 0 12%, #5a381c 12% 100%);
+        box-shadow: inset 0 8px 12px rgba(0, 0, 0, 0.35);
+        border: 1px solid #2a1a0e;
+        position: relative;
+      }
+      .hole::after {
+        content: attr(data-slot);
+        position: absolute;
+        left: 4px;
+        bottom: 4px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 8px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(234, 217, 184, 0.55);
+      }
+      .hole.lit { box-shadow: inset 0 0 18px rgba(244, 160, 32, 0.45); }
+
+      .lamp {
+        position: absolute;
+        left: 28px;
+        bottom: 118px;
+        width: 86px;
+        height: 110px;
+        z-index: 5;
+      }
+      .lamp .arm {
+        position: absolute;
+        left: 38px;
+        bottom: 0;
+        width: 8px;
+        height: 54px;
+        background: linear-gradient(180deg, #c9a227, #6b4423);
+        border-radius: 2px;
+      }
+      .lamp .shade {
+        position: absolute;
+        left: 8px;
+        bottom: 46px;
+        width: 70px;
+        height: 36px;
+        background: linear-gradient(180deg, #c41e3a 0 18%, #8b1a28 18% 100%);
+        clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+        box-shadow: 0 10px 28px rgba(244, 160, 32, 0.35);
+      }
+      .lamp .glow {
+        position: absolute;
+        left: 6px;
+        bottom: 8px;
+        width: 74px;
+        height: 70px;
+        background: radial-gradient(ellipse at 50% 0%, rgba(255, 192, 74, 0.55), transparent 72%);
+        pointer-events: none;
+      }
+
+      .desk-top {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 118px;
+        background:
+          repeating-linear-gradient(90deg, rgba(42, 26, 14, 0.12) 0 3px, transparent 3px 18px),
+          linear-gradient(180deg, #c4a06a 0%, #a07840 55%, #8b5e34 100%);
+        border-top: 4px solid #3d2614;
+        z-index: 4;
+      }
+
+      .envelope {
+        position: absolute;
+        left: 50%;
+        bottom: 142px;
+        width: 168px;
+        height: 104px;
+        transform: translateX(-50%) rotate(-4deg);
+        z-index: 6;
+        transition: left 0.55s ease, bottom 0.55s ease, transform 0.55s ease, filter 0.4s ease;
+        background:
+          linear-gradient(160deg, transparent 0 42%, rgba(61, 38, 20, 0.08) 42% 43%, transparent 43%),
+          linear-gradient(180deg, #ead9b8, #d4b896);
+        border: 1px solid #8b5e34;
+        box-shadow: 4px 8px 0 rgba(61, 38, 20, 0.18);
+      }
+      .envelope .flap {
+        position: absolute;
+        inset: 0 0 48% 0;
+        background: linear-gradient(180deg, #f3e6c9, #d4b896);
+        clip-path: polygon(0 0, 100% 0, 50% 100%);
+        border-bottom: 1px solid rgba(61, 38, 20, 0.15);
+      }
+      .envelope .addr {
+        position: absolute;
+        left: 12px;
+        bottom: 14px;
+        right: 46px;
+        font-family: "Libre Baskerville", serif;
+        font-size: 11px;
+        color: var(--oak-deep);
+        line-height: 1.35;
+      }
+      .envelope .stamp {
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        width: 28px;
+        height: 32px;
+        border: 2px dashed var(--frank);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 7px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: grid;
+        place-items: center;
+        color: var(--frank);
+        transform: rotate(8deg);
+      }
+      .nixie-mark {
+        position: absolute;
+        left: 18px;
+        top: 36px;
+        font-family: "Libre Baskerville", serif;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--nixie);
+        border: 3px solid var(--nixie);
+        padding: 2px 8px;
+        transform: rotate(-12deg);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 7;
+      }
+      .stage.nixied .envelope { left: 78%; bottom: 28px; transform: translateX(-50%) rotate(8deg); }
+      .stage.nixied .nixie-mark { opacity: 1; }
+      .stage.mapped .envelope { left: 22%; bottom: 28px; transform: translateX(-50%) rotate(-10deg); filter: saturate(1.1); }
+      .stage.mapped .envelope .stamp { border-color: var(--mapped); color: var(--mapped); }
+
+      .bins {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        z-index: 5;
+        pointer-events: none;
+      }
+      .bin {
+        width: 42%;
+        height: 86px;
+        border: 3px solid var(--oak-deep);
+        background: rgba(61, 38, 20, 0.28);
+        font-family: "Libre Baskerville", serif;
+        font-size: 18px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        display: grid;
+        place-items: center;
+        color: var(--paper);
+      }
+      .bin.mapped-bin { border-color: var(--mapped); color: #b7e4c7; }
+      .bin.nixied-bin { border-color: var(--nixie); color: #ffc2c8; }
+      .stage.mapped .bin.mapped-bin { background: rgba(45, 106, 79, 0.45); box-shadow: 0 0 18px rgba(45, 106, 79, 0.35); }
+      .stage.nixied .bin.nixied-bin { background: rgba(196, 30, 58, 0.4); box-shadow: 0 0 18px rgba(196, 30, 58, 0.35); }
+
+      .desk {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+      .ledger, .chart {
+        background: rgba(243, 230, 201, 0.82);
+        border: 1px solid var(--line);
+        padding: 16px;
+        box-shadow: 0 8px 0 rgba(61, 38, 20, 0.06);
+      }
+      .verdict {
+        font-family: "Libre Baskerville", serif;
+        font-size: 42px;
+        margin: 0 0 6px;
+        line-height: 1;
+      }
+      .verdict.alarm { color: var(--nixie); }
+      .verdict.hold { color: var(--mapped); }
+      .reason { margin: 0 0 14px; color: var(--mute); line-height: 1.5; }
+      .paths {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path {
+        border: 1px solid var(--line);
+        padding: 10px;
+        background: var(--kraft-lit);
+      }
+      .path b {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--frank);
+        margin-bottom: 6px;
+      }
+      .path .face { font-size: 14px; }
+      .path .note {
+        display: block;
+        margin-top: 6px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .path.fail { border-color: rgba(196, 30, 58, 0.5); }
+      .path.fail .face { color: var(--nixie); }
+      .path.ok { border-color: rgba(45, 106, 79, 0.45); }
+      .path.ok .face { color: var(--mapped); }
+      .plaques { display: grid; gap: 8px; }
+      .plaque {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        background: var(--kraft-lit);
+      }
+      .plaque i {
+        width: 10px;
+        height: 10px;
+        margin-top: 5px;
+        border-radius: 50%;
+        background: var(--mute);
+        flex: 0 0 auto;
+      }
+      .plaque.on i { background: var(--mapped); box-shadow: 0 0 8px var(--mapped-lit); }
+      .plaque.hot i { background: var(--nixie); box-shadow: 0 0 8px var(--nixie-hot); }
+      .plaque b {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--oak-deep);
+      }
+      .plaque span { color: var(--mute); font-size: 13px; }
+      .log {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--oak-deep);
+        min-height: 240px;
+        white-space: pre-wrap;
+      }
+      .log .hit { color: var(--nixie); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+      .chip, button.chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 9px;
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        background: var(--paper);
+        color: var(--mute);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+      }
+      .chip.dead { color: var(--nixie); border-color: rgba(196, 30, 58, 0.5); background: rgba(196, 30, 58, 0.08); }
+      .chip.live { color: var(--mapped); border-color: rgba(45, 106, 79, 0.5); }
+
+      .balloon, .chain-pane, .sim, .research-panel {
+        margin-top: 16px;
+        background: rgba(243, 230, 201, 0.82);
+        border: 1px solid var(--line);
+        padding: 14px;
+      }
+      .balloon h3, .chain-pane h3, .sim h3, .research h3, .research-panel h3 {
+        margin: 0 0 10px;
+        font-family: "Libre Baskerville", serif;
+        font-size: 22px;
+        font-weight: 400;
+        color: var(--oak-deep);
+      }
+      .gauge {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .gauge b {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--frank);
+      }
+      .bar {
+        min-height: 36px;
+        padding: 8px 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: var(--kraft-lit);
+        border: 1px solid rgba(61, 38, 20, 0.1);
+        color: var(--mute);
+        position: relative;
+        overflow: hidden;
+      }
+      .bar .fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 8%;
+        background: rgba(45, 106, 79, 0.18);
+      }
+      .bar.cut .fill {
+        width: 96%;
+        background: rgba(196, 30, 58, 0.2);
+      }
+      .bar.cut { color: var(--nixie); border-color: rgba(196, 30, 58, 0.4); }
+      .bar.kept { color: var(--mapped); border-color: rgba(45, 106, 79, 0.4); }
+      .bar.kept .fill { width: 96%; }
+
+      .ab {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 10px;
+        align-items: stretch;
+      }
+      @media (max-width: 720px) { .ab { grid-template-columns: 1fr; } }
+      .ab-card {
+        border: 1px dashed rgba(61, 38, 20, 0.28);
+        padding: 12px;
+        background: var(--kraft-lit);
+        cursor: pointer;
+      }
+      .ab-card.active.fail { border-style: solid; border-color: var(--nixie); }
+      .ab-card.active.ok { border-style: solid; border-color: var(--mapped); }
+      .ab-card b {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .ab-card.fail b { color: var(--nixie); }
+      .ab-card.ok b { color: var(--mapped); }
+      .ab-card p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.45; }
+      .ab-flip {
+        align-self: center;
+        font-family: "Libre Baskerville", serif;
+        font-style: italic;
+        color: var(--oak);
+        text-align: center;
+        font-size: 14px;
+      }
+
+      .matrix {
+        margin-top: 16px;
+        overflow-x: auto;
+        background: rgba(243, 230, 201, 0.82);
+        border: 1px solid var(--line);
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(61, 38, 20, 0.08);
+      }
+      th {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--frank);
+        background: var(--kraft);
+      }
+      td { color: var(--ink); font-family: "JetBrains Mono", monospace; font-size: 12px; }
+      tr.active td { background: rgba(196, 30, 58, 0.06); }
+      .fail-cell { color: var(--nixie); font-weight: 700; }
+      .pass-cell { color: var(--mapped); }
+
+      .actions, .sim-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0;
+      }
+      button.act {
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border: 1px solid var(--oak);
+        background: var(--paper);
+        color: var(--oak-deep);
+        cursor: pointer;
+      }
+      button.act:hover { border-color: var(--nixie); color: var(--nixie); }
+      .sim p { margin: 0 0 8px; color: var(--mute); font-size: 14px; }
+      textarea, .drop {
+        width: 100%;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: var(--paper);
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 10px;
+      }
+      textarea { min-height: 180px; resize: vertical; }
+      .drop {
+        min-height: 52px;
+        display: grid;
+        place-items: center;
+        color: var(--mute);
+        margin-bottom: 10px;
+      }
+      .stayoff {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .stayoff span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+        border: 1px solid rgba(106, 88, 68, 0.25);
+        padding: 3px 8px;
+      }
+      .research { margin-top: 28px; color: var(--mute); line-height: 1.55; max-width: 62em; }
+      .research code { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--frank); }
+      footer { margin-top: 28px; color: var(--mute); font-size: 13px; }
+      .remediation {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 860px) { .remediation { grid-template-columns: 1fr; } }
+      .remedy {
+        border: 1px solid var(--line);
+        background: rgba(243, 230, 201, 0.82);
+        padding: 14px;
+        cursor: pointer;
+      }
+      .remedy:hover { border-color: var(--mapped); }
+      .remedy b {
+        display: block;
+        font-family: "Libre Baskerville", serif;
+        font-size: 16px;
+        color: var(--oak-deep);
+        margin-bottom: 8px;
+      }
+      .remedy p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.45; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">07:50 / hermes catalog #167 / #92383</p>
+        <h1>Nixie <em>undeliverable-mail desk</em></h1>
+        <p class="lede">
+          07:50 nixie: a send that reports <code>Message sent/queued</code> but never maps,
+          then settles as undelivered after 45s no-ack, is not a delivered report-back —
+          it is already <strong>nixied</strong>.
+          Score the frank or admit the piece already nixied.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92383">anthropics/claude-code#92383</a>
+          (OPEN; bug, has repro, platform:windows, area:permissions, area:desktop).
+          On Claude Desktop for Windows 1.46388.3 (Code tab), a cross-session
+          <code>send_message</code> (ccd_session_mgmt) from an <code>auto</code> sender is
+          silently discarded. The same message from a <code>bypassPermissions</code> sender
+          delivers. Diagnostic fixtures only. No live Claude sessions.
+        </p>
+      </div>
+
+      <section class="stage nixied" id="stage" aria-label="USPS nixie sorting desk">
+        <div class="stage-label" id="stage-label">idle nixied · auto sender · no Mapping</div>
+        <div class="count-tag" id="count-tag">settled · 45s no-ack · 14/14</div>
+        <div class="pigeonholes" aria-hidden="true">
+          <div class="hole lit" data-slot="auto"></div>
+          <div class="hole" data-slot="bypass"></div>
+          <div class="hole" data-slot="map"></div>
+          <div class="hole" data-slot="ack"></div>
+          <div class="hole" data-slot="cli"></div>
+          <div class="hole" data-slot="idle"></div>
+          <div class="hole" data-slot="chip"></div>
+          <div class="hole" data-slot="cwd"></div>
+        </div>
+        <div class="lamp" aria-hidden="true">
+          <div class="glow"></div>
+          <div class="shade"></div>
+          <div class="arm"></div>
+        </div>
+        <article class="envelope" id="envelope">
+          <div class="flap"></div>
+          <div class="stamp" id="env-stamp">sent</div>
+          <div class="addr" id="env-addr">local_&lt;recipient&gt;<br>ccd_session_mgmt<br>auto · no Mapping</div>
+          <div class="nixie-mark" id="nixie-mark">Nixie</div>
+        </article>
+        <div class="desk-top" aria-hidden="true"></div>
+        <div class="bins" aria-hidden="true">
+          <div class="bin mapped-bin">Mapped</div>
+          <div class="bin nixied-bin">Nixied</div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Nixie scoring assay">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">settled</p>
+          <p class="reason" id="reason">The send reports success but never maps. After the ack timeout it is settled as undelivered and discarded with no retry. Admit the piece already nixied.</p>
+          <div class="paths" id="paths"></div>
+          <div class="plaques">
+            <div class="plaque" id="p-mode"><i></i><div><b>permission mode</b><span id="s-mode">auto</span></div></div>
+            <div class="plaque" id="p-map"><i></i><div><b>Mapping line</b><span id="s-map">never appears</span></div></div>
+            <div class="plaque" id="p-tool"><i></i><div><b>sender tool result</b><span id="s-tool">Message sent/queued · false sent</span></div></div>
+            <div class="plaque" id="p-settle"><i></i><div><b>settle</b><span id="s-settle">45001ms no-ack · settled as undelivered</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2 style="margin:0 0 10px;font-family:'Libre Baskerville',serif;font-size:24px;font-weight:400;">Franking slip / main.log</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <section class="balloon" aria-label="Frank gauge">
+        <h3>Frank gauge</h3>
+        <div class="gauge">
+          <b>Mapping frank</b>
+          <div class="bar cut" id="bar-map"><span class="fill"></span>no Mapping line · piece never mapped</div>
+        </div>
+        <div class="gauge">
+          <b>ack clock</b>
+          <div class="bar cut" id="bar-ack"><span class="fill"></span>45001ms · settled as undelivered</div>
+        </div>
+      </section>
+
+      <section class="chain-pane" aria-label="A/B flip">
+        <h3>Decisive A/B (same session, same cwd)</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Encoded from the #92383 A/B. One hand-opened session. Flip only permission mode.
+          <code>classifierSummaryEnabled</code> stayed true. Click a card.
+        </p>
+        <div class="ab">
+          <article class="ab-card fail active" data-ab="auto" id="ab-auto">
+            <b>auto → nixied</b>
+            <p>Pings to an idle recipient settled-as-undelivered at 45s. No Mapping line. 14/14 dropped sends from auto-mode senders.</p>
+          </article>
+          <div class="ab-flip">flip only<br>permission mode</div>
+          <article class="ab-card ok" data-ab="bypass" id="ab-bypass">
+            <b>bypass → mapped</b>
+            <p>The very next ping delivered instantly. Mapping line appeared. Every delivered send came from bypassPermissions.</p>
+          </article>
+        </div>
+      </section>
+
+      <div class="matrix" aria-label="Send path matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>scenario</th>
+              <th>shipped</th>
+              <th>switch-bypass</th>
+              <th>grep-settle + retry</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <section class="remediation" aria-label="Remediation panels">
+        <article class="remedy" data-remedy="bypass">
+          <b>Switch to bypassPermissions</b>
+          <p>Issue workaround: switch sessions that must report back via send_message to bypass permissions. The A/B delivered the next ping instantly.</p>
+        </article>
+        <article class="remedy" data-remedy="verify">
+          <b>Grep the settle signature</b>
+          <p>Issue workaround: after each send, grep main.log for settled as undelivered and the recipient transcript for a fingerprint, then resend on a confirmed drop.</p>
+        </article>
+      </section>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the frank</button>
+        <button class="act" data-act="idle">Pin idle nixied</button>
+        <button class="act" data-act="seed">Pin seeded settled</button>
+        <button class="act" data-act="admit">Admit the piece already nixied</button>
+        <button class="act" data-act="hold">Hold the mapped frank</button>
+        <button class="act" data-act="fixtures">Load #92383 fixture</button>
+        <button class="act" data-act="reset">Reset to mapped</button>
+      </div>
+
+      <div class="sim">
+        <h3>Sorter simulator</h3>
+        <p>Rewrite the sender permission mode without touching a live Claude session. Diagnostic only.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-mode="auto">auto drop</span>
+          <span class="chip" data-sim-mode="bypass">bypass deliver</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="nixied">nixied</button>
+          <button class="chip" data-chip="settled">settled</button>
+          <button class="chip" data-chip="mapped">mapped</button>
+          <button class="chip" data-chip="undelivered">undelivered</button>
+          <button class="chip" data-chip="auto-drop">auto-drop</button>
+          <button class="chip" data-chip="bypass-deliver">bypass-deliver</button>
+          <button class="chip" data-chip="false-sent">false-sent</button>
+          <button class="chip" data-chip="no-ack">no-ack</button>
+          <button class="chip" data-chip="no-mapping">no-mapping</button>
+          <button class="chip" data-chip="no-retry">no-retry</button>
+          <button class="chip" data-chip="no-transcript">no-transcript</button>
+          <button class="chip" data-chip="no-model-turn">no-model-turn</button>
+          <button class="chip" data-chip="optimistic-ui">optimistic-ui</button>
+          <button class="chip" data-chip="14/14">14/14</button>
+          <button class="chip" data-chip="25-settle">25-settle</button>
+          <button class="chip" data-chip="switch-bypass">switch-bypass</button>
+          <button class="chip" data-chip="grep-settle">grep-settle</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the sorting desk</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this assay</h3>
+        <p>
+          On Claude Desktop for Windows <code>1.46388.3</code> (Code tab), a cross-session
+          <code>send_message</code> (ccd_session_mgmt MCP) from a sender whose permission mode
+          is <code>auto</code> is silently discarded. The same message from a
+          <code>bypassPermissions</code> sender delivers. The sender's tool result still
+          reports "Message sent/queued"; the recipient UI may show the message block
+          optimistically; but no user turn is written to the recipient transcript and no
+          model turn runs.
+        </p>
+        <p>
+          Delivered sends show a Mapping line in <code>main.log</code> within seconds.
+          Dropped sends never get Mapping, then after ~45s (sometimes 90s):
+          <code>peer input … drew no acknowledgement … settled as undelivered</code>.
+          The piece is discarded with no retry.
+        </p>
+        <p>
+          Decisive A/B: one hand-opened session, same cwd. Auto pings to an idle recipient
+          settled-as-undelivered at 45s; flipping only permission mode to
+          <code>bypassPermissions</code> delivered the next ping instantly and the Mapping
+          line appeared. <code>classifierSummaryEnabled</code> stayed true. 14/14 dropped
+          sends from auto-mode senders; every delivered send from bypassPermissions.
+          25 settled-as-undelivered events in one main.log across 6 days.
+        </p>
+        <p>
+          Ruled out: recipient busy/idle, sender model, chip vs hand-opened, fresh CLI,
+          cwd, recipient identity. Unattended auto-mode sessions lose report-backs with a
+          false "sent" result.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Embrasure #92365</span>
+            <span>Elision #92347</span>
+            <span>Graft #92354</span>
+            <span>Sostenuto #92360</span>
+            <span>Jetsam #92338</span>
+            <span>Priory #92345</span>
+            <span>Latchkey #92330</span>
+            <span>Portcullis #92278</span>
+            <span>Oubliette</span>
+            <span>Knock</span>
+            <span>Deadband / Deadeye / Deadlight</span>
+          </span>
+        </p>
+        <p>
+          Cousins cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/86014">#86014</a> sent-but-never-delivered / success with 0/4 delivery ·
+          <a href="https://github.com/anthropics/claude-code/issues/86059">#86059</a> recipient interrupted / loses message knowledge.
+          Do not name this Deadletter; name is Nixie.
+        </p>
+      </section>
+      <footer>
+        Catalog #167 · idle word nixied · seeded settled · no live Claude sessions ·
+        fonts Libre Baskerville / DM Sans / JetBrains Mono · USPS nixie sorting desk
+      </footer>
+    </main>
+    <script>
+      const HOLD = new Set([
+        "mapped", "bypass-deliver", "switch-bypass", "grep-settle"
+      ]);
+      const CHIPS = [
+        "nixied", "settled", "mapped", "undelivered", "auto-drop", "bypass-deliver",
+        "false-sent", "no-ack", "no-mapping", "no-retry", "no-transcript",
+        "no-model-turn", "optimistic-ui", "14/14", "25-settle", "switch-bypass",
+        "grep-settle"
+      ];
+      const CHIP_FILES = {
+        nixied: "nixied.json",
+        settled: "settled.json",
+        mapped: "mapped.json",
+        undelivered: "settled.json",
+        "auto-drop": "auto-drop.json",
+        "bypass-deliver": "bypass-deliver.json",
+        "false-sent": "auto-drop.json",
+        "no-ack": "settled.json",
+        "no-mapping": "92383.json",
+        "no-retry": "settled.json",
+        "no-transcript": "auto-drop.json",
+        "no-model-turn": "auto-drop.json",
+        "optimistic-ui": "92383.json",
+        "14/14": "auto-drop.json",
+        "25-settle": "92383.json",
+        "switch-bypass": "remediation-bypass.json",
+        "grep-settle": "remediation-verify.json"
+      };
+      const MATRIX = [
+        { id: "auto", name: "auto-mode send_message", shipped: "FAIL", bypass: "pass", verify: "pass", file: "auto-drop.json" },
+        { id: "repro", name: "A/B same session (auto side)", shipped: "FAIL", bypass: "pass", verify: "pass", file: "repro.json" },
+        { id: "bypass", name: "bypassPermissions send", shipped: "pass", bypass: "pass", verify: "pass", file: "bypass-deliver.json" },
+        { id: "mapped", name: "Mapping line present", shipped: "pass", bypass: "pass", verify: "pass", file: "mapped.json" },
+        { id: "switch-bypass", name: "switch senders to bypass", shipped: "pass", bypass: "pass", verify: "pass", file: "remediation-bypass.json" },
+        { id: "grep-settle", name: "grep settle + resend", shipped: "pass", bypass: "pass", verify: "pass", file: "remediation-verify.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92383,
+        seed: "nixied",
+        persistMapped: false,
+        nixied: true,
+        settled: true,
+        undelivered: true,
+        mapped: false,
+        mappingLine: false,
+        permissionMode: "auto",
+        toolResult: "Message sent/queued",
+        falseSent: true,
+        recipientTranscriptWritten: false,
+        modelTurnRan: false,
+        ackMs: 45001,
+        settledAsUndelivered: true,
+        shippedMark: "FAIL",
+        bypassMark: "pass",
+        verifyMark: "pass",
+        hubCount: "NIXIED",
+        log: [
+          "[idle] undeliverable-mail fence · auto-mode send reports sent but never maps",
+          "[desk] already nixied; idle word nixied"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92383,
+        seed: "settled",
+        persistMapped: false,
+        nixied: true,
+        settled: true,
+        undelivered: true,
+        mapped: false,
+        mappingLine: false,
+        permissionMode: "auto",
+        toolResult: "Message sent/queued",
+        falseSent: true,
+        recipientOptimisticUi: true,
+        recipientTranscriptWritten: false,
+        modelTurnRan: false,
+        ackMs: 45001,
+        settledAsUndelivered: true,
+        ownedCycle: true,
+        retry: false,
+        discarded: true,
+        banner: "auto send_message · no Mapping · 45s no-ack · settled as undelivered",
+        hubCount: "SETTLED",
+        shippedMark: "FAIL",
+        bypassMark: "pass",
+        verifyMark: "pass",
+        log: [
+          "[issue] #92383 OPEN · auto-mode send_message silently dropped",
+          "[warn] peer input drew no acknowledgement from the CLI in 45001ms — settled as undelivered (ownedCycle=true)",
+          "[info] CLI undelivered input without running it — settled (hold=false cycle=true next=false)",
+          "[desk] already settled; seeded word settled"
+        ]
+      };
+
+      const mappedTicket = {
+        source: "probe",
+        issue: 92383,
+        seed: "mapped",
+        persistMapped: true,
+        nixied: false,
+        settled: false,
+        undelivered: false,
+        mapped: true,
+        mappingLine: true,
+        permissionMode: "bypassPermissions",
+        toolResult: "Message sent/queued",
+        falseSent: false,
+        recipientTranscriptWritten: true,
+        modelTurnRan: true,
+        ackMs: 2000,
+        settledAsUndelivered: false,
+        shippedMark: "pass",
+        bypassMark: "pass",
+        verifyMark: "pass",
+        hubCount: "MAPPED",
+        log: [
+          "[map] Sending message to session local_<recipient>",
+          "[map] Mapping internal session local_<recipient> to CLI session <uuid>",
+          "[desk] mapped; contrast hold mapped"
+        ]
+      };
+
+      let modeState = "auto";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        return t.switchedToBypass === true
+          || t.verificationScript === true
+          || t.grepsSettleSignature === true
+          || t.surfacesSettleToSender === true
+          || t.seed === "switch-bypass"
+          || t.seed === "grep-settle";
+      }
+
+      function alreadyNixied(t) {
+        const seed = String(t.seed || "");
+        if (HOLD.has(seed) && t.nixied !== true && t.settledAsUndelivered !== true) return false;
+        if (t.mapped === true && t.nixied !== true && t.settledAsUndelivered !== true) return false;
+        if (remediating(t) && t.nixied !== true) return false;
+        if (t.nixied === true || t.settled === true || t.undelivered === true || t.settledAsUndelivered === true) return true;
+        if (seed === "nixied" || seed === "settled" || seed === "undelivered" || seed === "auto-drop" || seed === "false-sent" || seed === "no-ack" || seed === "no-mapping" || seed === "no-retry" || seed === "no-transcript" || seed === "no-model-turn" || seed === "optimistic-ui" || seed === "14/14" || seed === "25-settle") {
+          return !remediating(t);
+        }
+        if (t.permissionMode === "auto" && t.mappingLine !== true && !remediating(t) && t.mapped !== true) return true;
+        return t.mappingLine === false && t.recipientTranscriptWritten === false;
+      }
+
+      function holdTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (t.persistMapped === true || t.mapped === true || HOLD.has(seed) || remediating(t))
+          && t.nixied !== true
+          && t.settledAsUndelivered !== true
+          && !alreadyNixied(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyNixied(t);
+        t.shippedNixied = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedNixied ? "FAIL" : "pass");
+        t.bypassMark = t.bypassMark || "pass";
+        t.verifyMark = t.verifyMark || "pass";
+        const hold = holdTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "nixied") chips.push("nixied");
+        if (t.settled === true || t.settledAsUndelivered === true || seed === "settled") chips.push("settled");
+        if (hold || seed === "mapped") chips.push("mapped");
+        if (t.undelivered === true || seed === "undelivered") chips.push("undelivered");
+        if (t.permissionMode === "auto" || seed === "auto-drop") chips.push("auto-drop");
+        if (t.permissionMode === "bypassPermissions" || seed === "bypass-deliver") chips.push("bypass-deliver");
+        if (t.falseSent === true || seed === "false-sent") chips.push("false-sent");
+        if ((t.ackMs && t.ackMs >= 45000) || seed === "no-ack") chips.push("no-ack");
+        if (t.mappingLine === false || seed === "no-mapping") chips.push("no-mapping");
+        if (t.retry === false || seed === "no-retry") chips.push("no-retry");
+        if (t.recipientTranscriptWritten === false || seed === "no-transcript") chips.push("no-transcript");
+        if (t.modelTurnRan === false || seed === "no-model-turn") chips.push("no-model-turn");
+        if (t.recipientOptimisticUi === true || seed === "optimistic-ui") chips.push("optimistic-ui");
+        if (t.droppedFromAuto || seed === "14/14") chips.push("14/14");
+        if (t.settleEventsSixDays || seed === "25-settle") chips.push("25-settle");
+        if (t.switchedToBypass === true || seed === "switch-bypass") chips.push("switch-bypass");
+        if (t.verificationScript === true || t.grepsSettleSignature === true || seed === "grep-settle") chips.push("grep-settle");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (hold ? "mapped" : "nixied");
+        return { ticket: t, hold, alarm, chips: unique, verdict };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] auto send_message · no Mapping · settled as undelivered · already nixied"]
+            : ["[desk] bypassPermissions · Mapping within seconds · mapped"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /nixied|settled|FAIL|no Mapping|no-ack|undelivered|auto|false sent|discarded/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm && !remediating(t) ? "false sent · no Mapping · nixied" : "Mapping frank present", "auto drop vs bypass deliver"],
+          ["switch-bypass", t.bypassMark, t.switchedToBypass ? "report-back sender on bypass" : "would flip senders to bypassPermissions", "issue workaround"],
+          ["grep-settle", t.verifyMark, t.verificationScript ? "settle signature grepped · resend" : "would grep settle + fingerprint and retry", "surface undelivered"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.bypass)}${cell(row.verify)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id, scenario: row.id }
+                : { ...mappedTicket, seed: row.id, scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const franked = t.mappingLine === true || t.mapped === true;
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? "The send reports success but never maps. After the ack timeout it is settled as undelivered and discarded with no retry. Admit the piece already nixied."
+          : (result.verdict === "switch-bypass"
+            ? "Switch sessions that must report back via send_message to bypass permissions. The next ping maps."
+            : (result.verdict === "grep-settle"
+              ? "Grep main.log for the settle signature and the recipient transcript for a fingerprint, then resend on a confirmed drop."
+              : "Mapping frank present. bypassPermissions sender. User turn written. Model turn ran."));
+        const stage = document.getElementById("stage");
+        stage.classList.toggle("nixied", alarm);
+        stage.classList.toggle("mapped", !alarm);
+        document.getElementById("stage-label").textContent = alarm
+          ? "idle nixied · " + (t.permissionMode || "auto") + " · no Mapping"
+          : "mapped · " + (t.permissionMode || "bypassPermissions") + " · frank present";
+        document.getElementById("count-tag").textContent = alarm
+          ? "settled · 45s no-ack · 14/14"
+          : "mapped · Mapping within seconds";
+        document.getElementById("env-stamp").textContent = alarm ? "sent?" : "map";
+        document.getElementById("env-addr").innerHTML = alarm
+          ? "local_&lt;recipient&gt;<br>ccd_session_mgmt<br>auto · no Mapping"
+          : "local_&lt;recipient&gt;<br>ccd_session_mgmt<br>bypass · Mapping";
+        document.querySelectorAll(".hole").forEach((hole) => {
+          hole.classList.toggle("lit", (alarm && hole.dataset.slot === "auto") || (!alarm && hole.dataset.slot === "bypass"));
+        });
+        setPlaque("p-mode", t.permissionMode === "bypassPermissions", t.permissionMode === "auto" && alarm);
+        setPlaque("p-map", franked, !franked && alarm);
+        setPlaque("p-tool", t.falseSent !== true && franked, t.falseSent === true);
+        setPlaque("p-settle", !alarm && t.settledAsUndelivered !== true, t.settledAsUndelivered === true || alarm);
+        document.getElementById("s-mode").textContent = t.permissionMode || "auto";
+        document.getElementById("s-map").textContent = franked
+          ? "Mapping internal session local_<recipient> to CLI session <uuid>"
+          : "never appears · no Mapping line";
+        document.getElementById("s-tool").textContent = t.falseSent
+          ? "Message sent/queued · false sent"
+          : "Message sent/queued · actually delivered";
+        document.getElementById("s-settle").textContent = alarm
+          ? (t.ackMs || 45001) + "ms no-ack · settled as undelivered"
+          : "acked · not settled";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.hold;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        const barMap = document.getElementById("bar-map");
+        barMap.className = "bar " + (franked ? "kept" : "cut");
+        barMap.innerHTML = franked
+          ? `<span class="fill"></span>Mapping line within seconds · piece mapped`
+          : `<span class="fill"></span>no Mapping line · piece never mapped`;
+        const barAck = document.getElementById("bar-ack");
+        barAck.className = "bar " + (alarm ? "cut" : "kept");
+        barAck.innerHTML = alarm
+          ? `<span class="fill"></span>` + (t.ackMs || 45001) + `ms · settled as undelivered`
+          : `<span class="fill"></span>acked · model turn ran`;
+        document.getElementById("ab-auto").classList.toggle("active", alarm);
+        document.getElementById("ab-bypass").classList.toggle("active", !alarm);
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintMatrix(t.scenario || (alarm ? "auto" : (t.switchedToBypass ? "switch-bypass" : (t.verificationScript ? "grep-settle" : "bypass"))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (modeState === "bypass") return { ...mappedTicket, seed: "mapped", permissionMode: "bypassPermissions", hubCount: "BYPASS" };
+        return { ...seeded, seed: "settled", permissionMode: "auto", hubCount: "AUTO" };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-mode]").forEach((b) => {
+          const on = b.dataset.simMode === modeState;
+          const fail = modeState === "auto";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        modeState = "auto";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        modeState = "auto";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset") {
+            modeState = "bypass";
+            syncSimChips();
+            try { apply(await loadNamed("mapped.json")); }
+            catch { apply({ ...mappedTicket }); }
+            return;
+          }
+          if (act === "hold") {
+            modeState = "bypass";
+            syncSimChips();
+            try { apply(await loadNamed("bypass-deliver.json")); }
+            catch { apply({ ...mappedTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("settled.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("auto-drop.json")); }
+            catch { apply({ ...seeded, seed: "nixied", hubCount: "AUTO" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92383.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-mode]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          modeState = btn.dataset.simMode;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...mappedTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92383 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = kind === "bypass" ? "remediation-bypass.json" : "remediation-verify.json";
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply({
+              ...mappedTicket,
+              seed: kind === "bypass" ? "switch-bypass" : "grep-settle",
+              switchedToBypass: kind === "bypass",
+              verificationScript: kind !== "bypass"
+            });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-ab]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const side = el.dataset.ab;
+          modeState = side;
+          syncSimChips();
+          const file = side === "bypass" ? "bypass-deliver.json" : "auto-drop.json";
+          try { apply(await loadNamed(file)); }
+          catch { apply(side === "bypass" ? { ...mappedTicket } : { ...seeded, seed: "nixied" }); }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
