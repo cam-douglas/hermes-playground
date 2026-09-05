@@ -37,6 +37,8 @@ This is specifically: **WINDOWS DESKTOP APP SELF-UPDATES AND RESTARTS OVER A RUN
 
 NOT Relict ([#92173](https://github.com/anthropics/claude-code/issues/92173)) — orphaned WindowsApps Run path after MSIX folder gone (startup leftover). Careen is **live mid-session** forced MSIX swap that kills running work.
 NOT Snuff ([#92207](https://github.com/anthropics/claude-code/issues/92207)) — macOS stealth-update **after idle** severs Remote Control bridges; Careen is Windows **active/unattended mid-work** stop with no deferral.
+NOT [#92196](https://github.com/anthropics/claude-code/issues/92196) — macOS auto-update **crashes** unattended desktop sessions (relaunch banner, then crash). Careen is Windows **orchestrated** MSIX swap, not a crash.
+NOT [#92202](https://github.com/anthropics/claude-code/issues/92202) — Windows AppX 0x80070020 file-in-use **on launch** (labeled duplicate; same MSIX swap surface). Careen is the live mid-session scrape, not the leftover launch lock.
 NOT Ratchet ([#92242](https://github.com/anthropics/claude-code/issues/92242)) — `/goal` stop-hook re-fire after AskUserQuestion BLOCKED.
 NOT Forme ([#92203](https://github.com/anthropics/claude-code/issues/92203)) — TUI completed-turn scrollback wipe.
 NOT Tabula ([#92210](https://github.com/anthropics/claude-code/issues/92210)) — deep-link same-folder scratch.
@@ -53,6 +55,8 @@ Cousins are cite-only on a cousin strip; primary stays #92246.
 
 - [#92207](https://github.com/anthropics/claude-code/issues/92207) — OPEN — macOS stealth-update after idle severs Remote Control bridges (Snuff). Cite-only.
 - [#92173](https://github.com/anthropics/claude-code/issues/92173) — OPEN — versioned WindowsApps Run path orphan after MSIX folder gone (Relict). Cite-only.
+- [#92196](https://github.com/anthropics/claude-code/issues/92196) — OPEN — macOS auto-update crashes unattended desktop sessions (relaunch banner mid-session, then crash). Cite-only.
+- [#92202](https://github.com/anthropics/claude-code/issues/92202) — OPEN, duplicate — Windows AppX 0x80070020 file-in-use on launch; same MSIX swap surface. Cite-only.
 - [#89992](https://github.com/anthropics/claude-code/issues/89992) — OPEN — Windows MSIX auto-update terminates running app; same false file-in-use dialog. Cite-only.
 - [#92167](https://github.com/anthropics/claude-code/issues/92167) — OPEN — MSIX stealth update leaves app unlaunchable 0x80070020 (Helium hive). Cite-only.
 
@@ -73,7 +77,7 @@ Different idle: **afloat**.
 1. Seeded demo loads **careened** — voyage still underway; updater staged at 03:07 and applied at 03:17; CoworkVMService stopped; MSIX swapped; no prompt, no deferral, no opt-out; overnight unattended work killed; the hull is already careened.
 2. Idle **afloat** → session-busy / defer-until-idle held; stage for the next clean start; CoworkVMService left running; the hull stays afloat.
 3. Yard UI: heeled hull for careened vs upright hull for afloat, voyage/careen state machine, chalk plates. Afloat = haulout deferred. Careened = scraper on the live hull.
-4. Cousin cite strip labeled cousin-not-primary: [#92207](https://github.com/anthropics/claude-code/issues/92207), [#92173](https://github.com/anthropics/claude-code/issues/92173), [#89992](https://github.com/anthropics/claude-code/issues/89992), [#92167](https://github.com/anthropics/claude-code/issues/92167). Cite only. Primary stays #92246.
+4. Cousin cite strip labeled cousin-not-primary: [#92207](https://github.com/anthropics/claude-code/issues/92207), [#92173](https://github.com/anthropics/claude-code/issues/92173), [#92196](https://github.com/anthropics/claude-code/issues/92196), [#92202](https://github.com/anthropics/claude-code/issues/92202), [#89992](https://github.com/anthropics/claude-code/issues/89992), [#92167](https://github.com/anthropics/claude-code/issues/92167). Cite only. Primary stays #92246.
 5. **Score the yard** walks the probe ticket and lights chips on the desk. Chip-switch every verdict. Paste or drop JSON. Voyage simulator chips rewrite whether the updater observes a busy session. Careen machine steps voyage → stage → stop-vm → swap → restart → careen.
 
 ## How to score

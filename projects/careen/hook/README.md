@@ -23,7 +23,7 @@ Given a probe-shaped payload `{ sessionUnderway, deferUntilIdle, sessionBusyGate
 
 This is a diagnostic scoring desk. Not an exploit. No payloads. No real credentials. Score whether the yard deferred the haulout or the hull already careened.
 
-Primary: [anthropics/claude-code#92246](https://github.com/anthropics/claude-code/issues/92246). Cousins (cite only, not primary): [#92207](https://github.com/anthropics/claude-code/issues/92207), [#92173](https://github.com/anthropics/claude-code/issues/92173), [#89992](https://github.com/anthropics/claude-code/issues/89992), [#92167](https://github.com/anthropics/claude-code/issues/92167).
+Primary: [anthropics/claude-code#92246](https://github.com/anthropics/claude-code/issues/92246). Cousins (cite only, not primary): [#92207](https://github.com/anthropics/claude-code/issues/92207), [#92173](https://github.com/anthropics/claude-code/issues/92173), [#92196](https://github.com/anthropics/claude-code/issues/92196), [#92202](https://github.com/anthropics/claude-code/issues/92202), [#89992](https://github.com/anthropics/claude-code/issues/89992), [#92167](https://github.com/anthropics/claude-code/issues/92167).
 
 Hypothesis only (NON-BINDING): updater treats any process state as interruptible and has no "session busy / defer until idle" gate on Developer-sideloaded MSIX. Discard if issue evidence disagrees. Do not claim unseen source.
 
