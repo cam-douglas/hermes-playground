@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fulcrum — naming-lever lab for #92377</title>
+    <meta
+      name="description"
+      content="Fulcrum — balance-beam / pivot / naming-lever lab for Claude Code #92377: --name is discarded; the peer registry inherits a foreign auto title. Idle word is inherited."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fira+Code:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f3ead8;
+        --vellum: #e8dcc4;
+        --ink: #1b1712;
+        --mute: #6b6154;
+        --rule: rgba(27, 23, 18, 0.14);
+        --brass: #b8892d;
+        --brass-hot: #d4a43a;
+        --custom: #1f6a58;
+        --custom-hot: #2a8a72;
+        --auto: #a33a2c;
+        --auto-hot: #c44a3a;
+        --hold: #2a6b4a;
+        --hold-hot: #3a8a62;
+        --wood: #6d4c2b;
+        --plate: #fff8ec;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "DM Sans", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 12% -10%, rgba(184, 137, 45, 0.16), transparent 42%),
+          radial-gradient(ellipse at 90% 0%, rgba(163, 58, 44, 0.08), transparent 36%),
+          repeating-linear-gradient(90deg, transparent 0 27px, rgba(109, 76, 43, 0.03) 27px 28px),
+          linear-gradient(180deg, #f7f0e2 0%, #f3ead8 48%, #e7d8bc 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass); }
+      .wrap { width: min(1220px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "Fira Code", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 3px solid var(--brass);
+        padding-left: 10px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "Fira Code", ui-monospace, monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--brass);
+      }
+      h1 {
+        font-family: "Cormorant Garamond", "Iowan Old Style", serif;
+        font-size: clamp(58px, 11vw, 116px);
+        letter-spacing: -0.03em;
+        margin: 4px 0 10px;
+        font-weight: 600;
+        line-height: 0.78;
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 500;
+        color: var(--auto);
+        font-size: 0.22em;
+        letter-spacing: 0.16em;
+        display: block;
+        margin-top: 14px;
+        text-transform: uppercase;
+        font-family: "DM Sans", sans-serif;
+      }
+      .lede { max-width: 78em; color: var(--mute); line-height: 1.65; font-size: 17px; }
+      .lede code, code {
+        font-family: "Fira Code", monospace;
+        font-size: 13px;
+        color: var(--wood);
+      }
+
+      .bench {
+        margin: 26px 0 0;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(255, 248, 236, 0.96), rgba(232, 220, 196, 0.94)),
+          repeating-linear-gradient(0deg, transparent 0 23px, rgba(184, 137, 45, 0.05) 23px 24px);
+        box-shadow: 0 28px 64px rgba(80, 50, 18, 0.14);
+        padding: 16px 16px 14px;
+      }
+      .bench.inherited, .bench.collided, .bench.auto, .bench.custom-title {
+        box-shadow: 0 0 0 3px rgba(163, 58, 44, 0.28), 0 28px 64px rgba(80, 50, 18, 0.14);
+      }
+      .bench.name-applied, .bench.registry-locked,
+      .bench.dedup-user-name, .bench.foreign-title-blocked {
+        box-shadow: 0 0 0 3px rgba(42, 107, 74, 0.3), 0 28px 64px rgba(80, 50, 18, 0.14);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "Fira Code", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 14px;
+        border-bottom: 1px dashed rgba(184, 137, 45, 0.45);
+        padding-bottom: 8px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 920px) { .deck { grid-template-columns: 1fr; } }
+
+      .cap, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "Fira Code", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .beam-col {
+        background: var(--plate);
+        border: 1px solid rgba(184, 137, 45, 0.28);
+        min-height: 360px;
+        padding: 14px;
+      }
+      .scale {
+        position: relative;
+        height: 220px;
+        margin: 8px 6px 4px;
+      }
+      .beam {
+        position: absolute;
+        left: 6%;
+        right: 6%;
+        top: 58px;
+        height: 10px;
+        background: linear-gradient(90deg, var(--custom), var(--brass) 48%, var(--brass) 52%, var(--auto));
+        border-radius: 3px;
+        transform-origin: 50% 50%;
+        transform: rotate(11deg);
+        transition: transform 0.4s ease;
+        box-shadow: 0 4px 0 rgba(109, 76, 43, 0.18);
+      }
+      .bench.name-applied .beam,
+      .bench.registry-locked .beam,
+      .bench.dedup-user-name .beam,
+      .bench.foreign-title-blocked .beam { transform: rotate(-11deg); }
+      .pan {
+        position: absolute;
+        top: 78px;
+        width: 34%;
+        min-height: 92px;
+        border: 1px solid var(--rule);
+        background: #fffdf7;
+        padding: 8px 10px;
+        transition: top 0.4s ease;
+      }
+      .pan.custom { left: 4%; top: 58px; border-color: rgba(31, 106, 88, 0.35); }
+      .pan.auto { right: 4%; top: 98px; border-color: rgba(163, 58, 44, 0.4); }
+      .bench.name-applied .pan.custom,
+      .bench.registry-locked .pan.custom,
+      .bench.dedup-user-name .pan.custom,
+      .bench.foreign-title-blocked .pan.custom { top: 98px; }
+      .bench.name-applied .pan.auto,
+      .bench.registry-locked .pan.auto,
+      .bench.dedup-user-name .pan.auto,
+      .bench.foreign-title-blocked .pan.auto { top: 58px; }
+      .pan b {
+        display: block;
+        font-family: "Fira Code", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+      .pan.custom b { color: var(--custom); }
+      .pan.auto b { color: var(--auto); }
+      .pan strong {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 22px;
+        display: block;
+        line-height: 1.05;
+      }
+      .pivot {
+        position: absolute;
+        left: 50%;
+        top: 46px;
+        width: 0;
+        height: 0;
+        border-left: 18px solid transparent;
+        border-right: 18px solid transparent;
+        border-bottom: 28px solid var(--brass);
+        transform: translateX(-50%);
+        filter: drop-shadow(0 4px 0 rgba(109, 76, 43, 0.2));
+      }
+      .pivot::after {
+        content: "";
+        position: absolute;
+        left: -5px;
+        top: 26px;
+        width: 10px;
+        height: 46px;
+        background: var(--wood);
+      }
+      .base {
+        position: absolute;
+        left: 50%;
+        bottom: 8px;
+        width: 84px;
+        height: 10px;
+        background: var(--wood);
+        transform: translateX(-50%);
+      }
+      .free-word {
+        text-align: center;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 30px;
+        color: var(--auto);
+        letter-spacing: 0.02em;
+        font-weight: 600;
+      }
+      .bench.name-applied .free-word,
+      .bench.registry-locked .free-word,
+      .bench.dedup-user-name .free-word,
+      .bench.foreign-title-blocked .free-word { color: var(--hold-hot); }
+      .free-cap {
+        text-align: center;
+        color: var(--mute);
+        font-size: 13px;
+        margin-top: 4px;
+        line-height: 1.45;
+      }
+
+      .dial-col {
+        background: var(--plate);
+        border: 1px solid rgba(184, 137, 45, 0.22);
+        padding: 14px;
+      }
+      .dial {
+        position: relative;
+        width: min(100%, 260px);
+        height: 132px;
+        margin: 8px auto 6px;
+        overflow: hidden;
+      }
+      .dial-arc {
+        position: absolute;
+        left: 8%;
+        right: 8%;
+        bottom: 0;
+        height: 220px;
+        border-radius: 50%;
+        border: 10px solid #d8c9a8;
+        border-bottom-color: transparent;
+        border-left-color: var(--custom);
+        border-right-color: var(--auto);
+        transform: rotate(-18deg);
+      }
+      .needle {
+        position: absolute;
+        left: 50%;
+        bottom: 8px;
+        width: 4px;
+        height: 88px;
+        background: var(--brass-hot);
+        transform-origin: 50% 100%;
+        transform: translateX(-50%) rotate(38deg);
+        transition: transform 0.35s ease;
+        border-radius: 2px;
+      }
+      .bench.name-applied .needle,
+      .bench.registry-locked .needle,
+      .bench.dedup-user-name .needle,
+      .bench.foreign-title-blocked .needle { transform: translateX(-50%) rotate(-38deg); }
+      .dial-labs {
+        display: flex;
+        justify-content: space-between;
+        font-family: "Fira Code", monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .clutch-line {
+        margin-top: 12px;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .lag {
+        margin-top: 16px;
+      }
+      .lag-bar {
+        height: 10px;
+        background: #efe4cd;
+        border: 1px solid var(--rule);
+        position: relative;
+        overflow: hidden;
+      }
+      .lag-fill {
+        height: 100%;
+        width: 18%;
+        background: linear-gradient(90deg, var(--brass), var(--auto));
+        transition: width 0.35s ease;
+      }
+      .bench.name-applied .lag-fill,
+      .bench.registry-locked .lag-fill,
+      .bench.dedup-user-name .lag-fill,
+      .bench.foreign-title-blocked .lag-fill { width: 100%; background: var(--hold); }
+      .lag-labs {
+        display: flex;
+        justify-content: space-between;
+        font-family: "Fira Code", monospace;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-top: 6px;
+      }
+
+      .ledger {
+        background: var(--plate);
+        border: 1px solid rgba(163, 58, 44, 0.22);
+        padding: 14px;
+      }
+      .rows { display: grid; gap: 7px; }
+      .row {
+        border: 1px solid var(--rule);
+        padding: 8px 10px;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      .row b {
+        font-family: "Fira Code", monospace;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .row strong {
+        display: block;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .row.hit { border-color: rgba(163, 58, 44, 0.5); }
+      .row.quiet { border-color: rgba(42, 107, 74, 0.4); }
+      .row.quiet strong { color: var(--hold); }
+      .tip {
+        margin-top: 12px;
+      }
+      .tip-meter {
+        height: 12px;
+        background: #efe4cd;
+        border: 1px solid var(--rule);
+        position: relative;
+      }
+      .tip-fill {
+        height: 100%;
+        width: 72%;
+        background: repeating-linear-gradient(90deg, var(--auto) 0 8px, var(--auto-hot) 8px 16px);
+        transition: width 0.35s ease, background 0.3s ease;
+      }
+      .bench.name-applied .tip-fill,
+      .bench.registry-locked .tip-fill,
+      .bench.dedup-user-name .tip-fill,
+      .bench.foreign-title-blocked .tip-fill {
+        width: 18%;
+        background: var(--hold);
+      }
+      .tip-lab {
+        margin-top: 6px;
+        font-family: "Fira Code", monospace;
+        font-size: 11px;
+        color: var(--mute);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .beats { margin-top: 16px; }
+      .beat-row {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+      }
+      @media (max-width: 800px) { .beat-row { grid-template-columns: 1fr 1fr; } }
+      .beat {
+        border: 1px solid var(--rule);
+        padding: 10px 8px;
+        background: #fffdf7;
+      }
+      .beat em {
+        font-family: "Fira Code", monospace;
+        font-size: 10px;
+        color: var(--brass);
+        font-style: normal;
+      }
+      .beat b { display: block; margin: 4px 0 2px; font-size: 13px; }
+      .beat span { color: var(--mute); font-size: 12px; }
+      .beat.loss { border-color: rgba(163, 58, 44, 0.55); }
+      .beat.hold { border-color: rgba(42, 107, 74, 0.5); }
+
+      .desk { margin-top: 22px; }
+      .verdict-row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+      .verdict {
+        font-family: "Cormorant Garamond", serif;
+        font-size: clamp(34px, 6vw, 58px);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 0;
+        line-height: 0.9;
+      }
+      .verdict.alarm { color: var(--auto-hot); }
+      .verdict.hold { color: var(--hold-hot); }
+      .reason { color: var(--mute); max-width: 62em; line-height: 1.55; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+      .chip {
+        font-family: "Fira Code", monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        background: var(--plate);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .chip.live { border-color: var(--hold); color: var(--hold-hot); }
+      .chip.dead { border-color: var(--auto); color: var(--auto-hot); }
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 800px) { .paths { grid-template-columns: 1fr; } }
+      .path { border: 1px solid var(--rule); padding: 12px; background: var(--plate); }
+      .path.fail { border-color: rgba(163, 58, 44, 0.5); }
+      .path.ok { border-color: rgba(42, 107, 74, 0.45); }
+      .path b { font-family: "Fira Code", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .path .face { margin: 8px 0; font-size: 14px; }
+      .path .note { color: var(--mute); font-size: 12px; }
+      .log {
+        font-family: "Fira Code", monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        background: #fffdf7;
+        border: 1px solid var(--rule);
+        padding: 12px;
+        white-space: pre-wrap;
+      }
+      .log .hit { color: var(--auto-hot); }
+      .slip {
+        margin-top: 10px;
+        font-family: "Fira Code", monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        background: #fffdf7;
+        border: 1px solid var(--rule);
+        padding: 12px;
+        white-space: pre-wrap;
+      }
+      .slip .hook { color: var(--brass); }
+      .slip .user { color: var(--auto-hot); }
+      .slip .asst { color: var(--hold-hot); }
+      .matrix { margin: 16px 0; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { border-bottom: 1px solid var(--rule); padding: 8px 10px; text-align: left; }
+      th { font-family: "Fira Code", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brass); }
+      tr.active { background: rgba(184, 137, 45, 0.1); }
+      .fail-cell { color: var(--auto-hot); }
+      .pass-cell { color: var(--hold-hot); }
+      .remediation { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 900px) { .remediation { grid-template-columns: 1fr 1fr; } }
+      .remedy {
+        border: 1px solid var(--rule);
+        padding: 12px;
+        background: var(--plate);
+        cursor: pointer;
+      }
+      .remedy:hover { border-color: var(--brass); }
+      .remedy b { display: block; margin-bottom: 6px; }
+      .remedy p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+      .act {
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        background: #fff8ec;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .act:hover { border-color: var(--brass-hot); color: var(--brass); }
+      .sim { margin-top: 18px; }
+      .sim h3 {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 26px;
+        margin: 0 0 8px;
+        font-weight: 600;
+      }
+      .sim p { color: var(--mute); margin: 0 0 10px; }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .drop {
+        margin-top: 14px;
+        border: 1px dashed rgba(184, 137, 45, 0.55);
+        padding: 16px;
+        text-align: center;
+        color: var(--mute);
+        font-family: "Fira Code", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 12px;
+        background: #fffdf7;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        font-family: "Fira Code", monospace;
+        font-size: 12px;
+        padding: 12px;
+      }
+      .research { margin-top: 22px; color: var(--mute); line-height: 1.6; }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "Fira Code", monospace;
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        padding: 3px 6px;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--mute);
+        font-size: 13px;
+        font-family: "Fira Code", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="catalog chrome" href="/">← catalog</a>
+      <p class="mark chrome">17:50 / hermes catalog #177 / #92377</p>
+      <h1>Fulcrum <em>balance-beam / pivot / naming lever</em></h1>
+      <p class="lede chrome">
+        A naming pivot that should lock the peer identity when
+        <code>--name</code> is set, but the auto-title side of the lever overwrites
+        the custom-title side so the registry tip lands on another session's
+        generated name. Sessions collide on one handle and
+        <code>SendMessage</code> tips the wrong way. Idle word is
+        <code>inherited</code>. Seeded state is <code>collided</code>.
+      </p>
+
+      <section class="bench collided" id="stage" aria-label="Naming lever bench">
+        <div class="rail">
+          <span>fulcrum · custom-title · auto-title</span>
+          <span id="stage-label">seeded collided · one generated name · many [ref]</span>
+          <span id="count-tag">2.1.261 · Ubuntu/Debian · regression vs 2.1.251</span>
+        </div>
+        <div class="deck">
+          <div class="beam-col">
+            <h4 class="cap">naming lever</h4>
+            <div class="scale" aria-hidden="true">
+              <div class="beam" id="beam"></div>
+              <div class="pivot"></div>
+              <div class="base"></div>
+              <article class="pan custom" id="pan-custom">
+                <b>custom-title</b>
+                <strong id="custom-name">Hermit</strong>
+              </article>
+              <article class="pan auto" id="pan-auto">
+                <b>auto-title</b>
+                <strong id="auto-name">Artifact skill trigger instruction passing</strong>
+              </article>
+            </div>
+            <div class="free-word" id="free-word">inherited</div>
+            <p class="free-cap" id="free-cap">--name written as custom-title · registry inherits a foreign auto title</p>
+          </div>
+          <div class="dial-col">
+            <h4 class="cap">nameSource dial</h4>
+            <div class="dial" aria-hidden="true">
+              <div class="dial-arc"></div>
+              <div class="needle" id="needle"></div>
+            </div>
+            <div class="dial-labs">
+              <span>custom</span>
+              <span>auto</span>
+            </div>
+            <p class="clutch-line" id="pathline">
+              --name Hermit · nameSource auto · ~100 ms after launch
+            </p>
+            <div class="lag">
+              <h4 class="cap">inheritance lag</h4>
+              <div class="lag-bar"><div class="lag-fill" id="lag-fill"></div></div>
+              <div class="lag-labs">
+                <span>t+0 launch</span>
+                <span id="lag-lab">nameSince ~100 ms · before any prompt</span>
+              </div>
+            </div>
+          </div>
+          <div class="ledger">
+            <h4 class="cap">peer-registry ledger</h4>
+            <div class="rows" id="ledger-rows">
+              <article class="row hit">
+                <b>[c53456] · bg · busy</b>
+                <strong>Artifact skill trigger instruction passing</strong>
+              </article>
+              <article class="row hit">
+                <b>[e1c327] · interactive · idle · tmux</b>
+                <strong>Artifact skill trigger instruction passing</strong>
+              </article>
+              <article class="row hit">
+                <b>[8b1593] · interactive · shell · tmux</b>
+                <strong>Artifact skill trigger instruction passing</strong>
+              </article>
+            </div>
+            <div class="tip">
+              <h4 class="cap">SendMessage tip</h4>
+              <div class="tip-meter"><div class="tip-fill" id="tip-fill"></div></div>
+              <div class="tip-lab" id="tip-lab">bare name ambiguous · name [ref] delivers</div>
+            </div>
+          </div>
+        </div>
+        <div class="beats">
+          <h4 class="cap">launch timeline · --name to collided handle</h4>
+          <div class="beat-row" id="proofs">
+            <article class="beat" id="beat-1"><em>1</em><b>--name set</b><span>Hermit / dup4cc4</span></article>
+            <article class="beat" id="beat-2"><em>2</em><b>custom-title</b><span>transcript records it</span></article>
+            <article class="beat" id="beat-3"><em>3</em><b>~100 ms</b><span>nameSince after start</span></article>
+            <article class="beat" id="beat-4"><em>4</em><b>nameSource auto</b><span>foreign generated title</span></article>
+            <article class="beat" id="beat-5"><em>5</em><b>ListAgents</b><span>same name · different [ref]</span></article>
+            <article class="beat loss" id="beat-6"><em>6</em><b>SendMessage</b><span>bare name ambiguous</span></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Fulcrum scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">collided</p>
+            <p class="reason" id="reason">
+              Multiple live sessions share one generated name. ListAgents rows are distinguishable only by [ref] and tmux address. Bare SendMessage is ambiguous.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="slip" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Naming-lever path matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>shipped</th>
+                <th>isolate</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="remediation" aria-label="Assay dials">
+          <article class="remedy" data-remedy="name-applied">
+            <b>Name-applied</b>
+            <p>--name should set the session name and replace any generated title. Last working 2.1.251 registered Hermit [5fb191].</p>
+          </article>
+          <article class="remedy" data-remedy="registry-locked">
+            <b>Registry-locked</b>
+            <p>Peer registry, ListAgents, and the prompt-bar should use the user-set name.</p>
+          </article>
+          <article class="remedy" data-remedy="dedup-user-name">
+            <b>Dedup user-name</b>
+            <p>If a collision must happen, the two-word dedup rename should apply for user-set names.</p>
+          </article>
+          <article class="remedy" data-remedy="foreign-title-blocked">
+            <b>Foreign title blocked</b>
+            <p>A fresh session should never register under a title generated for a different session.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act" data-act="score">Score the naming lever</button>
+          <button class="act" data-act="idle">Pin idle inherited</button>
+          <button class="act" data-act="seed">Pin seeded collided</button>
+          <button class="act" data-act="custom">Score custom-title vs auto</button>
+          <button class="act" data-act="flip">Flip name-applied vs foreign-inherited</button>
+          <button class="act" data-act="fixtures">Load #92377 fixture</button>
+          <button class="act" data-act="reset">Reset to name-applied</button>
+        </div>
+
+        <div class="sim">
+          <h3>Naming-lever simulator</h3>
+          <p>Rewrite the fulcrum without touching a live Claude session. Diagnostic assay dials only — not real API calls.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="custom">custom-title</span>
+            <span class="chip" data-sim-pull="auto">auto-title</span>
+            <span class="chip" data-sim-pull="ledger">collided ledger</span>
+            <span class="chip" data-sim-pull="lock">registry lock</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="inherited">inherited</button>
+            <button class="chip" data-chip="collided">collided</button>
+            <button class="chip" data-chip="name-applied">name-applied</button>
+            <button class="chip" data-chip="registry-locked">registry-locked</button>
+            <button class="chip" data-chip="dedup-user-name">dedup-user-name</button>
+            <button class="chip" data-chip="foreign-title-blocked">foreign-title-blocked</button>
+            <button class="chip" data-chip="custom-title">custom-title</button>
+            <button class="chip" data-chip="auto">auto</button>
+            <button class="chip" data-chip="cousins">cousins</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the naming lever</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            On Claude Code <code>2.1.261</code> (Ubuntu/Debian), a regression versus
+            last working <code>2.1.251</code> (the same <code>--name Hermit</code>
+            launch registered as <code>Hermit [5fb191]</code> on 2026-08-31),
+            <code>claude --name &lt;name&gt;</code> no longer sets the name a session
+            registers for cross-session messaging.
+          </p>
+          <p>
+            <code>~/.claude/sessions/&lt;pid&gt;.json</code> is written with
+            <code>nameSource: "auto"</code> and a <code>name</code> that is an
+            AI-generated title copied from a different, unrelated session, about
+            100 ms after launch and before any prompt is sent. The transcript
+            records the <code>--name</code> value as a <code>custom-title</code>
+            line, but the peer registry, <code>ListAgents</code>, and the
+            prompt-bar title all show the foreign generated title.
+          </p>
+          <p>
+            Example: launched with <code>--name Hermit</code> → registry name
+            "Artifact skill trigger instruction passing", <code>nameSource</code>
+            auto. Observed: seven live sessions across four working directories,
+            including three fresh scratch sessions launched with
+            <code>--name dup4cc4</code>, all registered as the same generated
+            title. The string is not on disk except <code>sessions/*.json</code>
+            and transcripts — it appears carried in a running process.
+          </p>
+          <p>
+            <code>ListAgents</code> shows multiple rows sharing the same name,
+            distinguishable only by <code>[ref]</code> and tmux address.
+            <code>SendMessage</code> to the bare name is ambiguous; to
+            <code>name [ref]</code> delivers to that ref; after
+            <code>/rename</code>, the old <code>name [ref]</code> becomes
+            unreachable.
+          </p>
+          <p>
+            Related but distinct: #91054 covers collisions between
+            <code>nameSource: derived</code> default display names. This report
+            is about an explicit <code>--name</code> being discarded and replaced
+            by a generated title that belongs to another session.
+          </p>
+          <p>
+            Expected: <code>--name</code> should set the session name, replace any
+            generated title, and be the name peers use. A fresh session should
+            never register under a title generated for a different session. If a
+            collision must happen, the dedup rename to a two-word variant should
+            apply for user-set names.
+          </p>
+          <p>
+            Repro: have one other session with a generated title; in three empty
+            scratch dirs launch
+            <code>claude --model haiku --permission-mode acceptEdits --name dup4cc4</code>
+            in three tmux panes; before any prompt, read
+            <code>sessions/&lt;pid&gt;.json</code>; observe shared foreign title +
+            <code>nameSource</code> auto.
+          </p>
+          <p>
+            Stay off: <span class="stayoff">
+              <span>Wildcat #92399</span>
+              <span>Clobber #92419</span>
+              <span>Watchdog #92424</span>
+              <span>Understudy #92426</span>
+              <span>Fairlead #92403</span>
+              <span>Stroboscope</span>
+              <span>Heliostat</span>
+              <span>Lethe</span>
+              <span>Frizzen</span>
+            </span>
+          </p>
+          <p>
+            Cousins cite-only:
+            <a href="https://github.com/anthropics/claude-code/issues/91054">#91054</a>
+            generated names collide / dedup missing ·
+            <a href="https://github.com/anthropics/claude-code/issues/88845">#88845</a>
+            /rename survives into pre-/clear ·
+            <a href="https://github.com/anthropics/claude-code/issues/86736">#86736</a>
+            desktop rename does not propagate ·
+            <a href="https://github.com/anthropics/claude-code/issues/86531">#86531</a>
+            /rename renames other sessions ·
+            <a href="https://github.com/anthropics/claude-code/issues/81899">#81899</a>
+            resume/attach overwrites bg titles.
+          </p>
+        </section>
+        <footer>
+          Catalog #177 · idle word inherited · seeded collided · contrast name-applied / registry-locked / dedup-user-name / foreign-title-blocked ·
+          no live Claude sessions · fonts Cormorant Garamond / DM Sans / Fira Code · naming fulcrum
+        </footer>
+      </section>
+    </main>
+    <script>
+      const HOLD = new Set([
+        "name-applied",
+        "registry-locked",
+        "dedup-user-name",
+        "foreign-title-blocked"
+      ]);
+      const CHIPS = [
+        "inherited", "collided", "name-applied", "registry-locked",
+        "dedup-user-name", "foreign-title-blocked", "custom-title",
+        "auto", "cousins"
+      ];
+      const CHIP_FILES = {
+        inherited: "inherited.json",
+        collided: "collided.json",
+        "name-applied": "name-applied.json",
+        "registry-locked": "registry-locked.json",
+        "dedup-user-name": "dedup-user-name.json",
+        "foreign-title-blocked": "foreign-title-blocked.json",
+        "custom-title": "custom-title.json",
+        auto: "auto.json",
+        cousins: "cousins.json"
+      };
+      const MATRIX = [
+        { id: "registry", name: "--name Hermit · registry foreign title · nameSource auto", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "registry-entry.json" },
+        { id: "repro", name: "three --name dup4cc4 scratch panes · shared foreign title", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "repro.json" },
+        { id: "list", name: "ListAgents same name · different [ref] and tmux", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "list-agents.json" },
+        { id: "send", name: "bare SendMessage ambiguous · after /rename unreachable", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "send-message.json" },
+        { id: "applied", name: "--name sets the session name · replaces generated title", shipped: "pass", isolate: "pass", scored: "pass", file: "name-applied.json" },
+        { id: "locked", name: "peers address the user-set name", shipped: "pass", isolate: "pass", scored: "pass", file: "registry-locked.json" },
+        { id: "dedup", name: "user-set collision · two-word dedup rename", shipped: "pass", isolate: "pass", scored: "pass", file: "dedup-user-name.json" },
+        { id: "blocked", name: "fresh session never inherits a foreign generated title", shipped: "pass", isolate: "pass", scored: "pass", file: "foreign-title-blocked.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92377,
+        seed: "inherited",
+        inherited: true,
+        collided: false,
+        nameApplied: false,
+        registryLocked: false,
+        dedupUserName: false,
+        foreignTitleBlocked: false,
+        nameSource: "auto",
+        customTitlePresent: true,
+        foreignTitleInherited: true,
+        inheritanceLagMs: 100,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "INHERITED",
+        log: [
+          "[idle] claude --name <name> · transcript records custom-title",
+          "[lever] peer registry writes nameSource auto · name is a foreign generated title",
+          "[lag] ~100 ms after launch · before any prompt is sent",
+          "[desk] already inherited; idle word inherited"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92377,
+        seed: "collided",
+        inherited: true,
+        collided: true,
+        nameApplied: false,
+        registryLocked: false,
+        dedupUserName: false,
+        foreignTitleBlocked: false,
+        nameSource: "auto",
+        sharedGeneratedTitle: "Artifact skill trigger instruction passing",
+        scratchName: "dup4cc4",
+        liveSessionsObserved: 7,
+        workingDirectoriesObserved: 4,
+        bareSendMessageAmbiguous: true,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "COLLIDED",
+        log: [
+          "[issue] #92377 OPEN · --name discarded · foreign auto title on the peer registry",
+          "[beam] custom-title side records --name · auto-title side overwrites the registry tip",
+          "[ledger] seven live sessions / four directories · three --name dup4cc4 scratch panes share one generated title",
+          "[desk] already collided; seeded word collided"
+        ]
+      };
+
+      const appliedTicket = {
+        source: "probe",
+        issue: 92377,
+        seed: "name-applied",
+        nameApplied: true,
+        registryLocked: true,
+        foreignTitleBlocked: true,
+        nameSource: "custom",
+        cliName: "Hermit",
+        registryName: "Hermit",
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "NAME-APPLIED",
+        log: [
+          "[hold] --name sets the session name and replaces any generated title",
+          "[working] 2.1.251 · --name Hermit registered as Hermit [5fb191] on 2026-08-31",
+          "[desk] name-applied; contrast hold"
+        ]
+      };
+
+      const lockedTicket = {
+        source: "probe",
+        issue: 92377,
+        seed: "registry-locked",
+        nameApplied: true,
+        registryLocked: true,
+        foreignTitleBlocked: true,
+        nameSource: "custom",
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "REGISTRY-LOCKED",
+        log: [
+          "[hold] --name is the name other sessions use to address this session",
+          "[lock] peer registry · ListAgents · prompt-bar title all show the user-set name",
+          "[desk] registry-locked; contrast hold"
+        ]
+      };
+
+      const dedupTicket = {
+        source: "probe",
+        issue: 92377,
+        seed: "dedup-user-name",
+        nameApplied: true,
+        registryLocked: true,
+        dedupUserName: true,
+        foreignTitleBlocked: true,
+        nameSource: "custom",
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "DEDUP-USER-NAME",
+        log: [
+          "[hold] if a collision must happen, dedup rename to a two-word variant applies for user-set names",
+          "[not] #91054 is collisions between nameSource:derived default display names — cite-only cousin",
+          "[desk] dedup-user-name; contrast hold"
+        ]
+      };
+
+      const blockedTicket = {
+        source: "probe",
+        issue: 92377,
+        seed: "foreign-title-blocked",
+        nameApplied: true,
+        registryLocked: true,
+        foreignTitleBlocked: true,
+        nameSource: "custom",
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "FOREIGN-TITLE-BLOCKED",
+        log: [
+          "[hold] a fresh session never registers under a title generated for a different session",
+          "[note] the foreign string is not present under ~/.claude except sessions/*.json and transcripts",
+          "[desk] foreign-title-blocked; contrast hold"
+        ]
+      };
+
+      const customTicket = {
+        source: "probe",
+        issue: 92377,
+        seed: "custom-title",
+        inherited: true,
+        customTitlePresent: true,
+        nameApplied: false,
+        nameSource: "auto",
+        cliName: "Hermit",
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "CUSTOM-TITLE",
+        log: [
+          "[score] custom-title vs auto",
+          "[custom] transcript customTitle Hermit",
+          "[auto] registry nameSource auto · Artifact skill trigger instruction passing",
+          "[desk] custom-title is written; the registry tip still lands on auto"
+        ]
+      };
+
+      const autoTicket = {
+        source: "probe",
+        issue: 92377,
+        seed: "auto",
+        inherited: true,
+        nameSource: "auto",
+        foreignTitleInherited: true,
+        nameApplied: false,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "AUTO",
+        log: [
+          "[score] custom-title vs auto",
+          "[auto] nameSource auto · name copied from a different, unrelated session",
+          "[not] #91054 is nameSource:derived default display-name collisions — cite-only cousin",
+          "[desk] auto-title side of the lever overwrites the custom-title side"
+        ]
+      };
+
+      let pullState = "ledger";
+      let flipHold = false;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed)
+          || t.nameApplied === true
+          || t.registryLocked === true
+          || t.dedupUserName === true
+          || t.foreignTitleBlocked === true;
+      }
+
+      function alreadyInherited(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.collided !== true && t.inherited !== true && t.foreignTitleInherited !== true) return false;
+        if (HOLD.has(seed) && t.collided !== true && t.inherited !== true) return false;
+        if (t.inherited === true || t.collided === true || t.foreignTitleInherited === true || t.nameSource === "auto") return true;
+        if (["inherited", "collided", "custom-title", "auto"].includes(seed)) return !HOLD.has(seed);
+        return t.nameApplied !== true && t.registryLocked !== true && !HOLD.has(seed);
+      }
+
+      function scoredTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (HOLD.has(seed) || remediating(t))
+          && t.collided !== true
+          && !alreadyInherited(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyInherited(t);
+        t.shippedFree = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedFree ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (remediating(t) ? "pass" : "FAIL");
+        const holding = scoredTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "inherited") chips.push("inherited");
+        if (t.collided === true || seed === "collided") chips.push("collided");
+        if (seed === "custom-title" || t.customTitlePresent === true) chips.push("custom-title");
+        if (seed === "auto" || t.nameSource === "auto") chips.push("auto");
+        if ((holding && t.nameApplied === true) || seed === "name-applied") chips.push("name-applied");
+        if ((holding && t.registryLocked === true) || seed === "registry-locked") chips.push("registry-locked");
+        if ((holding && t.dedupUserName === true) || seed === "dedup-user-name") chips.push("dedup-user-name");
+        if ((holding && t.foreignTitleBlocked === true) || seed === "foreign-title-blocked") chips.push("foreign-title-blocked");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (holding
+            ? (t.foreignTitleBlocked ? "foreign-title-blocked" : (t.dedupUserName ? "dedup-user-name" : (t.registryLocked ? "registry-locked" : "name-applied")))
+            : (t.collided ? "collided" : (t.nameSource === "auto" && seed !== "inherited" ? "auto" : "inherited")));
+        return { ticket: t, holding, alarm, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        inherited: "claude --name is recorded as custom-title, but the registry inherits a foreign auto title about 100 ms after launch, before any prompt is sent. Idle word is inherited.",
+        collided: "Multiple live sessions share one generated name. ListAgents rows are distinguishable only by [ref] and tmux address. Bare SendMessage is ambiguous. Admit the registry already collided.",
+        "name-applied": "--name should set the session name and replace any generated title. Last working 2.1.251 registered Hermit [5fb191] on 2026-08-31.",
+        "registry-locked": "--name should be the name other sessions use to address this session. Peer registry, ListAgents, and the prompt-bar should match.",
+        "dedup-user-name": "If a collision must happen, the dedup rename to a two-word variant should apply for user-set names. Distinct from cousin #91054 (nameSource:derived defaults).",
+        "foreign-title-blocked": "A fresh session should never register under a title generated for a different session.",
+        "custom-title": "The transcript records --name as custom-title. That is not enough: the registry tip still lands on auto.",
+        auto: "nameSource is auto. The name is an AI-generated title copied from a different, unrelated session. Not #91054 derived-default collisions.",
+        cousins: "Cite-only cousins #91054 #88845 #86736 #86531 #81899. Related surfaces, different root cause — primary stays #92377."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] --name · nameSource auto · already collided"]
+            : ["[desk] name-applied · registry-locked"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /inherit|collid|FAIL|auto|ambiguous|foreign|discard|never/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "--name discarded · foreign auto title" : "name-applied / registry-locked / dedup / blocked", "naming-lever path"],
+          ["isolate", t.isolateMark, "explicit --name discarded · not #91054 derived-default collisions", "not a clone"],
+          ["scored", t.scoredMark, remediating(t) ? "name-applied / registry-locked / dedup-user-name / foreign-title-blocked" : "would score after --name reaches the registry", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id === "registry" ? "inherited" : "collided", scenario: row.id }
+                : { ...appliedTicket, seed: "name-applied", scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (t.nameApplied === true || t.seed === "name-applied") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">--name sets the session name and replaces any generated title</span>\n` +
+            `<span class="asst">2.1.251 · Hermit [5fb191] on 2026-08-31</span>\n` +
+            `<span class="hook">name-applied; contrast hold</span>`;
+          return;
+        }
+        if (t.registryLocked === true || t.seed === "registry-locked") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">peers address the user-set name</span>\n` +
+            `<span class="hook">registry-locked; contrast hold</span>`;
+          return;
+        }
+        if (t.dedupUserName === true || t.seed === "dedup-user-name") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">user-set collision · dedup rename to a two-word variant</span>\n` +
+            `<span class="hook">dedup-user-name; contrast hold</span>`;
+          return;
+        }
+        if (t.foreignTitleBlocked === true || t.seed === "foreign-title-blocked") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">fresh session never inherits another session's generated title</span>\n` +
+            `<span class="hook">foreign-title-blocked; contrast hold</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">Claude Code 2.1.261 · Ubuntu/Debian · regression vs 2.1.251</span>\n` +
+          `<span class="user">--name Hermit · registry Artifact skill trigger instruction passing · nameSource auto</span>\n` +
+          `<span class="user">transcript customTitle Hermit · ai-title / agent-name of the foreign title</span>\n` +
+          `<span class="user">seven live sessions · three --name dup4cc4 scratch panes · same generated title</span>\n` +
+          `<span class="hook">bare SendMessage ambiguous · after /rename old name [ref] unreachable</span>`;
+      }
+
+      function paintLedger(holding) {
+        if (holding) {
+          document.getElementById("ledger-rows").innerHTML =
+            `<article class="row quiet"><b>[5fb191] · interactive</b><strong>Hermit</strong></article>` +
+            `<article class="row quiet"><b>user-set · registry-locked</b><strong>peers address --name</strong></article>` +
+            `<article class="row quiet"><b>fresh session</b><strong>foreign title blocked</strong></article>`;
+          return;
+        }
+        document.getElementById("ledger-rows").innerHTML =
+          `<article class="row hit"><b>[c53456] · bg · busy</b><strong>Artifact skill trigger instruction passing</strong></article>` +
+          `<article class="row hit"><b>[e1c327] · interactive · idle · tmux</b><strong>Artifact skill trigger instruction passing</strong></article>` +
+          `<article class="row hit"><b>[8b1593] · interactive · shell · tmux</b><strong>Artifact skill trigger instruction passing</strong></article>`;
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const seedName = String(t.seed || result.verdict || "");
+        const collided = t.collided === true || seedName === "collided";
+        const applied = t.nameApplied === true || seedName === "name-applied";
+        const locked = t.registryLocked === true || seedName === "registry-locked";
+        const dedup = t.dedupUserName === true || seedName === "dedup-user-name";
+        const blocked = t.foreignTitleBlocked === true || seedName === "foreign-title-blocked";
+        const holding = (result.holding || remediating(t)) && !alarm;
+        const stageClass = applied && holding
+          ? "name-applied"
+          : (locked && holding
+            ? "registry-locked"
+            : (dedup && holding
+              ? "dedup-user-name"
+              : (blocked && holding
+                ? "foreign-title-blocked"
+                : (seedName === "auto"
+                  ? "auto"
+                  : (seedName === "custom-title"
+                    ? "custom-title"
+                    : (collided ? "collided" : (CHIPS.includes(seedName) ? seedName : "inherited")))))));
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || REASONS[alarm ? "collided" : "name-applied"];
+        document.getElementById("stage").className = "bench " + stageClass;
+        document.getElementById("stage-label").textContent = alarm
+          ? (collided ? "seeded collided · one generated name · many [ref]" : "idle inherited · foreign auto title")
+          : (applied ? "name-applied · --name reaches the registry" : (locked ? "registry-locked · peers use --name" : (dedup ? "dedup-user-name · two-word variant" : "foreign-title-blocked · fresh session clean")));
+        document.getElementById("count-tag").textContent = alarm
+          ? "2.1.261 · Ubuntu/Debian · regression vs 2.1.251"
+          : "name-applied · registry-locked · 2.1.251 polarity";
+        document.getElementById("free-word").textContent = holding ? "locked" : "inherited";
+        document.getElementById("free-cap").textContent = holding
+          ? (applied ? "--name sets the session name" : (locked ? "peers address the user-set name" : (dedup ? "two-word dedup for user-set names" : "fresh session never inherits a foreign title")))
+          : "--name written as custom-title · registry inherits a foreign auto title";
+        document.getElementById("pathline").textContent = holding
+          ? (applied ? "--name Hermit · registry Hermit · nameSource custom" : (locked ? "ListAgents shows the user-set name" : (dedup ? "user-set collision · two-word dedup" : "foreign generated title never copied")))
+          : "--name Hermit · nameSource auto · ~100 ms after launch";
+        document.getElementById("custom-name").textContent = holding ? "Hermit" : (t.cliName || t.scratchName || "Hermit / dup4cc4");
+        document.getElementById("auto-name").textContent = holding ? "replaced" : "Artifact skill trigger instruction passing";
+        document.getElementById("lag-lab").textContent = holding
+          ? "no foreign nameSince overwrite"
+          : "nameSince ~100 ms · before any prompt";
+        document.getElementById("tip-lab").textContent = holding
+          ? "SendMessage addresses the user-set name"
+          : "bare name ambiguous · name [ref] delivers";
+        paintLedger(holding);
+        ["beat-1", "beat-2", "beat-3", "beat-4", "beat-5", "beat-6"].forEach((id, i) => {
+          const el = document.getElementById(id);
+          el.className = "beat" + (holding ? " hold" : (i >= 3 ? " loss" : ""));
+        });
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.holding;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        paintMatrix(t.scenario || (applied ? "applied" : (locked ? "locked" : (dedup ? "dedup" : (blocked && holding ? "blocked" : (collided ? "send" : "registry"))))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "lock") return { ...appliedTicket };
+        if (pullState === "custom") return { ...customTicket };
+        if (pullState === "auto") return { ...autoTicket };
+        return { ...seeded };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState !== "lock";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "auto";
+        flipHold = false;
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "ledger";
+        flipHold = false;
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset") {
+            pullState = "lock";
+            flipHold = true;
+            syncSimChips();
+            try { apply(await loadNamed("name-applied.json")); }
+            catch { apply({ ...appliedTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("collided.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "custom") {
+            pullState = "custom";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("custom-title.json")); }
+            catch { apply({ ...customTicket }); }
+            return;
+          }
+          if (act === "flip") {
+            flipHold = !flipHold;
+            if (flipHold) {
+              pullState = "lock";
+              syncSimChips();
+              try { apply(await loadNamed("name-applied.json")); }
+              catch { apply({ ...appliedTicket }); }
+            } else {
+              pullState = "auto";
+              syncSimChips();
+              try { apply(await loadNamed("inherited.json")); }
+              catch { apply({ ...idle }); }
+            }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92377.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...appliedTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92377 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = CHIP_FILES[kind];
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(kind === "registry-locked" ? { ...lockedTicket }
+              : (kind === "dedup-user-name" ? { ...dedupTicket }
+                : (kind === "foreign-title-blocked" ? { ...blockedTicket } : { ...appliedTicket })));
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
