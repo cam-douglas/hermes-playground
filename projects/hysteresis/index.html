@@ -1,0 +1,1183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hysteresis — magnetic remanence lab for #92444</title>
+    <meta
+      name="description"
+      content="Hysteresis — magnetic materials / B-H curve assay for Claude Code #92444: mid-session /effort invalidates the prompt cache on Sonnet 5 and Opus 5. Idle word is remanent."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --ferrite: #12100e;
+        --oxide: #1c1612;
+        --ink: #f3e6d4;
+        --mute: #8c7d70;
+        --rule: rgba(196, 90, 42, 0.22);
+        --rust: #c45a2a;
+        --rust-hot: #e07038;
+        --rust-wash: rgba(196, 90, 42, 0.16);
+        --cobalt: #3d6bff;
+        --cobalt-hot: #7a9cff;
+        --cobalt-wash: rgba(61, 107, 255, 0.18);
+        --amber: #e8a03c;
+        --amber-hot: #f4c06a;
+        --amber-wash: rgba(232, 160, 60, 0.16);
+        --char: #0c0a09;
+        --slot: #181410;
+        --snap: #ff4d3a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Figtree, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 8% -12%, rgba(196, 90, 42, 0.18), transparent 44%),
+          radial-gradient(ellipse at 92% 4%, rgba(61, 107, 255, 0.12), transparent 38%),
+          radial-gradient(ellipse at 50% 100%, rgba(232, 160, 60, 0.06), transparent 42%),
+          repeating-radial-gradient(circle at 18% 22%, transparent 0 11px, rgba(196, 90, 42, 0.03) 11px 12px),
+          linear-gradient(180deg, #1a1512 0%, #12100e 52%, #0c0a09 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--amber); }
+      .wrap { width: min(1280px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 3px solid var(--cobalt);
+        padding-left: 10px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--amber);
+      }
+      h1 {
+        font-family: Syne, "Segoe UI", sans-serif;
+        font-size: clamp(52px, 10vw, 104px);
+        letter-spacing: -0.04em;
+        margin: 4px 0 10px;
+        font-weight: 800;
+        line-height: 0.82;
+        color: var(--ink);
+      }
+      h1 em {
+        font-style: normal;
+        font-weight: 600;
+        color: var(--rust-hot);
+        font-size: 0.2em;
+        letter-spacing: 0.18em;
+        display: block;
+        margin-top: 14px;
+        text-transform: uppercase;
+        font-family: "IBM Plex Mono", monospace;
+      }
+      .lede { max-width: 78em; color: var(--mute); line-height: 1.65; font-size: 17px; }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--amber-hot);
+      }
+
+      .lab {
+        margin: 26px 0 0;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(28, 22, 18, 0.96), rgba(18, 16, 14, 0.96)),
+          repeating-linear-gradient(90deg, transparent 0 38px, rgba(196, 90, 42, 0.045) 38px 39px);
+        box-shadow: 0 24px 56px rgba(0, 0, 0, 0.42), inset 0 0 0 1px rgba(196, 90, 42, 0.08);
+        padding: 16px 16px 14px;
+        position: relative;
+      }
+      .lab::after {
+        content: "";
+        position: absolute;
+        inset: 12px 12px auto auto;
+        width: 42px;
+        height: 8px;
+        background: repeating-linear-gradient(90deg, var(--amber) 0 3px, transparent 3px 7px);
+        opacity: 0.7;
+        pointer-events: none;
+      }
+      .lab.rewritten, .lab.sonnet-partial, .lab.opus-full,
+      .lab.docs-mismatch, .lab.dialog-false-alarm, .lab.mid-session-switch, .lab.cousins {
+        box-shadow: 0 0 0 3px rgba(196, 90, 42, 0.4), 0 24px 56px rgba(0, 0, 0, 0.42);
+      }
+      .lab.remanent, .lab.fable-preserved {
+        box-shadow: 0 0 0 3px rgba(61, 107, 255, 0.42), 0 24px 56px rgba(0, 0, 0, 0.42);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin-bottom: 14px;
+        border-bottom: 1px dashed rgba(196, 90, 42, 0.36);
+        padding-bottom: 8px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 0.9fr 1.25fr 0.95fr;
+        gap: 14px;
+      }
+      @media (max-width: 980px) { .deck { grid-template-columns: 1fr; } }
+
+      .cap, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      .curve-col, .lane-col, .face-col {
+        background: var(--slot);
+        border: 1px solid rgba(196, 90, 42, 0.2);
+        min-height: 360px;
+        padding: 14px;
+      }
+      .bh {
+        width: 100%;
+        height: auto;
+        display: block;
+        background:
+          radial-gradient(circle at 50% 50%, rgba(61, 107, 255, 0.08), transparent 62%),
+          #0d0b0a;
+        border: 1px solid rgba(61, 107, 255, 0.18);
+      }
+      .idle-word {
+        font-family: Syne, sans-serif;
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 12px 0 4px;
+        color: var(--rust-hot);
+      }
+      .lab.remanent .idle-word, .lab.fable-preserved .idle-word { color: var(--cobalt-hot); }
+      .idle-cap { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+
+      .faceplate {
+        border: 1px solid rgba(232, 160, 60, 0.28);
+        background: linear-gradient(180deg, #221810, #16120e);
+        padding: 12px;
+        margin-top: 12px;
+      }
+      .faceplate strong {
+        display: block;
+        font-family: Syne, sans-serif;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 4px 0 6px;
+      }
+      .faceplate span { color: var(--mute); font-size: 13px; line-height: 1.45; display: block; }
+
+      .lanes { display: grid; gap: 10px; }
+      .lane {
+        border: 1px solid rgba(196, 90, 42, 0.2);
+        padding: 10px;
+        background: #14110e;
+      }
+      .lane.fable { border-color: rgba(61, 107, 255, 0.35); }
+      .lane.sonnet { border-color: rgba(232, 160, 60, 0.35); }
+      .lane.opus { border-color: rgba(255, 77, 58, 0.35); }
+      .lane header {
+        display: flex;
+        justify-content: space-between;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .lane.fable header { color: var(--cobalt-hot); }
+      .lane.sonnet header { color: var(--amber-hot); }
+      .lane.opus header { color: var(--snap); }
+      .meter { height: 8px; background: #0c0a09; display: flex; margin-bottom: 6px; overflow: hidden; }
+      .meter .read { background: var(--cobalt); }
+      .meter .write { background: var(--rust); }
+      .lane.opus .meter .write { background: var(--snap); }
+      .lane.fable .meter .write { background: var(--amber); }
+      .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .pair b { color: var(--ink); font-weight: 500; }
+
+      .ticks {
+        display: flex;
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .tick {
+        flex: 1;
+        height: 18px;
+        border: 1px solid rgba(232, 160, 60, 0.28);
+        background: repeating-linear-gradient(90deg, var(--amber) 0 2px, transparent 2px 6px);
+        opacity: 0.35;
+      }
+      .tick.on { opacity: 1; box-shadow: 0 0 12px rgba(232, 160, 60, 0.35); }
+
+      .lower {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 14px;
+        margin-top: 14px;
+      }
+      @media (max-width: 980px) { .lower { grid-template-columns: 1fr; } }
+      .assay, .expect {
+        background: var(--slot);
+        border: 1px solid rgba(196, 90, 42, 0.2);
+        padding: 14px;
+      }
+      .rows { display: grid; gap: 6px; }
+      .row {
+        display: grid;
+        grid-template-columns: 0.7fr 0.7fr 0.55fr 0.55fr 0.55fr;
+        gap: 6px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+        background: #120f0c;
+        border: 1px solid rgba(196, 90, 42, 0.12);
+      }
+      .row.head { color: var(--amber); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; }
+      .row.zero { color: var(--snap); }
+      .row.hold { color: var(--cobalt-hot); }
+      .row.droop { color: var(--amber-hot); }
+      .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .vs article { background: #120f0c; border: 1px solid rgba(196, 90, 42, 0.16); padding: 10px; }
+      .vs b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin-bottom: 6px;
+      }
+      .vs p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.5; }
+
+      .beats { margin-top: 14px; }
+      .beat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+      @media (max-width: 980px) { .beat-row { grid-template-columns: 1fr 1fr 1fr; } }
+      .beat {
+        background: var(--slot);
+        border: 1px solid rgba(196, 90, 42, 0.2);
+        padding: 10px;
+      }
+      .beat em {
+        font-family: "IBM Plex Mono", monospace;
+        font-style: normal;
+        font-size: 10px;
+        color: var(--mute);
+      }
+      .beat b { display: block; font-family: Syne, sans-serif; font-size: 16px; margin: 4px 0 2px; }
+      .beat span { color: var(--mute); font-size: 12px; }
+      .beat.glow { border-color: var(--amber); box-shadow: 0 0 16px rgba(232, 160, 60, 0.18); }
+      .beat.loss { border-color: var(--snap); }
+      .beat.hold { border-color: var(--cobalt); }
+
+      .desk { margin-top: 22px; }
+      .verdict-row { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+      .verdict {
+        font-family: Syne, sans-serif;
+        font-size: clamp(36px, 6vw, 64px);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 0;
+        line-height: 0.9;
+      }
+      .verdict.alarm { color: var(--rust-hot); }
+      .verdict.hold { color: var(--cobalt-hot); }
+      .reason { max-width: 46em; color: var(--mute); line-height: 1.55; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+      .chip, button.chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid var(--rule);
+        background: var(--slot);
+        color: var(--ink);
+        padding: 5px 8px;
+        cursor: pointer;
+      }
+      .chip.live { border-color: var(--cobalt); color: var(--cobalt-hot); box-shadow: 0 0 0 1px rgba(61, 107, 255, 0.35); }
+      .chip.dead { border-color: var(--rust); color: var(--rust-hot); }
+
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 980px) { .paths { grid-template-columns: 1fr; } }
+      .path { background: var(--slot); border: 1px solid var(--rule); padding: 12px; }
+      .path.fail { border-color: rgba(196, 90, 42, 0.5); }
+      .path.ok { border-color: rgba(61, 107, 255, 0.45); }
+      .path b { font-family: Syne, sans-serif; font-size: 20px; display: block; margin-bottom: 6px; }
+      .path .face { color: var(--ink); font-size: 14px; line-height: 1.45; }
+      .path .note { display: block; margin-top: 8px; color: var(--mute); font-family: "IBM Plex Mono", monospace; font-size: 11px; }
+
+      .log, .slip {
+        background: var(--slot);
+        border: 1px solid var(--rule);
+        padding: 12px;
+        white-space: pre-wrap;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .slip { margin-top: 10px; }
+      .log .hit { color: var(--rust-hot); }
+      .slip .hook { color: var(--amber); }
+      .slip .user { color: var(--snap); }
+      .slip .asst { color: var(--cobalt-hot); }
+      .matrix { margin: 16px 0; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { border-bottom: 1px solid var(--rule); padding: 8px 10px; text-align: left; }
+      th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      tr.active { background: var(--rust-wash); }
+      .fail-cell { color: var(--rust-hot); }
+      .pass-cell { color: var(--cobalt-hot); }
+      .remediation { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 980px) { .remediation { grid-template-columns: 1fr 1fr; } }
+      .remedy {
+        border: 1px solid var(--rule);
+        padding: 12px;
+        background: var(--slot);
+        cursor: pointer;
+      }
+      .remedy:hover { border-color: var(--cobalt); }
+      .remedy b { display: block; margin-bottom: 6px; font-family: Syne, sans-serif; }
+      .remedy p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+      .act {
+        font-family: Figtree, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--slot);
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .act:hover { border-color: var(--amber-hot); color: var(--amber); }
+      .sim { margin-top: 18px; }
+      .sim h3 {
+        font-family: Syne, sans-serif;
+        font-size: 26px;
+        margin: 0 0 8px;
+        font-weight: 800;
+      }
+      .sim p { color: var(--mute); margin: 0 0 10px; }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .drop {
+        margin-top: 14px;
+        border: 1px dashed rgba(196, 90, 42, 0.5);
+        padding: 16px;
+        text-align: center;
+        color: var(--mute);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 12px;
+        background: var(--char);
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 12px;
+      }
+      .research { margin-top: 22px; color: var(--mute); line-height: 1.6; }
+      .research h3 { font-family: Syne, sans-serif; color: var(--ink); }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        padding: 3px 6px;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--mute);
+        font-size: 13px;
+        font-family: "IBM Plex Mono", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="catalog chrome" href="/">← catalog</a>
+      <p class="mark chrome">21:50 Sydney · hysteresis · catalog #181 · #92444</p>
+      <h1>Hysteresis <em>magnetic remanence / B-H curve assay</em></h1>
+      <p class="lede chrome">
+        Turning the effort dial should leave the prompt-cache remanent —
+        docs say no effect. On Sonnet the curve droops. On Opus the loop
+        snaps open (<code>read=0</code>). Idle word is
+        <code>remanent</code>. Seeded state is <code>rewritten</code>.
+      </p>
+
+      <section class="lab rewritten" id="stage" aria-label="Hysteresis materials lab">
+        <div class="rail">
+          <span>hysteresis · ferrite · remanence</span>
+          <span id="stage-label">seeded rewritten · Sonnet droops · Opus snaps open</span>
+          <span id="count-tag">#92444 · area:cost · documentation</span>
+        </div>
+        <div class="deck">
+          <div class="curve-col">
+            <h4 class="cap">B-H curve · effort switch</h4>
+            <svg class="bh" id="bh" viewBox="0 0 360 248" aria-hidden="true">
+              <line x1="28" y1="124" x2="332" y2="124" stroke="rgba(243,230,212,0.18)" stroke-width="1" />
+              <line x1="180" y1="18" x2="180" y2="230" stroke="rgba(243,230,212,0.18)" stroke-width="1" />
+              <text x="322" y="118" fill="#8c7d70" font-size="10" font-family="IBM Plex Mono, monospace">H</text>
+              <text x="186" y="28" fill="#8c7d70" font-size="10" font-family="IBM Plex Mono, monospace">B</text>
+              <text x="186" y="72" fill="#e8a03c" font-size="9" font-family="IBM Plex Mono, monospace" id="br-label">Br</text>
+              <line x1="174" y1="68" x2="186" y2="68" stroke="#e8a03c" stroke-width="2" id="br-tick" />
+              <path id="loop-fable" d="M70 170 C110 210, 150 210, 180 124 C210 38, 250 38, 290 78 C250 18, 210 18, 180 124 C150 230, 110 230, 70 170 Z" fill="none" stroke="#3d6bff" stroke-width="2.4" opacity="0.35" />
+              <path id="loop-sonnet" d="M78 164 C118 196, 156 188, 180 124 C204 60, 246 52, 286 86 C250 40, 214 48, 180 124 C148 198, 114 206, 78 164 Z" fill="none" stroke="#e8a03c" stroke-width="2.4" opacity="0.9" />
+              <path id="loop-opus" d="M96 150 C130 168, 158 150, 180 124 C202 98, 230 88, 264 108 C220 116, 200 120, 180 124 C160 128, 132 136, 96 150 Z" fill="none" stroke="#ff4d3a" stroke-width="2.8" opacity="0.95" />
+              <circle cx="180" cy="68" r="4" fill="#e8a03c" id="br-dot" />
+              <circle cx="180" cy="124" r="3" fill="#f3e6d4" />
+            </svg>
+            <div class="idle-word" id="free-word">rewritten</div>
+            <p class="idle-cap" id="free-cap">Sonnet droops a partial rewrite · Opus snaps the loop open (read=0)</p>
+            <div class="ticks" aria-label="Remanence amber ticks">
+              <div class="tick on" id="tick-1"></div>
+              <div class="tick" id="tick-2"></div>
+              <div class="tick" id="tick-3"></div>
+              <div class="tick on" id="tick-4"></div>
+              <div class="tick" id="tick-5"></div>
+            </div>
+          </div>
+          <div class="lane-col">
+            <h4 class="cap">model lanes · control vs switch</h4>
+            <div class="lanes" id="lanes">
+              <article class="lane fable">
+                <header><span>Fable 5.1</span><span id="fable-state">remanent / free</span></header>
+                <div class="meter" title="Fable switch 1"><span class="read" style="width:98%"></span><span class="write" style="width:2%"></span></div>
+                <div class="pair">
+                  <span>ctrl 66.6K / 0.22K</span>
+                  <span>hi→lo <b>66.8K / 0.14K</b></span>
+                  <span>lo→med 66.9K / 0.13K</span>
+                  <span>cache remanent</span>
+                </div>
+              </article>
+              <article class="lane sonnet">
+                <header><span>Sonnet 5</span><span id="sonnet-state">partial rewrite</span></header>
+                <div class="meter" title="Sonnet switch 1"><span class="read" style="width:66%"></span><span class="write" style="width:34%"></span></div>
+                <div class="pair">
+                  <span>ctrl 77.4K / 0.17K</span>
+                  <span>hi→lo <b>51.3K / 26.5K</b></span>
+                  <span>lo→med 45.4K / 32.5K</span>
+                  <span>curve droops</span>
+                </div>
+              </article>
+              <article class="lane opus">
+                <header><span>Opus 5</span><span id="opus-state">full rewrite</span></header>
+                <div class="meter" title="Opus switch 1"><span class="read" style="width:0%"></span><span class="write" style="width:100%"></span></div>
+                <div class="pair">
+                  <span>ctrl 65.7K / 0.13K</span>
+                  <span>hi→lo <b>0 / 65.9K</b></span>
+                  <span>lo→med 0 / 66.1K</span>
+                  <span>loop snaps open</span>
+                </div>
+              </article>
+            </div>
+          </div>
+          <div class="face-col">
+            <h4 class="cap">faceplate</h4>
+            <article class="faceplate" id="faceplate">
+              <b class="cap">remanence</b>
+              <strong id="face-text">cache rewritten</strong>
+              <span id="face-note">Mid-session /effort. Docs say no effect. Sonnet partial. Opus read=0.</span>
+            </article>
+            <article class="faceplate" style="margin-top:10px">
+              <b class="cap">docs claim</b>
+              <strong id="docs-face" style="font-size:18px">not part of the cache key</strong>
+              <span id="docs-note">changing it mid-session has no effect on the cache</span>
+            </article>
+            <article class="faceplate" style="margin-top:10px">
+              <b class="cap">dialog</b>
+              <strong id="dialog-face" style="font-size:18px">unconditional miss</strong>
+              <span id="dialog-note">correct for Sonnet/Opus · false alarm for Fable</span>
+            </article>
+          </div>
+        </div>
+        <div class="lower">
+          <div class="assay">
+            <h4 class="cap">transcript table · cache_read / cache_creation</h4>
+            <div class="rows" id="table-rows">
+              <div class="row head"><span>model</span><span>turn</span><span>effort</span><span>read</span><span>write</span></div>
+              <div class="row hold"><span>Sonnet 5</span><span>control</span><span>high→high</span><span>77.4K</span><span>0.17K</span></div>
+              <div class="row droop"><span>Sonnet 5</span><span>switch 1</span><span>high→low</span><span>51.3K</span><span>26.5K</span></div>
+              <div class="row droop"><span>Sonnet 5</span><span>switch 2</span><span>low→medium</span><span>45.4K</span><span>32.5K</span></div>
+              <div class="row hold"><span>Opus 5</span><span>control</span><span>high→high</span><span>65.7K</span><span>0.13K</span></div>
+              <div class="row zero"><span>Opus 5</span><span>switch 1</span><span>high→low</span><span>0</span><span>65.9K</span></div>
+              <div class="row zero"><span>Opus 5</span><span>switch 2</span><span>low→medium</span><span>0</span><span>66.1K</span></div>
+              <div class="row hold"><span>Fable 5.1</span><span>control</span><span>high→high</span><span>66.6K</span><span>0.22K</span></div>
+              <div class="row hold"><span>Fable 5.1</span><span>switch 1</span><span>high→low</span><span>66.8K</span><span>0.14K</span></div>
+              <div class="row hold"><span>Fable 5.1</span><span>switch 2</span><span>low→medium</span><span>66.9K</span><span>0.13K</span></div>
+            </div>
+          </div>
+          <div class="expect">
+            <h4 class="cap">expected vs actual</h4>
+            <div class="vs">
+              <article>
+                <b>expected</b>
+                <p id="exp-copy">Effort is not part of the cache key. Changing it mid-session has no effect on the cache — remanent on every family.</p>
+              </article>
+              <article>
+                <b>actual</b>
+                <p id="act-copy">True only for Fable 5.1. Sonnet 5 partial rewrite. Opus 5 full rewrite (read=0 / write≈ctx).</p>
+              </article>
+            </div>
+          </div>
+        </div>
+        <div class="beats">
+          <h4 class="cap">assay timeline · control to snap</h4>
+          <div class="beat-row" id="proofs">
+            <article class="beat" id="beat-1"><em>1</em><b>docs</b><span>not in cache key</span></article>
+            <article class="beat" id="beat-2"><em>2</em><b>control</b><span>high→high holds</span></article>
+            <article class="beat glow" id="beat-3"><em>3</em><b>switch</b><span>high→low /effort</span></article>
+            <article class="beat loss" id="beat-4"><em>4</em><b>Sonnet</b><span>partial rewrite</span></article>
+            <article class="beat loss" id="beat-5"><em>5</em><b>Opus</b><span>read=0 full</span></article>
+            <article class="beat hold" id="beat-6"><em>6</em><b>Fable</b><span>remanent / free</span></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Hysteresis scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">rewritten</p>
+            <p class="reason" id="reason">
+              Mid-session /effort invalidated the prompt cache on Sonnet 5 and Opus 5. Docs say no effect. Admit the cache already rewritten.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="slip" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Hysteresis path matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>shipped</th>
+                <th>isolate</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="remediation" aria-label="Assay pads">
+          <article class="remedy" data-remedy="remanent">
+            <b>Remanent</b>
+            <p>Prompt-cache holds after mid-session /effort. Docs claim, idle fence.</p>
+          </article>
+          <article class="remedy" data-remedy="sonnet-partial">
+            <b>Sonnet droop</b>
+            <p>high→low 51.3K / 26.5K. low→medium 45.4K / 32.5K. Partial rewrite.</p>
+          </article>
+          <article class="remedy" data-remedy="opus-full">
+            <b>Opus snap</b>
+            <p>Both switches read=0 / write≈ctx. Entire prefix rewritten.</p>
+          </article>
+          <article class="remedy" data-remedy="fable-preserved">
+            <b>Fable free</b>
+            <p>All switches remanent. ~66.8K read / ~0.13-0.22K write.</p>
+          </article>
+          <article class="remedy" data-remedy="docs-mismatch">
+            <b>Docs mismatch</b>
+            <p>Advertised remanent. Live rewritten on two of three families.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act" data-act="score">Score the remanence</button>
+          <button class="act" data-act="idle">Admit remanent</button>
+          <button class="act" data-act="seed">Pin seeded rewritten</button>
+          <button class="act" data-act="flip">Flip remanent vs rewritten</button>
+          <button class="act" data-act="fixtures">Load #92444 fixture</button>
+          <button class="act" data-act="reset">Reset to remanent</button>
+        </div>
+
+        <div class="sim">
+          <h3>Hysteresis simulator</h3>
+          <p>Rewrite the B-H loop without touching a live Claude session. Diagnostic assay pads only — not real API calls.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="rewrite">admit rewritten</span>
+            <span class="chip" data-sim-pull="hold">score remanent</span>
+            <span class="chip" data-sim-pull="sonnet">sonnet droop</span>
+            <span class="chip" data-sim-pull="opus">opus snap</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="remanent">remanent</button>
+            <button class="chip" data-chip="rewritten">rewritten</button>
+            <button class="chip" data-chip="sonnet-partial">sonnet-partial</button>
+            <button class="chip" data-chip="opus-full">opus-full</button>
+            <button class="chip" data-chip="fable-preserved">fable-preserved</button>
+            <button class="chip" data-chip="docs-mismatch">docs-mismatch</button>
+            <button class="chip" data-chip="dialog-false-alarm">dialog-false-alarm</button>
+            <button class="chip" data-chip="mid-session-switch">mid-session-switch</button>
+            <button class="chip" data-chip="cousins">cousins</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the ferrite</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            Anthropic prompt-caching docs say effort is
+            <code>not part of the cache key... changing it mid-session has no effect on the cache</code>
+            (<a href="https://code.claude.com/docs/en/prompt-caching">prompt-caching</a>).
+            Empirically true only for Fable 5.1. On Sonnet 5 and Opus 5, a mid-session
+            <code>/effort</code> change invalidates the cache — partially on Sonnet, fully on Opus.
+          </p>
+          <p>
+            One interactive session per model, ~65-78K token base context, effort held
+            steady for a control turn, then switched twice. Numbers are
+            <code>cache_read_input_tokens</code> / <code>cache_creation_input_tokens</code>
+            from each session's transcript.
+          </p>
+          <p>
+            Opus 5 <code>read=0</code> on both switches means the entire prefix was
+            rewritten from scratch — the worst outcome of the three models tested.
+            The in-app confirmation dialog warns of a cache miss unconditionally:
+            correct for Sonnet/Opus, a false alarm for Fable.
+          </p>
+          <p>
+            Hypothesis only (NON-BINDING): effort may be included in the cache key
+            for Sonnet/Opus families despite docs; Fable omits it. Verify nothing —
+            encode the issue table only. Do not invent runtime source claims.
+          </p>
+          <p>
+            Stay off: <span class="stayoff">
+              <span>Rheostat #92436</span>
+              <span>Hardstand #92452</span>
+              <span>Aphonia #92409</span>
+              <span>Fulcrum #92377</span>
+              <span>Wildcat #92399</span>
+              <span>Clobber #92419</span>
+              <span>Ephemera #92090</span>
+              <span>Commutator</span>
+            </span>
+          </p>
+          <p>
+            Cousins cite-only:
+            <a href="https://github.com/anthropics/claude-code/issues/61984">#61984</a>
+            CLOSED Opus 4.7 full/near-full cache miss ·
+            <a href="https://github.com/anthropics/claude-code/issues/63962">#63962</a>
+            CLOSED cache preserved (Fable-consistent); also the unconditional dialog.
+          </p>
+        </section>
+        <footer>
+          Catalog #181 · idle word remanent · seeded rewritten · mark 21:50 Sydney · hysteresis ·
+          no live Claude sessions · fonts Syne / Figtree / IBM Plex Mono · magnetic remanence lab
+        </footer>
+      </section>
+    </main>
+    <script>
+      const HOLD = new Set(["remanent", "fable-preserved"]);
+      const CHIPS = [
+        "remanent", "rewritten", "sonnet-partial", "opus-full", "fable-preserved",
+        "docs-mismatch", "dialog-false-alarm", "mid-session-switch", "cousins"
+      ];
+      const CHIP_FILES = {
+        remanent: "remanent.json",
+        rewritten: "rewritten.json",
+        "sonnet-partial": "sonnet-partial.json",
+        "opus-full": "opus-full.json",
+        "fable-preserved": "fable-preserved.json",
+        "docs-mismatch": "docs-mismatch.json",
+        "dialog-false-alarm": "dialog-false-alarm.json",
+        "mid-session-switch": "mid-session-switch.json",
+        cousins: "cousins.json"
+      };
+      const MATRIX = [
+        { id: "repro", name: "mid-session /effort · control then two switches per family", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "repro.json" },
+        { id: "primary", name: "#92444 · Sonnet partial · Opus read=0 · Fable remanent", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "92444.json" },
+        { id: "settings", name: "docs say remanent · live rewritten on Sonnet/Opus", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "settings.json" },
+        { id: "sonnet", name: "Sonnet 5 high→low 51.3K / 26.5K · partial rewrite", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "sonnet-partial.json" },
+        { id: "opus", name: "Opus 5 both switches read=0 / write≈ctx", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "opus-full.json" },
+        { id: "docs", name: "docs wrong for two of three families", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "docs-mismatch.json" },
+        { id: "fable", name: "Fable 5.1 all switches remanent / free", shipped: "pass", isolate: "pass", scored: "pass", file: "fable-preserved.json" },
+        { id: "remanent", name: "prompt-cache remanent after mid-session /effort", shipped: "pass", isolate: "pass", scored: "pass", file: "remanent.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92444,
+        seed: "remanent",
+        remanent: true,
+        rewritten: false,
+        cachePreserved: true,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "REMANENT",
+        log: [
+          "[idle] prompt-cache remanent after mid-session /effort",
+          "[docs] effort is not part of the cache key · changing it mid-session has no effect",
+          "[desk] already remanent; idle word remanent"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92444,
+        seed: "rewritten",
+        remanent: false,
+        rewritten: true,
+        sonnetPartial: true,
+        opusFull: true,
+        docsMismatch: true,
+        dialogFalseAlarm: true,
+        midSessionSwitch: true,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "REWRITTEN",
+        log: [
+          "[issue] #92444 OPEN · /effort mid-session invalidates the prompt cache on Sonnet 5 and Opus 5",
+          "[docs] effort is not part of the cache key... changing it mid-session has no effect on the cache",
+          "[sonnet] high→low read 51.3K / write 26.5K · low→medium read 45.4K / write 32.5K",
+          "[opus] high→low read 0 / write 65.9K · low→medium read 0 / write 66.1K",
+          "[desk] already rewritten; seeded word rewritten"
+        ]
+      };
+
+      const remanentTicket = { ...idle };
+      const sonnetTicket = { source: "probe", issue: 92444, seed: "sonnet-partial", rewritten: true, sonnetPartial: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "SONNET-PARTIAL", log: ["[sonnet-partial] high→low 51.3K / 26.5K · low→medium 45.4K / 32.5K"] };
+      const opusTicket = { source: "probe", issue: 92444, seed: "opus-full", rewritten: true, opusFull: true, opusRead: 0, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "OPUS-FULL", log: ["[opus-full] both switches read=0 / write≈ctx"] };
+      const fableTicket = { source: "probe", issue: 92444, seed: "fable-preserved", remanent: true, rewritten: false, cachePreserved: true, fablePreserved: true, shippedMark: "pass", scoredMark: "pass", isolateMark: "pass", hubCount: "FABLE-PRESERVED", log: ["[fable-preserved] all switches ~66.8K read / ~0.13-0.22K write"] };
+      const docsTicket = { source: "probe", issue: 92444, seed: "docs-mismatch", rewritten: true, docsMismatch: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "DOCS-MISMATCH", log: ["[docs-mismatch] advertised remanent · live rewritten on Sonnet/Opus"] };
+      const dialogTicket = { source: "probe", issue: 92444, seed: "dialog-false-alarm", rewritten: true, dialogFalseAlarm: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "DIALOG-FALSE-ALARM", log: ["[dialog-false-alarm] unconditional miss warning · false on Fable"] };
+      const switchTicket = { source: "probe", issue: 92444, seed: "mid-session-switch", rewritten: true, midSessionSwitch: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "MID-SESSION-SWITCH", log: ["[mid-session-switch] control holds · switches rewrite Sonnet/Opus"] };
+      const cousinsTicket = { source: "probe", issue: 92444, seed: "cousins", rewritten: true, cousinsCiteOnly: [61984, 63962], shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "COUSINS", log: ["[cousins] #61984 #63962", "[desk] primary stays #92444"] };
+
+      const FALLBACKS = {
+        remanent: remanentTicket,
+        rewritten: seeded,
+        "sonnet-partial": sonnetTicket,
+        "opus-full": opusTicket,
+        "fable-preserved": fableTicket,
+        "docs-mismatch": docsTicket,
+        "dialog-false-alarm": dialogTicket,
+        "mid-session-switch": switchTicket,
+        cousins: cousinsTicket
+      };
+
+      let pullState = "rewrite";
+      let flipHold = false;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.remanent === true && t.rewritten !== true);
+      }
+
+      function alreadyRewritten(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.rewritten !== true) return false;
+        if (HOLD.has(seed) && t.rewritten !== true) return false;
+        if (t.rewritten === true || t.opusRead === 0) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.remanent !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyRewritten(t);
+        t.shippedFree = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedFree ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (remediating(t) ? "pass" : "FAIL");
+        const holding = remediating(t) && !alarm;
+        const chips = [];
+        if (holding || seed === "remanent") chips.push("remanent");
+        if (alarm || seed === "rewritten" || t.rewritten === true) chips.push("rewritten");
+        if (seed === "sonnet-partial" || t.sonnetPartial === true) chips.push("sonnet-partial");
+        if (seed === "opus-full" || t.opusFull === true) chips.push("opus-full");
+        if (seed === "fable-preserved" || t.fablePreserved === true) chips.push("fable-preserved");
+        if (seed === "docs-mismatch" || t.docsMismatch === true) chips.push("docs-mismatch");
+        if (seed === "dialog-false-alarm" || t.dialogFalseAlarm === true) chips.push("dialog-false-alarm");
+        if (seed === "mid-session-switch" || t.midSessionSwitch === true) chips.push("mid-session-switch");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (holding ? "remanent" : "rewritten");
+        return { ticket: t, holding, alarm, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        remanent: "The prompt-cache is remanent after mid-session /effort. Docs say effort is not part of the cache key. Idle word is remanent.",
+        rewritten: "Mid-session /effort invalidated the prompt cache on Sonnet 5 and Opus 5. Docs say no effect. Admit the cache already rewritten.",
+        "sonnet-partial": "Sonnet 5 high→low read 51.3K / write 26.5K. low→medium read 45.4K / write 32.5K. The B-H curve droops — partial rewrite, not full remanence.",
+        "opus-full": "Opus 5 both switches read=0 / write≈ctx (65.9K and 66.1K). The loop snaps open. The entire prefix was rewritten from scratch.",
+        "fable-preserved": "Fable 5.1 all switches preserve cache (~66.8K read, ~0.13-0.22K write). The switch is genuinely free. Contrast remanent / free.",
+        "docs-mismatch": "Docs at code.claude.com/docs/en/prompt-caching say effort is not part of the cache key. Empirically false on Sonnet 5 and Opus 5.",
+        "dialog-false-alarm": "The in-app confirmation dialog warns of a cache miss unconditionally. Correct for Sonnet/Opus. False alarm for Fable.",
+        "mid-session-switch": "Control high→high holds remanence on every family. The mid-session switches invalidate on Sonnet (partial) and Opus (full).",
+        cousins: "Cite-only cousins #61984 CLOSED Opus 4.7 full/near-full miss and #63962 CLOSED cache preserved (Fable-consistent). Both stale-bot closed. Primary stays #92444."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] cache rewritten · Sonnet partial · Opus read=0"]
+            : ["[desk] remanent · prompt-cache holds"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /rewritten|FAIL|read=0|partial|mismatch|snap/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "cache rewritten · Sonnet partial · Opus read=0" : "remanent · mid-session /effort has no effect", "hysteresis path"],
+          ["isolate", t.isolateMark, "mid-session /effort cache key · not Rheostat --level · not Hardstand Dispatch", "not a clone"],
+          ["scored", t.scoredMark, remediating(t) ? "remanent" : "would score after docs and dialog split by family", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id === "sonnet" ? "sonnet-partial" : (row.id === "opus" ? "opus-full" : (row.id === "docs" ? "docs-mismatch" : "rewritten")), scenario: row.id }
+                : { ...(row.id === "fable" ? fableTicket : remanentTicket), scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (HOLD.has(t.seed) || result.holding) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">Br remanent after /effort</span>\n` +
+            `<span class="asst">cache_read holds · cache_creation ~0.13-0.22K</span>\n` +
+            `<span class="hook">${t.seed || "remanent"}; contrast hold</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">/effort mid-session · high→low then low→medium</span>\n` +
+          `<span class="user">Opus 5 read=0 / write 65.9K · 66.1K</span>\n` +
+          `<span class="asst">Sonnet 5 51.3K / 26.5K · 45.4K / 32.5K</span>\n` +
+          `<span class="hook">docs: not part of the cache key · Fable remanent</span>`;
+      }
+
+      function paintCurve(holding, seed) {
+        const fable = document.getElementById("loop-fable");
+        const sonnet = document.getElementById("loop-sonnet");
+        const opus = document.getElementById("loop-opus");
+        const br = document.getElementById("br-dot");
+        const tick = document.getElementById("br-tick");
+        if (holding || seed === "fable-preserved") {
+          fable.setAttribute("opacity", "0.95");
+          fable.setAttribute("stroke-width", "2.8");
+          sonnet.setAttribute("opacity", "0.22");
+          opus.setAttribute("opacity", "0.16");
+          br.setAttribute("cy", "68");
+          br.setAttribute("fill", "#3d6bff");
+          tick.setAttribute("y1", "68");
+          tick.setAttribute("y2", "68");
+          tick.setAttribute("stroke", "#3d6bff");
+          document.getElementById("br-label").setAttribute("y", "62");
+          document.getElementById("br-label").setAttribute("fill", "#7a9cff");
+        } else if (seed === "sonnet-partial") {
+          fable.setAttribute("opacity", "0.2");
+          sonnet.setAttribute("opacity", "0.95");
+          sonnet.setAttribute("stroke-width", "2.8");
+          opus.setAttribute("opacity", "0.2");
+          br.setAttribute("cy", "88");
+          br.setAttribute("fill", "#e8a03c");
+          tick.setAttribute("y1", "88");
+          tick.setAttribute("y2", "88");
+          tick.setAttribute("stroke", "#e8a03c");
+          document.getElementById("br-label").setAttribute("y", "82");
+          document.getElementById("br-label").setAttribute("fill", "#e8a03c");
+        } else if (seed === "opus-full") {
+          fable.setAttribute("opacity", "0.16");
+          sonnet.setAttribute("opacity", "0.2");
+          opus.setAttribute("opacity", "0.98");
+          opus.setAttribute("stroke-width", "3");
+          br.setAttribute("cy", "124");
+          br.setAttribute("fill", "#ff4d3a");
+          tick.setAttribute("y1", "124");
+          tick.setAttribute("y2", "124");
+          tick.setAttribute("stroke", "#ff4d3a");
+          document.getElementById("br-label").setAttribute("y", "118");
+          document.getElementById("br-label").setAttribute("fill", "#ff4d3a");
+        } else {
+          fable.setAttribute("opacity", "0.35");
+          sonnet.setAttribute("opacity", "0.9");
+          opus.setAttribute("opacity", "0.95");
+          br.setAttribute("cy", "118");
+          br.setAttribute("fill", "#ff4d3a");
+          tick.setAttribute("y1", "118");
+          tick.setAttribute("y2", "118");
+          tick.setAttribute("stroke", "#e8a03c");
+          document.getElementById("br-label").setAttribute("y", "112");
+          document.getElementById("br-label").setAttribute("fill", "#e8a03c");
+        }
+        ["tick-1", "tick-2", "tick-3", "tick-4", "tick-5"].forEach((id, i) => {
+          document.getElementById(id).classList.toggle("on", holding ? i % 2 === 0 : i === 0 || i === 3);
+        });
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const seedName = String(t.seed || result.verdict || "");
+        const holding = (result.holding || remediating(t)) && !alarm;
+        const stageClass = holding
+          ? (seedName === "fable-preserved" ? "fable-preserved" : "remanent")
+          : (CHIPS.includes(seedName) && seedName !== "remanent" ? seedName : "rewritten");
+        const verdictEl = document.getElementById("verdict");
+        verdictEl.textContent = result.verdict;
+        verdictEl.className = "verdict " + (holding ? "hold" : "alarm");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || REASONS[alarm ? "rewritten" : "remanent"];
+        document.getElementById("stage").className = "lab " + stageClass;
+        document.getElementById("stage-label").textContent = holding
+          ? (seedName === "fable-preserved" ? "fable-preserved · remanent / free · all switches hold" : "remanent · prompt-cache holds after mid-session /effort")
+          : (seedName === "cousins" ? "cousins · cite-only #61984 #63962"
+            : (seedName === "opus-full" ? "opus-full · loop snaps open · read=0"
+            : (seedName === "sonnet-partial" ? "sonnet-partial · curve droops · partial rewrite"
+            : (seedName === "docs-mismatch" ? "docs-mismatch · advertised remanent · live rewritten"
+            : (seedName === "dialog-false-alarm" ? "dialog-false-alarm · unconditional miss · false on Fable"
+            : "seeded rewritten · Sonnet droops · Opus snaps open")))));
+        document.getElementById("count-tag").textContent = holding
+          ? "remanent · mid-session /effort has no effect"
+          : "#92444 · area:cost · documentation";
+        document.getElementById("free-word").textContent = holding ? (seedName === "fable-preserved" ? "remanent" : "remanent") : (CHIPS.includes(seedName) ? seedName : "rewritten");
+        document.getElementById("free-cap").textContent = holding
+          ? "prompt-cache remanent after mid-session /effort · Fable-consistent"
+          : "Sonnet droops a partial rewrite · Opus snaps the loop open (read=0)";
+        document.getElementById("face-text").textContent = holding ? "cache remanent" : "cache rewritten";
+        document.getElementById("face-note").textContent = holding
+          ? "Mid-session /effort leaves Br on the curve. Docs match the live cache."
+          : "Mid-session /effort. Docs say no effect. Sonnet partial. Opus read=0.";
+        document.getElementById("docs-face").textContent = holding ? "matches live remanence" : "not part of the cache key";
+        document.getElementById("docs-note").textContent = holding
+          ? "changing it mid-session has no effect — and the live cache agrees"
+          : "changing it mid-session has no effect on the cache";
+        document.getElementById("dialog-face").textContent = holding ? "family-split dialog" : "unconditional miss";
+        document.getElementById("dialog-note").textContent = holding
+          ? "Fable stays quiet. Sonnet/Opus only warn when the loop actually snaps."
+          : "correct for Sonnet/Opus · false alarm for Fable";
+        document.getElementById("fable-state").textContent = "remanent / free";
+        document.getElementById("sonnet-state").textContent = holding ? "remanent" : "partial rewrite";
+        document.getElementById("opus-state").textContent = holding ? "remanent" : "full rewrite";
+        document.getElementById("act-copy").textContent = holding
+          ? "Mid-session /effort leaves the prompt-cache remanent on every family."
+          : "True only for Fable 5.1. Sonnet 5 partial rewrite. Opus 5 full rewrite (read=0 / write≈ctx).";
+        paintCurve(holding, seedName);
+        ["beat-1", "beat-2", "beat-3", "beat-4", "beat-5", "beat-6"].forEach((id, i) => {
+          const el = document.getElementById(id);
+          el.className = "beat" + (holding ? " hold" : (i === 2 ? " glow" : (i === 3 || i === 4 ? " loss" : (i === 5 ? " hold" : ""))));
+        });
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.holding;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        const matrixId = holding
+          ? (seedName === "fable-preserved" ? "fable" : "remanent")
+          : (seedName === "sonnet-partial" ? "sonnet"
+            : (seedName === "opus-full" ? "opus"
+            : (seedName === "docs-mismatch" ? "docs"
+            : (t.scenario === "repro" ? "repro"
+            : (t.scenario === "settings" ? "settings" : "primary")))));
+        paintMatrix(t.scenario === "92444" ? "primary" : matrixId);
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "hold") return { ...remanentTicket };
+        if (pullState === "sonnet") return { ...sonnetTicket };
+        if (pullState === "opus") return { ...opusTicket };
+        return { ...seeded };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const hold = pullState === "hold";
+          b.classList.toggle("dead", on && !hold);
+          b.classList.toggle("live", on && hold);
+        });
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") {
+            pullState = "hold";
+            flipHold = true;
+            syncSimChips();
+            try { apply(await loadNamed("remanent.json")); }
+            catch { apply({ ...idle }); }
+            return;
+          }
+          if (act === "seed") {
+            pullState = "rewrite";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("rewritten.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "flip") {
+            flipHold = !flipHold;
+            if (flipHold) {
+              pullState = "hold";
+              syncSimChips();
+              try { apply(await loadNamed("remanent.json")); }
+              catch { apply({ ...remanentTicket }); }
+            } else {
+              pullState = "rewrite";
+              syncSimChips();
+              try { apply(await loadNamed("rewritten.json")); }
+              catch { apply({ ...seeded }); }
+            }
+            return;
+          }
+          if (act === "fixtures") {
+            pullState = "rewrite";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("92444.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch { apply({ ...(FALLBACKS[chip] || seeded), seed: chip, issue: 92444 }); }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          try { apply(await loadNamed(CHIP_FILES[kind])); }
+          catch { apply({ ...(FALLBACKS[kind] || remanentTicket) }); }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
