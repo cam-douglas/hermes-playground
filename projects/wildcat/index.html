@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wildcat — windlass freewheel lab for #92399</title>
+    <meta
+      name="description"
+      content="Wildcat — windlass-deck / chain-wildcat / freewheel lab for Claude Code #92399: run_in_background reports completed on parent-shell exit while nohup children keep writing; immediate ps can miss them. Idle word is freewheeling."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Sora:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --deck: #07090c;
+        --iron: #10151b;
+        --plate: #181f27;
+        --rivet: #2a333c;
+        --foam: #dce4ea;
+        --mute: #7d8a94;
+        --rust: #c45a28;
+        --rust-hot: #ef7a3a;
+        --brass: #c9a24e;
+        --brass-hot: #e8c56a;
+        --copper: #b87333;
+        --hold: #3d9a78;
+        --hold-hot: #62c49a;
+        --spin: #e8a040;
+        --line: rgba(201, 162, 78, 0.26);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Sora, "Segoe UI", sans-serif;
+        color: var(--foam);
+        background:
+          radial-gradient(ellipse at 8% -8%, rgba(196, 90, 40, 0.14), transparent 38%),
+          radial-gradient(ellipse at 92% 0%, rgba(232, 160, 64, 0.08), transparent 32%),
+          repeating-radial-gradient(circle at 50% 120px, transparent 0 18px, rgba(201, 162, 78, 0.035) 18px 19px),
+          linear-gradient(180deg, #121820 0%, #07090c 46%, #050608 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass-hot); }
+      .wrap { width: min(1240px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 3px solid var(--rust);
+        padding-left: 10px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--brass);
+      }
+      h1 {
+        font-family: Syne, "Avenir Next", sans-serif;
+        font-size: clamp(56px, 10vw, 108px);
+        letter-spacing: -0.04em;
+        margin: 6px 0 12px;
+        font-weight: 800;
+        line-height: 0.82;
+      }
+      h1 em {
+        font-style: normal;
+        font-weight: 600;
+        color: var(--rust-hot);
+        font-size: 0.2em;
+        letter-spacing: 0.18em;
+        display: block;
+        margin-top: 16px;
+        text-transform: uppercase;
+        font-family: Sora, sans-serif;
+      }
+      .lede { max-width: 76em; color: var(--mute); line-height: 1.65; font-size: 17px; }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--brass-hot);
+      }
+
+      .windlass {
+        margin: 26px 0 0;
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(24, 31, 39, 0.96), rgba(7, 9, 12, 0.98)),
+          repeating-linear-gradient(90deg, transparent 0 21px, rgba(184, 115, 51, 0.05) 21px 22px);
+        box-shadow: 0 32px 70px rgba(0, 0, 0, 0.55);
+        padding: 16px 16px 14px;
+      }
+      .windlass.freewheeling, .windlass.doubled, .windlass.visibility-lag {
+        box-shadow: 0 0 0 3px rgba(196, 90, 40, 0.34), 0 32px 70px rgba(0, 0, 0, 0.55);
+      }
+      .windlass.work-finished, .windlass.descendant-count-at-exit,
+      .windlass.delayed-ps-recheck, .windlass.shell-exit-only {
+        box-shadow: 0 0 0 3px rgba(61, 154, 120, 0.32), 0 32px 70px rgba(0, 0, 0, 0.55);
+      }
+      .chainrail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 14px;
+        border-bottom: 1px dashed rgba(201, 162, 78, 0.35);
+        padding-bottom: 8px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 0.78fr 1.05fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 920px) { .deck { grid-template-columns: 1fr; } }
+
+      .cap, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .sprocket-col {
+        background: #0c1014;
+        border: 1px solid rgba(232, 160, 64, 0.24);
+        min-height: 340px;
+        padding: 14px;
+      }
+      .sprocket-wrap {
+        width: 188px;
+        height: 188px;
+        margin: 12px auto 10px;
+        position: relative;
+      }
+      .sprocket {
+        width: 188px;
+        height: 188px;
+        border-radius: 50%;
+        background:
+          repeating-conic-gradient(from 6deg, #2a333c 0 8deg, #0c1014 8deg 15deg),
+          radial-gradient(circle at 50% 50%, #1a2128 0 28%, #0a0d10 42%, #c9a24e 43% 48%, #10151b 49%);
+        box-shadow:
+          inset 0 0 0 14px #161c22,
+          inset 0 0 0 16px var(--brass),
+          0 0 0 7px #1c232b,
+          0 18px 30px rgba(0, 0, 0, 0.5);
+        position: relative;
+      }
+      .sprocket::after {
+        content: "";
+        position: absolute;
+        inset: 38%;
+        border-radius: 50%;
+        background: var(--spin);
+        box-shadow: 0 0 22px var(--spin);
+      }
+      .sprocket.spin { animation: freewheel 2.2s linear infinite; }
+      .sprocket.held { animation: none; filter: grayscale(0.15); }
+      .sprocket.held::after { background: var(--hold-hot); box-shadow: 0 0 16px var(--hold); }
+      @keyframes freewheel { to { transform: rotate(360deg); } }
+      .free-word {
+        text-align: center;
+        font-family: Syne, sans-serif;
+        font-size: 26px;
+        color: var(--spin);
+        letter-spacing: 0.03em;
+        font-weight: 700;
+      }
+      .windlass.work-finished .free-word,
+      .windlass.descendant-count-at-exit .free-word,
+      .windlass.delayed-ps-recheck .free-word,
+      .windlass.shell-exit-only .free-word { color: var(--hold-hot); }
+      .free-cap {
+        text-align: center;
+        color: var(--mute);
+        font-size: 13px;
+        margin-top: 6px;
+        line-height: 1.45;
+      }
+      .brake-row {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: center;
+      }
+      .brake {
+        width: 70px;
+        height: 10px;
+        background: var(--rivet);
+        border-radius: 3px;
+        position: relative;
+      }
+      .brake i {
+        position: absolute;
+        left: 4px;
+        top: -16px;
+        width: 10px;
+        height: 28px;
+        background: var(--rust);
+        border-radius: 2px;
+        transform-origin: 50% 90%;
+        transform: rotate(-38deg);
+        transition: transform 0.25s ease, background 0.2s;
+      }
+      .windlass.work-finished .brake i,
+      .windlass.descendant-count-at-exit .brake i,
+      .windlass.delayed-ps-recheck .brake i { transform: rotate(18deg); background: var(--hold); }
+      .brake-lab {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+
+      .clutch {
+        background: #0c1014;
+        border: 1px solid rgba(201, 162, 78, 0.2);
+        padding: 14px;
+      }
+      .dial {
+        position: relative;
+        width: min(100%, 280px);
+        height: 140px;
+        margin: 8px auto 6px;
+        overflow: hidden;
+      }
+      .dial-arc {
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        bottom: 0;
+        height: 240px;
+        border-radius: 50%;
+        border: 10px solid var(--rivet);
+        border-bottom-color: transparent;
+        border-left-color: var(--rust);
+        border-right-color: var(--hold);
+        transform: rotate(-20deg);
+      }
+      .needle {
+        position: absolute;
+        left: 50%;
+        bottom: 8px;
+        width: 4px;
+        height: 92px;
+        background: var(--brass-hot);
+        transform-origin: 50% 100%;
+        transform: translateX(-50%) rotate(-42deg);
+        transition: transform 0.35s ease;
+        border-radius: 2px;
+      }
+      .windlass.work-finished .needle,
+      .windlass.descendant-count-at-exit .needle { transform: translateX(-50%) rotate(42deg); }
+      .windlass.shell-exit-only .needle,
+      .windlass.delayed-ps-recheck .needle { transform: translateX(-50%) rotate(-8deg); }
+      .dial-labs {
+        display: flex;
+        justify-content: space-between;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .clutch-line {
+        margin-top: 12px;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .ledger {
+        background: #0c1014;
+        border: 1px solid rgba(196, 90, 40, 0.24);
+        padding: 14px;
+      }
+      .crews {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .crew {
+        border: 1px solid var(--line);
+        padding: 10px;
+        min-height: 92px;
+      }
+      .crew b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 6px;
+      }
+      .crew strong {
+        font-family: Syne, sans-serif;
+        font-size: 28px;
+        display: block;
+      }
+      .crew.a strong { color: var(--spin); }
+      .crew.b strong { color: var(--rust-hot); }
+      .crew.quiet strong { color: var(--hold-hot); }
+      .mult {
+        margin-top: 10px;
+        font-family: Syne, sans-serif;
+        font-size: 36px;
+        color: var(--rust-hot);
+        letter-spacing: -0.03em;
+      }
+      .windlass.work-finished .mult,
+      .windlass.descendant-count-at-exit .mult,
+      .windlass.delayed-ps-recheck .mult,
+      .windlass.shell-exit-only .mult { color: var(--hold-hot); }
+
+      .lag {
+        margin-top: 14px;
+      }
+      .lag-bar {
+        height: 10px;
+        background: #0a0d10;
+        border: 1px solid var(--line);
+        position: relative;
+        overflow: hidden;
+      }
+      .lag-fill {
+        height: 100%;
+        width: 16%;
+        background: linear-gradient(90deg, var(--rust), var(--spin));
+        transition: width 0.35s ease;
+      }
+      .windlass.delayed-ps-recheck .lag-fill,
+      .windlass.work-finished .lag-fill,
+      .windlass.descendant-count-at-exit .lag-fill { width: 100%; background: var(--hold); }
+      .lag-labs {
+        display: flex;
+        justify-content: space-between;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-top: 6px;
+      }
+
+      .beats { margin-top: 16px; }
+      .beat-row {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+      }
+      @media (max-width: 800px) { .beat-row { grid-template-columns: 1fr 1fr; } }
+      .beat {
+        border: 1px solid var(--line);
+        padding: 10px 8px;
+        background: #0b0f13;
+      }
+      .beat em {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        color: var(--brass);
+        font-style: normal;
+      }
+      .beat b { display: block; margin: 4px 0 2px; font-size: 13px; }
+      .beat span { color: var(--mute); font-size: 12px; }
+      .beat.loss { border-color: rgba(196, 90, 40, 0.55); }
+      .beat.hold { border-color: rgba(61, 154, 120, 0.5); }
+
+      .desk { margin-top: 22px; }
+      .verdict-row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+      .verdict {
+        font-family: Syne, sans-serif;
+        font-size: clamp(32px, 6vw, 56px);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 0.9;
+      }
+      .verdict.alarm { color: var(--rust-hot); }
+      .verdict.hold { color: var(--hold-hot); }
+      .reason { color: var(--mute); max-width: 62em; line-height: 1.55; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        border: 1px solid var(--line);
+        padding: 5px 8px;
+        background: #0c1014;
+        color: var(--foam);
+        cursor: pointer;
+      }
+      .chip.live { border-color: var(--hold); color: var(--hold-hot); }
+      .chip.dead { border-color: var(--rust); color: var(--rust-hot); }
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 800px) { .paths { grid-template-columns: 1fr; } }
+      .path { border: 1px solid var(--line); padding: 12px; background: #0c1014; }
+      .path.fail { border-color: rgba(196, 90, 40, 0.5); }
+      .path.ok { border-color: rgba(61, 154, 120, 0.45); }
+      .path b { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .path .face { margin: 8px 0; font-size: 14px; }
+      .path .note { color: var(--mute); font-size: 12px; }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        background: #0a0d10;
+        border: 1px solid var(--line);
+        padding: 12px;
+        white-space: pre-wrap;
+      }
+      .log .hit { color: var(--rust-hot); }
+      .slip {
+        margin-top: 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        background: #0a0d10;
+        border: 1px solid var(--line);
+        padding: 12px;
+        white-space: pre-wrap;
+      }
+      .slip .hook { color: var(--brass-hot); }
+      .slip .user { color: var(--rust-hot); }
+      .slip .asst { color: var(--hold-hot); }
+      .matrix { margin: 16px 0; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+      th { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brass); }
+      tr.active { background: rgba(232, 160, 64, 0.08); }
+      .fail-cell { color: var(--rust-hot); }
+      .pass-cell { color: var(--hold-hot); }
+      .remediation { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 900px) { .remediation { grid-template-columns: 1fr 1fr; } }
+      .remedy {
+        border: 1px solid var(--line);
+        padding: 12px;
+        background: #0c1014;
+        cursor: pointer;
+      }
+      .remedy:hover { border-color: var(--brass); }
+      .remedy b { display: block; margin-bottom: 6px; }
+      .remedy p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+      .act {
+        font-family: Sora, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        background: #161c22;
+        color: var(--foam);
+        border: 1px solid var(--line);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .act:hover { border-color: var(--brass-hot); color: var(--brass-hot); }
+      .sim { margin-top: 18px; }
+      .sim h3 {
+        font-family: Syne, sans-serif;
+        font-size: 22px;
+        margin: 0 0 8px;
+      }
+      .sim p { color: var(--mute); margin: 0 0 10px; }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .drop {
+        margin-top: 14px;
+        border: 1px dashed rgba(201, 162, 78, 0.45);
+        padding: 16px;
+        text-align: center;
+        color: var(--mute);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 12px;
+        background: #0a0d10;
+        color: var(--foam);
+        border: 1px solid var(--line);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 12px;
+      }
+      .research { margin-top: 22px; color: var(--mute); line-height: 1.6; }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--line);
+        padding: 3px 6px;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--mute);
+        font-size: 13px;
+        font-family: "IBM Plex Mono", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="catalog chrome" href="/">← catalog</a>
+      <p class="mark chrome">16:50 / hermes catalog #176 / #92399</p>
+      <h1>Wildcat <em>windlass / chain-wheel / freewheel</em></h1>
+      <p class="lede chrome">
+        When the clutch (parent shell) drops, the wildcat keeps
+        <code>freewheeling</code> — detached <code>nohup</code> children still write —
+        but the deck bell already rang <code>completed</code>.
+        The bosun checks the chain locker too early (immediate <code>ps</code> miss),
+        thinks the launch failed, and starts a second crew. Both crews haul the same
+        hawser and write ~1.8× duplicate rows. Score the descendants or admit the
+        writers already <code>doubled</code>.
+      </p>
+
+      <section class="windlass doubled" id="stage" aria-label="Windlass deck">
+        <div class="chainrail">
+          <span>windlass · clutch · locker</span>
+          <span id="stage-label">seeded doubled · two crews on one hawser</span>
+          <span id="count-tag">2.1.260 · macOS arm64 · zsh</span>
+        </div>
+        <div class="deck">
+          <div class="sprocket-col">
+            <h4 class="cap">chain wildcat sprocket</h4>
+            <div class="sprocket-wrap">
+              <div class="sprocket spin" id="sprocket" aria-hidden="true"></div>
+            </div>
+            <div class="free-word" id="free-word">freewheeling</div>
+            <p class="free-cap" id="free-cap">clutch dropped · children still writing · bell already rang</p>
+            <div class="brake-row">
+              <div class="brake" aria-hidden="true"><i id="brake-arm"></i></div>
+              <span class="brake-lab" id="brake-lab">brake dropped</span>
+            </div>
+          </div>
+          <div class="clutch">
+            <h4 class="cap">shell-exit vs work-finished</h4>
+            <div class="dial" aria-hidden="true">
+              <div class="dial-arc"></div>
+              <div class="needle" id="needle"></div>
+            </div>
+            <div class="dial-labs">
+              <span>shell-exit</span>
+              <span>work-finished</span>
+            </div>
+            <p class="clutch-line" id="pathline">
+              run_in_background true · nohup … &amp; · completed ~1s exit 0
+            </p>
+          </div>
+          <div class="ledger">
+            <h4 class="cap">duplicate-row ledger</h4>
+            <div class="crews">
+              <article class="crew a" id="crew-a">
+                <b>generation A</b>
+                <strong id="gen-a">alive</strong>
+                <span>--worker-id still writing</span>
+              </article>
+              <article class="crew b" id="crew-b">
+                <b>generation B</b>
+                <strong id="gen-b">relaunched</strong>
+                <span>same --worker-id · same file</span>
+              </article>
+            </div>
+            <div class="mult" id="mult">~1.8×</div>
+            <div class="lag">
+              <h4 class="cap">ps-visibility lag</h4>
+              <div class="lag-bar"><div class="lag-fill" id="lag-fill"></div></div>
+              <div class="lag-labs">
+                <span>t+0 immediate ps</span>
+                <span id="lag-lab">empty · wait ~5s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="beats">
+          <h4 class="cap">generation timeline · clutch to doubled hawser</h4>
+          <div class="beat-row" id="proofs">
+            <article class="beat" id="beat-1"><em>1</em><b>nohup nest</b><span>inside run_in_background</span></article>
+            <article class="beat" id="beat-2"><em>2</em><b>clutch drops</b><span>parent shell exits</span></article>
+            <article class="beat" id="beat-3"><em>3</em><b>deck bell</b><span>completed · exit 0</span></article>
+            <article class="beat" id="beat-4"><em>4</em><b>locker glance</b><span>immediate ps empty</span></article>
+            <article class="beat" id="beat-5"><em>5</em><b>children listed</b><span>wait ~5s</span></article>
+            <article class="beat loss" id="beat-6"><em>6</em><b>second crew</b><span>~1.8× rows</span></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Wildcat scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">doubled</p>
+            <p class="reason" id="reason">
+              Immediate ps miss. The model relaunched. Two processes for the same --worker-id wrote ~1.8× duplicate rows. Admit the writers already doubled.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="slip" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Windlass path matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>shipped</th>
+                <th>isolate</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="remediation" aria-label="Assay dials">
+          <article class="remedy" data-remedy="shell-exit-only">
+            <b>Shell-exit-only</b>
+            <p>Score the current contract: completed means the parent shell exited. Docs should say detaching children is unsupported.</p>
+          </article>
+          <article class="remedy" data-remedy="work-finished">
+            <b>Work-finished</b>
+            <p>Completion should mean the work finished — not a bell while the probe log is still growing.</p>
+          </article>
+          <article class="remedy" data-remedy="descendant-count-at-exit">
+            <b>Descendant count</b>
+            <p>Report live descendants at parent-shell exit so the locker is not scored empty.</p>
+          </article>
+          <article class="remedy" data-remedy="delayed-ps-recheck">
+            <b>Delayed ps recheck</b>
+            <p>Never nest nohup…&amp;. Wait a few seconds and re-check ps before assuming the launch failed.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act" data-act="score">Score the descendants</button>
+          <button class="act" data-act="idle">Pin idle freewheeling</button>
+          <button class="act" data-act="seed">Pin seeded doubled</button>
+          <button class="act" data-act="admit">Admit the writers already doubled</button>
+          <button class="act" data-act="cast">Score work-finished</button>
+          <button class="act" data-act="fixtures">Load #92399 fixture</button>
+          <button class="act" data-act="reset">Reset to work-finished</button>
+        </div>
+
+        <div class="sim">
+          <h3>Windlass-deck simulator</h3>
+          <p>Rewrite the wildcat without touching a live Claude session. Diagnostic assay dials only — not real API calls.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="clutch">clutch drop</span>
+            <span class="chip" data-sim-pull="locker">empty locker</span>
+            <span class="chip" data-sim-pull="ledger">doubled ledger</span>
+            <span class="chip" data-sim-pull="descendants">descendant count</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="freewheeling">freewheeling</button>
+            <button class="chip" data-chip="doubled">doubled</button>
+            <button class="chip" data-chip="shell-exit-only">shell-exit-only</button>
+            <button class="chip" data-chip="work-finished">work-finished</button>
+            <button class="chip" data-chip="descendant-count-at-exit">descendant-count-at-exit</button>
+            <button class="chip" data-chip="delayed-ps-recheck">delayed-ps-recheck</button>
+            <button class="chip" data-chip="visibility-lag">visibility-lag</button>
+            <button class="chip" data-chip="ruled-out-or-workarounds">ruled-out-or-workarounds</button>
+            <button class="chip" data-chip="cousins">cousins</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the windlass deck</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            On Claude Code <code>2.1.2xx</code> (observed 2026-08-20; still the same on
+            <code>2.1.260</code>), macOS arm64, zsh, with
+            <code>permissions.defaultMode: auto</code>, a Bash call issued with
+            <code>run_in_background: true</code> whose command spawns detached children
+            via <code>nohup &lt;cmd&gt; &gt; log 2&gt;&amp;1 &amp;</code> is reported
+            <strong>completed</strong> as soon as the parent shell exits.
+          </p>
+          <p>
+            A follow-up <code>ps aux | grep &lt;cmd&gt;</code> right after the
+            notification sometimes showed no matching processes. The model concluded
+            the launch failed and relaunched the same workers. Later ps showed two
+            processes for the same <code>--worker-id</code>. Both generations wrote
+            the same output file concurrently, producing ~1.8× duplicate rows.
+          </p>
+          <p>
+            Two separable issues. Completion semantics: "completed" means the shell
+            exited, not that the work finished. Process visibility: immediate ps can
+            miss processes that appear ~5s later.
+          </p>
+          <p>
+            Minimal repro: <code>run_in_background</code> true with
+            <code>nohup sh -c 'for i in $(seq 1 60); do echo tick $i &gt;&gt; /tmp/bg_probe.log; sleep 1; done' &gt; /dev/null 2&gt;&amp;1 &amp;</code>
+            → completion within ~1s exit 0; immediate ps sometimes empty; wait ~5s
+            and ps lists the process; the log keeps growing for 60s after completed.
+          </p>
+          <p>
+            Expected: report live descendants at exit, or document shell-exit-only
+            and that detaching children inside <code>run_in_background</code> is
+            unsupported; document any teardown visibility window. Workaround: never
+            nest <code>nohup … &amp;</code>; re-check ps after a few seconds.
+          </p>
+          <p>
+            Stay off: <span class="stayoff">
+              <span>Clobber #92419</span>
+              <span>Watchdog #92424</span>
+              <span>Understudy #92426</span>
+              <span>Fairlead #92403</span>
+              <span>Stroboscope #92395</span>
+              <span>Heliostat</span>
+              <span>Lethe</span>
+              <span>Frizzen</span>
+            </span>
+          </p>
+          <p>
+            Cousins cite-only:
+            <a href="https://github.com/anthropics/claude-code/issues/88702">#88702</a>
+            timeout / never-exiting bg ·
+            <a href="https://github.com/anthropics/claude-code/issues/91869">#91869</a>
+            Windows never completes (opposite polarity) ·
+            <a href="https://github.com/anthropics/claude-code/issues/88048">#88048</a>
+            Agent returns before subagent stops ·
+            <a href="https://github.com/anthropics/claude-code/issues/87689">#87689</a>
+            notification never delivered ·
+            <a href="https://github.com/anthropics/claude-code/issues/91225">#91225</a>
+            run_in_background=false ignored on Fork.
+          </p>
+        </section>
+        <footer>
+          Catalog #176 · idle word freewheeling · seeded doubled · contrast shell-exit-only / work-finished / descendant-count-at-exit / delayed-ps-recheck ·
+          no live Claude sessions · fonts Syne / Sora / IBM Plex Mono · windlass wildcat
+        </footer>
+      </section>
+    </main>
+    <script>
+      const HOLD = new Set([
+        "shell-exit-only",
+        "work-finished",
+        "descendant-count-at-exit",
+        "delayed-ps-recheck"
+      ]);
+      const CHIPS = [
+        "freewheeling", "doubled", "shell-exit-only", "work-finished",
+        "descendant-count-at-exit", "delayed-ps-recheck", "visibility-lag",
+        "ruled-out-or-workarounds", "cousins"
+      ];
+      const CHIP_FILES = {
+        freewheeling: "freewheeling.json",
+        doubled: "doubled.json",
+        "shell-exit-only": "shell-exit.json",
+        "work-finished": "work-finished.json",
+        "descendant-count-at-exit": "descendants.json",
+        "delayed-ps-recheck": "delayed-ps.json",
+        "visibility-lag": "visibility-lag.json",
+        "ruled-out-or-workarounds": "ruled-out-or-workarounds.json",
+        cousins: "cousins.json"
+      };
+      const MATRIX = [
+        { id: "clutch", name: "parent shell exits · completed ~1s exit 0", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "freewheeling.json" },
+        { id: "repro", name: "nohup tick loop · immediate ps miss · log grows 60s", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "repro.json" },
+        { id: "locker", name: "immediate ps empty · process appears ~5s later", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "visibility-lag.json" },
+        { id: "ledger", name: "two processes same --worker-id · ~1.8× rows", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "doubled.json" },
+        { id: "docs", name: "document shell-exit-only · detaching unsupported", shipped: "pass", isolate: "pass", scored: "pass", file: "shell-exit.json" },
+        { id: "work", name: "completed means work finished", shipped: "pass", isolate: "pass", scored: "pass", file: "work-finished.json" },
+        { id: "descendants", name: "report live descendants at exit", shipped: "pass", isolate: "pass", scored: "pass", file: "descendants.json" },
+        { id: "recheck", name: "wait ~5s · re-check ps · never nest nohup", shipped: "pass", isolate: "pass", scored: "pass", file: "delayed-ps.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92399,
+        seed: "freewheeling",
+        freewheeling: true,
+        doubled: false,
+        shellExitOnly: true,
+        workFinished: false,
+        descendantCountAtExit: false,
+        delayedPsRecheck: false,
+        parentShellExited: true,
+        childrenAlive: true,
+        completionReported: "completed",
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "FREEWHEELING",
+        log: [
+          "[idle] run_in_background · nohup <cmd> > log 2>&1 &",
+          "[clutch] parent shell exits · harness reports completed exit 0",
+          "[wildcat] detached children keep running · work is not finished",
+          "[desk] already freewheeling; idle word freewheeling"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92399,
+        seed: "doubled",
+        freewheeling: true,
+        doubled: true,
+        shellExitOnly: true,
+        workFinished: false,
+        descendantCountAtExit: false,
+        delayedPsRecheck: false,
+        visibilityLag: true,
+        immediatePsEmpty: true,
+        laterPsTwoProcesses: true,
+        duplicateRowFactor: 1.8,
+        parentShellExited: true,
+        childrenAlive: true,
+        completionReported: "completed",
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "DOUBLED",
+        log: [
+          "[issue] #92399 OPEN · run_in_background completed while children still run",
+          "[chain] clutch drops → bell completed → bosun checks locker too early → empty ps → second crew",
+          "[ledger] two processes same --worker-id · both write the same output file · ~1.8x duplicate rows",
+          "[desk] already doubled; seeded word doubled"
+        ]
+      };
+
+      const docsTicket = {
+        source: "probe",
+        issue: 92399,
+        seed: "shell-exit-only",
+        shellExitOnly: true,
+        documentedContract: true,
+        workFinished: false,
+        descendantCountAtExit: false,
+        delayedPsRecheck: false,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "SHELL-EXIT-ONLY",
+        log: [
+          "[hold] completion semantics scored as shell-exit-only",
+          "[docs] state that detaching children inside run_in_background is unsupported",
+          "[desk] shell-exit-only; contrast hold"
+        ]
+      };
+
+      const workTicket = {
+        source: "probe",
+        issue: 92399,
+        seed: "work-finished",
+        workFinished: true,
+        shellExitOnly: false,
+        descendantCountAtExit: false,
+        delayedPsRecheck: false,
+        freewheeling: false,
+        doubled: false,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "WORK-FINISHED",
+        log: [
+          "[hold] completion waits until the work is finished",
+          "[bell] no completed while /tmp/bg_probe.log is still growing",
+          "[desk] work-finished; contrast hold"
+        ]
+      };
+
+      const descTicket = {
+        source: "probe",
+        issue: 92399,
+        seed: "descendant-count-at-exit",
+        descendantCountAtExit: true,
+        workFinished: false,
+        delayedPsRecheck: false,
+        freewheeling: false,
+        doubled: false,
+        liveDescendantsReported: true,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "DESCENDANTS",
+        log: [
+          "[fix] completion reports live descendants at parent-shell exit",
+          "[bell] completed is no longer silent about freewheeling children",
+          "[desk] descendant-count-at-exit; contrast hold"
+        ]
+      };
+
+      const delayTicket = {
+        source: "probe",
+        issue: 92399,
+        seed: "delayed-ps-recheck",
+        delayedPsRecheck: true,
+        visibilityLag: false,
+        doubled: false,
+        relaunchAvoided: true,
+        visibilityWindowSeconds: 5,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "DELAYED-PS",
+        log: [
+          "[hold] re-check ps after a few seconds before assuming launch failed",
+          "[window] immediate empty · ~5s later the process is listed",
+          "[desk] delayed-ps-recheck; contrast hold"
+        ]
+      };
+
+      const lagTicket = {
+        source: "probe",
+        issue: 92399,
+        seed: "visibility-lag",
+        freewheeling: true,
+        visibilityLag: true,
+        immediatePsEmpty: true,
+        laterPsListsProcess: true,
+        visibilityWindowSeconds: 5,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "VISIBILITY-LAG",
+        log: [
+          "[lag] immediate ps aux | grep <cmd> sometimes empty",
+          "[wait] ~5s later the same ps lists the process",
+          "[log] /tmp/bg_probe.log keeps growing for 60s after completed",
+          "[desk] visibility-lag; bosun checked the locker too early"
+        ]
+      };
+
+      let pullState = "ledger";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed)
+          || t.workFinished === true
+          || t.descendantCountAtExit === true
+          || t.delayedPsRecheck === true
+          || t.documentedContract === true
+          || t.liveDescendantsReported === true
+          || t.relaunchAvoided === true;
+      }
+
+      function alreadyFree(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.doubled !== true && t.visibilityLag !== true && t.freewheeling !== true) return false;
+        if (HOLD.has(seed) && t.doubled !== true && t.freewheeling !== true && t.visibilityLag !== true) return false;
+        if (t.freewheeling === true || t.doubled === true || t.visibilityLag === true) return true;
+        if (["freewheeling", "doubled", "visibility-lag", "ruled-out-or-workarounds"].includes(seed)) {
+          return !HOLD.has(seed);
+        }
+        return t.workFinished !== true && t.descendantCountAtExit !== true && t.delayedPsRecheck !== true && !HOLD.has(seed);
+      }
+
+      function scoredTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (HOLD.has(seed) || remediating(t))
+          && t.doubled !== true
+          && !alreadyFree(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyFree(t);
+        t.shippedFree = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedFree ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (remediating(t) ? "pass" : "FAIL");
+        const holding = scoredTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "freewheeling") chips.push("freewheeling");
+        if (t.doubled === true || seed === "doubled") chips.push("doubled");
+        if (t.visibilityLag === true || seed === "visibility-lag") chips.push("visibility-lag");
+        if ((holding && t.shellExitOnly === true) || seed === "shell-exit-only") chips.push("shell-exit-only");
+        if ((holding && t.workFinished === true) || seed === "work-finished") chips.push("work-finished");
+        if ((holding && t.descendantCountAtExit === true) || seed === "descendant-count-at-exit") chips.push("descendant-count-at-exit");
+        if ((holding && t.delayedPsRecheck === true) || seed === "delayed-ps-recheck") chips.push("delayed-ps-recheck");
+        if (t.workaroundsOnly === true || seed === "ruled-out-or-workarounds") chips.push("ruled-out-or-workarounds");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (holding
+            ? (t.descendantCountAtExit ? "descendant-count-at-exit" : (t.delayedPsRecheck ? "delayed-ps-recheck" : (t.workFinished ? "work-finished" : "shell-exit-only")))
+            : (t.doubled ? "doubled" : (t.visibilityLag ? "visibility-lag" : "freewheeling")));
+        return { ticket: t, holding, alarm, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        freewheeling: "When the clutch drops, the wildcat keeps spinning. The deck bell already rang completed. The children are still writing. Idle word is freewheeling.",
+        doubled: "Immediate ps miss. The model relaunched. Two processes for the same --worker-id wrote ~1.8× duplicate rows. Admit the writers already doubled.",
+        "shell-exit-only": "Completed means the parent shell exited, not that the work finished. Docs should state that detaching children inside run_in_background is unsupported.",
+        "work-finished": "Completion should mean the work finished — not a bell while /tmp/bg_probe.log is still growing.",
+        "descendant-count-at-exit": "Report live descendants at parent-shell exit so the locker is not scored empty.",
+        "delayed-ps-recheck": "Re-check ps after a few seconds before assuming the launch failed. Immediate ps can miss processes that appear ~5s later.",
+        "visibility-lag": "Immediate ps sometimes empty. Wait ~5s and the process is listed. The log keeps growing for 60s after completed.",
+        "ruled-out-or-workarounds": "Never nest nohup…& inside run_in_background. Not timeout cousin #88702. Not opposite polarity #91869. Re-check ps after a few seconds.",
+        cousins: "Cite-only cousins #88702 #91869 #88048 #87689 #91225. Related surfaces, different root cause — primary stays #92399."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] run_in_background · shell-exit · already doubled"]
+            : ["[desk] descendants reported · work finished or delayed ps"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /freewheel|doubl|FAIL|empty|relaunch|1\.8|never|completed|miss/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "shell-exit bell · children still writing" : "descendants / docs / delayed ps", "windlass path"],
+          ["isolate", t.isolateMark, "two separable issues · completion vs visibility", "not timeout cousin"],
+          ["scored", t.scoredMark, remediating(t) ? "work-finished / descendants / delayed-ps / documented shell-exit" : "would score after descendants", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id === "locker" ? "visibility-lag" : "doubled", scenario: row.id }
+                : { ...workTicket, seed: "work-finished", scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (t.workFinished === true || t.seed === "work-finished") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">completed waits until the work is finished</span>\n` +
+            `<span class="asst">no bell while /tmp/bg_probe.log is still growing</span>\n` +
+            `<span class="hook">work-finished; contrast hold</span>`;
+          return;
+        }
+        if (t.descendantCountAtExit === true || t.seed === "descendant-count-at-exit") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">live descendants reported at parent-shell exit</span>\n` +
+            `<span class="hook">descendant-count-at-exit; contrast hold</span>`;
+          return;
+        }
+        if (t.delayedPsRecheck === true || t.seed === "delayed-ps-recheck") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">wait ~5s · re-check ps · never nest nohup … &</span>\n` +
+            `<span class="hook">delayed-ps-recheck; contrast hold</span>`;
+          return;
+        }
+        if (result.holding && (t.seed === "shell-exit-only" || t.documentedContract === true)) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">docs: completed = shell-exit-only</span>\n` +
+            `<span class="asst">detaching children inside run_in_background is unsupported</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">Claude Code 2.1.2xx / 2.1.260 · macOS arm64 · zsh · auto</span>\n` +
+          `<span class="user">run_in_background true · nohup tick loop · completed ~1s exit 0</span>\n` +
+          `<span class="user">immediate ps sometimes empty · ~5s later listed</span>\n` +
+          `<span class="user">later two processes same --worker-id · ~1.8× duplicate rows</span>\n` +
+          `<span class="hook">log keeps growing 60s after completed</span>`;
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const seedName = String(t.seed || result.verdict || "");
+        const doubled = t.doubled === true || seedName === "doubled";
+        const work = t.workFinished === true || seedName === "work-finished";
+        const desc = t.descendantCountAtExit === true || seedName === "descendant-count-at-exit";
+        const delay = t.delayedPsRecheck === true || seedName === "delayed-ps-recheck";
+        const docs = t.documentedContract === true || seedName === "shell-exit-only";
+        const lag = t.visibilityLag === true || seedName === "visibility-lag";
+        const holding = (result.holding || remediating(t)) && !alarm;
+        const stageClass = work
+          ? "work-finished"
+          : (desc
+            ? "descendant-count-at-exit"
+            : (delay
+              ? "delayed-ps-recheck"
+              : (holding && docs
+                ? "shell-exit-only"
+                : (lag
+                  ? "visibility-lag"
+                  : (doubled ? "doubled" : (CHIPS.includes(seedName) ? seedName : "freewheeling"))))));
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || REASONS[alarm ? "doubled" : "work-finished"];
+        document.getElementById("stage").className = "windlass " + stageClass;
+        document.getElementById("stage-label").textContent = alarm
+          ? (lag && !doubled ? "visibility-lag · locker glance empty" : (doubled ? "seeded doubled · two crews on one hawser" : "idle freewheeling · clutch dropped"))
+          : (work ? "work-finished · bell waits" : (desc ? "descendants reported at exit" : (delay ? "delayed-ps-recheck · wait ~5s" : "shell-exit-only · documented")));
+        document.getElementById("count-tag").textContent = alarm
+          ? "2.1.260 · macOS arm64 · zsh"
+          : (work ? "work finished · no false bell" : "descendants / docs / delayed ps");
+        const sprocket = document.getElementById("sprocket");
+        sprocket.className = "sprocket " + (holding ? "held" : "spin");
+        document.getElementById("free-word").textContent = holding ? "held" : "freewheeling";
+        document.getElementById("free-cap").textContent = holding
+          ? (work ? "completion waits for the work" : (desc ? "live descendants reported" : (delay ? "ps rechecked after a few seconds" : "contract documented as shell-exit-only")))
+          : "clutch dropped · children still writing · bell already rang";
+        document.getElementById("brake-lab").textContent = holding ? "brake set" : "brake dropped";
+        document.getElementById("pathline").textContent = holding
+          ? (work ? "completed means work finished" : (desc ? "live descendants at parent-shell exit" : (delay ? "never nest nohup · re-check ps after ~5s" : "docs: shell-exit-only · detaching unsupported")))
+          : "run_in_background true · nohup … & · completed ~1s exit 0";
+        document.getElementById("gen-a").textContent = holding ? (delay || desc ? "listed" : "one crew") : "alive";
+        document.getElementById("gen-b").textContent = holding ? "not launched" : (doubled ? "relaunched" : "unseen");
+        document.getElementById("crew-a").className = "crew a" + (holding ? " quiet" : "");
+        document.getElementById("crew-b").className = "crew b" + (holding ? " quiet" : "");
+        document.getElementById("mult").textContent = holding ? "1.0×" : "~1.8×";
+        document.getElementById("lag-lab").textContent = holding
+          ? (delay ? "rechecked · process listed" : "visibility window scored")
+          : "empty · wait ~5s";
+        ["beat-1", "beat-2", "beat-3", "beat-4", "beat-5", "beat-6"].forEach((id, i) => {
+          const el = document.getElementById(id);
+          el.className = "beat" + (holding ? " hold" : (i === 5 || i === 3 ? " loss" : ""));
+        });
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.holding;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        paintMatrix(t.scenario || (work ? "work" : (desc ? "descendants" : (delay ? "recheck" : (docs && holding ? "docs" : (lag ? "locker" : (doubled ? "ledger" : "clutch")))))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "descendants") return { ...descTicket };
+        if (pullState === "locker") return { ...lagTicket };
+        if (pullState === "clutch") return { ...idle };
+        return { ...seeded };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState !== "descendants";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "clutch";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "ledger";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset") {
+            pullState = "descendants";
+            syncSimChips();
+            try { apply(await loadNamed("work-finished.json")); }
+            catch { apply({ ...workTicket }); }
+            return;
+          }
+          if (act === "cast") {
+            pullState = "descendants";
+            syncSimChips();
+            try { apply(await loadNamed("work-finished.json")); }
+            catch { apply({ ...workTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("doubled.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("repro.json")); }
+            catch { apply({ ...seeded, seed: "doubled", hubCount: "ADMIT" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92399.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...workTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92399 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = CHIP_FILES[kind];
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(kind === "work-finished" ? { ...workTicket }
+              : (kind === "descendant-count-at-exit" ? { ...descTicket }
+                : (kind === "delayed-ps-recheck" ? { ...delayTicket } : { ...docsTicket })));
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
