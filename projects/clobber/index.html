@@ -696,6 +696,7 @@
             <button class="chip" data-chip="notified">notified</button>
             <button class="chip" data-chip="conflicted">conflicted</button>
             <button class="chip" data-chip="ruled-out-or-workarounds">ruled-out-or-workarounds</button>
+            <button class="chip" data-chip="cousins">cousins</button>
           </div>
         </div>
 
@@ -759,7 +760,7 @@
       const HOLD = new Set(["in-place", "notified", "conflicted"]);
       const CHIPS = [
         "deaf", "clobbered", "new-inode", "outside-workspace", "silent-loss",
-        "in-place", "notified", "conflicted", "ruled-out-or-workarounds"
+        "in-place", "notified", "conflicted", "ruled-out-or-workarounds", "cousins"
       ];
       const CHIP_FILES = {
         deaf: "deaf.json",
@@ -770,7 +771,8 @@
         "in-place": "in-place.json",
         notified: "notified.json",
         conflicted: "conflicted.json",
-        "ruled-out-or-workarounds": "ruled-out-or-workarounds.json"
+        "ruled-out-or-workarounds": "ruled-out-or-workarounds.json",
+        cousins: "cousins.json"
       };
       const MATRIX = [
         { id: "inode", name: "inode 5588409 → 5588677 same path", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "new-inode.json" },
@@ -1009,6 +1011,7 @@
         if ((holding && t.notified === true) || seed === "notified") chips.push("notified");
         if (t.conflicted === true || seed === "conflicted") chips.push("conflicted");
         if (t.workaroundsOnly === true || seed === "ruled-out-or-workarounds") chips.push("ruled-out-or-workarounds");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
         const unique = [...new Set(chips)];
         let verdict = seed && CHIPS.includes(seed)
           ? seed
@@ -1027,7 +1030,8 @@
         "in-place": "Write in place (open + truncate + write) keeps the same inode. Watchers observe the modification.",
         notified: "Watcher fires, or an explicit change signal reaches the editor. Score the notify.",
         conflicted: "A notified editor that knows disk is B dialogs before autosave writes A′.",
-        "ruled-out-or-workarounds": "Not a race — that is cousin #87056. In-workspace recursive gallery usually reloads. Suggested: in-place, copy-back, or explicit signal."
+        "ruled-out-or-workarounds": "Not a race — that is cousin #87056. In-workspace recursive gallery usually reloads. Suggested: in-place, copy-back, or explicit signal.",
+        cousins: "Cite-only cousin #87056: concurrent editing race / collision detection. Related symptom, different root cause — the editor is never notified."
       };
 
       function paintLog(alarm, t) {
