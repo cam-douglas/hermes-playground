@@ -1,6 +1,6 @@
 # Watchdog
 
-A **night kennel / dog-watch / stall-watchdog lab** — coal slats, brass collar tags, leash rails, progress-silence chronograph, compaction-nap vs bite timeline, six-retry kennel cards — Syne + Figtree + JetBrains Mono — for a real Claude Code defect: **INSIDE A WORKFLOW-TOOL RUN, THE PER-AGENT STALL WATCHDOG (`stalled — no progress for 180000ms`) FIRES WHILE THE AGENT IS AUTO-COMPACTING ITS CONTEXT.** A watchdog that bites during the silent compaction nap is not protecting the flock — it is already choking. Score the pause or admit the agent already retried.
+A **night kennel / dog-watch / stall-watchdog lab** — coal slats, brass collar tags, leash rails, progress-silence chronograph, compaction-nap vs bite timeline, six-retry kennel cards — Bricolage Grotesque + Karla + Fragment Mono — for a real Claude Code defect: **INSIDE A WORKFLOW-TOOL RUN, THE PER-AGENT STALL WATCHDOG (`stalled — no progress for 180000ms`) FIRES WHILE THE AGENT IS AUTO-COMPACTING ITS CONTEXT.** A watchdog that bites during the silent compaction nap is not protecting the flock — it is already choking. Score the pause or admit the agent already retried.
 
 Primary:
 
@@ -76,7 +76,7 @@ Cousins cite-only (NOT primary):
 
 Product name stays **Watchdog**. Do not rename to Understudy, Fairlead, Stroboscope, Heliostat, Lethe, Frizzen, Nixie, Embrasure, Elision, Graft, Fetch, Sluice, or any existing catalog slug. Name/slug `watchdog` confirmed unused in catalog.json.
 
-Different UI: night kennel / dog-watch / stall-watchdog lab — coal slats, brass collar tags, leash rails, progress-silence chronograph, compaction-nap vs bite timeline, six-retry kennel cards. Syne + Figtree + JetBrains Mono. NOT Bodoni Moda / Source Sans 3 / IBM Plex Mono (Understudy dressing-room). NOT Fraunces / Outfit / Fragment Mono (Fairlead hawse). NOT Syne / Manrope / IBM Plex Mono (Stroboscope optics — Syne reused here with Figtree + JetBrains Mono, not Manrope). NOT Bricolage Grotesque / Sora / JetBrains Mono (Heliostat). Stay OFF dressing-room call-board / hawse-pipe / optics strobe / rooftop observatory / underworld ferry / flintlock lockplate / postal pigeonholes / battlement merlons / blue-pencil folio / orchard cambium.
+Different UI: night kennel / dog-watch / stall-watchdog lab — coal slats, brass collar tags, leash rails, progress-silence chronograph, compaction-nap vs bite timeline, six-retry kennel cards. Bricolage Grotesque + Karla + Fragment Mono. NOT Syne / Manrope / IBM Plex Mono (Stroboscope optics — do not reuse Syne). NOT Bodoni Moda / Source Sans 3 / IBM Plex Mono (Understudy dressing-room). NOT Fraunces / Outfit / Fragment Mono as a trio (Fairlead hawse — Fragment Mono here is paired with Bricolage Grotesque + Karla, not Fraunces + Outfit). NOT Bricolage Grotesque / Sora / JetBrains Mono (Heliostat — Bricolage Grotesque here is paired with Karla + Fragment Mono, not Sora). Stay OFF dressing-room call-board / hawse-pipe / optics strobe / rooftop observatory / underworld ferry / flintlock lockplate / postal pigeonholes / battlement merlons / blue-pencil folio / orchard cambium.
 
 Different verbs: Score the pause, pin idle choking, pin seeded retried, admit the agent already retried, flip nap vs bite vs six-retry vs streamed Write, load fixtures, reset to scored.
 
