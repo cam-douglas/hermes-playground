@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Muzzle — suppressor chronograph for #92459</title>
+    <meta
+      name="description"
+      content="Muzzle — ballistics range suppressor bay / muzzle-brake chronograph for Claude Code #92459: --safe-mode and --disable-slash-commands leave skill_listing on the wire. Idle word is leaking."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Bebas+Neue&family=Source+Code+Pro:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bay: #12160e;
+        --olive: #3d4a28;
+        --olive-deep: #2a3320;
+        --olive-paint: #556b2f;
+        --olive-wash: rgba(85, 107, 47, 0.22);
+        --canvas: #c4b89a;
+        --canvas-dim: #8a7f64;
+        --brass: #c9a227;
+        --brass-hot: #e4c15a;
+        --brass-wash: rgba(201, 162, 39, 0.16);
+        --chalk: #e8e4d8;
+        --leak: #c41e3a;
+        --leak-hot: #ff3d55;
+        --leak-wash: rgba(196, 30, 58, 0.2);
+        --excise: #3eb489;
+        --excise-hot: #7dcea0;
+        --excise-wash: rgba(62, 180, 137, 0.18);
+        --blast: #ff6b2b;
+        --ink: #e8e4d8;
+        --mute: #8a8474;
+        --slot: #1a1f14;
+        --rule: rgba(201, 162, 39, 0.22);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Barlow, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 12% -8%, rgba(201, 162, 39, 0.1), transparent 42%),
+          radial-gradient(ellipse at 88% 0%, rgba(196, 30, 58, 0.08), transparent 36%),
+          repeating-linear-gradient(90deg, transparent 0 47px, rgba(85, 107, 47, 0.07) 47px 48px),
+          linear-gradient(180deg, #1c2214 0%, #12160e 48%, #0c1008 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass-hot); }
+      .wrap { width: min(1320px, calc(100% - 28px)); margin: 0 auto; padding: 20px 0 92px; }
+      .catalog {
+        display: inline-block;
+        font-family: "Source Code Pro", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 4px solid var(--brass);
+        padding-left: 10px;
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "Source Code Pro", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--brass);
+      }
+      h1 {
+        font-family: "Bebas Neue", Impact, sans-serif;
+        font-size: clamp(64px, 12vw, 128px);
+        letter-spacing: 0.04em;
+        margin: 2px 0 8px;
+        font-weight: 400;
+        line-height: 0.82;
+        color: var(--chalk);
+        text-shadow: 2px 2px 0 rgba(61, 74, 40, 0.8);
+      }
+      h1 em {
+        font-style: normal;
+        display: block;
+        font-family: "Source Code Pro", monospace;
+        font-size: 0.16em;
+        letter-spacing: 0.28em;
+        color: var(--brass-hot);
+        margin-top: 10px;
+      }
+      .lede { max-width: 76em; color: var(--mute); line-height: 1.65; font-size: 17px; }
+      .lede code, code {
+        font-family: "Source Code Pro", monospace;
+        font-size: 13px;
+        color: var(--brass-hot);
+      }
+
+      .bay {
+        margin: 24px 0 0;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(42, 51, 32, 0.94), rgba(18, 22, 14, 0.96)),
+          repeating-linear-gradient(0deg, transparent 0 18px, rgba(85, 107, 47, 0.05) 18px 19px);
+        box-shadow: 0 28px 60px rgba(0, 0, 0, 0.48), inset 0 0 0 1px rgba(201, 162, 39, 0.08);
+        padding: 14px 16px 16px;
+        position: relative;
+      }
+      .bay::before {
+        content: "RANGE BAY 182";
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.2em;
+        font-size: 13px;
+        color: var(--canvas-dim);
+      }
+      .bay.leaking, .bay.safe-mode-leak, .bay.disable-slash-leak,
+      .bay.log-suppressed-only, .bay.cousins {
+        box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.45), 0 28px 60px rgba(0, 0, 0, 0.48);
+      }
+      .bay.excised, .bay.bare-excised {
+        box-shadow: 0 0 0 3px rgba(62, 180, 137, 0.45), 0 28px 60px rgba(0, 0, 0, 0.48);
+      }
+      .bay.agent-tool-killed {
+        box-shadow: 0 0 0 3px rgba(255, 107, 43, 0.45), 0 28px 60px rgba(0, 0, 0, 0.48);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "Source Code Pro", monospace;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 12px;
+        border-bottom: 1px dashed rgba(201, 162, 39, 0.34);
+        padding-bottom: 8px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 1.35fr 0.85fr 0.9fr;
+        gap: 14px;
+      }
+      @media (max-width: 980px) { .deck { grid-template-columns: 1fr; } .bay::before { display: none; } }
+
+      .cap, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "Source Code Pro", monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--canvas-dim);
+      }
+
+      .sleeve {
+        background: var(--slot);
+        border: 1px solid rgba(201, 162, 39, 0.2);
+        padding: 10px 10px 8px;
+        min-height: 220px;
+      }
+      .sleeve svg { width: 100%; height: auto; display: block; }
+      .vent {
+        transform-origin: 40px 42px;
+        animation: none;
+      }
+      .bay.leaking .vent, .bay.safe-mode-leak .vent,
+      .bay.disable-slash-leak .vent, .bay.log-suppressed-only .vent, .bay.cousins .vent {
+        animation: vent 0.7s ease-in-out infinite alternate;
+      }
+      @keyframes vent {
+        from { opacity: 0.25; }
+        to { opacity: 0.95; }
+      }
+
+      .chrono-wrap {
+        background: var(--slot);
+        border: 1px solid rgba(201, 162, 39, 0.2);
+        padding: 10px;
+        display: grid;
+        place-items: center;
+      }
+      .chrono {
+        width: min(240px, 100%);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 50% 50%, #1c2014 0 58%, #2a2410 59% 72%, #c9a227 73% 78%, #8b6914 79% 86%, #3d4a28 87% 100%);
+        box-shadow: inset 0 0 0 6px rgba(18, 22, 14, 0.55), 0 10px 24px rgba(0, 0, 0, 0.4);
+        position: relative;
+      }
+      .chrono svg { width: 100%; height: 100%; }
+      .needle { transform-origin: 100px 100px; transition: transform 0.45s ease; }
+      .readout {
+        position: absolute;
+        left: 50%;
+        top: 62%;
+        transform: translateX(-50%);
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.12em;
+        font-size: 22px;
+        color: var(--leak-hot);
+        text-align: center;
+        line-height: 1;
+      }
+      .bay.excised .readout, .bay.bare-excised .readout { color: var(--excise-hot); }
+      .bay.agent-tool-killed .readout { color: var(--blast); }
+
+      .face-col { display: flex; flex-direction: column; gap: 10px; }
+      .faceplate {
+        background: linear-gradient(180deg, rgba(61, 74, 40, 0.35), rgba(18, 22, 14, 0.7));
+        border: 1px solid rgba(201, 162, 39, 0.24);
+        padding: 12px 14px;
+      }
+      .faceplate strong {
+        display: block;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 34px;
+        letter-spacing: 0.08em;
+        line-height: 0.95;
+        color: var(--leak-hot);
+        margin: 4px 0 6px;
+      }
+      .bay.excised .faceplate strong, .bay.bare-excised .faceplate strong { color: var(--excise-hot); }
+      .bay.agent-tool-killed .faceplate strong { color: var(--blast); }
+      .faceplate span { color: var(--mute); font-size: 13px; line-height: 1.45; display: block; }
+
+      .lanes {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 720px) { .lanes { grid-template-columns: 1fr; } }
+      .lane {
+        background: var(--slot);
+        border: 1px solid rgba(201, 162, 39, 0.18);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .lane header {
+        display: flex;
+        justify-content: space-between;
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.1em;
+        font-size: 22px;
+        color: var(--canvas);
+      }
+      .lane header small {
+        font-family: "Source Code Pro", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        color: var(--mute);
+        align-self: center;
+      }
+      .lane p { margin: 8px 0 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+      .lane.hot { border-color: var(--leak); box-shadow: inset 0 0 0 1px var(--leak-wash); }
+      .lane.hold { border-color: var(--excise); box-shadow: inset 0 0 0 1px var(--excise-wash); }
+      .lane.warn { border-color: var(--blast); }
+
+      .wire {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 10px;
+      }
+      @media (max-width: 720px) { .wire { grid-template-columns: 1fr; } }
+      .ticket {
+        background: var(--slot);
+        border: 1px solid rgba(201, 162, 39, 0.18);
+        padding: 10px 12px;
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+      }
+      .ticket .row {
+        display: grid;
+        grid-template-columns: 1.2fr 0.7fr 0.8fr;
+        gap: 8px;
+        padding: 5px 0;
+        border-bottom: 1px dashed rgba(201, 162, 39, 0.16);
+      }
+      .ticket .row.head { color: var(--canvas-dim); letter-spacing: 0.12em; text-transform: uppercase; font-size: 10px; }
+      .ticket .row.leak { color: var(--leak-hot); }
+      .ticket .row.hold { color: var(--excise-hot); }
+      .vs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .vs article {
+        background: var(--slot);
+        border: 1px solid rgba(201, 162, 39, 0.18);
+        padding: 10px 12px;
+      }
+      .vs b {
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.12em;
+        font-size: 18px;
+        color: var(--brass);
+        display: block;
+        margin-bottom: 6px;
+      }
+      .vs p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.5; }
+
+      .desk { margin-top: 22px; }
+      .verdict-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .verdict {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(42px, 7vw, 72px);
+        letter-spacing: 0.06em;
+        margin: 0;
+        line-height: 0.9;
+      }
+      .verdict.alarm { color: var(--leak-hot); }
+      .verdict.hold { color: var(--excise-hot); }
+      .verdict.warn { color: var(--blast); }
+      .reason { max-width: 46em; color: var(--mute); line-height: 1.55; margin: 8px 0 0; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+      .chip {
+        font-family: "Source Code Pro", monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        border: 1px solid var(--rule);
+        background: var(--slot);
+        color: var(--chalk);
+        padding: 5px 8px;
+        cursor: pointer;
+      }
+      .chip.on { border-color: var(--leak); color: var(--leak-hot); }
+      .chip.hold { border-color: var(--excise); color: var(--excise-hot); }
+      .chip.warn { border-color: var(--blast); color: var(--blast); }
+
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path { background: var(--slot); border: 1px solid var(--rule); padding: 10px 12px; }
+      .path b { font-family: "Bebas Neue", sans-serif; letter-spacing: 0.1em; font-size: 20px; display: block; }
+      .path.fail { border-color: var(--leak); }
+      .path.ok { border-color: var(--excise); }
+      .path .face { color: var(--chalk); font-size: 14px; margin: 6px 0; }
+      .path .note { font-family: "Source Code Pro", monospace; font-size: 11px; color: var(--mute); }
+
+      .log, .slip {
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        background: #0c1008;
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        white-space: pre-wrap;
+        line-height: 1.55;
+        margin-bottom: 10px;
+      }
+      .log .hit { color: var(--leak-hot); }
+      .slip .hook { color: var(--brass-hot); }
+      .slip .user { color: var(--leak-hot); }
+      .slip .asst { color: var(--excise-hot); }
+
+      .matrix { overflow: auto; margin: 12px 0 16px; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); }
+      th { font-family: "Source Code Pro", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--canvas-dim); }
+      tr.active td { background: rgba(201, 162, 39, 0.08); }
+      .fail-cell { color: var(--leak-hot); }
+      .pass-cell { color: var(--excise-hot); }
+
+      .pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+      @media (max-width: 800px) { .pads { grid-template-columns: 1fr 1fr; } }
+      .pad {
+        background: var(--slot);
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .pad b { font-family: "Bebas Neue", sans-serif; letter-spacing: 0.08em; font-size: 18px; display: block; color: var(--brass); }
+      .pad p { margin: 6px 0 0; color: var(--mute); font-size: 12px; line-height: 1.4; }
+
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 16px; }
+      .act {
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.1em;
+        font-size: 18px;
+        border: 1px solid var(--brass);
+        background: transparent;
+        color: var(--chalk);
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+      .act:hover { background: var(--brass-wash); }
+      .act.primary { background: var(--olive); border-color: var(--olive-paint); }
+
+      .sim { margin: 8px 0 16px; }
+      .sim h3 {
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.08em;
+        font-size: 26px;
+        margin: 0 0 6px;
+      }
+      .sim p { margin: 0 0 10px; color: var(--mute); }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+      .drop {
+        border: 1px dashed rgba(201, 162, 39, 0.4);
+        padding: 14px;
+        text-align: center;
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--canvas-dim);
+        margin-bottom: 10px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #0c1008;
+        color: var(--chalk);
+        border: 1px solid var(--rule);
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        padding: 10px;
+        resize: vertical;
+      }
+      .research { margin-top: 22px; color: var(--mute); line-height: 1.6; }
+      .research h3 { font-family: "Bebas Neue", sans-serif; letter-spacing: 0.08em; font-size: 28px; color: var(--chalk); margin: 0 0 8px; }
+      .stayoff span {
+        display: inline-block;
+        margin: 0 8px 4px 0;
+        font-family: "Source Code Pro", monospace;
+        font-size: 11px;
+        border-bottom: 1px solid rgba(138, 132, 116, 0.4);
+      }
+      footer {
+        margin-top: 22px;
+        font-family: "Source Code Pro", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--canvas-dim);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <a class="catalog" href="/">hermes playground catalog</a>
+        <p class="mark">22:50 Sydney · muzzle · catalog #182 · #92459</p>
+        <h1>MUZZLE<em>suppressor bay · muzzle-brake chronograph</em></h1>
+        <p class="lede">
+          A seated suppressor sleeve should silence <code>skill_listing</code> and
+          <code>agent_listing_delta</code> under <code>--safe-mode</code> and
+          <code>--disable-slash-commands</code>. On the live request the log line
+          is suppressed while the wire still carries the payload —
+          <strong style="color:var(--leak-hot)">leaking</strong>. When the
+          attachments are actually removed —
+          <strong style="color:var(--excise-hot)">excised</strong> — that is the
+          rare <code>--bare</code> path, which also kills Agent-tool delegation.
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/92459">#92459</a>.
+        </p>
+      </header>
+
+      <section class="bay leaking" id="bay" aria-label="Suppressor chronograph bay">
+        <div class="rail">
+          <span>bay 182 · olive range paint · brass chronograph</span>
+          <span id="rail-state">sleeve seated · blast vents past the baffle</span>
+        </div>
+        <div class="deck">
+          <div>
+            <h4 class="cap">suppressor sleeve · baffle stack</h4>
+            <div class="sleeve">
+              <svg viewBox="0 0 560 150" role="img" aria-label="Suppressor sleeve cross-section">
+                <rect x="8" y="58" width="86" height="18" rx="2" fill="#6b6048" />
+                <rect x="86" y="52" width="18" height="30" fill="#8b6914" />
+                <rect x="104" y="40" width="430" height="54" rx="8" fill="#3d4a28" stroke="#c9a227" stroke-width="2" />
+                <polygon class="baffle" points="160,46 186,67 160,88" fill="#c4b89a" opacity="0.85" />
+                <polygon class="baffle" points="220,46 246,67 220,88" fill="#c4b89a" opacity="0.85" />
+                <polygon class="baffle" points="280,46 306,67 280,88" fill="#c4b89a" opacity="0.7" />
+                <polygon class="baffle" points="340,46 366,67 340,88" fill="#c4b89a" opacity="0.55" />
+                <polygon class="baffle" points="400,46 426,67 400,88" fill="#c4b89a" opacity="0.4" />
+                <ellipse id="muzzle-exit" cx="534" cy="67" rx="10" ry="20" fill="#12160e" stroke="#c9a227" />
+                <path class="vent" id="vent-1" d="M170 40 C176 18 196 12 214 22" fill="none" stroke="#ff3d55" stroke-width="3" />
+                <path class="vent" id="vent-2" d="M230 40 C240 10 268 8 292 24" fill="none" stroke="#ff6b2b" stroke-width="3" />
+                <path class="vent" id="vent-3" d="M290 40 C304 14 330 10 352 26" fill="none" stroke="#ff3d55" stroke-width="2.5" />
+                <circle id="payload-dot" cx="140" cy="67" r="6" fill="#c41e3a" />
+                <text x="16" y="128" fill="#8a8474" font-size="11" font-family="Source Code Pro, monospace">SKILL_LISTING + AGENT_LISTING_DELTA</text>
+                <text id="sleeve-caption" x="300" y="128" fill="#ff3d55" font-size="11" font-family="Source Code Pro, monospace">BLAST STILL VENTS</text>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <h4 class="cap">chronograph</h4>
+            <div class="chrono-wrap">
+              <div class="chrono" aria-hidden="true">
+                <svg viewBox="0 0 200 200">
+                  <circle cx="100" cy="100" r="62" fill="none" stroke="#c4b89a" stroke-width="1" opacity="0.35" />
+                  <line class="needle" id="needle-skill" x1="100" y1="100" x2="100" y2="48" stroke="#ff3d55" stroke-width="2.4" />
+                  <line class="needle" id="needle-agent" x1="100" y1="100" x2="148" y2="118" stroke="#e4c15a" stroke-width="2" />
+                  <circle cx="100" cy="100" r="4" fill="#c9a227" />
+                </svg>
+                <div class="readout" id="chrono-read">LEAKING</div>
+              </div>
+            </div>
+          </div>
+          <div class="face-col">
+            <h4 class="cap">faceplate</h4>
+            <article class="faceplate" id="faceplate">
+              <b class="cap">wire state</b>
+              <strong id="face-text">leaking</strong>
+              <span id="face-note">Documented disable flags. Sleeve seated. Blast still vents past the baffle.</span>
+            </article>
+            <article class="faceplate">
+              <b class="cap">docs claim</b>
+              <strong id="docs-face" style="font-size:22px">skills disabled</strong>
+              <span id="docs-note">--safe-mode help lists skills · --disable-slash-commands disables skills</span>
+            </article>
+            <article class="faceplate">
+              <b class="cap">log vs wire</b>
+              <strong id="log-face" style="font-size:22px">log suppressed</strong>
+              <span id="log-note">Sending N skills via attachment may go silent. The attachment does not.</span>
+            </article>
+          </div>
+        </div>
+
+        <div class="lanes" id="lanes">
+          <article class="lane hot" data-lane="safe-mode-leak">
+            <header>01 SAFE-MODE <small>--safe-mode</small></header>
+            <p>Help lists skills among customizations disabled. <code>skill_listing</code> stays fully present. Content/size unchanged. Tokens nearly identical to baseline.</p>
+          </article>
+          <article class="lane hot" data-lane="disable-slash-leak">
+            <header>02 SLASH <small>--disable-slash-commands</small></header>
+            <p>Documented to disable skills. Attachments stay. Only the log line is suppressed. Underlying payload unaffected.</p>
+          </article>
+          <article class="lane hold" data-lane="bare-excised">
+            <header>03 BARE <small>--bare</small></header>
+            <p>Both attachments excised. Undocumented side-effect: Agent-tool delegation fail/no-op for /plan, Explore, general-purpose.</p>
+          </article>
+        </div>
+
+        <div class="wire">
+          <div class="ticket" id="wire-ticket">
+            <div class="row head"><span>attachment</span><span>flag path</span><span>on the wire</span></div>
+            <div class="row leak"><span>skill_listing</span><span>--safe-mode</span><span>present · size unchanged</span></div>
+            <div class="row leak"><span>agent_listing_delta</span><span>--disable-slash-commands</span><span>present · size unchanged</span></div>
+            <div class="row leak"><span>input_tokens</span><span>either flag</span><span>nearly identical to baseline</span></div>
+            <div class="row hold"><span>both attachments</span><span>--bare</span><span>excised</span></div>
+          </div>
+          <div class="vs">
+            <article>
+              <b>expected</b>
+              <p id="exp-copy">Documented disable flags remove the skill/agent attachment payload from the request.</p>
+            </article>
+            <article>
+              <b>actual</b>
+              <p id="act-copy">Neither flag strips skill_listing or agent_listing_delta. Only --bare excises — and it kills Agent-tool.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Muzzle scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">leaking</p>
+            <p class="reason" id="reason">
+              skill_listing and agent_listing_delta still ride the live request under
+              documented disable flags. The sleeve looks seated. The blast still vents.
+              Admit leaking.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="slip" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Muzzle path matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>shipped</th>
+                <th>isolate</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="pads" aria-label="Assay pads">
+          <article class="pad" data-remedy="leaking">
+            <b>Leaking</b>
+            <p>Attachments still on the wire under documented disable flags.</p>
+          </article>
+          <article class="pad" data-remedy="safe-mode-leak">
+            <b>Safe-mode leak</b>
+            <p>Help lists skills. skill_listing fully present. Tokens match baseline.</p>
+          </article>
+          <article class="pad" data-remedy="log-suppressed-only">
+            <b>Log only</b>
+            <p>Sending N skills via attachment suppressed. Payload unaffected.</p>
+          </article>
+          <article class="pad" data-remedy="excised">
+            <b>Excised</b>
+            <p>--bare removes both attachments. Rare hold path.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act primary" data-act="score">Score probes</button>
+          <button class="act" data-act="idle">Admit leaking</button>
+          <button class="act" data-act="seed">Pin seeded excised</button>
+          <button class="act" data-act="fixtures">Load #92459 fixture</button>
+          <button class="act" data-act="flip">Flip leaking vs excised</button>
+          <button class="act" data-act="reset">Reset to leaking</button>
+        </div>
+
+        <div class="sim">
+          <h3>Range simulator</h3>
+          <p>Seat the sleeve without touching a live Claude session. Diagnostic chronograph pads only — not real API calls.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="leak">admit leaking</span>
+            <span class="chip" data-sim-pull="excise">pin excised</span>
+            <span class="chip" data-sim-pull="safe">safe-mode vent</span>
+            <span class="chip" data-sim-pull="bare">bare hold</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="leaking">leaking</button>
+            <button class="chip" data-chip="excised">excised</button>
+            <button class="chip" data-chip="safe-mode-leak">safe-mode-leak</button>
+            <button class="chip" data-chip="disable-slash-leak">disable-slash-leak</button>
+            <button class="chip" data-chip="bare-excised">bare-excised</button>
+            <button class="chip" data-chip="log-suppressed-only">log-suppressed-only</button>
+            <button class="chip" data-chip="agent-tool-killed">agent-tool-killed</button>
+            <button class="chip" data-chip="cousins">cousins</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the chronograph desk</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            Both <code>--safe-mode</code> and <code>--disable-slash-commands</code>
+            are documented to disable skills. Safe-mode help lists
+            <code>skills</code> among customizations disabled. In practice neither
+            flag removes <code>skill_listing</code> or <code>agent_listing_delta</code>
+            from the actual request sent to the model.
+          </p>
+          <p>
+            Direct JSONL inspection: attachment content and size unchanged;
+            <code>input_tokens</code> nearly identical to an unflagged baseline.
+            Only a log line (<code>Sending N skills via attachment</code>) is
+            suppressed under <code>--disable-slash-commands</code>. The underlying
+            attachment is unaffected under either flag.
+          </p>
+          <p>
+            <code>--bare</code> does remove both attachments, then — as an
+            undocumented side effect — disables all Agent-tool delegation
+            (<code>/plan</code>, Explore, general-purpose subagents fail/no-op).
+            That is a larger scope than <code>--safe-mode</code>'s stated behavior.
+          </p>
+          <p>
+            Hypothesis only (NON-BINDING): flag paths suppress the log / slash
+            surface but skip the attachment-strip step that <code>--bare</code>
+            takes (and <code>--bare</code> over-scopes by disabling Agent-tool).
+            Verify nothing — encode issue facts only. Do not invent runtime
+            source claims.
+          </p>
+          <p>
+            Stay off: <span class="stayoff">
+              <span>magnetic remanence #92444</span>
+              <span>bakelite dial #92436</span>
+              <span>night apron #92452</span>
+              <span>laryngoscope #92409</span>
+              <span>Intake counting</span>
+              <span>kennel dog-watch #174</span>
+            </span>
+          </p>
+          <p>
+            Cousins cite-only:
+            <a href="https://github.com/anthropics/claude-code/issues/60251">#60251</a>
+            CLOSED/locked — disable-slash still ships skills as API attachment in -p mode ·
+            <a href="https://github.com/anthropics/claude-code/issues/89327">#89327</a>
+            live — clean boot sends skill catalog in Skill tool schema AND skill_listing.
+          </p>
+        </section>
+        <footer>
+          Catalog #182 · idle word leaking · seeded excised · mark 22:50 Sydney · muzzle ·
+          no live Claude sessions · fonts Bebas Neue / Barlow / Source Code Pro ·
+          suppressor chronograph bay · not a kennel
+        </footer>
+      </section>
+    </main>
+    <script>
+      const HOLD = new Set(["excised", "bare-excised"]);
+      const SPECIAL = new Set(["agent-tool-killed"]);
+      const CHIPS = [
+        "leaking", "excised", "safe-mode-leak", "disable-slash-leak",
+        "bare-excised", "log-suppressed-only", "agent-tool-killed", "cousins"
+      ];
+      const CHIP_FILES = {
+        leaking: "leaking.json",
+        excised: "excised.json",
+        "safe-mode-leak": "safe-mode-leak.json",
+        "disable-slash-leak": "disable-slash-leak.json",
+        "bare-excised": "bare-excised.json",
+        "log-suppressed-only": "log-suppressed-only.json",
+        "agent-tool-killed": "agent-tool-killed.json",
+        cousins: "cousins.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "#92459 · --safe-mode + --disable-slash-commands · attachments still on the wire", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "92459.json" },
+        { id: "settings", name: "docs say skills disabled · live attachments still present", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "settings.json" },
+        { id: "safe", name: "--safe-mode help lists skills · skill_listing fully present", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "safe-mode-leak.json" },
+        { id: "slash", name: "--disable-slash-commands documented disable · attachments stay", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "disable-slash-leak.json" },
+        { id: "log", name: "log line suppressed · underlying attachment unaffected", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "log-suppressed-only.json" },
+        { id: "bare", name: "--bare removes both attachments", shipped: "pass", isolate: "pass", scored: "pass", file: "bare-excised.json" },
+        { id: "agent", name: "--bare also kills Agent-tool delegation", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "agent-tool-killed.json" },
+        { id: "leaking", name: "idle leak · sleeve seated · blast still vents", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "leaking.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92459,
+        seed: "leaking",
+        leaking: true,
+        excised: false,
+        skillListingPresent: true,
+        agentListingPresent: true,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "LEAKING",
+        log: [
+          "[idle] skill_listing / agent_listing_delta still on the wire under documented disable flags",
+          "[docs] --safe-mode and --disable-slash-commands disable skills",
+          "[desk] already leaking; idle word leaking"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92459,
+        seed: "excised",
+        leaking: false,
+        excised: true,
+        attachmentsRemoved: true,
+        flag: "--bare",
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "EXCISED",
+        log: [
+          "[seeded] --bare removes skill_listing and agent_listing_delta",
+          "[desk] already excised; seeded word excised"
+        ]
+      };
+
+      const leakingTicket = { ...idle };
+      const safeTicket = { source: "probe", issue: 92459, seed: "safe-mode-leak", leaking: true, safeMode: true, skillListingPresent: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "SAFE-MODE-LEAK", log: ["[safe-mode] documented to disable skills · skill_listing present"] };
+      const slashTicket = { source: "probe", issue: 92459, seed: "disable-slash-leak", leaking: true, disableSlash: true, skillListingPresent: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "DISABLE-SLASH-LEAK", log: ["[disable-slash] documented to disable skills · attachments stay"] };
+      const logTicket = { source: "probe", issue: 92459, seed: "log-suppressed-only", leaking: true, logSuppressed: true, disableSlash: true, skillListingPresent: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "LOG-SUPPRESSED-ONLY", log: ["[log] Sending N skills via attachment suppressed · attachment unaffected"] };
+      const bareTicket = { source: "probe", issue: 92459, seed: "bare-excised", excised: true, leaking: false, bare: true, attachmentsRemoved: true, shippedMark: "pass", scoredMark: "pass", isolateMark: "pass", hubCount: "BARE-EXCISED", log: ["[bare] both attachments removed"] };
+      const agentTicket = { source: "probe", issue: 92459, seed: "agent-tool-killed", agentToolKilled: true, excised: true, leaking: false, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "AGENT-TOOL-KILLED", log: ["[bare] attachments excised · Agent-tool killed"] };
+      const cousinsTicket = { source: "probe", issue: 92459, seed: "cousins", leaking: true, cousinsCiteOnly: [60251, 89327], shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "COUSINS", log: ["[cousins] #60251 #89327", "[desk] primary stays #92459"] };
+      const primaryTicket = { ...idle, seed: "leaking", scenario: "92459", hubCount: "92459", log: ["[primary] #92459 · skill_listing + agent_listing_delta still on the wire"] };
+
+      const FALLBACKS = {
+        leaking: leakingTicket,
+        excised: seeded,
+        "safe-mode-leak": safeTicket,
+        "disable-slash-leak": slashTicket,
+        "bare-excised": bareTicket,
+        "log-suppressed-only": logTicket,
+        "agent-tool-killed": agentTicket,
+        cousins: cousinsTicket
+      };
+
+      let pullState = "leak";
+      let flipHold = false;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || SPECIAL.has(seed) || (t.excised === true && t.leaking !== true);
+      }
+
+      function alreadyLeaking(t) {
+        const seed = String(t.seed || "");
+        if (SPECIAL.has(seed)) return false;
+        if (remediating(t) && t.leaking !== true) return false;
+        if (HOLD.has(seed) && t.leaking !== true) return false;
+        if (t.leaking === true || t.skillListingPresent === true || t.agentListingPresent === true) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed) && !SPECIAL.has(seed)) return true;
+        return t.excised !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyLeaking(t);
+        const special = SPECIAL.has(seed) || t.agentToolKilled === true;
+        t.shippedFree = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedFree || special ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (remediating(t) && !special ? "pass" : "FAIL");
+        const holding = remediating(t) && !alarm && !special;
+        const chips = [];
+        if (holding || seed === "excised" || seed === "bare-excised") chips.push(seed === "bare-excised" ? "bare-excised" : "excised");
+        if (alarm || seed === "leaking" || t.leaking === true) chips.push("leaking");
+        if (seed === "safe-mode-leak" || t.safeMode === true) chips.push("safe-mode-leak");
+        if (seed === "disable-slash-leak" || t.disableSlash === true) chips.push("disable-slash-leak");
+        if (seed === "bare-excised" || (t.bare === true && t.attachmentsRemoved === true)) chips.push("bare-excised");
+        if (seed === "log-suppressed-only" || t.logSuppressed === true) chips.push("log-suppressed-only");
+        if (special) chips.push("agent-tool-killed");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (special ? "agent-tool-killed" : (holding ? "excised" : "leaking"));
+        return { ticket: t, holding, alarm, special, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        leaking: "skill_listing and agent_listing_delta still ride the live request under documented disable flags. The sleeve looks seated. The blast still vents. Admit leaking.",
+        excised: "--bare removes both attachments. Seeded word is excised. The rare hold path.",
+        "safe-mode-leak": "--safe-mode help lists skills among customizations disabled. skill_listing stays fully present. Content/size unchanged. input_tokens nearly identical to an unflagged baseline.",
+        "disable-slash-leak": "--disable-slash-commands is documented to disable skills. skill_listing and agent_listing_delta stay on the request. The slash surface may be gone. The payload is not.",
+        "bare-excised": "--bare successfully removes both skill_listing and agent_listing_delta. Hold path. Agent-tool over-scope is scored separately.",
+        "log-suppressed-only": "Only a log line (Sending N skills via attachment) is suppressed under --disable-slash-commands. The underlying attachment is unaffected under either flag.",
+        "agent-tool-killed": "--bare excises both attachments, then kills Agent-tool delegation. /plan, Explore, and general-purpose subagents fail/no-op. Larger scope than --safe-mode's stated behavior.",
+        cousins: "Cite-only cousins #60251 CLOSED/locked disable-slash still ships skills as API attachment in -p mode, and #89327 live clean-boot Skill-schema plus skill_listing. Primary stays #92459."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] leaking · skill_listing still on the wire"]
+            : ["[desk] excised · --bare stripped both attachments"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /leaking|FAIL|skill_listing|unaffected|still/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "leaking · attachments still on the wire" : (result.special ? "excised attachments · Agent-tool killed" : "excised · --bare stripped both"), "muzzle path"],
+          ["isolate", t.isolateMark, "disable-flag attachment strip · not cache remanence · not exclusive-cwd", "not a clone"],
+          ["scored", t.scoredMark, remediating(t) && !result.special ? "excised" : "would score after documented flags take the --bare strip without Agent-tool over-scope", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(FALLBACKS[row.id === "safe" ? "safe-mode-leak" : row.id === "slash" ? "disable-slash-leak" : row.id === "log" ? "log-suppressed-only" : row.id === "bare" ? "bare-excised" : row.id === "agent" ? "agent-tool-killed" : row.id === "settings" ? "safe-mode-leak" : "leaking"] || idle);
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (result.special) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">--bare · skill_listing excised · agent_listing_delta excised</span>\n` +
+            `<span class="user">Agent-tool · /plan fail/no-op · Explore fail/no-op</span>\n` +
+            `<span class="hook">${t.seed || "agent-tool-killed"}; special bare side-effect</span>`;
+          return;
+        }
+        if (HOLD.has(t.seed) || result.holding) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">--bare · both attachments excised</span>\n` +
+            `<span class="asst">skill_listing gone · agent_listing_delta gone</span>\n` +
+            `<span class="hook">${t.seed || "excised"}; hold</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">--safe-mode · --disable-slash-commands</span>\n` +
+          `<span class="user">attachment type=skill_listing · size unchanged</span>\n` +
+          `<span class="user">attachment type=agent_listing_delta · size unchanged</span>\n` +
+          `<span class="hook">log: Sending N skills via attachment suppressed under --disable-slash-commands only</span>`;
+      }
+
+      function paintSleeve(result) {
+        const leaking = result.alarm;
+        const special = result.special;
+        const vents = ["vent-1", "vent-2", "vent-3"].map((id) => document.getElementById(id));
+        const dot = document.getElementById("payload-dot");
+        const cap = document.getElementById("sleeve-caption");
+        const exit = document.getElementById("muzzle-exit");
+        vents.forEach((v) => {
+          v.setAttribute("opacity", leaking ? "1" : "0.08");
+          v.setAttribute("stroke", leaking ? "#ff3d55" : "#3eb489");
+        });
+        dot.setAttribute("fill", leaking ? "#c41e3a" : (special ? "#ff6b2b" : "#3eb489"));
+        cap.textContent = leaking ? "BLAST STILL VENTS" : (special ? "EXCISED · AGENT-TOOL KILLED" : "PAYLOAD EXCISED");
+        cap.setAttribute("fill", leaking ? "#ff3d55" : (special ? "#ff6b2b" : "#7dcea0"));
+        exit.setAttribute("stroke", leaking ? "#c41e3a" : "#3eb489");
+        document.getElementById("needle-skill").style.transform = leaking ? "rotate(38deg)" : "rotate(-20deg)";
+        document.getElementById("needle-agent").style.transform = leaking ? "rotate(54deg)" : "rotate(-8deg)";
+        document.getElementById("chrono-read").textContent = leaking ? "LEAKING" : (special ? "SIDE-FX" : "EXCISED");
+      }
+
+      function paintLanes(seed) {
+        document.querySelectorAll(".lane").forEach((el) => {
+          const kind = el.dataset.lane;
+          el.classList.toggle("hot", seed === kind || (seed === "leaking" && kind !== "bare-excised") || seed === "log-suppressed-only" && kind === "disable-slash-leak" || seed === "cousins");
+          el.classList.toggle("hold", seed === "bare-excised" && kind === "bare-excised" || seed === "excised" && kind === "bare-excised");
+          el.classList.toggle("warn", seed === "agent-tool-killed" && kind === "bare-excised");
+        });
+      }
+
+      function paintFace(result) {
+        const seed = result.verdict;
+        document.getElementById("face-text").textContent = seed;
+        document.getElementById("face-note").textContent = REASONS[seed] || REASONS.leaking;
+        document.getElementById("docs-face").textContent = result.holding ? "strip honored" : "skills disabled";
+        document.getElementById("docs-note").textContent = result.holding
+          ? "--bare took the attachment-strip step"
+          : "--safe-mode help lists skills · --disable-slash-commands disables skills";
+        document.getElementById("log-face").textContent = seed === "log-suppressed-only"
+          ? "log suppressed"
+          : (result.holding ? "payload gone" : (result.special ? "Agent-tool killed" : "log vs wire"));
+        document.getElementById("log-note").textContent = seed === "log-suppressed-only"
+          ? "Sending N skills via attachment may go silent. The attachment does not."
+          : (result.holding
+            ? "Both attachments excised from the request."
+            : (result.special
+              ? "/plan, Explore, general-purpose subagents fail/no-op."
+              : "JSONL: attachment content and size unchanged. Tokens nearly identical to baseline."));
+        document.getElementById("rail-state").textContent = result.alarm
+          ? "sleeve seated · blast vents past the baffle"
+          : (result.special ? "sleeve seated · payload excised · Agent-tool killed" : "sleeve seated · payload excised");
+        document.getElementById("exp-copy").textContent = "Documented disable flags remove the skill/agent attachment payload from the request.";
+        document.getElementById("act-copy").textContent = result.holding
+          ? "--bare excised both attachments. Hold path."
+          : (result.special
+            ? "--bare excised attachments and killed Agent-tool delegation."
+            : "Neither flag strips skill_listing or agent_listing_delta. Only --bare excises — and it kills Agent-tool.");
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : (SPECIAL.has(chip) ? "warn" : "on");
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92459 }); }
+          });
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bay = document.getElementById("bay");
+        bay.className = "bay " + result.verdict;
+        const v = document.getElementById("verdict");
+        v.textContent = result.verdict;
+        v.className = "verdict " + (result.special ? "warn" : (result.holding ? "hold" : "alarm"));
+        document.getElementById("reason").textContent = REASONS[result.verdict] || result.verdict;
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintFace(result);
+        paintSleeve(result);
+        paintLanes(result.verdict);
+        paintChips(result);
+        paintPaths(result);
+        paintLog(result.alarm, result.ticket);
+        paintSlip(result);
+        const map = {
+          leaking: "leaking", excised: "bare", "bare-excised": "bare",
+          "safe-mode-leak": "safe", "disable-slash-leak": "slash",
+          "log-suppressed-only": "log", "agent-tool-killed": "agent",
+          cousins: "primary", "92459": "primary"
+        };
+        paintMatrix(ticket.scenario === "92459" ? "primary" : (map[result.verdict] || ticket.scenario || ""));
+        document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+          btn.classList.toggle("on", btn.dataset.chip === result.verdict && !HOLD.has(result.verdict) && !SPECIAL.has(result.verdict));
+          btn.classList.toggle("hold", btn.dataset.chip === result.verdict && HOLD.has(result.verdict));
+          btn.classList.toggle("warn", btn.dataset.chip === result.verdict && SPECIAL.has(result.verdict));
+        });
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(new URL("data/" + name, location.href));
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function ticketFromSim() {
+        if (pullState === "excise") return { ...seeded };
+        if (pullState === "safe") return { ...safeTicket };
+        if (pullState === "bare") return { ...bareTicket };
+        return { ...idle };
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((el) => {
+          el.classList.toggle("on", el.dataset.simPull === pullState && pullState !== "excise" && pullState !== "bare");
+          el.classList.toggle("hold", el.dataset.simPull === pullState && (pullState === "excise" || pullState === "bare"));
+        });
+      }
+
+      document.querySelectorAll("[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") {
+            pullState = "leak";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("leaking.json")); }
+            catch { apply({ ...idle }); }
+            return;
+          }
+          if (act === "seed") {
+            pullState = "excise";
+            flipHold = true;
+            syncSimChips();
+            try { apply(await loadNamed("excised.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "flip") {
+            flipHold = !flipHold;
+            if (flipHold) {
+              pullState = "excise";
+              syncSimChips();
+              try { apply(await loadNamed("excised.json")); }
+              catch { apply({ ...seeded }); }
+            } else {
+              pullState = "leak";
+              syncSimChips();
+              try { apply(await loadNamed("leaking.json")); }
+              catch { apply({ ...idle }); }
+            }
+            return;
+          }
+          if (act === "fixtures") {
+            pullState = "leak";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("92459.json")); }
+            catch { apply({ ...primaryTicket }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92459 }); }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          try { apply(await loadNamed(CHIP_FILES[kind])); }
+          catch { apply({ ...(FALLBACKS[kind] || idle) }); }
+        });
+      });
+
+      document.querySelectorAll("[data-lane]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.lane;
+          try { apply(await loadNamed(CHIP_FILES[kind])); }
+          catch { apply({ ...(FALLBACKS[kind] || idle) }); }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
