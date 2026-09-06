@@ -1,0 +1,1186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Demurrage — clerk's laytime ledger for #92548</title>
+    <meta
+      name="description"
+      content="Demurrage — a harbour-office laytime ledger for Claude Code #92548: remote-daemon ccd-cli chat berths accrue unpaid (~300MB each) instead of releasing when the vessel leaves. Idle word is accruing."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,650;0,6..72,750;1,6..72,500&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #061016;
+        --night: #0a1820;
+        --slate: #10242c;
+        --paper: #dce8e4;
+        --teal: #2a7a78;
+        --teal-hot: #3ec4b8;
+        --harbour: #1a4a4e;
+        --amber: #e8a84a;
+        --amber-hot: #f0c36a;
+        --steel: #8a9aa8;
+        --rule: rgba(62, 196, 184, 0.22);
+        --hold: #3ec4b8;
+        --alarm: #e8a84a;
+        --mute: #7a8e96;
+        --rust: #c46a3a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Public Sans", "Segoe UI", sans-serif;
+        color: var(--paper);
+        background:
+          radial-gradient(ellipse at 8% 0%, rgba(42, 122, 120, 0.28), transparent 44%),
+          radial-gradient(ellipse at 92% 8%, rgba(232, 168, 74, 0.12), transparent 40%),
+          repeating-linear-gradient(180deg, transparent 0 27px, rgba(138, 154, 168, 0.04) 27px 28px),
+          linear-gradient(180deg, #0a1820 0%, #061016 52%, #041014 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--teal-hot); }
+      .wrap { width: min(1320px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 2px solid var(--teal);
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--amber-hot);
+      }
+      h1 {
+        font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+        font-size: clamp(56px, 11vw, 112px);
+        letter-spacing: -0.035em;
+        margin: 4px 0 10px;
+        font-weight: 750;
+        line-height: 0.82;
+        color: var(--paper);
+      }
+      h1 em {
+        font-style: italic;
+        display: block;
+        font-family: Newsreader, Georgia, serif;
+        font-size: 0.22em;
+        letter-spacing: 0.06em;
+        font-weight: 500;
+        color: var(--teal-hot);
+        margin-top: 12px;
+      }
+      .lede { max-width: 78em; color: var(--mute); line-height: 1.65; font-size: 16px; }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--amber-hot);
+      }
+
+      .office {
+        margin: 22px 0 0;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(16, 36, 44, 0.96), rgba(6, 16, 22, 0.98)),
+          repeating-linear-gradient(90deg, transparent 0 47px, rgba(138, 154, 168, 0.05) 47px 48px);
+        box-shadow: 0 28px 56px rgba(0, 0, 0, 0.55), inset 0 0 80px rgba(42, 122, 120, 0.06);
+        padding: 16px 16px 18px;
+        position: relative;
+        overflow: hidden;
+      }
+      .office::before {
+        content: "BERTH 192";
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        font-family: Newsreader, serif;
+        letter-spacing: 0.18em;
+        font-size: 14px;
+        color: var(--amber-hot);
+      }
+      .office.accruing, .office.duplicate-resume, .office.daemon-orphan,
+      .office.deleted-binary, .office.no-lifecycle-flags, .office.outage-census,
+      .office.cousins {
+        box-shadow: 0 0 0 3px rgba(232, 168, 74, 0.4), 0 28px 56px rgba(0, 0, 0, 0.55);
+      }
+      .office.cleared {
+        box-shadow: 0 0 0 3px rgba(62, 196, 184, 0.5), 0 28px 56px rgba(0, 0, 0, 0.55);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--teal-hot);
+        margin-bottom: 14px;
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 8px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .occupancy {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      @media (max-width: 900px) {
+        .occupancy { grid-template-columns: 1fr 1fr; }
+        .office::before { display: none; }
+      }
+      .berth-ticket {
+        border: 1px solid var(--rule);
+        background: #0c1c22;
+        padding: 10px 10px 8px;
+        min-height: 92px;
+        cursor: pointer;
+      }
+      .berth-ticket b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--paper);
+      }
+      .berth-ticket span {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        color: var(--mute);
+        margin-top: 4px;
+      }
+      .berth-ticket em {
+        display: block;
+        font-style: normal;
+        font-family: Newsreader, serif;
+        font-size: 18px;
+        color: var(--amber-hot);
+        margin-top: 6px;
+      }
+      .berth-ticket.idle { box-shadow: inset 3px 0 0 var(--alarm); }
+      .berth-ticket.live { box-shadow: inset 3px 0 0 var(--hold); }
+      .berth-ticket.on { outline: 1px solid var(--amber); }
+
+      .clerk {
+        display: grid;
+        grid-template-columns: 0.86fr 1.24fr 0.9fr;
+        gap: 12px;
+      }
+      @media (max-width: 1040px) { .clerk { grid-template-columns: 1fr; } }
+
+      .cap, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--teal-hot);
+      }
+      .clock-well, .census, .registry {
+        background: #07141a;
+        border: 1px solid rgba(62, 196, 184, 0.2);
+        min-height: 360px;
+        padding: 12px;
+      }
+      .clock-svg { width: 100%; height: auto; display: block; }
+      .face-word {
+        font-family: Newsreader, Georgia, serif;
+        font-style: italic;
+        font-size: 34px;
+        margin: 8px 0 0;
+        text-align: center;
+        color: var(--amber-hot);
+      }
+      .office.cleared .face-word { color: var(--hold); }
+      .face-sub {
+        text-align: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+        margin: 2px 0 0;
+      }
+      table { width: 100%; border-collapse: collapse; }
+      th, td {
+        text-align: left;
+        padding: 5px 4px;
+        border-bottom: 1px solid rgba(138, 154, 168, 0.16);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+      }
+      th {
+        color: var(--mute);
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 10px;
+      }
+      tr.dup td { color: var(--amber-hot); }
+      tr.active td { color: var(--teal-hot); }
+      td.hulk { color: var(--rust); }
+      td.ok { color: var(--hold); }
+      .reason { color: var(--mute); line-height: 1.55; font-size: 14px; }
+
+      .socket-card {
+        border: 1px solid var(--rule);
+        padding: 8px;
+        margin-bottom: 8px;
+        background: #0b1a20;
+        cursor: pointer;
+      }
+      .socket-card b {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        color: var(--paper);
+      }
+      .socket-card span {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        color: var(--mute);
+        margin-top: 3px;
+      }
+      .socket-card.on { box-shadow: inset 0 0 0 1px var(--amber); }
+
+      .hulks, .flags, .seizures, .rails {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .hulk-tag, .flag, .seizure, .rail-chip {
+        border: 1px solid var(--rule);
+        padding: 8px 10px;
+        min-width: 140px;
+        background: #0b1a20;
+        cursor: pointer;
+      }
+      .hulk-tag b, .flag b, .seizure b, .rail-chip b {
+        display: block;
+        font-family: Newsreader, serif;
+        font-size: 16px;
+      }
+      .hulk-tag span, .flag span, .seizure span, .rail-chip span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        color: var(--mute);
+      }
+      .hulk-tag.gone { box-shadow: inset 3px 0 0 var(--rust); color: var(--rust); }
+      .flag.missing { box-shadow: inset 3px 0 0 var(--alarm); }
+      .flag.present { box-shadow: inset 3px 0 0 var(--steel); }
+      .seizure.alarm { box-shadow: inset 3px 0 0 var(--alarm); }
+      .hulk-tag.on, .flag.on, .seizure.on, .rail-chip.on {
+        outline: 1px solid var(--amber);
+      }
+
+      .desk { margin-top: 22px; }
+      .verdict-row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+      .verdict {
+        font-family: Newsreader, serif;
+        font-size: clamp(36px, 6vw, 68px);
+        margin: 0;
+        line-height: 0.92;
+      }
+      .verdict.alarm { color: var(--amber-hot); }
+      .verdict.hold { color: var(--hold); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 460px; justify-content: flex-end; }
+      .chip, button.chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        border: 1px solid var(--rule);
+        background: #0b1a20;
+        color: var(--mute);
+        padding: 4px 8px;
+        cursor: pointer;
+      }
+      .chip.on { color: var(--amber-hot); border-color: var(--alarm); }
+      .chip.hold { color: var(--hold); border-color: var(--hold); }
+
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 800px) { .paths { grid-template-columns: 1fr; } }
+      .path { border: 1px solid var(--rule); padding: 10px; background: #07141a; }
+      .path.fail { box-shadow: inset 3px 0 0 var(--alarm); }
+      .path.ok { box-shadow: inset 3px 0 0 var(--hold); }
+      .path b { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-hot); }
+      .path .face { margin: 6px 0; font-family: Newsreader, serif; }
+      .path .note { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--mute); }
+
+      .log, .galley {
+        white-space: pre-wrap;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        background: #07141a;
+        border: 1px solid var(--rule);
+        padding: 12px;
+        margin: 10px 0;
+        min-height: 72px;
+        color: var(--mute);
+      }
+      .log .hit { color: var(--amber-hot); }
+      .galley .hook { color: var(--teal-hot); }
+      .galley .user { color: var(--paper); }
+      .galley .asst { color: var(--hold); }
+
+      .matrix { overflow: auto; margin: 16px 0; }
+      .matrix table { min-width: 680px; }
+      tr.clickable { cursor: pointer; }
+      tr.clickable.active { background: rgba(232, 168, 74, 0.08); }
+      .fail-cell { color: var(--amber-hot); }
+      .pass-cell { color: var(--hold); }
+
+      .pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+      @media (max-width: 800px) { .pads { grid-template-columns: 1fr 1fr; } }
+      .pad {
+        border: 1px solid var(--rule);
+        padding: 10px;
+        cursor: pointer;
+        background: #0b1a20;
+      }
+      .pad b { display: block; font-family: Newsreader, serif; margin-bottom: 4px; font-size: 18px; }
+      .pad p { margin: 0; color: var(--mute); font-size: 13px; }
+
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+      .act {
+        font-family: "Public Sans", sans-serif;
+        font-weight: 700;
+        border: 1px solid var(--rule);
+        background: #10242c;
+        color: var(--paper);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .act.primary { background: var(--amber); color: #1c1408; border-color: var(--amber); }
+
+      .sim, .research { margin: 18px 0; }
+      .sim h3, .research h3 {
+        font-family: Newsreader, serif;
+        font-size: 24px;
+        margin: 0 0 8px;
+      }
+      .sim p, .research p { color: var(--mute); line-height: 1.6; }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+      .drop {
+        margin: 12px 0;
+        border: 1px dashed rgba(62, 196, 184, 0.45);
+        padding: 14px;
+        text-align: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--teal-hot);
+        text-transform: uppercase;
+      }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        background: #07141a;
+        color: var(--paper);
+        border: 1px solid var(--rule);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .stayoff { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        border: 1px solid var(--rule);
+        padding: 2px 7px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--steel);
+      }
+      footer {
+        margin-top: 22px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--mute);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <a class="catalog" href="/">hermes playground catalog</a>
+        <p class="mark">08:50 Sydney · demurrage · catalog #192 · #92548</p>
+        <h1>Demurrage<em>clerk's laytime / overstay ledger</em></h1>
+        <p class="lede">
+          On a self-hosted Linux remote daemon the clerk should release or reuse
+          each chat berth when the vessel leaves. Instead one ~300&nbsp;MB
+          <code>ccd-cli</code> process per chat stays
+          <strong style="color:var(--amber-hot)">accruing</strong>
+          unpaid — duplicates on the same <code>--resume</code> UUID, daemons
+          idle days after last client, hulks still running pruned binaries —
+          until the host is seized. When the berth is released or reused the
+          tally reads
+          <strong style="color:var(--hold)">cleared</strong>.
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/92548">#92548</a>.
+        </p>
+      </header>
+
+      <section class="office accruing" id="bay" aria-label="Demurrage clerk's laytime ledger">
+        <div class="rail">
+          <span>berth 192 · harbour office · night-ink · amber tally · steel rules</span>
+          <span id="rail-state">laytime unpaid · ~300MB per chat · no idle clock</span>
+        </div>
+        <div class="occupancy" id="occupancy" aria-label="Berth occupancy board"></div>
+        <div class="clerk">
+          <div>
+            <h4 class="cap">laytime clock · faceplate</h4>
+            <div class="clock-well">
+              <svg class="clock-svg" viewBox="0 0 280 220" role="img" aria-label="laytime clock">
+                <defs>
+                  <radialGradient id="lamp" cx="50%" cy="40%" r="55%">
+                    <stop offset="0%" stop-color="#3ec4b8" stop-opacity="0.35" />
+                    <stop offset="70%" stop-color="#e8a84a" stop-opacity="0.08" />
+                    <stop offset="100%" stop-color="#061016" stop-opacity="0" />
+                  </radialGradient>
+                </defs>
+                <rect x="8" y="10" width="264" height="200" fill="#07141a" stroke="#2a7a78" stroke-opacity="0.45" />
+                <circle cx="140" cy="108" r="78" fill="url(#lamp)" stroke="#8a9aa8" stroke-opacity="0.45" />
+                <circle cx="140" cy="108" r="62" fill="none" stroke="#3ec4b8" stroke-opacity="0.35" />
+                <g id="tally-marks" stroke="#e8a84a" stroke-width="2">
+                  <line x1="140" y1="38" x2="140" y2="48" />
+                  <line x1="200" y1="108" x2="190" y2="108" />
+                  <line x1="140" y1="178" x2="140" y2="168" />
+                  <line x1="80" y1="108" x2="90" y2="108" />
+                </g>
+                <line id="lay-hand" x1="140" y1="108" x2="188" y2="62" stroke="#e8a84a" stroke-width="2.4" />
+                <circle cx="140" cy="108" r="4" fill="#e8a84a" />
+                <text x="20" y="28" font-family="IBM Plex Mono, monospace" font-size="8" fill="#7a8e96">LAYTIME · UNPAID</text>
+                <text id="clock-label" x="108" y="200" font-family="IBM Plex Mono, monospace" font-size="9" fill="#e8a84a">ACCRUING</text>
+              </svg>
+              <p class="face-word" id="pour-copy">accruing</p>
+              <p class="face-sub" id="pour-sub">~300MB ccd-cli · 250–420 MB RSS · never released</p>
+            </div>
+          </div>
+          <div>
+            <h4 class="cap">process census · --resume UUID</h4>
+            <div class="census">
+              <table>
+                <thead>
+                  <tr>
+                    <th>conversation</th>
+                    <th>pid</th>
+                    <th>socket</th>
+                    <th>age</th>
+                  </tr>
+                </thead>
+                <tbody id="census-body"></tbody>
+              </table>
+              <p class="reason" id="tree-note" style="margin-top:12px">
+                Four conversations, nine processes. Decisive row: 2e283802 twice on 5b2efa6a, ~48h apart.
+              </p>
+            </div>
+          </div>
+          <div>
+            <h4 class="cap">socket registry · last client</h4>
+            <div class="registry" id="registry"></div>
+          </div>
+        </div>
+
+        <h4 class="cap" style="margin-top:16px">deleted-binary hulk rail</h4>
+        <div class="hulks" id="hulks"></div>
+        <h4 class="cap" style="margin-top:16px">flag list · missing lifecycle stamps</h4>
+        <div class="flags" id="flags"></div>
+        <h4 class="cap" style="margin-top:16px">outage timeline · host seized</h4>
+        <div class="seizures" id="seizures"></div>
+        <h4 class="cap" style="margin-top:16px">self-host assay rails</h4>
+        <div class="rails" id="routes"></div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Demurrage scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">accruing</p>
+            <p class="reason" id="reason">
+              Chat berths stay occupied after the vessel leaves. Admit accruing.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="galley" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Demurrage ledger matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>request</th>
+                <th>effect</th>
+                <th>shipped</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="pads" aria-label="Assay pads">
+          <article class="pad" data-remedy="accruing">
+            <b>Accruing</b>
+            <p>~300MB ccd-cli berth unpaid after the vessel leaves.</p>
+          </article>
+          <article class="pad" data-remedy="duplicate-resume">
+            <b>Duplicate resume</b>
+            <p>Same --resume UUID twice on one socket, ~48h apart.</p>
+          </article>
+          <article class="pad" data-remedy="deleted-binary">
+            <b>Deleted binary</b>
+            <p>2.1.247 x2 still executing after prune.</p>
+          </article>
+          <article class="pad" data-remedy="cleared">
+            <b>Cleared</b>
+            <p>Berth released or reused. Laytime paid.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act primary" data-act="score">Score the ledger</button>
+          <button class="act" data-act="idle">Admit accruing</button>
+          <button class="act" data-act="seed">Pin seeded cleared</button>
+          <button class="act" data-act="fixtures">Load #92548 fixture</button>
+          <button class="act" data-act="flip">Flip accruing vs cleared</button>
+          <button class="act" data-act="reset">Reset to accruing</button>
+        </div>
+
+        <div class="sim">
+          <h3>Clerk simulator</h3>
+          <p>Re-tally the ledger without a live remote daemon. Diagnostic clerk only — not a live process dump.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="flood">admit accruing</span>
+            <span class="chip" data-sim-pull="trim">pin cleared</span>
+            <span class="chip" data-sim-pull="stale">duplicate-resume</span>
+            <span class="chip" data-sim-pull="jump">deleted-binary</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="accruing">accruing</button>
+            <button class="chip" data-chip="cleared">cleared</button>
+            <button class="chip" data-chip="duplicate-resume">duplicate-resume</button>
+            <button class="chip" data-chip="daemon-orphan">daemon-orphan</button>
+            <button class="chip" data-chip="deleted-binary">deleted-binary</button>
+            <button class="chip" data-chip="no-lifecycle-flags">no-lifecycle-flags</button>
+            <button class="chip" data-chip="outage-census">outage-census</button>
+            <button class="chip" data-chip="cousins">cousins</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the demurrage ledger</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            ccd-cli 2.1.260 (2.1.247, 2.1.255, 2.1.258 also resident). Daemon
+            build <code>7d193f89fc02cf1035a391245312e34ad419f63e</code>, built
+            2026-08-25T00:11:43Z. Bridge
+            <code>4534d8648b686881955c6f13baf46ae72ee72f4c</code>. Unraid,
+            Linux 6.12.24, 15&nbsp;GB RAM, no swap. Tailscale SSH. Desktop and
+            mobile apps only — no terminal. Reporter jbast1224. Filed
+            2026-09-06T20:19:28Z. Labels: bug, has repro, platform:linux,
+            perf:memory, area:self-hosted-environments. OPEN.
+          </p>
+          <p>
+            Opening a chat starts a <code>ccd-cli</code> process holding
+            250–420&nbsp;MB. It stays resident indefinitely. Reopening under the
+            same daemon spawns a second process against the same
+            <code>--resume</code> UUID. Client updates start a new socket while
+            the old daemon keeps every chat it held — one was alive 11 days,
+            4 days after last client, reparented to init. <code>-cli-keep</code>
+            (default 3) deletes old binaries; 2.1.247 x2 kept running. Flag list
+            has no idle timeout, session cap, or eviction — only
+            <code>-stop</code>, all-or-nothing. Two hard outages: 2026-08-31
+            load 87 / 23 sessions / 8.1&nbsp;GB; 2026-09-01 load 97 / 59 sessions
+            / ~15&nbsp;GB. Printers dropped MQTT at the same moment.
+          </p>
+          <p>
+            Cousins cite-only: <a href="https://github.com/anthropics/claude-code/issues/92059">#92059</a>
+            (client memory governor 0 of 0 idle, remote-control veto);
+            <a href="https://github.com/anthropics/claude-code/issues/1935">#1935</a>
+            (orphaned MCP servers — different component, same lifecycle family);
+            <a href="https://github.com/anthropics/claude-code/issues/49790">#49790</a>
+            (requests the opposite behaviour). Neighbourhood contrast:
+            <a href="https://github.com/anthropics/claude-code/issues/92510">#92510</a>
+            is host fd climb on macOS — a different paradigm. Primary stays #92548.
+          </p>
+          <p>
+            Hypothesis only (NON-BINDING): the remote daemon has no session
+            lifecycle — no release on chat close, no reuse of
+            <code>--resume</code>, no exit on client disconnect, and prune does
+            not restart processes still executing the deleted binary. Encoded
+            from the issue body only. Do not invent closed-source claims.
+          </p>
+          <p class="stayoff" aria-label="Stay-off prior desks">
+            <span>stay off #92543</span>
+            <span>stay off #92434</span>
+            <span>stay off #92510 as primary</span>
+            <span>stay off #92059 as primary</span>
+            <span>stay off #88257</span>
+            <span>stay off oak bench / chalk disc / coiled gauge / valve / CRT</span>
+          </p>
+        </section>
+      </section>
+
+      <footer>
+        hermes-playground · /demurrage/ · catalog #192 · #92548 · score accruing or admit cleared
+      </footer>
+    </main>
+
+    <script>
+      const CHIPS = [
+        "accruing", "cleared", "duplicate-resume", "daemon-orphan",
+        "deleted-binary", "no-lifecycle-flags", "outage-census", "cousins"
+      ];
+      const HOLD = new Set(["cleared"]);
+      const ALARM = new Set([
+        "accruing", "duplicate-resume", "daemon-orphan",
+        "deleted-binary", "no-lifecycle-flags", "outage-census", "cousins"
+      ]);
+      const CHIP_FILES = {
+        accruing: "92548.json",
+        cleared: "cleared.json",
+        "duplicate-resume": "duplicate-resume.json",
+        "daemon-orphan": "daemon-orphan.json",
+        "deleted-binary": "deleted-binary.json",
+        "no-lifecycle-flags": "no-lifecycle-flags.json",
+        "outage-census": "outage-census.json",
+        cousins: "cousins.json"
+      };
+      const PROCESSES = [
+        { conversation: "2e283802", pid: 363856, socket: "5b2efa6a", ageH: 117.1 },
+        { conversation: "2e283802", pid: 267743, socket: "5b2efa6a", ageH: 68.6, duplicateSameDaemon: true },
+        { conversation: "2e283802", pid: 3753765, socket: "85fbdb5e", ageH: 93.1 },
+        { conversation: "c41780db", pid: 338535, socket: "5b2efa6a", ageH: 117.3 },
+        { conversation: "c41780db", pid: 3753764, socket: "85fbdb5e", ageH: 93.1 },
+        { conversation: "f2498e39", pid: 2110967, socket: "77f380c3", ageH: 118.0 },
+        { conversation: "f2498e39", pid: 958621, socket: "4927f78e", ageH: 2.5 },
+        { conversation: "59aa5e70", pid: 2110977, socket: "77f380c3", ageH: 118.0 },
+        { conversation: "59aa5e70", pid: 958053, socket: "4927f78e", ageH: 2.4 }
+      ];
+      const DAEMONS = [
+        { socket: "85fbdb5e", started: "Aug 25 19:22", lastClient: "Sep 2 11:28", chatsHeld: 2, state: "idle 4 days", idle: true },
+        { socket: "77f380c3", started: "Sep 1 10:25", lastClient: "Sep 1 23:39", chatsHeld: 2, state: "idle 5 days", idle: true },
+        { socket: "5b2efa6a", started: "Sep 1 11:10", lastClient: "active", chatsHeld: 4, state: "in use" },
+        { socket: "4927f78e", started: "Sep 6 05:48", lastClient: "active", chatsHeld: 3, state: "in use" }
+      ];
+      const HULKS = [
+        { name: "2.1.247 x2", note: "no longer on disk · still executing", gone: true, file: "deleted-binary.json" },
+        { name: "2.1.255 x3", note: "on disk · still resident", gone: false, file: "deleted-binary.json" },
+        { name: "2.1.258 x2", note: "on disk · still resident", gone: false, file: "deleted-binary.json" },
+        { name: "2.1.260", note: "server-side at filing", gone: false, file: "92548.json" }
+      ];
+      const FLAGS = [
+        { name: "-cli-keep", note: "default 3 · prunes binaries only", missing: false, file: "deleted-binary.json" },
+        { name: "-stop", note: "all-or-nothing · needs a shell", missing: false, file: "no-lifecycle-flags.json" },
+        { name: "idle-timeout", note: "MISSING from the flag list", missing: true, file: "no-lifecycle-flags.json" },
+        { name: "max-session", note: "MISSING · no session cap", missing: true, file: "no-lifecycle-flags.json" },
+        { name: "eviction", note: "MISSING · nothing reclaims", missing: true, file: "no-lifecycle-flags.json" }
+      ];
+      const SEIZURES = [
+        { date: "2026-08-31", note: "load 87 · ~60 D-state · 23 sessions · 8.1 GB", file: "outage-census.json" },
+        { date: "2026-09-01", note: "load 97 · 324 MB free of 15 GB · 59 sessions · ~15 GB", file: "outage-census.json" }
+      ];
+      const RAILS = [
+        { id: "tailscale", name: "Tailscale SSH", effect: "desktop + mobile only · no terminal", file: "92548.json", alarm: true },
+        { id: "unraid", name: "Unraid 15 GB", effect: "Linux 6.12.24 · no swap", file: "outage-census.json", alarm: true },
+        { id: "apps", name: "No per-chat control", effect: "-stop is all-or-nothing", file: "no-lifecycle-flags.json", alarm: true },
+        { id: "hold", name: "Release / reuse", effect: "berth vacated when the vessel leaves", file: "cleared.json", alarm: false }
+      ];
+      const MATRIX = [
+        { id: "primary", name: "primary #92548", request: "remote daemon", effect: "~300MB ccd-cli never released", shipped: "FAIL", scored: "FAIL", file: "92548.json" },
+        { id: "accruing", name: "idle accruing", request: "open / close / wait", effect: "process stays resident", shipped: "FAIL", scored: "FAIL", file: "92548.json" },
+        { id: "dup", name: "duplicate-resume", request: "reopen same chat", effect: "2e283802 twice on 5b2efa6a", shipped: "FAIL", scored: "FAIL", file: "duplicate-resume.json" },
+        { id: "orphan", name: "daemon-orphan", request: "client update", effect: "11d/4d idle socket · init", shipped: "FAIL", scored: "FAIL", file: "daemon-orphan.json" },
+        { id: "hulk", name: "deleted-binary", request: "-cli-keep prune", effect: "2.1.247 x2 still executing", shipped: "FAIL", scored: "FAIL", file: "deleted-binary.json" },
+        { id: "flags", name: "no-lifecycle-flags", request: "flag list", effect: "no idle / max / eviction", shipped: "FAIL", scored: "FAIL", file: "no-lifecycle-flags.json" },
+        { id: "outage", name: "outage-census", request: "host seized", effect: "8.1 GB then ~15 GB", shipped: "FAIL", scored: "FAIL", file: "outage-census.json" },
+        { id: "cleared", name: "seeded cleared", request: "release / reuse", effect: "laytime paid · berth vacant", shipped: "pass", scored: "pass", file: "cleared.json" }
+      ];
+
+      const idle = {
+        source: "probe", issue: 92548, seed: "accruing", accruing: true, cleared: false,
+        duplicateSameDaemon: true, deletedBinary: true, noLifecycleFlags: true,
+        rssMb: 300, idleDays: 4, upDays: 11, shippedMark: "FAIL", scoredMark: "FAIL",
+        isolateMark: "pass", hubCount: "ACCRUING",
+        log: ["[idle] ~300MB ccd-cli still resident after the chat closed", "[tally] 2e283802 twice on 5b2efa6a · 11d/4d idle daemon · 2.1.247 hulk"]
+      };
+      const seeded = {
+        source: "probe", issue: 92548, seed: "cleared", accruing: false, cleared: true,
+        released: true, reused: true, shippedMark: "pass", scoredMark: "pass",
+        isolateMark: "pass", hubCount: "CLEARED",
+        log: ["[seeded] chat process released on close or idle; --resume reused"]
+      };
+      const dupTicket = { source: "probe", issue: 92548, seed: "duplicate-resume", duplicateResume: true, duplicateSameDaemon: true, accruing: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "DUPLICATE-RESUME", log: ["[duplicate] 2e283802 PID 363856 and 267743 on 5b2efa6a · ~48h apart"] };
+      const orphanTicket = { source: "probe", issue: 92548, seed: "daemon-orphan", daemonOrphan: true, accruing: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "DAEMON-ORPHAN", log: ["[orphan] 85fbdb5e 11 days up / 4 days since last client · reparented to init"] };
+      const hulkTicket = { source: "probe", issue: 92548, seed: "deleted-binary", deletedBinary: true, accruing: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "DELETED-BINARY", log: ["[hulk] 2.1.247 x2 still executing after -cli-keep prune"] };
+      const flagsTicket = { source: "probe", issue: 92548, seed: "no-lifecycle-flags", noLifecycleFlags: true, accruing: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "NO-LIFECYCLE-FLAGS", log: ["[flags] no idle timeout · no max-session · no eviction · only -stop"] };
+      const outageTicket = { source: "probe", issue: 92548, seed: "outage-census", outageCensus: true, accruing: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "OUTAGE-CENSUS", log: ["[seizure] 2026-08-31 8.1 GB · 2026-09-01 ~15 GB · MQTT printers dropped"] };
+      const cousinsTicket = { source: "probe", issue: 92548, seed: "cousins", accruing: true, cousinsCiteOnly: [92059, 1935, 49790], shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "COUSINS", log: ["[cousins] #92059 #1935 #49790", "[ledger] primary stays #92548"] };
+      const primaryTicket = { ...idle, seed: "accruing", scenario: "92548", hubCount: "92548", log: ["[primary] #92548 · ~300MB ccd-cli · same --resume twice on one daemon"] };
+
+      const FALLBACKS = {
+        accruing: idle,
+        cleared: seeded,
+        "duplicate-resume": dupTicket,
+        "daemon-orphan": orphanTicket,
+        "deleted-binary": hulkTicket,
+        "no-lifecycle-flags": flagsTicket,
+        "outage-census": outageTicket,
+        cousins: cousinsTicket
+      };
+
+      let pullState = "flood";
+      let flipHold = false;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.cleared === true && t.accruing !== true);
+      }
+
+      function alreadyAccruing(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.accruing !== true) return false;
+        if (HOLD.has(seed) && t.accruing !== true) return false;
+        if (t.accruing === true) return true;
+        if (t.duplicateSameDaemon === true || t.deletedBinary === true || t.noLifecycleFlags === true) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.cleared !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyAccruing(t);
+        t.shippedFree = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedFree ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (remediating(t) ? "pass" : "FAIL");
+        const holding = remediating(t) && !alarm;
+        const chips = [];
+        if (holding || seed === "cleared") chips.push("cleared");
+        if (alarm || seed === "accruing" || t.accruing === true) chips.push("accruing");
+        if (seed === "duplicate-resume" || t.duplicateResume === true || t.duplicateSameDaemon === true) chips.push("duplicate-resume");
+        if (seed === "daemon-orphan" || t.daemonOrphan === true || (t.idleDays >= 4)) chips.push("daemon-orphan");
+        if (seed === "deleted-binary" || t.deletedBinary === true) chips.push("deleted-binary");
+        if (seed === "no-lifecycle-flags" || t.noLifecycleFlags === true) chips.push("no-lifecycle-flags");
+        if (seed === "outage-census" || t.outageCensus === true) chips.push("outage-census");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (holding ? "cleared" : "accruing");
+        return { ticket: t, holding, alarm, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        accruing: "The remote daemon should release or reuse each chat berth when the vessel leaves; instead ~300MB ccd-cli sessions accrue unpaid. Admit accruing.",
+        cleared: "Ledger already cleared. Chat process released on close or idle; reopen reused the same --resume berth; daemon vacated.",
+        "duplicate-resume": "Reopening a chat under the SAME daemon spawns a duplicate against the same --resume UUID. Decisive row: 2e283802 PID 363856 and 267743 on socket 5b2efa6a, started ~48h apart.",
+        "daemon-orphan": "Each client update starts a new daemon on a new socket; the old one keeps every chat it held. 85fbdb5e: 11 days up, 4 days since last client. Idle daemons reparented to init.",
+        "deleted-binary": "CLI prune (-cli-keep default 3) deletes old binaries but leaves processes still executing them. 2.1.247 x2 still running after prune. Filing: 397MB / 277MB hulks.",
+        "no-lifecycle-flags": "Flag list has no idle timeout, session cap, or eviction. Only -stop, all-or-nothing per daemon. Desktop and mobile have no shell and no per-chat control.",
+        "outage-census": "Two hard outages on Unraid, 15 GB, no swap. 2026-08-31 load 87 / 23 sessions / 8.1 GB. 2026-09-01 load 97 / 59 sessions / ~15 GB. Printers dropped MQTT simultaneously.",
+        cousins: "Cite-only #92059 client memory governor 0 of 0 idle with remote-control veto; #1935 orphaned MCP servers; #49790 requests the opposite behaviour. #92510 is host fd climb on macOS — different paradigm. Primary stays #92548."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[ledger] accruing · ~300MB ccd-cli still on the berth"]
+            : ["[ledger] cleared · berth released or reused"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /accruing|300|FAIL|duplicate|hulk|seizure|idle/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "accruing · remote-daemon overstay" : "cleared · berth released", "demurrage path"],
+          ["isolate", t.isolateMark, "Linux self-host remote daemon · not client governor · not host fd climb · not #92543 argv bevel", "not a clone"],
+          ["scored", t.scoredMark, remediating(t) ? "cleared" : "would score after the berth is released or reused", "expected rail"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="clickable ${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            <td>${row.request}</td>
+            <td>${row.effect}</td>
+            ${cell(row.shipped)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "accruing", accruing: "accruing", dup: "duplicate-resume",
+                orphan: "daemon-orphan", hulk: "deleted-binary",
+                flags: "no-lifecycle-flags", outage: "outage-census", cleared: "cleared"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        if (result.holding) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">chat process released on close or idle</span>\n` +
+            `<span class="asst">--resume reused · daemon vacated</span>\n` +
+            `<span class="hook">${result.ticket.seed || "cleared"}; hold</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">ccd-cli:</span>\n` +
+          `<span class="user">~300MB · 250–420 MB RSS · never released</span>\n` +
+          `<span class="hook">--resume 2e283802:</span>\n` +
+          `<span class="user">PID 363856 and 267743 on 5b2efa6a · ~48h apart</span>\n` +
+          `<span class="asst">rails: release on close · reuse UUID · daemon exit · per-chat stop</span>`;
+      }
+
+      function paintTray(result) {
+        document.getElementById("pour-copy").textContent = result.verdict;
+        document.getElementById("pour-sub").textContent = result.holding
+          ? "berth released · --resume reused · daemon vacated"
+          : "~300MB ccd-cli · 250–420 MB RSS · never released";
+        document.getElementById("rail-state").textContent = result.holding
+          ? "laytime paid · berth vacant · cleared"
+          : "laytime unpaid · ~300MB per chat · no idle clock";
+        document.getElementById("tree-note").textContent = result.verdict === "duplicate-resume"
+          ? "Decisive row: conversation 2e283802 PID 363856 (117.1h) and PID 267743 (68.6h) on socket 5b2efa6a — same daemon, ~48h apart."
+          : (result.holding
+            ? "Hold path releases the process on close or idle and reuses the same --resume berth."
+            : "Four conversations, nine processes. Decisive row: 2e283802 twice on 5b2efa6a, ~48h apart.");
+        const hand = document.getElementById("lay-hand");
+        const label = document.getElementById("clock-label");
+        if (hand) {
+          hand.setAttribute("x2", result.holding ? "140" : "188");
+          hand.setAttribute("y2", result.holding ? "52" : "62");
+          hand.setAttribute("stroke", result.holding ? "#3ec4b8" : "#e8a84a");
+        }
+        if (label) {
+          label.textContent = result.holding ? "CLEARED" : "ACCRUING";
+          label.setAttribute("fill", result.holding ? "#3ec4b8" : "#e8a84a");
+        }
+      }
+
+      function paintCensus(result) {
+        const rows = Array.isArray(result.ticket.processes) && result.ticket.processes.length
+          ? result.ticket.processes
+          : PROCESSES;
+        document.getElementById("census-body").innerHTML = rows.map((row) => {
+          const dup = row.duplicateSameDaemon === true ||
+            (row.conversation === "2e283802" && row.socket === "5b2efa6a" && !result.holding);
+          return `<tr class="${dup ? "dup" : (result.holding ? "active" : "")}">
+            <td>${row.conversation}</td>
+            <td>${row.pid}</td>
+            <td>${row.socket}</td>
+            <td class="${dup ? "hulk" : "ok"}">${row.ageH} h${dup ? " · DUP" : ""}</td>
+          </tr>`;
+        }).join("");
+      }
+
+      function paintOccupancy(result) {
+        document.getElementById("occupancy").innerHTML = DAEMONS.map((d) => {
+          const on = (!result.holding && d.idle) || (result.holding && !d.idle) ? "on" : "";
+          return `<article class="berth-ticket ${d.idle ? "idle" : "live"} ${on}" data-socket="${d.socket}">
+            <b>${d.socket}</b>
+            <span>started ${d.started} · last ${d.lastClient}</span>
+            <em>${result.holding && d.idle ? "vacated" : d.state}</em>
+          </article>`;
+        }).join("");
+        document.querySelectorAll("#occupancy [data-socket]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const d = DAEMONS.find((x) => x.socket === el.dataset.socket);
+            if (!d) return;
+            try { apply(await loadNamed(d.idle ? "daemon-orphan.json" : "92548.json")); }
+            catch { apply(d.idle ? { ...orphanTicket } : { ...idle }); }
+          });
+        });
+      }
+
+      function paintRegistry(result) {
+        const rows = Array.isArray(result.ticket.daemons) && result.ticket.daemons.length
+          ? result.ticket.daemons
+          : DAEMONS;
+        document.getElementById("registry").innerHTML = rows.map((d) => {
+          const on = result.verdict === "daemon-orphan" && d.idle ? "on" : "";
+          return `<article class="socket-card ${on}">
+            <b>${d.socket}</b>
+            <span>${d.started} → ${d.lastClient} · ${d.chatsHeld} chats · ${d.state}</span>
+          </article>`;
+        }).join("");
+      }
+
+      function paintHulks(result) {
+        document.getElementById("hulks").innerHTML = HULKS.map((h) => {
+          const on = result.verdict === "deleted-binary" && h.gone ? "on" : "";
+          return `<article class="hulk-tag ${h.gone ? "gone" : ""} ${on}" data-hulk="${h.name}">
+            <b>${h.name}</b>
+            <span>${result.holding ? "restarted / gone" : h.note}</span>
+          </article>`;
+        }).join("");
+        document.querySelectorAll("#hulks [data-hulk]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const h = HULKS.find((x) => x.name === el.dataset.hulk);
+            if (!h) return;
+            try { apply(await loadNamed(h.file)); }
+            catch { apply({ ...hulkTicket }); }
+          });
+        });
+      }
+
+      function paintFlags(result) {
+        document.getElementById("flags").innerHTML = FLAGS.map((f) => {
+          const on = result.verdict === "no-lifecycle-flags" && f.missing ? "on" : "";
+          return `<article class="flag ${f.missing ? "missing" : "present"} ${on}" data-flag="${f.name}">
+            <b>${f.name}</b>
+            <span>${result.holding && f.missing ? "present on the hold path" : f.note}</span>
+          </article>`;
+        }).join("");
+        document.querySelectorAll("#flags [data-flag]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const f = FLAGS.find((x) => x.name === el.dataset.flag);
+            if (!f) return;
+            try { apply(await loadNamed(f.file)); }
+            catch { apply({ ...flagsTicket }); }
+          });
+        });
+      }
+
+      function paintSeizures(result) {
+        document.getElementById("seizures").innerHTML = SEIZURES.map((s) => {
+          const on = result.verdict === "outage-census" ? "on" : "";
+          return `<article class="seizure alarm ${on}" data-date="${s.date}">
+            <b>${s.date}</b>
+            <span>${s.note}</span>
+          </article>`;
+        }).join("");
+        document.querySelectorAll("#seizures [data-date]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            try { apply(await loadNamed("outage-census.json")); }
+            catch { apply({ ...outageTicket }); }
+          });
+        });
+      }
+
+      function paintRoutes(result) {
+        document.getElementById("routes").innerHTML = RAILS.map((r) => {
+          const on = (result.holding && !r.alarm) || (!result.holding && r.alarm) ? "on" : "";
+          return `<article class="rail-chip ${on}" data-route="${r.id}">
+            <b>${r.name}</b>
+            <span>${r.effect}</span>
+          </article>`;
+        }).join("");
+        document.querySelectorAll("#routes [data-route]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const r = RAILS.find((x) => x.id === el.dataset.route);
+            if (!r) return;
+            try { apply(await loadNamed(r.file)); }
+            catch { apply(r.alarm ? { ...idle } : { ...seeded }); }
+          });
+        });
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92548 }); }
+          });
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bay = document.getElementById("bay");
+        bay.className = "office " + result.verdict;
+        const v = document.getElementById("verdict");
+        v.textContent = result.verdict;
+        v.className = "verdict " + (result.holding ? "hold" : "alarm");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || result.verdict;
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintTray(result);
+        paintCensus(result);
+        paintOccupancy(result);
+        paintRegistry(result);
+        paintHulks(result);
+        paintFlags(result);
+        paintSeizures(result);
+        paintRoutes(result);
+        paintChips(result);
+        paintPaths(result);
+        paintLog(result.alarm, result.ticket);
+        paintSlip(result);
+        const map = {
+          accruing: "accruing", cleared: "cleared", "duplicate-resume": "dup",
+          "daemon-orphan": "orphan", "deleted-binary": "hulk",
+          "no-lifecycle-flags": "flags", "outage-census": "outage",
+          cousins: "primary", "92548": "primary"
+        };
+        const scenario = ticket.scenario === "92548" ? "primary"
+          : (map[result.verdict] || ticket.scenario || "");
+        paintMatrix(scenario);
+        document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+          const holdish = HOLD.has(result.verdict);
+          btn.classList.toggle("on", btn.dataset.chip === result.verdict && !holdish);
+          btn.classList.toggle("hold", btn.dataset.chip === result.verdict && holdish);
+        });
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(new URL("data/" + name, location.href));
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function ticketFromSim() {
+        if (pullState === "trim") return { ...seeded };
+        if (pullState === "stale") return { ...dupTicket };
+        if (pullState === "jump") return { ...hulkTicket };
+        return { ...idle };
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((el) => {
+          el.classList.toggle("on", el.dataset.simPull === pullState && pullState !== "trim");
+          el.classList.toggle("hold", el.dataset.simPull === pullState && pullState === "trim");
+        });
+      }
+
+      document.querySelectorAll("[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") {
+            pullState = "flood";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("92548.json")); }
+            catch { apply({ ...idle }); }
+            return;
+          }
+          if (act === "seed") {
+            pullState = "trim";
+            flipHold = true;
+            syncSimChips();
+            try { apply(await loadNamed("cleared.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "flip") {
+            flipHold = !flipHold;
+            if (flipHold) {
+              pullState = "trim";
+              syncSimChips();
+              try { apply(await loadNamed("cleared.json")); }
+              catch { apply({ ...seeded }); }
+            } else {
+              pullState = "flood";
+              syncSimChips();
+              try { apply(await loadNamed("92548.json")); }
+              catch { apply({ ...idle }); }
+            }
+            return;
+          }
+          if (act === "fixtures") {
+            pullState = "flood";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("92548.json")); }
+            catch { apply({ ...primaryTicket }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92548 }); }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          try { apply(await loadNamed(CHIP_FILES[kind])); }
+          catch { apply({ ...(FALLBACKS[kind] || idle) }); }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
