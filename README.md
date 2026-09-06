@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Stroboscope](https://hermes-playground-green.vercel.app/stroboscope/)** — high-speed photography / optics lab stroboscope desk. A terminal panel that flickers open and steals the chat caret on every shell tool call is not a helpful console — it is already strobing. Score the hold or admit the focus already stolen. Folder: `projects/stroboscope/`.
+**Featured: [Fairlead](https://hermes-playground-green.vercel.app/fairlead/)** — ship-deck hawse-pipe / chock-rail / URI-scheme fairlead lab. A fairlead that only guides file:// and returns null on vscode-remote:// is not a remote-ready drop — it is already unguided. Score the lead or admit the path already dropped. Folder: `projects/fairlead/`.
+
+**Listed: [Stroboscope](https://hermes-playground-green.vercel.app/stroboscope/)** — high-speed photography / optics lab stroboscope desk. A terminal panel that flickers open and steals the chat caret on every shell tool call is not a helpful console — it is already strobing. Score the hold or admit the focus already stolen. Folder: `projects/stroboscope/`. Still listed. Not featured.
 
 **Listed: [Heliostat](https://hermes-playground-green.vercel.app/heliostat/)** — rooftop observatory / brass heliostat mount. A heliostat that stays aimed at the dawn sky after the terminal's sun has moved because the only wake bell is DECSET 2031 and this terminal never rings it, is not a broken photometer — it is already dawnlocked. Score the track or admit the beam already misaimed. Folder: `projects/heliostat/`. Still listed. Not featured.
 

@@ -1,0 +1,1446 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fairlead — hawse-pipe lab for #92403</title>
+    <meta
+      name="description"
+      content="Fairlead — ship-deck hawse-pipe / chock-rail / URI-scheme fairlead for Claude Code #92403: Explorer drop silently does nothing on Remote-WSL/SSH/Dev Containers because the handler only accepts file://. Idle word is unguided."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --night-sea: #07141c;
+        --deep: #041016;
+        --plate: #122028;
+        --salt: #9aa7b2;
+        --salt-hot: #d5dde3;
+        --hawse: #c9a24a;
+        --hawse-hot: #e8c56a;
+        --amber: #e8a23a;
+        --amber-hot: #ffc45a;
+        --seafoam: #5fd4b3;
+        --seafoam-hot: #8eecd2;
+        --ink: #e8eef2;
+        --mute: #8b99a3;
+        --line: rgba(201, 162, 74, 0.18);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Outfit, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 12% 0%, rgba(95, 212, 179, 0.07), transparent 34%),
+          radial-gradient(ellipse at 88% 6%, rgba(232, 162, 58, 0.08), transparent 30%),
+          linear-gradient(180deg, #0b1c26 0%, #07141c 52%, #041016 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--hawse-hot); }
+      .wrap { width: min(1220px, calc(100% - 24px)); margin: 0 auto; padding: 20px 0 80px; }
+      .catalog {
+        display: inline-block;
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(139, 153, 163, 0.4);
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--hawse);
+      }
+      h1 {
+        font-family: Fraunces, "Iowan Old Style", serif;
+        font-size: clamp(48px, 8vw, 92px);
+        letter-spacing: -0.03em;
+        margin: 4px 0 10px;
+        font-weight: 700;
+        line-height: 0.86;
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 500;
+        color: var(--hawse);
+        font-size: 0.26em;
+        letter-spacing: 0.14em;
+        display: block;
+        margin-top: 12px;
+      }
+      .lede { max-width: 68em; color: var(--mute); line-height: 1.55; font-size: 16px; }
+      .lede code, code {
+        font-family: "Fragment Mono", monospace;
+        font-size: 13px;
+        color: var(--hawse-hot);
+      }
+
+      .deck {
+        margin: 22px 0 0;
+        position: relative;
+        min-height: 580px;
+        border-radius: 8px;
+        border: 1px solid rgba(154, 167, 178, 0.22);
+        background:
+          repeating-linear-gradient(90deg, #16303a 0 46px, #12262e 46px 48px),
+          linear-gradient(180deg, #1a3340 0%, #0e1c24 55%, #09141a 100%);
+        box-shadow: 0 28px 60px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+      }
+      .deck::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 16px;
+        background:
+          repeating-linear-gradient(90deg, #c9a24a 0 18px, #7a6228 18px 20px, #8b97a3 20px 38px, #5a6570 38px 40px);
+        z-index: 3;
+      }
+      .deck.unguided, .deck.dropped, .deck.remote-null, .deck.overlay-lies, .deck.codeeditors-external {
+        box-shadow: 0 0 0 4px rgba(232, 162, 58, 0.28), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+      .deck.led, .deck.normalized, .deck.fsPath-prefer, .deck.local-file-ok {
+        box-shadow: 0 0 0 4px rgba(95, 212, 179, 0.28), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+
+      .tag {
+        position: absolute;
+        z-index: 8;
+        font-family: "Fragment Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: rgba(4, 16, 22, 0.82);
+        padding: 4px 8px;
+        border: 1px solid rgba(201, 162, 74, 0.28);
+        color: var(--hawse);
+      }
+      .tag-l { left: 14px; top: 28px; }
+      .tag-r { right: 14px; top: 28px; color: var(--seafoam-hot); }
+
+      .gauges {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        top: 56px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        z-index: 6;
+      }
+      .gauge {
+        background: linear-gradient(180deg, #243844, #121f26);
+        border: 2px solid #8b97a3;
+        border-radius: 4px;
+        padding: 8px 10px;
+        min-width: 0;
+        box-shadow: inset 0 1px 0 rgba(232, 239, 242, 0.08);
+      }
+      .gauge h4 {
+        margin: 0 0 8px;
+        font-family: "Fragment Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .lamp {
+        height: 54px;
+        border-radius: 3px;
+        background: #081318;
+        border: 1px solid rgba(154, 167, 178, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Fragment Mono", monospace;
+        font-size: 12px;
+        color: var(--salt);
+      }
+      .deck.local-file-ok .g-file .lamp,
+      .deck.led .g-file .lamp,
+      .deck.normalized .g-file .lamp { color: var(--seafoam); box-shadow: inset 0 0 18px rgba(95, 212, 179, 0.2); }
+      .deck.dropped .g-remote .lamp,
+      .deck.unguided .g-remote .lamp,
+      .deck.remote-null .g-remote .lamp,
+      .deck.codeeditors-external .g-remote .lamp {
+        color: var(--amber-hot);
+        box-shadow: inset 0 0 18px rgba(232, 162, 58, 0.28);
+      }
+      .deck.overlay-lies .g-overlay .lamp,
+      .deck.dropped .g-overlay .lamp,
+      .deck.unguided .g-overlay .lamp {
+        color: var(--amber);
+      }
+      .deck.dropped .g-helper .lamp,
+      .deck.remote-null .g-helper .lamp,
+      .deck.unguided .g-helper .lamp { color: var(--amber-hot); }
+      .deck.led .g-helper .lamp,
+      .deck.normalized .g-helper .lamp,
+      .deck.fsPath-prefer .g-helper .lamp { color: var(--seafoam); }
+
+      .mid {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        top: 154px;
+        height: 210px;
+        display: grid;
+        grid-template-columns: 1fr 1.15fr 0.95fr;
+        gap: 12px;
+        z-index: 5;
+      }
+      .fitting {
+        background: linear-gradient(180deg, #2a404c, #152229);
+        border: 2px solid #c9a24a;
+        border-radius: 6px;
+        padding: 10px;
+        position: relative;
+      }
+      .fitting b {
+        display: block;
+        font-family: "Fragment Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--hawse);
+        margin-bottom: 8px;
+      }
+      .hawse {
+        height: 148px;
+        border-radius: 50% / 42%;
+        border: 10px solid #c9a24a;
+        background:
+          radial-gradient(ellipse at 50% 50%, #041016 0%, #0b1c24 62%, #1a2e38 100%);
+        box-shadow:
+          inset 0 0 0 4px #7a6228,
+          0 8px 18px rgba(0, 0, 0, 0.35);
+        position: relative;
+        overflow: hidden;
+      }
+      .hawse i {
+        position: absolute;
+        left: 18%;
+        right: 18%;
+        top: 42%;
+        height: 10px;
+        border-radius: 99px;
+        background: var(--amber);
+        transform: rotate(-12deg);
+      }
+      .deck.led .hawse i,
+      .deck.normalized .hawse i,
+      .deck.fsPath-prefer .hawse i,
+      .deck.local-file-ok .hawse i {
+        background: var(--seafoam);
+        top: 48%;
+        transform: none;
+      }
+      .deck.dropped .hawse i,
+      .deck.unguided .hawse i,
+      .deck.remote-null .hawse i {
+        animation: slip 0.9s ease-in-out infinite;
+      }
+      @keyframes slip {
+        0%, 100% { transform: translateY(0) rotate(-12deg); opacity: 1; }
+        55% { transform: translateY(28px) rotate(18deg); opacity: 0.25; }
+      }
+
+      .chock {
+        height: 148px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .chock svg { width: 100%; height: 140px; }
+      .chock path.rail { fill: none; stroke: #8b97a3; stroke-width: 8; stroke-linecap: round; }
+      .chock path.line { fill: none; stroke: var(--amber); stroke-width: 5; stroke-linecap: round; }
+      .deck.led .chock path.line,
+      .deck.normalized .chock path.line,
+      .deck.fsPath-prefer .chock path.line,
+      .deck.local-file-ok .chock path.line { stroke: var(--seafoam); }
+      .deck.dropped .chock path.line,
+      .deck.unguided .chock path.line { stroke-dasharray: 8 10; animation: dash 0.8s linear infinite; }
+      @keyframes dash { to { stroke-dashoffset: -36; } }
+
+      .fair {
+        height: 148px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .fair svg { width: 160px; height: 130px; }
+      .fair ellipse { fill: none; stroke: #c9a24a; stroke-width: 8; }
+      .fair path { fill: none; stroke: var(--amber); stroke-width: 5; }
+      .deck.led .fair path,
+      .deck.normalized .fair path,
+      .deck.fsPath-prefer .fair path,
+      .deck.local-file-ok .fair path { stroke: var(--seafoam); }
+      .deck.dropped .fair path,
+      .deck.unguided .fair path { animation: fall 1.1s ease-in-out infinite; }
+      @keyframes fall {
+        0%, 40% { transform: translateY(0); opacity: 1; }
+        100% { transform: translateY(18px); opacity: 0.15; }
+      }
+
+      .work {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        bottom: 16px;
+        height: 186px;
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
+        gap: 12px;
+        z-index: 6;
+      }
+      .explorer, .panel {
+        background: #0a161c;
+        border: 2px solid #8b97a3;
+        border-radius: 4px;
+        padding: 10px 12px;
+        position: relative;
+      }
+      .explorer b, .panel b {
+        display: block;
+        font-family: "Fragment Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 8px;
+      }
+      .file-row {
+        font-family: "Fragment Mono", monospace;
+        font-size: 12px;
+        color: var(--salt-hot);
+        padding: 8px 10px;
+        background: #122028;
+        border: 1px dashed rgba(201, 162, 74, 0.35);
+      }
+      .uri {
+        margin-top: 8px;
+        font-family: "Fragment Mono", monospace;
+        font-size: 11px;
+        color: var(--amber);
+        word-break: break-all;
+      }
+      .deck.local-file-ok .uri,
+      .deck.led .uri,
+      .deck.normalized .uri { color: var(--seafoam); }
+
+      .dropzone {
+        min-height: 72px;
+        background: #071016;
+        border: 1px dashed rgba(154, 167, 178, 0.28);
+        padding: 10px;
+        font-family: "Fragment Mono", monospace;
+        font-size: 13px;
+        color: var(--mute);
+        position: relative;
+      }
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(201, 162, 74, 0.12);
+        border: 2px dashed var(--hawse);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Fragment Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--hawse-hot);
+        opacity: 0;
+      }
+      .deck.dropped .overlay,
+      .deck.unguided .overlay,
+      .deck.overlay-lies .overlay,
+      .deck.remote-null .overlay,
+      .deck.codeeditors-external .overlay { opacity: 1; }
+      .deck.led .overlay,
+      .deck.normalized .overlay,
+      .deck.fsPath-prefer .overlay,
+      .deck.local-file-ok .overlay {
+        opacity: 0.35;
+        border-color: var(--seafoam);
+        color: var(--seafoam);
+      }
+      .mention {
+        margin-top: 8px;
+        font-family: "Fragment Mono", monospace;
+        font-size: 13px;
+        color: var(--mute);
+      }
+      .deck.led .mention,
+      .deck.normalized .mention,
+      .deck.fsPath-prefer .mention,
+      .deck.local-file-ok .mention { color: var(--seafoam); }
+      .deck.dropped .mention,
+      .deck.unguided .mention { color: var(--amber); }
+
+      .desk {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) {
+        .gauges, .mid, .work, .desk { grid-template-columns: 1fr; }
+        .deck { min-height: 1180px; }
+        .mid { top: 430px; height: auto; }
+        .work { top: 860px; bottom: auto; }
+      }
+      .ledger, .chart, .balloon, .chain-pane, .instruments, .transcript, .matrix, .remediation, .sim, .research {
+        background: var(--plate);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 16px;
+        margin-top: 14px;
+      }
+      .desk .ledger, .desk .chart { margin-top: 0; }
+      .verdict {
+        font-family: Fraunces, serif;
+        font-size: 42px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin: 0 0 8px;
+        line-height: 0.9;
+      }
+      .verdict.alarm { color: var(--amber-hot); }
+      .verdict.hold { color: var(--seafoam); }
+      .reason { margin: 0 0 14px; color: var(--mute); line-height: 1.5; }
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path { border: 1px solid var(--line); padding: 10px; border-radius: 4px; }
+      .path.fail { border-color: rgba(232, 162, 58, 0.45); }
+      .path.ok { border-color: rgba(95, 212, 179, 0.4); }
+      .path b { font-family: "Fragment Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .path .face { margin: 6px 0; font-size: 14px; }
+      .path .note { color: var(--mute); font-size: 12px; }
+      .plaques { margin-top: 12px; display: grid; gap: 8px; }
+      .plaque {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+        border-radius: 4px;
+      }
+      .plaque i {
+        width: 10px; height: 10px; border-radius: 50%; margin-top: 4px;
+        background: var(--salt); display: block;
+      }
+      .plaque.on i { background: var(--seafoam); }
+      .plaque.hot i { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+      .plaque b { display: block; font-size: 13px; }
+      .plaque span { color: var(--mute); font-size: 12px; font-family: "Fragment Mono", monospace; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      .chip {
+        font-family: "Fragment Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--line);
+        padding: 5px 8px;
+        border-radius: 99px;
+        cursor: pointer;
+        background: transparent;
+        color: var(--ink);
+      }
+      .chip.live { border-color: var(--seafoam); color: var(--seafoam); }
+      .chip.dead { border-color: rgba(232, 162, 58, 0.5); color: var(--amber-hot); }
+      .chart h2, .balloon h3, .chain-pane h3, .transcript h3, .sim h3, .research h3 {
+        font-family: Fraunces, serif;
+        margin: 0 0 10px;
+        font-size: 22px;
+      }
+      .log {
+        font-family: "Fragment Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        color: var(--salt-hot);
+      }
+      .log .hit { color: var(--amber-hot); }
+      .meter { margin-bottom: 10px; }
+      .meter b { display: block; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); margin-bottom: 6px; }
+      .bar {
+        height: 28px;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        position: relative;
+        font-family: "Fragment Mono", monospace;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        overflow: hidden;
+      }
+      .bar .fill { position: absolute; inset: 0 auto 0 0; width: 62%; background: rgba(232, 162, 58, 0.18); }
+      .bar.kept .fill { width: 92%; background: rgba(95, 212, 179, 0.2); }
+      .bar.cut { color: var(--amber-hot); }
+      .bar.kept { color: var(--seafoam); }
+      .ab { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      @media (max-width: 900px) { .ab { grid-template-columns: 1fr 1fr; } }
+      .ab-card {
+        border: 1px solid var(--line);
+        padding: 12px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .ab-card b { display: block; font-family: Fraunces, serif; margin-bottom: 6px; }
+      .ab-card p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+      .ab-card.active { outline: 2px solid var(--hawse-hot); }
+      .ab-card.fail { border-color: rgba(232, 162, 58, 0.45); }
+      .ab-card.ok { border-color: rgba(95, 212, 179, 0.4); }
+      .instruments { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      @media (max-width: 900px) { .instruments { grid-template-columns: 1fr 1fr; } }
+      .inst { border: 1px solid var(--line); padding: 10px; border-radius: 4px; }
+      .inst b { display: block; font-family: Fraunces, serif; margin-bottom: 6px; }
+      .inst p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+      .jsonl {
+        font-family: "Fragment Mono", monospace;
+        font-size: 12px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+      .jsonl .user { color: var(--amber-hot); }
+      .jsonl .hook { color: var(--hawse-hot); }
+      .jsonl .asst { color: var(--seafoam); }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+      th { font-family: "Fragment Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); }
+      tr.active { background: rgba(95, 212, 179, 0.06); }
+      .fail-cell { color: var(--amber-hot); }
+      .pass-cell { color: var(--seafoam); }
+      .remediation { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      @media (max-width: 800px) { .remediation { grid-template-columns: 1fr; } }
+      .remedy { border: 1px solid var(--line); padding: 12px; border-radius: 4px; cursor: pointer; }
+      .remedy:hover { border-color: var(--hawse-hot); }
+      .remedy b { display: block; font-family: Fraunces, serif; font-size: 18px; margin-bottom: 6px; }
+      .remedy p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.45; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+      .act {
+        font-family: Fraunces, serif;
+        font-size: 14px;
+        padding: 10px 12px;
+        border-radius: 4px;
+        border: 1px solid var(--salt);
+        background: #122028;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .act:hover { border-color: var(--hawse); }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .drop {
+        margin-top: 12px;
+        border: 1px dashed rgba(201, 162, 74, 0.35);
+        padding: 16px;
+        text-align: center;
+        color: var(--mute);
+        font-family: "Fragment Mono", monospace;
+        font-size: 12px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 10px;
+        background: #071016;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        font-family: "Fragment Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        border: 1px solid var(--line);
+        padding: 3px 7px;
+        border-radius: 99px;
+        font-size: 12px;
+        color: var(--mute);
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">12:50 / hermes catalog #172 / #92403</p>
+        <h1>Fairlead <em>hawse-pipe / chock rail</em></h1>
+        <p class="lede">
+          12:50 fairlead: a fairlead that only guides <code>file://</code> and
+          returns null on <code>vscode-remote://</code> is not a remote-ready
+          drop — it is already <strong>unguided</strong>. Score the lead or
+          admit the path already <strong>dropped</strong>.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92403">anthropics/claude-code#92403</a>
+          (OPEN; bug, has-repro, platform:windows, area:ide, platform:vscode, platform:wsl).
+          Extension <code>Anthropic.claude-code 2.1.261</code> (also 2.1.259);
+          VS Code 1.136.1; Client Windows 11; Remote WSL2 Ubuntu.
+          Diagnostic fixtures only. No live Claude sessions.
+        </p>
+      </div>
+
+      <section class="deck dropped" id="stage" aria-label="Hawse-pipe fairlead deck">
+        <div class="tag tag-l" id="stage-label">seeded dropped · vscode-remote · helper null</div>
+        <div class="tag tag-r" id="count-tag">Remote-WSL · 2.1.261 · VS Code 1.136.1</div>
+        <div class="gauges">
+          <article class="gauge g-file">
+            <h4>scheme · file://</h4>
+            <div class="lamp" id="lamp-file">local ok</div>
+          </article>
+          <article class="gauge g-remote">
+            <h4>scheme · vscode-remote://</h4>
+            <div class="lamp" id="lamp-remote">returns null</div>
+          </article>
+          <article class="gauge g-overlay">
+            <h4>overlay veil</h4>
+            <div class="lamp" id="lamp-overlay">appears anyway</div>
+          </article>
+          <article class="gauge g-helper">
+            <h4>helper eG0 / OJ0</h4>
+            <div class="lamp" id="lamp-helper">null on remote</div>
+          </article>
+        </div>
+        <div class="mid">
+          <article class="fitting">
+            <b>Hawse-pipe</b>
+            <div class="hawse" aria-hidden="true"><i></i></div>
+          </article>
+          <article class="fitting">
+            <b>Chock rail</b>
+            <div class="chock" aria-hidden="true">
+              <svg viewBox="0 0 260 140">
+                <path class="rail" d="M20 110 C20 40, 70 20, 130 20 S240 40, 240 110"></path>
+                <path class="line" id="chock-line" d="M16 96 C80 70, 150 48, 244 34"></path>
+              </svg>
+            </div>
+          </article>
+          <article class="fitting">
+            <b>Fairlead</b>
+            <div class="fair" aria-hidden="true">
+              <svg viewBox="0 0 160 130">
+                <ellipse cx="56" cy="64" rx="28" ry="36"></ellipse>
+                <ellipse cx="104" cy="64" rx="28" ry="36"></ellipse>
+                <path id="fair-line" d="M8 70 C40 58, 80 90, 152 40"></path>
+              </svg>
+            </div>
+          </article>
+        </div>
+        <div class="work">
+          <div class="explorer">
+            <b>VS Code Explorer</b>
+            <div class="file-row" id="file-row">src/app.ts · Shift+drag</div>
+            <div class="uri" id="uri-line">vscode-remote://wsl%2BUbuntu/home/user/project/src/app.ts</div>
+          </div>
+          <div class="panel" id="drop-panel">
+            <b>Claude Code panel</b>
+            <div class="dropzone">
+              drop onto input
+              <div class="overlay" id="overlay">drop overlay · scheme-agnostic</div>
+            </div>
+            <div class="mention" id="mention">no @mention · no attachment · no error</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Fairlead scoring assay">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">dropped</p>
+          <p class="reason" id="reason">A remote Explorer drop produced vscode-remote://. The helper returned null. No @mention, no attachment, no error. Admit the path already dropped.</p>
+          <div class="paths" id="paths"></div>
+          <div class="plaques">
+            <div class="plaque hot" id="p-scheme"><i></i><div><b>URI scheme</b><span id="s-scheme">vscode-remote:// · helper file:// only</span></div></div>
+            <div class="plaque hot" id="p-helper"><i></i><div><b>Helper eG0 / OJ0</b><span id="s-helper">!startsWith(file://) → null</span></div></div>
+            <div class="plaque" id="p-overlay"><i></i><div><b>Overlay veil</b><span id="s-overlay">scheme-agnostic detect · looks like a no-op</span></div></div>
+            <div class="plaque" id="p-branch"><i></i><div><b>codeeditors branch</b><span id="s-branch">prefers resource.external over fsPath</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2>Deck log / overboard line</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <section class="balloon" aria-label="Lead gauge">
+        <h3>Lead gauge</h3>
+        <div class="meter">
+          <b>helper / scheme</b>
+          <div class="bar cut" id="bar-scheme"><span class="fill"></span>unguided · file:// only</div>
+        </div>
+        <div class="meter">
+          <b>drop result</b>
+          <div class="bar cut" id="bar-drop"><span class="fill"></span>dropped · silent discard</div>
+        </div>
+      </section>
+
+      <section class="chain-pane" aria-label="Four lines">
+        <h3>Score a lead</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Encoded from #92403. Same panel, four lines. Click a card.
+        </p>
+        <div class="ab">
+          <article class="ab-card fail active" data-ab="remote" id="ab-remote">
+            <b>remote → dropped</b>
+            <p>Shift+drag from Explorer on Remote-WSL. Overlay appears. Helper null. Nothing inserted.</p>
+          </article>
+          <article class="ab-card ok" data-ab="local" id="ab-local">
+            <b>local → file-ok</b>
+            <p>Same drag in a local window. file:///c%3A/Users/… passes. @mention inserted.</p>
+          </article>
+          <article class="ab-card ok" data-ab="normalize" id="ab-normalize">
+            <b>normalize → led</b>
+            <p>Map vscode-remote://authority/path → file:///path before existing logic.</p>
+          </article>
+          <article class="ab-card ok" data-ab="fspath" id="ab-fspath">
+            <b>fsPath → prefer</b>
+            <p>codeeditors prefers resource.fsPath. /home/user/project/src/app.ts would have worked.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="instruments" aria-label="Assay instruments">
+        <article class="inst">
+          <b>GitHub #92403</b>
+          <p>OPEN · bug · has-repro · platform:windows · area:ide · platform:vscode · platform:wsl. Reporter AndresDiagoM.</p>
+        </article>
+        <article class="inst">
+          <b>2.1.261 / 2.1.259</b>
+          <p>VS Code 1.136.1. Client Windows 11. Remote WSL2 Ubuntu. Also Remote-SSH / Dev Containers.</p>
+        </article>
+        <article class="inst">
+          <b>Helper guard</b>
+          <p>eG0 / OJ0 returns null unless the URI starts with file://.</p>
+        </article>
+        <article class="inst">
+          <b>Overlay lies</b>
+          <p>Detection is scheme-agnostic. Overlay appears. Failure looks like a no-op.</p>
+        </article>
+        <article class="inst">
+          <b>Workarounds</b>
+          <p>Type @ and pick. OS Explorer dataTransfer.files. Copy Relative Path paste.</p>
+        </article>
+      </section>
+
+      <section class="transcript" aria-label="Helper / URI slip">
+        <h3>Helper / URI slip</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Published Remote-WSL observations from the issue — not a live Claude session.
+        </p>
+        <div class="jsonl" id="jsonl"></div>
+      </section>
+
+      <div class="matrix" aria-label="Lead path matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>lead</th>
+              <th>shipped</th>
+              <th>isolate</th>
+              <th>lead</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <section class="remediation" aria-label="Remediation panels">
+        <article class="remedy" data-remedy="normalize">
+          <b>Normalize scheme</b>
+          <p>Map <code>vscode-remote://&lt;authority&gt;/&lt;path&gt;</code> to <code>file:///&lt;path&gt;</code> before the existing helper. Local patch matched a local window.</p>
+        </article>
+        <article class="remedy" data-remedy="fspath">
+          <b>Prefer fsPath</b>
+          <p>Make the <code>codeeditors</code> branch prefer <code>resource.fsPath</code> over <code>resource.external</code>.</p>
+        </article>
+        <article class="remedy" data-remedy="led">
+          <b>Lead the line</b>
+          <p>A remote-ready fairlead inserts <code>@path/to/file</code> the way a local window already does.</p>
+        </article>
+      </section>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the lead</button>
+        <button class="act" data-act="idle">Pin idle unguided</button>
+        <button class="act" data-act="seed">Pin seeded dropped</button>
+        <button class="act" data-act="admit">Admit the path already dropped</button>
+        <button class="act" data-act="lead">Lead the line</button>
+        <button class="act" data-act="fixtures">Load #92403 fixture</button>
+        <button class="act" data-act="reset">Reset to led</button>
+      </div>
+
+      <div class="sim">
+        <h3>Hawse-pipe simulator</h3>
+        <p>Rewrite the line without touching a live Claude session. Diagnostic only.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-pull="remote">remote drop</span>
+          <span class="chip" data-sim-pull="local">local file://</span>
+          <span class="chip" data-sim-pull="normalize">normalize scheme</span>
+          <span class="chip" data-sim-pull="fspath">fsPath prefer</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="unguided">unguided</button>
+          <button class="chip" data-chip="dropped">dropped</button>
+          <button class="chip" data-chip="led">led</button>
+          <button class="chip" data-chip="normalized">normalized</button>
+          <button class="chip" data-chip="fsPath-prefer">fsPath-prefer</button>
+          <button class="chip" data-chip="local-file-ok">local-file-ok</button>
+          <button class="chip" data-chip="remote-null">remote-null</button>
+          <button class="chip" data-chip="overlay-lies">overlay-lies</button>
+          <button class="chip" data-chip="codeeditors-external">codeeditors-external</button>
+          <button class="chip" data-chip="ruled-out-or-workarounds">ruled-out-or-workarounds</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the hawse-pipe deck</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this assay</h3>
+        <p>
+          On Extension <code>Anthropic.claude-code 2.1.261</code> (also 2.1.259) in
+          VS Code <code>1.136.1</code> with a Windows 11 client and a Remote-WSL
+          Ubuntu window, Shift+dragging a file from the VS Code Explorer into the
+          Claude Code panel does nothing. No <code>@mention</code>, no attachment,
+          no error. The same drag works in a local window.
+        </p>
+        <p>
+          Cause: the webview drop handler accepts only <code>file://</code> URIs.
+          Remote windows produce <code>vscode-remote://</code> URIs. Helper
+          <code>eG0</code> / <code>OJ0</code> returns null on a non-file scheme,
+          and the drop is discarded silently. Drag detection is scheme-agnostic,
+          so the overlay still appears.
+        </p>
+        <p>
+          The <code>codeeditors</code> branch prefers
+          <code>resource.external</code> (the <code>vscode-remote://</code> string)
+          over <code>fsPath</code>. Preferring <code>fsPath</code> would have
+          worked. Suggested normalize:
+          <code>vscode-remote://authority/path</code> → <code>file:///path</code>
+          before existing logic.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Stroboscope #92395</span>
+            <span>Heliostat #92389</span>
+            <span>Lethe #92335</span>
+            <span>Frizzen #92353</span>
+            <span>Nixie #92383</span>
+            <span>Embrasure #92365</span>
+            <span>Elision #92347</span>
+            <span>Graft #92354</span>
+            <span>Hawser</span>
+            <span>Buoy</span>
+            <span>Clew</span>
+            <span>Bollard</span>
+          </span>
+        </p>
+        <p>
+          Cousins cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/21044">#21044</a>
+          closed Cursor Remote-SSH drop ·
+          <a href="https://github.com/anthropics/claude-code/issues/25128">#25128</a>
+          open VS Code panel DnD.
+        </p>
+      </section>
+      <footer>
+        Catalog #172 · idle word unguided · seeded dropped · contrast led / normalized / fsPath-prefer / local-file-ok ·
+        no live Claude sessions · fonts Fraunces / Outfit / Fragment Mono · hawse-pipe fairlead
+      </footer>
+    </main>
+    <script>
+      const LEAD = new Set([
+        "led", "normalized", "fsPath-prefer", "local-file-ok"
+      ]);
+      const CHIPS = [
+        "unguided", "dropped", "led", "normalized", "fsPath-prefer",
+        "local-file-ok", "remote-null", "overlay-lies", "codeeditors-external",
+        "ruled-out-or-workarounds"
+      ];
+      const CHIP_FILES = {
+        unguided: "unguided.json",
+        dropped: "dropped.json",
+        led: "led.json",
+        normalized: "remediation-normalize.json",
+        "fsPath-prefer": "remediation-fspath.json",
+        "local-file-ok": "local-file-ok.json",
+        "remote-null": "remote-null.json",
+        "overlay-lies": "overlay-lies.json",
+        "codeeditors-external": "codeeditors-external.json",
+        "ruled-out-or-workarounds": "ruled-out-or-workarounds.json"
+      };
+      const MATRIX = [
+        { id: "remote", name: "Remote-WSL Shift+drag", shipped: "FAIL", isolate: "pass", lead: "FAIL", file: "repro.json" },
+        { id: "repro", name: "published overlay + silent discard", shipped: "FAIL", isolate: "pass", lead: "FAIL", file: "repro.json" },
+        { id: "null", name: "helper null on vscode-remote", shipped: "FAIL", isolate: "pass", lead: "FAIL", file: "remote-null.json" },
+        { id: "overlay", name: "overlay appears anyway", shipped: "FAIL", isolate: "pass", lead: "FAIL", file: "overlay-lies.json" },
+        { id: "external", name: "codeeditors prefers external", shipped: "FAIL", isolate: "pass", lead: "FAIL", file: "codeeditors-external.json" },
+        { id: "local", name: "local window file://", shipped: "pass", isolate: "pass", lead: "pass", file: "local-file-ok.json" },
+        { id: "led", name: "rope through the fairlead", shipped: "pass", isolate: "pass", lead: "pass", file: "led.json" },
+        { id: "normalize", name: "vscode-remote → file://", shipped: "pass", isolate: "pass", lead: "pass", file: "remediation-normalize.json" },
+        { id: "fspath", name: "prefer resource.fsPath", shipped: "pass", isolate: "pass", lead: "pass", file: "remediation-fspath.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92403,
+        seed: "unguided",
+        unguided: true,
+        dropped: false,
+        led: false,
+        scheme: "vscode-remote",
+        helperAcceptsFileOnly: true,
+        helperReturnsNull: true,
+        overlayAppears: true,
+        mentionInserted: false,
+        shippedMark: "FAIL",
+        leadMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "UNGUIDED",
+        log: [
+          "[idle] drop handler accepts only file:// URIs",
+          "[remote] Remote-WSL / Remote-SSH / Dev Containers produce vscode-remote://",
+          "[desk] already unguided; idle word unguided"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92403,
+        seed: "dropped",
+        unguided: true,
+        dropped: true,
+        led: false,
+        scheme: "vscode-remote",
+        uri: "vscode-remote://wsl%2BUbuntu/home/user/project/src/app.ts",
+        helperReturnsNull: true,
+        dropDiscardedSilently: true,
+        overlayAppears: true,
+        mentionInserted: false,
+        shippedMark: "FAIL",
+        leadMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "DROPPED",
+        log: [
+          "[issue] #92403 OPEN · Explorer drop silently does nothing on Remote-WSL/SSH/Dev Containers",
+          "[uri] vscode-remote://wsl%2BUbuntu/home/user/project/src/app.ts",
+          "[helper] !startsWith(file://) → null",
+          "[drop] discarded silently; no @mention; no attachment; no error",
+          "[desk] already dropped; seeded word dropped"
+        ]
+      };
+
+      const ledTicket = {
+        source: "probe",
+        issue: 92403,
+        seed: "led",
+        unguided: false,
+        dropped: false,
+        led: true,
+        mentionInserted: true,
+        helperReturnsNull: false,
+        shippedMark: "pass",
+        leadMark: "pass",
+        isolateMark: "pass",
+        hubCount: "LED",
+        log: [
+          "[lead] remote path led through the hawse-pipe",
+          "[drop] @src/app.ts inserted",
+          "[desk] led; contrast hold"
+        ]
+      };
+
+      const normalizedTicket = {
+        source: "probe",
+        issue: 92403,
+        seed: "normalized",
+        unguided: false,
+        dropped: false,
+        led: true,
+        normalized: true,
+        mentionInserted: true,
+        helperReturnsNull: false,
+        shippedMark: "pass",
+        leadMark: "pass",
+        isolateMark: "pass",
+        hubCount: "NORMALIZED",
+        log: [
+          "[fix] vscode-remote://authority/path → file:///path",
+          "[drop] existing helper then inserts @path",
+          "[desk] normalized; contrast hold"
+        ]
+      };
+
+      const fsPathTicket = {
+        source: "probe",
+        issue: 92403,
+        seed: "fsPath-prefer",
+        unguided: false,
+        dropped: false,
+        led: true,
+        fsPathPrefer: true,
+        mentionInserted: true,
+        helperReturnsNull: false,
+        shippedMark: "pass",
+        leadMark: "pass",
+        isolateMark: "pass",
+        hubCount: "FSPATH-PREFER",
+        log: [
+          "[fix] codeeditors prefers resource.fsPath",
+          "[path] /home/user/project/src/app.ts led through",
+          "[desk] fsPath-prefer; contrast hold"
+        ]
+      };
+
+      const localTicket = {
+        source: "probe",
+        issue: 92403,
+        seed: "local-file-ok",
+        unguided: false,
+        dropped: false,
+        led: true,
+        localFileOk: true,
+        scheme: "file",
+        uri: "file:///c%3A/Users/...",
+        mentionInserted: true,
+        helperReturnsNull: false,
+        shippedMark: "pass",
+        leadMark: "pass",
+        isolateMark: "pass",
+        hubCount: "LOCAL-FILE-OK",
+        log: [
+          "[local] Explorer hands over file:///c%3A/Users/...",
+          "[helper] startsWith(file://) passes",
+          "[desk] local-file-ok; contrast hold"
+        ]
+      };
+
+      let pullState = "remote";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        return t.seed === "normalized"
+          || t.seed === "fsPath-prefer"
+          || t.seed === "led"
+          || t.scenario === "remediation-normalize"
+          || t.scenario === "remediation-fspath"
+          || t.led === true
+          || t.normalized === true
+          || t.fsPathPrefer === true
+          || t.localFileOk === true;
+      }
+
+      function alreadyUnguided(t) {
+        const seed = String(t.seed || "");
+        if (t.led === true && t.dropped !== true && t.unguided !== true) return false;
+        if (t.localFileOk === true && t.helperReturnsNull !== true) return false;
+        if (t.normalized === true && t.dropped !== true) return false;
+        if (t.fsPathPrefer === true && t.dropped !== true) return false;
+        if (remediating(t) && t.dropped !== true && t.unguided !== true) return false;
+        if (LEAD.has(seed) && t.dropped !== true && t.helperReturnsNull !== true) return false;
+        if (t.unguided === true || t.dropped === true || t.dropDiscardedSilently === true) return true;
+        if ([
+          "unguided", "dropped", "remote-null", "overlay-lies",
+          "codeeditors-external", "ruled-out-or-workarounds"
+        ].includes(seed)) {
+          return !LEAD.has(seed);
+        }
+        return t.helperReturnsNull === true && t.led !== true;
+      }
+
+      function leadTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (t.led === true || t.normalized === true || t.fsPathPrefer === true || t.localFileOk === true || LEAD.has(seed) || remediating(t))
+          && t.dropped !== true
+          && !alreadyUnguided(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyUnguided(t);
+        t.shippedUnguided = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedUnguided ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.leadMark = t.leadMark || (t.led === true || remediating(t) || t.localFileOk === true ? "pass" : "FAIL");
+        const lead = leadTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "unguided") chips.push("unguided");
+        if (t.dropped === true || seed === "dropped") chips.push("dropped");
+        if ((lead && t.led === true) || seed === "led") chips.push("led");
+        if (t.normalized === true || seed === "normalized") chips.push("normalized");
+        if (t.fsPathPrefer === true || seed === "fsPath-prefer") chips.push("fsPath-prefer");
+        if (t.localFileOk === true || seed === "local-file-ok") chips.push("local-file-ok");
+        if (t.helperReturnsNull === true || seed === "remote-null") chips.push("remote-null");
+        if (t.dragDetectionSchemeAgnostic === true || seed === "overlay-lies") chips.push("overlay-lies");
+        if (t.prefersExternal === true || seed === "codeeditors-external") chips.push("codeeditors-external");
+        if (t.workaroundsOnly === true || seed === "ruled-out-or-workarounds") chips.push("ruled-out-or-workarounds");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (lead
+            ? (t.localFileOk ? "local-file-ok" : (t.normalized ? "normalized" : (t.fsPathPrefer ? "fsPath-prefer" : "led")))
+            : (t.dropped ? "dropped" : "unguided"));
+        return { ticket: t, lead, alarm, chips: unique, verdict };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] vscode-remote · helper null · already dropped"]
+            : ["[desk] line led · @mention inserted"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /unguided|dropped|FAIL|null|silent|overboard|discard/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "helper only guides file://" : (t.localFileOk ? "local file:// still inserts" : "remote path led"), "webview drop handler"],
+          ["isolate", t.isolateMark, "local window file:// still works; OS Explorer dataTransfer.files works", "scheme fence only"],
+          ["lead", t.leadMark, t.led === true || remediating(t) || t.localFileOk === true ? "normalize or fsPath-prefer" : "would lead after scheme map", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.lead)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id, scenario: row.id }
+                : { ...ledTicket, seed: row.id, scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (t.localFileOk === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">local window · file:///c%3A/Users/...</span>\n` +
+            `<span class="asst">helper startsWith(file://) passes</span>\n` +
+            `<span class="hook">@mention inserted as on a local window</span>`;
+          return;
+        }
+        if (t.normalized === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">vscode-remote://wsl%2BUbuntu/home/user/project/src/app.ts</span>\n` +
+            `<span class="asst">→ file:///home/user/project/src/app.ts → src/app.ts</span>\n` +
+            `<span class="hook">normalize before existing logic</span>`;
+          return;
+        }
+        if (t.fsPathPrefer === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">codeeditors · resource.fsPath</span>\n` +
+            `<span class="asst">/home/user/project/src/app.ts</span>\n` +
+            `<span class="hook">prefer fsPath over resource.external</span>`;
+          return;
+        }
+        if (result.lead && t.led === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">rope through the fairlead</span>\n` +
+            `<span class="asst">@src/app.ts inserted</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">2.1.261 · VS Code 1.136.1 · Remote-WSL Ubuntu</span>\n` +
+          `<span class="user">vscode-remote://wsl%2BUbuntu/home/user/project/src/app.ts</span>\n` +
+          `<span class="user">if (!Z.startsWith("file://")) return null</span>\n` +
+          `<span class="user">overlay appears · drop discarded · no @mention</span>\n` +
+          `<span class="hook">codeeditors prefers external · detection scheme-agnostic</span>`;
+      }
+
+      const REASONS = {
+        unguided: "A fairlead that only guides file:// and returns null on vscode-remote:// is not a remote-ready drop — it is already unguided.",
+        dropped: "A remote Explorer drop produced vscode-remote://. The helper returned null. No @mention, no attachment, no error. Admit the path already dropped.",
+        "remote-null": "Helper eG0/OJ0 returns null unless the URI starts with file://. The remote line never enters the hawse-pipe.",
+        "overlay-lies": "Drag detection is scheme-agnostic, so the overlay still appears. The helper then returns null. The failure looks like a no-op.",
+        "codeeditors-external": "The codeeditors branch prefers resource.external — the vscode-remote:// string — over fsPath. Same silent discard.",
+        "local-file-ok": "The same Shift+drag works in a local window. file:///c%3A/Users/… passes the guard and inserts @path.",
+        led: "The rope is through the fairlead. A remote path is led and the drop inserts @path/to/file. Score the lead.",
+        normalized: "Map vscode-remote://authority/path to file:///path before existing logic. A local patch matched a local window.",
+        "fsPath-prefer": "Prefer resource.fsPath in the codeeditors branch. /home/user/project/src/app.ts would have worked here.",
+        "ruled-out-or-workarounds": "Type @ and pick. Drag from Windows Explorer. Copy Relative Path paste. The Explorer drop stays unguided."
+      };
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const seedName = String(t.seed || result.verdict || "");
+        const dropped = t.dropped === true || seedName === "dropped";
+        const localOk = t.localFileOk === true || seedName === "local-file-ok";
+        const normalized = t.normalized === true || seedName === "normalized";
+        const fspath = t.fsPathPrefer === true || seedName === "fsPath-prefer";
+        const leading = (result.lead || t.led === true) && !alarm;
+        const stageClass = localOk
+          ? "local-file-ok"
+          : (normalized
+            ? "normalized"
+            : (fspath
+              ? "fsPath-prefer"
+              : (leading
+                ? "led"
+                : (dropped ? "dropped" : (CHIPS.includes(seedName) ? seedName : "unguided")))));
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || REASONS[alarm ? "dropped" : "led"];
+        const stage = document.getElementById("stage");
+        stage.className = "deck " + stageClass;
+        document.getElementById("stage-label").textContent = alarm
+          ? (dropped ? "seeded dropped · vscode-remote · helper null" : (seedName === "overlay-lies" ? "overlay-lies · detect ok · drop discarded" : "idle unguided · file:// only"))
+          : (localOk ? "local-file-ok · file:// passes" : (normalized ? "normalized · remote mapped to file://" : (fspath ? "fsPath-prefer · codeeditors" : "led · rope through the fairlead")));
+        document.getElementById("count-tag").textContent = alarm
+          ? "Remote-WSL · 2.1.261 · VS Code 1.136.1"
+          : "line led · @mention inserted";
+        document.getElementById("lamp-file").textContent = localOk || leading ? "file:// led" : "local only";
+        document.getElementById("lamp-remote").textContent = alarm ? "returns null" : (normalized ? "mapped" : "led");
+        document.getElementById("lamp-overlay").textContent = alarm ? "appears anyway" : "guided drop";
+        document.getElementById("lamp-helper").textContent = alarm ? "null on remote" : "path led";
+        document.getElementById("uri-line").textContent = localOk
+          ? "file:///c%3A/Users/..."
+          : (normalized
+            ? "file:///home/user/project/src/app.ts"
+            : (fspath ? "/home/user/project/src/app.ts" : (t.uri || "vscode-remote://wsl%2BUbuntu/home/user/project/src/app.ts")));
+        document.getElementById("file-row").textContent = localOk ? "src/app.ts · local Shift+drag" : "src/app.ts · Shift+drag";
+        document.getElementById("mention").textContent = leading || localOk
+          ? "@src/app.ts · mention inserted"
+          : "no @mention · no attachment · no error";
+        document.getElementById("overlay").textContent = alarm
+          ? "drop overlay · scheme-agnostic"
+          : "drop overlay · line led";
+        setPlaque("p-scheme", leading || localOk, alarm);
+        setPlaque("p-helper", leading || localOk, t.helperReturnsNull === true || alarm);
+        setPlaque("p-overlay", true, t.overlayAppears === true && alarm);
+        setPlaque("p-branch", t.fsPathPrefer === true, (t.prefersExternal === true || seedName === "codeeditors-external") && alarm);
+        document.getElementById("s-scheme").textContent = alarm
+          ? "vscode-remote:// · helper file:// only"
+          : (localOk ? "file:// · local window" : "remote mapped or fsPath led");
+        document.getElementById("s-helper").textContent = alarm
+          ? "!startsWith(file://) → null"
+          : "path led through existing logic";
+        document.getElementById("s-overlay").textContent = alarm
+          ? "scheme-agnostic detect · looks like a no-op"
+          : "overlay matches a guided drop";
+        document.getElementById("s-branch").textContent = t.fsPathPrefer === true
+          ? "prefers resource.fsPath"
+          : "prefers resource.external over fsPath";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = LEAD.has(c) && result.lead;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        const barScheme = document.getElementById("bar-scheme");
+        barScheme.className = "bar " + (leading || localOk ? "kept" : "cut");
+        barScheme.innerHTML = leading || localOk
+          ? `<span class="fill"></span>` + (normalized ? "normalized · remote → file://" : (fspath ? "fsPath-prefer · codeeditors" : (localOk ? "local-file-ok · file:// passes" : "led · rope through")))
+          : `<span class="fill"></span>` + "unguided · file:// only";
+        const barDrop = document.getElementById("bar-drop");
+        barDrop.className = "bar " + (leading || localOk ? "kept" : "cut");
+        barDrop.innerHTML = leading || localOk
+          ? `<span class="fill"></span>led · @mention inserted`
+          : `<span class="fill"></span>` + (dropped ? "dropped · silent discard" : "unguided · remote scheme fenced");
+        document.getElementById("ab-remote").classList.toggle("active", alarm && !localOk && pullState !== "normalize" && pullState !== "fspath");
+        document.getElementById("ab-local").classList.toggle("active", localOk || pullState === "local");
+        document.getElementById("ab-normalize").classList.toggle("active", normalized || pullState === "normalize");
+        document.getElementById("ab-fspath").classList.toggle("active", fspath || pullState === "fspath");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        paintMatrix(t.scenario || (localOk ? "local" : (normalized ? "normalize" : (fspath ? "fspath" : (leading ? "led" : "remote")))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "local") return { ...localTicket };
+        if (pullState === "normalize") return { ...normalizedTicket };
+        if (pullState === "fspath") return { ...fsPathTicket };
+        return { ...seeded, seed: "dropped", hubCount: "REMOTE" };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState === "remote";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "remote";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "remote";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset" || act === "lead") {
+            pullState = "normalize";
+            syncSimChips();
+            try { apply(await loadNamed("led.json")); }
+            catch { apply({ ...ledTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("dropped.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("repro.json")); }
+            catch { apply({ ...seeded, seed: "dropped", hubCount: "ADMIT" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92403.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (LEAD.has(chip)) apply({ ...ledTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92403 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = kind === "fspath"
+            ? "remediation-fspath.json"
+            : (kind === "led" ? "led.json" : "remediation-normalize.json");
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply({
+              ...ledTicket,
+              seed: kind === "fspath" ? "fsPath-prefer" : (kind === "led" ? "led" : "normalized"),
+              scenario: kind === "fspath" ? "remediation-fspath" : (kind === "led" ? "led" : "remediation-normalize"),
+              fsPathPrefer: kind === "fspath",
+              normalized: kind === "normalize"
+            });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-ab]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const side = el.dataset.ab;
+          pullState = side === "local" ? "local" : (side === "normalize" ? "normalize" : (side === "fspath" ? "fspath" : "remote"));
+          syncSimChips();
+          const file = side === "local"
+            ? "local-file-ok.json"
+            : (side === "normalize" ? "remediation-normalize.json" : (side === "fspath" ? "remediation-fspath.json" : "repro.json"));
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(side === "local" ? { ...localTicket } : (side === "normalize" ? { ...normalizedTicket } : (side === "fspath" ? { ...fsPathTicket } : { ...seeded, seed: "dropped", scenario: side })));
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
