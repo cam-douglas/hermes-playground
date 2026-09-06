@@ -1,0 +1,1289 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aphonia — voice-clinic lab for #92409</title>
+    <meta
+      name="description"
+      content="Aphonia — clinical voice-lab / laryngoscope assay for Claude Code #92409: ListAgents rosters peers and instructs SendMessage, but SendMessage is missing from this Code-tab toolset. Idle word is mute."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Karla:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --tile: #e7eef0;
+        --well: #f7fbfb;
+        --ink: #1a2224;
+        --mute: #5c6b6d;
+        --rule: rgba(26, 34, 36, 0.12);
+        --teal: #2a7a78;
+        --teal-hot: #3a9a96;
+        --teal-wash: rgba(42, 122, 120, 0.12);
+        --rose: #b85a6a;
+        --rose-hot: #c96b7a;
+        --rose-wash: rgba(184, 90, 106, 0.14);
+        --amber: #c9a15b;
+        --amber-hot: #d8b46a;
+        --amber-wash: rgba(201, 161, 91, 0.18);
+        --char: #243033;
+        --slot: #ffffff;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Karla, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 8% -8%, rgba(42, 122, 120, 0.1), transparent 40%),
+          radial-gradient(ellipse at 92% 4%, rgba(184, 90, 106, 0.08), transparent 34%),
+          repeating-linear-gradient(0deg, transparent 0 31px, rgba(26, 34, 36, 0.035) 31px 32px),
+          repeating-linear-gradient(90deg, transparent 0 31px, rgba(26, 34, 36, 0.035) 31px 32px),
+          linear-gradient(180deg, #f3f8f8 0%, #e7eef0 54%, #dfe8e9 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--teal); }
+      .wrap { width: min(1240px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 3px solid var(--teal);
+        padding-left: 10px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--teal);
+      }
+      h1 {
+        font-family: Fraunces, "Iowan Old Style", serif;
+        font-size: clamp(56px, 10vw, 108px);
+        letter-spacing: -0.03em;
+        margin: 4px 0 10px;
+        font-weight: 650;
+        line-height: 0.8;
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 500;
+        color: var(--rose);
+        font-size: 0.2em;
+        letter-spacing: 0.16em;
+        display: block;
+        margin-top: 14px;
+        text-transform: uppercase;
+        font-family: Karla, sans-serif;
+      }
+      .lede { max-width: 78em; color: var(--mute); line-height: 1.65; font-size: 17px; }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--teal);
+      }
+
+      .clinic {
+        margin: 26px 0 0;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(247, 251, 251, 0.96), rgba(231, 238, 240, 0.94));
+        box-shadow: 0 24px 56px rgba(26, 34, 36, 0.1);
+        padding: 16px 16px 14px;
+      }
+      .clinic.mute, .clinic.rostered, .clinic.deferred-search-miss, .clinic.mcp-not-substitute {
+        box-shadow: 0 0 0 3px rgba(184, 90, 106, 0.28), 0 24px 56px rgba(26, 34, 36, 0.1);
+      }
+      .clinic.sibling-has-voice {
+        box-shadow: 0 0 0 3px rgba(201, 161, 91, 0.36), 0 24px 56px rgba(26, 34, 36, 0.1);
+      }
+      .clinic.voiced, .clinic.tool-present {
+        box-shadow: 0 0 0 3px rgba(42, 122, 120, 0.32), 0 24px 56px rgba(26, 34, 36, 0.1);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--teal);
+        margin-bottom: 14px;
+        border-bottom: 1px dashed rgba(42, 122, 120, 0.35);
+        padding-bottom: 8px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 0.95fr 1.1fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 960px) { .deck { grid-template-columns: 1fr; } }
+
+      .cap, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--teal);
+      }
+      .scope-col, .tray-col, .booth-col {
+        background: var(--slot);
+        border: 1px solid rgba(42, 122, 120, 0.18);
+        min-height: 360px;
+        padding: 14px;
+      }
+      .scope-svg { width: 100%; height: 220px; display: block; }
+      .scope-svg .blade { fill: none; stroke: var(--rose); stroke-width: 8; stroke-linecap: round; transition: stroke 0.35s ease; }
+      .scope-svg .handle { fill: var(--char); }
+      .scope-svg .lamp { fill: var(--rose); transition: fill 0.35s ease; }
+      .clinic.rostered .scope-svg .blade,
+      .clinic.sibling-has-voice .scope-svg .blade { stroke: var(--amber); }
+      .clinic.rostered .scope-svg .lamp,
+      .clinic.sibling-has-voice .scope-svg .lamp { fill: var(--amber); }
+      .clinic.voiced .scope-svg .blade,
+      .clinic.tool-present .scope-svg .blade { stroke: var(--teal); }
+      .clinic.voiced .scope-svg .lamp,
+      .clinic.tool-present .scope-svg .lamp { fill: var(--teal-hot); }
+      .idle-word {
+        font-family: Fraunces, serif;
+        font-size: 42px;
+        font-weight: 650;
+        letter-spacing: -0.03em;
+        margin: 8px 0 4px;
+        color: var(--rose);
+      }
+      .clinic.voiced .idle-word,
+      .clinic.tool-present .idle-word { color: var(--teal); }
+      .clinic.sibling-has-voice .idle-word,
+      .clinic.rostered .idle-word { color: var(--amber); }
+      .idle-cap { color: var(--mute); font-size: 14px; line-height: 1.5; margin: 0; }
+
+      .slots { display: grid; gap: 10px; }
+      .slot {
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        background: var(--well);
+        min-height: 72px;
+      }
+      .slot b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+      .slot strong { display: block; font-family: Fraunces, serif; font-size: 22px; font-weight: 650; }
+      .slot span { display: block; color: var(--mute); font-size: 13px; margin-top: 4px; }
+      .slot.empty { border-color: rgba(184, 90, 106, 0.45); background: var(--rose-wash); }
+      .slot.empty b, .slot.empty strong { color: var(--rose); }
+      .slot.glow { border-color: rgba(201, 161, 91, 0.55); background: var(--amber-wash); }
+      .slot.glow b, .slot.glow strong { color: #8a6d2e; }
+      .slot.live { border-color: rgba(42, 122, 120, 0.5); background: var(--teal-wash); }
+      .slot.live b, .slot.live strong { color: var(--teal); }
+
+      .booths { display: grid; gap: 10px; }
+      .booth {
+        border: 1px solid var(--rule);
+        padding: 12px;
+        background: var(--well);
+      }
+      .booth .who {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .booth h3 {
+        font-family: Fraunces, serif;
+        font-size: 26px;
+        margin: 4px 0 6px;
+        font-weight: 650;
+      }
+      .booth p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+      .booth.this { border-color: rgba(184, 90, 106, 0.4); }
+      .booth.sib { border-color: rgba(42, 122, 120, 0.35); }
+      .clinic.voiced .booth.this,
+      .clinic.tool-present .booth.this { border-color: rgba(42, 122, 120, 0.5); }
+      .tag {
+        display: inline-block;
+        margin-top: 8px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 7px;
+        border: 1px solid var(--rule);
+      }
+      .booth.this .tag { color: var(--rose); border-color: rgba(184, 90, 106, 0.4); }
+      .booth.sib .tag { color: var(--teal); border-color: rgba(42, 122, 120, 0.4); }
+      .clinic.voiced .booth.this .tag,
+      .clinic.tool-present .booth.this .tag { color: var(--teal); border-color: rgba(42, 122, 120, 0.4); }
+
+      .lower {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 14px;
+        margin-top: 14px;
+      }
+      @media (max-width: 860px) { .lower { grid-template-columns: 1fr; } }
+      .roster, .chart {
+        background: var(--slot);
+        border: 1px solid rgba(42, 122, 120, 0.18);
+        padding: 14px;
+      }
+      .plates { display: grid; gap: 8px; }
+      .plate {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        background: var(--well);
+      }
+      .plate b {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .plate strong { font-family: Fraunces, serif; font-size: 22px; }
+      .plate.named { border-color: rgba(201, 161, 91, 0.5); background: var(--amber-wash); }
+      .plate.ghost { opacity: 0.72; }
+      .vs { display: grid; gap: 10px; }
+      .vs article {
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        background: var(--well);
+      }
+      .vs b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+      .vs .exp b { color: var(--teal); }
+      .vs .act b { color: var(--rose); }
+      .vs p { margin: 0; font-size: 14px; line-height: 1.45; }
+
+      .beats { margin-top: 16px; }
+      .beat-row {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+      }
+      @media (max-width: 800px) { .beat-row { grid-template-columns: 1fr 1fr; } }
+      .beat {
+        border: 1px solid var(--rule);
+        padding: 10px 8px;
+        background: var(--slot);
+      }
+      .beat em {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        color: var(--teal);
+        font-style: normal;
+      }
+      .beat b { display: block; margin: 4px 0 2px; font-size: 13px; }
+      .beat span { color: var(--mute); font-size: 12px; }
+      .beat.loss { border-color: rgba(184, 90, 106, 0.55); }
+      .beat.hold { border-color: rgba(42, 122, 120, 0.5); }
+      .beat.glow { border-color: rgba(201, 161, 91, 0.55); }
+
+      .desk { margin-top: 22px; }
+      .verdict-row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+      .verdict {
+        font-family: Fraunces, serif;
+        font-size: clamp(34px, 6vw, 58px);
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        margin: 0;
+        line-height: 0.9;
+      }
+      .verdict.alarm { color: var(--rose-hot); }
+      .verdict.hold { color: var(--teal-hot); }
+      .verdict.warn { color: #a07a2e; }
+      .reason { color: var(--mute); max-width: 62em; line-height: 1.55; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        background: var(--slot);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .chip.live { border-color: var(--teal); color: var(--teal); }
+      .chip.dead { border-color: var(--rose); color: var(--rose); }
+      .chip.warn { border-color: var(--amber); color: #8a6d2e; }
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 800px) { .paths { grid-template-columns: 1fr; } }
+      .path { border: 1px solid var(--rule); padding: 12px; background: var(--slot); }
+      .path.fail { border-color: rgba(184, 90, 106, 0.5); }
+      .path.ok { border-color: rgba(42, 122, 120, 0.45); }
+      .path b { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .path .face { margin: 8px 0; font-size: 14px; }
+      .path .note { color: var(--mute); font-size: 12px; }
+      .log, .slip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        background: var(--slot);
+        border: 1px solid var(--rule);
+        padding: 12px;
+        white-space: pre-wrap;
+      }
+      .slip { margin-top: 10px; }
+      .log .hit { color: var(--rose-hot); }
+      .slip .hook { color: var(--amber); }
+      .slip .user { color: var(--rose-hot); }
+      .slip .asst { color: var(--teal); }
+      .matrix { margin: 16px 0; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { border-bottom: 1px solid var(--rule); padding: 8px 10px; text-align: left; }
+      th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--teal);
+      }
+      tr.active { background: var(--amber-wash); }
+      .fail-cell { color: var(--rose-hot); }
+      .pass-cell { color: var(--teal); }
+      .remediation { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 900px) { .remediation { grid-template-columns: 1fr 1fr; } }
+      .remedy {
+        border: 1px solid var(--rule);
+        padding: 12px;
+        background: var(--slot);
+        cursor: pointer;
+      }
+      .remedy:hover { border-color: var(--teal); }
+      .remedy b { display: block; margin-bottom: 6px; }
+      .remedy p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+      .act {
+        font-family: Karla, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--well);
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .act:hover { border-color: var(--teal-hot); color: var(--teal); }
+      .sim { margin-top: 18px; }
+      .sim h3 {
+        font-family: Fraunces, serif;
+        font-size: 26px;
+        margin: 0 0 8px;
+        font-weight: 650;
+      }
+      .sim p { color: var(--mute); margin: 0 0 10px; }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .drop {
+        margin-top: 14px;
+        border: 1px dashed rgba(42, 122, 120, 0.45);
+        padding: 16px;
+        text-align: center;
+        color: var(--mute);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 12px;
+        background: var(--slot);
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 12px;
+      }
+      .research { margin-top: 22px; color: var(--mute); line-height: 1.6; }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        padding: 3px 6px;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--mute);
+        font-size: 13px;
+        font-family: "IBM Plex Mono", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="catalog chrome" href="/">← catalog</a>
+      <p class="mark chrome">18:50 / hermes catalog #178 / #92409</p>
+      <h1>Aphonia <em>voice clinic / laryngoscope assay</em></h1>
+      <p class="lede chrome">
+        A laryngoscope tray that shows every choir name on the roster but never
+        lays the speaking reed beside it — the sibling booth already sings.
+        <code>ListAgents</code> works. <code>SendMessage</code> is not on this
+        session's tray. Idle word is <code>mute</code>. Seeded state is
+        <code>rostered</code>.
+      </p>
+
+      <section class="clinic rostered" id="stage" aria-label="Voice clinic laryngoscope tray">
+        <div class="rail">
+          <span>aphonia · laryngoscope · instrument tray</span>
+          <span id="stage-label">seeded rostered · choir named · reed missing</span>
+          <span id="count-tag">2.1.258 · Windows 11 · Code tab · Agent SDK</span>
+        </div>
+        <div class="deck">
+          <div class="scope-col">
+            <h4 class="cap">laryngoscope</h4>
+            <svg class="scope-svg" viewBox="0 0 280 220" aria-hidden="true">
+              <rect x="18" y="18" width="244" height="184" fill="#f7fbfb" stroke="rgba(26,34,36,0.08)" />
+              <path class="blade" d="M54 168 C 62 110, 88 64, 148 52 C 188 44, 214 62, 228 92" />
+              <rect class="handle" x="42" y="150" width="28" height="46" rx="6" />
+              <circle class="lamp" cx="228" cy="92" r="9" />
+              <circle cx="228" cy="92" r="18" fill="none" stroke="rgba(201,161,91,0.35)" stroke-width="2" />
+            </svg>
+            <div class="idle-word" id="free-word">rostered</div>
+            <p class="idle-cap" id="free-cap">ListAgents printed 21 peers and SendMessage instructions · the reed was never laid on this tray</p>
+          </div>
+          <div class="tray-col">
+            <h4 class="cap">instrument tray</h4>
+            <div class="slots">
+              <article class="slot glow" id="slot-list">
+                <b>ListAgents</b>
+                <strong id="list-state">present</strong>
+                <span id="list-note">21 peers · instructs SendMessage</span>
+              </article>
+              <article class="slot empty" id="slot-send">
+                <b>SendMessage</b>
+                <strong id="send-state">absent</strong>
+                <span id="send-note">not in this session toolset</span>
+              </article>
+              <article class="slot empty" id="slot-search">
+                <b>ToolSearch</b>
+                <strong id="search-state">miss</strong>
+                <span id="search-note">select:SendMessage · no matching deferred tools</span>
+              </article>
+            </div>
+          </div>
+          <div class="booth-col">
+            <h4 class="cap">exam booths</h4>
+            <div class="booths">
+              <article class="booth this" id="booth-this">
+                <div class="who">this session · Code tab</div>
+                <h3 id="this-title">Agent SDK</h3>
+                <p id="this-copy">running within the Claude Agent SDK · claude-fable-5-1 · D:\dev\GitHub</p>
+                <span class="tag" id="this-tag">mute</span>
+              </article>
+              <article class="booth sib" id="booth-sib">
+                <div class="who">sibling · same machine / account</div>
+                <h3 id="sib-title">Orchestration</h3>
+                <p id="sib-copy">cwd D:\dev\GitHub · SendMessage present and used on aria-80</p>
+                <span class="tag" id="sib-tag">voiced</span>
+              </article>
+            </div>
+          </div>
+        </div>
+        <div class="lower">
+          <div class="roster">
+            <h4 class="cap">choir roster · ListAgents</h4>
+            <div class="plates" id="roster-plates">
+              <article class="plate named">
+                <div>
+                  <b>[056652] · interactive · idle</b>
+                  <strong>aria-80</strong>
+                </div>
+                <span>named in #92409</span>
+              </article>
+              <article class="plate ghost">
+                <div>
+                  <b>20 further peers</b>
+                  <strong>names unpublished</strong>
+                </div>
+                <span>count only · do not invent</span>
+              </article>
+            </div>
+          </div>
+          <div class="chart">
+            <h4 class="cap">expected vs actual</h4>
+            <div class="vs">
+              <article class="exp">
+                <b>expected</b>
+                <p id="exp-copy">SendMessage available whenever ListAgents reports peers. Docs: messaging on with nothing to enable on 2.1.234+ Windows.</p>
+              </article>
+              <article class="act">
+                <b>actual</b>
+                <p id="act-copy">ListAgents present. SendMessage absent. Desktop send_message MCP is not a substitute — needs a CCD session id; cannot resolve aria-80.</p>
+              </article>
+            </div>
+          </div>
+        </div>
+        <div class="beats">
+          <h4 class="cap">session timeline · roster to mute tray</h4>
+          <div class="beat-row" id="proofs">
+            <article class="beat" id="beat-1"><em>1</em><b>Code tab</b><span>Agent SDK · 2.1.258</span></article>
+            <article class="beat" id="beat-2"><em>2</em><b>ListAgents</b><span>21 peers including aria-80</span></article>
+            <article class="beat" id="beat-3"><em>3</em><b>instructions</b><span>send with SendMessage</span></article>
+            <article class="beat" id="beat-4"><em>4</em><b>toolset</b><span>SendMessage absent</span></article>
+            <article class="beat" id="beat-5"><em>5</em><b>ToolSearch</b><span>no matching deferred tools</span></article>
+            <article class="beat loss" id="beat-6"><em>6</em><b>sibling</b><span>Orchestration already voiced</span></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Aphonia scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">rostered</p>
+            <p class="reason" id="reason">
+              ListAgents advertised 21 peers and SendMessage instructions while the tool is missing from this session's toolset.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="slip" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Voice-clinic path matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>shipped</th>
+                <th>isolate</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="remediation" aria-label="Assay dials">
+          <article class="remedy" data-remedy="voiced">
+            <b>Voiced</b>
+            <p>SendMessage should be available whenever ListAgents reports peers. Docs: messaging on with nothing to enable on 2.1.234+ Windows.</p>
+          </article>
+          <article class="remedy" data-remedy="tool-present">
+            <b>Tool-present</b>
+            <p>SendMessage belongs in this session toolset. ToolSearch select:SendMessage should find it.</p>
+          </article>
+          <article class="remedy" data-remedy="sibling-has-voice">
+            <b>Sibling has voice</b>
+            <p>Orchestration on the same machine already used SendMessage on aria-80. This booth did not.</p>
+          </article>
+          <article class="remedy" data-remedy="mcp-not-substitute">
+            <b>MCP not substitute</b>
+            <p>Desktop send_message (session_mgmt) needs a CCD session id and cannot resolve peer names such as aria-80.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act" data-act="score">Score the voice</button>
+          <button class="act" data-act="idle">Pin idle mute</button>
+          <button class="act" data-act="seed">Pin seeded rostered</button>
+          <button class="act" data-act="sibling">Score sibling-has-voice</button>
+          <button class="act" data-act="flip">Flip voiced vs mute</button>
+          <button class="act" data-act="fixtures">Load #92409 fixture</button>
+          <button class="act" data-act="reset">Reset to voiced</button>
+        </div>
+
+        <div class="sim">
+          <h3>Laryngoscope simulator</h3>
+          <p>Rewrite the tray without touching a live Claude session. Diagnostic assay dials only — not real API calls.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="roster">roster glow</span>
+            <span class="chip" data-sim-pull="mute">mute tray</span>
+            <span class="chip" data-sim-pull="sibling">sibling booth</span>
+            <span class="chip" data-sim-pull="voice">voiced hold</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="mute">mute</button>
+            <button class="chip" data-chip="rostered">rostered</button>
+            <button class="chip" data-chip="voiced">voiced</button>
+            <button class="chip" data-chip="tool-present">tool-present</button>
+            <button class="chip" data-chip="sibling-has-voice">sibling-has-voice</button>
+            <button class="chip" data-chip="deferred-search-miss">deferred-search-miss</button>
+            <button class="chip" data-chip="mcp-not-substitute">mcp-not-substitute</button>
+            <button class="chip" data-chip="cousins">cousins</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the laryngoscope tray</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            On Claude Code <code>2.1.258</code> (Windows 11 Enterprise 10.0.26200),
+            in a Claude desktop app <strong>Code tab</strong> session that reports
+            "running within the Claude Agent SDK" (model <code>claude-fable-5-1</code>),
+            <code>ListAgents</code> lists peer sessions and instructs
+            <code>send with SendMessage({to: name, message: ...})</code>, but the
+            <code>SendMessage</code> tool is not present in the session's toolset.
+          </p>
+          <p>
+            <code>ToolSearch</code> with <code>select:SendMessage</code> returns
+            "No matching deferred tools found". A sibling session on the same
+            machine and same account ("Orchestration", cwd <code>D:\dev\GitHub</code>)
+            did have <code>SendMessage</code> and used it successfully to message
+            the same peer.
+          </p>
+          <p>
+            Settings: <code>permissions.defaultMode: dontAsk</code>,
+            <code>crossSessionInbound: accept</code>, no <code>permissions.deny</code>,
+            no project settings gate the tool. Reproduced twice in the same session;
+            the tool list does not change mid-session. The gate appears per-session
+            at startup, not version or settings.
+          </p>
+          <p>
+            Expected: <code>SendMessage</code> is available whenever
+            <code>ListAgents</code> is available and reports peers, per
+            <a href="https://code.claude.com/docs/en/cross-session-messaging">cross-session messaging docs</a>
+            ("messaging is on with nothing to enable" once on 2.1.234+ on Windows).
+            Actual: <code>ListAgents</code> present, <code>SendMessage</code> absent.
+            The desktop-app <code>send_message</code> MCP tool (session_mgmt) is not
+            a substitute: it requires a CCD session id and cannot resolve peer names
+            such as <code>aria-80</code>.
+          </p>
+          <p>
+            Stay off: <span class="stayoff">
+              <span>Deadlight #92249</span>
+              <span>Nixie #92383</span>
+              <span>Fulcrum #92377</span>
+              <span>Wildcat #92399</span>
+              <span>Clobber #92419</span>
+              <span>Watchdog #92424</span>
+              <span>Understudy #92426</span>
+              <span>Fairlead #92403</span>
+              <span>Stroboscope</span>
+              <span>Heliostat</span>
+              <span>Lethe</span>
+              <span>Frizzen</span>
+            </span>
+          </p>
+          <p>
+            Cousins cite-only:
+            <a href="https://github.com/anthropics/claude-code/issues/92249">#92249</a>
+            scheduled-task / Remote Control blanks both tools ·
+            <a href="https://github.com/anthropics/claude-code/issues/92134">#92134</a>
+            ListAgents instructs missing SendMessage for subagent continue ·
+            <a href="https://github.com/anthropics/claude-code/issues/92016">#92016</a>
+            Desktop auto-denies CLI-native SendMessage ·
+            <a href="https://github.com/anthropics/claude-code/issues/92289">#92289</a>
+            Desktop blocks SendMessage for subagent continuation ·
+            <a href="https://github.com/anthropics/claude-code/issues/90481">#90481</a>
+            VS Code update disables ListAgents/SendMessage ·
+            <a href="https://github.com/anthropics/claude-code/issues/81185">#81185</a>
+            plugin teammate tools omit SendMessage ·
+            <a href="https://github.com/anthropics/claude-code/issues/79931">#79931</a>
+            Grep/Glob missing from roster.
+          </p>
+        </section>
+        <footer>
+          Catalog #178 · idle word mute · seeded rostered · contrast voiced / tool-present ·
+          no live Claude sessions · fonts Fraunces / Karla / IBM Plex Mono · voice clinic
+        </footer>
+      </section>
+    </main>
+    <script>
+      const HOLD = new Set(["voiced", "tool-present"]);
+      const CHIPS = [
+        "mute", "rostered", "voiced", "tool-present",
+        "sibling-has-voice", "deferred-search-miss",
+        "mcp-not-substitute", "cousins"
+      ];
+      const CHIP_FILES = {
+        mute: "mute.json",
+        rostered: "rostered.json",
+        voiced: "voiced.json",
+        "tool-present": "tool-present.json",
+        "sibling-has-voice": "sibling-has-voice.json",
+        "deferred-search-miss": "deferred-search-miss.json",
+        "mcp-not-substitute": "mcp-not-substitute.json",
+        cousins: "cousins.json"
+      };
+      const MATRIX = [
+        { id: "list", name: "ListAgents 21 peers · aria-80 [056652] · SendMessage instructed", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "list-agents.json" },
+        { id: "repro", name: "Code tab · ListAgents then SendMessage aria-80 hello", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "repro.json" },
+        { id: "search", name: "ToolSearch select:SendMessage · no matching deferred tools", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "toolsearch-miss.json" },
+        { id: "sibling", name: "sibling Orchestration · SendMessage used on same peer", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "sibling-has-sendmessage.json" },
+        { id: "mcp", name: "desktop send_message MCP cannot resolve aria-80", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "mcp-not-substitute.json" },
+        { id: "voiced", name: "SendMessage available whenever ListAgents reports peers", shipped: "pass", isolate: "pass", scored: "pass", file: "voiced.json" },
+        { id: "present", name: "SendMessage in the session toolset · ToolSearch finds it", shipped: "pass", isolate: "pass", scored: "pass", file: "tool-present.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92409,
+        seed: "mute",
+        mute: true,
+        rostered: false,
+        voiced: false,
+        toolPresent: false,
+        siblingHasVoice: true,
+        deferredSearchMiss: true,
+        mcpNotSubstitute: true,
+        listAgentsPresent: true,
+        sendMessagePresent: false,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "MUTE",
+        log: [
+          "[idle] Code tab · Agent SDK · ListAgents may list peers",
+          "[tray] SendMessage slot empty · speaking reed never placed",
+          "[gate] tool list does not change mid-session · gate at startup",
+          "[desk] already muted; idle word mute"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92409,
+        seed: "rostered",
+        mute: true,
+        rostered: true,
+        voiced: false,
+        toolPresent: false,
+        siblingHasVoice: true,
+        deferredSearchMiss: true,
+        mcpNotSubstitute: true,
+        listAgentsPresent: true,
+        sendMessagePresent: false,
+        peerCount: 21,
+        namedPeer: "aria-80 [056652] · interactive · idle",
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "ROSTERED",
+        log: [
+          "[issue] #92409 OPEN · ListAgents present · SendMessage absent",
+          "[roster] 21 peers · aria-80 [056652] · interactive · idle",
+          "[copy] send with SendMessage({to: name, message: ...})",
+          "[search] ToolSearch select:SendMessage · No matching deferred tools found",
+          "[desk] already rostered; seeded word rostered"
+        ]
+      };
+
+      const voicedTicket = {
+        source: "probe",
+        issue: 92409,
+        seed: "voiced",
+        mute: false,
+        rostered: false,
+        voiced: true,
+        toolPresent: true,
+        siblingHasVoice: true,
+        deferredSearchMiss: false,
+        listAgentsPresent: true,
+        sendMessagePresent: true,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "VOICED",
+        log: [
+          "[hold] SendMessage available whenever ListAgents reports peers",
+          "[docs] messaging is on with nothing to enable · 2.1.234+ on Windows",
+          "[desk] voiced; contrast hold"
+        ]
+      };
+
+      const presentTicket = {
+        source: "probe",
+        issue: 92409,
+        seed: "tool-present",
+        mute: false,
+        voiced: true,
+        toolPresent: true,
+        deferredSearchMiss: false,
+        listAgentsPresent: true,
+        sendMessagePresent: true,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "TOOL-PRESENT",
+        log: [
+          "[hold] SendMessage is in this session toolset",
+          "[search] ToolSearch select:SendMessage finds the tool",
+          "[desk] tool-present; contrast hold"
+        ]
+      };
+
+      const siblingTicket = {
+        source: "probe",
+        issue: 92409,
+        seed: "sibling-has-voice",
+        mute: true,
+        rostered: true,
+        voiced: false,
+        toolPresent: false,
+        siblingHasVoice: true,
+        thisSessionHasSendMessage: false,
+        siblingSession: "Orchestration",
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "SIBLING-HAS-VOICE",
+        log: [
+          "[booth-a] Code tab · Agent SDK · SendMessage absent",
+          "[booth-b] Orchestration · cwd D:\\dev\\GitHub · SendMessage present and used",
+          "[gate] per-session at startup · not version · not settings",
+          "[desk] sibling-has-voice; the sibling booth already sings"
+        ]
+      };
+
+      const missTicket = {
+        source: "probe",
+        issue: 92409,
+        seed: "deferred-search-miss",
+        mute: true,
+        rostered: true,
+        voiced: false,
+        toolPresent: false,
+        deferredSearchMiss: true,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "DEFERRED-SEARCH-MISS",
+        log: [
+          "[search] ToolSearch select:SendMessage",
+          "[miss] No matching deferred tools found",
+          "[desk] deferred-search-miss; scope find returns empty"
+        ]
+      };
+
+      const mcpTicket = {
+        source: "probe",
+        issue: 92409,
+        seed: "mcp-not-substitute",
+        mute: true,
+        rostered: true,
+        voiced: false,
+        mcpNotSubstitute: true,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "MCP-NOT-SUBSTITUTE",
+        log: [
+          "[mcp] desktop-app send_message · session_mgmt",
+          "[need] CCD session id · cannot resolve aria-80",
+          "[desk] mcp-not-substitute; not a speaking reed"
+        ]
+      };
+
+      let pullState = "roster";
+      let flipHold = false;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || t.voiced === true || t.toolPresent === true;
+      }
+
+      function alreadyMuted(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.mute !== true && t.rostered !== true && t.sendMessagePresent !== false) return false;
+        if (HOLD.has(seed) && t.mute !== true && t.rostered !== true) return false;
+        if (t.mute === true || t.rostered === true || t.sendMessagePresent === false) return true;
+        if (["mute", "rostered", "deferred-search-miss", "mcp-not-substitute", "sibling-has-voice"].includes(seed)) return !HOLD.has(seed);
+        return t.voiced !== true && t.toolPresent !== true && !HOLD.has(seed);
+      }
+
+      function scoredTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (HOLD.has(seed) || remediating(t)) && t.rostered !== true && !alreadyMuted(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyMuted(t);
+        t.shippedFree = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedFree ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (remediating(t) ? "pass" : "FAIL");
+        const holding = scoredTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "mute") chips.push("mute");
+        if (t.rostered === true || seed === "rostered") chips.push("rostered");
+        if ((holding && t.voiced === true) || seed === "voiced") chips.push("voiced");
+        if ((holding && t.toolPresent === true) || seed === "tool-present") chips.push("tool-present");
+        if (t.siblingHasVoice === true || seed === "sibling-has-voice") chips.push("sibling-has-voice");
+        if (t.deferredSearchMiss === true || seed === "deferred-search-miss") chips.push("deferred-search-miss");
+        if (t.mcpNotSubstitute === true || seed === "mcp-not-substitute") chips.push("mcp-not-substitute");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (holding
+            ? (t.toolPresent ? "tool-present" : "voiced")
+            : (t.rostered ? "rostered" : (t.deferredSearchMiss ? "deferred-search-miss" : "mute")));
+        return { ticket: t, holding, alarm, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        mute: "The speaking reed was never placed on this Code-tab / Agent-SDK tray. ListAgents may still print the choir. Idle word is mute.",
+        rostered: "ListAgents advertised 21 peers, including aria-80 [056652] · interactive · idle, and instructed SendMessage — but the tool is missing. Admit the session already muted.",
+        voiced: "SendMessage should be available whenever ListAgents reports peers. Docs: messaging is on with nothing to enable once on 2.1.234+ on Windows.",
+        "tool-present": "SendMessage belongs in this session toolset. ToolSearch select:SendMessage should find it instead of returning no matching deferred tools.",
+        "sibling-has-voice": "Sibling Orchestration on the same machine and account, cwd D:\\dev\\GitHub, had SendMessage and used it on the same peer. This booth did not. Gate appears per-session at startup.",
+        "deferred-search-miss": "ToolSearch with select:SendMessage returns No matching deferred tools found. The tool is not waiting behind a stub — it is not in this session catalog.",
+        "mcp-not-substitute": "The desktop-app send_message MCP (session_mgmt) requires a CCD session id and cannot resolve peer names such as aria-80. It is not a substitute.",
+        cousins: "Cite-only cousins #92249 #92134 #92016 #92289 #90481 #81185 #79931. Related surfaces, different root cause — primary stays #92409."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] ListAgents · SendMessage absent · already muted"]
+            : ["[desk] voiced · tool-present"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /mute|roster|FAIL|absent|miss|cannot|never/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "ListAgents present · SendMessage absent" : "voiced / tool-present", "voice-clinic path"],
+          ["isolate", t.isolateMark, "interactive Code tab · ListAgents works · not Deadlight dual-blank", "not a clone"],
+          ["scored", t.scoredMark, remediating(t) ? "voiced / tool-present" : "would score after SendMessage is on the tray", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id === "search" ? "deferred-search-miss" : (row.id === "sibling" ? "sibling-has-voice" : (row.id === "mcp" ? "mcp-not-substitute" : "rostered")), scenario: row.id }
+                : { ...voicedTicket, seed: row.id === "present" ? "tool-present" : "voiced", scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (t.voiced === true || t.seed === "voiced") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">SendMessage available whenever ListAgents reports peers</span>\n` +
+            `<span class="asst">docs · messaging on with nothing to enable · 2.1.234+ Windows</span>\n` +
+            `<span class="hook">voiced; contrast hold</span>`;
+          return;
+        }
+        if (t.toolPresent === true || t.seed === "tool-present") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">SendMessage in the session toolset</span>\n` +
+            `<span class="hook">tool-present; ToolSearch can load it</span>`;
+          return;
+        }
+        if (t.seed === "mcp-not-substitute") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="user">desktop send_message MCP · session_mgmt</span>\n` +
+            `<span class="hook">needs CCD session id · cannot resolve aria-80</span>`;
+          return;
+        }
+        if (t.seed === "sibling-has-voice") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">Orchestration · cwd D:\\dev\\GitHub · SendMessage used on aria-80</span>\n` +
+            `<span class="user">this Code-tab session · SendMessage absent</span>\n` +
+            `<span class="hook">sibling-has-voice; gate per-session at startup</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">Claude Code 2.1.258 · Windows 11 · Code tab · Agent SDK · claude-fable-5-1</span>\n` +
+          `<span class="user">ListAgents · 21 peers · aria-80 [056652] · interactive · idle</span>\n` +
+          `<span class="user">send with SendMessage({to: name, message: ...}) · tool not in toolset</span>\n` +
+          `<span class="user">ToolSearch select:SendMessage · No matching deferred tools found</span>\n` +
+          `<span class="hook">sibling Orchestration already used SendMessage on the same peer</span>`;
+      }
+
+      function paintRoster(holding) {
+        if (holding) {
+          document.getElementById("roster-plates").innerHTML =
+            `<article class="plate named"><div><b>[056652] · interactive · idle</b><strong>aria-80</strong></div><span>addressable</span></article>` +
+            `<article class="plate"><div><b>choir + reed</b><strong>SendMessage on tray</strong></div><span>voiced hold</span></article>`;
+          return;
+        }
+        document.getElementById("roster-plates").innerHTML =
+          `<article class="plate named"><div><b>[056652] · interactive · idle</b><strong>aria-80</strong></div><span>named in #92409</span></article>` +
+          `<article class="plate ghost"><div><b>20 further peers</b><strong>names unpublished</strong></div><span>count only · do not invent</span></article>`;
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const seedName = String(t.seed || result.verdict || "");
+        const rostered = t.rostered === true || seedName === "rostered";
+        const voiced = t.voiced === true || seedName === "voiced";
+        const present = t.toolPresent === true || seedName === "tool-present";
+        const sibling = seedName === "sibling-has-voice" || t.siblingHasVoice === true;
+        const holding = (result.holding || remediating(t)) && !alarm;
+        const stageClass = present && holding
+          ? "tool-present"
+          : (voiced && holding
+            ? "voiced"
+            : (seedName === "sibling-has-voice"
+              ? "sibling-has-voice"
+              : (seedName === "deferred-search-miss"
+                ? "deferred-search-miss"
+                : (seedName === "mcp-not-substitute"
+                  ? "mcp-not-substitute"
+                  : (rostered ? "rostered" : (CHIPS.includes(seedName) ? seedName : "mute"))))));
+        const verdictEl = document.getElementById("verdict");
+        verdictEl.textContent = result.verdict;
+        verdictEl.className = "verdict " + (holding ? "hold" : (seedName === "sibling-has-voice" ? "warn" : "alarm"));
+        document.getElementById("reason").textContent = REASONS[result.verdict] || REASONS[alarm ? "rostered" : "voiced"];
+        document.getElementById("stage").className = "clinic " + stageClass;
+        document.getElementById("stage-label").textContent = holding
+          ? (present ? "tool-present · reed on the tray" : "voiced · ListAgents + SendMessage")
+          : (seedName === "sibling-has-voice"
+            ? "sibling-has-voice · Orchestration sings"
+            : (rostered ? "seeded rostered · choir named · reed missing" : "idle mute · speaking reed never laid"));
+        document.getElementById("count-tag").textContent = holding
+          ? "voiced · tool-present · 2.1.234+ polarity"
+          : "2.1.258 · Windows 11 · Code tab · Agent SDK";
+        document.getElementById("free-word").textContent = holding ? "voiced" : (rostered ? "rostered" : "mute");
+        document.getElementById("free-cap").textContent = holding
+          ? (present ? "SendMessage is in the session toolset · ToolSearch can load it" : "SendMessage available whenever ListAgents reports peers")
+          : (rostered
+            ? "ListAgents printed 21 peers and SendMessage instructions · the reed was never laid on this tray"
+            : "speaking reed never placed on this Code-tab / Agent-SDK tray");
+        document.getElementById("list-state").textContent = "present";
+        document.getElementById("list-note").textContent = holding ? "21 peers · SendMessage available" : "21 peers · instructs SendMessage";
+        document.getElementById("send-state").textContent = holding ? "present" : "absent";
+        document.getElementById("send-note").textContent = holding ? "on this session tray" : "not in this session toolset";
+        document.getElementById("search-state").textContent = holding ? "hit" : "miss";
+        document.getElementById("search-note").textContent = holding
+          ? "select:SendMessage finds the tool"
+          : "select:SendMessage · no matching deferred tools";
+        document.getElementById("slot-list").className = holding ? "slot live" : "slot glow";
+        document.getElementById("slot-send").className = holding ? "slot live" : "slot empty";
+        document.getElementById("slot-search").className = holding ? "slot live" : "slot empty";
+        document.getElementById("this-tag").textContent = holding ? "voiced" : "mute";
+        document.getElementById("sib-tag").textContent = "voiced";
+        document.getElementById("this-copy").textContent = holding
+          ? "running within the Claude Agent SDK · SendMessage on the tray"
+          : "running within the Claude Agent SDK · claude-fable-5-1 · D:\\dev\\GitHub";
+        document.getElementById("act-copy").textContent = holding
+          ? "ListAgents present. SendMessage present. Peer names such as aria-80 are addressable."
+          : "ListAgents present. SendMessage absent. Desktop send_message MCP is not a substitute — needs a CCD session id; cannot resolve aria-80.";
+        paintRoster(holding);
+        ["beat-1", "beat-2", "beat-3", "beat-4", "beat-5", "beat-6"].forEach((id, i) => {
+          const el = document.getElementById(id);
+          el.className = "beat" + (holding ? " hold" : (i === 2 ? " glow" : (i >= 3 ? " loss" : "")));
+        });
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.holding;
+          const warn = c === "sibling-has-voice" || c === "rostered";
+          return `<span class="chip ${live ? "live" : (warn && !holding ? "warn" : "dead")}">${c}</span>`;
+        }).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        paintMatrix(t.scenario || (present && holding ? "present" : (voiced && holding ? "voiced" : (seedName === "sibling-has-voice" ? "sibling" : (seedName === "deferred-search-miss" ? "search" : (seedName === "mcp-not-substitute" ? "mcp" : (rostered ? "list" : "repro")))))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "voice") return { ...voicedTicket };
+        if (pullState === "mute") return { ...idle };
+        if (pullState === "sibling") return { ...siblingTicket };
+        return { ...seeded };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState !== "voice";
+          b.classList.toggle("dead", on && fail && pullState !== "sibling");
+          b.classList.toggle("warn", on && pullState === "sibling");
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "mute";
+        flipHold = false;
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "roster";
+        flipHold = false;
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset") {
+            pullState = "voice";
+            flipHold = true;
+            syncSimChips();
+            try { apply(await loadNamed("voiced.json")); }
+            catch { apply({ ...voicedTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("rostered.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "sibling") {
+            pullState = "sibling";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("sibling-has-voice.json")); }
+            catch { apply({ ...siblingTicket }); }
+            return;
+          }
+          if (act === "flip") {
+            flipHold = !flipHold;
+            if (flipHold) {
+              pullState = "voice";
+              syncSimChips();
+              try { apply(await loadNamed("voiced.json")); }
+              catch { apply({ ...voicedTicket }); }
+            } else {
+              pullState = "mute";
+              syncSimChips();
+              try { apply(await loadNamed("mute.json")); }
+              catch { apply({ ...idle }); }
+            }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92409.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...voicedTicket, seed: chip });
+            else if (chip === "sibling-has-voice") apply({ ...siblingTicket });
+            else if (chip === "deferred-search-miss") apply({ ...missTicket });
+            else if (chip === "mcp-not-substitute") apply({ ...mcpTicket });
+            else apply({ ...seeded, seed: chip, issue: 92409 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = CHIP_FILES[kind];
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(kind === "tool-present" ? { ...presentTicket }
+              : (kind === "sibling-has-voice" ? { ...siblingTicket }
+                : (kind === "mcp-not-substitute" ? { ...mcpTicket } : { ...voicedTicket })));
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
