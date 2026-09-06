@@ -1,0 +1,1304 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clobber — print-shop overstrike lab for #92419</title>
+    <meta
+      name="description"
+      content="Clobber — print-shop / overstrike / letterpress clobber lab for Claude Code #92419: Edit/Write rename new-inode so editor watchers never fire, then autosave clobbers. Idle word is deaf."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --iron: #0c0a08;
+        --soot: #14110d;
+        --press: #1b1610;
+        --rail: #2a2318;
+        --paper: #eadcc4;
+        --cream: #f3ead6;
+        --ink: #efe6d4;
+        --mute: #8a7e6e;
+        --brass: #c4a056;
+        --brass-hot: #e2c56e;
+        --verm: #c42a1a;
+        --verm-hot: #e84830;
+        --cyan: #4a8e8c;
+        --cyan-mute: #3a6a6c;
+        --cyan-hot: #6ec4c0;
+        --hold: #6a9a74;
+        --line: rgba(196, 160, 86, 0.28);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Figtree, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 12% -10%, rgba(196, 42, 26, 0.1), transparent 36%),
+          radial-gradient(ellipse at 88% 0%, rgba(74, 142, 140, 0.1), transparent 34%),
+          repeating-linear-gradient(0deg, transparent 0 31px, rgba(234, 220, 196, 0.03) 31px 32px),
+          linear-gradient(180deg, #18140f 0%, #0c0a08 48%, #090806 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass-hot); }
+      .wrap { width: min(1220px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 3px solid var(--verm);
+        padding-left: 10px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--brass);
+      }
+      h1 {
+        font-family: "DM Serif Display", "Times New Roman", serif;
+        font-size: clamp(56px, 10vw, 112px);
+        letter-spacing: -0.03em;
+        margin: 6px 0 12px;
+        font-weight: 400;
+        line-height: 0.8;
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--verm-hot);
+        font-size: 0.2em;
+        letter-spacing: 0.16em;
+        display: block;
+        margin-top: 16px;
+        text-transform: uppercase;
+        font-family: Figtree, sans-serif;
+      }
+      .lede { max-width: 74em; color: var(--mute); line-height: 1.65; font-size: 17px; }
+      .lede code, code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--brass-hot);
+      }
+
+      .press {
+        margin: 26px 0 0;
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(27, 22, 16, 0.96), rgba(12, 10, 8, 0.97)),
+          repeating-linear-gradient(90deg, transparent 0 17px, rgba(196, 160, 86, 0.045) 17px 18px);
+        box-shadow: 0 32px 70px rgba(0, 0, 0, 0.55);
+        padding: 16px 16px 14px;
+      }
+      .press.deaf, .press.clobbered, .press.new-inode,
+      .press.outside-workspace, .press.silent-loss {
+        box-shadow: 0 0 0 3px rgba(196, 42, 26, 0.32), 0 32px 70px rgba(0, 0, 0, 0.55);
+      }
+      .press.in-place, .press.notified, .press.conflicted {
+        box-shadow: 0 0 0 3px rgba(106, 154, 116, 0.32), 0 32px 70px rgba(0, 0, 0, 0.55);
+      }
+      .inkrail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 14px;
+        border-bottom: 1px dashed rgba(196, 160, 86, 0.35);
+        padding-bottom: 8px;
+      }
+      .bed {
+        display: grid;
+        grid-template-columns: 0.72fr 1.15fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 900px) { .bed { grid-template-columns: 1fr; } }
+
+      .eye-col, .forme, .clobber-time, .proofs h4, .sheets h4, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .eye-col {
+        background: #120f0b;
+        border: 1px solid rgba(74, 142, 140, 0.28);
+        min-height: 320px;
+        padding: 14px;
+        position: relative;
+      }
+      .eyepiece {
+        width: 168px;
+        height: 168px;
+        margin: 18px auto 12px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 38% 32%, rgba(234, 220, 196, 0.18), transparent 28%),
+          radial-gradient(circle at 50% 50%, #1c3a3a 0 28%, #0e1414 42%, #2a2218 43% 56%, #0c0a08 57%);
+        box-shadow:
+          inset 0 0 0 10px #1a1610,
+          inset 0 0 0 12px var(--brass),
+          0 0 0 6px #2a2318,
+          0 18px 30px rgba(0, 0, 0, 0.45);
+        position: relative;
+      }
+      .eyepiece::after {
+        content: "";
+        position: absolute;
+        inset: 38%;
+        border-radius: 50%;
+        background: var(--cyan-hot);
+        box-shadow: 0 0 18px var(--cyan);
+      }
+      .press.deaf .eyepiece, .press.clobbered .eyepiece,
+      .press.new-inode .eyepiece, .press.outside-workspace .eyepiece,
+      .press.silent-loss .eyepiece {
+        filter: grayscale(0.45) saturate(0.55);
+      }
+      .press.deaf .eyepiece::after, .press.clobbered .eyepiece::after,
+      .press.new-inode .eyepiece::after, .press.outside-workspace .eyepiece::after,
+      .press.silent-loss .eyepiece::after {
+        background: var(--cyan-mute);
+        box-shadow: none;
+        inset: 44%;
+      }
+      .eye-word {
+        text-align: center;
+        font-family: "DM Serif Display", serif;
+        font-size: 28px;
+        color: var(--cyan-hot);
+        letter-spacing: 0.04em;
+      }
+      .press.deaf .eye-word, .press.clobbered .eye-word,
+      .press.new-inode .eye-word, .press.outside-workspace .eye-word,
+      .press.silent-loss .eye-word { color: var(--mute); }
+      .eye-cap {
+        text-align: center;
+        color: var(--mute);
+        font-size: 13px;
+        margin-top: 6px;
+        line-height: 1.45;
+      }
+
+      .forme {
+        background: #16120d;
+        border: 1px solid rgba(196, 160, 86, 0.28);
+        padding: 14px;
+        min-height: 320px;
+      }
+      .plate {
+        background:
+          linear-gradient(180deg, #3a3224, #241c12);
+        border: 2px solid var(--brass);
+        min-height: 168px;
+        padding: 14px;
+        position: relative;
+        box-shadow: inset 0 0 0 4px #1a140c, 4px 6px 0 rgba(0, 0, 0, 0.35);
+      }
+      .plate b {
+        display: block;
+        font-family: "DM Serif Display", serif;
+        font-size: 22px;
+        color: var(--cream);
+      }
+      .stamps {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 8px;
+        align-items: center;
+        margin-top: 16px;
+      }
+      .stamp {
+        background: linear-gradient(180deg, #2a2418, #16120c);
+        border: 1px solid var(--brass);
+        padding: 10px 8px;
+        text-align: center;
+      }
+      .stamp span {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .stamp strong {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 22px;
+        color: var(--cream);
+        margin-top: 4px;
+      }
+      .press.deaf .stamp-after, .press.clobbered .stamp-after,
+      .press.new-inode .stamp-after, .press.outside-workspace .stamp-after,
+      .press.silent-loss .stamp-after {
+        border-color: var(--verm);
+        color: var(--verm-hot);
+      }
+      .press.in-place .stamp-after, .press.notified .stamp-after,
+      .press.conflicted .stamp-after { border-color: var(--hold); }
+      .arrow {
+        font-family: "JetBrains Mono", monospace;
+        color: var(--verm-hot);
+        font-size: 20px;
+        text-align: center;
+      }
+      .press.in-place .arrow, .press.notified .arrow, .press.conflicted .arrow { color: var(--hold); }
+      .pathline {
+        margin-top: 12px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--mute);
+      }
+
+      .clobber-time {
+        background: #16120d;
+        border: 1px solid rgba(196, 42, 26, 0.28);
+        padding: 14px;
+        min-height: 320px;
+        position: relative;
+      }
+      .beats { display: grid; gap: 8px; }
+      .beat {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 10px;
+        align-items: start;
+        background: #120f0b;
+        border-left: 3px solid var(--brass);
+        padding: 8px 10px;
+      }
+      .beat i {
+        font-family: "DM Serif Display", serif;
+        font-style: normal;
+        color: var(--brass-hot);
+        font-size: 18px;
+      }
+      .beat b { display: block; font-size: 14px; }
+      .beat span { color: var(--mute); font-size: 12px; }
+      .beat.loss { border-left-color: var(--verm); }
+      .beat.hold { border-left-color: var(--hold); }
+      .clobber-mark {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        transform: rotate(-12deg);
+        font-family: "DM Serif Display", serif;
+        font-size: 28px;
+        letter-spacing: 0.08em;
+        color: var(--verm-hot);
+        border: 3px solid var(--verm);
+        padding: 4px 10px 2px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .press.clobbered .clobber-mark, .press.silent-loss .clobber-mark { opacity: 0.92; }
+
+      .proofs {
+        margin-top: 14px;
+        padding: 12px;
+        border: 1px solid rgba(234, 220, 196, 0.12);
+        background: #120f0b;
+      }
+      .proof-row {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+      }
+      @media (max-width: 900px) { .proof-row { grid-template-columns: 1fr 1fr; } }
+      .proof {
+        background: var(--paper);
+        color: #2a1c10;
+        min-height: 118px;
+        padding: 10px;
+        box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.35);
+        position: relative;
+      }
+      .proof em {
+        font-family: "DM Serif Display", serif;
+        font-style: normal;
+        font-size: 26px;
+        display: block;
+        line-height: 1;
+      }
+      .proof b { display: block; font-size: 13px; margin: 6px 0 4px; }
+      .proof span { display: block; font-size: 11px; color: #5a4a38; }
+      .press.deaf .proof, .press.clobbered .proof,
+      .press.new-inode .proof, .press.outside-workspace .proof,
+      .press.silent-loss .proof { outline: 1px dashed rgba(196, 42, 26, 0.55); }
+      .press.in-place .proof, .press.notified .proof,
+      .press.conflicted .proof { outline: 1px solid rgba(106, 154, 116, 0.55); }
+
+      .sheets {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      @media (max-width: 700px) { .sheets { grid-template-columns: 1fr; } }
+      .sheet {
+        border: 1px solid var(--line);
+        background: #16120d;
+        padding: 12px;
+        min-height: 140px;
+      }
+      .sheet.orphan { border-color: rgba(196, 42, 26, 0.4); }
+      .sheet.gallery { border-color: rgba(74, 142, 140, 0.4); }
+      .sheet h5 {
+        margin: 0 0 8px;
+        font-family: "DM Serif Display", serif;
+        font-size: 22px;
+        font-weight: 400;
+      }
+      .sheet p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.5; }
+      .sheet code { color: var(--cream); }
+      .press.outside-workspace .sheet.orphan,
+      .press.clobbered .sheet.orphan,
+      .press.silent-loss .sheet.orphan {
+        box-shadow: 0 0 0 2px rgba(196, 42, 26, 0.35);
+      }
+      .press.notified .sheet.gallery, .press.in-place .sheet.gallery {
+        box-shadow: 0 0 0 2px rgba(110, 196, 192, 0.3);
+      }
+
+      .desk {
+        margin-top: 22px;
+        border: 1px solid var(--line);
+        background: rgba(20, 17, 13, 0.92);
+        padding: 16px;
+      }
+      .verdict-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .verdict {
+        font-family: "DM Serif Display", serif;
+        font-size: clamp(36px, 6vw, 64px);
+        line-height: 0.9;
+        margin: 0;
+      }
+      .verdict.alarm { color: var(--verm-hot); }
+      .verdict.hold { color: var(--hold); }
+      .reason { max-width: 46em; color: var(--mute); line-height: 1.55; margin: 8px 0 0; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      .chip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--line);
+        padding: 5px 8px;
+        background: #120f0b;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .chip.live { border-color: var(--hold); color: var(--hold); }
+      .chip.dead { border-color: var(--verm); color: var(--verm-hot); }
+
+      .paths {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 16px;
+      }
+      @media (max-width: 700px) { .paths { grid-template-columns: 1fr; } }
+      .path {
+        border: 1px solid var(--line);
+        padding: 12px;
+        background: #120f0b;
+      }
+      .path.fail { border-color: rgba(196, 42, 26, 0.45); }
+      .path.ok { border-color: rgba(106, 154, 116, 0.45); }
+      .path b { display: block; font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brass); }
+      .path .face { margin: 8px 0; font-size: 15px; }
+      .path .note { color: var(--mute); font-size: 12px; }
+
+      .log {
+        margin-top: 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.65;
+        background: #0e0c09;
+        border: 1px solid var(--line);
+        padding: 12px;
+        white-space: pre-wrap;
+        min-height: 92px;
+      }
+      .log .hit { color: var(--verm-hot); }
+      .slip {
+        margin-top: 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.7;
+        background: #120f0b;
+        border-left: 4px solid var(--brass);
+        padding: 12px 14px;
+      }
+      .slip .asst { color: var(--cyan-hot); }
+      .slip .user { color: var(--verm-hot); }
+      .slip .hook { color: var(--brass-hot); }
+
+      .matrix { margin-top: 16px; overflow: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { border-bottom: 1px solid rgba(234, 220, 196, 0.1); padding: 8px 8px; text-align: left; }
+      th { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--brass); }
+      tr.active { background: rgba(196, 160, 86, 0.08); }
+      .fail-cell { color: var(--verm-hot); }
+      .pass-cell { color: var(--hold); }
+
+      .remediation {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 16px;
+      }
+      @media (max-width: 700px) { .remediation { grid-template-columns: 1fr; } }
+      .remedy {
+        border: 1px solid rgba(106, 154, 116, 0.35);
+        padding: 12px;
+        background: #12160f;
+        cursor: pointer;
+      }
+      .remedy b { display: block; font-family: "DM Serif Display", serif; font-size: 20px; font-weight: 400; margin-bottom: 6px; }
+      .remedy p { margin: 0; color: var(--mute); font-size: 14px; }
+
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+      .act {
+        font-family: Figtree, sans-serif;
+        font-weight: 600;
+        background: var(--brass);
+        color: #1a1208;
+        border: 0;
+        padding: 9px 12px;
+        cursor: pointer;
+      }
+      .act:hover { background: var(--brass-hot); }
+      .sim { margin-top: 16px; }
+      .sim h3, .research h3, .slip-head {
+        font-family: "DM Serif Display", serif;
+        font-size: 24px;
+        font-weight: 400;
+        margin: 0 0 8px;
+      }
+      .sim p { color: var(--mute); margin: 0 0 10px; }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .drop {
+        margin-top: 14px;
+        border: 1px dashed rgba(196, 160, 86, 0.45);
+        padding: 16px;
+        text-align: center;
+        color: var(--mute);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 12px;
+        background: #0e0c09;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        padding: 12px;
+      }
+      .research { margin-top: 22px; color: var(--mute); line-height: 1.6; }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--line);
+        padding: 3px 6px;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--mute);
+        font-size: 13px;
+        font-family: "JetBrains Mono", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="catalog chrome" href="/">← catalog</a>
+      <p class="mark chrome">15:50 / hermes catalog #175 / #92419</p>
+      <h1>Clobber <em>print-shop / overstrike / letterpress</em></h1>
+      <p class="lede chrome">
+        A watchman who never sees the plate swap because the inode changed under him
+        is not guarding the forme — he is already <code>deaf</code>.
+        Edit/Write uses temp-file + rename. Path unchanged; inode
+        <code>5588409 → 5588677</code>. The editor keeps A, types A′, and
+        <code>files.autoSave</code> afterDelay stamps A′ over agent B.
+        Score the notify or admit the agent edit already <code>clobbered</code>.
+      </p>
+
+      <section class="press clobbered" id="stage" aria-label="Forme press bed">
+        <div class="inkrail">
+          <span>forme · inode stamps · watchman</span>
+          <span id="stage-label">seeded clobbered · autosave A′ over B</span>
+          <span id="count-tag">macOS 26.6.2 · VS Code 1.135.0</span>
+        </div>
+        <div class="bed">
+          <div class="eye-col">
+            <h4>deaf watchman's eyepiece</h4>
+            <div class="eyepiece" aria-hidden="true"></div>
+            <div class="eye-word" id="eye-word">deaf</div>
+            <p class="eye-cap" id="eye-cap">inode-bound watcher never fires · plate already swapped</p>
+          </div>
+          <div class="forme">
+            <h4>forme plate</h4>
+            <div class="plate">
+              <b id="plate-title">same path, new file object</b>
+              <div class="stamps">
+                <div class="stamp stamp-before">
+                  <span>inode before</span>
+                  <strong id="inode-before">5588409</strong>
+                </div>
+                <div class="arrow" id="inode-arrow">→</div>
+                <div class="stamp stamp-after">
+                  <span>inode after</span>
+                  <strong id="inode-after">5588677</strong>
+                </div>
+              </div>
+              <p class="pathline" id="pathline">path unchanged · atomic replace · temp-file + rename</p>
+            </div>
+          </div>
+          <div class="clobber-time">
+            <h4>autosave clobber-stamp</h4>
+            <div class="beats">
+              <div class="beat" id="beat-a"><i>A</i><div><b>buffer clean</b><span>editor shows A</span></div></div>
+              <div class="beat" id="beat-b"><i>B</i><div><b>agent write</b><span>disk = B · new inode</span></div></div>
+              <div class="beat loss" id="beat-ap"><i>A′</i><div><b>user types</b><span>autosave afterDelay</span></div></div>
+            </div>
+            <div class="clobber-mark" id="clobber-mark">CLOBBERED</div>
+          </div>
+        </div>
+        <div class="proofs">
+          <h4>failure chain · overstrike proofs 1–6</h4>
+          <div class="proof-row" id="proofs">
+            <article class="proof"><em>1</em><b>open A</b><span>buffer clean</span></article>
+            <article class="proof"><em>2</em><b>agent B</b><span>atomic replace</span></article>
+            <article class="proof"><em>3</em><b>watcher deaf</b><span>still shows A</span></article>
+            <article class="proof"><em>4</em><b>user types</b><span>buffer A′ dirty</span></article>
+            <article class="proof"><em>5</em><b>autosave</b><span>afterDelay ~1s</span></article>
+            <article class="proof"><em>6</em><b>B lost</b><span>no conflict dialog</span></article>
+          </div>
+        </div>
+        <div class="sheets">
+          <article class="sheet orphan">
+            <h5>orphan sheet</h5>
+            <p>
+              Files opened <strong>outside</strong> any workspace folder are watched individually
+              and reproduce every time — e.g. <code>~/.claude/plans/</code>.
+            </p>
+          </article>
+          <article class="sheet gallery">
+            <h5>recursive gallery</h5>
+            <p>
+              Workspace folders get a recursive directory watcher that observes the rename,
+              so in-workspace files usually reload.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Clobber scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">clobbered</p>
+            <p class="reason" id="reason">
+              Autosave writes A′ over agent B. The editor believes A′ descends from current disk. Admit the agent edit already clobbered.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="slip" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Forme path matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>shipped</th>
+                <th>isolate</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="remediation" aria-label="Remediation panels">
+          <article class="remedy" data-remedy="in-place">
+            <b>Write in place</b>
+            <p>Open + truncate + write to the same inode so watchers observe the modification.</p>
+          </article>
+          <article class="remedy" data-remedy="notified">
+            <b>Score the notify</b>
+            <p>Copy content back into the original inode after rename, or emit an explicit change signal.</p>
+          </article>
+          <article class="remedy" data-remedy="conflicted">
+            <b>Conflict before overwrite</b>
+            <p>A notified editor that knows disk is B would dialog before autosave writes A′.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act" data-act="score">Score the notify</button>
+          <button class="act" data-act="idle">Pin idle deaf</button>
+          <button class="act" data-act="seed">Pin seeded clobbered</button>
+          <button class="act" data-act="admit">Admit the agent edit already clobbered</button>
+          <button class="act" data-act="cast">Score write in place</button>
+          <button class="act" data-act="fixtures">Load #92419 fixture</button>
+          <button class="act" data-act="reset">Reset to notified</button>
+        </div>
+
+        <div class="sim">
+          <h3>Overstrike-lab simulator</h3>
+          <p>Rewrite the forme without touching a live Claude session. Diagnostic only.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="inode">new inode</span>
+            <span class="chip" data-sim-pull="orphan">orphan sheet</span>
+            <span class="chip" data-sim-pull="loss">silent loss</span>
+            <span class="chip" data-sim-pull="place">in-place write</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="deaf">deaf</button>
+            <button class="chip" data-chip="clobbered">clobbered</button>
+            <button class="chip" data-chip="new-inode">new-inode</button>
+            <button class="chip" data-chip="outside-workspace">outside-workspace</button>
+            <button class="chip" data-chip="silent-loss">silent-loss</button>
+            <button class="chip" data-chip="in-place">in-place</button>
+            <button class="chip" data-chip="notified">notified</button>
+            <button class="chip" data-chip="conflicted">conflicted</button>
+            <button class="chip" data-chip="ruled-out-or-workarounds">ruled-out-or-workarounds</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the forme press</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            On macOS <code>26.6.2</code> with VS Code <code>1.135.0</code> and the Claude Code
+            VS Code extension, Edit/Write replace files via temp-file + rename rather than
+            modifying in place. The path is unchanged but the inode is new, so any watcher
+            bound to the original inode never fires.
+          </p>
+          <p>
+            Measured: inode BEFORE <code>5588409</code> → AFTER <code>5588677</code>.
+            Same path, different file object. The editor keeps showing stale A and believes
+            the buffer is clean. The user types A′. <code>files.autoSave: "afterDelay"</code>
+            writes A′ about a second later. B is lost. No conflict dialog.
+          </p>
+          <p>
+            Workspace recursive directory watchers observe the rename, so in-workspace files
+            usually reload. Files opened outside any workspace folder — e.g.
+            <code>~/.claude/plans/</code> — are watched individually and reproduce every time.
+          </p>
+          <p>
+            Expected: write in place (same inode), or copy content back into the original inode
+            after rename, or emit an explicit change signal. Related but distinct:
+            <a href="https://github.com/anthropics/claude-code/issues/87056">#87056</a>
+            frames the same symptom as a race and asks for collision detection.
+            #92419 is narrower: the editor is never notified.
+          </p>
+          <p>
+            Stay off: <span class="stayoff">
+              <span>Watchdog #92424</span>
+              <span>Understudy #92426</span>
+              <span>Fairlead #92403</span>
+              <span>Stroboscope #92395</span>
+              <span>Heliostat #92389</span>
+              <span>Lethe #92335</span>
+              <span>Frizzen #92353</span>
+              <span>Nixie #92383</span>
+              <span>Embrasure #92365</span>
+              <span>Elision #92347</span>
+              <span>Graft #92354</span>
+            </span>
+          </p>
+          <p>
+            Cousins cite-only:
+            <a href="https://github.com/anthropics/claude-code/issues/87056">#87056</a>
+            concurrent editing race / collision detection — related symptom, different root cause.
+          </p>
+        </section>
+        <footer>
+          Catalog #175 · idle word deaf · seeded clobbered · contrast in-place / notified / conflicted ·
+          no live Claude sessions · fonts DM Serif Display / Figtree / JetBrains Mono · print-shop clobber
+        </footer>
+      </section>
+    </main>
+    <script>
+      const HOLD = new Set(["in-place", "notified", "conflicted"]);
+      const CHIPS = [
+        "deaf", "clobbered", "new-inode", "outside-workspace", "silent-loss",
+        "in-place", "notified", "conflicted", "ruled-out-or-workarounds"
+      ];
+      const CHIP_FILES = {
+        deaf: "deaf.json",
+        clobbered: "clobbered.json",
+        "new-inode": "new-inode.json",
+        "outside-workspace": "outside-workspace.json",
+        "silent-loss": "silent-loss.json",
+        "in-place": "in-place.json",
+        notified: "notified.json",
+        conflicted: "conflicted.json",
+        "ruled-out-or-workarounds": "ruled-out-or-workarounds.json"
+      };
+      const MATRIX = [
+        { id: "inode", name: "inode 5588409 → 5588677 same path", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "new-inode.json" },
+        { id: "repro", name: "outside workspace · stat inode differs · type · B gone", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "repro.json" },
+        { id: "orphan", name: "individual watch ~/.claude/plans/ every time", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "outside-workspace.json" },
+        { id: "loss", name: "silent data loss · no error · no prompt", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "silent-loss.json" },
+        { id: "place", name: "write in place · same inode", shipped: "pass", isolate: "pass", scored: "pass", file: "in-place.json" },
+        { id: "signal", name: "explicit change signal / copy-back", shipped: "pass", isolate: "pass", scored: "pass", file: "notified.json" },
+        { id: "dialog", name: "conflict dialog before overwrite", shipped: "pass", isolate: "pass", scored: "pass", file: "conflicted.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92419,
+        seed: "deaf",
+        deaf: true,
+        clobbered: false,
+        notified: false,
+        newInode: true,
+        inodeBefore: 5588409,
+        inodeAfter: 5588677,
+        watcherFired: false,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "DEAF",
+        log: [
+          "[idle] Edit/Write · temp-file + rename · atomic replace",
+          "[eye] watcher bound to original inode · never fires",
+          "[desk] already deaf; idle word deaf"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92419,
+        seed: "clobbered",
+        deaf: true,
+        clobbered: true,
+        notified: false,
+        newInode: true,
+        outsideWorkspace: true,
+        silentLoss: true,
+        inodeBefore: 5588409,
+        inodeAfter: 5588677,
+        autosaveAfterDelay: true,
+        conflictDialog: false,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "CLOBBERED",
+        log: [
+          "[issue] #92419 OPEN · Edit/Write replace files via rename (new inode)",
+          "[chain] A clean → agent B new inode → watcher deaf → user types A′ → autosave A′",
+          "[loss] B is lost; editor believes A′ descends from current disk",
+          "[desk] already clobbered; seeded word clobbered"
+        ]
+      };
+
+      const placeTicket = {
+        source: "probe",
+        issue: 92419,
+        seed: "in-place",
+        deaf: false,
+        clobbered: false,
+        inPlace: true,
+        notified: true,
+        inodeBefore: 5588409,
+        inodeAfter: 5588409,
+        sameInode: true,
+        watcherFired: true,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "IN-PLACE",
+        log: [
+          "[fix] write in place · open + truncate + write",
+          "[inode] BEFORE 5588409 · AFTER 5588409 · same file object",
+          "[desk] in-place; contrast hold"
+        ]
+      };
+
+      const notifiedTicket = {
+        source: "probe",
+        issue: 92419,
+        seed: "notified",
+        deaf: false,
+        clobbered: false,
+        notified: true,
+        watcherFired: true,
+        inodeBefore: 5588409,
+        inodeAfter: 5588409,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "NOTIFIED",
+        log: [
+          "[fix] explicit change signal or copy-back into original inode",
+          "[eye] watchman sees the plate · editor reloads B",
+          "[desk] notified; contrast hold"
+        ]
+      };
+
+      const conflictTicket = {
+        source: "probe",
+        issue: 92419,
+        seed: "conflicted",
+        deaf: false,
+        clobbered: false,
+        notified: true,
+        conflicted: true,
+        conflictDialog: true,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "CONFLICTED",
+        log: [
+          "[hold] editor knows disk is B · buffer is A′ · dialog before write",
+          "[keep] B is not silently destroyed",
+          "[desk] conflicted; contrast hold"
+        ]
+      };
+
+      const inodeTicket = {
+        source: "probe",
+        issue: 92419,
+        seed: "new-inode",
+        deaf: true,
+        newInode: true,
+        inodeBefore: 5588409,
+        inodeAfter: 5588677,
+        pathUnchanged: true,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "NEW-INODE",
+        log: [
+          "[inode] BEFORE 5588409 → AFTER 5588677",
+          "[path] unchanged · different file object",
+          "[desk] new-inode; already deaf"
+        ]
+      };
+
+      const orphanTicket = {
+        source: "probe",
+        issue: 92419,
+        seed: "outside-workspace",
+        deaf: true,
+        clobbered: true,
+        outsideWorkspace: true,
+        exampleOrphanPath: "~/.claude/plans/",
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "OUTSIDE-WORKSPACE",
+        log: [
+          "[orphan] files outside any workspace folder watched individually",
+          "[path] e.g. ~/.claude/plans/",
+          "[desk] outside-workspace; every time"
+        ]
+      };
+
+      const lossTicket = {
+        source: "probe",
+        issue: 92419,
+        seed: "silent-loss",
+        deaf: true,
+        clobbered: true,
+        silentLoss: true,
+        conflictDialog: false,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "SILENT-LOSS",
+        log: [
+          "[impact] silent data loss — no error, no prompt, nothing in the UI",
+          "[desk] B is lost; failure row silent-loss"
+        ]
+      };
+
+      let pullState = "orphan";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        return t.seed === "in-place"
+          || t.seed === "notified"
+          || t.seed === "conflicted"
+          || t.inPlace === true
+          || t.notified === true
+          || t.conflicted === true
+          || t.sameInode === true
+          || t.watcherFired === true
+          || t.conflictDialog === true;
+      }
+
+      function alreadyDeaf(t) {
+        const seed = String(t.seed || "");
+        if (t.notified === true && t.deaf !== true && t.clobbered !== true) return false;
+        if (t.inPlace === true && t.deaf !== true) return false;
+        if (remediating(t) && t.deaf !== true && t.clobbered !== true && t.newInode !== true && t.silentLoss !== true) return false;
+        if (HOLD.has(seed) && t.deaf !== true && t.clobbered !== true) return false;
+        if (t.deaf === true || t.clobbered === true || t.newInode === true || t.outsideWorkspace === true || t.silentLoss === true) return true;
+        if (["deaf", "clobbered", "new-inode", "outside-workspace", "silent-loss", "ruled-out-or-workarounds"].includes(seed)) {
+          return !HOLD.has(seed);
+        }
+        return t.watcherFired === false && t.notified !== true && t.seed !== "conflicted";
+      }
+
+      function scoredTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (t.notified === true || t.inPlace === true || t.conflicted === true || HOLD.has(seed) || remediating(t))
+          && t.clobbered !== true
+          && !alreadyDeaf(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyDeaf(t);
+        t.shippedDeaf = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedDeaf ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (t.notified === true || remediating(t) || t.inPlace === true ? "pass" : "FAIL");
+        const holding = scoredTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "deaf") chips.push("deaf");
+        if (t.clobbered === true || seed === "clobbered") chips.push("clobbered");
+        if (t.newInode === true || seed === "new-inode") chips.push("new-inode");
+        if (t.outsideWorkspace === true || seed === "outside-workspace") chips.push("outside-workspace");
+        if (t.silentLoss === true || seed === "silent-loss") chips.push("silent-loss");
+        if ((holding && t.inPlace === true) || seed === "in-place") chips.push("in-place");
+        if ((holding && t.notified === true) || seed === "notified") chips.push("notified");
+        if (t.conflicted === true || seed === "conflicted") chips.push("conflicted");
+        if (t.workaroundsOnly === true || seed === "ruled-out-or-workarounds") chips.push("ruled-out-or-workarounds");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (holding
+            ? (t.conflicted ? "conflicted" : (t.inPlace ? "in-place" : "notified"))
+            : (t.clobbered ? "clobbered" : "deaf"));
+        return { ticket: t, holding, alarm, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        deaf: "A watchman who never sees the plate swap because the inode changed under him is not guarding the forme — he is already deaf.",
+        clobbered: "Autosave writes A′ over agent B. The editor believes A′ descends from current disk. Admit the agent edit already clobbered.",
+        "new-inode": "inode BEFORE 5588409 → AFTER 5588677. Same path, different file object. Atomic replace via temp-file + rename.",
+        "outside-workspace": "Files opened outside any workspace folder are watched individually and reproduce every time — e.g. ~/.claude/plans/.",
+        "silent-loss": "Silent data loss — no error, no prompt, nothing in the UI. B is lost.",
+        "in-place": "Write in place (open + truncate + write) keeps the same inode. Watchers observe the modification.",
+        notified: "Watcher fires, or an explicit change signal reaches the editor. Score the notify.",
+        conflicted: "A notified editor that knows disk is B dialogs before autosave writes A′.",
+        "ruled-out-or-workarounds": "Not a race — that is cousin #87056. In-workspace recursive gallery usually reloads. Suggested: in-place, copy-back, or explicit signal."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] Edit/Write · new inode · already clobbered"]
+            : ["[desk] same inode · watchman notified"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /deaf|clobber|FAIL|inode|never|silent|A′|lost|orphan/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "inode swapped · watcher never fires" : "same inode or explicit notify", "watchman path"],
+          ["isolate", t.isolateMark, "in-workspace recursive gallery still usually reloads", "orphan sheet only"],
+          ["scored", t.scoredMark, t.notified === true || remediating(t) || t.inPlace === true ? "in-place / signal / conflict dialog" : "would score after notify", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id, scenario: row.id }
+                : { ...notifiedTicket, seed: row.id, scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (t.inPlace === true || t.seed === "in-place") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">open + truncate + write · same inode 5588409</span>\n` +
+            `<span class="asst">watchers observe the modification</span>\n` +
+            `<span class="hook">in-place; contrast hold</span>`;
+          return;
+        }
+        if (t.seed === "conflicted" || t.conflicted === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">disk = B · buffer = A′ · conflict dialog</span>\n` +
+            `<span class="hook">B is not silently destroyed</span>`;
+          return;
+        }
+        if (result.holding && t.notified === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">explicit change signal or copy-back into original inode</span>\n` +
+            `<span class="asst">watchman sees the plate · editor reloads B</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">macOS 26.6.2 · VS Code 1.135.0 · Claude Code VS Code extension</span>\n` +
+          `<span class="user">inode BEFORE 5588409 → AFTER 5588677 · path unchanged</span>\n` +
+          `<span class="user">watcher never fires · editor shows A · buffer still clean</span>\n` +
+          `<span class="user">user types A′ · files.autoSave afterDelay · B is lost</span>\n` +
+          `<span class="hook">in-workspace usually reloads · orphan ~/.claude/plans/ every time</span>`;
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const seedName = String(t.seed || result.verdict || "");
+        const clob = t.clobbered === true || seedName === "clobbered";
+        const place = t.inPlace === true || seedName === "in-place";
+        const noted = t.notified === true || seedName === "notified";
+        const conf = t.conflicted === true || seedName === "conflicted";
+        const inode = t.newInode === true || seedName === "new-inode";
+        const orphan = t.outsideWorkspace === true || seedName === "outside-workspace";
+        const loss = t.silentLoss === true || seedName === "silent-loss";
+        const holding = (result.holding || t.notified === true || t.inPlace === true) && !alarm;
+        const stageClass = place
+          ? "in-place"
+          : (conf
+            ? "conflicted"
+            : (holding
+              ? "notified"
+              : (loss
+                ? "silent-loss"
+                : (orphan
+                  ? "outside-workspace"
+                  : (inode
+                    ? "new-inode"
+                    : (clob ? "clobbered" : (CHIPS.includes(seedName) ? seedName : "deaf")))))));
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || REASONS[alarm ? "clobbered" : "notified"];
+        document.getElementById("stage").className = "press " + stageClass;
+        document.getElementById("stage-label").textContent = alarm
+          ? (loss ? "silent-loss · no error · B gone" : (orphan ? "orphan sheet · individual watch" : (inode ? "new-inode · 5588409 → 5588677" : (clob ? "seeded clobbered · autosave A′ over B" : "idle deaf · watcher never fires"))))
+          : (place ? "in-place · same inode" : (conf ? "conflicted · dialog before overwrite" : "notified · watchman sees the plate"));
+        document.getElementById("count-tag").textContent = alarm
+          ? "macOS 26.6.2 · VS Code 1.135.0"
+          : (place ? "same inode · watchers observe" : "notify scored · B kept");
+        document.getElementById("eye-word").textContent = holding ? "sees" : "deaf";
+        document.getElementById("eye-cap").textContent = holding
+          ? (place ? "same inode · modification observed" : (conf ? "disk B known · dialog before A′" : "watcher fires or explicit signal"))
+          : "inode-bound watcher never fires · plate already swapped";
+        const before = t.inodeBefore || 5588409;
+        const after = holding ? (t.inodeAfter || before) : (t.inodeAfter || 5588677);
+        document.getElementById("inode-before").textContent = before;
+        document.getElementById("inode-after").textContent = after;
+        document.getElementById("inode-arrow").textContent = before === after ? "=" : "→";
+        document.getElementById("plate-title").textContent = holding
+          ? (place ? "same path, same file object" : "watchman notified")
+          : "same path, new file object";
+        document.getElementById("pathline").textContent = holding
+          ? (place ? "open + truncate + write · same inode" : "explicit signal or copy-back")
+          : "path unchanged · atomic replace · temp-file + rename";
+        document.getElementById("beat-a").className = "beat" + (holding ? " hold" : "");
+        document.getElementById("beat-b").className = "beat" + (holding ? " hold" : "");
+        document.getElementById("beat-ap").className = "beat" + (holding ? " hold" : " loss");
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.holding;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        paintMatrix(t.scenario || (place ? "place" : (conf ? "dialog" : (holding ? "signal" : (loss ? "loss" : (orphan ? "orphan" : (inode ? "inode" : "repro")))))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "place") return { ...placeTicket };
+        if (pullState === "loss") return { ...lossTicket };
+        if (pullState === "inode") return { ...inodeTicket };
+        return { ...orphanTicket };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState !== "place";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "inode";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "orphan";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset") {
+            pullState = "place";
+            syncSimChips();
+            try { apply(await loadNamed("notified.json")); }
+            catch { apply({ ...notifiedTicket }); }
+            return;
+          }
+          if (act === "cast") {
+            pullState = "place";
+            syncSimChips();
+            try { apply(await loadNamed("in-place.json")); }
+            catch { apply({ ...placeTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("clobbered.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("repro.json")); }
+            catch { apply({ ...seeded, seed: "clobbered", hubCount: "ADMIT" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92419.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...notifiedTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92419 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = kind === "in-place" ? "in-place.json" : (kind === "conflicted" ? "conflicted.json" : "notified.json");
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(kind === "in-place" ? { ...placeTicket } : (kind === "conflicted" ? { ...conflictTicket } : { ...notifiedTicket }));
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>

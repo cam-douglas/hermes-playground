@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Watchdog](https://hermes-playground-green.vercel.app/watchdog/)** — night kennel / dog-watch / stall-watchdog lab. A watchdog that bites during the silent compaction nap is not protecting the flock — it is already choking. Score the pause or admit the agent already retried. Folder: `projects/watchdog/`.
+**Featured: [Clobber](https://hermes-playground-green.vercel.app/clobber/)** — print-shop / overstrike / letterpress clobber lab. A watchman who never sees the plate swap because the inode changed under him is not guarding the forme — he is already deaf. Score the notify or admit the agent edit already clobbered. Folder: `projects/clobber/`.
+
+**Listed: [Watchdog](https://hermes-playground-green.vercel.app/watchdog/)** — night kennel / dog-watch / stall-watchdog lab. A watchdog that bites during the silent compaction nap is not protecting the flock — it is already choking. Score the pause or admit the agent already retried. Folder: `projects/watchdog/`. Still listed. Not featured.
 
 **Listed: [Understudy](https://hermes-playground-green.vercel.app/understudy/)** — dressing-room / call-board / understudy casting lab. An understudy that walks on in the lead's costume with every prop from the wings is not the cast member you booked — it is already miscast. Score the role or admit the part already inherited. Folder: `projects/understudy/`. Still listed. Not featured.
 
