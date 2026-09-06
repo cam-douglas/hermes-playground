@@ -2,7 +2,23 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Clobber](https://hermes-playground-green.vercel.app/clobber/)** — print-shop / overstrike / letterpress clobber lab. A watchman who never sees the plate swap because the inode changed under him is not guarding the forme — he is already deaf. Score the notify or admit the agent edit already clobbered. Folder: `projects/clobber/`.
+**Featured: [Thrash](https://hermes-playground-green.vercel.app/thrash/)** — OS thrashing / working-set / paging-storm console. First prompt of every new process freezes the TUI ~40–60s (event-loop stall 40808ms, RSS ~2.6 GB) even with --safe-mode. Score thrashing or admit responsive. Folder: `projects/thrash/`.
+
+**Listed: [Muzzle](https://hermes-playground-green.vercel.app/muzzle/)** — ballistics range suppressor bay / muzzle-brake chronograph. A seated sleeve should silence skill/agent attachments under --safe-mode/--disable-slash-commands but only quiets the log while the wire still leaks. Score leaking or admit excised. Folder: `projects/muzzle/`. Still listed. Not featured.
+
+**Listed: [Hysteresis](https://hermes-playground-green.vercel.app/hysteresis/)** — magnetic remanence / materials lab. A materials lab that should leave the prompt-cache remanent when the effort dial turns — docs say no effect — but Sonnet droops a partial rewrite and Opus snaps the loop open. Score the remanence or admit the cache already rewritten. Folder: `projects/hysteresis/`. Still listed. Not featured.
+
+**Listed: [Hardstand](https://hermes-playground-green.vercel.app/hardstand/)** — night apron / tower strip. A night apron that lets the tower clear two ships on the same non-git pad while Dispatch radio refuses the second landing. Score the pad or admit the hardstand already refused. Folder: `projects/hardstand/`. Still listed. Not featured.
+
+**Listed: [Rheostat](https://hermes-playground-green.vercel.app/rheostat/)** — bakelite effort dial. A bakelite effort dial that reads --level low on the faceplate but the copper behind stays hardwired at high. Score the dial or admit the pipeline already maxed. Folder: `projects/rheostat/`. Still listed. Not featured.
+
+**Listed: [Aphonia](https://hermes-playground-green.vercel.app/aphonia/)** — laryngoscope / voice-clinic tray. A laryngoscope tray that shows every choir name on the roster but never lays the speaking reed beside it. Score the voice or admit the session already muted. Folder: `projects/aphonia/`. Still listed. Not featured.
+
+**Listed: [Fulcrum](https://hermes-playground-green.vercel.app/fulcrum/)** — naming pivot / registry lever. A naming pivot that should lock the peer identity when --name is set, but the auto-title side overwrites the custom-title side. Score the naming lever or admit the registry already collided. Folder: `projects/fulcrum/`. Still listed. Not featured.
+
+**Listed: [Wildcat](https://hermes-playground-green.vercel.app/wildcat/)** — windlass / wildcat clutch. When the clutch drops the wildcat keeps freewheeling and the deck bell already rang completed. Score the descendants or admit the writers already doubled. Folder: `projects/wildcat/`. Still listed. Not featured.
+
+**Listed: [Clobber](https://hermes-playground-green.vercel.app/clobber/)** — print-shop / overstrike / letterpress clobber lab. A watchman who never sees the plate swap because the inode changed under him is not guarding the forme — he is already deaf. Score the notify or admit the agent edit already clobbered. Folder: `projects/clobber/`. Still listed. Not featured.
 
 **Listed: [Watchdog](https://hermes-playground-green.vercel.app/watchdog/)** — night kennel / dog-watch / stall-watchdog lab. A watchdog that bites during the silent compaction nap is not protecting the flock — it is already choking. Score the pause or admit the agent already retried. Folder: `projects/watchdog/`. Still listed. Not featured.
 

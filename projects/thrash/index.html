@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thrash — paging-storm console for #88257</title>
+    <meta
+      name="description"
+      content="Thrash — CRT working-set / paging-storm console for Claude Code #88257: first prompt freezes TUI ~40–60s with event-loop stall and ~2.6GB RSS even under --safe-mode. Idle word is thrashing."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Orbitron:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --crt: #020804;
+        --tube: #041108;
+        --phosphor: #39ff14;
+        --phosphor-hot: #9dff7a;
+        --phosphor-dim: #14661f;
+        --grid: rgba(57, 255, 20, 0.14);
+        --amber: #ffb000;
+        --amber-hot: #ffd56a;
+        --alert: #ff5a36;
+        --hold: #7dffb3;
+        --mute: #4a7a52;
+        --ink: #c8ffc0;
+        --rule: rgba(57, 255, 20, 0.22);
+        --slot: #03140a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(57, 255, 20, 0.08), transparent 48%),
+          repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.18) 3px 4px),
+          linear-gradient(180deg, #06140a 0%, #020804 55%, #010302 100%);
+      }
+      body::before {
+        content: "";
+        pointer-events: none;
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+        z-index: 8;
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--phosphor-hot); }
+      .wrap { width: min(1280px, calc(100% - 28px)); margin: 0 auto; padding: 20px 0 92px; position: relative; z-index: 1; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 3px solid var(--phosphor);
+        padding-left: 10px;
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--phosphor);
+        text-shadow: 0 0 8px rgba(57, 255, 20, 0.45);
+      }
+      h1 {
+        font-family: Orbitron, "IBM Plex Sans", sans-serif;
+        font-size: clamp(52px, 11vw, 108px);
+        letter-spacing: 0.12em;
+        margin: 4px 0 8px;
+        font-weight: 800;
+        line-height: 0.86;
+        color: var(--phosphor);
+        text-shadow: 0 0 18px rgba(57, 255, 20, 0.45), 0 0 2px #39ff14;
+      }
+      h1 em {
+        font-style: normal;
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.16em;
+        letter-spacing: 0.28em;
+        color: var(--amber-hot);
+        margin-top: 10px;
+        text-shadow: none;
+      }
+      .lede { max-width: 78em; color: var(--mute); line-height: 1.65; font-size: 16px; }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        color: var(--phosphor-hot);
+      }
+
+      .console {
+        margin: 24px 0 0;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(4, 17, 8, 0.96), rgba(2, 8, 4, 0.98)),
+          repeating-linear-gradient(90deg, transparent 0 27px, rgba(57, 255, 20, 0.04) 27px 28px);
+        box-shadow: 0 0 0 1px rgba(57, 255, 20, 0.08), 0 28px 60px rgba(0, 0, 0, 0.55), inset 0 0 80px rgba(57, 255, 20, 0.04);
+        padding: 14px 16px 16px;
+        position: relative;
+      }
+      .console::before {
+        content: "WS CONSOLE 183";
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        font-family: Orbitron, sans-serif;
+        letter-spacing: 0.18em;
+        font-size: 11px;
+        color: var(--phosphor-dim);
+      }
+      .console.thrashing, .console.event-loop-stall, .console.rss-balloon,
+      .console.cpu-bound-gap, .console.safe-mode-still-stalls,
+      .console.sleep-wake-mislabelled, .console.cousins {
+        box-shadow: 0 0 0 3px rgba(255, 90, 54, 0.45), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+      .console.responsive {
+        box-shadow: 0 0 0 3px rgba(125, 255, 179, 0.45), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--phosphor);
+        margin-bottom: 12px;
+        border-bottom: 1px dashed rgba(57, 255, 20, 0.28);
+        padding-bottom: 8px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 1.2fr 0.85fr 0.95fr;
+        gap: 14px;
+      }
+      @media (max-width: 980px) { .deck { grid-template-columns: 1fr; } .console::before { display: none; } }
+
+      .cap, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--phosphor-dim);
+      }
+
+      .scope {
+        background: var(--slot);
+        border: 1px solid rgba(57, 255, 20, 0.2);
+        padding: 10px;
+        min-height: 220px;
+      }
+      .scope svg { width: 100%; height: auto; display: block; }
+      .hb-line { stroke: var(--phosphor); stroke-width: 2; fill: none; }
+      .console.thrashing .hb-line, .console.event-loop-stall .hb-line,
+      .console.rss-balloon .hb-line, .console.cpu-bound-gap .hb-line,
+      .console.safe-mode-still-stalls .hb-line, .console.sleep-wake-mislabelled .hb-line,
+      .console.cousins .hb-line {
+        animation: flatline 1.4s linear infinite;
+      }
+      .console.responsive .hb-line { animation: pulse 0.9s ease-in-out infinite; }
+      @keyframes flatline {
+        0%, 100% { opacity: 0.35; }
+        50% { opacity: 1; }
+      }
+      @keyframes pulse {
+        from { opacity: 0.55; }
+        to { opacity: 1; }
+      }
+
+      .chrono-wrap {
+        background: var(--slot);
+        border: 1px solid rgba(57, 255, 20, 0.2);
+        padding: 10px;
+        display: grid;
+        place-items: center;
+      }
+      .chrono {
+        width: min(240px, 100%);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 50% 50%, #03140a 0 58%, #0a2a12 59% 72%, #14661f 73% 78%, #39ff14 79% 81%, #041108 82% 100%);
+        box-shadow: inset 0 0 0 6px rgba(2, 8, 4, 0.7), 0 0 24px rgba(57, 255, 20, 0.18);
+        position: relative;
+      }
+      .chrono svg { width: 100%; height: 100%; }
+      .sweep { transform-origin: 100px 100px; }
+      .console.thrashing .sweep, .console.event-loop-stall .sweep,
+      .console.cpu-bound-gap .sweep {
+        animation: sweep 4s linear infinite;
+      }
+      @keyframes sweep { to { transform: rotate(360deg); } }
+      .readout {
+        position: absolute;
+        left: 50%;
+        top: 62%;
+        transform: translateX(-50%);
+        font-family: Orbitron, sans-serif;
+        letter-spacing: 0.08em;
+        font-size: 13px;
+        color: var(--alert);
+        text-align: center;
+        line-height: 1.1;
+        text-shadow: 0 0 8px rgba(255, 90, 54, 0.55);
+      }
+      .console.responsive .readout { color: var(--hold); text-shadow: 0 0 8px rgba(125, 255, 179, 0.45); }
+
+      .face-col { display: flex; flex-direction: column; gap: 10px; }
+      .faceplate {
+        background: linear-gradient(180deg, rgba(20, 102, 31, 0.18), rgba(2, 8, 4, 0.7));
+        border: 1px solid rgba(57, 255, 20, 0.22);
+        padding: 12px 14px;
+      }
+      .faceplate strong {
+        display: block;
+        font-family: Orbitron, sans-serif;
+        font-size: 28px;
+        letter-spacing: 0.08em;
+        line-height: 0.95;
+        color: var(--alert);
+        margin: 4px 0 6px;
+        text-shadow: 0 0 10px rgba(255, 90, 54, 0.4);
+      }
+      .console.responsive .faceplate strong { color: var(--hold); text-shadow: 0 0 10px rgba(125, 255, 179, 0.35); }
+      .faceplate span { color: var(--mute); font-size: 13px; line-height: 1.45; display: block; }
+
+      .gauges {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 0.55fr 1.45fr;
+        gap: 10px;
+      }
+      @media (max-width: 720px) { .gauges { grid-template-columns: 1fr; } }
+      .thermo {
+        background: var(--slot);
+        border: 1px solid rgba(57, 255, 20, 0.18);
+        padding: 10px 12px;
+        min-height: 160px;
+      }
+      .thermo-col {
+        height: 140px;
+        width: 28px;
+        margin: 8px auto 0;
+        border: 1px solid var(--phosphor-dim);
+        background: #010302;
+        position: relative;
+        overflow: hidden;
+      }
+      .mercury {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 76%;
+        background: linear-gradient(180deg, var(--amber-hot), var(--alert));
+        box-shadow: 0 0 12px rgba(255, 176, 0, 0.45);
+        transition: height 0.45s ease;
+      }
+      .console.responsive .mercury {
+        height: 18%;
+        background: linear-gradient(180deg, var(--hold), var(--phosphor));
+        box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+      }
+      .gap {
+        background: var(--slot);
+        border: 1px solid rgba(57, 255, 20, 0.18);
+        padding: 10px 12px;
+      }
+      .gap-bar {
+        height: 18px;
+        background: #010302;
+        border: 1px solid var(--phosphor-dim);
+        position: relative;
+        margin: 10px 0 8px;
+        overflow: hidden;
+      }
+      .gap-fill {
+        position: absolute;
+        inset: 0 auto 0 8%;
+        width: 78%;
+        background: repeating-linear-gradient(90deg, var(--alert) 0 6px, transparent 6px 10px);
+        animation: crawl 1.2s linear infinite;
+      }
+      .console.responsive .gap-fill {
+        width: 8%;
+        background: var(--hold);
+        animation: none;
+      }
+      @keyframes crawl { to { transform: translateX(12px); } }
+      .pages {
+        display: grid;
+        grid-template-columns: repeat(16, 1fr);
+        gap: 3px;
+        margin-top: 8px;
+      }
+      .page {
+        aspect-ratio: 1;
+        background: var(--phosphor-dim);
+        opacity: 0.35;
+      }
+      .page.hot { background: var(--alert); opacity: 0.95; box-shadow: 0 0 6px rgba(255, 90, 54, 0.55); }
+      .page.warm { background: var(--amber); opacity: 0.7; }
+      .console.responsive .page.hot, .console.responsive .page.warm {
+        background: var(--phosphor);
+        opacity: 0.45;
+        box-shadow: none;
+      }
+
+      .lanes {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 720px) { .lanes { grid-template-columns: 1fr; } }
+      .lane {
+        background: var(--slot);
+        border: 1px solid rgba(57, 255, 20, 0.18);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .lane header {
+        display: flex;
+        justify-content: space-between;
+        font-family: Orbitron, sans-serif;
+        letter-spacing: 0.08em;
+        font-size: 14px;
+        color: var(--phosphor-hot);
+      }
+      .lane header small {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        color: var(--mute);
+        align-self: center;
+      }
+      .lane p { margin: 8px 0 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+      .lane.hot { border-color: var(--alert); box-shadow: inset 0 0 0 1px rgba(255, 90, 54, 0.25); }
+      .lane.hold { border-color: var(--hold); box-shadow: inset 0 0 0 1px rgba(125, 255, 179, 0.25); }
+
+      .wire {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 10px;
+      }
+      @media (max-width: 720px) { .wire { grid-template-columns: 1fr; } }
+      .ticket {
+        background: var(--slot);
+        border: 1px solid rgba(57, 255, 20, 0.18);
+        padding: 10px 12px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+      }
+      .ticket .row {
+        display: grid;
+        grid-template-columns: 1.2fr 0.7fr 0.9fr;
+        gap: 8px;
+        padding: 5px 0;
+        border-bottom: 1px dashed rgba(57, 255, 20, 0.14);
+      }
+      .ticket .row.head { color: var(--phosphor-dim); letter-spacing: 0.12em; text-transform: uppercase; font-size: 10px; }
+      .ticket .row.leak { color: var(--alert); }
+      .ticket .row.hold { color: var(--hold); }
+      .vs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .vs article {
+        background: var(--slot);
+        border: 1px solid rgba(57, 255, 20, 0.18);
+        padding: 10px 12px;
+      }
+      .vs b {
+        font-family: Orbitron, sans-serif;
+        letter-spacing: 0.1em;
+        font-size: 13px;
+        color: var(--phosphor);
+        display: block;
+        margin-bottom: 6px;
+      }
+      .vs p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.5; }
+
+      .desk { margin-top: 22px; }
+      .verdict-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .verdict {
+        font-family: Orbitron, sans-serif;
+        font-size: clamp(32px, 6vw, 58px);
+        letter-spacing: 0.06em;
+        margin: 0;
+        line-height: 0.95;
+        text-shadow: 0 0 16px rgba(255, 90, 54, 0.35);
+      }
+      .verdict.alarm { color: var(--alert); }
+      .verdict.hold { color: var(--hold); text-shadow: 0 0 16px rgba(125, 255, 179, 0.35); }
+      .reason { max-width: 46em; color: var(--mute); line-height: 1.55; margin: 8px 0 0; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--rule);
+        background: var(--slot);
+        color: var(--ink);
+        padding: 5px 8px;
+        cursor: pointer;
+      }
+      .chip.on { border-color: var(--alert); color: var(--alert); }
+      .chip.hold { border-color: var(--hold); color: var(--hold); }
+
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path { background: var(--slot); border: 1px solid var(--rule); padding: 10px 12px; }
+      .path b { font-family: Orbitron, sans-serif; letter-spacing: 0.1em; font-size: 14px; display: block; color: var(--phosphor); }
+      .path.fail { border-color: var(--alert); }
+      .path.ok { border-color: var(--hold); }
+      .path .face { color: var(--ink); font-size: 14px; margin: 6px 0; }
+      .path .note { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--mute); }
+
+      .log, .slip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        background: #010302;
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        white-space: pre-wrap;
+        line-height: 1.55;
+        margin-bottom: 10px;
+      }
+      .log .hit { color: var(--alert); }
+      .slip .hook { color: var(--phosphor-hot); }
+      .slip .user { color: var(--alert); }
+      .slip .asst { color: var(--hold); }
+
+      .matrix { overflow: auto; margin: 12px 0 16px; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); }
+      th { font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--phosphor-dim); }
+      tr.active td { background: rgba(57, 255, 20, 0.06); }
+      .fail-cell { color: var(--alert); }
+      .pass-cell { color: var(--hold); }
+
+      .pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+      @media (max-width: 800px) { .pads { grid-template-columns: 1fr 1fr; } }
+      .pad {
+        background: var(--slot);
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .pad b { font-family: Orbitron, sans-serif; letter-spacing: 0.06em; font-size: 14px; display: block; color: var(--phosphor); }
+      .pad p { margin: 6px 0 0; color: var(--mute); font-size: 12px; line-height: 1.4; }
+
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 16px; }
+      .act {
+        font-family: Orbitron, sans-serif;
+        letter-spacing: 0.08em;
+        font-size: 12px;
+        border: 1px solid var(--phosphor);
+        background: transparent;
+        color: var(--ink);
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+      .act:hover { background: rgba(57, 255, 20, 0.1); }
+      .act.primary { background: #0a2a12; border-color: var(--phosphor); }
+
+      .sim { margin: 8px 0 16px; }
+      .sim h3 {
+        font-family: Orbitron, sans-serif;
+        letter-spacing: 0.08em;
+        font-size: 18px;
+        margin: 0 0 6px;
+        color: var(--phosphor);
+      }
+      .sim p { margin: 0 0 10px; color: var(--mute); }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+      .drop {
+        border: 1px dashed rgba(57, 255, 20, 0.4);
+        padding: 14px;
+        text-align: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--phosphor-dim);
+        margin-bottom: 10px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #010302;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+        resize: vertical;
+      }
+      .research { margin-top: 22px; color: var(--mute); line-height: 1.6; }
+      .research h3 { font-family: Orbitron, sans-serif; letter-spacing: 0.08em; font-size: 20px; color: var(--phosphor); margin: 0 0 8px; }
+      .stayoff span {
+        display: inline-block;
+        margin: 0 8px 4px 0;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border-bottom: 1px solid rgba(74, 122, 82, 0.45);
+      }
+      footer {
+        margin-top: 22px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--phosphor-dim);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <a class="catalog" href="/">hermes playground catalog</a>
+        <p class="mark">23:50 Sydney · thrash · catalog #183 · #88257</p>
+        <h1>THRASH<em>working-set · paging-storm console</em></h1>
+        <p class="lede">
+          First prompt of every new Claude Code process should stream in a couple
+          of seconds. Instead the TUI freezes ~40–60s: event-loop stall
+          <code>40808ms</code>, ~100% CPU, RSS ~2.5–3.5 GB
+          (<code>rss=2646MB</code> <code>heap=896MB</code>) even with
+          <code>--safe-mode</code>, Haiku, and a one-file git repo —
+          <strong style="color:var(--alert)">thrashing</strong>. When the first
+          prompt streams and the terminal stays alive —
+          <strong style="color:var(--hold)">responsive</strong>. Primary
+          <a href="https://github.com/anthropics/claude-code/issues/88257">#88257</a>.
+        </p>
+      </header>
+
+      <section class="console thrashing" id="bay" aria-label="Paging-storm working-set console">
+        <div class="rail">
+          <span>console 183 · crt phosphor · working-set gauges</span>
+          <span id="rail-state">heartbeat flatline · rss balloon · stall 40808ms</span>
+        </div>
+        <div class="deck">
+          <div>
+            <h4 class="cap">event-loop heartbeat</h4>
+            <div class="scope">
+              <svg viewBox="0 0 560 150" role="img" aria-label="Event-loop heartbeat oscilloscope">
+                <rect x="0" y="0" width="560" height="150" fill="#010302" />
+                <g stroke="#14661f" stroke-width="0.6">
+                  <path d="M0 30 H560 M0 60 H560 M0 90 H560 M0 120 H560" />
+                  <path d="M70 0 V150 M140 0 V150 M210 0 V150 M280 0 V150 M350 0 V150 M420 0 V150 M490 0 V150" />
+                </g>
+                <path id="hb-path" class="hb-line" d="M0 75 H560" />
+                <text x="12" y="142" fill="#4a7a52" font-size="11" font-family="IBM Plex Mono, monospace">EVENT LOOP</text>
+                <text id="hb-caption" x="300" y="142" fill="#ff5a36" font-size="11" font-family="IBM Plex Mono, monospace">FLATLINE · STALL 40808ms</text>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <h4 class="cap">stall chronograph</h4>
+            <div class="chrono-wrap">
+              <div class="chrono" aria-hidden="true">
+                <svg viewBox="0 0 200 200">
+                  <circle cx="100" cy="100" r="62" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.35" />
+                  <line class="sweep" id="sweep" x1="100" y1="100" x2="100" y2="44" stroke="#39ff14" stroke-width="1.6" />
+                  <circle cx="100" cy="100" r="3" fill="#39ff14" />
+                </svg>
+                <div class="readout" id="chrono-read">40808ms</div>
+              </div>
+            </div>
+          </div>
+          <div class="face-col">
+            <h4 class="cap">faceplate</h4>
+            <article class="faceplate" id="faceplate">
+              <b class="cap">working set</b>
+              <strong id="face-text">thrashing</strong>
+              <span id="face-note">First prompt of every new process. Heartbeat flat. RSS ballooned.</span>
+            </article>
+            <article class="faceplate">
+              <b class="cap">stall / rss</b>
+              <strong id="docs-face" style="font-size:20px">40808ms · 2646MB</strong>
+              <span id="docs-note">expected 200ms · heap 896MB · ext 270MB · cpu=40899ms</span>
+            </article>
+            <article class="faceplate">
+              <b class="cap">skills → first byte</b>
+              <strong id="log-face" style="font-size:18px">12 skills · 40832ms</strong>
+              <span id="log-note">Silence after Sending 12 skills via attachment (initial). CPU≈wall. [likely sleep/wake] is a lie.</span>
+            </article>
+          </div>
+        </div>
+
+        <div class="gauges">
+          <div class="thermo">
+            <h4 class="cap">rss thermometer</h4>
+            <div class="thermo-col" aria-hidden="true"><div class="mercury" id="mercury"></div></div>
+            <p id="thermo-read" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);text-align:center;margin:8px 0 0">2646 MB</p>
+          </div>
+          <div class="gap">
+            <h4 class="cap">skills-attachment → first-byte gap</h4>
+            <div class="gap-bar"><div class="gap-fill" id="gap-fill"></div></div>
+            <p id="gap-copy" style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--mute)">
+              Sending 12 skills via attachment (initial) · ~41s silence · first byte after 40832ms
+            </p>
+            <div class="pages" id="pages"></div>
+          </div>
+        </div>
+
+        <div class="lanes" id="lanes">
+          <article class="lane hot" data-lane="event-loop-stall">
+            <header>01 STALL <small>40808ms</small></header>
+            <p>Event loop blocked 40808ms (expected 200ms, actual 41008ms). TUI no redraw. Ctrl+C often ignored until the stall ends.</p>
+          </article>
+          <article class="lane hot" data-lane="rss-balloon">
+            <header>02 RSS <small>2646MB</small></header>
+            <p>Debug: rss=2646MB heap=896MB ext=270MB. Live RSS ~2.5–3.5 GB on a 62 GB host. majflt=0.</p>
+          </article>
+          <article class="lane hold" data-lane="responsive">
+            <header>03 HOLD <small>responsive</small></header>
+            <p>Expected: first prompt streams within a couple of seconds. Terminal stays alive. Seeded word is responsive.</p>
+          </article>
+        </div>
+
+        <div class="wire">
+          <div class="ticket" id="wire-ticket">
+            <div class="row head"><span>signal</span><span>measured</span><span>reading</span></div>
+            <div class="row leak"><span>event-loop-stall</span><span>40808ms</span><span>expected 200ms</span></div>
+            <div class="row leak"><span>rss / heap / ext</span><span>2646 / 896 / 270</span><span>MB · host 62 GB</span></div>
+            <div class="row leak"><span>cpu vs wall</span><span>40899 ≈ 40808</span><span>sync main-thread · not I/O</span></div>
+            <div class="row hold"><span>first prompt</span><span>couple of seconds</span><span>responsive (expected)</span></div>
+          </div>
+          <div class="vs">
+            <article>
+              <b>expected</b>
+              <p id="exp-copy">First prompt starts streaming within a couple of seconds. Terminal stays responsive.</p>
+            </article>
+            <article>
+              <b>actual</b>
+              <p id="act-copy">TUI freezes immediately. ~100% CPU. RSS ~2.5–3.5 GB. Every new process pays again. --safe-mode still stalls.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Thrash scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">thrashing</p>
+            <p class="reason" id="reason">
+              First prompt of every new process freezes the TUI ~40–60s. Event-loop
+              stall 40808ms. RSS 2646MB. Admit thrashing.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="slip" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Thrash path matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>shipped</th>
+                <th>isolate</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="pads" aria-label="Assay pads">
+          <article class="pad" data-remedy="thrashing">
+            <b>Thrashing</b>
+            <p>First-prompt stall. Ballooned RSS. Frozen TUI.</p>
+          </article>
+          <article class="pad" data-remedy="event-loop-stall">
+            <b>Event-loop stall</b>
+            <p>40808ms block. Ctrl+C ignored until it ends.</p>
+          </article>
+          <article class="pad" data-remedy="cpu-bound-gap">
+            <b>CPU-bound gap</b>
+            <p>12 skills attached. First byte 40832ms. CPU≈wall.</p>
+          </article>
+          <article class="pad" data-remedy="responsive">
+            <b>Responsive</b>
+            <p>First prompt streams in a couple of seconds.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act primary" data-act="score">Score probes</button>
+          <button class="act" data-act="idle">Admit thrashing</button>
+          <button class="act" data-act="seed">Pin seeded responsive</button>
+          <button class="act" data-act="fixtures">Load #88257 fixture</button>
+          <button class="act" data-act="flip">Flip thrashing vs responsive</button>
+          <button class="act" data-act="reset">Reset to thrashing</button>
+        </div>
+
+        <div class="sim">
+          <h3>Working-set simulator</h3>
+          <p>Replay the paging storm without touching a live Claude session. Diagnostic CRT pads only — not real API calls.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="thrash">admit thrashing</span>
+            <span class="chip" data-sim-pull="hold">pin responsive</span>
+            <span class="chip" data-sim-pull="stall">stall sweep</span>
+            <span class="chip" data-sim-pull="rss">rss balloon</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="thrashing">thrashing</button>
+            <button class="chip" data-chip="responsive">responsive</button>
+            <button class="chip" data-chip="event-loop-stall">event-loop-stall</button>
+            <button class="chip" data-chip="rss-balloon">rss-balloon</button>
+            <button class="chip" data-chip="cpu-bound-gap">cpu-bound-gap</button>
+            <button class="chip" data-chip="safe-mode-still-stalls">safe-mode-still-stalls</button>
+            <button class="chip" data-chip="sleep-wake-mislabelled">sleep-wake-mislabelled</button>
+            <button class="chip" data-chip="cousins">cousins</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the paging-storm console</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            Claude Code 2.1.237 blocks the main thread ~40–60s on the first prompt
+            of every new process. The TUI looks dead. This reproduces with
+            <code>--safe-mode</code>, no user MCP, Haiku, and a one-file git repo.
+          </p>
+          <p>
+            Debug: silence between <code>Sending 12 skills via attachment (initial)</code>
+            and <code>first byte after 40832ms</code>.
+            <code>[event-loop-stall] blocked for 40808ms … cpu=40899ms rss=2646MB heap=896MB</code>.
+            CPU time ≈ wall time, so this is synchronous main-thread work, not I/O.
+            The detector's <code>[likely sleep/wake]</code> tag is misleading.
+          </p>
+          <p>
+            Isolation ruled out user MCP, opus[1m], large workspace, session history,
+            and user config. Every new process pays again. Same pattern without
+            <code>--safe-mode</code>: 50–64s, RSS up to ~3.5 GB.
+          </p>
+          <p>
+            Hypothesis only (NON-BINDING): something between skills-attachment send
+            and first API byte does heavy synchronous main-thread work (possibly
+            skill/attachment materialization or related), ballooning RSS and stalling
+            the event loop; detector mis-tags sleep/wake. Verify nothing — encode
+            issue facts only. Do not invent runtime source claims.
+          </p>
+          <p>
+            Stay off: <span class="stayoff">
+              <span>Sostenuto mic freeze</span>
+              <span>Muzzle #92459 attachment strip</span>
+              <span>Watchdog compaction-nap</span>
+              <span>Stroboscope focus steal</span>
+              <span>Hysteresis remanence</span>
+              <span>Hardstand apron</span>
+              <span>Rheostat bakelite</span>
+              <span>Oubliette stone pit</span>
+              <span>#85050 backup only</span>
+            </span>
+          </p>
+          <p>
+            Cousins cite-only:
+            <a href="https://github.com/anthropics/claude-code/issues/89772">#89772</a>
+            Bash-tool event-loop CPU spin ·
+            <a href="https://github.com/anthropics/claude-code/issues/91633">#91633</a>
+            FileIndex large cwd ·
+            <a href="https://github.com/anthropics/claude-code/issues/88072">#88072</a>
+            Desktop auto-updater ·
+            <a href="https://github.com/anthropics/claude-code/issues/92325">#92325</a>
+            Desktop stalls discarded as sleep ·
+            <a href="https://github.com/anthropics/claude-code/issues/91941">#91941</a>
+            Linux Desktop event-loop compound crash.
+          </p>
+        </section>
+        <footer>
+          Catalog #183 · idle word thrashing · seeded responsive · mark 23:50 Sydney · thrash ·
+          no live Claude sessions · fonts IBM Plex Sans / IBM Plex Mono / Orbitron ·
+          CRT paging-storm console · not a suppressor bay
+        </footer>
+      </section>
+    </main>
+    <script>
+      const HOLD = new Set(["responsive"]);
+      const CHIPS = [
+        "thrashing", "responsive", "event-loop-stall", "rss-balloon",
+        "cpu-bound-gap", "safe-mode-still-stalls", "sleep-wake-mislabelled", "cousins"
+      ];
+      const CHIP_FILES = {
+        thrashing: "thrashing.json",
+        responsive: "responsive.json",
+        "event-loop-stall": "event-loop-stall.json",
+        "rss-balloon": "rss-balloon.json",
+        "cpu-bound-gap": "cpu-bound-gap.json",
+        "safe-mode-still-stalls": "safe-mode-still-stalls.json",
+        "sleep-wake-mislabelled": "sleep-wake-mislabelled.json",
+        cousins: "cousins.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "#88257 · first prompt freezes TUI ~40–60s · stall 40808ms · rss=2646MB", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "88257.json" },
+        { id: "settings", name: "isolation table · --safe-mode still stalls", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "settings.json" },
+        { id: "stall", name: "event-loop-stall 40808ms · Ctrl+C ignored", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "event-loop-stall.json" },
+        { id: "rss", name: "rss=2646MB heap=896MB · range ~2.5–3.5 GB", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "rss-balloon.json" },
+        { id: "gap", name: "12 skills attached · first byte 40832ms · cpu≈wall", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "cpu-bound-gap.json" },
+        { id: "safe", name: "--safe-mode + Haiku + one-file repo still freezes", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "safe-mode-still-stalls.json" },
+        { id: "tag", name: "[likely sleep/wake] misleading when CPU≈wall", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "sleep-wake-mislabelled.json" },
+        { id: "thrashing", name: "idle thrash · heartbeat flatline · RSS balloon", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "thrashing.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 88257,
+        seed: "thrashing",
+        thrashing: true,
+        responsive: false,
+        stallMs: 40808,
+        rssMB: 2646,
+        heapMB: 896,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "THRASHING",
+        log: [
+          "[idle] first prompt of every new process freezes TUI ~40–60s",
+          "[stall] blocked for 40808ms · rss=2646MB heap=896MB",
+          "[desk] already thrashing; idle word thrashing"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 88257,
+        seed: "responsive",
+        thrashing: false,
+        responsive: true,
+        stallMs: 0,
+        firstByteMs: 2000,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "RESPONSIVE",
+        log: [
+          "[seeded] first prompt streams within a couple of seconds",
+          "[desk] already responsive; seeded word responsive"
+        ]
+      };
+
+      const stallTicket = { source: "probe", issue: 88257, seed: "event-loop-stall", thrashing: true, eventLoopStall: true, stallMs: 40808, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "EVENT-LOOP-STALL", log: ["[stall] blocked for 40808ms · Ctrl+C ignored"] };
+      const rssTicket = { source: "probe", issue: 88257, seed: "rss-balloon", thrashing: true, rssBalloon: true, rssMB: 2646, heapMB: 896, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "RSS-BALLOON", log: ["[rss] rss=2646MB heap=896MB ext=270MB"] };
+      const gapTicket = { source: "probe", issue: 88257, seed: "cpu-bound-gap", thrashing: true, cpuBoundGap: true, cpuApproxWall: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "CPU-BOUND-GAP", log: ["[gap] 12 skills · first byte 40832ms · cpu≈wall"] };
+      const safeTicket = { source: "probe", issue: 88257, seed: "safe-mode-still-stalls", thrashing: true, safeMode: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "SAFE-MODE-STILL-STALLS", log: ["[safe-mode] Disabled in safe mode · still stalls"] };
+      const tagTicket = { source: "probe", issue: 88257, seed: "sleep-wake-mislabelled", thrashing: true, sleepWakeMislabelled: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "SLEEP-WAKE-MISLABELLED", log: ["[tag] [likely sleep/wake] misleading · cpu≈wall"] };
+      const cousinsTicket = { source: "probe", issue: 88257, seed: "cousins", thrashing: true, cousinsCiteOnly: [89772, 91633, 88072, 92325, 91941], shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "COUSINS", log: ["[cousins] #89772 #91633 #88072 #92325 #91941", "[desk] primary stays #88257"] };
+      const primaryTicket = { ...idle, seed: "thrashing", scenario: "88257", hubCount: "88257", log: ["[primary] #88257 · first prompt freezes TUI · stall 40808ms · rss=2646MB"] };
+
+      const FALLBACKS = {
+        thrashing: idle,
+        responsive: seeded,
+        "event-loop-stall": stallTicket,
+        "rss-balloon": rssTicket,
+        "cpu-bound-gap": gapTicket,
+        "safe-mode-still-stalls": safeTicket,
+        "sleep-wake-mislabelled": tagTicket,
+        cousins: cousinsTicket
+      };
+
+      let pullState = "thrash";
+      let flipHold = false;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.responsive === true && t.thrashing !== true);
+      }
+
+      function alreadyThrashing(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.thrashing !== true) return false;
+        if (HOLD.has(seed) && t.thrashing !== true) return false;
+        if (t.thrashing === true || (typeof t.stallMs === "number" && t.stallMs >= 40000) || (typeof t.rssMB === "number" && t.rssMB >= 2500)) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.responsive !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyThrashing(t);
+        t.shippedFree = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedFree ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (remediating(t) ? "pass" : "FAIL");
+        const holding = remediating(t) && !alarm;
+        const chips = [];
+        if (holding || seed === "responsive") chips.push("responsive");
+        if (alarm || seed === "thrashing" || t.thrashing === true) chips.push("thrashing");
+        if (seed === "event-loop-stall" || t.eventLoopStall === true || (typeof t.stallMs === "number" && t.stallMs >= 40000)) chips.push("event-loop-stall");
+        if (seed === "rss-balloon" || t.rssBalloon === true || (typeof t.rssMB === "number" && t.rssMB >= 2500)) chips.push("rss-balloon");
+        if (seed === "cpu-bound-gap" || t.cpuBoundGap === true || t.cpuApproxWall === true) chips.push("cpu-bound-gap");
+        if (seed === "safe-mode-still-stalls" || t.safeMode === true) chips.push("safe-mode-still-stalls");
+        if (seed === "sleep-wake-mislabelled" || t.sleepWakeMislabelled === true) chips.push("sleep-wake-mislabelled");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        const verdict = seed && CHIPS.includes(seed) ? seed : (holding ? "responsive" : "thrashing");
+        return { ticket: t, holding, alarm, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        thrashing: "First prompt of every new process freezes the TUI ~40–60s. Event-loop stall 40808ms. RSS 2646MB. Admit thrashing.",
+        responsive: "First prompt streams within a couple of seconds. Terminal stays alive. Seeded word is responsive.",
+        "event-loop-stall": "Event loop blocked for 40808ms (expected 200ms, actual 41008ms). TUI no redraw. Ctrl+C often ignored until the stall ends.",
+        "rss-balloon": "RSS balloons to rss=2646MB heap=896MB ext=270MB. Live range ~2.5–3.5 GB on a 62 GB host. majflt=0.",
+        "cpu-bound-gap": "Silence between Sending 12 skills via attachment (initial) and first byte after 40832ms. cpu=40899ms ≈ wall. Synchronous main-thread work, not I/O.",
+        "safe-mode-still-stalls": "--safe-mode still stalls. [claudeai-mcp] Disabled in safe mode. Haiku. One-file git repo. Isolation ruled out user MCP, large cwd, session history, and user config.",
+        "sleep-wake-mislabelled": "Stall detector tags [likely sleep/wake] but cpu=40899ms ≈ wall 40808ms. The tag is misleading.",
+        cousins: "Cite-only cousins #89772 Bash-tool CPU spin, #91633 FileIndex large cwd, #88072 Desktop auto-updater, #92325 Desktop sleep-tag, #91941 Linux Desktop crash-loop. Primary stays #88257."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] thrashing · event-loop stall · RSS balloon"]
+            : ["[desk] responsive · first prompt streams"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /thrashing|FAIL|stall|rss|silence|misleading|still/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "thrashing · first prompt freezes TUI" : "responsive · first prompt streams", "thrash path"],
+          ["isolate", t.isolateMark, "first-prompt API-path stall · not mic freeze · not attachment strip", "not a clone"],
+          ["scored", t.scoredMark, remediating(t) ? "responsive" : "would score after first prompt streams in a couple of seconds", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = { primary: "thrashing", settings: "safe-mode-still-stalls", stall: "event-loop-stall", rss: "rss-balloon", gap: "cpu-bound-gap", safe: "safe-mode-still-stalls", tag: "sleep-wake-mislabelled", thrashing: "thrashing" };
+              apply(FALLBACKS[map[row.id] || "thrashing"] || idle);
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (HOLD.has(t.seed) || result.holding) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">first prompt · streams in a couple of seconds</span>\n` +
+            `<span class="asst">terminal stays alive · event loop live</span>\n` +
+            `<span class="hook">${t.seed || "responsive"}; hold</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">Sending 12 skills via attachment (initial)</span>\n` +
+          `<span class="user">[event-loop-stall] blocked for 40808ms cpu=40899ms rss=2646MB heap=896MB</span>\n` +
+          `<span class="user">[API:timing] first byte after 40832ms</span>\n` +
+          `<span class="hook">[likely sleep/wake] misleading · CPU≈wall</span>`;
+      }
+
+      function paintScope(result) {
+        const path = document.getElementById("hb-path");
+        const cap = document.getElementById("hb-caption");
+        if (result.holding) {
+          path.setAttribute("d", "M0 75 L40 75 L52 28 L64 118 L76 75 L200 75 L212 40 L224 110 L236 75 L560 75");
+          cap.textContent = "LIVE · FIRST PROMPT STREAMS";
+          cap.setAttribute("fill", "#7dffb3");
+          document.getElementById("chrono-read").textContent = "LIVE";
+          document.getElementById("mercury").style.height = "18%";
+          document.getElementById("thermo-read").textContent = "working set held";
+          document.getElementById("thermo-read").style.color = "var(--hold)";
+        } else {
+          path.setAttribute("d", "M0 75 H560");
+          cap.textContent = "FLATLINE · STALL 40808ms";
+          cap.setAttribute("fill", "#ff5a36");
+          document.getElementById("chrono-read").textContent = (result.ticket.stallMs || 40808) + "ms";
+          document.getElementById("mercury").style.height = "76%";
+          document.getElementById("thermo-read").textContent = (result.ticket.rssMB || 2646) + " MB";
+          document.getElementById("thermo-read").style.color = "var(--amber)";
+        }
+      }
+
+      function paintPages(holding) {
+        const root = document.getElementById("pages");
+        root.innerHTML = "";
+        for (let i = 0; i < 48; i++) {
+          const el = document.createElement("span");
+          el.className = "page" + (holding ? "" : (i % 5 === 0 ? " hot" : (i % 3 === 0 ? " warm" : "")));
+          root.appendChild(el);
+        }
+      }
+
+      function paintLanes(seed) {
+        document.querySelectorAll(".lane").forEach((el) => {
+          const kind = el.dataset.lane;
+          el.classList.toggle("hot", seed !== "responsive" && kind !== "responsive");
+          el.classList.toggle("hold", seed === "responsive" && kind === "responsive");
+        });
+      }
+
+      function paintFace(result) {
+        const seed = result.verdict;
+        document.getElementById("face-text").textContent = seed;
+        document.getElementById("face-note").textContent = REASONS[seed] || REASONS.thrashing;
+        document.getElementById("docs-face").textContent = result.holding ? "couple of seconds" : "40808ms · 2646MB";
+        document.getElementById("docs-note").textContent = result.holding
+          ? "terminal stays alive · event loop live"
+          : "expected 200ms · heap 896MB · ext 270MB · cpu=40899ms";
+        document.getElementById("log-face").textContent = result.holding ? "first byte soon" : "12 skills · 40832ms";
+        document.getElementById("log-note").textContent = result.holding
+          ? "First prompt streams. No paging storm."
+          : "Silence after Sending 12 skills via attachment (initial). CPU≈wall. [likely sleep/wake] is a lie.";
+        document.getElementById("rail-state").textContent = result.holding
+          ? "heartbeat live · working set held"
+          : "heartbeat flatline · rss balloon · stall 40808ms";
+        document.getElementById("exp-copy").textContent = "First prompt starts streaming within a couple of seconds. Terminal stays responsive.";
+        document.getElementById("act-copy").textContent = result.holding
+          ? "First prompt streams. Terminal stays alive. Hold path."
+          : "TUI freezes immediately. ~100% CPU. RSS ~2.5–3.5 GB. Every new process pays again. --safe-mode still stalls.";
+        document.getElementById("gap-copy").textContent = result.holding
+          ? "first prompt streams · no 41s silence"
+          : "Sending 12 skills via attachment (initial) · ~41s silence · first byte after 40832ms";
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 88257 }); }
+          });
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bay = document.getElementById("bay");
+        bay.className = "console " + result.verdict;
+        const v = document.getElementById("verdict");
+        v.textContent = result.verdict;
+        v.className = "verdict " + (result.holding ? "hold" : "alarm");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || result.verdict;
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintFace(result);
+        paintScope(result);
+        paintPages(result.holding);
+        paintLanes(result.verdict);
+        paintChips(result);
+        paintPaths(result);
+        paintLog(result.alarm, result.ticket);
+        paintSlip(result);
+        const map = {
+          thrashing: "thrashing",
+          responsive: "primary",
+          "event-loop-stall": "stall",
+          "rss-balloon": "rss",
+          "cpu-bound-gap": "gap",
+          "safe-mode-still-stalls": "safe",
+          "sleep-wake-mislabelled": "tag",
+          cousins: "primary",
+          "88257": "primary"
+        };
+        paintMatrix(ticket.scenario === "88257" ? "primary" : (map[result.verdict] || ticket.scenario || ""));
+        document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+          btn.classList.toggle("on", btn.dataset.chip === result.verdict && !HOLD.has(result.verdict));
+          btn.classList.toggle("hold", btn.dataset.chip === result.verdict && HOLD.has(result.verdict));
+        });
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(new URL("data/" + name, location.href));
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function ticketFromSim() {
+        if (pullState === "hold") return { ...seeded };
+        if (pullState === "stall") return { ...stallTicket };
+        if (pullState === "rss") return { ...rssTicket };
+        return { ...idle };
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((el) => {
+          el.classList.toggle("on", el.dataset.simPull === pullState && pullState !== "hold");
+          el.classList.toggle("hold", el.dataset.simPull === pullState && pullState === "hold");
+        });
+      }
+
+      document.querySelectorAll("[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") {
+            pullState = "thrash";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("thrashing.json")); }
+            catch { apply({ ...idle }); }
+            return;
+          }
+          if (act === "seed") {
+            pullState = "hold";
+            flipHold = true;
+            syncSimChips();
+            try { apply(await loadNamed("responsive.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "flip") {
+            flipHold = !flipHold;
+            if (flipHold) {
+              pullState = "hold";
+              syncSimChips();
+              try { apply(await loadNamed("responsive.json")); }
+              catch { apply({ ...seeded }); }
+            } else {
+              pullState = "thrash";
+              syncSimChips();
+              try { apply(await loadNamed("thrashing.json")); }
+              catch { apply({ ...idle }); }
+            }
+            return;
+          }
+          if (act === "fixtures") {
+            pullState = "thrash";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("88257.json")); }
+            catch { apply({ ...primaryTicket }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 88257 }); }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          try { apply(await loadNamed(CHIP_FILES[kind])); }
+          catch { apply({ ...(FALLBACKS[kind] || idle) }); }
+        });
+      });
+
+      document.querySelectorAll("[data-lane]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.lane;
+          try { apply(await loadNamed(CHIP_FILES[kind])); }
+          catch { apply({ ...(FALLBACKS[kind] || idle) }); }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
