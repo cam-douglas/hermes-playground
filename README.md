@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Catachresis](https://hermes-playground-green.vercel.app/catachresis/)** — lexicographer stamp desk / misnomer atelier. An MCP 403 `insufficient_scope` challenge should name the missing scope (`events:write`) but Claude Code stamps `token expired` over a live grant (#92518). Score mislabeled or admit scoped. Folder: `projects/catachresis/`.
+**Featured: [Decant](https://hermes-playground-green.vercel.app/decant/)** — gravity-pour cellar rack / carboy assay. Claude Desktop should carry the whole login-shell environment into a session but instead skims only PATH and leaves credentials as lees (#92515). Score skimmed or admit intact. Folder: `projects/decant/`.
+
+**Listed: [Catachresis](https://hermes-playground-green.vercel.app/catachresis/)** — lexicographer stamp desk / misnomer atelier. An MCP 403 `insufficient_scope` challenge should name the missing scope (`events:write`) but Claude Code stamps `token expired` over a live grant (#92518). Score mislabeled or admit scoped. Folder: `projects/catachresis/`. Still listed. Not featured.
 
 **Listed: [Bourdon](https://hermes-playground-green.vercel.app/bourdon/)** — Bourdon-tube pressure gauge bay. The Cowork/Code Apple Virtualization VM should hold host fds when idle but instead saturates toward `kern.maxfiles` (~409k, guest still clean) until macOS panics — Cmd+Q vents it (#92510). Score saturating or admit vented. Folder: `projects/bourdon/`. Still listed. Not featured.
 
