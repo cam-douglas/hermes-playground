@@ -1,6 +1,6 @@
 # Heliostat
 
-A **rooftop observatory / brass heliostat mount** — copper dome, silvered mirror disc, sun-path dial, dawn-locked aim gauge, OSC-11 sky swatches (light `fafa` vs dark `2828`), DECSET-2031 silent bell that never rings, inject-997 override lever — Instrument Serif + Sora + IBM Plex Mono — for a real Claude Code defect: **`"theme": "auto"` NEVER FOLLOWS A LIVE LIGHT/DARK SWITCH ON WINDOWS TERMINAL BECAUSE RESAMPLE IS GATED SOLELY ON DECSET 2031, WHICH WT DOES NOT IMPLEMENT.**
+A **rooftop observatory / brass heliostat mount** — copper dome, silvered mirror disc, sun-path dial, dawn-locked aim gauge, OSC-11 sky swatches (light `fafa` vs dark `2828`), DECSET-2031 silent bell that never rings, inject-997 override lever — Bricolage Grotesque + Sora + JetBrains Mono — for a real Claude Code defect: **`"theme": "auto"` NEVER FOLLOWS A LIVE LIGHT/DARK SWITCH ON WINDOWS TERMINAL BECAUSE RESAMPLE IS GATED SOLELY ON DECSET 2031, WHICH WT DOES NOT IMPLEMENT.**
 
 Primary:
 
@@ -86,7 +86,7 @@ Cousins cite-only (NOT primary):
 
 Product name stays **Heliostat**. Do not rename to Lethe, Frizzen, Nixie, Embrasure, Elision, Graft, Stroboscope, Flutter, Fairlead, Chock, Gypsy, Wildcat, Fulcrum, Trunnion, Aphonia, or any existing catalog slug. Name/slug `heliostat` confirmed unused in catalog.json.
 
-Different UI: rooftop observatory / copper dome / brass heliostat mount / silvered mirror disc / sun-path dial / dawn-locked aim gauge / OSC-11 sky swatches / silent 2031 bell / inject-997 lever. Instrument Serif + Sora + IBM Plex Mono. NOT Cormorant Garamond / Manrope / IBM Plex Mono (Lethe river-mist). NOT Bodoni Moda / Commissioner / Space Mono (Frizzen walnut-steel-brass). Stay OFF underworld ferry quay / flintlock lockplate / postal pigeonholes / battlement merlons / blue-pencil folio / orchard cambium.
+Different UI: rooftop observatory / copper dome / brass heliostat mount / silvered mirror disc / sun-path dial / dawn-locked aim gauge / OSC-11 sky swatches / silent 2031 bell / inject-997 lever. Bricolage Grotesque + Sora + JetBrains Mono. NOT Fraunces / Outfit (Embrasure / Sostenuto). NOT Cormorant Garamond / Manrope / IBM Plex Mono (Lethe river-mist). NOT Bodoni Moda / Commissioner / Space Mono (Frizzen walnut-steel-brass). Stay OFF underworld ferry quay / flintlock lockplate / postal pigeonholes / battlement merlons / blue-pencil folio / orchard cambium.
 
 Different verbs: Score the track, pin idle dawnlocked, pin seeded misaimed, admit the beam already misaimed, flip OS theme vs inject-997 vs `/theme`, load fixtures, reset to tracking.
 
