@@ -1,0 +1,1407 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Watchdog — night kennel stall lab for #92424</title>
+    <meta
+      name="description"
+      content="Watchdog — night kennel / dog-watch / stall-watchdog lab for Claude Code #92424: Workflow stall watchdog kills agents during auto-compaction. Idle word is choking."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --coal: #0b0c0e;
+        --soot: #121416;
+        --kennel: #181b1f;
+        --slat: #22262c;
+        --rail: #8c7348;
+        --brass: #c9a05a;
+        --brass-hot: #e8c878;
+        --collar: #d4893a;
+        --collar-hot: #f0a84a;
+        --bite: #a63d38;
+        --bite-hot: #d05a52;
+        --moss: #6a9a74;
+        --moss-hot: #8fbe98;
+        --chalk: #d6d2c8;
+        --ink: #ece8e0;
+        --mute: #8a8680;
+        --line: rgba(201, 160, 90, 0.2);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Figtree, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 18% -8%, rgba(212, 137, 58, 0.08), transparent 38%),
+          radial-gradient(ellipse at 92% 8%, rgba(166, 61, 56, 0.08), transparent 32%),
+          repeating-linear-gradient(90deg, transparent 0 22px, rgba(255,255,255,0.018) 22px 23px),
+          linear-gradient(180deg, #16181c 0%, #0b0c0e 46%, #08090b 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass-hot); }
+      .wrap { width: min(1200px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 3px solid var(--collar);
+        padding-left: 10px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--brass);
+      }
+      h1 {
+        font-family: Syne, "Futura", sans-serif;
+        font-size: clamp(52px, 9vw, 100px);
+        letter-spacing: -0.045em;
+        margin: 6px 0 12px;
+        font-weight: 800;
+        line-height: 0.82;
+      }
+      h1 em {
+        font-style: normal;
+        font-weight: 600;
+        color: var(--collar);
+        font-size: 0.22em;
+        letter-spacing: 0.18em;
+        display: block;
+        margin-top: 14px;
+        text-transform: uppercase;
+      }
+      .lede { max-width: 72em; color: var(--mute); line-height: 1.6; font-size: 17px; }
+      .lede code, code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--collar-hot);
+      }
+
+      .house {
+        margin: 26px 0 0;
+        border: 1px solid rgba(201, 160, 90, 0.28);
+        background:
+          linear-gradient(180deg, rgba(24, 27, 31, 0.94), rgba(11, 12, 14, 0.96)),
+          repeating-linear-gradient(90deg, transparent 0 18px, rgba(201, 160, 90, 0.04) 18px 19px);
+        box-shadow: 0 32px 70px rgba(0, 0, 0, 0.55);
+        padding: 18px 18px 16px;
+      }
+      .house.choking, .house.retried, .house.compaction-nap, .house.six-retry, .house.no-knob {
+        box-shadow: 0 0 0 3px rgba(166, 61, 56, 0.3), 0 32px 70px rgba(0, 0, 0, 0.55);
+      }
+      .house.scored, .house.streamed-survival, .house.sibling-survivors {
+        box-shadow: 0 0 0 3px rgba(106, 154, 116, 0.3), 0 32px 70px rgba(0, 0, 0, 0.55);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 14px;
+        border-bottom: 1px dashed rgba(201, 160, 90, 0.35);
+        padding-bottom: 8px;
+      }
+      .room {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) { .room { grid-template-columns: 1fr; } }
+
+      .tags, .chrono, .stalls, .floor h4, .gauges h4 {
+        margin: 0 0 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--collar);
+      }
+      .tags {
+        background: #14171b;
+        border: 1px solid rgba(201, 160, 90, 0.22);
+        min-height: 320px;
+        padding: 12px;
+        position: relative;
+      }
+      .leash {
+        height: 10px;
+        background: linear-gradient(180deg, #a8884a, #6a5430);
+        border-radius: 2px;
+        position: relative;
+        margin: 8px 0 22px;
+        box-shadow: 0 0 0 1px rgba(232, 200, 120, 0.2);
+      }
+      .leash::before, .leash::after {
+        content: "";
+        position: absolute;
+        top: -5px;
+        width: 14px; height: 14px;
+        border: 2px solid var(--brass-hot);
+        border-radius: 50%;
+        background: #0e1013;
+      }
+      .leash::before { left: 12%; }
+      .leash::after { right: 18%; }
+      .collar-row { display: grid; gap: 10px; }
+      .tag {
+        background: linear-gradient(180deg, #e0c070, #b8883a);
+        color: #2a1c0c;
+        padding: 10px 12px 10px 28px;
+        font-family: Syne, sans-serif;
+        font-weight: 700;
+        box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.4);
+        position: relative;
+        clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%);
+      }
+      .tag::before {
+        content: "";
+        position: absolute;
+        left: 8px; top: 50%;
+        width: 8px; height: 8px;
+        margin-top: -4px;
+        border-radius: 50%;
+        background: #2a1c0c;
+        box-shadow: 0 0 0 2px #6a4a18;
+      }
+      .tag b { display: block; font-size: 18px; line-height: 1; }
+      .tag span { display: block; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.06em; margin-top: 4px; }
+      .house.choking .tag-idle, .house.retried .tag-seed,
+      .house.compaction-nap .tag-nap, .house.six-retry .tag-seed,
+      .house.no-knob .tag-nap {
+        outline: 2px dashed var(--bite);
+        filter: saturate(1.15);
+      }
+      .house.scored .tag-idle, .house.streamed-survival .tag-idle,
+      .house.sibling-survivors .tag-idle {
+        outline: 2px solid var(--moss);
+      }
+
+      .chrono {
+        background: #101318;
+        border: 1px solid rgba(201, 160, 90, 0.2);
+        padding: 12px;
+        min-height: 320px;
+      }
+      .dial-wrap {
+        display: grid;
+        place-items: center;
+        height: 210px;
+      }
+      .dial {
+        width: 188px; height: 188px;
+        border-radius: 50%;
+        background:
+          conic-gradient(
+            from -90deg,
+            rgba(106, 154, 116, 0.55) 0 4.3deg,
+            rgba(212, 137, 58, 0.22) 4.3deg 216deg,
+            var(--bite) 216deg 220deg,
+            rgba(166, 61, 56, 0.18) 220deg 246deg,
+            #16181c 246deg 360deg
+          );
+        box-shadow:
+          inset 0 0 0 12px #0c0e11,
+          0 0 0 2px rgba(201, 160, 90, 0.35),
+          0 0 28px rgba(166, 61, 56, 0.18);
+        position: relative;
+      }
+      .dial::after {
+        content: "";
+        position: absolute;
+        inset: 38px;
+        border-radius: 50%;
+        background: #0c0e11;
+        box-shadow: inset 0 0 0 1px rgba(201, 160, 90, 0.22);
+      }
+      .dial-face {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        z-index: 1;
+        text-align: center;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .dial-face b {
+        display: block;
+        font-family: Syne, sans-serif;
+        font-size: 28px;
+        letter-spacing: -0.04em;
+      }
+      .dial-face span { color: var(--mute); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .house.choking .dial, .house.retried .dial,
+      .house.compaction-nap .dial, .house.six-retry .dial, .house.no-knob .dial {
+        box-shadow: inset 0 0 0 12px #0c0e11, 0 0 0 2px var(--bite), 0 0 32px rgba(166, 61, 56, 0.35);
+      }
+      .house.scored .dial, .house.streamed-survival .dial, .house.sibling-survivors .dial {
+        box-shadow: inset 0 0 0 12px #0c0e11, 0 0 0 2px var(--moss), 0 0 28px rgba(106, 154, 116, 0.28);
+      }
+      .ticks {
+        display: flex;
+        justify-content: space-between;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        color: var(--mute);
+        margin-top: 8px;
+      }
+      .ticks i { font-style: normal; color: var(--bite-hot); }
+
+      .stalls {
+        background: #101318;
+        border: 1px solid rgba(201, 160, 90, 0.2);
+        padding: 12px;
+        min-height: 320px;
+      }
+      .kennels {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .kennel {
+        border: 1px solid var(--line);
+        background: #0d0f12;
+        padding: 8px 8px 10px;
+        min-height: 88px;
+        position: relative;
+      }
+      .kennel::before {
+        content: "";
+        display: block;
+        height: 16px;
+        margin: -8px -8px 8px;
+        background: linear-gradient(135deg, transparent 40%, var(--rail) 40% 60%, transparent 60%),
+          linear-gradient(-135deg, transparent 40%, var(--rail) 40% 60%, transparent 60%),
+          #1a1510;
+        clip-path: polygon(50% 0, 100% 100%, 0 100%);
+      }
+      .kennel b {
+        display: block;
+        font-family: Syne, sans-serif;
+        font-size: 18px;
+        line-height: 1;
+      }
+      .kennel span {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        color: var(--mute);
+        margin-top: 4px;
+      }
+      .house.retried .kennel, .house.six-retry .kennel, .house.choking .kennel,
+      .house.compaction-nap .kennel, .house.no-knob .kennel {
+        border-color: rgba(166, 61, 56, 0.5);
+      }
+      .house.retried .kennel span, .house.six-retry .kennel span,
+      .house.choking .kennel span, .house.compaction-nap .kennel span,
+      .house.no-knob .kennel span { color: var(--bite-hot); }
+      .house.scored .kennel, .house.streamed-survival .kennel,
+      .house.sibling-survivors .kennel { border-color: rgba(106, 154, 116, 0.45); }
+      .house.scored .kennel span, .house.streamed-survival .kennel span,
+      .house.sibling-survivors .kennel span { color: var(--moss-hot); }
+
+      .floor {
+        margin-top: 14px;
+        min-height: 92px;
+        border: 1px dashed rgba(214, 210, 200, 0.16);
+        background:
+          repeating-linear-gradient(90deg, #14171b 0 14px, #101318 14px 28px);
+        padding: 10px 12px;
+      }
+      .timeline {
+        position: relative;
+        height: 18px;
+        background: #0c0e11;
+        border: 1px solid var(--line);
+        margin: 8px 0;
+      }
+      .timeline .nap {
+        position: absolute; inset: 0 auto 0 0;
+        width: 76%;
+        background: rgba(212, 137, 58, 0.28);
+      }
+      .timeline .bite-mark {
+        position: absolute; top: -6px; bottom: -6px; left: 72%;
+        width: 2px;
+        background: var(--bite-hot);
+        box-shadow: 0 0 10px var(--bite);
+      }
+      .house.scored .timeline .nap, .house.streamed-survival .timeline .nap,
+      .house.sibling-survivors .timeline .nap { background: rgba(106, 154, 116, 0.3); width: 64%; }
+      .house.scored .timeline .bite-mark, .house.streamed-survival .timeline .bite-mark,
+      .house.sibling-survivors .timeline .bite-mark { opacity: 0.35; }
+      .blocking {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--mute);
+      }
+
+      .desk {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+      .ledger, .chart, .balloon, .chain-pane, .instruments, .transcript, .matrix, .remediation, .sim, .research {
+        background: var(--kennel);
+        border: 1px solid var(--line);
+        padding: 16px;
+        margin-top: 14px;
+      }
+      .desk .ledger, .desk .chart { margin-top: 0; }
+      .verdict {
+        font-family: Syne, sans-serif;
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 0 0 8px;
+        line-height: 0.88;
+      }
+      .verdict.alarm { color: var(--bite-hot); }
+      .verdict.hold { color: var(--moss-hot); }
+      .reason { margin: 0 0 14px; color: var(--mute); line-height: 1.55; }
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path { border: 1px solid var(--line); padding: 10px; }
+      .path.fail { border-color: rgba(166, 61, 56, 0.5); }
+      .path.ok { border-color: rgba(106, 154, 116, 0.45); }
+      .path b { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .path .face { margin: 6px 0; font-size: 14px; }
+      .path .note { color: var(--mute); font-size: 12px; }
+      .plaques { margin-top: 12px; display: grid; gap: 8px; }
+      .plaque {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+      }
+      .plaque i {
+        width: 10px; height: 10px; border-radius: 50%; margin-top: 4px;
+        background: var(--mute); display: block;
+      }
+      .plaque.on i { background: var(--moss); }
+      .plaque.hot i { background: var(--bite); box-shadow: 0 0 8px var(--bite); }
+      .plaque b { display: block; font-size: 13px; }
+      .plaque span { color: var(--mute); font-size: 12px; font-family: "JetBrains Mono", monospace; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      .chip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--line);
+        padding: 5px 8px;
+        border-radius: 2px;
+        cursor: pointer;
+        background: transparent;
+        color: var(--ink);
+      }
+      .chip.live { border-color: var(--moss); color: var(--moss-hot); }
+      .chip.dead { border-color: rgba(166, 61, 56, 0.55); color: var(--bite-hot); }
+      .chart h2, .balloon h3, .chain-pane h3, .transcript h3, .sim h3, .research h3 {
+        font-family: Syne, sans-serif;
+        margin: 0 0 10px;
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .log {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        color: var(--chalk);
+      }
+      .log .hit { color: var(--bite-hot); }
+      .meter { margin-bottom: 10px; }
+      .meter b { display: block; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); margin-bottom: 6px; }
+      .bar {
+        height: 28px;
+        border: 1px solid var(--line);
+        position: relative;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        overflow: hidden;
+      }
+      .bar .fill { position: absolute; inset: 0 auto 0 0; width: 72%; background: rgba(166, 61, 56, 0.18); }
+      .bar.kept .fill { width: 90%; background: rgba(106, 154, 116, 0.2); }
+      .bar.cut { color: var(--bite-hot); }
+      .bar.kept { color: var(--moss); }
+      .ab { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      @media (max-width: 900px) { .ab { grid-template-columns: 1fr 1fr; } }
+      .ab-card {
+        border: 1px solid var(--line);
+        padding: 12px;
+        cursor: pointer;
+      }
+      .ab-card b { display: block; font-family: Syne, sans-serif; margin-bottom: 6px; }
+      .ab-card p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+      .ab-card.active { outline: 2px solid var(--collar-hot); }
+      .ab-card.fail { border-color: rgba(166, 61, 56, 0.45); }
+      .ab-card.ok { border-color: rgba(106, 154, 116, 0.4); }
+      .instruments { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      @media (max-width: 900px) { .instruments { grid-template-columns: 1fr 1fr; } }
+      .inst { border: 1px solid var(--line); padding: 10px; }
+      .inst b { display: block; font-family: Syne, sans-serif; margin-bottom: 6px; }
+      .inst p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+      .jsonl {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+      .jsonl .user { color: var(--bite-hot); }
+      .jsonl .hook { color: var(--collar-hot); }
+      .jsonl .asst { color: var(--moss); }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+      th { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); }
+      tr.active { background: rgba(106, 154, 116, 0.06); }
+      .fail-cell { color: var(--bite-hot); }
+      .pass-cell { color: var(--moss); }
+      .remediation { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      @media (max-width: 800px) { .remediation { grid-template-columns: 1fr; } }
+      .remedy { border: 1px solid var(--line); padding: 12px; cursor: pointer; }
+      .remedy:hover { border-color: var(--collar-hot); }
+      .remedy b { display: block; font-family: Syne, sans-serif; font-size: 18px; margin-bottom: 6px; }
+      .remedy p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.45; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+      .act {
+        font-family: Syne, sans-serif;
+        font-size: 15px;
+        padding: 10px 12px;
+        border: 1px solid var(--brass);
+        background: #14171b;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .act:hover { border-color: var(--collar); }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .drop {
+        margin-top: 12px;
+        border: 1px dashed rgba(201, 160, 90, 0.35);
+        padding: 16px;
+        text-align: center;
+        color: var(--mute);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 10px;
+        background: #0c0e11;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        border: 1px solid var(--line);
+        padding: 3px 7px;
+        font-size: 12px;
+        color: var(--mute);
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">14:50 / hermes catalog #174 / #92424</p>
+        <h1>Watchdog <em>night kennel / dog-watch</em></h1>
+        <p class="lede">
+          14:50 watchdog: a watchdog that bites during the silent compaction nap is not
+          protecting the flock — it is already <strong>choking</strong>. Score the pause
+          or admit the agent already <strong>retried</strong>.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92424">anthropics/claude-code#92424</a>
+          (OPEN; bug, has-repro, platform:macos, area:core, area:agents).
+          Claude Code <code>2.1.252 / 2.1.257 / 2.1.260</code>; macOS 25.5.
+          Diagnostic fixtures only. No live Claude sessions.
+        </p>
+      </div>
+
+      <section class="house retried" id="stage" aria-label="Night kennel stall-watchdog house">
+        <div class="rail">
+          <span id="stage-label">seeded retried · six from-scratch · 180s bite</span>
+          <span id="count-tag">2.1.260 · macOS 25.5 · 33/751</span>
+        </div>
+        <div class="room">
+          <article class="tags">
+            <h4>collar tags</h4>
+            <div class="leash" aria-hidden="true"></div>
+            <div class="collar-row">
+              <div class="tag tag-idle">
+                <b>choking</b>
+                <span id="tag-idle">idle · silent compact · bite already set</span>
+              </div>
+              <div class="tag tag-seed">
+                <b>retried</b>
+                <span id="tag-seed">seeded · six identical prompts</span>
+              </div>
+              <div class="tag tag-nap">
+                <b>nap</b>
+                <span id="tag-nap">150–205s · streams nothing</span>
+              </div>
+            </div>
+          </article>
+          <article class="chrono">
+            <h4>progress-silence chronograph</h4>
+            <div class="dial-wrap">
+              <div class="dial" aria-hidden="true">
+                <div class="dial-face">
+                  <div>
+                    <b id="dial-num">180s</b>
+                    <span id="dial-cap">bite</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ticks">
+              <span>3s ordinary</span>
+              <span>156s median</span>
+              <i>180s bite</i>
+              <span>205s max</span>
+            </div>
+          </article>
+          <article class="stalls">
+            <h4>six-retry kennel</h4>
+            <div class="kennels" id="kennels">
+              <div class="kennel"><b>1</b><span>179–180s · bite</span></div>
+              <div class="kennel"><b>2</b><span>same prompt</span></div>
+              <div class="kennel"><b>3</b><span>same compact</span></div>
+              <div class="kennel"><b>4</b><span>same silence</span></div>
+              <div class="kennel"><b>5</b><span>same death</span></div>
+              <div class="kennel"><b>6</b><span>0.78–1.17M tok</span></div>
+            </div>
+          </article>
+        </div>
+        <div class="floor">
+          <h4>compaction nap vs bite</h4>
+          <div class="timeline" aria-hidden="true">
+            <span class="nap"></span>
+            <span class="bite-mark"></span>
+          </div>
+          <p class="blocking" id="blocking">last record a tool result · interrupt 179–180s · no assistant output · compact streams silence</p>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Watchdog scoring assay">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">retried</p>
+          <p class="reason" id="reason">The runtime retries the agent from scratch up to six times. Each retry re-reads the same material, reaches the same context size, compacts, and dies again. Admit the agent already retried.</p>
+          <div class="paths" id="paths"></div>
+          <div class="plaques">
+            <div class="plaque hot" id="p-nap"><i></i><div><b>Compaction nap</b><span id="s-nap">150–205s silent · nothing counted as progress</span></div></div>
+            <div class="plaque hot" id="p-bite"><i></i><div><b>180s bite</b><span id="s-bite">stalled — no progress for 180000ms</span></div></div>
+            <div class="plaque" id="p-stream"><i></i><div><b>Streamed Write</b><span id="s-stream">35–55KB 182–288s survived — stream counts</span></div></div>
+            <div class="plaque" id="p-knob"><i></i><div><b>Knobs</b><span id="s-knob">AUTO_COMPACT_WINDOW only · 180s and retry count have none</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2>Kennel log / dog-watch</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <section class="balloon" aria-label="Silence gauge">
+        <h3>Silence gauge</h3>
+        <div class="meter">
+          <b>compaction / progress</b>
+          <div class="bar cut" id="bar-nap"><span class="fill"></span>choking · silent nap · bite fires</div>
+        </div>
+        <div class="meter">
+          <b>retry loop</b>
+          <div class="bar cut" id="bar-retry"><span class="fill"></span>retried · six identical prompts</div>
+        </div>
+      </section>
+
+      <section class="chain-pane" aria-label="Four kennel paths">
+        <h3>Score a pause</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Encoded from #92424. Same kennel, four paths. Click a card.
+        </p>
+        <div class="ab">
+          <article class="ab-card fail active" data-ab="nap" id="ab-nap">
+            <b>nap → choking</b>
+            <p>Auto-compact 150–205s. Streams nothing. 180s bite inside the nap.</p>
+          </article>
+          <article class="ab-card fail" data-ab="retry" id="ab-retry">
+            <b>retry → six</b>
+            <p>From scratch. Same prompt. Same compact. Same death. 0.78–1.17M tokens.</p>
+          </article>
+          <article class="ab-card ok" data-ab="stream" id="ab-stream">
+            <b>Write → survives</b>
+            <p>35–55KB Write took 182–288s and was not killed. Stream counts.</p>
+          </article>
+          <article class="ab-card ok" data-ab="score" id="ab-score">
+            <b>score → pause</b>
+            <p>Compaction is a runtime action. Treat it as progress, or pause the bite.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="instruments" aria-label="Assay instruments">
+        <article class="inst">
+          <b>GitHub #92424</b>
+          <p>OPEN · bug · has-repro · platform:macos · area:core · area:agents. Reporter salah-oumla.</p>
+        </article>
+        <article class="inst">
+          <b>2.1.260 / macOS</b>
+          <p>Claude Code 2.1.252 / 2.1.257 / 2.1.260 native. macOS 25.5. Headless <code>claude -p</code>.</p>
+        </article>
+        <article class="inst">
+          <b>33 / 751</b>
+          <p>All 33: last record a tool result; interrupt 179–180s; no assistant output.</p>
+        </article>
+        <article class="inst">
+          <b>185K–195K</b>
+          <p>28 of 33 final-attempt contexts in band. Sibling compact median 224K.</p>
+        </article>
+        <article class="inst">
+          <b>No knob</b>
+          <p><code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code> moves trigger. 180s and retry count have none.</p>
+        </article>
+      </section>
+
+      <section class="transcript" aria-label="Stall / compact slip">
+        <h3>Stall / compact slip</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Published Workflow observations from the issue — not a live Claude session.
+        </p>
+        <div class="jsonl" id="jsonl"></div>
+      </section>
+
+      <div class="matrix" aria-label="Kennel path matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>path</th>
+              <th>shipped</th>
+              <th>isolate</th>
+              <th>scored</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <section class="remediation" aria-label="Remediation panels">
+        <article class="remedy" data-remedy="scored">
+          <b>Score the pause</b>
+          <p>Compaction is a runtime action. The watchdog should treat it as progress, or pause during it.</p>
+        </article>
+        <article class="remedy" data-remedy="stream">
+          <b>Honor streamed progress</b>
+          <p>Write 35–55KB already survives 182–288s because output streams. Compact should count the same way — or not be timed as silence.</p>
+        </article>
+        <article class="remedy" data-remedy="retry">
+          <b>Stop the six-pack</b>
+          <p>A stall retry should not restart an identical prompt six times into the same compaction band.</p>
+        </article>
+      </section>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the pause</button>
+        <button class="act" data-act="idle">Pin idle choking</button>
+        <button class="act" data-act="seed">Pin seeded retried</button>
+        <button class="act" data-act="admit">Admit the agent already retried</button>
+        <button class="act" data-act="cast">Score compaction as progress</button>
+        <button class="act" data-act="fixtures">Load #92424 fixture</button>
+        <button class="act" data-act="reset">Reset to scored</button>
+      </div>
+
+      <div class="sim">
+        <h3>Kennel-lab simulator</h3>
+        <p>Rewrite the kennel without touching a live Claude session. Diagnostic only.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-pull="nap">compaction nap</span>
+          <span class="chip" data-sim-pull="retry">six-retry</span>
+          <span class="chip" data-sim-pull="stream">streamed Write</span>
+          <span class="chip" data-sim-pull="score">score the pause</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="choking">choking</button>
+          <button class="chip" data-chip="retried">retried</button>
+          <button class="chip" data-chip="compaction-nap">compaction-nap</button>
+          <button class="chip" data-chip="six-retry">six-retry</button>
+          <button class="chip" data-chip="no-knob">no-knob</button>
+          <button class="chip" data-chip="scored">scored</button>
+          <button class="chip" data-chip="streamed-survival">streamed-survival</button>
+          <button class="chip" data-chip="sibling-survivors">sibling-survivors</button>
+          <button class="chip" data-chip="ruled-out-or-workarounds">ruled-out-or-workarounds</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the night kennel</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this assay</h3>
+        <p>
+          On Claude Code <code>2.1.252 / 2.1.257 / 2.1.260</code> on macOS <code>25.5</code>,
+          inside a Workflow-tool run, the per-agent stall watchdog
+          (<code>stalled — no progress for 180000ms</code>) fires while the agent is
+          auto-compacting its context.
+        </p>
+        <p>
+          Compaction at 180K–350K tokens takes 150–205 seconds and streams nothing
+          the watchdog counts as progress. The runtime then retries the agent from
+          scratch up to six times; each retry re-reads the same material, reaches
+          the same context size, compacts, and dies again.
+        </p>
+        <p>
+          33 of 751 agents failed with the stall. All 33: last record a tool result,
+          interrupt at 179–180s, no assistant output. Final-attempt context often
+          185K–195K. Surviving sibling compactions: last record →
+          <code>compact_boundary</code> median 156s / p90 176s / max 180s; to first
+          post-compaction assistant median 160s / p90 183s / max 205s. Ordinary
+          completed turns at 185K–200K: median 3s. Large Write calls of 35–55KB
+          took 182–288s and were <em>not</em> killed — streamed output counts as
+          progress.
+        </p>
+        <p>
+          Expected: compaction is a runtime action; the watchdog should treat it as
+          progress (or pause); a stall retry should not restart an identical prompt
+          six times. Workaround:
+          <code>CLAUDE_CODE_AUTO_COMPACT_WINDOW</code> moves the trigger but the
+          180s limit and retry count have no knob; bounding reads below the
+          compaction band avoids the kill.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Understudy #92426</span>
+            <span>Fairlead #92403</span>
+            <span>Stroboscope #92395</span>
+            <span>Heliostat #92389</span>
+            <span>Lethe #92335</span>
+            <span>Frizzen #92353</span>
+            <span>Nixie #92383</span>
+            <span>Embrasure #92365</span>
+            <span>Elision #92347</span>
+            <span>Graft #92354</span>
+          </span>
+        </p>
+        <p>
+          Cousins cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/85265">#85265</a>
+          async 600s stall ·
+          <a href="https://github.com/anthropics/claude-code/issues/75036">#75036</a>
+          no recovery path ·
+          <a href="https://github.com/anthropics/claude-code/issues/79017">#79017</a>
+          180s hard-coded / stallMs ·
+          <a href="https://github.com/anthropics/claude-code/issues/90092">#90092</a>
+          six identical stalls.
+        </p>
+      </section>
+      <footer>
+        Catalog #174 · idle word choking · seeded retried · contrast scored / streamed-survival / sibling-survivors ·
+        no live Claude sessions · fonts Syne / Figtree / JetBrains Mono · night kennel watchdog
+      </footer>
+    </main>
+    <script>
+      const HOLD = new Set(["scored", "streamed-survival", "sibling-survivors"]);
+      const CHIPS = [
+        "choking", "retried", "compaction-nap", "six-retry", "no-knob",
+        "scored", "streamed-survival", "sibling-survivors", "ruled-out-or-workarounds"
+      ];
+      const CHIP_FILES = {
+        choking: "choking.json",
+        retried: "retried.json",
+        "compaction-nap": "compaction-nap.json",
+        "six-retry": "six-retry.json",
+        "no-knob": "no-knob.json",
+        scored: "scored.json",
+        "streamed-survival": "streamed-survival.json",
+        "sibling-survivors": "sibling-survivors.json",
+        "ruled-out-or-workarounds": "ruled-out-or-workarounds.json"
+      };
+      const MATRIX = [
+        { id: "nap", name: "auto-compact 150–205s silent", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "compaction-nap.json" },
+        { id: "repro", name: "33/751 tool-result then 179–180s interrupt", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "repro.json" },
+        { id: "retry", name: "six identical from-scratch retries", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "six-retry.json" },
+        { id: "knob", name: "180s and retry count have no knob", shipped: "FAIL", isolate: "pass", scored: "FAIL", file: "no-knob.json" },
+        { id: "stream", name: "Write 35–55KB 182–288s not killed", shipped: "pass", isolate: "pass", scored: "pass", file: "streamed-survival.json" },
+        { id: "siblings", name: "166 sibling naps survived", shipped: "pass", isolate: "pass", scored: "pass", file: "sibling-survivors.json" },
+        { id: "score", name: "compaction scored as progress", shipped: "pass", isolate: "pass", scored: "pass", file: "scored.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92424,
+        seed: "choking",
+        choking: true,
+        retried: false,
+        scored: false,
+        compactionNap: true,
+        stallMs: 180000,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "CHOKING",
+        log: [
+          "[idle] Workflow per-agent stall watchdog · stalled — no progress for 180000ms",
+          "[nap] auto-compaction streams nothing the watchdog counts as progress",
+          "[desk] already choking; idle word choking"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92424,
+        seed: "retried",
+        choking: true,
+        retried: true,
+        scored: false,
+        sixRetry: true,
+        attempts: 6,
+        identicalPrompt: true,
+        stallMs: 180000,
+        failedAgents: 33,
+        totalAgents: 751,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "RETRIED",
+        log: [
+          "[issue] #92424 OPEN · Workflow stall watchdog kills agents during auto-compaction",
+          "[retry] six attempts from scratch; identical prompt each time",
+          "[loop] re-read same material → same context size → compact → die again",
+          "[desk] already retried; seeded word retried"
+        ]
+      };
+
+      const scoredTicket = {
+        source: "probe",
+        issue: 92424,
+        seed: "scored",
+        choking: false,
+        retried: false,
+        scored: true,
+        progressDuringCompact: true,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "SCORED",
+        log: [
+          "[score] compaction is a runtime action",
+          "[progress] watchdog treats compact as progress — or pauses",
+          "[desk] scored; contrast hold"
+        ]
+      };
+
+      const streamTicket = {
+        source: "probe",
+        issue: 92424,
+        seed: "streamed-survival",
+        choking: false,
+        retried: false,
+        scored: true,
+        streamedSurvival: true,
+        writeKilled: false,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "STREAMED-SURVIVAL",
+        log: [
+          "[write] 35KB–55KB completed Write · 182–288s · not killed",
+          "[rule] streamed output counts as progress",
+          "[desk] streamed-survival; contrast hold"
+        ]
+      };
+
+      const siblingTicket = {
+        source: "probe",
+        issue: 92424,
+        seed: "sibling-survivors",
+        choking: false,
+        retried: false,
+        scored: true,
+        siblingSurvivors: 166,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "SIBLING-SURVIVORS",
+        log: [
+          "[flock] 166 sibling auto-compactions survived",
+          "[boundary] last→compact_boundary median 156s / p90 176s / max 180s",
+          "[desk] sibling-survivors; contrast hold"
+        ]
+      };
+
+      const napTicket = {
+        source: "probe",
+        issue: 92424,
+        seed: "compaction-nap",
+        choking: true,
+        retried: true,
+        scored: false,
+        compactionNap: true,
+        progressDuringCompact: false,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "COMPACTION-NAP",
+        log: [
+          "[nap] auto-compact 180K–350K · 150–205s · streams nothing counted as progress",
+          "[bite] 180s hard line sits inside the nap",
+          "[desk] compaction-nap; already choking"
+        ]
+      };
+
+      const retryTicket = {
+        source: "probe",
+        issue: 92424,
+        seed: "six-retry",
+        choking: true,
+        retried: true,
+        scored: false,
+        sixRetry: true,
+        attempts: 6,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "SIX-RETRY",
+        log: [
+          "[loop] attempt 1…6 · from scratch · identical prompt",
+          "[die] compact → 180s silence → bite again",
+          "[desk] six-retry; already retried"
+        ]
+      };
+
+      let pullState = "retry";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        return t.seed === "scored"
+          || t.seed === "streamed-survival"
+          || t.seed === "sibling-survivors"
+          || t.scored === true
+          || t.streamedSurvival === true
+          || t.progressDuringCompact === true;
+      }
+
+      function alreadyChoking(t) {
+        const seed = String(t.seed || "");
+        if (t.scored === true && t.choking !== true && t.retried !== true) return false;
+        if (t.streamedSurvival === true && t.choking !== true) return false;
+        if (remediating(t) && t.choking !== true && t.retried !== true && t.compactionNap !== true && t.sixRetry !== true) return false;
+        if (HOLD.has(seed) && t.choking !== true && t.retried !== true) return false;
+        if (t.choking === true || t.retried === true || t.compactionNap === true || t.sixRetry === true || t.noKnob === true) return true;
+        if (["choking", "retried", "compaction-nap", "six-retry", "no-knob", "ruled-out-or-workarounds"].includes(seed)) {
+          return !HOLD.has(seed);
+        }
+        return t.progressDuringCompact === false && t.scored !== true && t.seed !== "sibling-survivors";
+      }
+
+      function scoredTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (t.scored === true || t.streamedSurvival === true || HOLD.has(seed) || remediating(t))
+          && t.retried !== true
+          && !alreadyChoking(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyChoking(t);
+        t.shippedChoking = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedChoking ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (t.scored === true || remediating(t) || t.streamedSurvival === true ? "pass" : "FAIL");
+        const holding = scoredTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "choking") chips.push("choking");
+        if (t.retried === true || seed === "retried") chips.push("retried");
+        if (t.compactionNap === true || seed === "compaction-nap") chips.push("compaction-nap");
+        if (t.sixRetry === true || seed === "six-retry") chips.push("six-retry");
+        if (t.noKnob === true || seed === "no-knob") chips.push("no-knob");
+        if ((holding && t.scored === true) || seed === "scored") chips.push("scored");
+        if (t.streamedSurvival === true || seed === "streamed-survival") chips.push("streamed-survival");
+        if (t.siblingSurvivors || seed === "sibling-survivors") chips.push("sibling-survivors");
+        if (t.workaroundsOnly === true || seed === "ruled-out-or-workarounds") chips.push("ruled-out-or-workarounds");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (holding
+            ? (t.streamedSurvival ? "streamed-survival" : (t.siblingSurvivors ? "sibling-survivors" : "scored"))
+            : (t.retried ? "retried" : "choking"));
+        return { ticket: t, holding, alarm, chips: unique, verdict };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] Workflow · 180s bite · already retried"]
+            : ["[desk] compaction scored as progress · bite paused"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /choking|retried|FAIL|180s|bite|six|silent|no knob|never/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "180s bite during silent compact" : "compaction scored as progress", "watchdog path"],
+          ["isolate", t.isolateMark, "Write stream still counts; ordinary 3s turns still fast", "silence path only"],
+          ["scored", t.scoredMark, t.scored === true || remediating(t) || t.streamedSurvival === true ? "treat compact as progress or pause" : "would score after pause", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id, scenario: row.id }
+                : { ...scoredTicket, seed: row.id, scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (t.streamedSurvival === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">Write 35–55KB · 182–288s · not killed</span>\n` +
+            `<span class="asst">ordinary 185K–200K turns · median 3s · p90 7s</span>\n` +
+            `<span class="hook">streamed output counts as progress</span>`;
+          return;
+        }
+        if (t.seed === "sibling-survivors" || (t.siblingSurvivors && !result.alarm)) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">166 sibling auto-compactions survived</span>\n` +
+            `<span class="asst">last → compact_boundary median 156s / p90 176s / max 180s</span>\n` +
+            `<span class="hook">the nap is ordinary; the bite is not</span>`;
+          return;
+        }
+        if (t.sixRetry === true && t.seed === "six-retry") {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="user">attempt 1…6 · from scratch · identical prompt</span>\n` +
+            `<span class="user">same material · same context size · same compact · same bite</span>\n` +
+            `<span class="user">0.78M to 1.17M cumulative tokens each</span>`;
+          return;
+        }
+        if (result.holding && t.scored === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">compaction is a runtime action</span>\n` +
+            `<span class="asst">watchdog treats compact as progress — or pauses</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">2.1.260 · macOS 25.5 · Workflow parallel() · stalled — no progress for 180000ms</span>\n` +
+          `<span class="user">33/751 · last record a tool result · interrupt 179–180s · no assistant output</span>\n` +
+          `<span class="user">compact 150–205s at 180K–350K · streams nothing counted as progress</span>\n` +
+          `<span class="user">six from-scratch retries · same prompt · same death</span>\n` +
+          `<span class="hook">Write 182–288s survived · ordinary turns median 3s</span>`;
+      }
+
+      const REASONS = {
+        choking: "A watchdog that bites during the silent compaction nap is not protecting the flock — it is already choking.",
+        retried: "The runtime retries the agent from scratch up to six times. Each retry re-reads the same material, reaches the same context size, compacts, and dies again. Admit the agent already retried.",
+        "compaction-nap": "Compaction at 180K–350K takes 150–205s and streams nothing the watchdog counts as progress. The 180s bite sits inside the nap.",
+        "six-retry": "Every stalled agent shows six attempts. Identical prompt. Same compact. Same bite. 0.78M–1.17M cumulative tokens.",
+        "no-knob": "CLAUDE_CODE_AUTO_COMPACT_WINDOW moves the trigger. The 180s limit and the retry count have no knob. Bounding reads is the only dodge.",
+        scored: "Compaction is a runtime action. The watchdog treats it as progress, or pauses during it. Score the pause.",
+        "streamed-survival": "Write 35–55KB took 182–288s and was not killed. Streamed output counts as progress. The bite is a silence ceiling, not a wall-clock ceiling.",
+        "sibling-survivors": "166 sibling auto-compactions survived. Last→boundary median 156s / p90 176s / max 180s. The nap is ordinary; the bite is not.",
+        "ruled-out-or-workarounds": "Ordinary 185K–200K turns are median 3s. Write survival proves stream counts. Bounding reads below the compaction band is the only dodge."
+      };
+
+      function kennelSpans(holding) {
+        if (holding) {
+          return ["pause held", "progress ticked", "nap scored", "one attempt", "bite idle", "flock kept"];
+        }
+        return ["179–180s · bite", "same prompt", "same compact", "same silence", "same death", "0.78–1.17M tok"];
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const seedName = String(t.seed || result.verdict || "");
+        const retried = t.retried === true || seedName === "retried";
+        const streamed = t.streamedSurvival === true || seedName === "streamed-survival";
+        const siblings = seedName === "sibling-survivors" || (t.siblingSurvivors && !alarm);
+        const six = t.sixRetry === true || seedName === "six-retry";
+        const nap = t.compactionNap === true || seedName === "compaction-nap";
+        const knob = t.noKnob === true || seedName === "no-knob";
+        const holding = (result.holding || t.scored === true) && !alarm;
+        const stageClass = streamed
+          ? "streamed-survival"
+          : (siblings
+            ? "sibling-survivors"
+            : (holding
+              ? "scored"
+              : (six
+                ? "six-retry"
+                : (nap
+                  ? "compaction-nap"
+                  : (knob
+                    ? "no-knob"
+                    : (retried ? "retried" : (CHIPS.includes(seedName) ? seedName : "choking")))))));
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || REASONS[alarm ? "retried" : "scored"];
+        const stage = document.getElementById("stage");
+        stage.className = "house " + stageClass;
+        document.getElementById("stage-label").textContent = alarm
+          ? (six ? "six-retry · identical prompt · same death" : (nap ? "compaction-nap · 150–205s silent" : (retried ? "seeded retried · six from-scratch · 180s bite" : "idle choking · silent compact · bite already set")))
+          : (streamed ? "streamed-survival · Write 182–288s not killed" : (siblings ? "sibling-survivors · 166 naps lived" : "scored · compaction treated as progress"));
+        document.getElementById("count-tag").textContent = alarm
+          ? (six ? "6 attempts · 0.78–1.17M tok" : "2.1.260 · macOS 25.5 · 33/751")
+          : (streamed ? "Write stream counts as progress" : "bite paused · nap scored");
+        document.getElementById("dial-num").textContent = holding ? "pause" : "180s";
+        document.getElementById("dial-cap").textContent = holding ? "scored" : "bite";
+        document.getElementById("tag-idle").textContent = alarm ? "idle · silent compact · bite already set" : "idle fence · bite paused";
+        document.getElementById("tag-seed").textContent = alarm ? "seeded · six identical prompts" : "no six-pack";
+        document.getElementById("tag-nap").textContent = alarm ? "150–205s · streams nothing" : "nap counted as progress";
+        document.getElementById("blocking").textContent = alarm
+          ? "last record a tool result · interrupt 179–180s · no assistant output · compact streams silence"
+          : (streamed ? "Write talked for 182–288s · bite never fired · stream counts" : (siblings ? "166 siblings finished the nap · last→boundary median 156s" : "compaction scored · bite paused · one attempt"));
+        const spans = kennelSpans(holding);
+        document.querySelectorAll("#kennels .kennel span").forEach((el, i) => {
+          el.textContent = spans[i] || "";
+        });
+        setPlaque("p-nap", holding || siblings, alarm && t.progressDuringCompact !== true);
+        setPlaque("p-bite", holding, alarm);
+        setPlaque("p-stream", streamed || holding, false);
+        setPlaque("p-knob", holding, knob || (alarm && t.stallLimitHasKnob !== true));
+        document.getElementById("s-nap").textContent = alarm
+          ? "150–205s silent · nothing counted as progress"
+          : "runtime action · counted as progress";
+        document.getElementById("s-bite").textContent = alarm
+          ? "stalled — no progress for 180000ms"
+          : "paused during compact";
+        document.getElementById("s-stream").textContent = "35–55KB 182–288s survived — stream counts";
+        document.getElementById("s-knob").textContent = alarm
+          ? "AUTO_COMPACT_WINDOW only · 180s and retry count have none"
+          : "pause scored · six-pack stopped";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.holding;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        const barNap = document.getElementById("bar-nap");
+        barNap.className = "bar " + (holding || siblings ? "kept" : "cut");
+        barNap.innerHTML = holding || siblings
+          ? `<span class="fill"></span>` + (streamed ? "streamed-survival · Write talked" : (siblings ? "sibling-survivors · 166 lived" : "scored · nap counted"))
+          : `<span class="fill"></span>` + (nap ? "compaction-nap · 150–205s silent" : "choking · silent nap · bite fires");
+        const barRetry = document.getElementById("bar-retry");
+        barRetry.className = "bar " + (holding ? "kept" : "cut");
+        barRetry.innerHTML = holding
+          ? `<span class="fill"></span>scored · one attempt`
+          : `<span class="fill"></span>` + (six ? "six-retry · identical prompt" : "retried · six identical prompts");
+        document.getElementById("ab-nap").classList.toggle("active", alarm && nap && pullState === "nap");
+        document.getElementById("ab-retry").classList.toggle("active", alarm && (six || retried) && pullState !== "stream" && pullState !== "score" && pullState !== "nap");
+        document.getElementById("ab-stream").classList.toggle("active", streamed || pullState === "stream");
+        document.getElementById("ab-score").classList.toggle("active", (holding && !streamed && !siblings) || pullState === "score");
+        if (alarm && !nap && pullState === "nap") document.getElementById("ab-nap").classList.add("active");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        paintMatrix(t.scenario || (streamed ? "stream" : (siblings ? "siblings" : (holding ? "score" : (six ? "retry" : (nap ? "nap" : "repro"))))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "score") return { ...scoredTicket };
+        if (pullState === "stream") return { ...streamTicket };
+        if (pullState === "nap") return { ...napTicket };
+        return { ...retryTicket };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState === "nap" || pullState === "retry";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "nap";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "retry";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset" || act === "cast") {
+            pullState = "score";
+            syncSimChips();
+            try { apply(await loadNamed("scored.json")); }
+            catch { apply({ ...scoredTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("retried.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("repro.json")); }
+            catch { apply({ ...seeded, seed: "retried", hubCount: "ADMIT" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92424.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...scoredTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92424 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = kind === "stream" ? "streamed-survival.json" : "scored.json";
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply({
+              ...scoredTicket,
+              seed: kind === "stream" ? "streamed-survival" : "scored",
+              streamedSurvival: kind === "stream"
+            });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-ab]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const side = el.dataset.ab;
+          pullState = side === "score" ? "score" : (side === "stream" ? "stream" : (side === "nap" ? "nap" : "retry"));
+          syncSimChips();
+          const file = side === "score"
+            ? "scored.json"
+            : (side === "stream" ? "streamed-survival.json" : (side === "nap" ? "compaction-nap.json" : "six-retry.json"));
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(side === "score" ? { ...scoredTicket } : (side === "stream" ? { ...streamTicket } : (side === "nap" ? { ...napTicket } : { ...retryTicket })));
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>

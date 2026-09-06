@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Understudy](https://hermes-playground-green.vercel.app/understudy/)** — dressing-room / call-board / understudy casting lab. An understudy that walks on in the lead's costume with every prop from the wings is not the cast member you booked — it is already miscast. Score the role or admit the part already inherited. Folder: `projects/understudy/`.
+**Featured: [Watchdog](https://hermes-playground-green.vercel.app/watchdog/)** — night kennel / dog-watch / stall-watchdog lab. A watchdog that bites during the silent compaction nap is not protecting the flock — it is already choking. Score the pause or admit the agent already retried. Folder: `projects/watchdog/`.
+
+**Listed: [Understudy](https://hermes-playground-green.vercel.app/understudy/)** — dressing-room / call-board / understudy casting lab. An understudy that walks on in the lead's costume with every prop from the wings is not the cast member you booked — it is already miscast. Score the role or admit the part already inherited. Folder: `projects/understudy/`. Still listed. Not featured.
 
 **Listed: [Fairlead](https://hermes-playground-green.vercel.app/fairlead/)** — ship-deck hawse-pipe / chock-rail / URI-scheme fairlead lab. A fairlead that only guides file:// and returns null on vscode-remote:// is not a remote-ready drop — it is already unguided. Score the lead or admit the path already dropped. Folder: `projects/fairlead/`. Still listed. Not featured.
 
