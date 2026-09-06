@@ -1,0 +1,1513 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stroboscope — optics lab for #92395</title>
+    <meta
+      name="description"
+      content="Stroboscope — high-speed photography / optics lab for Claude Code #92395: Desktop Code-tab Terminal panel flickers open/closed on every shell tool call and steals chat focus. Idle word is strobing."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Manrope:wght@400;500;600;700&family=Syne:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #070708;
+        --bench: #101114;
+        --matte: #16181c;
+        --rail: #22252b;
+        --chrome: #c7ccd4;
+        --chrome-dim: #8b919c;
+        --xenon: #d7f0ff;
+        --xenon-hot: #8ad4ff;
+        --safe: #ff6a2a;
+        --safe-dim: #c44a18;
+        --crt: #2dff7a;
+        --crt-dim: #148a42;
+        --stolen: #ff4d6d;
+        --hold: #4ad4b0;
+        --ink: #ececf1;
+        --mute: #8d919a;
+        --line: rgba(199, 204, 212, 0.16);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Manrope, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 8% 0%, rgba(255, 106, 42, 0.08), transparent 32%),
+          radial-gradient(ellipse at 92% 8%, rgba(138, 212, 255, 0.06), transparent 28%),
+          linear-gradient(180deg, #121318 0%, #070708 55%, #050506 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--xenon-hot); }
+      .wrap { width: min(1220px, calc(100% - 24px)); margin: 0 auto; padding: 20px 0 80px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(141, 145, 154, 0.4);
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--safe);
+      }
+      h1 {
+        font-family: Syne, "Avenir Next", sans-serif;
+        font-size: clamp(46px, 8vw, 88px);
+        letter-spacing: -0.04em;
+        margin: 4px 0 10px;
+        font-weight: 800;
+        line-height: 0.86;
+      }
+      h1 em {
+        font-style: normal;
+        font-weight: 500;
+        color: var(--xenon-hot);
+        font-size: 0.26em;
+        letter-spacing: 0.18em;
+        display: block;
+        margin-top: 12px;
+        text-transform: uppercase;
+      }
+      .lede { max-width: 68em; color: var(--mute); line-height: 1.55; font-size: 16px; }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--xenon);
+      }
+
+      .lab {
+        margin: 22px 0 0;
+        position: relative;
+        min-height: 560px;
+        border-radius: 6px;
+        border: 1px solid rgba(199, 204, 212, 0.18);
+        background:
+          linear-gradient(180deg, #1a1c22 0%, #101114 38%, #0b0c0f 100%);
+        box-shadow: 0 28px 60px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+      }
+      .lab::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 18px;
+        background:
+          repeating-linear-gradient(90deg, #2a2d34 0 18px, #1c1e24 18px 20px);
+        z-index: 2;
+      }
+      .lab.strobing, .lab.stolen, .lab.bg-double-strobe {
+        box-shadow: 0 0 0 4px rgba(255, 77, 109, 0.28), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+      .lab.held, .lab.in-place-update, .lab.file-tools-quiet, .lab.setting-off {
+        box-shadow: 0 0 0 4px rgba(74, 212, 176, 0.26), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+
+      .tag {
+        position: absolute;
+        z-index: 8;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: rgba(7, 7, 8, 0.82);
+        padding: 4px 8px;
+        border: 1px solid rgba(199, 204, 212, 0.22);
+        color: var(--chrome);
+      }
+      .tag-l { left: 14px; top: 30px; }
+      .tag-r { right: 14px; top: 30px; color: var(--xenon-hot); }
+
+      .safelight {
+        position: absolute;
+        left: 28px;
+        top: 54px;
+        width: 54px;
+        height: 78px;
+        z-index: 6;
+      }
+      .safelight .cord {
+        width: 2px;
+        height: 22px;
+        margin: 0 auto;
+        background: #3a3d44;
+      }
+      .safelight .shade {
+        width: 54px;
+        height: 28px;
+        background: radial-gradient(circle at 50% 20%, #ff8a4a, #c44a18 70%, #6a220c);
+        clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
+        box-shadow: 0 10px 24px rgba(255, 106, 42, 0.35);
+      }
+      .safelight .glow {
+        width: 70px;
+        height: 40px;
+        margin: -4px 0 0 -8px;
+        background: radial-gradient(ellipse at 50% 0%, rgba(255, 106, 42, 0.35), transparent 70%);
+      }
+
+      .rack {
+        position: absolute;
+        left: 96px;
+        right: 20px;
+        top: 58px;
+        height: 210px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.35fr 0.9fr;
+        gap: 12px;
+        z-index: 5;
+      }
+      .bezel {
+        background: linear-gradient(180deg, #2a2d34, #16181c);
+        border: 2px solid #8b919c;
+        border-radius: 4px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.16),
+          0 8px 18px rgba(0, 0, 0, 0.35);
+        padding: 8px;
+        min-width: 0;
+      }
+      .bezel h4 {
+        margin: 0 0 6px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--chrome-dim);
+      }
+
+      .tube {
+        height: 148px;
+        border-radius: 40px;
+        background:
+          linear-gradient(90deg, #1a1c20, #2a2e36 18%, #111318 50%, #2a2e36 82%, #1a1c20);
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 0 0 2px #4a5058;
+      }
+      .tube i {
+        position: absolute;
+        inset: 18px 22%;
+        border-radius: 30px;
+        background: linear-gradient(180deg, rgba(215, 240, 255, 0.15), rgba(138, 212, 255, 0.05));
+      }
+      .lab.strobing .tube i,
+      .lab.stolen .tube i,
+      .lab.shell-strobe .tube i,
+      .lab.docked-open .tube i,
+      .lab.no-config-toggle .tube i,
+      .lab.ruled-out .tube i {
+        animation: xenon 0.42s steps(2, end) infinite;
+      }
+      .lab.bg-double-strobe .tube i {
+        animation: xenon-double 0.86s steps(2, end) infinite;
+      }
+      .lab.held .tube i,
+      .lab.in-place-update .tube i,
+      .lab.file-tools-quiet .tube i,
+      .lab.setting-off .tube i {
+        animation: none;
+        background: rgba(138, 212, 255, 0.06);
+      }
+      @keyframes xenon {
+        0%, 49% { background: rgba(215, 240, 255, 0.95); box-shadow: 0 0 28px #8ad4ff; }
+        50%, 100% { background: rgba(138, 212, 255, 0.05); box-shadow: none; }
+      }
+      @keyframes xenon-double {
+        0%, 18% { background: rgba(215, 240, 255, 0.95); box-shadow: 0 0 28px #8ad4ff; }
+        19%, 49% { background: rgba(138, 212, 255, 0.05); box-shadow: none; }
+        50%, 68% { background: rgba(215, 240, 255, 0.95); box-shadow: 0 0 28px #8ad4ff; }
+        69%, 100% { background: rgba(138, 212, 255, 0.05); box-shadow: none; }
+      }
+
+      .crt {
+        height: 148px;
+        background: #06140c;
+        border-radius: 6px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 0 30px rgba(45, 255, 122, 0.12);
+      }
+      .crt svg { width: 100%; height: 100%; display: block; }
+      .crt path {
+        fill: none;
+        stroke: var(--crt);
+        stroke-width: 2;
+        filter: drop-shadow(0 0 6px var(--crt));
+      }
+      .lab.strobing .crt path,
+      .lab.stolen .crt path,
+      .lab.bg-double-strobe .crt path {
+        animation: sweep 0.7s linear infinite;
+      }
+      @keyframes sweep {
+        from { stroke-dashoffset: 0; }
+        to { stroke-dashoffset: -80; }
+      }
+
+      .counter {
+        height: 148px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #08090c;
+        border-radius: 4px;
+      }
+      .counter b {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 42px;
+        letter-spacing: 0.08em;
+        color: var(--safe);
+        text-shadow: 0 0 12px rgba(255, 106, 42, 0.55);
+      }
+      .counter span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        color: var(--chrome-dim);
+      }
+
+      .dials {
+        position: absolute;
+        left: 20px;
+        top: 282px;
+        display: flex;
+        gap: 14px;
+        z-index: 5;
+      }
+      .dial {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        border: 6px solid #8b919c;
+        background:
+          conic-gradient(from 210deg, #2a2d34, #101114 40%, #3a3e46 70%, #2a2d34);
+        position: relative;
+        box-shadow: inset 0 0 0 2px #1a1c20;
+      }
+      .dial::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 10px;
+        width: 3px;
+        height: 22px;
+        background: var(--safe);
+        transform-origin: 50% 24px;
+        transform: translateX(-50%) rotate(var(--rot, 25deg));
+      }
+      .dial em {
+        position: absolute;
+        left: 50%;
+        bottom: -18px;
+        transform: translateX(-50%);
+        font-style: normal;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--mute);
+        white-space: nowrap;
+      }
+      .lab.stolen .d1 { --rot: 78deg; }
+      .lab.bg-double-strobe .d1 { --rot: 118deg; }
+      .lab.held .d1, .lab.in-place-update .d1, .lab.setting-off .d1 { --rot: 4deg; }
+
+      .work {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        bottom: 16px;
+        height: 196px;
+        display: grid;
+        grid-template-columns: 1.15fr 28px 1fr;
+        gap: 0;
+        z-index: 6;
+      }
+      .chat, .panel {
+        background: #0c0d11;
+        border: 2px solid #8b919c;
+        border-radius: 4px;
+        padding: 10px 12px;
+        position: relative;
+      }
+      .chat b, .panel b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--chrome-dim);
+        margin-bottom: 8px;
+      }
+      .chat input {
+        width: 100%;
+        background: #16181c;
+        border: 1px solid rgba(199, 204, 212, 0.2);
+        color: var(--ink);
+        font-family: Manrope, sans-serif;
+        font-size: 15px;
+        padding: 10px 12px;
+        border-radius: 3px;
+      }
+      .caret {
+        display: inline-block;
+        width: 8px;
+        height: 16px;
+        background: var(--xenon);
+        margin-left: 4px;
+        vertical-align: text-bottom;
+        animation: blink 1s steps(1) infinite;
+      }
+      .lab.stolen .caret,
+      .lab.bg-double-strobe .caret {
+        background: var(--stolen);
+        animation: yank 0.28s steps(2) infinite;
+      }
+      .lab.held .caret,
+      .lab.in-place-update .caret,
+      .lab.file-tools-quiet .caret,
+      .lab.setting-off .caret {
+        background: var(--hold);
+      }
+      @keyframes blink { 50% { opacity: 0; } }
+      @keyframes yank {
+        0%, 49% { opacity: 1; transform: translateX(42px); }
+        50%, 100% { opacity: 0.2; transform: translateX(0); }
+      }
+      .focus-word {
+        margin-top: 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .lab.stolen .focus-word,
+      .lab.bg-double-strobe .focus-word { color: var(--stolen); }
+      .lab.held .focus-word,
+      .lab.in-place-update .focus-word,
+      .lab.file-tools-quiet .focus-word,
+      .lab.setting-off .focus-word { color: var(--hold); }
+
+      .sync {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .sync svg { width: 28px; height: 160px; }
+      .sync path {
+        fill: none;
+        stroke: #8b919c;
+        stroke-width: 3;
+      }
+      .lab.stolen .sync path,
+      .lab.strobing .sync path,
+      .lab.bg-double-strobe .sync path { stroke: var(--stolen); }
+
+      .panel .term {
+        min-height: 92px;
+        background: #070809;
+        border: 1px solid rgba(199, 204, 212, 0.12);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        color: var(--crt);
+        padding: 8px;
+        white-space: pre-wrap;
+      }
+      .lab.strobing .panel,
+      .lab.stolen .panel,
+      .lab.shell-strobe .panel,
+      .lab.docked-open .panel,
+      .lab.no-config-toggle .panel,
+      .lab.ruled-out .panel {
+        animation: panel-strobe 0.42s steps(2, end) infinite;
+      }
+      .lab.bg-double-strobe .panel {
+        animation: panel-double 0.86s steps(2, end) infinite;
+      }
+      .lab.held .panel,
+      .lab.in-place-update .panel,
+      .lab.file-tools-quiet .panel,
+      .lab.setting-off .panel {
+        animation: none;
+        opacity: 1;
+      }
+      @keyframes panel-strobe {
+        0%, 49% { opacity: 1; transform: translateY(0); }
+        50%, 100% { opacity: 0.15; transform: translateY(10px) scaleY(0.08); }
+      }
+      @keyframes panel-double {
+        0%, 18% { opacity: 1; transform: translateY(0); }
+        19%, 49% { opacity: 0.12; transform: translateY(10px) scaleY(0.08); }
+        50%, 68% { opacity: 1; transform: translateY(0); }
+        69%, 100% { opacity: 0.12; transform: translateY(10px) scaleY(0.08); }
+      }
+
+      .desk {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) {
+        .rack { grid-template-columns: 1fr 1fr; height: auto; }
+        .work, .desk { grid-template-columns: 1fr; }
+        .lab { min-height: 880px; }
+        .dials { top: 470px; }
+        .work { top: 560px; bottom: auto; }
+      }
+      .ledger, .chart, .balloon, .chain-pane, .instruments, .transcript, .matrix, .remediation, .sim, .research {
+        background: var(--matte);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 16px;
+        margin-top: 14px;
+      }
+      .desk .ledger, .desk .chart { margin-top: 0; }
+      .verdict {
+        font-family: Syne, sans-serif;
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin: 0 0 8px;
+        line-height: 0.9;
+      }
+      .verdict.alarm { color: var(--stolen); }
+      .verdict.hold { color: var(--hold); }
+      .reason { margin: 0 0 14px; color: var(--mute); line-height: 1.5; }
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path { border: 1px solid var(--line); padding: 10px; border-radius: 4px; }
+      .path.fail { border-color: rgba(255, 77, 109, 0.4); }
+      .path.ok { border-color: rgba(74, 212, 176, 0.4); }
+      .path b { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .path .face { margin: 6px 0; font-size: 14px; }
+      .path .note { color: var(--mute); font-size: 12px; }
+      .plaques { margin-top: 12px; display: grid; gap: 8px; }
+      .plaque {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+        border-radius: 4px;
+      }
+      .plaque i {
+        width: 10px; height: 10px; border-radius: 50%; margin-top: 4px;
+        background: var(--chrome-dim); display: block;
+      }
+      .plaque.on i { background: var(--hold); }
+      .plaque.hot i { background: var(--stolen); box-shadow: 0 0 8px var(--stolen); }
+      .plaque b { display: block; font-size: 13px; }
+      .plaque span { color: var(--mute); font-size: 12px; font-family: "IBM Plex Mono", monospace; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--line);
+        padding: 5px 8px;
+        border-radius: 99px;
+        cursor: pointer;
+        background: transparent;
+        color: var(--ink);
+      }
+      .chip.live { border-color: var(--hold); color: var(--hold); }
+      .chip.dead { border-color: rgba(255, 77, 109, 0.45); color: var(--stolen); }
+      .chart h2, .balloon h3, .chain-pane h3, .transcript h3, .sim h3, .research h3 {
+        font-family: Syne, sans-serif;
+        margin: 0 0 10px;
+        font-size: 22px;
+      }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        color: var(--chrome);
+      }
+      .log .hit { color: var(--stolen); }
+      .meter { margin-bottom: 10px; }
+      .meter b { display: block; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); margin-bottom: 6px; }
+      .bar {
+        height: 28px;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        position: relative;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        overflow: hidden;
+      }
+      .bar .fill { position: absolute; inset: 0 auto 0 0; width: 62%; background: rgba(255, 77, 109, 0.18); }
+      .bar.kept .fill { width: 92%; background: rgba(74, 212, 176, 0.2); }
+      .bar.cut { color: var(--stolen); }
+      .bar.kept { color: var(--hold); }
+      .ab { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      @media (max-width: 900px) { .ab { grid-template-columns: 1fr 1fr; } }
+      .ab-card {
+        border: 1px solid var(--line);
+        padding: 12px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .ab-card b { display: block; font-family: Syne, sans-serif; margin-bottom: 6px; }
+      .ab-card p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+      .ab-card.active { outline: 2px solid var(--xenon-hot); }
+      .ab-card.fail { border-color: rgba(255, 77, 109, 0.4); }
+      .ab-card.ok { border-color: rgba(74, 212, 176, 0.4); }
+      .instruments { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      @media (max-width: 900px) { .instruments { grid-template-columns: 1fr 1fr; } }
+      .inst { border: 1px solid var(--line); padding: 10px; border-radius: 4px; }
+      .inst b { display: block; font-family: Syne, sans-serif; margin-bottom: 6px; }
+      .inst p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+      .jsonl {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+      .jsonl .user { color: var(--stolen); }
+      .jsonl .hook { color: var(--xenon-hot); }
+      .jsonl .asst { color: var(--hold); }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+      th { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); }
+      tr.active { background: rgba(138, 212, 255, 0.06); }
+      .fail-cell { color: var(--stolen); }
+      .pass-cell { color: var(--hold); }
+      .remediation { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      @media (max-width: 800px) { .remediation { grid-template-columns: 1fr; } }
+      .remedy { border: 1px solid var(--line); padding: 12px; border-radius: 4px; cursor: pointer; }
+      .remedy:hover { border-color: var(--xenon-hot); }
+      .remedy b { display: block; font-family: Syne, sans-serif; font-size: 18px; margin-bottom: 6px; }
+      .remedy p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.45; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+      .act {
+        font-family: Syne, sans-serif;
+        font-size: 14px;
+        padding: 10px 12px;
+        border-radius: 4px;
+        border: 1px solid var(--chrome-dim);
+        background: #1a1c22;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .act:hover { border-color: var(--xenon); }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .drop {
+        margin-top: 12px;
+        border: 1px dashed rgba(199, 204, 212, 0.28);
+        padding: 16px;
+        text-align: center;
+        color: var(--mute);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 10px;
+        background: #0c0d11;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        border: 1px solid var(--line);
+        padding: 3px 7px;
+        border-radius: 99px;
+        font-size: 12px;
+        color: var(--mute);
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">11:50 / hermes catalog #171 / #92395</p>
+        <h1>Stroboscope <em>optics lab bench</em></h1>
+        <p class="lede">
+          11:50 stroboscope: a terminal panel that flickers open and steals the
+          chat caret on every shell tool call is not a helpful console — it is
+          already <strong>strobing</strong>. Score the hold or admit the focus
+          already <strong>stolen</strong>.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92395">anthropics/claude-code#92395</a>
+          (OPEN; bug, has-repro, platform:windows, area:desktop).
+          Claude Code desktop app (Code tab) <code>1.46388.4</code> on
+          Windows 11 Enterprise 10.0.26200.
+          Diagnostic fixtures only. No live Claude sessions.
+        </p>
+      </div>
+
+      <section class="lab stolen" id="stage" aria-label="Optics lab stroboscope bench">
+        <div class="tag tag-l" id="stage-label">seeded stolen · shell flicker · caret yanked</div>
+        <div class="tag tag-r" id="count-tag">Code tab · 1.46388.4 · PowerShell</div>
+        <div class="safelight" aria-hidden="true">
+          <div class="cord"></div>
+          <div class="shade"></div>
+          <div class="glow"></div>
+        </div>
+        <div class="rack">
+          <article class="bezel">
+            <h4>Xenon A · main flash</h4>
+            <div class="tube" id="tube-a"><i></i></div>
+          </article>
+          <article class="bezel">
+            <h4>Xenon B · fill flash</h4>
+            <div class="tube" id="tube-b"><i></i></div>
+          </article>
+          <article class="bezel">
+            <h4>Oscilloscope CRT</h4>
+            <div class="crt" aria-hidden="true">
+              <svg viewBox="0 0 220 100" preserveAspectRatio="none">
+                <path id="wave" d="M0 50 L12 50 L18 12 L24 88 L30 50 L70 50 L76 18 L82 82 L88 50 L140 50 L146 10 L152 90 L158 50 L220 50" stroke-dasharray="8 4"></path>
+              </svg>
+            </div>
+          </article>
+          <article class="bezel">
+            <h4>Frequency counter</h4>
+            <div class="counter">
+              <b id="hz">1.00</b>
+              <span>STROBES / CMD</span>
+            </div>
+          </article>
+        </div>
+        <div class="dials" aria-hidden="true">
+          <div class="dial d1"><em>delay</em></div>
+          <div class="dial d2"><em>duration</em></div>
+          <div class="dial d3"><em>sync</em></div>
+        </div>
+        <div class="work">
+          <div class="chat">
+            <b>Chat input</b>
+            <div>
+              <input id="chat-box" type="text" value="type while the assistant shells…" readonly />
+              <span class="caret" id="caret" aria-hidden="true"></span>
+            </div>
+            <div class="focus-word" id="focus-word">focus · stolen from chat</div>
+          </div>
+          <div class="sync" aria-hidden="true">
+            <svg viewBox="0 0 28 160">
+              <path d="M14 0 C14 40, 4 50, 14 80 S24 120, 14 160"></path>
+            </svg>
+          </div>
+          <div class="panel" id="term-panel">
+            <b>Terminal panel</b>
+            <div class="term" id="term">PS&gt; echo test<br />test</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Stroboscope scoring assay">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">stolen</p>
+          <p class="reason" id="reason">A shell tool call flickered the Terminal panel and keyboard focus left the chat input. Keystrokes during the flicker are lost or misdirected. Admit the focus already stolen.</p>
+          <div class="paths" id="paths"></div>
+          <div class="plaques">
+            <div class="plaque hot" id="p-flash"><i></i><div><b>Xenon / panel</b><span id="s-flash">open then close · every shell tool call</span></div></div>
+            <div class="plaque hot" id="p-caret"><i></i><div><b>Chat caret</b><span id="s-caret">focus stolen · keystrokes lost or misdirected</span></div></div>
+            <div class="plaque" id="p-path"><i></i><div><b>Trigger path</b><span id="s-path">Bash/PowerShell only · file tools quiet</span></div></div>
+            <div class="plaque" id="p-cfg"><i></i><div><b>Config / toggle</b><span id="s-cfg">no auto-open or auto-focus setting exists</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2>Bench log / shutter slip</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <section class="balloon" aria-label="Hold gauge">
+        <h3>Hold gauge</h3>
+        <div class="meter">
+          <b>panel visibility</b>
+          <div class="bar cut" id="bar-panel"><span class="fill"></span>strobing · opens then closes</div>
+        </div>
+        <div class="meter">
+          <b>chat caret</b>
+          <div class="bar cut" id="bar-caret"><span class="fill"></span>stolen · focus left the input</div>
+        </div>
+      </section>
+
+      <section class="chain-pane" aria-label="Four flashes">
+        <h3>Score a hold</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Encoded from #92395. Same Code tab, four flashes. Click a card.
+        </p>
+        <div class="ab">
+          <article class="ab-card fail active" data-ab="shell" id="ab-shell">
+            <b>shell → stolen</b>
+            <p>Ask for echo test. Panel flickers open then closed. Caret leaves chat. Keystrokes lost or misdirected.</p>
+          </article>
+          <article class="ab-card ok" data-ab="file" id="ab-file">
+            <b>file tools → quiet</b>
+            <p>Read/write/search produce no flicker. Isolates the trigger to the shell execution path.</p>
+          </article>
+          <article class="ab-card fail" data-ab="bg" id="ab-bg">
+            <b>background → double</b>
+            <p>run_in_background: true is worse. Two flickers per command — launch and completion.</p>
+          </article>
+          <article class="ab-card ok" data-ab="hold" id="ab-hold">
+            <b>remediation → held</b>
+            <p>Do not change visibility or focus. Write in place. Or autoOpenTerminalOnToolUse: false.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="instruments" aria-label="Assay instruments">
+        <article class="inst">
+          <b>GitHub #92395</b>
+          <p>OPEN · bug · has-repro · platform:windows · area:desktop. Reporter naji-atallah.</p>
+        </article>
+        <article class="inst">
+          <b>Code tab 1.46388.4</b>
+          <p>Windows 11 Enterprise 10.0.26200. PowerShell v1.0 path.</p>
+        </article>
+        <article class="inst">
+          <b>Shell vs file</b>
+          <p>Flicker only on Bash/PowerShell. File tools stay quiet.</p>
+        </article>
+        <article class="inst">
+          <b>Ruled out</b>
+          <p>No hooks. Keybindings absent. Config has PowerShell path + layout only.</p>
+        </article>
+        <article class="inst">
+          <b>No toggle</b>
+          <p>No GUI key. Avoiding shell is not viable for git/npm/CLI work.</p>
+        </article>
+      </section>
+
+      <section class="transcript" aria-label="Panel / focus slip">
+        <h3>Panel / focus slip</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Published Code-tab observations from the issue — not a live Claude session.
+        </p>
+        <div class="jsonl" id="jsonl"></div>
+      </section>
+
+      <div class="matrix" aria-label="Hold path matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>hold</th>
+              <th>shipped</th>
+              <th>isolate</th>
+              <th>hold</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <section class="remediation" aria-label="Remediation panels">
+        <article class="remedy" data-remedy="held">
+          <b>Visibility hold</b>
+          <p>Do not change Terminal panel visibility or focus in response to tool-call execution. Stay in whatever state the user left it.</p>
+        </article>
+        <article class="remedy" data-remedy="inplace">
+          <b>In-place update</b>
+          <p>Write output into the panel without raising or focusing it. Typing in chat should never be interrupted.</p>
+        </article>
+        <article class="remedy" data-remedy="setting">
+          <b>Setting off</b>
+          <p>Add a setting e.g. <code>autoOpenTerminalOnToolUse: false</code>. No such key exists today.</p>
+        </article>
+      </section>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the hold</button>
+        <button class="act" data-act="idle">Pin idle strobing</button>
+        <button class="act" data-act="seed">Pin seeded stolen</button>
+        <button class="act" data-act="admit">Admit the focus already stolen</button>
+        <button class="act" data-act="hold">Hold the panel</button>
+        <button class="act" data-act="fixtures">Load #92395 fixture</button>
+        <button class="act" data-act="reset">Reset to held</button>
+      </div>
+
+      <div class="sim">
+        <h3>Optics-lab simulator</h3>
+        <p>Rewrite the flash without touching a live Claude session. Diagnostic only.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-pull="shell">shell tool strobe</span>
+          <span class="chip" data-sim-pull="file">file-tool quiet</span>
+          <span class="chip" data-sim-pull="bg">background double</span>
+          <span class="chip" data-sim-pull="hold">visibility hold</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="strobing">strobing</button>
+          <button class="chip" data-chip="stolen">stolen</button>
+          <button class="chip" data-chip="held">held</button>
+          <button class="chip" data-chip="in-place-update">in-place-update</button>
+          <button class="chip" data-chip="file-tools-quiet">file-tools-quiet</button>
+          <button class="chip" data-chip="bg-double-strobe">bg-double-strobe</button>
+          <button class="chip" data-chip="docked-open">docked-open</button>
+          <button class="chip" data-chip="no-config-toggle">no-config-toggle</button>
+          <button class="chip" data-chip="shell-strobe">shell-strobe</button>
+          <button class="chip" data-chip="setting-off">setting-off</button>
+          <button class="chip" data-chip="ruled-out">ruled-out</button>
+          <button class="chip" data-chip="visibility-hold">visibility-hold</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the optics-lab bench</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this assay</h3>
+        <p>
+          In the Claude Code desktop app (Code tab) <code>1.46388.4</code> on
+          Windows 11 Enterprise <code>10.0.26200</code> with Windows PowerShell,
+          the Terminal panel flickers — opens then closes — on every
+          Bash/PowerShell tool call and steals keyboard focus from the chat input.
+        </p>
+        <p>
+          Expected: the panel stays in whatever state the user left it, or updates
+          in place without taking keyboard focus. Typing in chat should never be
+          interrupted by a tool call. Actual: focus jumps; keystrokes during the
+          flicker are lost or misdirected.
+        </p>
+        <p>
+          Ruled out: hooks in <code>~/.claude/settings.json</code> (none),
+          custom keybindings (file absent), desktop <code>config.json</code>
+          (only <code>terminalCliPowerShellPath</code> + layout —
+          no auto-open or auto-focus setting), leaving Terminal already docked
+          open (still flickers). <code>run_in_background: true</code> is worse
+          (two flickers). File read/write/search produce no flicker.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Heliostat #92389</span>
+            <span>Lethe #92335</span>
+            <span>Frizzen #92353</span>
+            <span>Nixie #92383</span>
+            <span>Embrasure #92365</span>
+            <span>Elision #92347</span>
+            <span>Graft #92354</span>
+            <span>Flutter (reserved)</span>
+          </span>
+        </p>
+        <p>
+          Cousins cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/89071">#89071</a> /
+          <a href="https://github.com/anthropics/claude-code/issues/89072">#89072</a> /
+          <a href="https://github.com/anthropics/claude-code/issues/39634">#39634</a> /
+          <a href="https://github.com/anthropics/claude-code/issues/35797">#35797</a> windowsHide conhost/WT ·
+          <a href="https://github.com/anthropics/claude-code/issues/7618">#7618</a> /ide focus ·
+          <a href="https://github.com/anthropics/claude-code/issues/32726">#32726</a> VS Code panel option ·
+          <a href="https://github.com/anthropics/claude-code/issues/1913">#1913</a> /
+          <a href="https://github.com/anthropics/claude-code/issues/10794">#10794</a> /
+          <a href="https://github.com/anthropics/claude-code/issues/82286">#82286</a> /
+          <a href="https://github.com/anthropics/claude-code/issues/84400">#84400</a> redraw/CPU flicker.
+        </p>
+      </section>
+      <footer>
+        Catalog #171 · idle word strobing · seeded stolen · contrast held / in-place-update / file-tools-quiet / bg-double-strobe ·
+        no live Claude sessions · fonts Syne / Manrope / IBM Plex Mono · optics-lab stroboscope
+      </footer>
+    </main>
+    <script>
+      const HOLD = new Set([
+        "held", "in-place-update", "file-tools-quiet", "setting-off", "visibility-hold"
+      ]);
+      const CHIPS = [
+        "strobing", "stolen", "held", "in-place-update", "file-tools-quiet",
+        "bg-double-strobe", "docked-open", "no-config-toggle", "shell-strobe",
+        "setting-off", "ruled-out", "visibility-hold"
+      ];
+      const CHIP_FILES = {
+        strobing: "strobing.json",
+        stolen: "stolen.json",
+        held: "held.json",
+        "in-place-update": "in-place-update.json",
+        "file-tools-quiet": "file-tools-quiet.json",
+        "bg-double-strobe": "bg-double-strobe.json",
+        "docked-open": "docked-open.json",
+        "no-config-toggle": "no-config-toggle.json",
+        "shell-strobe": "shell-strobe.json",
+        "setting-off": "remediation-setting.json",
+        "ruled-out": "ruled-out.json",
+        "visibility-hold": "remediation-held.json"
+      };
+      const MATRIX = [
+        { id: "shell", name: "Code tab echo test", shipped: "FAIL", isolate: "pass", hold: "FAIL", file: "repro.json" },
+        { id: "repro", name: "published shell flicker + focus steal", shipped: "FAIL", isolate: "pass", hold: "FAIL", file: "repro.json" },
+        { id: "file", name: "file read/write/search", shipped: "pass", isolate: "pass", hold: "pass", file: "file-tools-quiet.json" },
+        { id: "docked", name: "already docked open", shipped: "FAIL", isolate: "pass", hold: "FAIL", file: "docked-open.json" },
+        { id: "bg", name: "run_in_background true", shipped: "FAIL", isolate: "pass", hold: "FAIL", file: "bg-double-strobe.json" },
+        { id: "noconfig", name: "no auto-open setting", shipped: "FAIL", isolate: "pass", hold: "FAIL", file: "no-config-toggle.json" },
+        { id: "held", name: "panel stays as left", shipped: "pass", isolate: "pass", hold: "pass", file: "held.json" },
+        { id: "inplace", name: "write without raising", shipped: "pass", isolate: "pass", hold: "pass", file: "in-place-update.json" },
+        { id: "setting", name: "autoOpenTerminalOnToolUse false", shipped: "pass", isolate: "pass", hold: "pass", file: "remediation-setting.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92395,
+        seed: "strobing",
+        strobing: true,
+        stolen: false,
+        held: false,
+        toolKind: "shell",
+        panelFlickers: true,
+        focusStolen: false,
+        shippedMark: "FAIL",
+        holdMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "STROBING",
+        log: [
+          "[idle] Terminal panel flickers open/closed on every Bash/PowerShell tool call",
+          "[path] trigger is the shell execution path, not general tool activity",
+          "[desk] already strobing; idle word strobing"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92395,
+        seed: "stolen",
+        strobing: true,
+        stolen: true,
+        held: false,
+        toolKind: "shell",
+        panelFlickers: true,
+        panelOpensThenCloses: true,
+        focusStolen: true,
+        keystrokesLostOrMisdirected: true,
+        shippedMark: "FAIL",
+        holdMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "STOLEN",
+        log: [
+          "[issue] #92395 OPEN · Desktop Code-tab Terminal panel flickers and steals focus",
+          "[flicker] panel opens then closes on the shell tool call",
+          "[caret] keyboard focus jumps away from the chat input",
+          "[keys] keystrokes during the flicker are lost or misdirected",
+          "[desk] already stolen; seeded word stolen"
+        ]
+      };
+
+      const heldTicket = {
+        source: "probe",
+        issue: 92395,
+        seed: "held",
+        strobing: false,
+        stolen: false,
+        held: true,
+        panelFlickers: false,
+        focusStolen: false,
+        priorStateRespected: true,
+        shippedMark: "pass",
+        holdMark: "pass",
+        isolateMark: "pass",
+        hubCount: "HELD",
+        log: [
+          "[hold] Terminal panel stays in whatever state the user left it",
+          "[caret] typing in chat is never interrupted by a tool call",
+          "[desk] held; contrast hold"
+        ]
+      };
+
+      const inplaceTicket = {
+        source: "probe",
+        issue: 92395,
+        seed: "in-place-update",
+        strobing: false,
+        stolen: false,
+        held: true,
+        inPlaceUpdate: true,
+        panelFlickers: false,
+        focusStolen: false,
+        updatesInPlace: true,
+        shippedMark: "pass",
+        holdMark: "pass",
+        isolateMark: "pass",
+        hubCount: "IN-PLACE-UPDATE",
+        log: [
+          "[inplace] panel updates contents in place",
+          "[focus] does not take keyboard focus from chat",
+          "[desk] in-place-update; contrast hold"
+        ]
+      };
+
+      const quietTicket = {
+        source: "probe",
+        issue: 92395,
+        seed: "file-tools-quiet",
+        strobing: false,
+        stolen: false,
+        held: true,
+        fileToolsQuiet: true,
+        toolKind: "file",
+        panelFlickers: false,
+        focusStolen: false,
+        shippedMark: "pass",
+        holdMark: "pass",
+        isolateMark: "pass",
+        hubCount: "FILE-TOOLS-QUIET",
+        log: [
+          "[quiet] file read/write/search tool calls produce no flicker",
+          "[isolate] trigger is the shell execution path",
+          "[desk] file-tools-quiet; contrast hold"
+        ]
+      };
+
+      const bgTicket = {
+        source: "probe",
+        issue: 92395,
+        seed: "bg-double-strobe",
+        strobing: true,
+        stolen: true,
+        held: false,
+        bgDoubleStrobe: true,
+        runInBackground: true,
+        flickerCount: 2,
+        panelFlickers: true,
+        focusStolen: true,
+        shippedMark: "FAIL",
+        holdMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "BG-DOUBLE-STROBE",
+        log: [
+          "[bg] run_in_background: true on the command",
+          "[worse] two flickers per command — launch and completion",
+          "[desk] bg-double-strobe; already stolen twice"
+        ]
+      };
+
+      let pullState = "shell";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        return t.seed === "setting-off"
+          || t.seed === "visibility-hold"
+          || t.scenario === "remediation-held"
+          || t.scenario === "remediation-inplace"
+          || t.scenario === "remediation-setting"
+          || t.held === true
+          || t.inPlaceUpdate === true
+          || t.settingOff === true;
+      }
+
+      function alreadyStrobing(t) {
+        const seed = String(t.seed || "");
+        if (t.held === true && t.stolen !== true && t.strobing !== true) return false;
+        if (t.fileToolsQuiet === true && t.panelFlickers !== true) return false;
+        if (t.inPlaceUpdate === true && t.stolen !== true) return false;
+        if (remediating(t) && t.stolen !== true && t.strobing !== true) return false;
+        if (HOLD.has(seed) && t.stolen !== true && t.panelFlickers !== true) return false;
+        if (t.strobing === true || t.stolen === true || t.bgDoubleStrobe === true) return true;
+        if ([
+          "strobing", "stolen", "shell-strobe", "docked-open",
+          "no-config-toggle", "ruled-out", "bg-double-strobe"
+        ].includes(seed)) {
+          return !HOLD.has(seed);
+        }
+        return t.panelFlickers === true && t.held !== true;
+      }
+
+      function holdTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (t.held === true || t.inPlaceUpdate === true || t.fileToolsQuiet === true || t.settingOff === true || HOLD.has(seed) || remediating(t))
+          && t.stolen !== true
+          && !alreadyStrobing(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyStrobing(t);
+        t.shippedStrobing = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedStrobing ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.holdMark = t.holdMark || (t.held === true || remediating(t) || t.fileToolsQuiet === true ? "pass" : "FAIL");
+        const hold = holdTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "strobing") chips.push("strobing");
+        if (t.stolen === true || seed === "stolen") chips.push("stolen");
+        if ((hold && t.held === true) || seed === "held") chips.push("held");
+        if (t.inPlaceUpdate === true || seed === "in-place-update") chips.push("in-place-update");
+        if (t.fileToolsQuiet === true || seed === "file-tools-quiet") chips.push("file-tools-quiet");
+        if (t.bgDoubleStrobe === true || seed === "bg-double-strobe") chips.push("bg-double-strobe");
+        if (t.panelAlreadyDockedOpen === true || seed === "docked-open") chips.push("docked-open");
+        if (t.autoOpenSettingExists === false || seed === "no-config-toggle") chips.push("no-config-toggle");
+        if (t.toolKind === "shell" || seed === "shell-strobe") chips.push("shell-strobe");
+        if (t.settingOff === true || seed === "setting-off") chips.push("setting-off");
+        if (t.hooksConfigured === false || seed === "ruled-out") chips.push("ruled-out");
+        if (t.seed === "visibility-hold" || t.scenario === "remediation-held") chips.push("visibility-hold");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (hold
+            ? (t.fileToolsQuiet ? "file-tools-quiet" : (t.inPlaceUpdate ? "in-place-update" : (t.settingOff ? "setting-off" : "held")))
+            : (t.bgDoubleStrobe ? "bg-double-strobe" : (t.stolen ? "stolen" : "strobing")));
+        return { ticket: t, hold, alarm, chips: unique, verdict };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] shell tool call · panel strobe · already stolen"]
+            : ["[desk] panel held · caret stays"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /strobing|stolen|FAIL|flicker|yank|lost|worse|double/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "panel strobes on every shell tool call" : (t.fileToolsQuiet ? "file tools stay quiet" : "panel stays as left"), "Code tab Terminal panel"],
+          ["isolate", t.isolateMark, "file read/write/search produce no flicker", "shell path only"],
+          ["hold", t.holdMark, t.held === true || remediating(t) || t.fileToolsQuiet === true ? "visibility/focus unchanged" : "would hold without raising or focusing", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.hold)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id, scenario: row.id }
+                : { ...heldTicket, seed: row.id, scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (t.bgDoubleStrobe === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="user">run_in_background: true</span>\n` +
+            `<span class="user">flicker 1 · launch</span>\n` +
+            `<span class="user">flicker 2 · completion</span>\n` +
+            `<span class="hook">worse than the foreground strobe</span>`;
+          return;
+        }
+        if (t.fileToolsQuiet === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">file read/write/search · no flicker</span>\n` +
+            `<span class="asst">caret stays in chat</span>\n` +
+            `<span class="hook">isolates trigger to the shell execution path</span>`;
+          return;
+        }
+        if (result.hold && (t.held === true || t.inPlaceUpdate === true || t.settingOff === true)) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">do not change visibility or focus</span>\n` +
+            `<span class="asst">write output without raising</span>\n` +
+            `<span class="asst">or autoOpenTerminalOnToolUse: false</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">Code tab · 1.46388.4 · PowerShell</span>\n` +
+          `<span class="user">Bash/PowerShell tool call → panel opens then closes</span>\n` +
+          `<span class="user">keyboard focus jumps away from the chat input</span>\n` +
+          `<span class="user">keystrokes during the flicker lost or misdirected</span>\n` +
+          `<span class="hook">file tools quiet · docked-open still flickers · no auto-open key</span>`;
+      }
+
+      const REASONS = {
+        strobing: "The Terminal panel already strobes — opens then closes — on every Bash/PowerShell tool call. That is not a helpful console — it is already strobing.",
+        stolen: "A shell tool call flickered the Terminal panel and keyboard focus left the chat input. Keystrokes during the flicker are lost or misdirected. Admit the focus already stolen.",
+        "bg-double-strobe": "run_in_background: true is worse. Two flickers per command — one on launch, one on completion. The caret is stolen twice.",
+        "docked-open": "Leaving the Terminal already docked open still flickers. Prior panel state is not respected.",
+        "no-config-toggle": "No GUI toggle. config.json has no auto-open or auto-focus key. Avoiding shell is not viable for git/npm/CLI work.",
+        "shell-strobe": "Flicker occurs only on Bash/PowerShell tool calls. File read/write/search stay quiet. The trigger is the shell path.",
+        "file-tools-quiet": "File read/write/search produce no flicker. The tubes stay dark. That isolates the trigger to the shell execution path.",
+        held: "The panel stays in whatever state the user left it. The caret stays in chat. Score the hold.",
+        "in-place-update": "Output writes into the panel without raising or focusing it. Typing is never interrupted.",
+        "setting-off": "autoOpenTerminalOnToolUse: false would suppress the auto-open/auto-focus. No such key exists today.",
+        "visibility-hold": "Do not change Terminal panel visibility or focus on tool-call execution.",
+        "ruled-out": "Hooks none. Keybindings file absent. Config only PowerShell path + layout. The strobe remains."
+      };
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const seedName = String(t.seed || result.verdict || "");
+        const stolen = t.stolen === true || seedName === "stolen";
+        const bg = t.bgDoubleStrobe === true || seedName === "bg-double-strobe";
+        const quiet = t.fileToolsQuiet === true || seedName === "file-tools-quiet";
+        const inplace = t.inPlaceUpdate === true || seedName === "in-place-update";
+        const setting = t.settingOff === true || seedName === "setting-off";
+        const holding = (result.hold || t.held === true) && !alarm;
+        const stageClass = bg
+          ? "bg-double-strobe"
+          : (quiet
+            ? "file-tools-quiet"
+            : (inplace
+              ? "in-place-update"
+              : (setting
+                ? "setting-off"
+                : (holding
+                  ? "held"
+                  : (stolen ? "stolen" : (seedName === "docked-open" || seedName === "shell-strobe" || seedName === "no-config-toggle" || seedName === "ruled-out" ? seedName : "strobing"))))));
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || REASONS[alarm ? "stolen" : "held"];
+        const stage = document.getElementById("stage");
+        stage.className = "lab " + stageClass;
+        document.getElementById("stage-label").textContent = alarm
+          ? (stolen ? "seeded stolen · shell flicker · caret yanked" : (bg ? "bg-double-strobe · launch + completion" : "idle strobing · panel already strobes"))
+          : (quiet ? "file-tools-quiet · no flicker" : (inplace ? "in-place-update · write without raise" : (setting ? "setting-off · autoOpen false" : "held · panel stays as left")));
+        document.getElementById("count-tag").textContent = alarm
+          ? (bg ? "2 strobes / cmd · run_in_background" : "Code tab · 1.46388.4 · PowerShell")
+          : "caret stays · visibility held";
+        document.getElementById("hz").textContent = bg ? "2.00" : (alarm ? "1.00" : "0.00");
+        document.getElementById("focus-word").textContent = alarm
+          ? (stolen || bg ? "focus · stolen from chat" : "panel · already strobing")
+          : (quiet ? "focus · file tools leave the caret" : "focus · held in chat");
+        document.getElementById("term").innerHTML = quiet
+          ? "file tool · no shell · panel quiet"
+          : (holding
+            ? (inplace ? "output written in place\nPS&gt; echo test" : "PS&gt; panel stays as left")
+            : (bg ? "PS&gt; launch flicker\nPS&gt; completion flicker" : "PS&gt; echo test<br />test"));
+        document.getElementById("chat-box").value = alarm
+          ? "type while the assistant shells…"
+          : (quiet ? "file tools do not yank this caret" : "caret stays while output writes");
+        setPlaque("p-flash", holding || quiet, alarm);
+        setPlaque("p-caret", holding || quiet, stolen || bg);
+        setPlaque("p-path", true, t.toolKind === "shell" && alarm);
+        setPlaque("p-cfg", t.settingOff === true, t.autoOpenSettingExists === false && alarm);
+        document.getElementById("s-flash").textContent = alarm
+          ? (bg ? "two flickers · launch + completion" : "open then close · every shell tool call")
+          : (inplace ? "updates in place · no raise" : (quiet ? "file tools · no flicker" : "stays in the user's state"));
+        document.getElementById("s-caret").textContent = alarm
+          ? "focus stolen · keystrokes lost or misdirected"
+          : "caret stays in chat";
+        document.getElementById("s-path").textContent = quiet
+          ? "file read/write/search · quiet"
+          : "Bash/PowerShell only · file tools quiet";
+        document.getElementById("s-cfg").textContent = t.settingOff === true
+          ? "autoOpenTerminalOnToolUse: false"
+          : "no auto-open or auto-focus setting exists";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.hold;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        const barPanel = document.getElementById("bar-panel");
+        barPanel.className = "bar " + (holding || quiet ? "kept" : "cut");
+        barPanel.innerHTML = holding || quiet
+          ? `<span class="fill"></span>` + (inplace ? "in-place · write without raise" : (quiet ? "quiet · file tools do not strobe" : "held · stays as left"))
+          : `<span class="fill"></span>` + (bg ? "double strobe · launch + completion" : "strobing · opens then closes");
+        const barCaret = document.getElementById("bar-caret");
+        barCaret.className = "bar " + (holding || quiet ? "kept" : "cut");
+        barCaret.innerHTML = holding || quiet
+          ? `<span class="fill"></span>held · caret stays in chat`
+          : `<span class="fill"></span>` + (stolen || bg ? "stolen · focus left the input" : "strobing · panel yank armed");
+        document.getElementById("ab-shell").classList.toggle("active", alarm && !bg && !quiet && pullState !== "hold");
+        document.getElementById("ab-file").classList.toggle("active", quiet || pullState === "file");
+        document.getElementById("ab-bg").classList.toggle("active", bg || pullState === "bg");
+        document.getElementById("ab-hold").classList.toggle("active", (holding && !quiet) || pullState === "hold");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        paintMatrix(t.scenario || (bg ? "bg" : (quiet ? "file" : (holding ? (inplace ? "inplace" : (setting ? "setting" : "held")) : "shell"))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "file") return { ...quietTicket };
+        if (pullState === "bg") return { ...bgTicket };
+        if (pullState === "hold") return { ...heldTicket };
+        return { ...seeded, seed: "stolen", hubCount: "SHELL" };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState === "shell" || pullState === "bg";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "shell";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "shell";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset" || act === "hold") {
+            pullState = "hold";
+            syncSimChips();
+            try { apply(await loadNamed("held.json")); }
+            catch { apply({ ...heldTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("stolen.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("repro.json")); }
+            catch { apply({ ...seeded, seed: "stolen", hubCount: "ADMIT" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92395.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...heldTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92395 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = kind === "inplace"
+            ? "remediation-inplace.json"
+            : (kind === "setting" ? "remediation-setting.json" : "remediation-held.json");
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply({
+              ...heldTicket,
+              seed: kind === "inplace" ? "in-place-update" : (kind === "setting" ? "setting-off" : "held"),
+              scenario: kind === "inplace" ? "remediation-inplace" : (kind === "setting" ? "remediation-setting" : "remediation-held"),
+              inPlaceUpdate: kind === "inplace",
+              settingOff: kind === "setting"
+            });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-ab]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const side = el.dataset.ab;
+          pullState = side === "file" ? "file" : (side === "bg" ? "bg" : (side === "hold" ? "hold" : "shell"));
+          syncSimChips();
+          const file = side === "file"
+            ? "file-tools-quiet.json"
+            : (side === "bg" ? "bg-double-strobe.json" : (side === "hold" ? "held.json" : "repro.json"));
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(side === "file" ? { ...quietTicket } : (side === "bg" ? { ...bgTicket } : (side === "hold" ? { ...heldTicket } : { ...seeded, seed: "stolen", scenario: side })));
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
