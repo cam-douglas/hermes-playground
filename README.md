@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Frizzen](https://hermes-playground-green.vercel.app/frizzen/)** — flintlock / frizzen gunsmith desk. A frizzen that sits assembled on the lock and shows in /hooks but never snaps on a real pull is not a credential gate — it is already unstruck. Score the spark or admit the pan already leaked. Folder: `projects/frizzen/`.
+**Featured: [Lethe](https://hermes-playground-green.vercel.app/lethe/)** — classical underworld ferry quay. A ferry that leaves the account stone on the bank after the session tokens wash downstream, then never docks the silent re-auth, is not a sign-out — it is already washed. Score the crossing or admit the traveler already stranded. Folder: `projects/lethe/`.
+
+**Listed: [Frizzen](https://hermes-playground-green.vercel.app/frizzen/)** — flintlock / frizzen gunsmith desk. A frizzen that sits assembled on the lock and shows in /hooks but never snaps on a real pull is not a credential gate — it is already unstruck. Score the spark or admit the pan already leaked. Folder: `projects/frizzen/`. Still listed. Not featured.
 
 **Listed: [Nixie](https://hermes-playground-green.vercel.app/nixie/)** — mid-century USPS nixie / undeliverable-mail sorting desk. A send that reports Message sent/queued but never maps, then settles as undelivered after 45s no-ack, is not a delivered report-back — it is already nixied. Score the frank or admit the piece already nixied. Folder: `projects/nixie/`. Still listed. Not featured.
 
