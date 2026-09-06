@@ -1,0 +1,1205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hangfire — delayed-primer bay for #92478</title>
+    <meta
+      name="description"
+      content="Hangfire — delayed-primer / hangfire chronograph bay for Claude Code #92478: queued /compact is sometimes sent as a plain prompt (promptSource:queued) instead of executing. Idle word is hangfired."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anybody:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Oswald:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --cordite: #100e0c;
+        --char: #1a1612;
+        --slate: #3a3d42;
+        --slate-hot: #6b7078;
+        --brass: #c4a35a;
+        --brass-hot: #e8c878;
+        --brass-wash: rgba(196, 163, 90, 0.16);
+        --copper: #b87333;
+        --copper-hot: #d4894a;
+        --copper-wash: rgba(184, 115, 51, 0.2);
+        --fuse: #e8a030;
+        --fuse-hot: #ffb347;
+        --fuse-wash: rgba(232, 160, 48, 0.22);
+        --alarm: #c45a2a;
+        --alarm-hot: #e07038;
+        --hold: #7a9a6a;
+        --hold-hot: #a8c896;
+        --ink: #efe6d4;
+        --mute: #8a8174;
+        --rule: rgba(196, 163, 90, 0.22);
+        --slot: #161210;
+        --powder: #2a2c30;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Source Sans 3", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 8% -10%, rgba(184, 115, 51, 0.16), transparent 42%),
+          radial-gradient(ellipse at 92% 0%, rgba(232, 160, 48, 0.1), transparent 36%),
+          radial-gradient(ellipse at 50% 100%, rgba(58, 61, 66, 0.35), transparent 48%),
+          repeating-linear-gradient(135deg, transparent 0 11px, rgba(42, 44, 48, 0.35) 11px 12px),
+          linear-gradient(180deg, #1c1814 0%, #100e0c 52%, #0a0806 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--fuse-hot); }
+      .wrap { width: min(1340px, calc(100% - 28px)); margin: 0 auto; padding: 20px 0 92px; }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 4px solid var(--copper);
+        padding-left: 10px;
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--brass);
+      }
+      h1 {
+        font-family: Anybody, Oswald, Impact, sans-serif;
+        font-size: clamp(58px, 12vw, 118px);
+        letter-spacing: 0.02em;
+        margin: 2px 0 8px;
+        font-weight: 800;
+        line-height: 0.84;
+        color: var(--ink);
+        text-shadow: 2px 3px 0 rgba(184, 115, 51, 0.35);
+      }
+      h1 em {
+        font-style: normal;
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.155em;
+        letter-spacing: 0.26em;
+        color: var(--fuse-hot);
+        margin-top: 10px;
+      }
+      .lede { max-width: 78em; color: var(--mute); line-height: 1.65; font-size: 17px; }
+      .lede code, code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--brass-hot);
+      }
+
+      .bay {
+        margin: 24px 0 0;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(26, 22, 18, 0.96), rgba(16, 14, 12, 0.98)),
+          repeating-linear-gradient(0deg, transparent 0 17px, rgba(58, 61, 66, 0.12) 17px 18px);
+        box-shadow: 0 28px 60px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(196, 163, 90, 0.08);
+        padding: 14px 16px 16px;
+        position: relative;
+      }
+      .bay::before {
+        content: "PRIMER BAY 184";
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        font-family: Anybody, Oswald, sans-serif;
+        letter-spacing: 0.2em;
+        font-size: 13px;
+        color: var(--slate-hot);
+      }
+      .bay.hangfired, .bay.promptSource-queued, .bay.plain-prompt-path,
+      .bay.missing-compact-boundary, .bay.long-args-suggestive, .bay.cousins {
+        box-shadow: 0 0 0 3px rgba(196, 90, 42, 0.45), 0 28px 60px rgba(0, 0, 0, 0.5);
+      }
+      .bay.executed, .bay.idle-prompt-ok {
+        box-shadow: 0 0 0 3px rgba(122, 154, 106, 0.45), 0 28px 60px rgba(0, 0, 0, 0.5);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 12px;
+        border-bottom: 1px dashed rgba(196, 163, 90, 0.34);
+        padding-bottom: 8px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 1.5fr 0.75fr 0.95fr;
+        gap: 14px;
+      }
+      @media (max-width: 980px) { .deck { grid-template-columns: 1fr; } .bay::before { display: none; } }
+
+      .cap, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--slate-hot);
+      }
+
+      .cartridge {
+        background: var(--slot);
+        border: 1px solid rgba(196, 163, 90, 0.22);
+        padding: 10px 10px 8px;
+        min-height: 230px;
+      }
+      .cartridge svg { width: 100%; height: auto; display: block; }
+      .fuse-glow {
+        transform-origin: 52px 68px;
+        animation: none;
+      }
+      .bay.hangfired .fuse-glow, .bay.promptSource-queued .fuse-glow,
+      .bay.plain-prompt-path .fuse-glow, .bay.missing-compact-boundary .fuse-glow,
+      .bay.long-args-suggestive .fuse-glow, .bay.cousins .fuse-glow {
+        animation: hang 1.15s ease-in-out infinite alternate;
+      }
+      @keyframes hang {
+        from { opacity: 0.2; }
+        to { opacity: 1; }
+      }
+
+      .chrono-wrap {
+        background: var(--slot);
+        border: 1px solid rgba(184, 115, 51, 0.28);
+        padding: 10px;
+        display: grid;
+        place-items: center;
+      }
+      .chrono {
+        width: min(236px, 100%);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 50% 50%, #161210 0 56%, #2a2014 57% 70%, #c4a35a 71% 76%, #8a6a28 77% 84%, #b87333 85% 100%);
+        box-shadow: inset 0 0 0 6px rgba(16, 14, 12, 0.55), 0 10px 24px rgba(0, 0, 0, 0.4);
+        position: relative;
+      }
+      .chrono svg { width: 100%; height: 100%; }
+      .needle { transform-origin: 100px 100px; transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1); }
+      .readout {
+        position: absolute;
+        left: 50%;
+        top: 62%;
+        transform: translateX(-50%);
+        font-family: Anybody, Oswald, sans-serif;
+        letter-spacing: 0.1em;
+        font-size: 20px;
+        color: var(--alarm-hot);
+        text-align: center;
+        line-height: 1;
+      }
+      .bay.executed .readout, .bay.idle-prompt-ok .readout { color: var(--hold-hot); }
+
+      .face-col { display: flex; flex-direction: column; gap: 10px; }
+      .faceplate {
+        background:
+          linear-gradient(180deg, rgba(184, 115, 51, 0.22), rgba(16, 14, 12, 0.72));
+        border: 1px solid rgba(196, 163, 90, 0.28);
+        padding: 12px 14px;
+      }
+      .faceplate.copper {
+        background: linear-gradient(180deg, rgba(196, 163, 90, 0.18), rgba(16, 14, 12, 0.72));
+      }
+      .faceplate strong {
+        display: block;
+        font-family: Anybody, Oswald, sans-serif;
+        font-size: 32px;
+        letter-spacing: 0.06em;
+        line-height: 0.95;
+        color: var(--alarm-hot);
+        margin: 4px 0 6px;
+      }
+      .bay.executed .faceplate strong, .bay.idle-prompt-ok .faceplate strong { color: var(--hold-hot); }
+      .faceplate span { color: var(--mute); font-size: 13px; line-height: 1.45; display: block; }
+
+      .chambers {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 720px) { .chambers { grid-template-columns: 1fr; } }
+      .chamber {
+        background: var(--slot);
+        border: 1px solid rgba(196, 163, 90, 0.18);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .chamber header {
+        display: flex;
+        justify-content: space-between;
+        font-family: Anybody, Oswald, sans-serif;
+        letter-spacing: 0.08em;
+        font-size: 22px;
+        color: var(--ink);
+      }
+      .chamber header small {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        color: var(--mute);
+        align-self: center;
+      }
+      .chamber p { margin: 8px 0 0; color: var(--mute); font-size: 13px; line-height: 1.45; }
+      .chamber.hot { border-color: var(--alarm); box-shadow: inset 0 0 0 1px rgba(196, 90, 42, 0.25); }
+      .chamber.hold { border-color: var(--hold); box-shadow: inset 0 0 0 1px rgba(122, 154, 106, 0.25); }
+
+      .powder {
+        margin-top: 14px;
+        background: var(--slot);
+        border: 1px solid rgba(58, 61, 66, 0.5);
+        padding: 12px;
+      }
+      .powder .bar {
+        height: 14px;
+        background: repeating-linear-gradient(90deg, #2a2c30 0 8px, #1a1612 8px 10px);
+        border: 1px solid rgba(196, 163, 90, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+      .powder .fill {
+        height: 100%;
+        width: 52%;
+        background: linear-gradient(90deg, var(--copper), var(--fuse));
+        transition: width 0.4s ease;
+      }
+      .powder .ticks {
+        display: flex;
+        justify-content: space-between;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        color: var(--slate-hot);
+        margin-top: 6px;
+        letter-spacing: 0.08em;
+      }
+      .powder .note { margin: 8px 0 0; color: var(--mute); font-size: 13px; }
+
+      .wire {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 10px;
+      }
+      @media (max-width: 720px) { .wire { grid-template-columns: 1fr; } }
+      .ticket {
+        background: var(--slot);
+        border: 1px solid rgba(196, 163, 90, 0.18);
+        padding: 10px 12px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+      }
+      .ticket .row {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr 0.9fr;
+        gap: 8px;
+        padding: 5px 0;
+        border-bottom: 1px dashed rgba(196, 163, 90, 0.16);
+      }
+      .ticket .row.head { color: var(--slate-hot); letter-spacing: 0.12em; text-transform: uppercase; font-size: 10px; }
+      .ticket .row.leak { color: var(--alarm-hot); }
+      .ticket .row.hold { color: var(--hold-hot); }
+      .vs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .vs article {
+        background: var(--slot);
+        border: 1px solid rgba(196, 163, 90, 0.18);
+        padding: 10px 12px;
+      }
+      .vs b {
+        font-family: Anybody, Oswald, sans-serif;
+        letter-spacing: 0.1em;
+        font-size: 18px;
+        color: var(--brass);
+        display: block;
+        margin-bottom: 6px;
+      }
+      .vs p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.5; }
+
+      .desk { margin-top: 22px; }
+      .verdict-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .verdict {
+        font-family: Anybody, Oswald, sans-serif;
+        font-size: clamp(40px, 7vw, 70px);
+        letter-spacing: 0.04em;
+        margin: 0;
+        line-height: 0.9;
+      }
+      .verdict.alarm { color: var(--alarm-hot); }
+      .verdict.hold { color: var(--hold-hot); }
+      .reason { max-width: 48em; color: var(--mute); line-height: 1.55; margin: 8px 0 0; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+      .chip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--rule);
+        background: var(--slot);
+        color: var(--ink);
+        padding: 5px 8px;
+        cursor: pointer;
+      }
+      .chip.on { border-color: var(--alarm); color: var(--alarm-hot); }
+      .chip.hold { border-color: var(--hold); color: var(--hold-hot); }
+
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path { background: var(--slot); border: 1px solid var(--rule); padding: 10px 12px; }
+      .path b { font-family: Anybody, Oswald, sans-serif; letter-spacing: 0.08em; font-size: 20px; display: block; }
+      .path.fail { border-color: var(--alarm); }
+      .path.ok { border-color: var(--hold); }
+      .path .face { color: var(--ink); font-size: 14px; margin: 6px 0; }
+      .path .note { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--mute); }
+
+      .log, .slip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: #0a0806;
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        white-space: pre-wrap;
+        line-height: 1.55;
+        margin-bottom: 10px;
+      }
+      .log .hit { color: var(--alarm-hot); }
+      .slip .hook { color: var(--brass-hot); }
+      .slip .user { color: var(--alarm-hot); }
+      .slip .asst { color: var(--hold-hot); }
+
+      .matrix { overflow: auto; margin: 12px 0 16px; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); }
+      th { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--slate-hot); }
+      tr.active td { background: rgba(196, 163, 90, 0.08); }
+      .fail-cell { color: var(--alarm-hot); }
+      .pass-cell { color: var(--hold-hot); }
+
+      .pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+      @media (max-width: 800px) { .pads { grid-template-columns: 1fr 1fr; } }
+      .pad {
+        background: var(--slot);
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .pad b { font-family: Anybody, Oswald, sans-serif; letter-spacing: 0.06em; font-size: 18px; display: block; color: var(--brass); }
+      .pad p { margin: 6px 0 0; color: var(--mute); font-size: 12px; line-height: 1.4; }
+
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 16px; }
+      .act {
+        font-family: Anybody, Oswald, sans-serif;
+        letter-spacing: 0.08em;
+        font-size: 18px;
+        border: 1px solid var(--brass);
+        background: transparent;
+        color: var(--ink);
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+      .act:hover { background: var(--brass-wash); }
+      .act.primary { background: var(--copper); border-color: var(--copper-hot); color: #1a120c; }
+
+      .sim { margin: 8px 0 16px; }
+      .sim h3 {
+        font-family: Anybody, Oswald, sans-serif;
+        letter-spacing: 0.06em;
+        font-size: 26px;
+        margin: 0 0 6px;
+      }
+      .sim p { margin: 0 0 10px; color: var(--mute); }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+      .drop {
+        border: 1px dashed rgba(196, 163, 90, 0.4);
+        padding: 14px;
+        text-align: center;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--slate-hot);
+        margin-bottom: 10px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #0a0806;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+        resize: vertical;
+      }
+      .research { margin-top: 22px; color: var(--mute); line-height: 1.6; }
+      .research h3 { font-family: Anybody, Oswald, sans-serif; letter-spacing: 0.06em; font-size: 28px; color: var(--ink); margin: 0 0 8px; }
+      .stayoff span {
+        display: inline-block;
+        margin: 0 8px 4px 0;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        border-bottom: 1px solid rgba(138, 129, 116, 0.4);
+      }
+      footer {
+        margin-top: 22px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--slate-hot);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <a class="catalog" href="/">hermes playground catalog</a>
+        <p class="mark">00:50 Sydney · hangfire · catalog #184 · #92478</p>
+        <h1>HANGFIRE<em>delayed-primer chronograph bay</em></h1>
+        <p class="lede">
+          A queued <code>/compact</code> typed while a turn is running should fire
+          as the slash command at the turn boundary —
+          <code>file-history-snapshot</code> then <code>compact_boundary</code> +
+          command stub. On 2.1.257 it sometimes hangs through the turn, then
+          fires as a plain prompt (<code>promptSource:"queued"</code>) —
+          <strong style="color:var(--alarm-hot)">hangfired</strong>. The model
+          writes a prose "summary"; no compaction; no signal. When the command
+          actually runs —
+          <strong style="color:var(--hold-hot)">executed</strong> — that is the
+          hold path. Primary
+          <a href="https://github.com/anthropics/claude-code/issues/92478">#92478</a>.
+        </p>
+      </header>
+
+      <section class="bay hangfired" id="bay" aria-label="Delayed-primer chronograph bay">
+        <div class="rail">
+          <span>bay 184 · cordite charcoal · brass / copper · amber fuse</span>
+          <span id="rail-state">primer delayed · round fired as prose</span>
+        </div>
+        <div class="deck">
+          <div>
+            <h4 class="cap">cartridge · delayed primer</h4>
+            <div class="cartridge">
+              <svg viewBox="0 0 580 168" role="img" aria-label="Hangfire cartridge with delayed primer">
+                <rect x="8" y="48" width="36" height="44" rx="4" fill="#b87333" stroke="#e8c878" stroke-width="1.5" />
+                <circle class="fuse-glow" id="primer-cup" cx="26" cy="70" r="10" fill="#e8a030" />
+                <path class="fuse-glow" id="fuse-line" d="M26 60 C18 36 40 18 62 28" fill="none" stroke="#ffb347" stroke-width="2.4" />
+                <rect x="44" y="44" width="300" height="52" rx="4" fill="#c4a35a" stroke="#8a6a28" stroke-width="2" />
+                <rect x="52" y="52" width="284" height="36" fill="#8a6a28" opacity="0.35" />
+                <polygon points="344,44 392,36 392,104 344,96" fill="#c4a35a" stroke="#8a6a28" />
+                <path id="round-cmd" d="M392 52 L470 40 L534 40" fill="none" stroke="#7a9a6a" stroke-width="3" opacity="0.25" />
+                <path id="round-plain" d="M392 88 L470 108 L534 108" fill="none" stroke="#e07038" stroke-width="3" />
+                <rect id="chamber-cmd" x="470" y="28" width="96" height="28" rx="3" fill="#1a1612" stroke="#7a9a6a" stroke-width="1.5" />
+                <rect id="chamber-plain" x="470" y="94" width="96" height="28" rx="3" fill="#1a1612" stroke="#e07038" stroke-width="2" />
+                <text x="480" y="47" fill="#a8c896" font-size="11" font-family="JetBrains Mono, monospace">COMMAND</text>
+                <text x="488" y="113" fill="#e07038" font-size="11" font-family="JetBrains Mono, monospace">PLAIN</text>
+                <circle id="slug" cx="410" cy="88" r="7" fill="#e07038" />
+                <text x="16" y="148" fill="#8a8174" font-size="11" font-family="JetBrains Mono, monospace">/COMPACT  ·  promptSource</text>
+                <text id="cart-caption" x="280" y="148" fill="#e07038" font-size="11" font-family="JetBrains Mono, monospace">HANGFIRED · PROSE PATH</text>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <h4 class="cap">delay chronograph</h4>
+            <div class="chrono-wrap">
+              <div class="chrono" aria-hidden="true">
+                <svg viewBox="0 0 200 200">
+                  <circle cx="100" cy="100" r="62" fill="none" stroke="#c4a35a" stroke-width="1" opacity="0.4" />
+                  <line class="needle" id="needle-delay" x1="100" y1="100" x2="100" y2="46" stroke="#ffb347" stroke-width="2.6" />
+                  <line class="needle" id="needle-path" x1="100" y1="100" x2="150" y2="122" stroke="#e07038" stroke-width="2" />
+                  <circle cx="100" cy="100" r="4" fill="#b87333" />
+                </svg>
+                <div class="readout" id="chrono-read">HANGFIRED</div>
+              </div>
+            </div>
+          </div>
+          <div class="face-col">
+            <h4 class="cap">faceplates</h4>
+            <article class="faceplate" id="faceplate">
+              <b class="cap">primer state</b>
+              <strong id="face-text">hangfired</strong>
+              <span id="face-note">Queued /compact hung through the turn, then fired as ordinary prose.</span>
+            </article>
+            <article class="faceplate copper">
+              <b class="cap">promptSource</b>
+              <strong id="source-face" style="font-size:22px">queued</strong>
+              <span id="source-note">Failing user row carries promptSource:"queued". Executed echoes never carry it.</span>
+            </article>
+            <article class="faceplate">
+              <b class="cap">next attachment</b>
+              <strong id="attach-face" style="font-size:20px">total_tokens_reminder</strong>
+              <span id="attach-note">Fail path is the plain prompt. Command path starts with file-history-snapshot.</span>
+            </article>
+          </div>
+        </div>
+
+        <div class="chambers" id="chambers">
+          <article class="chamber hot" data-lane="hangfired">
+            <header>PLAIN <small>prompt path</small></header>
+            <p>User row carries <code>promptSource:"queued"</code>. Next attachment is <code>total_tokens_reminder</code>. Model writes a prose "summary". No <code>compact_boundary</code>.</p>
+          </article>
+          <article class="chamber hold" data-lane="executed">
+            <header>COMMAND <small>slash path</small></header>
+            <p>No <code>promptSource</code>. Next is <code>file-history-snapshot</code>, then <code>compact_boundary</code> + command stub. Same queue, ~0.4 s after <code>end_turn</code>.</p>
+          </article>
+        </div>
+
+        <div class="powder" aria-label="Powder-measure length gauge">
+          <h4 class="cap">powder measure · arg length</h4>
+          <div class="bar"><div class="fill" id="powder-fill"></div></div>
+          <div class="ticks">
+            <span>0</span>
+            <span>787 most executed</span>
+            <span>840 fail floor</span>
+            <span>1588 fail ceiling</span>
+            <span>1606 executed outlier</span>
+          </div>
+          <p class="note" id="powder-note">All 7 hangfires ≥ 840 chars. 27 of 29 executed queued cases ≤ 787. One executed at 1606 — length suggestive, not a hard rule.</p>
+        </div>
+
+        <div class="wire">
+          <div class="ticket" id="wire-ticket">
+            <div class="row head"><span>jsonl row</span><span>hangfired</span><span>executed</span></div>
+            <div class="row leak"><span>user /compact</span><span>promptSource:queued</span><span>no promptSource</span></div>
+            <div class="row leak"><span>next attachment</span><span>total_tokens_reminder</span><span>file-history-snapshot</span></div>
+            <div class="row hold"><span>boundary</span><span>missing</span><span>compact_boundary</span></div>
+            <div class="row hold"><span>model</span><span>prose "summary"</span><span>command stub</span></div>
+          </div>
+          <div class="vs">
+            <article>
+              <b>expected</b>
+              <p id="exp-copy">At the turn boundary the queued /compact executes: command stub, compact_boundary, compact summary.</p>
+            </article>
+            <article>
+              <b>actual</b>
+              <p id="act-copy">7 of 36 queued cases on 2.1.257 fire as a plain prompt. 0 of 30 on 2.1.222. Idle prompt always executes (6/6).</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Hangfire scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">hangfired</p>
+            <p class="reason" id="reason">
+              Queued /compact hung through the turn, then fired as a plain prompt.
+              promptSource:"queued". No compact_boundary. Admit hangfired.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="slip" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Hangfire path matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>2.1.222</th>
+                <th>2.1.257</th>
+                <th>shipped</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="pads" aria-label="Assay pads">
+          <article class="pad" data-remedy="hangfired">
+            <b>Hangfired</b>
+            <p>Queued /compact demoted to a plain prompt. Primer delayed.</p>
+          </article>
+          <article class="pad" data-remedy="promptSource-queued">
+            <b>promptSource</b>
+            <p>Failing user row carries promptSource:"queued".</p>
+          </article>
+          <article class="pad" data-remedy="plain-prompt-path">
+            <b>Plain path</b>
+            <p>Next attachment is total_tokens_reminder.</p>
+          </article>
+          <article class="pad" data-remedy="executed">
+            <b>Executed</b>
+            <p>compact_boundary + command stub. Hold path.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act primary" data-act="score">Score probes</button>
+          <button class="act" data-act="idle">Admit hangfired</button>
+          <button class="act" data-act="seed">Pin seeded executed</button>
+          <button class="act" data-act="fixtures">Load #92478 fixture</button>
+          <button class="act" data-act="flip">Flip hangfired vs executed</button>
+          <button class="act" data-act="reset">Reset to hangfired</button>
+        </div>
+
+        <div class="sim">
+          <h3>Bay simulator</h3>
+          <p>Seat the primer without touching a live Claude session. Diagnostic chronograph pads only — not real turns.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="hang">admit hangfired</span>
+            <span class="chip" data-sim-pull="exec">pin executed</span>
+            <span class="chip" data-sim-pull="queued">queued demotion</span>
+            <span class="chip" data-sim-pull="bound">boundary hold</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="hangfired">hangfired</button>
+            <button class="chip" data-chip="executed">executed</button>
+            <button class="chip" data-chip="promptSource-queued">promptSource-queued</button>
+            <button class="chip" data-chip="plain-prompt-path">plain-prompt-path</button>
+            <button class="chip" data-chip="missing-compact-boundary">missing-compact-boundary</button>
+            <button class="chip" data-chip="long-args-suggestive">long-args-suggestive</button>
+            <button class="chip" data-chip="idle-prompt-ok">idle-prompt-ok</button>
+            <button class="chip" data-chip="cousins">cousins</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the chronograph bay</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            On Claude Code 2.1.257, <code>/compact &lt;instructions&gt;</code>
+            typed while a turn is running (queued) is sometimes dispatched at
+            the turn boundary as a plain user prompt instead of executing as
+            the slash command. The model writes a prose "summary". No
+            compaction. Nothing tells the user or an orchestrator that the
+            command was dropped.
+          </p>
+          <p>
+            Failures: 7 of 36 queued mid-turn cases on 2.1.257; 0 of 30 on
+            2.1.222. Failing user row carries <code>promptSource:"queued"</code>;
+            executed echoes never carry <code>promptSource</code>. Fail path next
+            attachment is <code>total_tokens_reminder</code>; executed path is
+            <code>file-history-snapshot</code> then <code>compact_boundary</code>
+            + command stub.
+          </p>
+          <p>
+            All 7 failures had <code>/compact</code> text ≥ 840 chars; most
+            executed queued cases ≤ 787 (one executed at 1606) — length
+            suggestive, not a hard rule. Idle prompt <code>/compact</code>
+            always executes (6/6 on 2.1.257).
+          </p>
+          <p>
+            Hypothesis only (NON-BINDING): queued slash dispatch may skip
+            command parsing when args are long / when <code>promptSource</code>
+            stays <code>"queued"</code>, taking the plain prompt path
+            (<code>total_tokens_reminder</code>) instead of the command path
+            (<code>file-history-snapshot</code> → <code>compact_boundary</code>).
+            Verify nothing — encode issue facts only. Do not invent runtime
+            source claims.
+          </p>
+          <p>
+            Stay off: <span class="stayoff">
+              <span>CRT paging-storm #88257</span>
+              <span>olive suppressor #92459</span>
+              <span>magnetic remanence #92444</span>
+              <span>night apron #92452</span>
+              <span>bakelite dial #92436</span>
+              <span>kennel dog-watch #92424</span>
+              <span>silent drop #85697</span>
+            </span>
+          </p>
+          <p>
+            Cousins cite-only:
+            <a href="https://github.com/anthropics/claude-code/issues/85697">#85697</a>
+            queued /compact silently dropped (drop vs demotion) ·
+            <a href="https://github.com/anthropics/claude-code/issues/76875">#76875</a>
+            input during /compact cancels compaction ·
+            <a href="https://github.com/anthropics/claude-code/issues/92434">#92434</a>
+            auto-compact previous-turn token count ·
+            <a href="https://github.com/anthropics/claude-code/issues/92424">#92424</a>
+            stall watchdog during auto-compaction ·
+            <a href="https://github.com/anthropics/claude-code/issues/90711">#90711</a>
+            Remote Control busy indicator after /compact.
+          </p>
+        </section>
+        <footer>
+          Catalog #184 · idle word hangfired · seeded executed · mark 00:50 Sydney · hangfire ·
+          no live Claude sessions · fonts Anybody / Source Sans 3 / JetBrains Mono ·
+          delayed-primer chronograph bay · not a CRT · not an olive suppressor
+        </footer>
+      </section>
+    </main>
+    <script>
+      const HOLD = new Set(["executed"]);
+      const CONTROL = new Set(["idle-prompt-ok"]);
+      const CHIPS = [
+        "hangfired", "executed", "promptSource-queued", "plain-prompt-path",
+        "missing-compact-boundary", "long-args-suggestive", "idle-prompt-ok", "cousins"
+      ];
+      const CHIP_FILES = {
+        hangfired: "hangfired.json",
+        executed: "executed.json",
+        "promptSource-queued": "demoted-plain-prompt.json",
+        "plain-prompt-path": "plain-prompt-path.json",
+        "missing-compact-boundary": "missing-compact-boundary.json",
+        "long-args-suggestive": "long-args-suggestive.json",
+        "idle-prompt-ok": "idle-prompt-ok.json",
+        cousins: "cousins.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "#92478 · queued /compact demoted to a plain prompt", v222: "0/30", v257: "7/36", shipped: "FAIL", scored: "FAIL", file: "92478.json" },
+        { id: "queued", name: "queued mid-turn → executed", v222: "30/30", v257: "29/36", shipped: "FAIL", scored: "FAIL", file: "queue-enqueue.json" },
+        { id: "idleok", name: "typed at idle prompt → executed", v222: "5/5", v257: "6/6", shipped: "pass", scored: "pass", file: "idle-prompt-ok.json" },
+        { id: "source", name: "failing user row carries promptSource:queued", v222: "never", v257: "7/7 fails", shipped: "FAIL", scored: "FAIL", file: "demoted-plain-prompt.json" },
+        { id: "plain", name: "next attachment total_tokens_reminder", v222: "—", v257: "fail path", shipped: "FAIL", scored: "FAIL", file: "plain-prompt-path.json" },
+        { id: "bound", name: "file-history-snapshot → compact_boundary", v222: "30/30", v257: "29/36", shipped: "pass", scored: "pass", file: "compact-boundary.json" },
+        { id: "length", name: "arg length ≥ 840 suggestive (one executed at 1606)", v222: "—", v257: "7/7 fails", shipped: "FAIL", scored: "FAIL", file: "long-args-suggestive.json" },
+        { id: "hangfired", name: "idle hangfire · primer delayed · prose path", v222: "0", v257: "idle", shipped: "FAIL", scored: "FAIL", file: "hangfired.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92478,
+        seed: "hangfired",
+        hangfired: true,
+        executed: false,
+        queued: true,
+        promptSource: "queued",
+        nextAttachment: "total_tokens_reminder",
+        compactBoundary: false,
+        argChars: 840,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "HANGFIRED",
+        log: [
+          "[idle] queued /compact dispatched as a plain user prompt at the turn boundary",
+          "[jsonl] promptSource:\"queued\" · next attachment total_tokens_reminder",
+          "[desk] already hangfired; idle word hangfired"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92478,
+        seed: "executed",
+        hangfired: false,
+        executed: true,
+        compactBoundary: true,
+        commandStub: true,
+        nextAttachment: "file-history-snapshot",
+        promptSource: null,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "EXECUTED",
+        log: [
+          "[seeded] queued /compact executed as the slash command",
+          "[desk] already executed; seeded word executed"
+        ]
+      };
+
+      const sourceTicket = { source: "probe", issue: 92478, seed: "promptSource-queued", hangfired: true, promptSource: "queued", shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "QUEUED", log: ["[source] failing user row carries promptSource:\"queued\""] };
+      const plainTicket = { source: "probe", issue: 92478, seed: "plain-prompt-path", hangfired: true, nextAttachment: "total_tokens_reminder", shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "PLAIN", log: ["[path] next attachment total_tokens_reminder"] };
+      const missTicket = { source: "probe", issue: 92478, seed: "missing-compact-boundary", hangfired: true, compactBoundary: false, queued: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "NO-BOUNDARY", log: ["[boundary] no compact_boundary · prose summary"] };
+      const longTicket = { source: "probe", issue: 92478, seed: "long-args-suggestive", hangfired: true, argChars: 840, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "LONG-ARGS", log: ["[length] all 7 failures ≥ 840 chars · suggestive, not a rule"] };
+      const idleOkTicket = { source: "probe", issue: 92478, seed: "idle-prompt-ok", idlePrompt: true, executed: true, hangfired: false, shippedMark: "pass", scoredMark: "pass", isolateMark: "pass", hubCount: "IDLE-OK", log: ["[control] idle prompt /compact executed 6/6 on 2.1.257"] };
+      const cousinsTicket = { source: "probe", issue: 92478, seed: "cousins", hangfired: true, cousinsCiteOnly: [85697, 76875, 92434, 92424, 90711], shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "COUSINS", log: ["[cousins] #85697 #76875 #92434 #92424 #90711", "[desk] primary stays #92478"] };
+      const primaryTicket = { ...idle, seed: "hangfired", scenario: "92478", hubCount: "92478", log: ["[primary] #92478 · queued /compact demoted to a plain prompt"] };
+
+      const FALLBACKS = {
+        hangfired: idle,
+        executed: seeded,
+        "promptSource-queued": sourceTicket,
+        "plain-prompt-path": plainTicket,
+        "missing-compact-boundary": missTicket,
+        "long-args-suggestive": longTicket,
+        "idle-prompt-ok": idleOkTicket,
+        cousins: cousinsTicket
+      };
+
+      let pullState = "hang";
+      let flipHold = false;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || CONTROL.has(seed) || (t.executed === true && t.hangfired !== true);
+      }
+
+      function alreadyHangfired(t) {
+        const seed = String(t.seed || "");
+        if (CONTROL.has(seed)) return false;
+        if (remediating(t) && t.hangfired !== true) return false;
+        if (HOLD.has(seed) && t.hangfired !== true) return false;
+        if (t.hangfired === true || t.promptSource === "queued" || t.nextAttachment === "total_tokens_reminder") return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed) && !CONTROL.has(seed)) return true;
+        return t.executed !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyHangfired(t);
+        const control = CONTROL.has(seed) || t.idlePrompt === true;
+        t.shippedFree = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedFree ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (remediating(t) ? "pass" : "FAIL");
+        const holding = remediating(t) && !alarm;
+        const chips = [];
+        if (holding || seed === "executed") chips.push("executed");
+        if (alarm || seed === "hangfired" || t.hangfired === true) chips.push("hangfired");
+        if (seed === "promptSource-queued" || t.promptSource === "queued") chips.push("promptSource-queued");
+        if (seed === "plain-prompt-path" || t.nextAttachment === "total_tokens_reminder") chips.push("plain-prompt-path");
+        if (seed === "missing-compact-boundary" || t.compactBoundary === false) chips.push("missing-compact-boundary");
+        if (seed === "long-args-suggestive" || (typeof t.argChars === "number" && t.argChars >= 840)) chips.push("long-args-suggestive");
+        if (control) chips.push("idle-prompt-ok");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (control ? "idle-prompt-ok" : (holding ? "executed" : "hangfired"));
+        return { ticket: t, holding, alarm, control, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        hangfired: "Queued /compact hung through the turn, then fired as a plain prompt. promptSource:\"queued\". No compact_boundary. Admit hangfired.",
+        executed: "Queued /compact executed as the slash command. No promptSource. file-history-snapshot then compact_boundary + command stub. Seeded word is executed.",
+        "promptSource-queued": "Failing user row carries promptSource:\"queued\". Executed echoes never carry promptSource (29/29 on 2.1.257, 30/30 on 2.1.222).",
+        "plain-prompt-path": "Fail path next attachment is total_tokens_reminder — the input took the plain prompt path, not the command path. Model writes a prose \"summary\".",
+        "missing-compact-boundary": "No compact_boundary, no command stub. Expected: command stub, compact_boundary, compact summary. The primer delayed; the round fired as prose.",
+        "long-args-suggestive": "All 7 failures had /compact text ≥ 840 chars. 27 of 29 executed queued cases ≤ 787 (one executed at 1606). Length suggestive, not a hard rule.",
+        "idle-prompt-ok": "Typed at an idle prompt → executed every time: 6/6 on 2.1.257 (5/5 on 2.1.222). The hangfire is a queued mid-turn demotion, not an idle-prompt miss.",
+        cousins: "Cite-only cousins #85697 silent drop (not demotion), #76875 input cancels compact, #92434 resume overflow token count, #92424 stall watchdog, #90711 busy indicator. Primary stays #92478."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] hangfired · queued /compact demoted to a plain prompt"]
+            : ["[desk] executed · compact_boundary present"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /hangfired|FAIL|queued|prose|missing|suggestive/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "hangfired · queued /compact demoted to prose" : (result.control ? "idle prompt executed" : "executed · compact_boundary"), "hangfire path"],
+          ["isolate", t.isolateMark, "queued slash demotion · not CRT stall · not suppressor leak · not silent drop", "not a clone"],
+          ["scored", t.scoredMark, remediating(t) ? "executed" : "would score after queued /compact always takes the command path", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            <td>${row.v222}</td>
+            <td>${row.v257}</td>
+            ${cell(row.shipped)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "hangfired", queued: "hangfired", idleok: "idle-prompt-ok",
+                source: "promptSource-queued", plain: "plain-prompt-path",
+                bound: "executed", length: "long-args-suggestive", hangfired: "hangfired"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (result.control) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">idle prompt · /compact typed at rest</span>\n` +
+            `<span class="asst">executed 6/6 on 2.1.257 · 5/5 on 2.1.222</span>\n` +
+            `<span class="hook">${t.seed || "idle-prompt-ok"}; control</span>`;
+          return;
+        }
+        if (HOLD.has(t.seed) || result.holding) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">queue-operation enqueue · /compact</span>\n` +
+            `<span class="asst">user row · no promptSource · file-history-snapshot</span>\n` +
+            `<span class="asst">compact_boundary · command stub</span>\n` +
+            `<span class="hook">${t.seed || "executed"}; hold</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">queue-operation enqueue · /compact</span>\n` +
+          `<span class="user">user row · promptSource:"queued" · version 2.1.257</span>\n` +
+          `<span class="user">attachment type=total_tokens_reminder</span>\n` +
+          `<span class="hook">assistant prose "summary" · no compact_boundary</span>`;
+      }
+
+      function paintCartridge(result) {
+        const hang = result.alarm;
+        const cmd = document.getElementById("round-cmd");
+        const plain = document.getElementById("round-plain");
+        const slug = document.getElementById("slug");
+        const cap = document.getElementById("cart-caption");
+        const cup = document.getElementById("primer-cup");
+        cmd.setAttribute("opacity", hang ? "0.18" : "1");
+        plain.setAttribute("opacity", hang ? "1" : "0.18");
+        slug.setAttribute("cy", hang ? "88" : "52");
+        slug.setAttribute("fill", hang ? "#e07038" : "#7a9a6a");
+        cup.setAttribute("fill", hang ? "#e8a030" : "#7a9a6a");
+        cap.textContent = hang ? "HANGFIRED · PROSE PATH" : (result.control ? "IDLE PROMPT · EXECUTED" : "EXECUTED · COMMAND PATH");
+        cap.setAttribute("fill", hang ? "#e07038" : "#a8c896");
+        document.getElementById("needle-delay").style.transform = hang ? "rotate(48deg)" : "rotate(-18deg)";
+        document.getElementById("needle-path").style.transform = hang ? "rotate(62deg)" : "rotate(-28deg)";
+        document.getElementById("chrono-read").textContent = hang ? "HANGFIRED" : (result.control ? "IDLE-OK" : "EXECUTED");
+        const chars = typeof result.ticket.argChars === "number" ? result.ticket.argChars : (hang ? 840 : 400);
+        document.getElementById("powder-fill").style.width = Math.min(100, (chars / 1606) * 100) + "%";
+      }
+
+      function paintLanes(seed) {
+        document.querySelectorAll(".chamber").forEach((el) => {
+          const kind = el.dataset.lane;
+          el.classList.toggle("hot", seed !== "executed" && seed !== "idle-prompt-ok" && kind === "hangfired");
+          el.classList.toggle("hold", (seed === "executed" || seed === "idle-prompt-ok") && kind === "executed");
+        });
+      }
+
+      function paintFace(result) {
+        const seed = result.verdict;
+        document.getElementById("face-text").textContent = seed;
+        document.getElementById("face-note").textContent = REASONS[seed] || REASONS.hangfired;
+        document.getElementById("source-face").textContent = result.holding || result.control ? "absent" : "queued";
+        document.getElementById("source-note").textContent = result.holding || result.control
+          ? "Executed echoes never carry promptSource (29/29 on 2.1.257, 30/30 on 2.1.222)."
+          : "Failing user row carries promptSource:\"queued\".";
+        document.getElementById("attach-face").textContent = result.holding || result.control
+          ? "file-history-snapshot"
+          : "total_tokens_reminder";
+        document.getElementById("attach-note").textContent = result.holding || result.control
+          ? "Command path: file-history-snapshot then compact_boundary + command stub."
+          : "Fail path is the plain prompt. No compact_boundary.";
+        document.getElementById("rail-state").textContent = result.alarm
+          ? "primer delayed · round fired as prose"
+          : (result.control ? "idle prompt · primer fired on time" : "primer fired on time · compact_boundary");
+        document.getElementById("exp-copy").textContent = "At the turn boundary the queued /compact executes: command stub, compact_boundary, compact summary.";
+        document.getElementById("act-copy").textContent = result.holding
+          ? "Queued /compact executed. Hold path."
+          : (result.control
+            ? "Idle prompt /compact always executes (6/6 on 2.1.257)."
+            : "7 of 36 queued cases on 2.1.257 fire as a plain prompt. 0 of 30 on 2.1.222.");
+        document.getElementById("powder-note").textContent = seed === "long-args-suggestive"
+          ? "All 7 hangfires ≥ 840 chars. 27 of 29 executed queued ≤ 787. One executed at 1606 — suggestive, not a rule."
+          : (result.holding || result.control
+            ? "Length is suggestive only. One executed queued case was 1606 chars."
+            : "All 7 hangfires ≥ 840 chars. Most executed queued cases ≤ 787. Length suggestive, not a hard rule.");
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) || CONTROL.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92478 }); }
+          });
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bay = document.getElementById("bay");
+        bay.className = "bay " + result.verdict;
+        const v = document.getElementById("verdict");
+        v.textContent = result.verdict;
+        v.className = "verdict " + (result.holding || result.control ? "hold" : "alarm");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || result.verdict;
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintFace(result);
+        paintCartridge(result);
+        paintLanes(result.verdict);
+        paintChips(result);
+        paintPaths(result);
+        paintLog(result.alarm, result.ticket);
+        paintSlip(result);
+        const map = {
+          hangfired: "hangfired", executed: "bound", "promptSource-queued": "source",
+          "plain-prompt-path": "plain", "missing-compact-boundary": "plain",
+          "long-args-suggestive": "length", "idle-prompt-ok": "idleok",
+          cousins: "primary", "92478": "primary"
+        };
+        paintMatrix(ticket.scenario === "92478" ? "primary" : (map[result.verdict] || ticket.scenario || ""));
+        document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+          btn.classList.toggle("on", btn.dataset.chip === result.verdict && !HOLD.has(result.verdict) && !CONTROL.has(result.verdict));
+          btn.classList.toggle("hold", btn.dataset.chip === result.verdict && (HOLD.has(result.verdict) || CONTROL.has(result.verdict)));
+        });
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(new URL("data/" + name, location.href));
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function ticketFromSim() {
+        if (pullState === "exec") return { ...seeded };
+        if (pullState === "queued") return { ...sourceTicket };
+        if (pullState === "bound") return { ...seeded, seed: "executed" };
+        return { ...idle };
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((el) => {
+          el.classList.toggle("on", el.dataset.simPull === pullState && pullState !== "exec" && pullState !== "bound");
+          el.classList.toggle("hold", el.dataset.simPull === pullState && (pullState === "exec" || pullState === "bound"));
+        });
+      }
+
+      document.querySelectorAll("[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") {
+            pullState = "hang";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("hangfired.json")); }
+            catch { apply({ ...idle }); }
+            return;
+          }
+          if (act === "seed") {
+            pullState = "exec";
+            flipHold = true;
+            syncSimChips();
+            try { apply(await loadNamed("executed.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "flip") {
+            flipHold = !flipHold;
+            if (flipHold) {
+              pullState = "exec";
+              syncSimChips();
+              try { apply(await loadNamed("executed.json")); }
+              catch { apply({ ...seeded }); }
+            } else {
+              pullState = "hang";
+              syncSimChips();
+              try { apply(await loadNamed("hangfired.json")); }
+              catch { apply({ ...idle }); }
+            }
+            return;
+          }
+          if (act === "fixtures") {
+            pullState = "hang";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("92478.json")); }
+            catch { apply({ ...primaryTicket }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92478 }); }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          try { apply(await loadNamed(CHIP_FILES[kind])); }
+          catch { apply({ ...(FALLBACKS[kind] || idle) }); }
+        });
+      });
+
+      document.querySelectorAll("[data-lane]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.lane;
+          try { apply(await loadNamed(CHIP_FILES[kind])); }
+          catch { apply({ ...(FALLBACKS[kind] || idle) }); }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
