@@ -1,0 +1,1566 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lethe — underworld ferry quay for #92335</title>
+    <meta
+      name="description"
+      content="Lethe — classical underworld ferry quay for Claude in Chrome #92335: Sign-in after every browser-session end; silent re-auth never restores while claude.ai stays logged in. Idle word is washed."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #071018;
+        --ink-lit: #0e1c28;
+        --ink-deep: #04080c;
+        --mist: #c8d4dc;
+        --mist-mute: #8a9aa6;
+        --silver: #e8eef2;
+        --lantern: #e8a84a;
+        --lantern-hot: #ffc46a;
+        --washed: #3d8f8a;
+        --washed-hot: #7ecfc8;
+        --stone: #2a343c;
+        --stone-lit: #4a5864;
+        --strand: #d47858;
+        --line: rgba(126, 207, 200, 0.16);
+        --lamp: rgba(232, 168, 74, 0.2);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Manrope, "Segoe UI", sans-serif;
+        color: var(--mist);
+        background:
+          radial-gradient(ellipse 28% 20% at 12% 8%, var(--lamp), transparent 66%),
+          radial-gradient(ellipse 22% 16% at 86% 6%, rgba(126, 207, 200, 0.08), transparent 62%),
+          linear-gradient(180deg, #0a1620 0%, #071018 52%, #04080c 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--lantern-hot); }
+      .wrap { width: min(1220px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .chrome { margin-bottom: 12px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mist-mute);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(138, 154, 166, 0.4);
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--lantern);
+      }
+      h1 {
+        font-family: "Cormorant Garamond", "Palatino Linotype", serif;
+        font-size: clamp(44px, 8vw, 86px);
+        letter-spacing: -0.03em;
+        margin: 2px 0 8px;
+        font-weight: 700;
+        line-height: 0.9;
+        color: var(--silver);
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--washed-hot);
+        font-size: 0.3em;
+        letter-spacing: 0.12em;
+        display: block;
+        margin-top: 10px;
+      }
+      .lede { max-width: 62em; color: var(--mist-mute); line-height: 1.55; font-size: 16px; }
+      .lede code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--lantern-hot);
+      }
+
+      .stage {
+        margin: 22px 0 0;
+        position: relative;
+        min-height: 460px;
+        border: 12px solid #121a20;
+        outline: 1px solid rgba(126, 207, 200, 0.2);
+        box-shadow:
+          inset 0 0 0 3px #1a2830,
+          0 28px 60px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse 30% 22% at 18% 18%, rgba(232, 168, 74, 0.12), transparent 70%),
+          linear-gradient(180deg, #1a2834 0%, #0c1822 38%, #061018 100%);
+      }
+      .stage.washed, .stage.stranded {
+        box-shadow: inset 0 0 0 3px #1a2830, 0 0 0 4px rgba(61, 143, 138, 0.32), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+      .stage.restored, .stage.silent-restore {
+        box-shadow: inset 0 0 0 3px #1a2830, 0 0 0 4px rgba(232, 168, 74, 0.34), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+      .stage.signed-out-clean {
+        box-shadow: inset 0 0 0 3px #1a2830, 0 0 0 4px rgba(138, 154, 166, 0.28), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+      .stage.stale-bound {
+        box-shadow: inset 0 0 0 3px #1a2830, 0 0 0 4px rgba(212, 120, 88, 0.3), 0 28px 60px rgba(0, 0, 0, 0.55);
+      }
+      .stage-label, .count-tag {
+        position: absolute;
+        z-index: 8;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: rgba(4, 8, 12, 0.78);
+        padding: 4px 8px;
+        border: 1px solid rgba(126, 207, 200, 0.28);
+        color: var(--lantern);
+      }
+      .stage-label { left: 14px; top: 12px; }
+      .count-tag { right: 14px; top: 12px; color: var(--washed-hot); }
+
+      .mist {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 2;
+        background:
+          radial-gradient(ellipse 40% 18% at 30% 42%, rgba(200, 212, 220, 0.1), transparent 70%),
+          radial-gradient(ellipse 36% 16% at 72% 48%, rgba(200, 212, 220, 0.08), transparent 68%);
+        animation: drift 12s ease-in-out infinite;
+      }
+      @keyframes drift {
+        0%, 100% { transform: translateX(0); opacity: 0.85; }
+        50% { transform: translateX(18px); opacity: 1; }
+      }
+
+      .river {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 58%;
+        z-index: 1;
+        background:
+          repeating-linear-gradient(90deg, rgba(126, 207, 200, 0.05) 0 40px, transparent 40px 86px),
+          linear-gradient(180deg, #0a2830 0%, #061820 40%, #030c12 100%);
+      }
+      .river::before, .river::after {
+        content: "";
+        position: absolute;
+        left: -10%;
+        right: -10%;
+        height: 18px;
+        border-radius: 50%;
+        border: 1px solid rgba(126, 207, 200, 0.12);
+        animation: wave 7s linear infinite;
+      }
+      .river::before { top: 22%; }
+      .river::after { top: 48%; animation-duration: 11s; animation-direction: reverse; }
+      @keyframes wave {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(40px); }
+      }
+
+      .quay {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 42%;
+        height: 46%;
+        z-index: 3;
+        background:
+          repeating-linear-gradient(90deg, rgba(4, 8, 12, 0.28) 0 18px, transparent 18px 46px),
+          linear-gradient(180deg, #3a4650 0%, #2a343c 42%, #1a2228 100%);
+        clip-path: polygon(0 28%, 72% 18%, 100% 38%, 100% 100%, 0 100%);
+        box-shadow: inset 0 8px 0 rgba(232, 238, 242, 0.06);
+      }
+      .quay-edge {
+        position: absolute;
+        left: 0;
+        bottom: 44%;
+        width: 42%;
+        height: 10px;
+        z-index: 4;
+        background: linear-gradient(90deg, #5a6870, #2a343c);
+        clip-path: polygon(0 40%, 72% 0, 100% 80%, 0 100%);
+      }
+
+      .account-stone {
+        position: absolute;
+        left: 8%;
+        bottom: 18%;
+        width: 92px;
+        height: 64px;
+        z-index: 5;
+        background:
+          radial-gradient(circle at 30% 20%, rgba(232, 238, 242, 0.14), transparent 40%),
+          linear-gradient(160deg, #6a7680, #2a343c 60%, #1a2228);
+        border-radius: 6px 10px 4px 8px;
+        box-shadow: 4px 6px 0 rgba(4, 8, 12, 0.45);
+        display: grid;
+        place-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 8px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--silver);
+        text-align: center;
+        padding: 8px;
+        transition: opacity 0.35s ease, transform 0.35s ease;
+      }
+      .stage.signed-out-clean .account-stone {
+        opacity: 0.15;
+        transform: translateY(8px);
+      }
+      .account-stone b { display: block; color: var(--lantern-hot); font-size: 9px; margin-bottom: 4px; }
+
+      .lantern {
+        position: absolute;
+        left: 28%;
+        bottom: 38%;
+        width: 36px;
+        height: 92px;
+        z-index: 6;
+      }
+      .lantern .pole {
+        position: absolute;
+        left: 16px;
+        bottom: 0;
+        width: 4px;
+        height: 54px;
+        background: linear-gradient(180deg, #8a949c, #2a343c);
+      }
+      .lantern .cage {
+        position: absolute;
+        left: 6px;
+        bottom: 50px;
+        width: 24px;
+        height: 28px;
+        background: linear-gradient(180deg, rgba(255, 220, 140, 0.4), rgba(232, 168, 74, 0.16));
+        border: 1px solid rgba(255, 196, 106, 0.45);
+        border-radius: 3px 3px 6px 6px;
+      }
+      .lantern .flame {
+        position: absolute;
+        left: 13px;
+        bottom: 56px;
+        width: 10px;
+        height: 16px;
+        background: radial-gradient(ellipse at 50% 80%, #fff6c8, #e8a84a 55%, transparent 74%);
+        animation: flicker 1.8s ease-in-out infinite;
+      }
+      .lantern .glow {
+        position: absolute;
+        left: -18px;
+        bottom: 36px;
+        width: 72px;
+        height: 72px;
+        background: radial-gradient(circle, rgba(255, 196, 106, 0.28), transparent 70%);
+        pointer-events: none;
+      }
+      @keyframes flicker {
+        0%, 100% { transform: scaleY(1); opacity: 0.9; }
+        50% { transform: scaleY(1.14) translateY(-1px); opacity: 1; }
+      }
+
+      .ferry {
+        position: absolute;
+        left: 52%;
+        bottom: 22%;
+        width: 170px;
+        height: 70px;
+        z-index: 5;
+        transition: left 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), bottom 0.7s ease, opacity 0.4s ease;
+      }
+      .stage.washed .ferry, .stage.stranded .ferry { left: 58%; bottom: 16%; }
+      .stage.restored .ferry, .stage.silent-restore .ferry, .stage.log-bs-return .ferry { left: 38%; bottom: 28%; }
+      .stage.signed-out-clean .ferry { opacity: 0.25; left: 70%; }
+      .stage.stale-bound .ferry { left: 22%; bottom: 30%; }
+      .ferry .hull {
+        position: absolute;
+        left: 8px;
+        bottom: 0;
+        width: 150px;
+        height: 28px;
+        background: linear-gradient(180deg, #3a2a1c, #1a120c);
+        clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
+        box-shadow: 0 6px 0 rgba(4, 8, 12, 0.35);
+      }
+      .ferry .cabin {
+        position: absolute;
+        left: 48px;
+        bottom: 26px;
+        width: 54px;
+        height: 22px;
+        background: linear-gradient(180deg, #4a3a28, #2a1e14);
+        border-radius: 2px 2px 0 0;
+      }
+      .ferry .mast {
+        position: absolute;
+        left: 74px;
+        bottom: 46px;
+        width: 3px;
+        height: 22px;
+        background: #8a7018;
+      }
+      .ferry .lamp {
+        position: absolute;
+        left: 70px;
+        bottom: 64px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #fff6c8, #e8a84a);
+        box-shadow: 0 0 12px rgba(255, 196, 106, 0.7);
+      }
+      .ferry .oar {
+        position: absolute;
+        right: 18px;
+        bottom: 10px;
+        width: 36px;
+        height: 4px;
+        background: #6a5a40;
+        transform: rotate(-18deg);
+      }
+
+      .coins {
+        position: absolute;
+        right: 8%;
+        bottom: 10%;
+        width: 160px;
+        height: 80px;
+        z-index: 4;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+      }
+      .stage.washed .coins, .stage.stranded .coins { opacity: 1; }
+      .coins i {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #ffe08a, #c48a28 62%, #6a4a10);
+        box-shadow: 0 0 6px rgba(232, 168, 74, 0.45);
+        animation: wash 5.5s linear infinite;
+      }
+      .coins i:nth-child(1) { left: 8px; top: 12px; animation-delay: 0s; }
+      .coins i:nth-child(2) { left: 48px; top: 28px; animation-delay: 0.8s; }
+      .coins i:nth-child(3) { left: 86px; top: 8px; animation-delay: 1.4s; }
+      .coins i:nth-child(4) { left: 118px; top: 36px; animation-delay: 2.1s; }
+      @keyframes wash {
+        0% { transform: translate(0, 0); opacity: 0.95; }
+        100% { transform: translate(26px, 18px); opacity: 0.15; }
+      }
+
+      .far-shore {
+        position: absolute;
+        right: 18px;
+        top: 54px;
+        z-index: 5;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--lantern-hot);
+        background: rgba(4, 8, 12, 0.62);
+        border: 1px solid rgba(232, 168, 74, 0.28);
+        padding: 8px 10px;
+        width: 148px;
+      }
+      .far-shore b { display: block; color: var(--mist-mute); font-weight: 400; margin-bottom: 4px; }
+
+      .gauges {
+        position: absolute;
+        right: 18px;
+        top: 128px;
+        display: grid;
+        gap: 8px;
+        z-index: 6;
+        width: 148px;
+      }
+      .gauge-face {
+        background: rgba(4, 8, 12, 0.72);
+        border: 1px solid rgba(126, 207, 200, 0.28);
+        padding: 8px 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--lantern);
+      }
+      .gauge-face b { display: block; color: var(--mist-mute); font-weight: 400; margin-bottom: 4px; }
+      .gauge-face.hot { border-color: var(--washed); color: var(--washed-hot); }
+      .gauge-face.live { border-color: var(--lantern); color: var(--lantern-hot); }
+
+      .desk {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+      .ledger, .chart, .balloon, .chain-pane, .sim, .research-panel {
+        background: rgba(7, 16, 24, 0.78);
+        border: 1px solid var(--line);
+        padding: 16px;
+      }
+      .verdict {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 44px;
+        margin: 0 0 6px;
+        line-height: 1;
+      }
+      .verdict.alarm { color: var(--washed-hot); }
+      .verdict.hold { color: var(--lantern-hot); }
+      .reason { margin: 0 0 14px; color: var(--mist-mute); line-height: 1.5; }
+      .paths {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path {
+        border: 1px solid var(--line);
+        padding: 10px;
+        background: rgba(14, 28, 40, 0.7);
+      }
+      .path b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--lantern);
+        margin-bottom: 6px;
+      }
+      .path .face { font-size: 14px; }
+      .path .note {
+        display: block;
+        margin-top: 6px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--mist-mute);
+      }
+      .path.fail { border-color: rgba(61, 143, 138, 0.5); }
+      .path.fail .face { color: var(--washed-hot); }
+      .path.ok { border-color: rgba(232, 168, 74, 0.45); }
+      .path.ok .face { color: var(--lantern-hot); }
+      .plaques { display: grid; gap: 8px; }
+      .plaque {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        background: rgba(14, 28, 40, 0.7);
+      }
+      .plaque i {
+        width: 10px;
+        height: 10px;
+        margin-top: 5px;
+        border-radius: 50%;
+        background: var(--mist-mute);
+        flex: 0 0 auto;
+      }
+      .plaque.on i { background: var(--lantern); box-shadow: 0 0 8px var(--lantern-hot); }
+      .plaque.hot i { background: var(--washed); box-shadow: 0 0 8px var(--washed-hot); }
+      .plaque b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--silver);
+      }
+      .plaque span { color: var(--mist-mute); font-size: 13px; }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--silver);
+        min-height: 240px;
+        white-space: pre-wrap;
+      }
+      .log .hit { color: var(--washed-hot); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+      .chip, button.chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 9px;
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        background: rgba(4, 8, 12, 0.7);
+        color: var(--mist-mute);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+      }
+      .chip.dead { color: var(--washed-hot); border-color: rgba(61, 143, 138, 0.5); background: rgba(61, 143, 138, 0.1); }
+      .chip.live { color: var(--lantern-hot); border-color: rgba(232, 168, 74, 0.5); }
+
+      .balloon, .chain-pane, .sim { margin-top: 16px; }
+      .balloon h3, .chain-pane h3, .sim h3, .research h3 {
+        margin: 0 0 10px;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--silver);
+      }
+      .meter {
+        display: grid;
+        grid-template-columns: 170px 1fr;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .meter b {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--lantern);
+      }
+      .bar {
+        min-height: 36px;
+        padding: 8px 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        background: rgba(14, 28, 40, 0.7);
+        border: 1px solid rgba(126, 207, 200, 0.12);
+        color: var(--mist-mute);
+        position: relative;
+        overflow: hidden;
+      }
+      .bar .fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 8%;
+        background: rgba(232, 168, 74, 0.16);
+      }
+      .bar.cut .fill { width: 96%; background: rgba(61, 143, 138, 0.2); }
+      .bar.cut { color: var(--washed-hot); border-color: rgba(61, 143, 138, 0.4); }
+      .bar.kept { color: var(--lantern-hot); border-color: rgba(232, 168, 74, 0.4); }
+      .bar.kept .fill { width: 96%; }
+
+      .ab {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        align-items: stretch;
+      }
+      @media (max-width: 860px) { .ab { grid-template-columns: 1fr; } }
+      .ab-card {
+        border: 1px dashed rgba(126, 207, 200, 0.28);
+        padding: 12px;
+        background: rgba(14, 28, 40, 0.7);
+        cursor: pointer;
+      }
+      .ab-card.active.fail { border-style: solid; border-color: var(--washed); }
+      .ab-card.active.ok { border-style: solid; border-color: var(--lantern); }
+      .ab-card b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .ab-card.fail b { color: var(--washed-hot); }
+      .ab-card.ok b { color: var(--lantern-hot); }
+      .ab-card p { margin: 0; color: var(--mist-mute); font-size: 14px; line-height: 1.45; }
+
+      .instruments {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+      }
+      @media (max-width: 980px) { .instruments { grid-template-columns: 1fr 1fr; } }
+      .inst {
+        border: 1px solid var(--line);
+        background: rgba(7, 16, 24, 0.78);
+        padding: 12px;
+      }
+      .inst b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--lantern);
+        margin-bottom: 6px;
+      }
+      .inst p { margin: 0; color: var(--mist-mute); font-size: 13px; line-height: 1.4; }
+
+      .transcript {
+        margin-top: 16px;
+        background: rgba(7, 16, 24, 0.78);
+        border: 1px solid var(--line);
+        padding: 14px;
+      }
+      .transcript h3 {
+        margin: 0 0 10px;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 22px;
+        color: var(--silver);
+      }
+      .jsonl {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        background: #04080c;
+        border: 1px solid rgba(126, 207, 200, 0.16);
+        padding: 12px;
+        color: var(--mist-mute);
+        white-space: pre-wrap;
+      }
+      .jsonl .user { color: var(--washed-hot); }
+      .jsonl .asst { color: var(--lantern-hot); }
+      .jsonl .hook { color: var(--silver); }
+
+      .matrix {
+        margin-top: 16px;
+        overflow-x: auto;
+        background: rgba(7, 16, 24, 0.78);
+        border: 1px solid var(--line);
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(126, 207, 200, 0.08);
+      }
+      th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--lantern);
+        background: rgba(14, 28, 40, 0.85);
+      }
+      td { color: var(--mist); font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+      tr.active td { background: rgba(61, 143, 138, 0.08); }
+      .fail-cell { color: var(--washed-hot); font-weight: 700; }
+      .pass-cell { color: var(--lantern-hot); }
+
+      .actions, .sim-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0;
+      }
+      button.act {
+        font-family: Manrope, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border: 1px solid var(--lantern);
+        background: rgba(4, 8, 12, 0.8);
+        color: var(--lantern-hot);
+        cursor: pointer;
+      }
+      button.act:hover { border-color: var(--washed-hot); color: var(--washed-hot); }
+      .sim p { margin: 0 0 8px; color: var(--mist-mute); font-size: 14px; }
+      textarea, .drop {
+        width: 100%;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        background: #04080c;
+        color: var(--mist);
+        border: 1px solid var(--line);
+        padding: 10px;
+      }
+      textarea { min-height: 180px; resize: vertical; }
+      .drop {
+        min-height: 52px;
+        display: grid;
+        place-items: center;
+        color: var(--mist-mute);
+        margin-bottom: 10px;
+      }
+      .stayoff {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--mist-mute);
+        border: 1px solid rgba(138, 154, 166, 0.25);
+        padding: 3px 8px;
+      }
+      .research { margin-top: 28px; color: var(--mist-mute); line-height: 1.55; max-width: 64em; }
+      .research code { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--lantern-hot); }
+      footer { margin-top: 28px; color: var(--mist-mute); font-size: 13px; }
+      .remediation {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 860px) { .remediation { grid-template-columns: 1fr; } }
+      .remedy {
+        border: 1px solid var(--line);
+        background: rgba(7, 16, 24, 0.78);
+        padding: 14px;
+        cursor: pointer;
+      }
+      .remedy:hover { border-color: var(--lantern); }
+      .remedy b {
+        display: block;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 16px;
+        color: var(--silver);
+        margin-bottom: 8px;
+      }
+      .remedy p { margin: 0; color: var(--mist-mute); font-size: 14px; line-height: 1.45; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">09:50 / hermes catalog #169 / #92335</p>
+        <h1>Lethe <em>underworld ferry quay</em></h1>
+        <p class="lede">
+          09:50 lethe: a ferry that leaves the account stone on the bank after the
+          session tokens wash downstream, then never docks the silent re-auth, is not
+          a sign-out — it is already <strong>washed</strong>. Score the crossing or
+          admit the traveler already <strong>stranded</strong>.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92335">anthropics/claude-code#92335</a>
+          (OPEN; bug, has-repro, platform:linux, area:auth, area:chrome).
+          On Claude in Chrome 1.0.91 (Chrome 152 Flatpak, Fedora 44, Wayland/niri),
+          the side panel shows <code>Sign in</code> after every browser-session end
+          while <code>claude.ai</code> stays logged in. Diagnostic fixtures only.
+          No live Claude sessions.
+        </p>
+      </div>
+
+      <section class="stage stranded" id="stage" aria-label="Underworld ferry quay">
+        <div class="stage-label" id="stage-label">seeded stranded · Sign in · far shore awake</div>
+        <div class="count-tag" id="count-tag">session empty · accountUuid on the bank</div>
+        <div class="mist" aria-hidden="true"></div>
+        <div class="river" aria-hidden="true"></div>
+        <div class="quay" aria-hidden="true"></div>
+        <div class="quay-edge" aria-hidden="true"></div>
+        <div class="account-stone" id="account-stone"><b>account stone</b>accountUuid</div>
+        <div class="lantern" aria-hidden="true">
+          <div class="glow"></div>
+          <div class="flame"></div>
+          <div class="cage"></div>
+          <div class="pole"></div>
+        </div>
+        <div class="ferry" aria-hidden="true">
+          <div class="lamp"></div>
+          <div class="mast"></div>
+          <div class="cabin"></div>
+          <div class="hull"></div>
+          <div class="oar"></div>
+        </div>
+        <div class="coins" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="far-shore"><b>far shore</b><span id="far-shore-v">claude.ai logged in</span></div>
+        <div class="gauges" aria-hidden="true">
+          <div class="gauge-face hot" id="g-session"><b>session</b><span id="g-session-v">tokens washed</span></div>
+          <div class="gauge-face hot" id="g-ferry"><b>silent re-auth</b><span id="g-ferry-v">never docks</span></div>
+          <div class="gauge-face" id="g-bank"><b>local bank</b><span id="g-bank-v">accountUuid intact</span></div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Lethe scoring assay">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">stranded</p>
+          <p class="reason" id="reason">The ferry leaves the account stone on the bank after the session tokens wash downstream, then never docks the silent re-auth. The side panel shows Sign in while claude.ai stays logged in. Admit the traveler already stranded.</p>
+          <div class="paths" id="paths"></div>
+          <div class="plaques">
+            <div class="plaque" id="p-session"><i></i><div><b>chrome.storage.session</b><span id="s-session">accessToken / refreshToken / tokenExpiry gone</span></div></div>
+            <div class="plaque" id="p-bank"><i></i><div><b>chrome.storage.local</b><span id="s-bank">accountUuid · tokenOrg intact</span></div></div>
+            <div class="plaque" id="p-ferry"><i></i><div><b>Bs() / cic_ext_silent_reauth</b><span id="s-ferry">path present · session not restored</span></div></div>
+            <div class="plaque" id="p-panel"><i></i><div><b>side panel</b><span id="s-panel">Sign in · claude.ai still logged in</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2 style="margin:0 0 10px;font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;">Quay log / crossing slip</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <section class="balloon" aria-label="Crossing gauge">
+        <h3>Crossing gauge</h3>
+        <div class="meter">
+          <b>session tokens</b>
+          <div class="bar cut" id="bar-tokens"><span class="fill"></span>washed · RAM-only coins downstream</div>
+        </div>
+        <div class="meter">
+          <b>silent re-auth</b>
+          <div class="bar cut" id="bar-ferry"><span class="fill"></span>stranded · ferry never docks</div>
+        </div>
+      </section>
+
+      <section class="chain-pane" aria-label="Three crossings">
+        <h3>Score a crossing</h3>
+        <p style="margin:0 0 10px;color:var(--mist-mute);font-size:14px;">
+          Encoded from #92335. Same account stone, three crossings. Click a card.
+        </p>
+        <div class="ab">
+          <article class="ab-card fail active" data-ab="session-end" id="ab-session-end">
+            <b>session-end → stranded</b>
+            <p>Reboot or full Chrome quit. Side panel Sign in. claude.ai tab still awake. Account stone on the bank.</p>
+          </article>
+          <article class="ab-card fail" data-ab="silent-reauth" id="ab-silent-reauth">
+            <b>silent-reauth → washed</b>
+            <p>Bs() / cic_ext_silent_reauth ships after the bootstrap probe. The ferry exists. It never docks.</p>
+          </article>
+          <article class="ab-card ok" data-ab="manual" id="ab-manual">
+            <b>manual Sign in → still stranded</b>
+            <p>Clicking Sign in completes without credentials because claude.ai is alive. Still a manual step.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="instruments" aria-label="Assay instruments">
+        <article class="inst">
+          <b>GitHub #92335</b>
+          <p>OPEN · bug · has-repro · platform:linux · area:auth · area:chrome. Reporter musaad-sharikh.</p>
+        </article>
+        <article class="inst">
+          <b>chrome.storage.session</b>
+          <p>accessToken, refreshToken, tokenExpiry routed here by design. RAM-only. Wash on session end.</p>
+        </article>
+        <article class="inst">
+          <b>chrome.storage.local</b>
+          <p>accountUuid + tokenOrg intact. lastAuthFailureReason never written. Not a sign-out.</p>
+        </article>
+        <article class="inst">
+          <b>Bs() / cic_ext_silent_reauth</b>
+          <p>Bundle path after claude.ai/api/bootstrap. interactive:false. Session not restored.</p>
+        </article>
+        <article class="inst">
+          <b>Chrome 152 Flatpak</b>
+          <p>Extension 1.0.91. Fedora 44. Wayland/niri. Clear-cookies-on-exit is not set.</p>
+        </article>
+      </section>
+
+      <section class="transcript" aria-label="LevelDB slip">
+        <h3>LevelDB / storage slip</h3>
+        <p style="margin:0 0 10px;color:var(--mist-mute);font-size:14px;">
+          Published on-disk keys from the issue — not a live profile. Path
+          <code>Default/Local Extension Settings/fcoeoabgfenejglbffodgkkbkcdhcgfn/</code>
+        </p>
+        <div class="jsonl" id="jsonl"></div>
+      </section>
+
+      <div class="matrix" aria-label="Crossing path matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>crossing</th>
+              <th>shipped</th>
+              <th>bank</th>
+              <th>silent-restore</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <section class="remediation" aria-label="Remediation panels">
+        <article class="remedy" data-remedy="log">
+          <b>Log the Bs() return</b>
+          <p>Expected diagnostic: name disabled_by_gate / authorize_failed / success in the service-worker console. No user-visible signal today.</p>
+        </article>
+        <article class="remedy" data-remedy="restore">
+          <b>Silent restore from claude.ai</b>
+          <p>Expected fix: first service-worker start after session end re-authenticates from the live claude.ai session and opens already signed in.</p>
+        </article>
+      </section>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the crossing</button>
+        <button class="act" data-act="idle">Pin idle washed</button>
+        <button class="act" data-act="seed">Pin seeded stranded</button>
+        <button class="act" data-act="admit">Admit the traveler already stranded</button>
+        <button class="act" data-act="hold">Hold the restored ferry</button>
+        <button class="act" data-act="fixtures">Load #92335 fixture</button>
+        <button class="act" data-act="reset">Reset to restored</button>
+      </div>
+
+      <div class="sim">
+        <h3>Quay simulator</h3>
+        <p>Rewrite the crossing without touching a live Claude session. Diagnostic only.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-pull="session-end">session-end wash</span>
+          <span class="chip" data-sim-pull="silent-reauth">silent-reauth ferry</span>
+          <span class="chip" data-sim-pull="manual">manual Sign in</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="washed">washed</button>
+          <button class="chip" data-chip="stranded">stranded</button>
+          <button class="chip" data-chip="silent-reauth-exists">silent-reauth-exists</button>
+          <button class="chip" data-chip="tokens-session-only">tokens-session-only</button>
+          <button class="chip" data-chip="account-banked">account-banked</button>
+          <button class="chip" data-chip="no-failure-reason">no-failure-reason</button>
+          <button class="chip" data-chip="not-signed-out">not-signed-out</button>
+          <button class="chip" data-chip="ferry-timeout">ferry-timeout</button>
+          <button class="chip" data-chip="manual-sign-in-works">manual-sign-in-works</button>
+          <button class="chip" data-chip="profile-switch">profile-switch</button>
+          <button class="chip" data-chip="restored">restored</button>
+          <button class="chip" data-chip="signed-out-clean">signed-out-clean</button>
+          <button class="chip" data-chip="stale-bound">stale-bound</button>
+          <button class="chip" data-chip="disabled-by-gate">disabled-by-gate</button>
+          <button class="chip" data-chip="authorize-failed">authorize-failed</button>
+          <button class="chip" data-chip="never-reached">never-reached</button>
+          <button class="chip" data-chip="log-bs-return">log-bs-return</button>
+          <button class="chip" data-chip="silent-restore">silent-restore</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the ferry quay</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this assay</h3>
+        <p>
+          On Claude in Chrome <code>1.0.91</code> (Chrome 152 Flatpak, Fedora 44,
+          Wayland/niri), anything that ends the browser session leaves the side panel
+          on <code>Sign in</code> while <code>claude.ai</code> in a normal tab stays
+          fully logged in. The extension still knows the account:
+          <code>accountUuid</code> and <code>tokenOrg</code> are intact on
+          <code>chrome.storage.local</code>. This is not a sign-out.
+        </p>
+        <p>
+          Auth tokens (<code>accessToken</code>, <code>refreshToken</code>,
+          <code>tokenExpiry</code>) are routed to <code>chrome.storage.session</code>
+          by design and evaporate when the browser session ends. The refresh-token
+          path cannot run. The bundle ships silent re-auth
+          (<code>cic_ext_silent_reauth</code> / <code>Bs()</code>) after a
+          <code>claude.ai/api/bootstrap</code> probe, but the session is not restored.
+        </p>
+        <p>
+          <code>lastAuthFailureReason</code> was never written, so the
+          <code>account_mismatch</code> / <code>consent_required</code> terminals did
+          not run. The full sign-out routine did not clear <code>accountUuid</code>
+          either. That leaves <code>disabled_by_gate</code>,
+          <code>authorize_failed</code>, or the path never reached. Tight timeouts
+          (8s bootstrap, 5s non-interactive flow) may contribute on a slow link after
+          boot but do not explain warm-network cases.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Frizzen #92353</span>
+            <span>Nixie #92383</span>
+            <span>Embrasure #92365</span>
+            <span>Elision #92347</span>
+            <span>Graft #92354</span>
+            <span>Sostenuto #92360</span>
+            <span>Jetsam #92338</span>
+            <span>Priory #92345</span>
+            <span>Latchkey #92330</span>
+            <span>Portcullis #92278</span>
+            <span>Portfire / Matchlock / Touchhole</span>
+          </span>
+        </p>
+        <p>
+          Cousins cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/57365">#57365</a> CLOSED mid-session 403 WebSocket retry ·
+          <a href="https://github.com/anthropics/claude-code/issues/82455">#82455</a> OPEN opposite stale-bound ·
+          <a href="https://github.com/anthropics/claude-code/issues/82074">#82074</a> OPEN grant remains after global logout.
+        </p>
+      </section>
+      <footer>
+        Catalog #169 · idle word washed · seeded stranded · contrast restored / signed-out-clean / stale-bound ·
+        no live Claude sessions · fonts Cormorant Garamond / Manrope / IBM Plex Mono · underworld ferry quay
+      </footer>
+    </main>
+    <script>
+      const HOLD = new Set([
+        "restored", "signed-out-clean", "stale-bound", "log-bs-return", "silent-restore"
+      ]);
+      const CHIPS = [
+        "washed", "stranded", "silent-reauth-exists", "tokens-session-only",
+        "account-banked", "no-failure-reason", "not-signed-out", "ferry-timeout",
+        "manual-sign-in-works", "profile-switch", "restored", "signed-out-clean",
+        "stale-bound", "disabled-by-gate", "authorize-failed", "never-reached",
+        "log-bs-return", "silent-restore"
+      ];
+      const CHIP_FILES = {
+        washed: "washed.json",
+        stranded: "stranded.json",
+        "silent-reauth-exists": "silent-reauth-exists.json",
+        "tokens-session-only": "tokens-session-only.json",
+        "account-banked": "account-banked.json",
+        "no-failure-reason": "no-failure-reason.json",
+        "not-signed-out": "not-signed-out.json",
+        "ferry-timeout": "ferry-timeout.json",
+        "manual-sign-in-works": "manual-sign-in-works.json",
+        "profile-switch": "profile-switch.json",
+        restored: "restored.json",
+        "signed-out-clean": "signed-out-clean.json",
+        "stale-bound": "stale-bound.json",
+        "disabled-by-gate": "silent-reauth-exists.json",
+        "authorize-failed": "silent-reauth-exists.json",
+        "never-reached": "silent-reauth-exists.json",
+        "log-bs-return": "remediation-log.json",
+        "silent-restore": "remediation-restore.json"
+      };
+      const MATRIX = [
+        { id: "session-end", name: "reboot / full Chrome quit", shipped: "FAIL", bank: "pass", restore: "FAIL", file: "repro.json" },
+        { id: "repro", name: "published reboot repro", shipped: "FAIL", bank: "pass", restore: "FAIL", file: "repro.json" },
+        { id: "silent-reauth", name: "Bs() / cic_ext_silent_reauth", shipped: "FAIL", bank: "pass", restore: "FAIL", file: "silent-reauth-exists.json" },
+        { id: "tokens", name: "session-only token routing", shipped: "FAIL", bank: "pass", restore: "FAIL", file: "tokens-session-only.json" },
+        { id: "manual", name: "manual Sign in (no credentials)", shipped: "FAIL", bank: "pass", restore: "FAIL", file: "manual-sign-in-works.json" },
+        { id: "restored", name: "silent re-auth succeeded", shipped: "pass", bank: "pass", restore: "pass", file: "restored.json" },
+        { id: "signed-out", name: "clean sign-out clears accountUuid", shipped: "pass", bank: "cleared", restore: "pass", file: "signed-out-clean.json" },
+        { id: "log", name: "log Bs() return", shipped: "pass", bank: "pass", restore: "pass", file: "remediation-log.json" },
+        { id: "restore", name: "silent restore from claude.ai", shipped: "pass", bank: "pass", restore: "pass", file: "remediation-restore.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92335,
+        seed: "washed",
+        washed: true,
+        stranded: false,
+        restored: false,
+        browserSessionEnded: true,
+        sessionTokensPresent: false,
+        accountUuidPresent: true,
+        tokenOrgPresent: true,
+        lastAuthFailureReasonWritten: false,
+        fullSignOutRan: false,
+        silentReauthPathExists: true,
+        silentReauthRestored: false,
+        sidePanelShowsSignIn: true,
+        claudeAiTabLoggedIn: true,
+        shippedMark: "FAIL",
+        restoreMark: "FAIL",
+        bankMark: "pass",
+        hubCount: "WASHED",
+        log: [
+          "[idle] browser session ended · chrome.storage.session empty of accessToken / refreshToken / tokenExpiry",
+          "[bank] accountUuid and tokenOrg intact on chrome.storage.local",
+          "[quay] already washed; idle word washed"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92335,
+        seed: "stranded",
+        washed: true,
+        stranded: true,
+        restored: false,
+        browserSessionEnded: true,
+        sessionTokensPresent: false,
+        accountUuidPresent: true,
+        tokenOrgPresent: true,
+        lastAuthFailureReasonWritten: false,
+        fullSignOutRan: false,
+        silentReauthPathExists: true,
+        silentReauthRestored: false,
+        sidePanelShowsSignIn: true,
+        claudeAiTabLoggedIn: true,
+        shippedMark: "FAIL",
+        restoreMark: "FAIL",
+        bankMark: "pass",
+        hubCount: "STRANDED",
+        log: [
+          "[issue] #92335 OPEN · Sign-in screen after every browser-session end",
+          "[panel] Claude in Chrome side panel shows Sign in",
+          "[far-shore] claude.ai in a normal tab stays fully logged in",
+          "[bank] accountUuid and tokenOrg intact — not a sign-out",
+          "[quay] already stranded; seeded word stranded"
+        ]
+      };
+
+      const restoredTicket = {
+        source: "probe",
+        issue: 92335,
+        seed: "restored",
+        washed: false,
+        stranded: false,
+        restored: true,
+        sessionTokensPresent: true,
+        accountUuidPresent: true,
+        silentReauthPathExists: true,
+        silentReauthRestored: true,
+        bsReturn: "success",
+        sidePanelShowsSignIn: false,
+        claudeAiTabLoggedIn: true,
+        shippedMark: "pass",
+        restoreMark: "pass",
+        bankMark: "pass",
+        hubCount: "RESTORED",
+        log: [
+          "[ferry] Bs() returned success",
+          "[session] accessToken / refreshToken / tokenExpiry restored",
+          "[panel] already signed in · no user interaction",
+          "[quay] restored; contrast hold restored"
+        ]
+      };
+
+      const cleanTicket = {
+        source: "probe",
+        issue: 92335,
+        seed: "signed-out-clean",
+        washed: false,
+        stranded: false,
+        restored: false,
+        signedOutClean: true,
+        fullSignOutRan: true,
+        accountUuidPresent: false,
+        tokenOrgPresent: false,
+        sessionTokensPresent: false,
+        noStoredAccount: true,
+        sidePanelShowsSignIn: true,
+        claudeAiTabLoggedIn: false,
+        shippedMark: "pass",
+        restoreMark: "pass",
+        bankMark: "cleared",
+        hubCount: "SIGNED-OUT",
+        log: [
+          "[sign-out] full sign-out routine ran · accountUuid removed",
+          "[not] this is not the #92335 passive wash",
+          "[quay] signed-out-clean; contrast hold signed-out-clean"
+        ]
+      };
+
+      let pullState = "session-end";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        return t.seed === "log-bs-return"
+          || t.seed === "silent-restore"
+          || t.scenario === "remediation-log"
+          || t.scenario === "remediation-restore"
+          || t.workaroundLogged === true;
+      }
+
+      function alreadyWashed(t) {
+        const seed = String(t.seed || "");
+        if (HOLD.has(seed) && t.washed !== true && t.stranded !== true && t.silentReauthRestored !== false) {
+          if (t.restored === true || t.signedOutClean === true || t.staleBound === true || remediating(t)) return false;
+        }
+        if (t.restored === true && t.washed !== true && t.stranded !== true && remediating(t)) return false;
+        if (t.restored === true && t.silentReauthRestored === true && t.washed !== true) return false;
+        if (t.signedOutClean === true && t.washed !== true && t.stranded !== true) return false;
+        if (t.staleBound === true && t.washed !== true && t.stranded !== true) return false;
+        if (t.washed === true || t.stranded === true) return true;
+        if ([
+          "washed", "stranded", "silent-reauth-exists", "tokens-session-only",
+          "account-banked", "no-failure-reason", "not-signed-out", "ferry-timeout",
+          "manual-sign-in-works", "profile-switch", "disabled-by-gate",
+          "authorize-failed", "never-reached"
+        ].includes(seed)) {
+          return !remediating(t) && t.restored !== true;
+        }
+        if (t.sessionTokensPresent === false && t.accountUuidPresent === true && t.silentReauthRestored !== true && !remediating(t) && t.restored !== true) return true;
+        return t.sidePanelShowsSignIn === true && t.claudeAiTabLoggedIn === true && t.silentReauthRestored !== true && t.restored !== true && t.signedOutClean !== true;
+      }
+
+      function holdTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (t.restored === true || t.signedOutClean === true || t.staleBound === true || HOLD.has(seed) || remediating(t))
+          && t.washed !== true
+          && t.stranded !== true
+          && !alreadyWashed(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyWashed(t);
+        t.shippedWashed = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedWashed ? "FAIL" : "pass");
+        t.bankMark = t.bankMark || (t.accountUuidPresent === false ? "cleared" : "pass");
+        t.restoreMark = t.restoreMark || (t.silentReauthRestored === true || remediating(t) ? "pass" : "FAIL");
+        const hold = holdTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "washed") chips.push("washed");
+        if (t.stranded === true || seed === "stranded") chips.push("stranded");
+        if (t.silentReauthPathExists === true || seed === "silent-reauth-exists") chips.push("silent-reauth-exists");
+        if (t.tokensRoutedTo === "chrome.storage.session" || seed === "tokens-session-only") chips.push("tokens-session-only");
+        if ((t.accountUuidPresent === true && t.levelDbTokenKeys === 0) || seed === "account-banked") chips.push("account-banked");
+        if (t.lastAuthFailureReasonWritten === false || seed === "no-failure-reason") chips.push("no-failure-reason");
+        if (t.fullSignOutRan === false || seed === "not-signed-out") chips.push("not-signed-out");
+        if (t.bootstrapTimeoutMs === 8000 || seed === "ferry-timeout") chips.push("ferry-timeout");
+        if (t.manualSignInCompletesWithoutCredentials === true || seed === "manual-sign-in-works") chips.push("manual-sign-in-works");
+        if (t.profileSwitchReproducesSignIn === true || seed === "profile-switch") chips.push("profile-switch");
+        if (hold || seed === "restored") chips.push("restored");
+        if (t.signedOutClean === true || seed === "signed-out-clean") chips.push("signed-out-clean");
+        if (t.staleBound === true || seed === "stale-bound") chips.push("stale-bound");
+        if (seed === "disabled-by-gate" || t.bsReturn === "disabled_by_gate") chips.push("disabled-by-gate");
+        if (seed === "authorize-failed" || t.bsReturn === "authorize_failed") chips.push("authorize-failed");
+        if (seed === "never-reached" || t.bsReturn === null && t.silentReauthRestored === false && t.leftBranches) chips.push("never-reached");
+        if (t.seed === "log-bs-return" || t.scenario === "remediation-log") chips.push("log-bs-return");
+        if (t.seed === "silent-restore" || t.scenario === "remediation-restore") chips.push("silent-restore");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (hold ? (t.signedOutClean ? "signed-out-clean" : (t.staleBound ? "stale-bound" : "restored")) : (t.stranded ? "stranded" : "washed"));
+        return { ticket: t, hold, alarm, chips: unique, verdict };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[quay] session tokens washed · silent re-auth never docks · already stranded"]
+            : ["[quay] Bs() success · ferry docks · restored"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /washed|stranded|FAIL|Sign in|never|empty|downstream/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "Sign in after session end · washed" : "already signed in or a clean contrast", "reboot / full Chrome quit"],
+          ["local bank", t.bankMark, t.accountUuidPresent === false ? "accountUuid cleared" : "accountUuid · tokenOrg intact", "chrome.storage.local"],
+          ["silent-restore", t.restoreMark, t.silentReauthRestored === true || remediating(t) ? "Bs() restored the session" : "would dock after the bootstrap probe", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.bank)}${cell(row.restore)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id, scenario: row.id }
+                : { ...restoredTicket, seed: row.id, scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintJsonl(result) {
+        const t = result.ticket;
+        if (result.hold && t.signedOutClean === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="hook">chrome.storage.local: accountUuid cleared · tokenOrg cleared</span>\n` +
+            `<span class="hook">chrome.storage.session: empty</span>\n` +
+            `<span class="asst">[contrast] full sign-out routine ran — a real sign-out, not a wash</span>`;
+          return;
+        }
+        if (result.hold && t.staleBound === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">[cousin] #82455 OPEN · opposite: stays bound to a stale account</span>\n` +
+            `<span class="hook">[not] #92335 is token loss at session start with the account stone still on the bank</span>`;
+          return;
+        }
+        if (result.hold && (t.silentReauthRestored === true || t.restored === true)) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">Bs() → success</span>\n` +
+            `<span class="asst">chrome.storage.session: accessToken · refreshToken · tokenExpiry restored</span>\n` +
+            `<span class="asst">side panel: already signed in · no user interaction</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">chrome.storage.local: accountUuid, tokenOrg, lastActiveOrgHint, oauthState, codeVerifier</span>\n` +
+          `<span class="user">chrome.storage.session: (empty after session end) — accessToken, refreshToken, tokenExpiry evaporated</span>\n` +
+          `<span class="user">LevelDB token keys: 0 · lastAuthFailureReason: never written</span>\n` +
+          `<span class="hook">Bs() / cic_ext_silent_reauth: path present · session not restored</span>`;
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const restored = result.hold || t.restored === true;
+        const seedName = String(t.seed || "");
+        const stranded = t.stranded === true || seedName === "stranded" || (t.sidePanelShowsSignIn === true && t.claudeAiTabLoggedIn === true && !result.hold);
+        const stageClass = t.signedOutClean === true
+          ? "signed-out-clean"
+          : (t.staleBound === true
+            ? "stale-bound"
+            : (restored && !alarm
+              ? (seedName === "silent-restore" ? "silent-restore" : "restored")
+              : (stranded ? "stranded" : "washed")));
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? (result.verdict === "washed"
+            ? "The ferry leaves the account stone on the bank after the session tokens wash downstream, then never docks the silent re-auth. That is not a sign-out — it is already washed."
+            : "The ferry leaves the account stone on the bank after the session tokens wash downstream, then never docks the silent re-auth. The side panel shows Sign in while claude.ai stays logged in. Admit the traveler already stranded.")
+          : (result.verdict === "signed-out-clean"
+            ? "A real sign-out cleared accountUuid. That is the opposite bank from #92335, where the stone stays and the coins wash."
+            : (result.verdict === "stale-bound"
+              ? "#82455 is the opposite: the extension stays bound to a stale account. Cite only. Not this crossing."
+              : (result.verdict === "log-bs-return"
+                ? "Name the Bs() return in the service-worker console. No user-visible signal today whether the ferry ran."
+                : (result.verdict === "silent-restore"
+                  ? "First service-worker start after session end silently re-authenticates from the live claude.ai session."
+                  : "The ferry docked. Bs() returned success. Session tokens restored. Already signed in."))));
+        const stage = document.getElementById("stage");
+        stage.className = "stage " + stageClass;
+        document.getElementById("stage-label").textContent = alarm
+          ? (stranded ? "seeded stranded · Sign in · far shore awake" : "idle washed · tokens downstream · stone on the bank")
+          : (t.signedOutClean ? "signed-out-clean · account stone gone" : (t.staleBound ? "stale-bound · #82455 opposite" : "restored · ferry docks · already signed in"));
+        document.getElementById("count-tag").textContent = alarm
+          ? (stranded ? "session empty · accountUuid on the bank" : "RAM-only tokens washed")
+          : (t.signedOutClean ? "accountUuid cleared" : "Bs() success · session restored");
+        document.getElementById("far-shore-v").textContent = t.claudeAiTabLoggedIn === false
+          ? "claude.ai signed out"
+          : "claude.ai logged in";
+        document.getElementById("g-session").className = "gauge-face " + (t.sessionTokensPresent ? "live" : "hot");
+        document.getElementById("g-session-v").textContent = t.sessionTokensPresent ? "tokens restored" : "tokens washed";
+        document.getElementById("g-ferry").className = "gauge-face " + (t.silentReauthRestored === true ? "live" : "hot");
+        document.getElementById("g-ferry-v").textContent = t.silentReauthRestored === true ? "docked · success" : "never docks";
+        document.getElementById("g-bank").className = "gauge-face " + (t.accountUuidPresent ? (alarm ? "" : "live") : "hot");
+        document.getElementById("g-bank-v").textContent = t.accountUuidPresent ? "accountUuid intact" : "accountUuid cleared";
+        document.getElementById("account-stone").innerHTML = t.accountUuidPresent
+          ? "<b>account stone</b>accountUuid"
+          : "<b>cleared</b>no stone";
+        setPlaque("p-session", t.sessionTokensPresent === true, t.sessionTokensPresent === false);
+        setPlaque("p-bank", t.accountUuidPresent === true && !alarm, t.accountUuidPresent === true && alarm);
+        setPlaque("p-ferry", t.silentReauthRestored === true, t.silentReauthRestored !== true && t.silentReauthPathExists === true);
+        setPlaque("p-panel", t.sidePanelShowsSignIn !== true && !alarm, t.sidePanelShowsSignIn === true);
+        document.getElementById("s-session").textContent = t.sessionTokensPresent
+          ? "accessToken · refreshToken · tokenExpiry restored"
+          : "accessToken / refreshToken / tokenExpiry gone";
+        document.getElementById("s-bank").textContent = t.accountUuidPresent
+          ? "accountUuid · tokenOrg intact"
+          : "accountUuid cleared";
+        document.getElementById("s-ferry").textContent = t.silentReauthRestored === true
+          ? "Bs() success · session restored"
+          : "path present · session not restored";
+        document.getElementById("s-panel").textContent = t.sidePanelShowsSignIn
+          ? (t.claudeAiTabLoggedIn ? "Sign in · claude.ai still logged in" : "Sign in · far shore also dark")
+          : "already signed in";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.hold;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        const barTokens = document.getElementById("bar-tokens");
+        barTokens.className = "bar " + (t.sessionTokensPresent && !alarm ? "kept" : "cut");
+        barTokens.innerHTML = t.sessionTokensPresent && !alarm
+          ? `<span class="fill"></span>restored · session tokens on the ferry`
+          : `<span class="fill"></span>washed · RAM-only coins downstream`;
+        const barFerry = document.getElementById("bar-ferry");
+        barFerry.className = "bar " + (restored && !alarm ? "kept" : "cut");
+        barFerry.innerHTML = restored && !alarm
+          ? `<span class="fill"></span>` + (t.signedOutClean ? "signed-out-clean · stone cleared" : (t.staleBound ? "stale-bound · opposite cousin" : "restored · ferry docked"))
+          : `<span class="fill"></span>` + (stranded ? "stranded · ferry never docks" : "washed · silent re-auth did not restore");
+        document.getElementById("ab-session-end").classList.toggle("active", alarm && pullState === "session-end");
+        document.getElementById("ab-silent-reauth").classList.toggle("active", alarm && pullState === "silent-reauth");
+        document.getElementById("ab-manual").classList.toggle("active", pullState === "manual" || t.manualSignInCompletesWithoutCredentials === true);
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintJsonl(result);
+        paintMatrix(t.scenario || (t.signedOutClean ? "signed-out" : (t.staleBound ? "stale-bound" : (alarm ? (pullState === "silent-reauth" ? "silent-reauth" : (pullState === "manual" ? "manual" : "session-end")) : (remediating(t) ? (t.scenario || "restore") : "restored")))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "silent-reauth") {
+          return {
+            ...idle,
+            seed: "washed",
+            scenario: "silent-reauth",
+            silentReauthPathExists: true,
+            silentReauthRestored: false,
+            hubCount: "FERRY",
+            log: [
+              "[bundle] Ms = cic_ext_silent_reauth · async function Bs()",
+              "[probe] fetch claude.ai/api/bootstrap · 8000 ms abort",
+              "[flow] launchWebAuthFlow interactive:false · 5000 ms",
+              "[quay] silent-reauth-exists scores washed — the ferry never docks"
+            ]
+          };
+        }
+        if (pullState === "manual") {
+          return {
+            ...seeded,
+            seed: "manual-sign-in-works",
+            scenario: "manual",
+            manualSignInCompletesWithoutCredentials: true,
+            workaroundAutomatic: false,
+            hubCount: "MANUAL",
+            log: [
+              "[workaround] none automatic",
+              "[click] Sign in completes without re-entering credentials",
+              "[because] claude.ai session is alive",
+              "[quay] still a manual step after every browser session"
+            ]
+          };
+        }
+        return { ...seeded, seed: "stranded", hubCount: "SESSION-END" };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState !== "restored";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "silent-reauth";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "session-end";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset" || act === "hold") {
+            pullState = "session-end";
+            syncSimChips();
+            try { apply(await loadNamed("restored.json")); }
+            catch { apply({ ...restoredTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("stranded.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("repro.json")); }
+            catch { apply({ ...seeded, seed: "stranded", hubCount: "ADMIT" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92335.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try {
+            const ticket = await loadNamed(CHIP_FILES[chip]);
+            apply({ ...ticket, seed: chip });
+          } catch {
+            if (HOLD.has(chip)) apply({ ...restoredTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92335 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = kind === "log" ? "remediation-log.json" : "remediation-restore.json";
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply({
+              ...restoredTicket,
+              seed: kind === "log" ? "log-bs-return" : "silent-restore",
+              scenario: kind === "log" ? "remediation-log" : "remediation-restore"
+            });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-ab]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const side = el.dataset.ab;
+          pullState = side;
+          syncSimChips();
+          const file = side === "silent-reauth" ? "silent-reauth-exists.json" : (side === "manual" ? "manual-sign-in-works.json" : "repro.json");
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(ticketFromSim());
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
