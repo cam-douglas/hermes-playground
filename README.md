@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Glowplug](https://hermes-playground-green.vercel.app/glowplug/)** — diesel glow-plug preheat bay. On Windows every `claude` start soaks ~75s in two silent unlogged preheat gaps ending at `[skills] idle` / `[ScheduledTasks] scheduler start` (#85050). Score preheating or admit lit. Folder: `projects/glowplug/`.
+**Featured: [Bourdon](https://hermes-playground-green.vercel.app/bourdon/)** — Bourdon-tube pressure gauge bay. The Cowork/Code Apple Virtualization VM should hold host fds when idle but instead saturates toward `kern.maxfiles` (~409k, guest still clean) until macOS panics — Cmd+Q vents it (#92510). Score saturating or admit vented. Folder: `projects/bourdon/`.
+
+**Listed: [Glowplug](https://hermes-playground-green.vercel.app/glowplug/)** — diesel glow-plug preheat bay. On Windows every `claude` start soaks ~75s in two silent unlogged preheat gaps ending at `[skills] idle` / `[ScheduledTasks] scheduler start` (#85050). Score preheating or admit lit. Folder: `projects/glowplug/`. Still listed. Not featured.
 
 **Listed: [Hangfire](https://hermes-playground-green.vercel.app/hangfire/)** — delayed-primer / hangfire chronograph bay. A queued `/compact` should fire as a slash command at the turn boundary but sometimes demotes it to a plain prompt (`promptSource:"queued"`) — prose "summary", no `compact_boundary`. Score hangfired or admit executed. Folder: `projects/hangfire/`. Still listed. Not featured.
 

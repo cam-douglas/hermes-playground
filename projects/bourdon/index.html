@@ -1,0 +1,1156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bourdon — pressure gauge bay for #92510</title>
+    <meta
+      name="description"
+      content="Bourdon — Bourdon-tube pressure bay for Claude Code #92510: Cowork/Code Apple Virtualization VM leaks host file descriptors until kern.maxfiles panics macOS. Idle word is saturating."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --panel: #0a0d0c;
+        --well: #101513;
+        --brass: #c9a15a;
+        --brass-hot: #e4c57a;
+        --bronze: #8d6b2f;
+        --copper: #c47a3a;
+        --copper-hot: #e09252;
+        --patina: #3f7a68;
+        --patina-hot: #6fb89e;
+        --maxred: #c4342a;
+        --maxred-hot: #ef5a4c;
+        --ivory: #f3ead4;
+        --mute: #9a8f78;
+        --rule: rgba(201, 161, 90, 0.28);
+        --glass: #0d1612;
+        --slot: #0c100e;
+        --ink: #efe6d4;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Sora, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 18% 0%, rgba(196, 122, 58, 0.14), transparent 40%),
+          radial-gradient(ellipse at 86% 12%, rgba(63, 122, 104, 0.1), transparent 34%),
+          radial-gradient(ellipse at 50% 120%, rgba(196, 52, 42, 0.08), transparent 40%),
+          repeating-radial-gradient(circle at 0 0, transparent 0 18px, rgba(201, 161, 90, 0.035) 18px 19px),
+          linear-gradient(180deg, #14110d 0%, #0a0d0c 52%, #070908 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass-hot); }
+      .wrap { width: min(1240px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 2px solid var(--brass);
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--bronze);
+      }
+      h1 {
+        font-family: "Archivo Black", Impact, sans-serif;
+        font-size: clamp(52px, 11vw, 108px);
+        letter-spacing: -0.02em;
+        margin: 6px 0 8px;
+        font-weight: 400;
+        line-height: 0.86;
+        color: var(--ivory);
+        text-transform: uppercase;
+      }
+      h1 em {
+        font-style: normal;
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.18em;
+        letter-spacing: 0.22em;
+        color: var(--copper-hot);
+        margin-top: 10px;
+        text-transform: uppercase;
+      }
+      .lede { max-width: 74em; color: var(--mute); line-height: 1.65; font-size: 16px; }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--brass-hot);
+      }
+
+      .bay {
+        margin: 22px 0 0;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(16, 21, 19, 0.96), rgba(10, 13, 12, 0.98)),
+          repeating-linear-gradient(90deg, transparent 0 21px, rgba(201, 161, 90, 0.04) 21px 22px);
+        box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55), inset 0 0 90px rgba(196, 122, 58, 0.04);
+        padding: 16px 16px 18px;
+        position: relative;
+        overflow: hidden;
+      }
+      .bay::before {
+        content: "GAUGE BAY 186";
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        font-family: "Archivo Black", sans-serif;
+        letter-spacing: 0.16em;
+        font-size: 13px;
+        color: var(--bronze);
+      }
+      .bay.saturating, .bay.host-fd-409600, .bay.guest-clean-512,
+      .bay.idle-12h-after-prompt, .bay.virtiofs-suspect, .bay.cousins {
+        box-shadow: 0 0 0 3px rgba(196, 52, 42, 0.42), 0 24px 50px rgba(0, 0, 0, 0.55);
+      }
+      .bay.vented, .bay.cmdq-releases, .bay.cli-no-vm-clean {
+        box-shadow: 0 0 0 3px rgba(63, 122, 104, 0.45), 0 24px 50px rgba(0, 0, 0, 0.55);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--bronze);
+        margin-bottom: 14px;
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 8px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .deck {
+        display: grid;
+        grid-template-columns: 1.15fr 0.95fr 0.95fr;
+        gap: 14px;
+      }
+      @media (max-width: 980px) { .deck { grid-template-columns: 1fr; } .bay::before { display: none; } }
+
+      .cap, .desk h4 {
+        margin: 0 0 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--bronze);
+      }
+
+      .gauge-well {
+        background: var(--slot);
+        border: 1px solid rgba(201, 161, 90, 0.28);
+        padding: 10px;
+        min-height: 280px;
+        display: grid;
+        place-items: center;
+      }
+      .gauge {
+        width: min(280px, 100%);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 50% 50%, #0d1612 0 54%, #1a221c 55% 62%, #8d6b2f 63% 70%, #c9a15a 71% 78%, #3a2a14 79% 90%, #c9a15a 91% 100%);
+        box-shadow: inset 0 0 0 10px rgba(10, 13, 12, 0.45), 0 0 36px rgba(196, 52, 42, 0.12);
+        position: relative;
+        display: grid;
+        place-items: center;
+      }
+      .gauge svg { width: 78%; height: 78%; }
+      .needle { transform-origin: 100px 100px; transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+      .readout {
+        position: absolute;
+        bottom: 24%;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        color: var(--maxred-hot);
+      }
+      .bay.vented .readout, .bay.cmdq-releases .readout, .bay.cli-no-vm-clean .readout {
+        color: var(--patina-hot);
+      }
+
+      .tube-well {
+        background: var(--slot);
+        border: 1px solid rgba(196, 122, 58, 0.28);
+        padding: 8px 10px 6px;
+        min-height: 280px;
+      }
+      .tube-well svg { width: 100%; height: auto; display: block; }
+      .coil { transition: d 0.7s ease, stroke 0.4s ease; }
+      .bay.saturating .coil, .bay.host-fd-409600 .coil, .bay.guest-clean-512 .coil,
+      .bay.idle-12h-after-prompt .coil, .bay.virtiofs-suspect .coil, .bay.cousins .coil {
+        animation: uncoil 2.8s ease-in-out infinite alternate;
+      }
+      @keyframes uncoil {
+        from { stroke-width: 6; }
+        to { stroke-width: 4; }
+      }
+
+      .face-col { display: grid; gap: 10px; }
+      .faceplate {
+        background: var(--slot);
+        border-left: 4px solid var(--copper);
+        padding: 10px 12px;
+      }
+      .faceplate.steel { border-left-color: var(--brass); }
+      .faceplate.hold { border-left-color: var(--patina); }
+      .faceplate b { display: block; }
+      .faceplate strong {
+        display: block;
+        font-family: "Archivo Black", sans-serif;
+        font-size: 28px;
+        letter-spacing: 0.01em;
+        line-height: 1;
+        margin: 2px 0 4px;
+        text-transform: uppercase;
+      }
+      .faceplate span { color: var(--mute); font-size: 13px; line-height: 1.4; }
+
+      .climb {
+        margin-top: 16px;
+        background: var(--slot);
+        border: 1px solid var(--rule);
+        padding: 12px;
+      }
+      .timeline {
+        display: grid;
+        grid-template-columns: 70px 1fr 80px 1fr 90px 70px;
+        gap: 6px;
+        align-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+      }
+      @media (max-width: 820px) { .timeline { grid-template-columns: 1fr; } }
+      .tick {
+        color: var(--brass-hot);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .void {
+        height: 22px;
+        background:
+          repeating-linear-gradient(90deg, rgba(196, 52, 42, 0.16) 0 8px, transparent 8px 14px),
+          #1a1210;
+        border: 1px dashed rgba(196, 52, 42, 0.5);
+        position: relative;
+      }
+      .void span {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: var(--maxred-hot);
+      }
+      .void.hold {
+        border-style: solid;
+        border-color: rgba(63, 122, 104, 0.55);
+        background: rgba(63, 122, 104, 0.14);
+      }
+      .void.hold span { color: var(--patina-hot); }
+      .climb .note { margin: 10px 0 0; color: var(--mute); font-size: 13px; }
+
+      .workorder {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 12px;
+      }
+      @media (max-width: 820px) { .workorder { grid-template-columns: 1fr; } }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th, td {
+        text-align: left;
+        padding: 7px 8px;
+        border-bottom: 1px solid rgba(201, 161, 90, 0.16);
+      }
+      th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--bronze);
+      }
+      td.sec { font-family: "IBM Plex Mono", monospace; color: var(--maxred-hot); white-space: nowrap; }
+      td.sec.ok { color: var(--patina-hot); }
+      .vs { display: grid; gap: 10px; }
+      .vs article {
+        background: var(--slot);
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+      }
+      .vs b {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--bronze);
+      }
+      .vs p { margin: 6px 0 0; color: var(--mute); line-height: 1.5; }
+
+      .desk {
+        margin-top: 18px;
+        border: 1px solid var(--rule);
+        background: rgba(12, 16, 14, 0.82);
+        padding: 16px;
+      }
+      .verdict-row {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      @media (max-width: 820px) { .verdict-row { grid-template-columns: 1fr; } }
+      .verdict {
+        font-family: "Archivo Black", sans-serif;
+        font-size: 42px;
+        letter-spacing: -0.02em;
+        line-height: 0.95;
+        margin: 0;
+        text-transform: uppercase;
+      }
+      .verdict.alarm { color: var(--maxred-hot); }
+      .verdict.hold { color: var(--patina-hot); }
+      .reason { color: var(--mute); line-height: 1.55; margin: 8px 0 0; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+      .chip, button.chip, .act {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--rule);
+        background: #14110d;
+        color: var(--ink);
+        padding: 6px 9px;
+        cursor: pointer;
+      }
+      .chip.on, button.chip.on { border-color: var(--maxred); color: var(--maxred-hot); background: rgba(196, 52, 42, 0.14); }
+      .chip.hold, button.chip.hold { border-color: var(--patina); color: var(--patina-hot); background: rgba(63, 122, 104, 0.16); }
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+      @media (max-width: 820px) { .paths { grid-template-columns: 1fr; } }
+      .path { border: 1px solid var(--rule); padding: 10px; background: var(--slot); }
+      .path.fail { border-color: rgba(196, 52, 42, 0.45); }
+      .path.ok { border-color: rgba(63, 122, 104, 0.4); }
+      .path b { font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bronze); }
+      .path .face { margin: 6px 0; color: var(--ink); }
+      .path .note { color: var(--mute); font-size: 12px; }
+      .log, .slip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        background: #080a09;
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        white-space: pre-wrap;
+        margin-bottom: 12px;
+        color: var(--brass-hot);
+      }
+      .log .hit { color: var(--maxred-hot); }
+      .slip .hook { color: var(--brass-hot); }
+      .slip .user { color: var(--maxred-hot); }
+      .slip .asst { color: var(--patina-hot); }
+      .matrix { overflow-x: auto; margin: 8px 0 16px; }
+      .matrix tr.active { background: rgba(196, 52, 42, 0.08); }
+      .fail-cell { color: var(--maxred-hot); }
+      .pass-cell { color: var(--patina-hot); }
+      .pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+      @media (max-width: 820px) { .pads { grid-template-columns: 1fr 1fr; } }
+      .pad {
+        background: var(--slot);
+        border: 1px solid var(--rule);
+        padding: 10px;
+        cursor: pointer;
+      }
+      .pad b { display: block; font-family: "Archivo Black", sans-serif; font-size: 16px; letter-spacing: 0.02em; text-transform: uppercase; }
+      .pad p { margin: 4px 0 0; color: var(--mute); font-size: 13px; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+      .act.primary { background: rgba(196, 122, 58, 0.16); border-color: var(--copper); color: var(--copper-hot); }
+      .sim h3, .research h3 {
+        font-family: "Archivo Black", sans-serif;
+        font-size: 22px;
+        letter-spacing: 0.02em;
+        margin: 8px 0 6px;
+        text-transform: uppercase;
+      }
+      .sim p, .research p { color: var(--mute); line-height: 1.6; }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+      .drop {
+        margin: 12px 0;
+        border: 1px dashed rgba(201, 161, 90, 0.4);
+        padding: 14px;
+        text-align: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--bronze);
+        text-transform: uppercase;
+      }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        background: #080a09;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .stayoff { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        border: 1px solid var(--rule);
+        padding: 2px 7px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--bronze);
+      }
+      footer {
+        margin-top: 22px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: var(--bronze);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="chrome">
+        <a class="catalog" href="/">hermes playground catalog</a>
+        <p class="mark">02:50 Sydney · bourdon · catalog #186 · #92510</p>
+        <h1>BOURDON<em>bourdon-tube pressure gauge bay</em></h1>
+        <p class="lede">
+          On macOS Apple Silicon the Apple Virtualization VM that Cowork/Code
+          launches accumulates host-side open file descriptors continuously —
+          including while completely idle. Snapshot
+          <code>~409,600</code> fds (~71% of <code>kern.maxfiles</code>,
+          ~130x next-largest). Guest
+          <code>/proc/sys/fs/file-nr</code> is still
+          <strong style="color:var(--patina-hot)">~512</strong>. The tube
+          should hold. Instead it is
+          <strong style="color:var(--maxred-hot)">saturating</strong>.
+          Cmd+Q Desktop
+          <strong style="color:var(--patina-hot)">vents</strong> it.
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/92510">#92510</a>.
+        </p>
+      </header>
+
+      <section class="bay saturating" id="bay" aria-label="Bourdon-tube pressure gauge bay">
+        <div class="rail">
+          <span>bay 186 · brass / bronze · coiled tube · virtiofs manifold</span>
+          <span id="rail-state">tube uncoiling · host fds climbing · guest still clean</span>
+        </div>
+        <div class="deck">
+          <div>
+            <h4 class="cap">bourdon gauge · brass bezel</h4>
+            <div class="gauge-well">
+              <div class="gauge" aria-hidden="true">
+                <svg viewBox="0 0 200 200">
+                  <path d="M36 128 A72 72 0 1 1 164 128" fill="none" stroke="#8d6b2f" stroke-width="8" />
+                  <path d="M132 42 A72 72 0 0 1 164 128" fill="none" stroke="#c4342a" stroke-width="10" />
+                  <line class="needle" id="needle" x1="100" y1="100" x2="100" y2="42" stroke="#f3ead4" stroke-width="3" />
+                  <circle cx="100" cy="100" r="6" fill="#c9a15a" />
+                  <text x="28" y="148" fill="#9a8f78" font-size="8" font-family="IBM Plex Mono, monospace">0</text>
+                  <text x="148" y="148" fill="#ef5a4c" font-size="8" font-family="IBM Plex Mono, monospace">MAX</text>
+                </svg>
+                <div class="readout" id="lamp-read">409600</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h4 class="cap">coiled tube · virtiofs manifold</h4>
+            <div class="tube-well">
+              <svg viewBox="0 0 420 220" role="img" aria-label="Bourdon tube uncoiling under host fd pressure">
+                <rect x="12" y="28" width="86" height="48" rx="4" fill="#8d6b2f" />
+                <text x="22" y="48" fill="#f3ead4" font-size="10" font-family="IBM Plex Mono, monospace">HOST</text>
+                <text x="22" y="64" fill="#e4c57a" font-size="9" font-family="IBM Plex Mono, monospace">AVF VM</text>
+                <path class="coil" id="coil" d="M98 52 C140 20 170 90 210 40 C250 0 290 88 330 36 C360 8 390 70 404 48" fill="none" stroke="#c47a3a" stroke-width="6" stroke-linecap="round" />
+                <rect x="12" y="132" width="86" height="48" rx="4" fill="#3f7a68" />
+                <text x="22" y="152" fill="#f3ead4" font-size="10" font-family="IBM Plex Mono, monospace">GUEST</text>
+                <text x="22" y="168" fill="#6fb89e" font-size="9" font-family="IBM Plex Mono, monospace">file-nr</text>
+                <path id="guest-pipe" d="M98 156 H250" fill="none" stroke="#3f7a68" stroke-width="4" />
+                <text x="260" y="160" fill="#6fb89e" font-size="12" font-family="IBM Plex Mono, monospace" id="guest-cap">512 CLEAN</text>
+                <text x="12" y="208" fill="#9a8f78" font-size="10" font-family="IBM Plex Mono, monospace">VIRTIOFS  ·  /development ~300k</text>
+                <text id="tube-caption" x="220" y="208" fill="#ef5a4c" font-size="11" font-family="IBM Plex Mono, monospace">SATURATING · HOST HANDLES</text>
+              </svg>
+            </div>
+          </div>
+          <div class="face-col">
+            <h4 class="cap">faceplates</h4>
+            <article class="faceplate" id="faceplate">
+              <b class="cap">tube state</b>
+              <strong id="face-text">saturating</strong>
+              <span id="face-note">Host fd pressure climbs while idle toward kern.maxfiles. Guest still clean.</span>
+            </article>
+            <article class="faceplate steel">
+              <b class="cap">host fds</b>
+              <strong id="host-face" style="font-size:24px">409600</strong>
+              <span id="host-note">~71% of kern.maxfiles. ~130x next-largest process.</span>
+            </article>
+            <article class="faceplate hold">
+              <b class="cap">guest fds</b>
+              <strong id="guest-face" style="font-size:24px">512</strong>
+              <span id="guest-note">/proc/sys/fs/file-nr ~512. Five processes. Leak is host-side.</span>
+            </article>
+          </div>
+        </div>
+
+        <div class="climb" aria-label="Idle pressure climb">
+          <h4 class="cap">idle climb · 12h after last prompt</h4>
+          <div class="timeline" id="timeline">
+            <span class="tick">prompt</span>
+            <div class="void" id="void-idle"><span id="void-idle-lab">idle climb</span></div>
+            <span class="tick">+12h</span>
+            <div class="void" id="void-max"><span id="void-max-lab">~409k fds</span></div>
+            <span class="tick">maxfiles</span>
+            <span class="tick">panic</span>
+          </div>
+          <p class="note" id="climb-note">The count keeps growing with no prompt running. One occurrence hit 12 hours after the last prompt. Exhaustion → macOS kernel panic → reboot (1–5x/day if not caught).</p>
+        </div>
+
+        <div class="workorder">
+          <div>
+            <h4 class="cap">pressure snapshot · host vs guest</h4>
+            <table>
+              <thead>
+                <tr><th>holder</th><th>fds</th></tr>
+              </thead>
+              <tbody id="wall-body"></tbody>
+            </table>
+          </div>
+          <div class="vs">
+            <article>
+              <b>expected</b>
+              <p id="exp-copy">The VM should release host file descriptors when the guest closes files and when a session ends. An idle VM should not grow its fd usage past kern.maxfiles.</p>
+            </article>
+            <article>
+              <b>actual</b>
+              <p id="act-copy">Host VM ~409,600 fds. Guest ~512. Climb continues while idle. Cmd+Q vents it. CLI without VM does not exhibit this.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Bourdon scoring assay">
+        <div class="verdict-row">
+          <div>
+            <p class="verdict alarm" id="verdict">saturating</p>
+            <p class="reason" id="reason">
+              Host-side Apple Virtualization VM fds climb while idle toward
+              kern.maxfiles. Guest still clean. Admit saturating.
+            </p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="paths" id="paths"></div>
+        <div class="log" id="log"></div>
+        <div class="slip" id="jsonl"></div>
+
+        <div class="matrix" aria-label="Bourdon pressure matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>fds</th>
+                <th>effect</th>
+                <th>shipped</th>
+                <th>scored</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </div>
+
+        <section class="pads" aria-label="Assay pads">
+          <article class="pad" data-remedy="saturating">
+            <b>Saturating</b>
+            <p>Host fd climb while idle. Tube uncoiling.</p>
+          </article>
+          <article class="pad" data-remedy="host-fd-409600">
+            <b>Host 409k</b>
+            <p>~71% of kern.maxfiles. ~130x next.</p>
+          </article>
+          <article class="pad" data-remedy="guest-clean-512">
+            <b>Guest 512</b>
+            <p>file-nr clean. Leak is host-side.</p>
+          </article>
+          <article class="pad" data-remedy="vented">
+            <b>Vented</b>
+            <p>Cmd+Q Desktop releases descriptors.</p>
+          </article>
+        </section>
+
+        <div class="actions">
+          <button class="act primary" data-act="score">Score probes</button>
+          <button class="act" data-act="idle">Admit saturating</button>
+          <button class="act" data-act="seed">Pin seeded vented</button>
+          <button class="act" data-act="fixtures">Load #92510 fixture</button>
+          <button class="act" data-act="flip">Flip saturating vs vented</button>
+          <button class="act" data-act="reset">Reset to saturating</button>
+        </div>
+
+        <div class="sim">
+          <h3>Bay simulator</h3>
+          <p>Seat the Bourdon tube without touching a live Claude session. Diagnostic pressure pads only — not a live VM.</p>
+          <div class="sim-row">
+            <span class="chip" data-sim-pull="climb">admit saturating</span>
+            <span class="chip" data-sim-pull="vent">pin vented</span>
+            <span class="chip" data-sim-pull="host">host 409k</span>
+            <span class="chip" data-sim-pull="cli">cli no-vm hold</span>
+          </div>
+          <div class="sim-row" id="chip-switch">
+            <button class="chip" data-chip="saturating">saturating</button>
+            <button class="chip" data-chip="vented">vented</button>
+            <button class="chip" data-chip="host-fd-409600">host-fd-409600</button>
+            <button class="chip" data-chip="guest-clean-512">guest-clean-512</button>
+            <button class="chip" data-chip="idle-12h-after-prompt">idle-12h-after-prompt</button>
+            <button class="chip" data-chip="virtiofs-suspect">virtiofs-suspect</button>
+            <button class="chip" data-chip="cmdq-releases">cmdq-releases</button>
+            <button class="chip" data-chip="cli-no-vm-clean">cli-no-vm-clean</button>
+            <button class="chip" data-chip="cousins">cousins</button>
+          </div>
+        </div>
+
+        <div class="drop" id="drop">Drop a fixture JSON from data/ onto the pressure bay</div>
+        <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+        <section class="research">
+          <h3>Why this assay</h3>
+          <p>
+            On macOS 26.4 Apple Silicon, Claude Desktop Cowork with
+            <code>/development</code> (~300k files) launches an Apple
+            Virtualization VM that accumulates host-side open file descriptors
+            continuously, including while completely idle.
+          </p>
+          <p>
+            Pressure snapshot: Claude-owned VM ~409,600 fds (~71% of
+            <code>kern.maxfiles</code>, ~130x next-largest). Guest
+            <code>/proc/sys/fs/file-nr</code> ~512, five processes, top process
+            4 fds, uptime 2 min. Codex/Node ~106k in an earlier snapshot
+            (secondary). Coalition is Claude, not Docker.
+          </p>
+          <p>
+            Count still climbing 12 hours after the last prompt. Exhaustion
+            → macOS kernel panic → reboot, 1–5x/day if not caught. Cmd+Q
+            Desktop releases descriptors immediately. <code>kill</code> the VM
+            PID (Claude relaunches it). Smaller subfolder also helps. CLI from
+            Terminal with no VM does not exhibit this.
+          </p>
+          <p>
+            Hypothesis only (NON-BINDING): most likely the virtiofs /
+            shared-folder layer not releasing host handles for files the guest
+            has touched. Verify nothing — encode the issue body only. Do not
+            invent source-code claims.
+          </p>
+          <p>
+            Stay off: <span class="stayoff">
+              <span>diesel glow-plug #85050</span>
+              <span>delayed-primer #92478</span>
+              <span>CRT paging-storm #88257</span>
+              <span>olive suppressor #92459</span>
+              <span>magnetic remanence #92444</span>
+              <span>night apron #92452</span>
+              <span>bakelite dial #92436</span>
+            </span>
+          </p>
+          <p>
+            Cousins cite-only:
+            <a href="https://github.com/anthropics/claude-code/issues/79920">#79920</a>
+            daemon fd storm → ENFILE → panic ·
+            <a href="https://github.com/anthropics/claude-code/issues/92069">#92069</a>
+            Desktop over SSH / launchd 256 ·
+            <a href="https://github.com/anthropics/claude-code/issues/29573">#29573</a>
+            long-session file-limit ·
+            <a href="https://github.com/anthropics/claude-code/issues/26087">#26087</a>
+            <a href="https://github.com/anthropics/claude-code/issues/47829">#47829</a>
+            <a href="https://github.com/anthropics/claude-code/issues/26646">#26646</a>
+            <a href="https://github.com/anthropics/claude-code/issues/65239">#65239</a>
+            <a href="https://github.com/anthropics/claude-code/issues/47644">#47644</a>
+            guest panics / disk-write limits — different.
+          </p>
+        </section>
+        <footer>
+          Catalog #186 · idle word saturating · seeded vented · mark 02:50 Sydney · bourdon ·
+          no live Claude sessions · fonts Archivo Black / Sora / IBM Plex Mono ·
+          Bourdon-tube pressure bay · not a glow-plug · not a chronograph · not a CRT
+        </footer>
+      </section>
+    </main>
+    <script>
+      const HOLD = new Set(["vented"]);
+      const CONTROL = new Set(["cli-no-vm-clean"]);
+      const WORKAROUND = new Set(["cmdq-releases"]);
+      const CHIPS = [
+        "saturating", "vented", "host-fd-409600", "guest-clean-512",
+        "idle-12h-after-prompt", "virtiofs-suspect",
+        "cmdq-releases", "cli-no-vm-clean", "cousins"
+      ];
+      const CHIP_FILES = {
+        saturating: "saturating.json",
+        vented: "vented.json",
+        "host-fd-409600": "host-fd-409600.json",
+        "guest-clean-512": "guest-clean-512.json",
+        "idle-12h-after-prompt": "idle-12h-after-prompt.json",
+        "virtiofs-suspect": "virtiofs-suspect.json",
+        "cmdq-releases": "cmdq-releases.json",
+        "cli-no-vm-clean": "cli-no-vm-clean.json",
+        cousins: "cousins.json"
+      };
+      const WALL = [
+        { condition: "Claude-owned Apple Virtualization VM (host)", wall: "~409,600", ok: false },
+        { condition: "~71% of kern.maxfiles / ~130x next-largest", wall: "71% / 130x", ok: false },
+        { condition: "Codex/Node earlier snapshot (secondary)", wall: "~106,000", ok: false },
+        { condition: "Guest /proc/sys/fs/file-nr at boot", wall: "~512", ok: true },
+        { condition: "Guest processes / top-process fds / uptime", wall: "5 / 4 / 2 min", ok: true },
+        { condition: "Cmd+Q Claude Desktop", wall: "released", ok: true },
+        { condition: "Terminal CLI, no VM", wall: "does not exhibit", ok: true }
+      ];
+      const MATRIX = [
+        { id: "primary", name: "#92510 · host VM fd climb toward kern.maxfiles", wall: "~409k", effect: "panic", shipped: "FAIL", scored: "FAIL", file: "92510.json" },
+        { id: "host", name: "host Apple Virtualization VM", wall: "~409,600", effect: "71% maxfiles", shipped: "FAIL", scored: "FAIL", file: "host-fd-409600.json" },
+        { id: "guest", name: "guest file-nr", wall: "~512", effect: "host-side leak", shipped: "FAIL", scored: "FAIL", file: "guest-clean-512.json" },
+        { id: "idle12", name: "12h after last prompt", wall: "still climbing", effect: "idle", shipped: "FAIL", scored: "FAIL", file: "idle-12h-after-prompt.json" },
+        { id: "virtio", name: "virtiofs / shared-folder (NON-BINDING)", wall: "/development", effect: "suspect", shipped: "FAIL", scored: "FAIL", file: "virtiofs-suspect.json" },
+        { id: "cmdq", name: "Cmd+Q Desktop", wall: "released", effect: "vent", shipped: "pass", scored: "pass", file: "cmdq-releases.json" },
+        { id: "cli", name: "Terminal CLI, no VM", wall: "clean", effect: "control", shipped: "pass", scored: "pass", file: "cli-no-vm-clean.json" },
+        { id: "saturating", name: "idle Bourdon · host climb while idle", wall: "toward maxfiles", effect: "idle", shipped: "FAIL", scored: "FAIL", file: "saturating.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92510,
+        seed: "saturating",
+        saturating: true,
+        vented: false,
+        hostFdClimb: true,
+        hostFd: 409600,
+        guestFd: 512,
+        idleHoursAfterPrompt: 12,
+        shippedMark: "FAIL",
+        scoredMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "SATURATING",
+        log: [
+          "[idle] host-side Apple Virtualization VM fds climb continuously — including while completely idle",
+          "[snap] ~409,600 host fds · ~71% of kern.maxfiles · guest file-nr ~512",
+          "[desk] already saturating; idle word saturating"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92510,
+        seed: "vented",
+        saturating: false,
+        vented: true,
+        cmdq: true,
+        hostFd: 0,
+        shippedMark: "pass",
+        scoredMark: "pass",
+        isolateMark: "pass",
+        hubCount: "VENTED",
+        log: [
+          "[seeded] Cmd+Q Claude Desktop releases the descriptors immediately",
+          "[desk] already vented; seeded word vented"
+        ]
+      };
+
+      const hostTicket = { source: "probe", issue: 92510, seed: "host-fd-409600", saturating: true, hostFd: 409600, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "HOST-409600", log: ["[snap] ~409,600 host fds · ~71% of kern.maxfiles · ~130x next"] };
+      const guestTicket = { source: "probe", issue: 92510, seed: "guest-clean-512", saturating: true, guestFd: 512, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "GUEST-512", log: ["[guest] file-nr ~512 · 5 processes · leak is host-side"] };
+      const idle12Ticket = { source: "probe", issue: 92510, seed: "idle-12h-after-prompt", saturating: true, idleHoursAfterPrompt: 12, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "IDLE-12H", log: ["[idle] still climbing 12 hours after the last prompt"] };
+      const virtioTicket = { source: "probe", issue: 92510, seed: "virtiofs-suspect", saturating: true, virtiofsSuspect: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "VIRTIOFS", log: ["[hyp] virtiofs / shared-folder host handles — NON-BINDING"] };
+      const cmdqTicket = { source: "probe", issue: 92510, seed: "cmdq-releases", vented: true, saturating: false, cmdq: true, hostFd: 0, shippedMark: "pass", scoredMark: "pass", isolateMark: "pass", hubCount: "CMDQ", log: ["[vent] Cmd+Q Claude Desktop releases the descriptors immediately"] };
+      const cliTicket = { source: "probe", issue: 92510, seed: "cli-no-vm-clean", cliNoVm: true, vented: true, saturating: false, shippedMark: "pass", scoredMark: "pass", isolateMark: "pass", hubCount: "CLI-CLEAN", log: ["[control] Terminal CLI (no VM) does not exhibit this"] };
+      const cousinsTicket = { source: "probe", issue: 92510, seed: "cousins", saturating: true, cousinsCiteOnly: [79920, 92069, 29573, 26087, 47829, 26646, 65239, 47644], shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass", hubCount: "COUSINS", log: ["[cousins] #79920 #92069 #29573 #26087 #47829 #26646 #65239 #47644", "[desk] primary stays #92510"] };
+      const primaryTicket = { ...idle, seed: "saturating", scenario: "92510", hubCount: "92510", log: ["[primary] #92510 · host-side Cowork/Code VM fd climb toward kern.maxfiles"] };
+
+      const FALLBACKS = {
+        saturating: idle,
+        vented: seeded,
+        "host-fd-409600": hostTicket,
+        "guest-clean-512": guestTicket,
+        "idle-12h-after-prompt": idle12Ticket,
+        "virtiofs-suspect": virtioTicket,
+        "cmdq-releases": cmdqTicket,
+        "cli-no-vm-clean": cliTicket,
+        cousins: cousinsTicket
+      };
+
+      let pullState = "climb";
+      let flipHold = false;
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || CONTROL.has(seed) || WORKAROUND.has(seed) || (t.vented === true && t.saturating !== true);
+      }
+
+      function alreadySaturating(t) {
+        const seed = String(t.seed || "");
+        if (CONTROL.has(seed) || WORKAROUND.has(seed)) return false;
+        if (remediating(t) && t.saturating !== true) return false;
+        if (HOLD.has(seed) && t.saturating !== true) return false;
+        if (t.saturating === true || t.hostFdClimb === true) return true;
+        if (typeof t.hostFd === "number" && t.hostFd >= 409600) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed) && !CONTROL.has(seed) && !WORKAROUND.has(seed)) return true;
+        return t.vented !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadySaturating(t);
+        const control = CONTROL.has(seed) || (t.cliNoVm === true && seed === "cli-no-vm-clean");
+        const workaround = WORKAROUND.has(seed) || (t.cmdq === true && seed === "cmdq-releases");
+        t.shippedFree = alarm && !remediating(t);
+        t.shippedMark = t.shippedMark || (t.shippedFree ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (remediating(t) ? "pass" : "FAIL");
+        const holding = remediating(t) && !alarm;
+        const chips = [];
+        if (holding || seed === "vented") chips.push("vented");
+        if (alarm || seed === "saturating" || t.saturating === true) chips.push("saturating");
+        if (seed === "host-fd-409600" || (typeof t.hostFd === "number" && t.hostFd >= 409600)) chips.push("host-fd-409600");
+        if (seed === "guest-clean-512" || (typeof t.guestFd === "number" && t.guestFd <= 512 && t.guestFd > 0)) chips.push("guest-clean-512");
+        if (seed === "idle-12h-after-prompt" || (typeof t.idleHoursAfterPrompt === "number" && t.idleHoursAfterPrompt >= 12)) chips.push("idle-12h-after-prompt");
+        if (seed === "virtiofs-suspect" || t.virtiofsSuspect === true) chips.push("virtiofs-suspect");
+        if (workaround) chips.push("cmdq-releases");
+        if (control) chips.push("cli-no-vm-clean");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (control ? "cli-no-vm-clean" : (workaround ? "cmdq-releases" : (holding ? "vented" : "saturating")));
+        return { ticket: t, holding, alarm, control, workaround, chips: unique, verdict };
+      }
+
+      const REASONS = {
+        saturating: "Host-side Apple Virtualization VM fds climb while idle toward kern.maxfiles. Guest still clean. Admit saturating.",
+        vented: "Bourdon already vented. Cmd+Q Claude Desktop releases the descriptors immediately. Seeded word is vented.",
+        "host-fd-409600": "Pressure snapshot (host, macOS): Claude-owned Apple Virtualization VM ~409,600 open file descriptors (~71% of kern.maxfiles, ~130x next-largest). Codex/Node ~106,000 secondary.",
+        "guest-clean-512": "Guest /proc/sys/fs/file-nr ~512; ~5 processes shortly after boot; top process holds 4 fds; uptime 2 min. Leak is in the host-side VM process.",
+        "idle-12h-after-prompt": "Count keeps growing with no prompt running. One occurrence hit 12 hours after the last prompt. An idle VM should not grow its fd usage.",
+        "virtiofs-suspect": "Most likely the virtiofs / shared-folder layer not releasing host handles for files the guest has touched. Hypothesis only (NON-BINDING). Connected folder /development (~300k files).",
+        "cmdq-releases": "Cmd+Q Claude Desktop releases descriptors immediately. Also: kill the VM PID (Claude relaunches it); connect a smaller subfolder.",
+        "cli-no-vm-clean": "Claude Code run from Terminal (no VM) does not exhibit this. Control, not the idle saturating path.",
+        cousins: "Cite-only cousins #79920 daemon fd storm, #92069 Desktop-over-SSH launchd 256, #29573 long-session file-limit, #26087 #47829 #26646 #65239 #47644 guest panics / disk limits. Primary stays #92510."
+      };
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] saturating · host fd climb toward kern.maxfiles"]
+            : ["[desk] vented · Cmd+Q released descriptors"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /saturating|FAIL|409|climb|panic|virtio/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "saturating · host fds climb while idle" : (result.control ? "CLI no VM" : "vented · Cmd+Q released"), "bourdon path"],
+          ["isolate", t.isolateMark, "host-side Cowork/Code VM fd climb · not glow-plug preheat · not hangfire demotion · not CRT stall", "not a clone"],
+          ["scored", t.scoredMark, remediating(t) ? "vented" : "would score after the VM releases host handles when the guest closes files", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            <td>${row.wall}</td>
+            <td>${row.effect}</td>
+            ${cell(row.shipped)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "saturating", host: "host-fd-409600", guest: "guest-clean-512",
+                idle12: "idle-12h-after-prompt", virtio: "virtiofs-suspect",
+                cmdq: "cmdq-releases", cli: "cli-no-vm-clean", saturating: "saturating"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (result.control) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">claude from Terminal · no Apple Virtualization VM</span>\n` +
+            `<span class="asst">does not exhibit host fd climb</span>\n` +
+            `<span class="hook">${t.seed || "cli-no-vm-clean"}; control</span>`;
+          return;
+        }
+        if (HOLD.has(t.seed) || result.holding || result.workaround) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">Cmd+Q Claude Desktop</span>\n` +
+            `<span class="asst">host descriptors released immediately</span>\n` +
+            `<span class="hook">${t.seed || "vented"}; hold</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">Pressure snapshot (host, macOS):</span>\n` +
+          `<span class="user">Claude-owned Apple Virtualization VM: ~409,600 fds (~71% of kern.maxfiles)</span>\n` +
+          `<span class="hook">Inside the VM (guest) at boot:</span>\n` +
+          `<span class="asst">/proc/sys/fs/file-nr -> 512 0 ... · 5 processes · uptime 2 min</span>\n` +
+          `<span class="user">Outcome: system-wide fd exhaustion -> macOS kernel panic -> reboot</span>`;
+      }
+
+      function paintGauge(result) {
+        const soak = result.alarm;
+        const needle = document.getElementById("needle");
+        needle.style.transform = soak ? "rotate(52deg)" : "rotate(-48deg)";
+        document.getElementById("lamp-read").textContent = soak ? "409600" : (result.control ? "CLI" : "VENTED");
+        const coil = document.getElementById("coil");
+        coil.setAttribute("stroke", soak ? "#c47a3a" : "#6fb89e");
+        coil.setAttribute("d", soak
+          ? "M98 52 C140 20 170 90 210 40 C250 0 290 88 330 36 C360 8 390 70 404 48"
+          : "M98 52 C130 70 150 40 180 62 C210 84 240 50 270 68 C300 86 340 60 404 72");
+        const cap = document.getElementById("tube-caption");
+        cap.textContent = soak ? "SATURATING · HOST HANDLES" : (result.control ? "CLI · NO VM" : "VENTED · CMD+Q");
+        cap.setAttribute("fill", soak ? "#ef5a4c" : "#6fb89e");
+        document.getElementById("guest-cap").textContent = soak ? "512 CLEAN" : (result.control ? "NO GUEST" : "RELEASED");
+        const v1 = document.getElementById("void-idle");
+        const v2 = document.getElementById("void-max");
+        v1.classList.toggle("hold", !soak);
+        v2.classList.toggle("hold", !soak);
+        document.getElementById("void-idle-lab").textContent = soak ? "idle climb" : "held";
+        document.getElementById("void-max-lab").textContent = soak ? "~409k fds" : "vented";
+      }
+
+      function paintFace(result) {
+        const seed = result.verdict;
+        document.getElementById("face-text").textContent = seed;
+        document.getElementById("face-note").textContent = REASONS[seed] || REASONS.saturating;
+        const host = typeof result.ticket.hostFd === "number" ? result.ticket.hostFd : (result.alarm ? 409600 : 0);
+        const guest = typeof result.ticket.guestFd === "number" ? result.ticket.guestFd : (result.alarm ? 512 : 0);
+        document.getElementById("host-face").textContent = result.holding || result.control || result.workaround ? "0" : String(host);
+        document.getElementById("host-note").textContent = result.holding || result.control || result.workaround
+          ? "Descriptors released (or never entered the VM)."
+          : "~71% of kern.maxfiles. ~130x next-largest process.";
+        document.getElementById("guest-face").textContent = result.control ? "—" : String(guest || (result.alarm ? 512 : 0));
+        document.getElementById("guest-note").textContent = result.control
+          ? "No Apple Virtualization guest. Terminal CLI only."
+          : "/proc/sys/fs/file-nr ~512. Five processes. Leak is host-side.";
+        document.getElementById("rail-state").textContent = result.alarm
+          ? "tube uncoiling · host fds climbing · guest still clean"
+          : (result.control ? "cli path · no VM · tube never charged" : "tube vented · Cmd+Q released descriptors");
+        document.getElementById("exp-copy").textContent = "The VM should release host file descriptors when the guest closes files and when a session ends. An idle VM should not grow its fd usage past kern.maxfiles.";
+        document.getElementById("act-copy").textContent = result.holding || result.workaround
+          ? "Cmd+Q Desktop released the descriptors. Hold path."
+          : (result.control
+            ? "Terminal CLI without VM does not exhibit this."
+            : "Host VM ~409,600 fds. Guest ~512. Climb continues while idle. 1–5x panic/reboot per day if not caught.");
+        document.getElementById("climb-note").textContent = seed === "idle-12h-after-prompt"
+          ? "Count still climbing 12 hours after the last prompt. An idle VM should not grow its fd usage."
+          : (result.holding || result.control || result.workaround
+            ? "Tube vented or never charged. No climb toward kern.maxfiles."
+            : "The count keeps growing with no prompt running. One occurrence hit 12 hours after the last prompt. Exhaustion → macOS kernel panic → reboot (1–5x/day if not caught).");
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) || CONTROL.has(chip) || WORKAROUND.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92510 }); }
+          });
+        });
+      }
+
+      function paintWall() {
+        document.getElementById("wall-body").innerHTML = WALL.map((row) =>
+          `<tr><td>${row.condition}</td><td class="sec${row.ok ? " ok" : ""}">${row.wall}</td></tr>`
+        ).join("");
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bay = document.getElementById("bay");
+        bay.className = "bay " + result.verdict;
+        const v = document.getElementById("verdict");
+        v.textContent = result.verdict;
+        v.className = "verdict " + (result.holding || result.control || result.workaround ? "hold" : "alarm");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || result.verdict;
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintFace(result);
+        paintGauge(result);
+        paintChips(result);
+        paintPaths(result);
+        paintLog(result.alarm, result.ticket);
+        paintSlip(result);
+        const map = {
+          saturating: "saturating", vented: "cmdq", "host-fd-409600": "host",
+          "guest-clean-512": "guest", "idle-12h-after-prompt": "idle12",
+          "virtiofs-suspect": "virtio", "cmdq-releases": "cmdq",
+          "cli-no-vm-clean": "cli", cousins: "primary", "92510": "primary"
+        };
+        paintMatrix(ticket.scenario === "92510" ? "primary" : (map[result.verdict] || ticket.scenario || ""));
+        document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+          const holdish = HOLD.has(result.verdict) || CONTROL.has(result.verdict) || WORKAROUND.has(result.verdict);
+          btn.classList.toggle("on", btn.dataset.chip === result.verdict && !holdish);
+          btn.classList.toggle("hold", btn.dataset.chip === result.verdict && holdish);
+        });
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch(new URL("data/" + name, location.href));
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function ticketFromSim() {
+        if (pullState === "vent") return { ...seeded };
+        if (pullState === "host") return { ...hostTicket };
+        if (pullState === "cli") return { ...cliTicket };
+        return { ...idle };
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((el) => {
+          el.classList.toggle("on", el.dataset.simPull === pullState && pullState !== "vent" && pullState !== "cli");
+          el.classList.toggle("hold", el.dataset.simPull === pullState && (pullState === "vent" || pullState === "cli"));
+        });
+      }
+
+      document.querySelectorAll("[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle" || act === "reset") {
+            pullState = "climb";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("saturating.json")); }
+            catch { apply({ ...idle }); }
+            return;
+          }
+          if (act === "seed") {
+            pullState = "vent";
+            flipHold = true;
+            syncSimChips();
+            try { apply(await loadNamed("vented.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "flip") {
+            flipHold = !flipHold;
+            if (flipHold) {
+              pullState = "vent";
+              syncSimChips();
+              try { apply(await loadNamed("vented.json")); }
+              catch { apply({ ...seeded }); }
+            } else {
+              pullState = "climb";
+              syncSimChips();
+              try { apply(await loadNamed("saturating.json")); }
+              catch { apply({ ...idle }); }
+            }
+            return;
+          }
+          if (act === "fixtures") {
+            pullState = "climb";
+            flipHold = false;
+            syncSimChips();
+            try { apply(await loadNamed("92510.json")); }
+            catch { apply({ ...primaryTicket }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92510 }); }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          try { apply(await loadNamed(CHIP_FILES[kind])); }
+          catch { apply({ ...(FALLBACKS[kind] || idle) }); }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      paintWall();
+      syncSimChips();
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
