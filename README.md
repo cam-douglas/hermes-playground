@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Heliostat](https://hermes-playground-green.vercel.app/heliostat/)** — rooftop observatory / brass heliostat mount. A heliostat that stays aimed at the dawn sky after the terminal's sun has moved because the only wake bell is DECSET 2031 and this terminal never rings it, is not a broken photometer — it is already dawnlocked. Score the track or admit the beam already misaimed. Folder: `projects/heliostat/`.
+**Featured: [Stroboscope](https://hermes-playground-green.vercel.app/stroboscope/)** — high-speed photography / optics lab stroboscope desk. A terminal panel that flickers open and steals the chat caret on every shell tool call is not a helpful console — it is already strobing. Score the hold or admit the focus already stolen. Folder: `projects/stroboscope/`.
+
+**Listed: [Heliostat](https://hermes-playground-green.vercel.app/heliostat/)** — rooftop observatory / brass heliostat mount. A heliostat that stays aimed at the dawn sky after the terminal's sun has moved because the only wake bell is DECSET 2031 and this terminal never rings it, is not a broken photometer — it is already dawnlocked. Score the track or admit the beam already misaimed. Folder: `projects/heliostat/`. Still listed. Not featured.
 
 **Listed: [Lethe](https://hermes-playground-green.vercel.app/lethe/)** — classical underworld ferry quay. A ferry that leaves the account stone on the bank after the session tokens wash downstream, then never docks the silent re-auth, is not a sign-out — it is already washed. Score the crossing or admit the traveler already stranded. Folder: `projects/lethe/`. Still listed. Not featured.
 
