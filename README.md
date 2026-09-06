@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Bourdon](https://hermes-playground-green.vercel.app/bourdon/)** — Bourdon-tube pressure gauge bay. The Cowork/Code Apple Virtualization VM should hold host fds when idle but instead saturates toward `kern.maxfiles` (~409k, guest still clean) until macOS panics — Cmd+Q vents it (#92510). Score saturating or admit vented. Folder: `projects/bourdon/`.
+**Featured: [Catachresis](https://hermes-playground-green.vercel.app/catachresis/)** — lexicographer stamp desk / misnomer atelier. An MCP 403 `insufficient_scope` challenge should name the missing scope (`events:write`) but Claude Code stamps `token expired` over a live grant (#92518). Score mislabeled or admit scoped. Folder: `projects/catachresis/`.
+
+**Listed: [Bourdon](https://hermes-playground-green.vercel.app/bourdon/)** — Bourdon-tube pressure gauge bay. The Cowork/Code Apple Virtualization VM should hold host fds when idle but instead saturates toward `kern.maxfiles` (~409k, guest still clean) until macOS panics — Cmd+Q vents it (#92510). Score saturating or admit vented. Folder: `projects/bourdon/`. Still listed. Not featured.
 
 **Listed: [Glowplug](https://hermes-playground-green.vercel.app/glowplug/)** — diesel glow-plug preheat bay. On Windows every `claude` start soaks ~75s in two silent unlogged preheat gaps ending at `[skills] idle` / `[ScheduledTasks] scheduler start` (#85050). Score preheating or admit lit. Folder: `projects/glowplug/`. Still listed. Not featured.
 
