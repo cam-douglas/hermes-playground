@@ -1,0 +1,1568 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Heliostat — observatory mount for #92389</title>
+    <meta
+      name="description"
+      content="Heliostat — rooftop observatory / brass heliostat for Claude Code #92389: theme auto never updates on Windows Terminal because resample is gated solely on DECSET 2031. Idle word is dawnlocked."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Instrument+Serif:ital@0;1&family=Sora:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --night: #070b14;
+        --night-lit: #121a2c;
+        --copper: #b56a3a;
+        --copper-hot: #e08a52;
+        --brass: #d4b46a;
+        --brass-hot: #f3d88a;
+        --silver: #d7dee8;
+        --dawn: #fafafa;
+        --dusk: #282c34;
+        --aim: #6ec8c0;
+        --aim-hot: #9ee8e0;
+        --miss: #e07a48;
+        --mute: #8a93a6;
+        --ink: #e8ecf4;
+        --line: rgba(212, 180, 106, 0.2);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Sora, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% 8%, rgba(212, 180, 106, 0.08), transparent 28%),
+          radial-gradient(circle at 88% 4%, rgba(110, 200, 192, 0.06), transparent 24%),
+          linear-gradient(180deg, #10182a 0%, #070b14 58%, #05070e 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass-hot); }
+      .wrap { width: min(1180px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .chrome { margin-bottom: 14px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(138, 147, 166, 0.4);
+        margin-bottom: 8px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--brass);
+      }
+      h1 {
+        font-family: "Instrument Serif", "Times New Roman", serif;
+        font-size: clamp(48px, 9vw, 92px);
+        letter-spacing: -0.03em;
+        margin: 4px 0 10px;
+        font-weight: 400;
+        line-height: 0.88;
+        color: var(--silver);
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--brass);
+        font-size: 0.28em;
+        letter-spacing: 0.14em;
+        display: block;
+        margin-top: 12px;
+      }
+      .lede { max-width: 64em; color: var(--mute); line-height: 1.55; font-size: 16px; }
+      .lede code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--brass-hot);
+      }
+
+      .observatory {
+        margin: 24px 0 0;
+        position: relative;
+        min-height: 520px;
+        border-radius: 50% / 46%;
+        border: 14px solid #3a2418;
+        outline: 3px solid rgba(181, 106, 58, 0.35);
+        box-shadow:
+          inset 0 0 0 8px #5a3824,
+          0 30px 70px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 70% 18%, rgba(250, 250, 250, 0.08), transparent 18%),
+          radial-gradient(circle at 50% 120%, #1a1420 0%, transparent 42%),
+          linear-gradient(180deg, #1c2a48 0%, #0c1428 46%, #080c16 100%);
+      }
+      .observatory.dawnlocked, .observatory.misaimed {
+        box-shadow: inset 0 0 0 8px #5a3824, 0 0 0 5px rgba(224, 122, 72, 0.28), 0 30px 70px rgba(0, 0, 0, 0.55);
+      }
+      .observatory.tracking, .observatory.injected-997 {
+        box-shadow: inset 0 0 0 8px #5a3824, 0 0 0 5px rgba(110, 200, 192, 0.32), 0 30px 70px rgba(0, 0, 0, 0.55);
+      }
+      .observatory.manual-theme {
+        box-shadow: inset 0 0 0 8px #5a3824, 0 0 0 5px rgba(212, 180, 106, 0.3), 0 30px 70px rgba(0, 0, 0, 0.55);
+      }
+      .observatory.misaimed .sky {
+        background:
+          radial-gradient(circle at 72% 16%, rgba(250, 250, 250, 0.05), transparent 16%),
+          linear-gradient(180deg, #282c34 0%, #1a1e26 50%, #10141a 100%);
+      }
+      .observatory.tracking .sky,
+      .observatory.injected-997 .sky {
+        background:
+          radial-gradient(circle at 78% 14%, rgba(243, 216, 138, 0.16), transparent 18%),
+          linear-gradient(180deg, #282c34 0%, #1a1e26 50%, #10141a 100%);
+      }
+      .stage-label, .count-tag {
+        position: absolute;
+        z-index: 12;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: rgba(7, 11, 20, 0.82);
+        padding: 4px 8px;
+        border: 1px solid rgba(212, 180, 106, 0.3);
+        color: var(--brass);
+      }
+      .stage-label { left: 8%; top: 10%; }
+      .count-tag { right: 8%; top: 10%; color: var(--aim-hot); }
+
+      .sky { position: absolute; inset: 0; z-index: 1; }
+      .stars {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+        background-image:
+          radial-gradient(1px 1px at 12% 22%, #fff 60%, transparent 61%),
+          radial-gradient(1.4px 1.4px at 28% 16%, #fff 60%, transparent 61%),
+          radial-gradient(1px 1px at 41% 28%, #d7dee8 60%, transparent 61%),
+          radial-gradient(1.2px 1.2px at 63% 14%, #fff 60%, transparent 61%),
+          radial-gradient(1px 1px at 74% 26%, #fff 60%, transparent 61%),
+          radial-gradient(1.5px 1.5px at 86% 18%, #f3d88a 60%, transparent 61%),
+          radial-gradient(1px 1px at 18% 38%, #fff 60%, transparent 61%),
+          radial-gradient(1px 1px at 55% 22%, #fff 60%, transparent 61%);
+        animation: twinkle 7s ease-in-out infinite;
+      }
+      @keyframes twinkle {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+      }
+
+      .parapet {
+        position: absolute;
+        left: 6%;
+        right: 6%;
+        bottom: 0;
+        height: 22%;
+        z-index: 4;
+        background:
+          repeating-linear-gradient(90deg, #6a3e24 0 28px, #4a2a18 28px 30px),
+          linear-gradient(180deg, #8a5230 0%, #4a2a18 100%);
+        clip-path: polygon(0 38%, 8% 0, 92% 0, 100% 38%, 100% 100%, 0 100%);
+        box-shadow: inset 0 8px 0 rgba(243, 216, 138, 0.12);
+      }
+
+      .sun-path {
+        position: absolute;
+        left: 18%;
+        right: 18%;
+        top: 16%;
+        height: 46%;
+        z-index: 3;
+        border: 2px dashed rgba(243, 216, 138, 0.28);
+        border-radius: 50%;
+        pointer-events: none;
+      }
+      .sun-path::after {
+        content: "";
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--brass-hot);
+        box-shadow: 0 0 16px rgba(243, 216, 138, 0.7);
+        top: 8%;
+        right: 12%;
+      }
+      .observatory.dawnlocked .sun-path::after,
+      .observatory.misaimed .sun-path::after {
+        top: 62%;
+        right: auto;
+        left: 10%;
+        background: #fafafa;
+        box-shadow: 0 0 12px rgba(250, 250, 250, 0.45);
+      }
+
+      .mount {
+        position: absolute;
+        left: 50%;
+        bottom: 16%;
+        width: 220px;
+        height: 220px;
+        margin-left: -110px;
+        z-index: 6;
+      }
+      .tripod {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 12px;
+        height: 86px;
+        margin-left: -6px;
+        background: linear-gradient(180deg, #d4b46a, #8a6a30);
+        border-radius: 3px;
+      }
+      .tripod::before, .tripod::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        width: 10px;
+        height: 92px;
+        background: linear-gradient(180deg, #c4a25a, #6a4a20);
+        border-radius: 3px;
+      }
+      .tripod::before { left: -34px; transform: rotate(18deg); transform-origin: bottom center; }
+      .tripod::after { right: -34px; transform: rotate(-18deg); transform-origin: bottom center; }
+      .yoke {
+        position: absolute;
+        left: 50%;
+        bottom: 78px;
+        width: 88px;
+        height: 36px;
+        margin-left: -44px;
+        background: linear-gradient(180deg, #e8c878, #9a7428);
+        border-radius: 8px 8px 4px 4px;
+        box-shadow: inset 0 1px 0 rgba(255, 240, 200, 0.4);
+      }
+      .mirror {
+        position: absolute;
+        left: 50%;
+        bottom: 96px;
+        width: 92px;
+        height: 92px;
+        margin-left: -46px;
+        border-radius: 50%;
+        border: 6px solid #c4a25a;
+        background:
+          radial-gradient(circle at 32% 28%, #ffffff, #d7dee8 42%, #8a93a6 100%);
+        box-shadow:
+          inset -10px -12px 18px rgba(40, 44, 52, 0.28),
+          0 8px 18px rgba(0, 0, 0, 0.4);
+        transform: rotate(-18deg);
+        transition: transform 0.6s ease, background 0.4s ease;
+      }
+      .observatory.dawnlocked .mirror,
+      .observatory.misaimed .mirror {
+        transform: rotate(-38deg);
+        background: radial-gradient(circle at 32% 28%, #ffffff, #fafafa 50%, #c8c8c8 100%);
+      }
+      .observatory.tracking .mirror,
+      .observatory.injected-997 .mirror {
+        transform: rotate(28deg);
+        background: radial-gradient(circle at 32% 28%, #6a7080, #282c34 55%, #14181e 100%);
+      }
+      .beam {
+        position: absolute;
+        left: 50%;
+        bottom: 168px;
+        width: 8px;
+        height: 110px;
+        margin-left: -4px;
+        background: linear-gradient(180deg, rgba(250, 250, 250, 0.55), transparent);
+        transform-origin: bottom center;
+        transform: rotate(-38deg);
+        pointer-events: none;
+        z-index: 5;
+      }
+      .observatory.tracking .beam,
+      .observatory.injected-997 .beam {
+        background: linear-gradient(180deg, rgba(110, 200, 192, 0.7), transparent);
+        transform: rotate(28deg);
+      }
+
+      .bell {
+        position: absolute;
+        right: 14%;
+        top: 28%;
+        width: 54px;
+        height: 72px;
+        z-index: 7;
+      }
+      .bell .arm {
+        position: absolute;
+        left: 22px;
+        top: 0;
+        width: 6px;
+        height: 22px;
+        background: #c4a25a;
+      }
+      .bell .cup {
+        position: absolute;
+        left: 8px;
+        top: 18px;
+        width: 36px;
+        height: 28px;
+        background: linear-gradient(180deg, #e8c878, #8a6a30);
+        border-radius: 4px 4px 16px 16px;
+        box-shadow: inset 0 2px 0 rgba(255, 240, 200, 0.3);
+      }
+      .bell .clapper {
+        position: absolute;
+        left: 22px;
+        top: 42px;
+        width: 8px;
+        height: 10px;
+        border-radius: 50%;
+        background: #6a4a20;
+      }
+      .bell.silent .cup { filter: grayscale(0.4) brightness(0.7); }
+      .bell.rung .cup {
+        animation: ring 0.4s ease-in-out 2;
+        filter: none;
+      }
+      @keyframes ring {
+        0%, 100% { transform: rotate(0); }
+        50% { transform: rotate(12deg); }
+      }
+
+      .lever {
+        position: absolute;
+        left: 13%;
+        bottom: 26%;
+        width: 70px;
+        height: 90px;
+        z-index: 7;
+      }
+      .lever .base {
+        position: absolute;
+        left: 18px;
+        bottom: 0;
+        width: 34px;
+        height: 16px;
+        background: #8a6a30;
+        border-radius: 3px;
+      }
+      .lever .shaft {
+        position: absolute;
+        left: 32px;
+        bottom: 12px;
+        width: 7px;
+        height: 62px;
+        background: linear-gradient(180deg, #d4b46a, #6a4a20);
+        transform-origin: bottom center;
+        transform: rotate(-28deg);
+        transition: transform 0.35s ease;
+      }
+      .observatory.injected-997 .lever .shaft { transform: rotate(32deg); }
+      .lever .knob {
+        position: absolute;
+        left: 8px;
+        top: 0;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #f3d88a, #b56a3a);
+      }
+
+      .cuvettes {
+        position: absolute;
+        left: 50%;
+        bottom: 7%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 16px;
+        z-index: 8;
+      }
+      .cuvette {
+        width: 72px;
+        text-align: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .cuvette i {
+        display: block;
+        width: 36px;
+        height: 36px;
+        margin: 0 auto 6px;
+        border-radius: 50%;
+        border: 3px solid #c4a25a;
+        box-shadow: inset 0 0 0 2px rgba(7, 11, 20, 0.35);
+      }
+      .cuvette.dawn i { background: #fafafa; }
+      .cuvette.dusk i { background: #282c34; }
+
+      .lamps {
+        position: absolute;
+        left: 10%;
+        top: 42%;
+        display: grid;
+        gap: 8px;
+        z-index: 8;
+      }
+      .lamp {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 5px 8px;
+        border: 1px solid rgba(212, 180, 106, 0.28);
+        background: rgba(7, 11, 20, 0.72);
+        color: var(--mute);
+      }
+      .lamp.on { color: var(--aim-hot); border-color: rgba(110, 200, 192, 0.5); }
+      .lamp.off { color: var(--miss); border-color: rgba(224, 122, 72, 0.45); }
+
+      .aim-dial {
+        position: absolute;
+        right: 10%;
+        bottom: 28%;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        border: 2px solid rgba(212, 180, 106, 0.45);
+        background: rgba(7, 11, 20, 0.55);
+        z-index: 8;
+      }
+      .aim-dial::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 10px;
+        width: 3px;
+        height: 36px;
+        margin-left: -1.5px;
+        background: var(--miss);
+        transform-origin: bottom center;
+        transform: rotate(-40deg);
+      }
+      .observatory.tracking .aim-dial::before,
+      .observatory.injected-997 .aim-dial::before {
+        background: var(--aim-hot);
+        transform: rotate(36deg);
+      }
+      .aim-dial b {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 14px;
+        text-align: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 8px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+
+      .desk {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) {
+        .desk { grid-template-columns: 1fr; }
+        .observatory { border-radius: 36px; min-height: 460px; }
+      }
+      .ledger, .chart {
+        border: 1px solid var(--line);
+        background: rgba(12, 18, 32, 0.78);
+        padding: 16px;
+      }
+      .verdict {
+        font-family: "Instrument Serif", serif;
+        font-size: 42px;
+        margin: 0 0 8px;
+        line-height: 0.95;
+      }
+      .verdict.alarm { color: var(--miss); }
+      .verdict.hold { color: var(--aim-hot); }
+      .reason { margin: 0 0 14px; color: var(--mute); line-height: 1.5; }
+      .paths { display: grid; gap: 8px; }
+      .path {
+        border: 1px solid var(--line);
+        padding: 10px;
+        background: rgba(7, 11, 20, 0.55);
+      }
+      .path b {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .path.fail { border-color: rgba(224, 122, 72, 0.4); }
+      .path.ok { border-color: rgba(110, 200, 192, 0.4); }
+      .path .face { margin: 6px 0 4px; }
+      .path .note { color: var(--mute); font-size: 12px; }
+      .plaques { display: grid; gap: 8px; margin-top: 12px; }
+      .plaque {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+      }
+      .plaque i {
+        width: 10px;
+        height: 10px;
+        margin-top: 4px;
+        border-radius: 50%;
+        background: var(--mute);
+        flex: 0 0 auto;
+      }
+      .plaque.on i { background: var(--aim-hot); }
+      .plaque.hot i { background: var(--miss); }
+      .plaque b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .plaque span { color: var(--mute); font-size: 13px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      .chip, button.chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--line);
+        background: rgba(7, 11, 20, 0.7);
+        color: var(--mute);
+        padding: 4px 8px;
+        cursor: pointer;
+      }
+      .chip.live, button.chip.live { color: var(--aim-hot); border-color: rgba(110, 200, 192, 0.5); }
+      .chip.dead, button.chip.dead { color: var(--miss); border-color: rgba(224, 122, 72, 0.45); }
+      .chart h2 {
+        margin: 0 0 10px;
+        font-family: "Instrument Serif", serif;
+        font-size: 26px;
+        font-weight: 400;
+      }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        color: var(--mute);
+        min-height: 180px;
+      }
+      .log .hit { color: var(--miss); }
+
+      .balloon, .chain-pane, .transcript, .sim {
+        margin-top: 16px;
+        border: 1px solid var(--line);
+        background: rgba(12, 18, 32, 0.78);
+        padding: 16px;
+      }
+      .balloon h3, .chain-pane h3, .transcript h3, .sim h3 {
+        margin: 0 0 10px;
+        font-family: "Instrument Serif", serif;
+        font-size: 24px;
+        font-weight: 400;
+      }
+      .meter { margin-bottom: 12px; }
+      .meter b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 6px;
+      }
+      .bar {
+        position: relative;
+        border: 1px solid var(--line);
+        padding: 8px 10px 8px 16px;
+        overflow: hidden;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+      }
+      .bar .fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 8%;
+        background: rgba(212, 180, 106, 0.14);
+      }
+      .bar.cut .fill { width: 96%; background: rgba(224, 122, 72, 0.18); }
+      .bar.cut { color: var(--miss); border-color: rgba(224, 122, 72, 0.4); }
+      .bar.kept { color: var(--aim-hot); border-color: rgba(110, 200, 192, 0.4); }
+      .bar.kept .fill { width: 96%; }
+
+      .ab {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+      }
+      @media (max-width: 860px) { .ab { grid-template-columns: 1fr; } }
+      .ab-card {
+        border: 1px dashed rgba(212, 180, 106, 0.28);
+        padding: 12px;
+        background: rgba(7, 11, 20, 0.6);
+        cursor: pointer;
+      }
+      .ab-card.active.fail { border-style: solid; border-color: var(--miss); }
+      .ab-card.active.ok { border-style: solid; border-color: var(--aim); }
+      .ab-card b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .ab-card.fail b { color: var(--miss); }
+      .ab-card.ok b { color: var(--aim-hot); }
+      .ab-card p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.45; }
+
+      .instruments {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+      }
+      @media (max-width: 980px) { .instruments { grid-template-columns: 1fr 1fr; } }
+      .inst {
+        border: 1px solid var(--line);
+        background: rgba(12, 18, 32, 0.78);
+        padding: 12px;
+      }
+      .inst b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 6px;
+      }
+      .inst p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+
+      .jsonl {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        background: #070b14;
+        border: 1px solid rgba(212, 180, 106, 0.16);
+        padding: 12px;
+        color: var(--mute);
+        white-space: pre-wrap;
+      }
+      .jsonl .user { color: var(--miss); }
+      .jsonl .asst { color: var(--aim-hot); }
+      .jsonl .hook { color: var(--brass-hot); }
+
+      .matrix {
+        margin-top: 16px;
+        overflow-x: auto;
+        background: rgba(12, 18, 32, 0.78);
+        border: 1px solid var(--line);
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(212, 180, 106, 0.08);
+      }
+      th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass);
+        background: rgba(18, 26, 44, 0.85);
+      }
+      td { color: var(--ink); font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+      tr.active td { background: rgba(224, 122, 72, 0.08); }
+      .fail-cell { color: var(--miss); font-weight: 700; }
+      .pass-cell { color: var(--aim-hot); }
+
+      .actions, .sim-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0;
+      }
+      button.act {
+        font-family: Sora, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 12px;
+        border: 1px solid var(--brass);
+        background: rgba(7, 11, 20, 0.8);
+        color: var(--brass-hot);
+        cursor: pointer;
+      }
+      button.act:hover { border-color: var(--aim-hot); color: var(--aim-hot); }
+      .sim p { margin: 0 0 8px; color: var(--mute); font-size: 14px; }
+      textarea, .drop {
+        width: 100%;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        background: #070b14;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 10px;
+      }
+      textarea { min-height: 180px; resize: vertical; }
+      .drop {
+        min-height: 52px;
+        display: grid;
+        place-items: center;
+        color: var(--mute);
+        margin-bottom: 10px;
+      }
+      .stayoff {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+        border: 1px solid rgba(138, 147, 166, 0.25);
+        padding: 3px 8px;
+      }
+      .research { margin-top: 28px; color: var(--mute); line-height: 1.55; max-width: 64em; }
+      .research code { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--brass-hot); }
+      footer { margin-top: 28px; color: var(--mute); font-size: 13px; }
+      .remediation {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 860px) { .remediation { grid-template-columns: 1fr; } }
+      .remedy {
+        border: 1px solid var(--line);
+        background: rgba(12, 18, 32, 0.78);
+        padding: 14px;
+        cursor: pointer;
+      }
+      .remedy:hover { border-color: var(--brass); }
+      .remedy b {
+        display: block;
+        font-family: "Instrument Serif", serif;
+        font-size: 18px;
+        color: var(--silver);
+        margin-bottom: 8px;
+      }
+      .remedy p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.45; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">10:50 / hermes catalog #170 / #92389</p>
+        <h1>Heliostat <em>rooftop observatory mount</em></h1>
+        <p class="lede">
+          10:50 heliostat: a heliostat that stays aimed at the dawn sky after the
+          terminal's sun has moved because the only wake bell is DECSET 2031 and this
+          terminal never rings it, is not a broken photometer — it is already
+          <strong>dawnlocked</strong>. Score the track or admit the beam already
+          <strong>misaimed</strong>.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92389">anthropics/claude-code#92389</a>
+          (OPEN; bug, has-repro, platform:windows, area:tui).
+          On Windows Terminal 1.24.11911.0 + Claude Code 2.1.261,
+          <code>"theme": "auto"</code> resolves once at startup.
+          Diagnostic fixtures only. No live Claude sessions.
+        </p>
+      </div>
+
+      <section class="observatory misaimed" id="stage" aria-label="Rooftop observatory heliostat">
+        <div class="stage-label" id="stage-label">seeded misaimed · OS dark · Claude still light</div>
+        <div class="count-tag" id="count-tag">OSC 11 · rgb:2828/2c2c/3434 · never asked again</div>
+        <div class="sky" aria-hidden="true"></div>
+        <div class="stars" aria-hidden="true"></div>
+        <div class="sun-path" aria-hidden="true"></div>
+        <div class="parapet" aria-hidden="true"></div>
+        <div class="beam" aria-hidden="true"></div>
+        <div class="mount" aria-hidden="true">
+          <div class="mirror" id="mirror"></div>
+          <div class="yoke"></div>
+          <div class="tripod"></div>
+        </div>
+        <div class="bell silent" id="bell" aria-hidden="true">
+          <div class="arm"></div>
+          <div class="cup"></div>
+          <div class="clapper"></div>
+        </div>
+        <div class="lever" id="lever" aria-label="inject-997 lever">
+          <div class="shaft"><div class="knob"></div></div>
+          <div class="base"></div>
+        </div>
+        <div class="cuvettes" aria-hidden="true">
+          <div class="cuvette dawn"><i></i>OSC 11 dawn<br />fafa/fafa/fafa</div>
+          <div class="cuvette dusk"><i></i>OSC 11 dusk<br />2828/2c2c/3434</div>
+        </div>
+        <div class="lamps" aria-hidden="true">
+          <div class="lamp on" id="l-2026">?2026 supported</div>
+          <div class="lamp on" id="l-2004">?2004 supported</div>
+          <div class="lamp off" id="l-2031">?2031 0 unrecognized</div>
+        </div>
+        <div class="aim-dial" aria-hidden="true"><b id="aim-word">dawnlocked</b></div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Heliostat scoring assay">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">misaimed</p>
+          <p class="reason" id="reason">The heliostat stays aimed at the dawn sky after the terminal's sun has moved. OSC 11 already holds the new color. DECSET 2031 never rings. Admit the beam already misaimed.</p>
+          <div class="paths" id="paths"></div>
+          <div class="plaques">
+            <div class="plaque" id="p-2031"><i></i><div><b>DECRQM ? 2031</b><span id="s-2031">0 · NOT RECOGNIZED</span></div></div>
+            <div class="plaque" id="p-osc11"><i></i><div><b>OSC 11 sky</b><span id="s-osc11">after flip · rgb:2828/2c2c/3434 · never re-queried</span></div></div>
+            <div class="plaque" id="p-stdin"><i></i><div><b>stdin / CSI ? 997</b><span id="s-stdin">nothing arrives · 45s · several flips</span></div></div>
+            <div class="plaque" id="p-theme"><i></i><div><b>theme auto</b><span id="s-theme">resolved at startup · Claude still light</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2>Mount log / stdin slip</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <section class="balloon" aria-label="Aim gauge">
+        <h3>Aim gauge</h3>
+        <div class="meter">
+          <b>wake bell · DECSET 2031</b>
+          <div class="bar cut" id="bar-bell"><span class="fill"></span>silent · DECRQM ?2031 → 0</div>
+        </div>
+        <div class="meter">
+          <b>reflected beam</b>
+          <div class="bar cut" id="bar-beam"><span class="fill"></span>misaimed · still on the dawn sky</div>
+        </div>
+      </section>
+
+      <section class="chain-pane" aria-label="Three tracks">
+        <h3>Score a track</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Encoded from #92389. Same photometer, three tracks. Click a card.
+        </p>
+        <div class="ab">
+          <article class="ab-card fail active" data-ab="os-flip" id="ab-os-flip">
+            <b>OS flip → misaimed</b>
+            <p>Start light. Switch Windows to dark. Terminal repaints. Claude Code stays light. OSC 11 already holds 2828.</p>
+          </article>
+          <article class="ab-card ok" data-ab="inject" id="ab-inject">
+            <b>inject-997 → tracking</b>
+            <p>ESC [ ? 997 ; 2 n into the console input buffer. Immediate OSC 11 re-query. Theme switches in a live session.</p>
+          </article>
+          <article class="ab-card fail" data-ab="manual" id="ab-manual">
+            <b>/theme → manual-theme</b>
+            <p>Restart or /theme re-resolves by hand. Photometer works. Not a live track.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="instruments" aria-label="Assay instruments">
+        <article class="inst">
+          <b>GitHub #92389</b>
+          <p>OPEN · bug · has-repro · platform:windows · area:tui. Reporter rodchristiansen.</p>
+        </article>
+        <article class="inst">
+          <b>DECRQM table</b>
+          <p>?2031 → 0 NOT RECOGNIZED. ?2026 and ?2004 supported. The 0 is real.</p>
+        </article>
+        <article class="inst">
+          <b>OSC 11 swatches</b>
+          <p>Before: rgb:fafa/fafa/fafa. After: rgb:2828/2c2c/3434. WT reports immediately.</p>
+        </article>
+        <article class="inst">
+          <b>stdin 45s</b>
+          <p>?2031 enabled. Several OS flips. Nothing arrives. Inject 997 proves the parser.</p>
+        </article>
+        <article class="inst">
+          <b>Win11 + WT 1.24</b>
+          <p>Enterprise 26200. Claude Code 2.1.261. settings theme auto.</p>
+        </article>
+      </section>
+
+      <section class="transcript" aria-label="OSC / DECRQM slip">
+        <h3>OSC 11 / DECRQM slip</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Published console queries from the issue — not a live Windows Terminal session.
+        </p>
+        <div class="jsonl" id="jsonl"></div>
+      </section>
+
+      <div class="matrix" aria-label="Track path matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>track</th>
+              <th>shipped</th>
+              <th>detect</th>
+              <th>track</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <section class="remediation" aria-label="Remediation panels">
+        <article class="remedy" data-remedy="focus">
+          <b>OSC 11 on focus regain</b>
+          <p>When DECRQM ?2031 is unrecognized, re-query OSC 11 on focus. Reuse the existing focus path; do not leave it gated on CLAUDE_BG_BACKEND === "daemon".</p>
+        </article>
+        <article class="remedy" data-remedy="interval">
+          <b>OSC 11 on an interval</b>
+          <p>When 2031 is unrecognized, re-query OSC 11 on an interval (or both). WT maintainer: decide lightness from xterm color resource 11;?.</p>
+        </article>
+      </section>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the track</button>
+        <button class="act" data-act="idle">Pin idle dawnlocked</button>
+        <button class="act" data-act="seed">Pin seeded misaimed</button>
+        <button class="act" data-act="admit">Admit the beam already misaimed</button>
+        <button class="act" data-act="hold">Hold tracking</button>
+        <button class="act" data-act="fixtures">Load #92389 fixture</button>
+        <button class="act" data-act="reset">Reset to tracking</button>
+      </div>
+
+      <div class="sim">
+        <h3>Observatory simulator</h3>
+        <p>Rewrite the track without touching a live Claude session. Diagnostic only.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-pull="os-flip">OS theme flip</span>
+          <span class="chip" data-sim-pull="inject">inject-997 lever</span>
+          <span class="chip" data-sim-pull="manual">/theme restart</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="dawnlocked">dawnlocked</button>
+          <button class="chip" data-chip="misaimed">misaimed</button>
+          <button class="chip" data-chip="tracking">tracking</button>
+          <button class="chip" data-chip="injected-997">injected-997</button>
+          <button class="chip" data-chip="unrecognized-2031">unrecognized-2031</button>
+          <button class="chip" data-chip="osc11-fresh">osc11-fresh</button>
+          <button class="chip" data-chip="focus-gated-daemon">focus-gated-daemon</button>
+          <button class="chip" data-chip="manual-theme">manual-theme</button>
+          <button class="chip" data-chip="stdin-silent">stdin-silent</button>
+          <button class="chip" data-chip="controls-supported">controls-supported</button>
+          <button class="chip" data-chip="focus-requery">focus-requery</button>
+          <button class="chip" data-chip="interval-requery">interval-requery</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the observatory mount</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this assay</h3>
+        <p>
+          On Claude Code <code>2.1.261</code> in Windows Terminal <code>1.24.11911.0</code>
+          (Win11 Enterprise 26200), <code>"theme": "auto"</code> resolves once at
+          startup and never follows a live light/dark switch until restart or
+          <code>/theme</code>. Detection itself works. Only the trigger is missing.
+        </p>
+        <p>
+          Resample is gated solely on DECSET 2031 (<code>CSI ? 2031 h</code>). Claude
+          Code parses <code>CSI ? 997 ; [12] n</code> off stdin, then re-queries OSC 11.
+          Windows Terminal does not implement mode 2031
+          (microsoft/terminal#20335 closed 2026-07-31).
+          <code>DECRQM ? 2031</code> replies <code>0</code> NOT RECOGNIZED.
+          Controls <code>?2026</code> and <code>?2004</code> are supported, so the
+          <code>0</code> is real.
+        </p>
+        <p>
+          OSC 11 before the flip (light): <code>rgb:fafa/fafa/fafa</code>. After
+          (dark): <code>rgb:2828/2c2c/3434</code>. WT reports the new background
+          immediately. With <code>?2031</code> enabled and the OS theme flipped for
+          45s across several flips, nothing arrives on stdin. Injecting
+          <code>ESC [ ? 997 ; 2 n</code> makes Claude Code immediately re-query OSC 11
+          and switch in a live session. The path works. It is never invoked.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Lethe #92335</span>
+            <span>Frizzen #92353</span>
+            <span>Nixie #92383</span>
+            <span>Embrasure #92365</span>
+            <span>Elision #92347</span>
+            <span>Graft #92354</span>
+            <span>Sostenuto #92360</span>
+            <span>Jetsam #92338</span>
+            <span>Priory #92345</span>
+            <span>Latchkey #92330</span>
+          </span>
+        </p>
+        <p>
+          Cousins cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/63433">#63433</a> CLOSED not planned macOS ask ·
+          <a href="https://github.com/anthropics/claude-code/issues/86048">#86048</a> OPEN inverted auto ·
+          <a href="https://github.com/anthropics/claude-code/issues/75586">#75586</a> OPEN auto palettes ≠ standalone ·
+          <a href="https://github.com/anthropics/claude-code/issues/92299">#92299</a> OPEN auto-daltonized.
+        </p>
+      </section>
+      <footer>
+        Catalog #170 · idle word dawnlocked · seeded misaimed · contrast tracking / manual-theme / injected-997 ·
+        no live Claude sessions · fonts Instrument Serif / Sora / IBM Plex Mono · rooftop observatory heliostat
+      </footer>
+    </main>
+    <script>
+      const HOLD = new Set([
+        "tracking", "manual-theme", "injected-997", "focus-requery", "interval-requery"
+      ]);
+      const CHIPS = [
+        "dawnlocked", "misaimed", "tracking", "injected-997", "unrecognized-2031",
+        "osc11-fresh", "focus-gated-daemon", "manual-theme", "stdin-silent",
+        "controls-supported", "focus-requery", "interval-requery"
+      ];
+      const CHIP_FILES = {
+        dawnlocked: "dawnlocked.json",
+        misaimed: "misaimed.json",
+        tracking: "tracking.json",
+        "injected-997": "injected-997.json",
+        "unrecognized-2031": "unrecognized-2031.json",
+        "osc11-fresh": "osc11-fresh.json",
+        "focus-gated-daemon": "focus-gated-daemon.json",
+        "manual-theme": "manual-theme.json",
+        "stdin-silent": "stdin-silent.json",
+        "controls-supported": "controls-supported.json",
+        "focus-requery": "remediation-focus.json",
+        "interval-requery": "remediation-interval.json"
+      };
+      const MATRIX = [
+        { id: "os-flip", name: "OS light → dark on WT", shipped: "FAIL", detect: "pass", track: "FAIL", file: "repro.json" },
+        { id: "repro", name: "published {dark,light} colorScheme", shipped: "FAIL", detect: "pass", track: "FAIL", file: "repro.json" },
+        { id: "unrecognized", name: "DECRQM ?2031 → 0", shipped: "FAIL", detect: "pass", track: "FAIL", file: "unrecognized-2031.json" },
+        { id: "osc11", name: "OSC 11 fresh after flip", shipped: "FAIL", detect: "pass", track: "FAIL", file: "osc11-fresh.json" },
+        { id: "stdin", name: "45s stdin silence", shipped: "FAIL", detect: "pass", track: "FAIL", file: "stdin-silent.json" },
+        { id: "inject", name: "inject CSI ? 997 ; 2 n", shipped: "pass", detect: "pass", track: "pass", file: "injected-997.json" },
+        { id: "manual", name: "/theme or restart", shipped: "FAIL", detect: "pass", track: "FAIL", file: "manual-theme.json" },
+        { id: "tracking", name: "resample follows the sky", shipped: "pass", detect: "pass", track: "pass", file: "tracking.json" },
+        { id: "focus", name: "OSC 11 on focus regain", shipped: "pass", detect: "pass", track: "pass", file: "remediation-focus.json" },
+        { id: "interval", name: "OSC 11 on an interval", shipped: "pass", detect: "pass", track: "pass", file: "remediation-interval.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92389,
+        seed: "dawnlocked",
+        dawnlocked: true,
+        misaimed: false,
+        tracking: false,
+        themeSetting: "auto",
+        resolvedAtStartup: true,
+        followsLiveSwitch: false,
+        decrqm2031: "0",
+        decrqm2031Meaning: "NOT RECOGNIZED",
+        osc11Requeried: false,
+        csi997Received: false,
+        claudeTheme: "light",
+        shippedMark: "FAIL",
+        trackMark: "FAIL",
+        detectMark: "pass",
+        hubCount: "DAWNLOCKED",
+        log: [
+          "[idle] theme auto resolved once at startup · never follows a live light/dark switch",
+          "[gate] resample gated solely on DECSET 2031 (CSI ? 2031 h)",
+          "[desk] already dawnlocked; idle word dawnlocked"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92389,
+        seed: "misaimed",
+        dawnlocked: true,
+        misaimed: true,
+        tracking: false,
+        themeSetting: "auto",
+        resolvedAtStartup: true,
+        followsLiveSwitch: false,
+        osTheme: "dark",
+        claudeTheme: "light",
+        osc11Before: "rgb:fafa/fafa/fafa",
+        osc11After: "rgb:2828/2c2c/3434",
+        osc11Fresh: true,
+        osc11Requeried: false,
+        csi997Received: false,
+        stdinSilent45s: true,
+        decrqm2031: "0",
+        terminalRepainted: true,
+        shippedMark: "FAIL",
+        trackMark: "FAIL",
+        detectMark: "pass",
+        hubCount: "MISAIMED",
+        log: [
+          "[issue] #92389 OPEN · theme auto never updates on Windows Terminal",
+          "[sky] OSC 11 after flip · rgb:2828/2c2c/3434 · WT reports immediately",
+          "[mirror] Claude Code still light · rgb:fafa/fafa/fafa dawn reading",
+          "[stdin] nothing arrives · 45s across several flips",
+          "[desk] already misaimed; seeded word misaimed"
+        ]
+      };
+
+      const trackingTicket = {
+        source: "probe",
+        issue: 92389,
+        seed: "tracking",
+        dawnlocked: false,
+        misaimed: false,
+        tracking: true,
+        followsLiveSwitch: true,
+        osc11Requeried: true,
+        osTheme: "dark",
+        claudeTheme: "dark",
+        shippedMark: "pass",
+        trackMark: "pass",
+        detectMark: "pass",
+        hubCount: "TRACKING",
+        log: [
+          "[track] resample ran · OSC 11 re-queried",
+          "[sky] rgb:2828/2c2c/3434 · Claude dark",
+          "[desk] tracking; contrast hold tracking"
+        ]
+      };
+
+      const injectTicket = {
+        source: "probe",
+        issue: 92389,
+        seed: "injected-997",
+        dawnlocked: false,
+        misaimed: false,
+        tracking: true,
+        injected997: true,
+        osc11Requeried: true,
+        csi997Received: true,
+        osc11PathWorks: true,
+        parserWorks: true,
+        repaintWorks: true,
+        osTheme: "dark",
+        claudeTheme: "dark",
+        shippedMark: "pass",
+        trackMark: "pass",
+        detectMark: "pass",
+        hubCount: "INJECTED-997",
+        log: [
+          "[inject] ESC [ ? 997 ; 2 n into the console input buffer",
+          "[osc11] Claude Code immediately re-queried OSC 11 and switched",
+          "[desk] injected-997; path/parser/repaint work — never invoked on WT"
+        ]
+      };
+
+      const manualTicket = {
+        source: "probe",
+        issue: 92389,
+        seed: "manual-theme",
+        dawnlocked: false,
+        misaimed: false,
+        tracking: false,
+        manualTheme: true,
+        resolvedBy: "/theme",
+        osc11Requeried: true,
+        osTheme: "dark",
+        claudeTheme: "dark",
+        shippedMark: "FAIL",
+        trackMark: "FAIL",
+        detectMark: "pass",
+        hubCount: "MANUAL-THEME",
+        log: [
+          "[manual] /theme re-resolves appearance",
+          "[also] restart fixes it",
+          "[desk] manual-theme; not a live track"
+        ]
+      };
+
+      let pullState = "os-flip";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        return t.seed === "focus-requery"
+          || t.seed === "interval-requery"
+          || t.scenario === "remediation-focus"
+          || t.scenario === "remediation-interval";
+      }
+
+      function alreadyDawnlocked(t) {
+        const seed = String(t.seed || "");
+        if (t.tracking === true && t.misaimed !== true && t.dawnlocked !== true) return false;
+        if (t.injected997 === true && t.osc11Requeried === true) return false;
+        if (remediating(t) && t.misaimed !== true) return false;
+        if (t.manualTheme === true && seed === "manual-theme") return false;
+        if (t.dawnlocked === true || t.misaimed === true) return true;
+        if ([
+          "dawnlocked", "misaimed", "unrecognized-2031", "osc11-fresh",
+          "focus-gated-daemon", "stdin-silent", "controls-supported"
+        ].includes(seed)) {
+          return !remediating(t) && t.tracking !== true;
+        }
+        if (t.followsLiveSwitch === false && t.themeSetting === "auto" && !remediating(t) && t.tracking !== true) return true;
+        return t.osc11Fresh === true && t.osc11Requeried !== true && t.tracking !== true;
+      }
+
+      function holdTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (t.tracking === true || t.injected997 === true || t.manualTheme === true || HOLD.has(seed) || remediating(t))
+          && t.misaimed !== true
+          && !alreadyDawnlocked(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyDawnlocked(t);
+        t.shippedDawnlocked = alarm && !remediating(t) && t.manualTheme !== true;
+        t.shippedMark = t.shippedMark || (t.shippedDawnlocked ? "FAIL" : (t.manualTheme ? "FAIL" : "pass"));
+        t.detectMark = t.detectMark || "pass";
+        t.trackMark = t.trackMark || (t.tracking === true || remediating(t) || t.injected997 === true ? "pass" : "FAIL");
+        const hold = holdTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "dawnlocked") chips.push("dawnlocked");
+        if (t.misaimed === true || seed === "misaimed") chips.push("misaimed");
+        if ((hold && t.tracking === true) || seed === "tracking") chips.push("tracking");
+        if (t.injected997 === true || seed === "injected-997") chips.push("injected-997");
+        if (t.decrqm2031 === "0" || seed === "unrecognized-2031") chips.push("unrecognized-2031");
+        if (t.osc11Fresh === true || seed === "osc11-fresh") chips.push("osc11-fresh");
+        if (t.focusRequeryExists === true || seed === "focus-gated-daemon") chips.push("focus-gated-daemon");
+        if (t.manualTheme === true || seed === "manual-theme") chips.push("manual-theme");
+        if (t.stdinSilent45s === true || seed === "stdin-silent") chips.push("stdin-silent");
+        if (t.decrqm2026 === "supported" || t.decrqm2004 === "supported" || seed === "controls-supported") chips.push("controls-supported");
+        if (t.seed === "focus-requery" || t.scenario === "remediation-focus") chips.push("focus-requery");
+        if (t.seed === "interval-requery" || t.scenario === "remediation-interval") chips.push("interval-requery");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (hold
+            ? (t.injected997 ? "injected-997" : (t.manualTheme ? "manual-theme" : "tracking"))
+            : (t.misaimed ? "misaimed" : "dawnlocked"));
+        return { ticket: t, hold, alarm, chips: unique, verdict };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] theme auto · 2031 unrecognized · already misaimed"]
+            : ["[desk] OSC 11 re-queried · tracking"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /dawnlocked|misaimed|FAIL|never|silent|unrecognized|still light/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "detect-once · 2031 never rings" : (t.manualTheme ? "/theme by hand · not a live track" : "beam follows the live sky"), "theme auto on WT"],
+          ["detect", t.detectMark, "OSC 11 path / parser / photometer sound", "detection works"],
+          ["track", t.trackMark, t.tracking === true || remediating(t) || t.injected997 === true ? "OSC 11 re-queried" : "would re-query when 2031 is unrecognized", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.detect)}${cell(row.track)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id, scenario: row.id }
+                : { ...trackingTicket, seed: row.id, scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (t.injected997 === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="hook">ESC [ ? 997 ; 2 n</span>\n` +
+            `<span class="asst">OSC 11 re-query → rgb:2828/2c2c/3434</span>\n` +
+            `<span class="asst">theme switches in a live session · no restart</span>\n` +
+            `<span class="hook">;1n switches back</span>`;
+          return;
+        }
+        if (result.hold && t.tracking === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">DECRQM ? 2031 unrecognized → fallback OSC 11</span>\n` +
+            `<span class="asst">OSC 11 → rgb:2828/2c2c/3434</span>\n` +
+            `<span class="asst">theme auto follows the live sky</span>`;
+          return;
+        }
+        if (t.manualTheme === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="hook">/theme  (or restart)</span>\n` +
+            `<span class="asst">appearance re-resolved by hand</span>\n` +
+            `<span class="user">[note] not a live track — photometer works off the mount</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="user">DECRQM ? 2031 → 0 NOT RECOGNIZED</span>\n` +
+          `<span class="hook">DECRQM ? 2026 → supported</span>\n` +
+          `<span class="hook">DECRQM ? 2004 → supported</span>\n` +
+          `<span class="hook">OSC 11 before · rgb:fafa/fafa/fafa</span>\n` +
+          `<span class="user">OSC 11 after  · rgb:2828/2c2c/3434  · never re-queried</span>\n` +
+          `<span class="user">stdin 45s · several flips · no CSI ? 997</span>`;
+      }
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const tracking = (result.hold || t.tracking === true) && t.manualTheme !== true;
+        const seedName = String(t.seed || "");
+        const misaimed = t.misaimed === true
+          || seedName === "misaimed"
+          || (t.osTheme === "dark" && t.claudeTheme === "light" && seedName !== "dawnlocked");
+        const stageClass = t.injected997 === true
+          ? "injected-997"
+          : (t.manualTheme === true
+            ? "manual-theme"
+            : (tracking && !alarm ? "tracking" : (misaimed ? "misaimed" : "dawnlocked")));
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = alarm
+          ? (result.verdict === "dawnlocked"
+            ? "The heliostat stays aimed at the dawn sky. The only wake bell is DECSET 2031. This terminal never rings it. That is not a broken photometer — it is already dawnlocked."
+            : "The heliostat stays aimed at the dawn sky after the terminal's sun has moved. OSC 11 already holds the new color. DECSET 2031 never rings. Admit the beam already misaimed.")
+          : (result.verdict === "manual-theme"
+            ? "/theme or a restart re-resolves appearance by hand. The photometer works. That is not a live track."
+            : (result.verdict === "injected-997"
+              ? "Injecting CSI ? 997 ; 2 n re-queries OSC 11 and switches in a live session. The path works. It is never invoked on this terminal."
+              : (result.verdict === "focus-requery"
+                ? "When DECRQM ?2031 is unrecognized, re-query OSC 11 on focus regain. Reuse the existing focus path."
+                : (result.verdict === "interval-requery"
+                  ? "When DECRQM ?2031 is unrecognized, re-query OSC 11 on an interval. WT sanctioned: xterm color resource 11;?."
+                  : "The mount re-aimed. OSC 11 re-queried. The beam stays on the live sky."))));
+        const stage = document.getElementById("stage");
+        stage.className = "observatory " + stageClass;
+        document.getElementById("stage-label").textContent = alarm
+          ? (misaimed ? "seeded misaimed · OS dark · Claude still light" : "idle dawnlocked · theme auto · 2031 never rings")
+          : (t.injected997 ? "injected-997 · CSI ? 997 ; 2 n · live switch" : (t.manualTheme ? "manual-theme · /theme or restart" : "tracking · OSC 11 re-queried"));
+        document.getElementById("count-tag").textContent = alarm
+          ? (misaimed ? "OSC 11 · rgb:2828/2c2c/3434 · never asked again" : "DECRQM ?2031 → 0 · NOT RECOGNIZED")
+          : (t.injected997 ? "inject 997 · path / parser / repaint work" : "beam on the live sky");
+        document.getElementById("aim-word").textContent = result.verdict;
+        document.getElementById("bell").className = "bell " + ((t.csi997Received === true || tracking) && !alarm ? "rung" : "silent");
+        document.getElementById("l-2031").className = "lamp " + (t.decrqm2031 === "0" || t.decrqm2031Meaning === "NOT RECOGNIZED" || alarm ? "off" : "on");
+        document.getElementById("l-2031").textContent = t.decrqm2031 === "0" || alarm ? "?2031 0 unrecognized" : "?2031 live";
+        setPlaque("p-2031", t.decrqm2031 !== "0" && !alarm, t.decrqm2031 === "0" || alarm);
+        setPlaque("p-osc11", t.osc11Requeried === true, t.osc11Fresh === true && t.osc11Requeried !== true);
+        setPlaque("p-stdin", t.csi997Received === true, t.csi997Received !== true && alarm);
+        setPlaque("p-theme", t.claudeTheme === t.osTheme && t.osTheme === "dark", t.claudeTheme === "light" && (t.osTheme === "dark" || alarm));
+        document.getElementById("s-2031").textContent = t.decrqm2031 === "0" || alarm
+          ? "0 · NOT RECOGNIZED"
+          : "recognized · or fallback armed";
+        document.getElementById("s-osc11").textContent = t.osc11Requeried === true
+          ? "re-queried · " + (t.osc11After || "rgb:2828/2c2c/3434")
+          : (t.osc11Fresh ? "after flip · rgb:2828/2c2c/3434 · never re-queried" : "dawn reading · rgb:fafa/fafa/fafa");
+        document.getElementById("s-stdin").textContent = t.csi997Received === true
+          ? "CSI ? 997 arrived · resample ran"
+          : (t.stdinSilent45s || alarm ? "nothing arrives · 45s · several flips" : "no 997 report");
+        document.getElementById("s-theme").textContent = t.manualTheme
+          ? "/theme or restart · re-resolved by hand"
+          : (t.claudeTheme === "dark" && t.osTheme === "dark"
+            ? "auto follows · Claude dark"
+            : "resolved at startup · Claude still light");
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = HOLD.has(c) && result.hold;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        const barBell = document.getElementById("bar-bell");
+        barBell.className = "bar " + ((t.csi997Received === true || remediating(t)) && !alarm ? "kept" : "cut");
+        barBell.innerHTML = (t.csi997Received === true || remediating(t)) && !alarm
+          ? `<span class="fill"></span>rung · report arrived or fallback armed`
+          : `<span class="fill"></span>silent · DECRQM ?2031 → 0`;
+        const barBeam = document.getElementById("bar-beam");
+        barBeam.className = "bar " + (tracking && !alarm ? "kept" : "cut");
+        barBeam.innerHTML = tracking && !alarm
+          ? `<span class="fill"></span>tracking · beam on the live sky`
+          : `<span class="fill"></span>` + (misaimed ? "misaimed · still on the dawn sky" : "dawnlocked · aimed at the dawn reading");
+        document.getElementById("ab-os-flip").classList.toggle("active", alarm && pullState !== "inject" && pullState !== "manual");
+        document.getElementById("ab-inject").classList.toggle("active", t.injected997 === true || pullState === "inject");
+        document.getElementById("ab-manual").classList.toggle("active", t.manualTheme === true || pullState === "manual");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        paintMatrix(t.scenario || (t.injected997 ? "inject" : (t.manualTheme ? "manual" : (alarm ? "os-flip" : (remediating(t) ? (t.scenario || "focus") : "tracking")))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "inject") return { ...injectTicket };
+        if (pullState === "manual") return { ...manualTicket };
+        return { ...seeded, seed: "misaimed", hubCount: "OS-FLIP" };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState !== "inject";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "os-flip";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "os-flip";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset" || act === "hold") {
+            pullState = "inject";
+            syncSimChips();
+            try { apply(await loadNamed("tracking.json")); }
+            catch { apply({ ...trackingTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("misaimed.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("repro.json")); }
+            catch { apply({ ...seeded, seed: "misaimed", hubCount: "ADMIT" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92389.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (HOLD.has(chip)) apply({ ...trackingTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92389 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = kind === "focus" ? "remediation-focus.json" : "remediation-interval.json";
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply({
+              ...trackingTicket,
+              seed: kind === "focus" ? "focus-requery" : "interval-requery",
+              scenario: kind === "focus" ? "remediation-focus" : "remediation-interval"
+            });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-ab]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const side = el.dataset.ab;
+          pullState = side === "inject" ? "inject" : (side === "manual" ? "manual" : "os-flip");
+          syncSimChips();
+          const file = side === "inject" ? "injected-997.json" : (side === "manual" ? "manual-theme.json" : "repro.json");
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(side === "inject" ? { ...injectTicket } : (side === "manual" ? { ...manualTicket } : { ...seeded, seed: "misaimed", scenario: side }));
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>

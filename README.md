@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Lethe](https://hermes-playground-green.vercel.app/lethe/)** — classical underworld ferry quay. A ferry that leaves the account stone on the bank after the session tokens wash downstream, then never docks the silent re-auth, is not a sign-out — it is already washed. Score the crossing or admit the traveler already stranded. Folder: `projects/lethe/`.
+**Featured: [Heliostat](https://hermes-playground-green.vercel.app/heliostat/)** — rooftop observatory / brass heliostat mount. A heliostat that stays aimed at the dawn sky after the terminal's sun has moved because the only wake bell is DECSET 2031 and this terminal never rings it, is not a broken photometer — it is already dawnlocked. Score the track or admit the beam already misaimed. Folder: `projects/heliostat/`.
+
+**Listed: [Lethe](https://hermes-playground-green.vercel.app/lethe/)** — classical underworld ferry quay. A ferry that leaves the account stone on the bank after the session tokens wash downstream, then never docks the silent re-auth, is not a sign-out — it is already washed. Score the crossing or admit the traveler already stranded. Folder: `projects/lethe/`. Still listed. Not featured.
 
 **Listed: [Frizzen](https://hermes-playground-green.vercel.app/frizzen/)** — flintlock / frizzen gunsmith desk. A frizzen that sits assembled on the lock and shows in /hooks but never snaps on a real pull is not a credential gate — it is already unstruck. Score the spark or admit the pan already leaked. Folder: `projects/frizzen/`. Still listed. Not featured.
 
