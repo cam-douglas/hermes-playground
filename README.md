@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Thrash](https://hermes-playground-green.vercel.app/thrash/)** — OS thrashing / working-set / paging-storm console. First prompt of every new process freezes the TUI ~40–60s (event-loop stall 40808ms, RSS ~2.6 GB) even with --safe-mode. Score thrashing or admit responsive. Folder: `projects/thrash/`.
+**Featured: [Hangfire](https://hermes-playground-green.vercel.app/hangfire/)** — delayed-primer / hangfire chronograph bay. A queued `/compact` should fire as a slash command at the turn boundary but sometimes demotes it to a plain prompt (`promptSource:"queued"`) — prose "summary", no `compact_boundary`. Score hangfired or admit executed. Folder: `projects/hangfire/`.
+
+**Listed: [Thrash](https://hermes-playground-green.vercel.app/thrash/)** — OS thrashing / working-set / paging-storm console. First prompt of every new process freezes the TUI ~40–60s (event-loop stall 40808ms, RSS ~2.6 GB) even with --safe-mode. Score thrashing or admit responsive. Folder: `projects/thrash/`. Still listed. Not featured.
 
 **Listed: [Muzzle](https://hermes-playground-green.vercel.app/muzzle/)** — ballistics range suppressor bay / muzzle-brake chronograph. A seated sleeve should silence skill/agent attachments under --safe-mode/--disable-slash-commands but only quiets the log while the wire still leaks. Score leaking or admit excised. Folder: `projects/muzzle/`. Still listed. Not featured.
 
