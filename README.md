@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Decant](https://hermes-playground-green.vercel.app/decant/)** — gravity-pour cellar rack / carboy assay. Claude Desktop should carry the whole login-shell environment into a session but instead skims only PATH and leaves credentials as lees (#92515). Score skimmed or admit intact. Folder: `projects/decant/`.
+**Featured: [Diopter](https://hermes-playground-green.vercel.app/diopter/)** — optical diopter trial-lens tray / refraction bench. Consecutive sessions should keep the system+tools prefix collimated but a per-session scratchpad UUID lens in the system prompt defocuses the entire cache (#92524). Score defocused or admit sharp. Folder: `projects/diopter/`.
+
+**Listed: [Decant](https://hermes-playground-green.vercel.app/decant/)** — gravity-pour cellar rack / carboy assay. Claude Desktop should carry the whole login-shell environment into a session but instead skims only PATH and leaves credentials as lees (#92515). Score skimmed or admit intact. Folder: `projects/decant/`. Still listed. Not featured.
 
 **Listed: [Catachresis](https://hermes-playground-green.vercel.app/catachresis/)** — lexicographer stamp desk / misnomer atelier. An MCP 403 `insufficient_scope` challenge should name the missing scope (`events:write`) but Claude Code stamps `token expired` over a live grant (#92518). Score mislabeled or admit scoped. Folder: `projects/catachresis/`. Still listed. Not featured.
 
