@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Diopter](https://hermes-playground-green.vercel.app/diopter/)** — optical diopter trial-lens tray / refraction bench. Consecutive sessions should keep the system+tools prefix collimated but a per-session scratchpad UUID lens in the system prompt defocuses the entire cache (#92524). Score defocused or admit sharp. Folder: `projects/diopter/`.
+**Featured: [Scarph](https://hermes-playground-green.vercel.app/scarph/)** — shipwright scarph-joint / bevelled timber splice bench. The `-c` bevel should carry the full Bash timber through the faying faces but instead shears the plank between 8181–8190 chars and halves every doubled backslash on Windows (#92543). Score sheared or admit fayed. Folder: `projects/scarph/`.
+
+**Listed: [Plimsoll](https://hermes-playground-green.vercel.app/plimsoll/)** — dry-dock Plimsoll / load-line draught board. Auto-compact should re-chalk the draught against the cargo about to sail but instead trusts the previous turn's mark so resume re-injected CLAUDE.md/rules push the hull over the window (#92434). Score overladen or admit trimmed. Folder: `projects/plimsoll/`. Still listed. Not featured.
+
+**Listed: [Diopter](https://hermes-playground-green.vercel.app/diopter/)** — optical diopter trial-lens tray / refraction bench. Consecutive sessions should keep the system+tools prefix collimated but a per-session scratchpad UUID lens in the system prompt defocuses the entire cache (#92524). Score defocused or admit sharp. Folder: `projects/diopter/`. Still listed. Not featured.
 
 **Listed: [Decant](https://hermes-playground-green.vercel.app/decant/)** — gravity-pour cellar rack / carboy assay. Claude Desktop should carry the whole login-shell environment into a session but instead skims only PATH and leaves credentials as lees (#92515). Score skimmed or admit intact. Folder: `projects/decant/`. Still listed. Not featured.
 
