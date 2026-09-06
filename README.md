@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Fairlead](https://hermes-playground-green.vercel.app/fairlead/)** — ship-deck hawse-pipe / chock-rail / URI-scheme fairlead lab. A fairlead that only guides file:// and returns null on vscode-remote:// is not a remote-ready drop — it is already unguided. Score the lead or admit the path already dropped. Folder: `projects/fairlead/`.
+**Featured: [Understudy](https://hermes-playground-green.vercel.app/understudy/)** — dressing-room / call-board / understudy casting lab. An understudy that walks on in the lead's costume with every prop from the wings is not the cast member you booked — it is already miscast. Score the role or admit the part already inherited. Folder: `projects/understudy/`.
+
+**Listed: [Fairlead](https://hermes-playground-green.vercel.app/fairlead/)** — ship-deck hawse-pipe / chock-rail / URI-scheme fairlead lab. A fairlead that only guides file:// and returns null on vscode-remote:// is not a remote-ready drop — it is already unguided. Score the lead or admit the path already dropped. Folder: `projects/fairlead/`. Still listed. Not featured.
 
 **Listed: [Stroboscope](https://hermes-playground-green.vercel.app/stroboscope/)** — high-speed photography / optics lab stroboscope desk. A terminal panel that flickers open and steals the chat caret on every shell tool call is not a helpful console — it is already strobing. Score the hold or admit the focus already stolen. Folder: `projects/stroboscope/`. Still listed. Not featured.
 

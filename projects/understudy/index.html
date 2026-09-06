@@ -1,0 +1,1345 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Understudy — dressing-room casting lab for #92426</title>
+    <meta
+      name="description"
+      content="Understudy — dressing-room / call-board / understudy casting lab for Claude Code #92426: Agent tool ignores the subagent definition; dispatched children inherit the dispatcher's prompt and tools. Idle word is miscast."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --house: #100c09;
+        --wings: #1a1410;
+        --amber: #e8a04a;
+        --amber-hot: #f6c56a;
+        --chalk: #efe6d4;
+        --mute: #9a8d7a;
+        --ink: #f3ece0;
+        --crimson: #c44a3a;
+        --crimson-hot: #e86a54;
+        --foot: #7cb88a;
+        --foot-hot: #9ad4a8;
+        --gold: #d4b06a;
+        --line: rgba(232, 160, 74, 0.22);
+        --cork: #3a2a1c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Source Sans 3", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(232, 160, 74, 0.09), transparent 42%),
+          repeating-linear-gradient(135deg, rgba(239, 230, 212, 0.015) 0 2px, transparent 2px 14px),
+          linear-gradient(180deg, #1c1612 0%, #100c09 48%, #0a0806 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--amber-hot); }
+      .wrap { width: min(1180px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-left: 3px solid var(--amber);
+        padding-left: 10px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--gold);
+      }
+      h1 {
+        font-family: "Bodoni Moda", "Iowan Old Style", serif;
+        font-size: clamp(52px, 9vw, 104px);
+        letter-spacing: -0.04em;
+        margin: 6px 0 12px;
+        font-weight: 700;
+        line-height: 0.82;
+      }
+      h1 em {
+        font-style: italic;
+        font-weight: 500;
+        color: var(--amber);
+        font-size: 0.22em;
+        letter-spacing: 0.16em;
+        display: block;
+        margin-top: 14px;
+      }
+      .lede { max-width: 70em; color: var(--mute); line-height: 1.6; font-size: 17px; }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--amber-hot);
+      }
+
+      .house {
+        margin: 26px 0 0;
+        border: 1px solid rgba(212, 176, 106, 0.28);
+        background:
+          linear-gradient(180deg, rgba(26, 20, 16, 0.92), rgba(16, 12, 9, 0.96)),
+          repeating-linear-gradient(90deg, transparent 0 48px, rgba(239, 230, 212, 0.03) 48px 49px);
+        box-shadow: 0 32px 70px rgba(0, 0, 0, 0.55);
+        padding: 18px 18px 16px;
+      }
+      .house.miscast, .house.inherited, .house.no-ceiling, .house.prompt-leak, .house.plugin-batch {
+        box-shadow: 0 0 0 3px rgba(196, 74, 58, 0.28), 0 32px 70px rgba(0, 0, 0, 0.55);
+      }
+      .house.cast, .house.top-level-ok, .house.registry-lists {
+        box-shadow: 0 0 0 3px rgba(124, 184, 138, 0.28), 0 32px 70px rgba(0, 0, 0, 0.55);
+      }
+      .rail {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 14px;
+        border-bottom: 1px dashed rgba(212, 176, 106, 0.35);
+        padding-bottom: 8px;
+      }
+      .room {
+        display: grid;
+        grid-template-columns: 0.85fr 1.2fr 0.95fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) { .room { grid-template-columns: 1fr; } }
+
+      .callboard {
+        background: var(--cork);
+        border: 8px solid #2a1c12;
+        min-height: 320px;
+        padding: 12px;
+        position: relative;
+        box-shadow: inset 0 0 0 1px rgba(232, 160, 74, 0.18);
+      }
+      .callboard h4, .rack h4, .gauges h4, .floor h4 {
+        margin: 0 0 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      .cards { display: grid; gap: 8px; }
+      .role-card {
+        background: #f3e6c8;
+        color: #2a1c12;
+        padding: 10px 12px;
+        font-family: "Bodoni Moda", serif;
+        box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.35);
+        position: relative;
+      }
+      .role-card::before {
+        content: "";
+        position: absolute;
+        top: -7px; left: 18px;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #8a6a3a;
+        box-shadow: 0 0 0 3px #3a2a1c;
+      }
+      .role-card b { display: block; font-size: 20px; line-height: 1; }
+      .role-card span { display: block; font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.08em; margin-top: 4px; }
+      .house.inherited .card-explore, .house.miscast .card-explore,
+      .house.no-ceiling .card-explore, .house.prompt-leak .card-explore,
+      .house.plugin-batch .card-explore {
+        outline: 2px dashed var(--crimson);
+        background: #e8d0b0;
+      }
+      .house.cast .card-explore, .house.top-level-ok .card-explore,
+      .house.registry-lists .card-explore {
+        outline: 2px solid var(--foot);
+      }
+      .house.inherited .card-lead, .house.miscast .card-lead,
+      .house.no-ceiling .card-lead, .house.prompt-leak .card-lead,
+      .house.plugin-batch .card-lead {
+        background: #f6c0b0;
+      }
+
+      .rack {
+        background: #14100c;
+        border: 1px solid rgba(232, 160, 74, 0.2);
+        padding: 12px;
+        min-height: 320px;
+      }
+      .hanger {
+        height: 168px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 18px;
+      }
+      .garment {
+        width: 72px;
+        height: 140px;
+        background:
+          linear-gradient(180deg, #3a2a1c 0 18px, transparent 18px),
+          linear-gradient(180deg, #6a4a2a 0%, #2a1810 100%);
+        clip-path: polygon(18% 0, 82% 0, 100% 22%, 88% 100%, 12% 100%, 0 22%);
+        position: relative;
+        opacity: 0.55;
+      }
+      .garment.lead { background: linear-gradient(180deg, #c44a3a 0 18px, transparent 18px), linear-gradient(180deg, #8a3028, #2a1010); }
+      .garment.explore { background: linear-gradient(180deg, #7cb88a 0 18px, transparent 18px), linear-gradient(180deg, #3a5a44, #121810); }
+      .house.inherited .garment.lead, .house.miscast .garment.lead,
+      .house.no-ceiling .garment.lead, .house.prompt-leak .garment.lead,
+      .house.plugin-batch .garment.lead {
+        opacity: 1;
+        transform: translateX(38px);
+        box-shadow: 0 0 22px rgba(196, 74, 58, 0.35);
+      }
+      .house.cast .garment.explore, .house.top-level-ok .garment.explore {
+        opacity: 1;
+        box-shadow: 0 0 22px rgba(124, 184, 138, 0.35);
+      }
+      .mirror {
+        margin-top: 12px;
+        height: 88px;
+        border: 10px solid #3a2a1c;
+        border-radius: 50% / 42%;
+        background: radial-gradient(ellipse at 40% 30%, #2a2420, #0c0a08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Bodoni Moda", serif;
+        font-style: italic;
+        font-size: 18px;
+        color: var(--mute);
+        position: relative;
+      }
+      .mirror::before, .mirror::after {
+        content: "";
+        position: absolute;
+        top: -6px;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--amber-hot);
+        box-shadow: 0 0 8px var(--amber);
+      }
+      .mirror::before { left: 18%; }
+      .mirror::after { right: 18%; }
+      .house.inherited .mirror, .house.miscast .mirror,
+      .house.no-ceiling .mirror, .house.prompt-leak .mirror,
+      .house.plugin-batch .mirror { color: var(--crimson-hot); }
+      .house.cast .mirror, .house.top-level-ok .mirror,
+      .house.registry-lists .mirror { color: var(--foot-hot); }
+
+      .gauges {
+        background: #14100c;
+        border: 1px solid rgba(232, 160, 74, 0.2);
+        padding: 12px;
+        min-height: 320px;
+        display: grid;
+        gap: 10px;
+      }
+      .dial {
+        border: 1px solid var(--line);
+        padding: 10px;
+        background: #0e0b08;
+      }
+      .dial b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin-bottom: 8px;
+      }
+      .needle {
+        height: 10px;
+        background: #2a2218;
+        position: relative;
+        overflow: hidden;
+      }
+      .needle i {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 72%;
+        background: var(--crimson);
+      }
+      .house.cast .needle i, .house.top-level-ok .needle i,
+      .house.registry-lists .g-reg .needle i { width: 18%; background: var(--foot); }
+      .house.plugin-batch .g-tools .needle i { width: 96%; }
+      .house.registry-lists .g-reg .needle i { width: 92%; background: var(--foot); }
+      .readout {
+        margin-top: 6px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        color: var(--chalk);
+      }
+
+      .floor {
+        margin-top: 14px;
+        min-height: 92px;
+        border: 1px dashed rgba(239, 230, 212, 0.22);
+        background:
+          repeating-linear-gradient(0deg, transparent 0 18px, rgba(239, 230, 212, 0.04) 18px 19px),
+          repeating-linear-gradient(90deg, transparent 0 46px, rgba(239, 230, 212, 0.04) 46px 47px),
+          #16110c;
+        padding: 10px 12px;
+        position: relative;
+      }
+      .x-mark {
+        position: absolute;
+        font-family: "Bodoni Moda", serif;
+        font-size: 28px;
+        color: rgba(239, 230, 212, 0.35);
+      }
+      .x1 { left: 12%; bottom: 10px; }
+      .x2 { left: 48%; bottom: 18px; }
+      .x3 { right: 16%; bottom: 8px; }
+      .house.inherited .x2, .house.miscast .x2 { color: var(--crimson-hot); }
+      .house.cast .x1, .house.top-level-ok .x1 { color: var(--foot-hot); }
+      .blocking {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--mute);
+        position: relative;
+        z-index: 1;
+      }
+
+      .desk {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 14px;
+      }
+      @media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+      .ledger, .chart, .balloon, .chain-pane, .instruments, .transcript, .matrix, .remediation, .sim, .research {
+        background: var(--wings);
+        border: 1px solid var(--line);
+        padding: 16px;
+        margin-top: 14px;
+      }
+      .desk .ledger, .desk .chart { margin-top: 0; }
+      .verdict {
+        font-family: "Bodoni Moda", serif;
+        font-size: 44px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin: 0 0 8px;
+        line-height: 0.88;
+      }
+      .verdict.alarm { color: var(--crimson-hot); }
+      .verdict.hold { color: var(--foot-hot); }
+      .reason { margin: 0 0 14px; color: var(--mute); line-height: 1.55; }
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      @media (max-width: 720px) { .paths { grid-template-columns: 1fr; } }
+      .path { border: 1px solid var(--line); padding: 10px; }
+      .path.fail { border-color: rgba(196, 74, 58, 0.5); }
+      .path.ok { border-color: rgba(124, 184, 138, 0.45); }
+      .path b { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .path .face { margin: 6px 0; font-size: 14px; }
+      .path .note { color: var(--mute); font-size: 12px; }
+      .plaques { margin-top: 12px; display: grid; gap: 8px; }
+      .plaque {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+      }
+      .plaque i {
+        width: 10px; height: 10px; border-radius: 50%; margin-top: 4px;
+        background: var(--mute); display: block;
+      }
+      .plaque.on i { background: var(--foot); }
+      .plaque.hot i { background: var(--crimson); box-shadow: 0 0 8px var(--crimson); }
+      .plaque b { display: block; font-size: 13px; }
+      .plaque span { color: var(--mute); font-size: 12px; font-family: "IBM Plex Mono", monospace; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        border: 1px solid var(--line);
+        padding: 5px 8px;
+        border-radius: 2px;
+        cursor: pointer;
+        background: transparent;
+        color: var(--ink);
+      }
+      .chip.live { border-color: var(--foot); color: var(--foot-hot); }
+      .chip.dead { border-color: rgba(196, 74, 58, 0.55); color: var(--crimson-hot); }
+      .chart h2, .balloon h3, .chain-pane h3, .transcript h3, .sim h3, .research h3 {
+        font-family: "Bodoni Moda", serif;
+        margin: 0 0 10px;
+        font-size: 24px;
+      }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        color: var(--chalk);
+      }
+      .log .hit { color: var(--crimson-hot); }
+      .meter { margin-bottom: 10px; }
+      .meter b { display: block; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); margin-bottom: 6px; }
+      .bar {
+        height: 28px;
+        border: 1px solid var(--line);
+        position: relative;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        overflow: hidden;
+      }
+      .bar .fill { position: absolute; inset: 0 auto 0 0; width: 68%; background: rgba(196, 74, 58, 0.18); }
+      .bar.kept .fill { width: 90%; background: rgba(124, 184, 138, 0.2); }
+      .bar.cut { color: var(--crimson-hot); }
+      .bar.kept { color: var(--foot); }
+      .ab { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      @media (max-width: 900px) { .ab { grid-template-columns: 1fr 1fr; } }
+      .ab-card {
+        border: 1px solid var(--line);
+        padding: 12px;
+        cursor: pointer;
+      }
+      .ab-card b { display: block; font-family: "Bodoni Moda", serif; margin-bottom: 6px; }
+      .ab-card p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+      .ab-card.active { outline: 2px solid var(--amber-hot); }
+      .ab-card.fail { border-color: rgba(196, 74, 58, 0.45); }
+      .ab-card.ok { border-color: rgba(124, 184, 138, 0.4); }
+      .instruments { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      @media (max-width: 900px) { .instruments { grid-template-columns: 1fr 1fr; } }
+      .inst { border: 1px solid var(--line); padding: 10px; }
+      .inst b { display: block; font-family: "Bodoni Moda", serif; margin-bottom: 6px; }
+      .inst p { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.4; }
+      .jsonl {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+      .jsonl .user { color: var(--crimson-hot); }
+      .jsonl .hook { color: var(--amber-hot); }
+      .jsonl .asst { color: var(--foot); }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+      th { font-family: "IBM Plex Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); }
+      tr.active { background: rgba(124, 184, 138, 0.06); }
+      .fail-cell { color: var(--crimson-hot); }
+      .pass-cell { color: var(--foot); }
+      .remediation { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      @media (max-width: 800px) { .remediation { grid-template-columns: 1fr; } }
+      .remedy { border: 1px solid var(--line); padding: 12px; cursor: pointer; }
+      .remedy:hover { border-color: var(--amber-hot); }
+      .remedy b { display: block; font-family: "Bodoni Moda", serif; font-size: 18px; margin-bottom: 6px; }
+      .remedy p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.45; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+      .act {
+        font-family: "Bodoni Moda", serif;
+        font-size: 15px;
+        padding: 10px 12px;
+        border: 1px solid var(--gold);
+        background: #1a1410;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .act:hover { border-color: var(--amber); }
+      .sim-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .drop {
+        margin-top: 12px;
+        border: 1px dashed rgba(232, 160, 74, 0.35);
+        padding: 16px;
+        text-align: center;
+        color: var(--mute);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 180px;
+        margin-top: 10px;
+        background: #0c0a08;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        border: 1px solid var(--line);
+        padding: 3px 7px;
+        font-size: 12px;
+        color: var(--mute);
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="chrome">
+        <a class="catalog" href="/">← catalog</a>
+        <p class="mark">13:50 / hermes catalog #173 / #92426</p>
+        <h1>Understudy <em>dressing-room / call-board</em></h1>
+        <p class="lede">
+          13:50 understudy: an understudy that walks on in the lead's costume with
+          every prop from the wings is not the cast member you booked — it is already
+          <strong>miscast</strong>. Score the role or admit the part already
+          <strong>inherited</strong>.
+          Primary <a href="https://github.com/anthropics/claude-code/issues/92426">anthropics/claude-code#92426</a>
+          (OPEN; bug, has-repro, platform:macos, area:agents).
+          Claude Code <code>2.1.263</code>; macOS 26.6.2 (Darwin 25.6.0).
+          Diagnostic fixtures only. No live Claude sessions.
+        </p>
+      </div>
+
+      <section class="house inherited" id="stage" aria-label="Dressing-room understudy house">
+        <div class="rail">
+          <span id="stage-label">seeded inherited · Agent() · Write yes · generic prompt</span>
+          <span id="count-tag">2.1.263 · macOS 26.6.2 · Explore</span>
+        </div>
+        <div class="room">
+          <article class="callboard">
+            <h4>call-board</h4>
+            <div class="cards">
+              <div class="role-card card-explore">
+                <b>Explore</b>
+                <span id="card-explore">booked · no Write / Edit / Agent</span>
+              </div>
+              <div class="role-card card-lead">
+                <b>Lead</b>
+                <span id="card-lead">dispatcher · full prompt + tools</span>
+              </div>
+            </div>
+          </article>
+          <article class="rack">
+            <h4>costume rack</h4>
+            <div class="hanger" aria-hidden="true">
+              <div class="garment explore" title="Explore costume"></div>
+              <div class="garment lead" title="Lead costume"></div>
+            </div>
+            <div class="mirror" id="mirror">lead's face</div>
+          </article>
+          <article class="gauges">
+            <h4>prompt / tool gauges</h4>
+            <div class="dial g-prompt">
+              <b>prompt body</b>
+              <div class="needle"><i id="needle-prompt"></i></div>
+              <div class="readout" id="lamp-prompt">generic interactive-agent</div>
+            </div>
+            <div class="dial g-tools">
+              <b>tool surface</b>
+              <div class="needle"><i id="needle-tools"></i></div>
+              <div class="readout" id="lamp-tools">Write · Agent · Edit · Artifact</div>
+            </div>
+            <div class="dial g-reg">
+              <b>registry listing</b>
+              <div class="needle"><i id="needle-reg"></i></div>
+              <div class="readout" id="lamp-reg">name / description / frontmatter ok</div>
+            </div>
+          </article>
+        </div>
+        <div class="floor">
+          <h4>chalk blocking</h4>
+          <div class="x-mark x1">X</div>
+          <div class="x-mark x2">X</div>
+          <div class="x-mark x3">X</div>
+          <p class="blocking" id="blocking">Explore mark empty · lead mark occupied · dispatch did not error</p>
+        </div>
+      </section>
+
+      <section class="desk" id="desk" aria-label="Understudy scoring assay">
+        <div class="ledger">
+          <p class="verdict alarm" id="verdict">inherited</p>
+          <p class="reason" id="reason">A dispatched Explore received the dispatcher's prompt and tools wholesale. The agent body was never applied. Admit the part already inherited.</p>
+          <div class="paths" id="paths"></div>
+          <div class="plaques">
+            <div class="plaque hot" id="p-body"><i></i><div><b>Agent body</b><span id="s-body">never applied · generic interactive-agent prompt</span></div></div>
+            <div class="plaque hot" id="p-tools"><i></i><div><b>tools:</b><span id="s-tools">neither ceiling nor floor · Write held</span></div></div>
+            <div class="plaque" id="p-reg"><i></i><div><b>Registry</b><span id="s-reg">Available agent types listing still correct</span></div></div>
+            <div class="plaque" id="p-path"><i></i><div><b>Path</b><span id="s-path">Agent() dispatch · top-level --agent still applies</span></div></div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="chart">
+          <h2>Call-board log / wings</h2>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+
+      <section class="balloon" aria-label="Role gauge">
+        <h3>Role gauge</h3>
+        <div class="meter">
+          <b>definition / body</b>
+          <div class="bar cut" id="bar-body"><span class="fill"></span>miscast · body never applied</div>
+        </div>
+        <div class="meter">
+          <b>tool ceiling</b>
+          <div class="bar cut" id="bar-tools"><span class="fill"></span>inherited · Write / Agent / Edit / Artifact</div>
+        </div>
+      </section>
+
+      <section class="chain-pane" aria-label="Four roles">
+        <h3>Score a role</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Encoded from #92426. Same house, four roles. Click a card.
+        </p>
+        <div class="ab">
+          <article class="ab-card fail active" data-ab="dispatch" id="ab-dispatch">
+            <b>dispatch → inherited</b>
+            <p>Agent() Explore. Write yes. Generic interactive-agent prompt. No error.</p>
+          </article>
+          <article class="ab-card ok" data-ab="toplevel" id="ab-toplevel">
+            <b>top-level → ok</b>
+            <p>claude --agent Explore applies restricted tools and the agent prompt.</p>
+          </article>
+          <article class="ab-card ok" data-ab="registry" id="ab-registry">
+            <b>registry → lists</b>
+            <p>Available agent types listing shows name, description, frontmatter verbatim.</p>
+          </article>
+          <article class="ab-card fail" data-ab="plugin" id="ab-plugin">
+            <b>plugin → 3/3</b>
+            <p>No body. No ceiling. 460 deferred vs ~28 declared. Deterministic.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="instruments" aria-label="Assay instruments">
+        <article class="inst">
+          <b>GitHub #92426</b>
+          <p>OPEN · bug · has-repro · platform:macos · area:agents. Reporter alexatpando.</p>
+        </article>
+        <article class="inst">
+          <b>2.1.263 / macOS</b>
+          <p>Claude Code 2.1.263. macOS 26.6.2 (Darwin 25.6.0). Built-in and plugin types.</p>
+        </article>
+        <article class="inst">
+          <b>Explore booked</b>
+          <p>All tools except Agent, Artifact*, ExitPlanMode, Edit, Write, NotebookEdit.</p>
+        </article>
+        <article class="inst">
+          <b>Observed</b>
+          <p>Write yes. Generic prompt. Child also holds Agent, Edit, Artifact.</p>
+        </article>
+        <article class="inst">
+          <b>Inverse</b>
+          <p>Well-stocked parent: child silently gains tools its definition excludes.</p>
+        </article>
+      </section>
+
+      <section class="transcript" aria-label="Dispatch / prompt slip">
+        <h3>Dispatch / prompt slip</h3>
+        <p style="margin:0 0 10px;color:var(--mute);font-size:14px;">
+          Published Explore observations from the issue — not a live Claude session.
+        </p>
+        <div class="jsonl" id="jsonl"></div>
+      </section>
+
+      <div class="matrix" aria-label="Role path matrix">
+        <table>
+          <thead>
+            <tr>
+              <th>role</th>
+              <th>shipped</th>
+              <th>isolate</th>
+              <th>cast</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </div>
+
+      <section class="remediation" aria-label="Remediation panels">
+        <article class="remedy" data-remedy="cast">
+          <b>Apply the definition</b>
+          <p>Instantiation must seat the looked-up body and <code>tools:</code> the way <code>claude --agent</code> already does.</p>
+        </article>
+        <article class="remedy" data-remedy="toplevel">
+          <b>Honor top-level path</b>
+          <p><code>claude --agent Explore</code> already applies restricted tools and the agent prompt. Dispatch should use that path.</p>
+        </article>
+        <article class="remedy" data-remedy="ceiling">
+          <b>Ceiling under dispatch</b>
+          <p>Least-privilege via agent definitions needs a ceiling. <code>tools:</code> must exclude Write/Edit/Agent when Explore is booked.</p>
+        </article>
+      </section>
+
+      <div class="actions">
+        <button class="act" data-act="score">Score the role</button>
+        <button class="act" data-act="idle">Pin idle miscast</button>
+        <button class="act" data-act="seed">Pin seeded inherited</button>
+        <button class="act" data-act="admit">Admit the part already inherited</button>
+        <button class="act" data-act="cast">Cast the booked role</button>
+        <button class="act" data-act="fixtures">Load #92426 fixture</button>
+        <button class="act" data-act="reset">Reset to cast</button>
+      </div>
+
+      <div class="sim">
+        <h3>Casting-lab simulator</h3>
+        <p>Rewrite the role without touching a live Claude session. Diagnostic only.</p>
+        <div class="sim-row">
+          <span class="chip" data-sim-pull="dispatch">dispatch Agent()</span>
+          <span class="chip" data-sim-pull="toplevel">top-level --agent</span>
+          <span class="chip" data-sim-pull="registry">registry lists</span>
+          <span class="chip" data-sim-pull="plugin">plugin batch</span>
+        </div>
+        <div class="sim-row" id="chip-switch">
+          <button class="chip" data-chip="miscast">miscast</button>
+          <button class="chip" data-chip="inherited">inherited</button>
+          <button class="chip" data-chip="cast">cast</button>
+          <button class="chip" data-chip="top-level-ok">top-level-ok</button>
+          <button class="chip" data-chip="registry-lists">registry-lists</button>
+          <button class="chip" data-chip="no-ceiling">no-ceiling</button>
+          <button class="chip" data-chip="prompt-leak">prompt-leak</button>
+          <button class="chip" data-chip="plugin-batch">plugin-batch</button>
+          <button class="chip" data-chip="ruled-out-or-workarounds">ruled-out-or-workarounds</button>
+        </div>
+      </div>
+
+      <div class="drop" id="drop">Drop a fixture JSON from data/ onto the dressing-room house</div>
+      <textarea id="probe" spellcheck="false" aria-label="Probe JSON"></textarea>
+
+      <section class="research">
+        <h3>Why this assay</h3>
+        <p>
+          On Claude Code <code>2.1.263</code> on macOS <code>26.6.2</code>, the
+          <code>Agent</code> tool ignores the subagent definition. A dispatched
+          subagent receives the dispatching session's system prompt and tool
+          surface wholesale — built-in and plugin types alike.
+        </p>
+        <p>
+          <code>tools:</code> is neither a ceiling nor a floor under dispatch.
+          The agent body is never applied. Dispatch does not error; it returns
+          a plausible-looking agent that is not the one requested. The same
+          definitions <em>are</em> applied correctly at top level via
+          <code>claude --agent &lt;name&gt;</code>.
+        </p>
+        <p>
+          Explore, defined without Write/Edit/Agent/Artifact, still has Write
+          when dispatched, plus the generic interactive-agent prompt, and even
+          reproduced a sentence unique to the dispatcher's project-specific
+          system prompt. Plugin agents similarly got no agent body, no tool
+          ceiling, and every MCP server the dispatcher had (460 deferred tool
+          names vs declared ~28). Registry listing still shows correct
+          name/description/frontmatter — registration works; instantiation fails.
+        </p>
+        <p>
+          Stay off: <span class="stayoff">
+            <span>Fairlead #92403</span>
+            <span>Stroboscope #92395</span>
+            <span>Heliostat #92389</span>
+            <span>Lethe #92335</span>
+            <span>Frizzen #92353</span>
+            <span>Nixie #92383</span>
+            <span>Embrasure #92365</span>
+            <span>Elision #92347</span>
+            <span>Graft #92354</span>
+            <span>Callboard</span>
+          </span>
+        </p>
+        <p>
+          Cousins cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/30280">#30280</a>
+          MCP inherit ·
+          <a href="https://github.com/anthropics/claude-code/issues/80036">#80036</a>
+          nested strip ·
+          <a href="https://github.com/anthropics/claude-code/issues/89277">#89277</a>
+          fork inherit ·
+          <a href="https://github.com/anthropics/claude-code/issues/78234">#78234</a>
+          plugin teams ·
+          <a href="https://github.com/anthropics/claude-code/issues/80569">#80569</a>
+          effort ·
+          <a href="https://github.com/anthropics/claude-code/issues/92259">#92259</a>
+          allowlist.
+        </p>
+      </section>
+      <footer>
+        Catalog #173 · idle word miscast · seeded inherited · contrast cast / top-level-ok / registry-lists ·
+        no live Claude sessions · fonts Bodoni Moda / Source Sans 3 / IBM Plex Mono · dressing-room understudy
+      </footer>
+    </main>
+    <script>
+      const CAST = new Set(["cast", "top-level-ok", "registry-lists"]);
+      const CHIPS = [
+        "miscast", "inherited", "cast", "top-level-ok", "registry-lists",
+        "no-ceiling", "prompt-leak", "plugin-batch", "ruled-out-or-workarounds"
+      ];
+      const CHIP_FILES = {
+        miscast: "miscast.json",
+        inherited: "inherited.json",
+        cast: "cast.json",
+        "top-level-ok": "top-level-ok.json",
+        "registry-lists": "registry-lists.json",
+        "no-ceiling": "no-ceiling.json",
+        "prompt-leak": "prompt-leak.json",
+        "plugin-batch": "plugin-batch.json",
+        "ruled-out-or-workarounds": "ruled-out-or-workarounds.json"
+      };
+      const MATRIX = [
+        { id: "dispatch", name: "Agent() Explore dispatch", shipped: "FAIL", isolate: "pass", cast: "FAIL", file: "repro.json" },
+        { id: "repro", name: "stock install Write yes + generic prompt", shipped: "FAIL", isolate: "pass", cast: "FAIL", file: "repro.json" },
+        { id: "ceiling", name: "tools neither ceiling nor floor", shipped: "FAIL", isolate: "pass", cast: "FAIL", file: "no-ceiling.json" },
+        { id: "leak", name: "dispatcher-unique sentence in child", shipped: "FAIL", isolate: "pass", cast: "FAIL", file: "prompt-leak.json" },
+        { id: "plugin", name: "plugin batch 3/3 no body", shipped: "FAIL", isolate: "pass", cast: "FAIL", file: "plugin-batch.json" },
+        { id: "toplevel", name: "claude --agent Explore", shipped: "pass", isolate: "pass", cast: "pass", file: "top-level-ok.json" },
+        { id: "cast", name: "definition applied", shipped: "pass", isolate: "pass", cast: "pass", file: "cast.json" },
+        { id: "registry", name: "Available agent types listing", shipped: "pass", isolate: "pass", cast: "pass", file: "registry-lists.json" }
+      ];
+
+      const idle = {
+        source: "probe",
+        issue: 92426,
+        seed: "miscast",
+        miscast: true,
+        inherited: false,
+        cast: false,
+        registryLists: true,
+        agentBodyApplied: false,
+        toolsNeitherCeilingNorFloor: true,
+        shippedMark: "FAIL",
+        castMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "MISCAST",
+        log: [
+          "[idle] Agent() ignores the subagent definition under dispatch",
+          "[board] Explore booked; registry lists the role correctly",
+          "[desk] already miscast; idle word miscast"
+        ]
+      };
+
+      const seeded = {
+        source: "probe",
+        issue: 92426,
+        seed: "inherited",
+        miscast: true,
+        inherited: true,
+        cast: false,
+        noCeiling: true,
+        promptLeak: true,
+        dispatchErrors: false,
+        agentBodyApplied: false,
+        toolsNeitherCeilingNorFloor: true,
+        exploreHasWrite: true,
+        genericInteractivePrompt: true,
+        observedPromptFirstSentence: "You are an interactive agent that helps users with software engineering tasks.",
+        shippedMark: "FAIL",
+        castMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "INHERITED",
+        log: [
+          "[issue] #92426 OPEN · Agent tool ignores the subagent definition",
+          "[dispatch] Explore via Agent(); no error; plausible-looking agent returned",
+          "[prompt] You are an interactive agent that helps users with software engineering tasks.",
+          "[tools] Write / Agent / Edit / Artifact held — excluded by the definition",
+          "[desk] already inherited; seeded word inherited"
+        ]
+      };
+
+      const castTicket = {
+        source: "probe",
+        issue: 92426,
+        seed: "cast",
+        miscast: false,
+        inherited: false,
+        cast: true,
+        agentBodyApplied: true,
+        toolsNeitherCeilingNorFloor: false,
+        exploreHasWrite: false,
+        shippedMark: "pass",
+        castMark: "pass",
+        isolateMark: "pass",
+        hubCount: "CAST",
+        log: [
+          "[cast] definition body applied",
+          "[tools] Explore without Write/Edit/Agent/Artifact",
+          "[desk] cast; contrast hold"
+        ]
+      };
+
+      const topTicket = {
+        source: "probe",
+        issue: 92426,
+        seed: "top-level-ok",
+        miscast: false,
+        inherited: false,
+        cast: true,
+        topLevelOk: true,
+        agentBodyApplied: true,
+        exploreHasWrite: false,
+        shippedMark: "pass",
+        castMark: "pass",
+        isolateMark: "pass",
+        hubCount: "TOP-LEVEL-OK",
+        log: [
+          "[top-level] claude --agent Explore",
+          "[tools] restricted as defined — Write absent",
+          "[desk] top-level-ok; contrast hold"
+        ]
+      };
+
+      const regTicket = {
+        source: "probe",
+        issue: 92426,
+        seed: "registry-lists",
+        miscast: false,
+        inherited: false,
+        cast: false,
+        registryLists: true,
+        registrationWorks: true,
+        instantiationFails: true,
+        shippedMark: "pass",
+        castMark: "pass",
+        isolateMark: "pass",
+        hubCount: "REGISTRY-LISTS",
+        log: [
+          "[registry] Available agent types listing verbatim",
+          "[split] registration works; instantiation fails",
+          "[desk] registry-lists; contrast hold on the board"
+        ]
+      };
+
+      const pluginTicket = {
+        source: "probe",
+        issue: 92426,
+        seed: "plugin-batch",
+        miscast: true,
+        inherited: true,
+        cast: false,
+        pluginBatch: true,
+        agentBodyApplied: false,
+        deferredToolNames: 460,
+        declaredToolsApprox: 28,
+        shippedMark: "FAIL",
+        castMark: "FAIL",
+        isolateMark: "pass",
+        hubCount: "PLUGIN-BATCH",
+        log: [
+          "[batch] 3/3 plugin agents · no body · no ceiling",
+          "[tools] 460 deferred vs ~28 declared",
+          "[desk] plugin-batch; already inherited"
+        ]
+      };
+
+      let pullState = "dispatch";
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...seeded, parseError: true }; }
+      }
+
+      function remediating(t) {
+        return t.seed === "cast"
+          || t.seed === "top-level-ok"
+          || t.cast === true
+          || t.topLevelOk === true
+          || t.agentBodyApplied === true;
+      }
+
+      function alreadyMiscast(t) {
+        const seed = String(t.seed || "");
+        if (t.seed === "registry-lists" || t.registryLists === true && t.inherited !== true && t.miscast !== true && t.cast !== true) {
+          if (t.inherited !== true && t.miscast !== true && t.exploreHasWrite !== true) return false;
+        }
+        if (t.cast === true && t.inherited !== true && t.miscast !== true) return false;
+        if (t.topLevelOk === true && t.inherited !== true) return false;
+        if (remediating(t) && t.inherited !== true && t.miscast !== true && t.exploreHasWrite !== true) return false;
+        if (CAST.has(seed) && t.inherited !== true && t.exploreHasWrite !== true) return false;
+        if (t.miscast === true || t.inherited === true || t.noCeiling === true || t.promptLeak === true || t.pluginBatch === true) return true;
+        if (["miscast", "inherited", "no-ceiling", "prompt-leak", "plugin-batch", "ruled-out-or-workarounds"].includes(seed)) {
+          return !CAST.has(seed);
+        }
+        return t.agentBodyApplied === false && t.cast !== true && t.seed !== "registry-lists";
+      }
+
+      function castTicketScore(t) {
+        const seed = String(t.seed || "");
+        return (t.cast === true || t.topLevelOk === true || t.seed === "registry-lists" || CAST.has(seed) || remediating(t))
+          && t.inherited !== true
+          && !alreadyMiscast(t);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const alarm = alreadyMiscast(t);
+        t.shippedMiscast = alarm && !remediating(t) && seed !== "registry-lists";
+        t.shippedMark = t.shippedMark || (t.shippedMiscast ? "FAIL" : "pass");
+        t.isolateMark = t.isolateMark || "pass";
+        t.castMark = t.castMark || (t.cast === true || remediating(t) || t.topLevelOk === true || seed === "registry-lists" ? "pass" : "FAIL");
+        const holding = castTicketScore(t) && !alarm;
+        const chips = [];
+        if (alarm || seed === "miscast") chips.push("miscast");
+        if (t.inherited === true || seed === "inherited") chips.push("inherited");
+        if ((holding && t.cast === true) || seed === "cast") chips.push("cast");
+        if (t.topLevelOk === true || seed === "top-level-ok") chips.push("top-level-ok");
+        if (t.registryLists === true || seed === "registry-lists") chips.push("registry-lists");
+        if (t.noCeiling === true || t.toolsNeitherCeilingNorFloor === true || seed === "no-ceiling") chips.push("no-ceiling");
+        if (t.promptLeak === true || seed === "prompt-leak") chips.push("prompt-leak");
+        if (t.pluginBatch === true || seed === "plugin-batch") chips.push("plugin-batch");
+        if (t.workaroundsOnly === true || seed === "ruled-out-or-workarounds") chips.push("ruled-out-or-workarounds");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed)
+          ? seed
+          : (holding
+            ? (t.topLevelOk ? "top-level-ok" : (t.registryLists && !t.cast ? "registry-lists" : "cast"))
+            : (t.inherited ? "inherited" : "miscast"));
+        return { ticket: t, holding, alarm, chips: unique, verdict };
+      }
+
+      function setPlaque(id, on, hot) {
+        const el = document.getElementById(id);
+        el.classList.toggle("on", on && !hot);
+        el.classList.toggle("hot", !!hot);
+      }
+
+      function paintLog(alarm, t) {
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (alarm
+            ? ["[desk] Agent() · Write yes · already inherited"]
+            : ["[desk] definition applied · booked role walks on"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          const hit = /miscast|inherited|FAIL|Write yes|generic|460|leak|never applied/i.test(line);
+          return hit ? `<span class="hit">${line}</span>` : line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.alarm ? "Agent() clones dispatcher surface" : (t.topLevelOk ? "claude --agent applies definition" : "definition applied"), "instantiation path"],
+          ["isolate", t.isolateMark, "top-level --agent still applies; registry listing still correct", "dispatch path only"],
+          ["cast", t.castMark, t.cast === true || remediating(t) || t.topLevelOk === true || t.seed === "registry-lists" ? "apply looked-up body/tools" : "would cast after apply", "expected fix"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div class="face">${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="${active}" data-row="${row.id}">
+            <td>${row.name}</td>
+            ${cell(row.shipped)}${cell(row.isolate)}${cell(row.cast)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.style.cursor = "pointer";
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              apply(row.shipped === "FAIL"
+                ? { ...seeded, seed: row.id, scenario: row.id }
+                : { ...castTicket, seed: row.id, scenario: row.id });
+            }
+          });
+        });
+      }
+
+      function paintSlip(result) {
+        const t = result.ticket;
+        if (t.topLevelOk === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">claude --agent Explore</span>\n` +
+            `<span class="asst">restricted tools · Explore prompt present</span>\n` +
+            `<span class="hook">top-level path applies the definition</span>`;
+          return;
+        }
+        if (t.seed === "registry-lists" || (t.registryLists === true && !result.alarm)) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">Available agent types listing</span>\n` +
+            `<span class="asst">name · description · frontmatter tool list verbatim</span>\n` +
+            `<span class="hook">registration works; instantiation is what fails</span>`;
+          return;
+        }
+        if (t.pluginBatch === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="user">3/3 plugin agents · no # heading · no role instructions</span>\n` +
+            `<span class="user">You are Claude Code, Anthropic's official CLI for Claude, running within the Claude Agent SDK.</span>\n` +
+            `<span class="user">460 deferred tool names vs ~28 declared</span>`;
+          return;
+        }
+        if (result.holding && t.cast === true) {
+          document.getElementById("jsonl").innerHTML =
+            `<span class="asst">definition applied</span>\n` +
+            `<span class="asst">Explore walks on as Explore · Write absent</span>`;
+          return;
+        }
+        document.getElementById("jsonl").innerHTML =
+          `<span class="hook">2.1.263 · macOS 26.6.2 · Agent({ subagent_type: Explore })</span>\n` +
+          `<span class="user">Write — yes (expected no)</span>\n` +
+          `<span class="user">You are an interactive agent that helps users with software engineering tasks.</span>\n` +
+          `<span class="user">child also holds Agent, Edit, Artifact — all excluded</span>\n` +
+          `<span class="hook">registry listing still correct · body never applied</span>`;
+      }
+
+      const REASONS = {
+        miscast: "An understudy that walks on in the lead's costume with every prop from the wings is not the cast member you booked — it is already miscast.",
+        inherited: "A dispatched Explore received the dispatcher's prompt and tools wholesale. The agent body was never applied. Admit the part already inherited.",
+        "no-ceiling": "tools: is neither a ceiling nor a floor under dispatch. Explore still holds Write, Agent, Edit, and Artifact.",
+        "prompt-leak": "The child reproduced a sentence unique to the dispatcher's project-specific system prompt. Inheritance is positive, not a default.",
+        "plugin-batch": "Three of three plugin agents: no body, no ceiling, 460 deferred tool names against ~28 declared. Deterministic.",
+        cast: "The definition is applied. The booked role walks on as itself. Score the role.",
+        "top-level-ok": "claude --agent Explore at top level applies restricted tools and the agent prompt. Dispatch is the failing path.",
+        "registry-lists": "Available agent types listing shows name, description, and frontmatter verbatim. Registration works; instantiation fails.",
+        "ruled-out-or-workarounds": "MCP-inheritance framing is not the whole of it. Zero MCP still fails. tools: alone has no harness ceiling."
+      };
+
+      function paint(result) {
+        const alarm = result.alarm;
+        const t = result.ticket;
+        const seedName = String(t.seed || result.verdict || "");
+        const inherited = t.inherited === true || seedName === "inherited";
+        const topOk = t.topLevelOk === true || seedName === "top-level-ok";
+        const listed = seedName === "registry-lists" || (t.registryLists === true && !alarm);
+        const plugin = t.pluginBatch === true || seedName === "plugin-batch";
+        const holding = (result.holding || t.cast === true) && !alarm;
+        const stageClass = topOk
+          ? "top-level-ok"
+          : (listed
+            ? "registry-lists"
+            : (holding
+              ? "cast"
+              : (plugin
+                ? "plugin-batch"
+                : (seedName === "prompt-leak"
+                  ? "prompt-leak"
+                  : (seedName === "no-ceiling"
+                    ? "no-ceiling"
+                    : (inherited ? "inherited" : (CHIPS.includes(seedName) ? seedName : "miscast")))))));
+        document.getElementById("verdict").textContent = result.verdict;
+        document.getElementById("verdict").className = "verdict " + (alarm ? "alarm" : "hold");
+        document.getElementById("reason").textContent = REASONS[result.verdict] || REASONS[alarm ? "inherited" : "cast"];
+        const stage = document.getElementById("stage");
+        stage.className = "house " + stageClass;
+        document.getElementById("stage-label").textContent = alarm
+          ? (plugin ? "plugin-batch · 3/3 · 460 deferred" : (inherited ? "seeded inherited · Agent() · Write yes · generic prompt" : (seedName === "prompt-leak" ? "prompt-leak · dispatcher-unique sentence" : "idle miscast · booked Explore · walks on as Lead")))
+          : (topOk ? "top-level-ok · claude --agent Explore" : (listed ? "registry-lists · listing correct" : "cast · definition applied"));
+        document.getElementById("count-tag").textContent = alarm
+          ? (plugin ? "3/3 · ~28 declared · 460 deferred" : "2.1.263 · macOS 26.6.2 · Explore")
+          : (topOk ? "top-level path · definition applied" : "booked role walks on");
+        document.getElementById("lamp-prompt").textContent = alarm
+          ? (plugin ? "generic SDK CLI prompt" : "generic interactive-agent")
+          : (listed ? "listing only · body still unset on dispatch" : "Explore agent prompt");
+        document.getElementById("lamp-tools").textContent = alarm
+          ? (plugin ? "460 deferred · no ceiling" : "Write · Agent · Edit · Artifact")
+          : "Write absent · ceiling held";
+        document.getElementById("lamp-reg").textContent = "name / description / frontmatter ok";
+        document.getElementById("mirror").textContent = alarm ? "lead's face" : (listed ? "board only" : "Explore's face");
+        document.getElementById("card-explore").textContent = alarm
+          ? "booked · walked on as Lead"
+          : (listed ? "listed correctly on the board" : "booked · walked on as Explore");
+        document.getElementById("card-lead").textContent = alarm
+          ? "costume + props inherited"
+          : "stayed in the wings";
+        document.getElementById("blocking").textContent = alarm
+          ? "Explore mark empty · lead mark occupied · dispatch did not error"
+          : (listed ? "board lists Explore correctly · instantiation still the failing path" : "Explore mark occupied · lead stayed off");
+        setPlaque("p-body", holding || listed, alarm && t.agentBodyApplied !== true);
+        setPlaque("p-tools", holding && !plugin, t.toolsNeitherCeilingNorFloor === true || t.exploreHasWrite === true || alarm);
+        setPlaque("p-reg", true, false);
+        setPlaque("p-path", topOk || holding, alarm && !topOk);
+        document.getElementById("s-body").textContent = alarm
+          ? "never applied · generic interactive-agent prompt"
+          : (listed ? "listing correct · body applied only on a holding path" : "Explore body applied");
+        document.getElementById("s-tools").textContent = alarm
+          ? "neither ceiling nor floor · Write held"
+          : "ceiling held · Write absent";
+        document.getElementById("s-reg").textContent = "Available agent types listing still correct";
+        document.getElementById("s-path").textContent = topOk
+          ? "claude --agent Explore applies"
+          : "Agent() dispatch · top-level --agent still applies";
+        document.getElementById("chips").innerHTML = result.chips.map((c) => {
+          const live = CAST.has(c) && result.holding;
+          return `<span class="chip ${live ? "live" : "dead"}">${c}</span>`;
+        }).join("");
+        const barBody = document.getElementById("bar-body");
+        barBody.className = "bar " + (holding || listed ? "kept" : "cut");
+        barBody.innerHTML = holding || listed
+          ? `<span class="fill"></span>` + (topOk ? "top-level-ok · --agent applies" : (listed ? "registry-lists · listing correct" : "cast · body applied"))
+          : `<span class="fill"></span>` + (inherited ? "inherited · body never applied" : "miscast · booked Explore walks on as Lead");
+        const barTools = document.getElementById("bar-tools");
+        barTools.className = "bar " + (holding ? "kept" : "cut");
+        barTools.innerHTML = holding
+          ? `<span class="fill"></span>cast · Write absent`
+          : `<span class="fill"></span>` + (plugin ? "plugin-batch · 460 deferred" : "inherited · Write / Agent / Edit / Artifact");
+        document.getElementById("ab-dispatch").classList.toggle("active", alarm && !plugin && pullState !== "toplevel" && pullState !== "registry");
+        document.getElementById("ab-toplevel").classList.toggle("active", topOk || pullState === "toplevel");
+        document.getElementById("ab-registry").classList.toggle("active", listed || pullState === "registry");
+        document.getElementById("ab-plugin").classList.toggle("active", plugin || pullState === "plugin");
+        document.getElementById("probe").value = JSON.stringify(result.ticket, null, 2);
+        paintPaths(result);
+        paintLog(alarm, t);
+        paintSlip(result);
+        paintMatrix(t.scenario || (topOk ? "toplevel" : (listed ? "registry" : (plugin ? "plugin" : (holding ? "cast" : "dispatch")))));
+      }
+
+      function apply(ticket) {
+        paint(scoreMark(ticket));
+      }
+
+      function ticketFromSim() {
+        if (pullState === "toplevel") return { ...topTicket };
+        if (pullState === "registry") return { ...regTicket };
+        if (pullState === "plugin") return { ...pluginTicket };
+        return { ...seeded, seed: "inherited", hubCount: "DISPATCH" };
+      }
+
+      async function loadNamed(name) {
+        const res = await fetch("./data/" + name);
+        if (!res.ok) throw new Error(name);
+        return res.json();
+      }
+
+      function syncSimChips() {
+        document.querySelectorAll("[data-sim-pull]").forEach((b) => {
+          const on = b.dataset.simPull === pullState;
+          const fail = pullState === "dispatch" || pullState === "plugin";
+          b.classList.toggle("dead", on && fail);
+          b.classList.toggle("live", on && !fail);
+        });
+      }
+
+      function pinIdle() {
+        pullState = "dispatch";
+        syncSimChips();
+        apply({ ...idle });
+      }
+
+      function pinSeed() {
+        pullState = "dispatch";
+        syncSimChips();
+      }
+
+      document.querySelectorAll("button[data-act]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const act = btn.dataset.act;
+          if (act === "idle") return pinIdle();
+          if (act === "reset" || act === "cast") {
+            pullState = "toplevel";
+            syncSimChips();
+            try { apply(await loadNamed("cast.json")); }
+            catch { apply({ ...castTicket }); }
+            return;
+          }
+          if (act === "seed") {
+            pinSeed();
+            try { apply(await loadNamed("inherited.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "admit") {
+            pinSeed();
+            try { apply(await loadNamed("repro.json")); }
+            catch { apply({ ...seeded, seed: "inherited", hubCount: "ADMIT" }); }
+            return;
+          }
+          if (act === "fixtures") {
+            pinSeed();
+            try { apply(await loadNamed("92426.json")); }
+            catch { apply({ ...seeded }); }
+            return;
+          }
+          if (act === "score") {
+            const raw = document.getElementById("probe").value.trim();
+            if (!raw) return apply(ticketFromSim());
+            apply(parseProbe(raw));
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-sim-pull]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          pullState = btn.dataset.simPull;
+          syncSimChips();
+          apply(ticketFromSim());
+        });
+      });
+
+      document.querySelectorAll("#chip-switch [data-chip]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const chip = btn.dataset.chip;
+          try { apply(await loadNamed(CHIP_FILES[chip])); }
+          catch {
+            if (CAST.has(chip)) apply({ ...castTicket, seed: chip });
+            else apply({ ...seeded, seed: chip, issue: 92426 });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-remedy]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const kind = el.dataset.remedy;
+          const file = kind === "toplevel" ? "top-level-ok.json" : "cast.json";
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply({
+              ...castTicket,
+              seed: kind === "toplevel" ? "top-level-ok" : "cast",
+              topLevelOk: kind === "toplevel"
+            });
+          }
+        });
+      });
+
+      document.querySelectorAll("[data-ab]").forEach((el) => {
+        el.addEventListener("click", async () => {
+          const side = el.dataset.ab;
+          pullState = side === "toplevel" ? "toplevel" : (side === "registry" ? "registry" : (side === "plugin" ? "plugin" : "dispatch"));
+          syncSimChips();
+          const file = side === "toplevel"
+            ? "top-level-ok.json"
+            : (side === "registry" ? "registry-lists.json" : (side === "plugin" ? "plugin-batch.json" : "repro.json"));
+          try { apply(await loadNamed(file)); }
+          catch {
+            apply(side === "toplevel" ? { ...topTicket } : (side === "registry" ? { ...regTicket } : (side === "plugin" ? { ...pluginTicket } : { ...seeded, seed: "inherited", scenario: side })));
+          }
+        });
+      });
+
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (e) => e.preventDefault());
+      drop.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        apply(JSON.parse(await file.text()));
+      });
+
+      const embed = new URLSearchParams(location.search).get("embed");
+      if (embed === "1" || embed === "") {
+        document.body.classList.add("embed");
+      }
+
+      syncSimChips();
+      apply({ ...seeded });
+    </script>
+  </body>
+</html>
