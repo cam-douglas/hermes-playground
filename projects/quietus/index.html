@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quietus — registrar's death-knell ledger for #92716</title>
+    <meta
+      name="description"
+      content="Quietus — registrar's quietus / death-knell ledger bench for Claude Code #92716: SubagentStop stays silent on TaskStop and Exit-and-stop. Idle word is unrung."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Fragment+Mono:ital@0;1&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #0b0a08;
+        --desk: #16130f;
+        --walnut: #241e16;
+        --vellum: #e6d8be;
+        --vellum-dim: #b9ab8f;
+        --bronze: #8a6b3c;
+        --bronze-lit: #c9ae72;
+        --bell: #6d542d;
+        --wax: #8f3a2e;
+        --wax-ink: #e7b4a6;
+        --hold: #3c5648;
+        --hold-lit: #b4cbb8;
+        --fog: #8b8579;
+        --rule: rgba(201, 174, 114, 0.28);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Public Sans", "Segoe UI", sans-serif;
+        color: var(--vellum);
+        background:
+          radial-gradient(circle at 12% 8%, rgba(138, 107, 60, 0.16), transparent 32%),
+          radial-gradient(circle at 88% 4%, rgba(143, 58, 46, 0.1), transparent 28%),
+          repeating-linear-gradient(0deg, rgba(230, 216, 190, 0.035) 0 1px, transparent 1px 28px),
+          linear-gradient(180deg, #1c1812 0%, var(--desk) 52%, var(--ink) 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--bronze-lit); }
+      .wrap { width: min(1160px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 92px; }
+      .catalog {
+        display: inline-block;
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--hold-lit);
+        text-decoration: none;
+        border-bottom: 1px solid var(--bronze);
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "Fragment Mono", ui-monospace, monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--vellum-dim);
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        align-items: end;
+        border-bottom: 2px solid var(--bronze);
+        padding-bottom: 14px;
+        margin: 10px 0 16px;
+      }
+      .mast h1 {
+        font-family: Cardo, "Times New Roman", serif;
+        font-weight: 400;
+        font-style: italic;
+        font-size: clamp(56px, 11vw, 104px);
+        letter-spacing: -0.04em;
+        margin: 0;
+        line-height: 0.78;
+        color: var(--vellum);
+      }
+      .folio {
+        font-family: "Fragment Mono", monospace;
+        font-size: 11px;
+        color: var(--bronze-lit);
+        text-align: right;
+        border: 1px solid var(--bronze);
+        padding: 11px 13px;
+        background: rgba(36, 30, 22, 0.78);
+      }
+      .lede { max-width: 76em; color: var(--fog); line-height: 1.65; font-size: 16.5px; margin: 0 0 10px; }
+      .lede strong { color: var(--vellum); font-family: Cardo, serif; font-style: italic; }
+      .lede code, code {
+        font-family: "Fragment Mono", monospace;
+        font-size: 13px;
+        color: var(--bronze-lit);
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 12px 0 20px;
+      }
+      .tags a, .tags span {
+        font-family: "Fragment Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        color: var(--fog);
+        background: rgba(11, 10, 8, 0.55);
+      }
+      .tags a { color: var(--wax-ink); border-color: rgba(143, 58, 46, 0.55); }
+      .registry {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 0;
+        border: 1px solid var(--bronze);
+        background:
+          linear-gradient(180deg, rgba(230, 216, 190, 0.07), transparent 30%),
+          var(--walnut);
+        box-shadow: 12px 18px 0 rgba(11, 10, 8, 0.55);
+      }
+      .registry.unrung { outline: 2px solid rgba(143, 58, 46, 0.38); }
+      .registry.quieted { outline: 2px solid rgba(180, 203, 184, 0.35); }
+      .bell-pane {
+        background:
+          radial-gradient(circle at 50% 22%, rgba(201, 174, 114, 0.14), transparent 48%),
+          #120f0b;
+        border-right: 1px solid var(--bronze);
+        padding: 16px 14px 18px;
+      }
+      .bell-pane h2, .docket h2 {
+        font-family: Cardo, serif;
+        font-style: italic;
+        font-size: 16px;
+        margin: 0 0 10px;
+        color: var(--vellum);
+      }
+      .bell-tag {
+        display: inline-block;
+        font-family: "Fragment Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        background: var(--hold);
+        color: var(--hold-lit);
+        padding: 4px 8px;
+        margin: 0 0 10px;
+      }
+      .registry.unrung .bell-tag { background: #4a201a; color: var(--wax-ink); }
+      .bell-svg { width: 100%; height: auto; display: block; }
+      .docket {
+        padding: 18px 20px 22px;
+        background:
+          repeating-linear-gradient(0deg, transparent 0 31px, rgba(201, 174, 114, 0.09) 31px 32px),
+          linear-gradient(180deg, #2a241b, #1c1812);
+      }
+      .verdict-line {
+        margin: 4px 0 8px;
+        font-family: Cardo, serif;
+        font-style: italic;
+        font-size: clamp(36px, 5vw, 56px);
+        letter-spacing: -0.02em;
+        color: var(--wax-ink);
+        line-height: 0.9;
+      }
+      .registry.quieted .verdict-line { color: var(--hold-lit); }
+      .why { margin: 0 0 10px; color: var(--vellum-dim); line-height: 1.55; max-width: 50em; }
+      .chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0 12px; }
+      .chip {
+        font-family: "Fragment Mono", monospace;
+        font-size: 10px;
+        border: 1px solid var(--bronze);
+        background: transparent;
+        color: var(--vellum);
+        padding: 4px 7px;
+        cursor: pointer;
+      }
+      .chip.on { background: var(--wax); color: #1a100c; border-color: var(--wax); }
+      .chip.hold { background: var(--hold); color: #e8f6ec; border-color: var(--hold-lit); }
+      .gauges { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+      .slot {
+        border: 1px solid var(--rule);
+        padding: 8px;
+        background: rgba(11, 10, 8, 0.35);
+      }
+      .slot b {
+        display: block;
+        font-family: Cardo, serif;
+        font-style: italic;
+        font-size: 15px;
+      }
+      .slot span { font-size: 12px; color: var(--fog); }
+      .slot.slack { border-color: var(--wax); }
+      .slot.taut { border-color: var(--hold-lit); }
+      .log {
+        font-family: "Fragment Mono", monospace;
+        font-size: 11px;
+        line-height: 1.55;
+        background: rgba(11, 10, 8, 0.45);
+        border: 1px solid var(--rule);
+        padding: 8px;
+        min-height: 72px;
+        white-space: pre-wrap;
+        margin-top: 10px;
+      }
+      .log .hit { color: var(--wax-ink); }
+      .log .ok { color: var(--hold-lit); }
+      .paths { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 10px; }
+      .path { border: 1px solid var(--rule); padding: 7px; font-size: 12px; }
+      .path b { display: block; font-family: Cardo, serif; font-style: italic; font-size: 14px; }
+      .path.fail { border-color: var(--wax); }
+      .path.ok { border-color: var(--hold-lit); }
+      .path .note { color: var(--fog); font-family: "Fragment Mono", monospace; font-size: 10px; }
+      .actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+      .act {
+        font-family: Cardo, serif;
+        font-style: italic;
+        letter-spacing: 0.02em;
+        border: 1px solid var(--bronze-lit);
+        background: transparent;
+        color: var(--vellum);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .act.alarm { border-color: var(--wax); color: var(--wax-ink); }
+      .act.hold { border-color: var(--hold-lit); color: var(--hold-lit); }
+      .desk-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 20px 0;
+      }
+      .panel {
+        border: 1px solid var(--rule);
+        background: rgba(11, 10, 8, 0.58);
+        padding: 14px;
+      }
+      .panel h2, h2.sec {
+        font-family: Cardo, serif;
+        font-style: italic;
+        font-size: 24px;
+        margin: 0 0 10px;
+        color: var(--vellum);
+      }
+      h2.sec { margin: 28px 0 10px; }
+      table.axis {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .axis th, .axis td {
+        border-bottom: 1px solid var(--rule);
+        padding: 8px 6px;
+        text-align: left;
+      }
+      .axis th {
+        font-family: "Fragment Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--bronze);
+      }
+      .axis .bad { color: var(--wax-ink); }
+      .axis .good { color: var(--hold-lit); }
+      .axis tr.clickable { cursor: pointer; }
+      .axis tr.active { background: rgba(143, 58, 46, 0.12); }
+      .pegs, .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .peg, .card {
+        border: 1px solid var(--rule);
+        padding: 10px;
+        background: rgba(28, 22, 16, 0.7);
+        cursor: pointer;
+      }
+      .peg.on, .card.on { border-color: var(--wax); }
+      .card.hold { border-color: var(--hold-lit); }
+      .peg b, .card b {
+        display: block;
+        font-family: Cardo, serif;
+        font-style: italic;
+        font-size: 16px;
+        color: var(--vellum);
+      }
+      .peg span, .card span { color: var(--fog); font-size: 13px; }
+      .card code { display: block; margin-top: 6px; }
+      .drop {
+        border: 1px dashed var(--bronze);
+        padding: 12px;
+        color: var(--fog);
+        margin: 10px 0;
+      }
+      .drop.hot { border-color: var(--wax); color: var(--vellum); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #0b0a08;
+        color: var(--vellum);
+        border: 1px solid var(--bronze);
+        font-family: "Fragment Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .brief p { color: var(--fog); line-height: 1.65; }
+      .cousin-not-primary { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+      .cousin-not-primary span {
+        font-family: "Fragment Mono", monospace;
+        font-size: 11px;
+        border: 1px dashed var(--rule);
+        padding: 4px 8px;
+        color: var(--bronze-lit);
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "Fragment Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        padding: 4px 8px;
+        color: var(--fog);
+      }
+      footer {
+        margin-top: 32px;
+        font-family: "Fragment Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--vellum-dim);
+      }
+      @media (max-width: 820px) {
+        .mast, .registry, .desk-row, .gauges, .paths, .pegs, .cards {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="catalog chrome" href="/">hermes-playground catalog</a>
+      <div class="mark chrome">05:50 / hermes catalog #211 / #92716</div>
+      <header class="mast">
+        <h1>Quietus</h1>
+        <div class="folio">
+          FOLIO QT-211<br />
+          REGISTRAR · QUIETUS<br />
+          SUBAGENTSTOP · KNELL
+        </div>
+      </header>
+      <p class="lede">
+        05:50 quietus: a registrar's quietus / death-knell ledger that should
+        ring <code>SubagentStop</code> when a background subagent is killed via
+        <code>TaskStop</code> or Exit-and-stop but instead stays
+        <strong>unrung</strong> — registry clears, hook silent, normal
+        completion still tolls
+        (<a href="https://github.com/anthropics/claude-code/issues/92716">#92716</a>).
+        Score <strong>unrung</strong> or admit <strong>quieted</strong>.
+      </p>
+      <p class="lede">
+        Claude Code 2.1.261 · macOS 26.6 · Haiku 4.5 parent and subagent ·
+        tmux interactive · zsh headless · reporter pszypowicz · 0 comments.
+      </p>
+      <div class="tags chrome" aria-label="Native integrations">
+        <a href="https://github.com/anthropics/claude-code/issues/92716">GitHub issue #92716</a>
+        <span>SubagentStop · TaskStop</span>
+        <span>Exit and stop tasks</span>
+        <span>last_assistant_message</span>
+        <span>area:hooks · area:agents</span>
+        <a href="/">Vercel catalog back-link</a>
+        <a href="hook/quietus.mjs">hook scorer</a>
+        <span>ink / parchment / bronze knell</span>
+      </div>
+
+      <section class="registry unrung" id="bench">
+        <aside class="bell-pane">
+          <h2>Bronze knell</h2>
+          <span class="bell-tag" id="bell-tag">BELL · SILENT</span>
+          <svg class="bell-svg" id="bell-svg" viewBox="0 0 240 280" role="img" aria-label="Muted bronze death-knell over a registrar ledger">
+            <rect x="0" y="0" width="240" height="280" fill="#0b0a08" />
+            <rect x="18" y="36" width="204" height="200" fill="#1a1610" stroke="#8a6b3c" stroke-width="2" />
+            <g id="ledger-rules" stroke="#c9ae72" stroke-opacity="0.28" stroke-width="1">
+              <line x1="28" y1="62" x2="212" y2="62" />
+              <line x1="28" y1="86" x2="212" y2="86" />
+              <line x1="28" y1="110" x2="212" y2="110" />
+              <line x1="28" y1="134" x2="212" y2="134" />
+              <line x1="28" y1="158" x2="212" y2="158" />
+              <line x1="28" y1="182" x2="212" y2="182" />
+              <line x1="28" y1="206" x2="212" y2="206" />
+            </g>
+            <path id="bell-body" d="M78 78 C78 58 162 58 162 78 L172 148 C172 164 68 164 68 148 Z" fill="#6d542d" stroke="#c9ae72" stroke-width="2" />
+            <rect id="bell-yoke" x="112" y="48" width="16" height="22" fill="#8a6b3c" />
+            <ellipse id="bell-lip" cx="120" cy="150" rx="54" ry="10" fill="#8a6b3c" stroke="#c9ae72" stroke-width="1.4" />
+            <line id="clapper" x1="120" y1="92" x2="120" y2="146" stroke="#e6d8be" stroke-width="3" />
+            <circle id="clapper-ball" cx="120" cy="150" r="6" fill="#e6d8be" />
+            <g id="bell-rings" stroke="#8f3a2e" stroke-width="1.2" fill="none" opacity="0.15">
+              <ellipse cx="120" cy="168" rx="40" ry="8" />
+              <ellipse cx="120" cy="180" rx="52" ry="10" />
+            </g>
+            <text x="24" y="28" fill="#c9ae72" font-size="9" font-family="Fragment Mono, monospace">DEATH-KNELL</text>
+            <text x="24" y="262" fill="#b9ab8f" font-size="9" font-family="Fragment Mono, monospace">REGISTRAR LEDGER</text>
+          </svg>
+        </aside>
+        <div class="docket">
+          <h2>Registrar docket · death-knell folio</h2>
+          <p class="verdict-line" id="verdict">unrung</p>
+          <p class="why" id="why">
+            ALARM: quietus unrung; TaskStop and Exit-and-stop never ring SubagentStop.
+          </p>
+          <div class="chips" id="chips"></div>
+          <div class="gauges" id="gauges"></div>
+          <div class="log" id="log"></div>
+          <div class="paths" id="paths"></div>
+          <div class="actions">
+            <button class="act alarm" type="button" id="leave-unrung">Leave the ledger unrung</button>
+            <button class="act hold" type="button" id="toll-knell">Toll the knell</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="desk-row">
+        <section class="panel" aria-label="published hook log">
+          <h2>Published hook log</h2>
+          <table class="axis">
+            <thead>
+              <tr>
+                <th>t</th>
+                <th>event</th>
+                <th>agent</th>
+                <th>note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>+0</code></td>
+                <td>SubagentStart</td>
+                <td><code>a7e17cab67db81d3b</code></td>
+                <td class="bad">TaskStop path starts</td>
+              </tr>
+              <tr>
+                <td><code>+18 / +21</code></td>
+                <td>Stop</td>
+                <td><code>bg:[]</code></td>
+                <td class="bad">agent gone · no SubagentStop</td>
+              </tr>
+              <tr>
+                <td><code>+147</code></td>
+                <td>SubagentStart</td>
+                <td><code>a407d56a2f914aea2</code></td>
+                <td class="good">control starts</td>
+              </tr>
+              <tr>
+                <td><code>+240</code></td>
+                <td>SubagentStop</td>
+                <td><code>last:done</code></td>
+                <td class="good">control still tolls</td>
+              </tr>
+              <tr>
+                <td><code>+267</code></td>
+                <td>SubagentStart</td>
+                <td><code>aeb8c19d42bf9982c</code></td>
+                <td class="bad">Exit-and-stop starts</td>
+              </tr>
+              <tr>
+                <td><code>+268</code></td>
+                <td>Stop</td>
+                <td>running</td>
+                <td class="bad">session ends · no SubagentStop</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="panel" aria-label="what should happen">
+          <h2>What should happen</h2>
+          <p class="why" style="color: var(--fog)">
+            Every <code>SubagentStart</code> is followed by exactly one
+            <code>SubagentStop</code>, regardless of how the subagent ends.
+            A kill through <code>TaskStop</code> or through session exit
+            should fire the hook, with <code>last_assistant_message</code>
+            empty if there is none. The control run proves the hook is
+            registered: normal background completion still tolls.
+          </p>
+        </section>
+      </div>
+
+      <h2 class="sec">Kill-path bays</h2>
+      <div class="pegs" id="bays"></div>
+
+      <h2 class="sec">Isolation plates</h2>
+      <div class="cards" id="plates"></div>
+
+      <h2 class="sec">Registrar ledger</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>ticket</th>
+            <th>bay</th>
+            <th>ledger</th>
+            <th>shipped</th>
+            <th>scored</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+
+      <h2 class="sec">Probe the quietus</h2>
+      <div class="drop" id="drop">Drop a fixture JSON here. Paste below.</div>
+      <textarea id="probe" spellcheck="false"></textarea>
+      <div class="actions">
+        <button class="act alarm" type="button" id="score-quietus">Score the quietus</button>
+        <button class="act alarm" type="button" id="pin-unrung">Pin idle unrung</button>
+        <button class="act hold" type="button" id="pin-quieted">Pin seeded quieted</button>
+        <button class="act hold" type="button" id="admit-quieted">Admit quieted</button>
+        <button class="act" type="button" id="load-fixtures">Load fixtures</button>
+        <button class="act hold" type="button" id="reset-quieted">Reset to quieted</button>
+      </div>
+
+      <section class="brief">
+        <h2 class="sec">Why Quietus is not a clone</h2>
+        <p>
+          <strong>Not Cribble/#92684.</strong>
+          Mid-path denyWrite fail-open on Linux. Different defect.
+        </p>
+        <p>
+          <strong>Not Springe/#92675.</strong>
+          Plugin-native PreToolUse deny not enforced interactively. Different defect.
+        </p>
+        <p>
+          <strong>Not Gangway/#92662 / Waybill/#92624 / Oubliette/#92095 / Larum/#92563 / Deadman/#92593 / Watchdog / Knell / Tocsin / Aphonia.</strong>
+          Quietus is specifically the TaskStop / Exit-and-stop kill path that never rings SubagentStop.
+        </p>
+        <p class="cousin-not-primary" id="cousin-strip">
+          <span>cousin-not-primary #78463 API-error burst missing SubagentStop</span>
+          <span>cousin-not-primary #44971 team-agent shutdown protocol</span>
+          <span>cousin-not-primary #82249 DIFFERENT: control completion still tolls on 2.1.261</span>
+        </p>
+        <p>
+          Stay off:
+          <span class="stayoff">
+            <span>Cribble/#92684 mid-path denyWrite sieve</span>
+            <span>Springe/#92675 plugin-native PreToolUse slip</span>
+            <span>Gangway/#92662 Chrome never-redial</span>
+            <span>Waybill/#92624 named spawn foreign session id</span>
+            <span>Oubliette/#92095 cold-parent child-completion void</span>
+            <span>Larum/#92563 background-task notification never starts a turn</span>
+          </span>
+        </p>
+      </section>
+
+      <footer class="chrome">
+        hermes-playground · catalog #211 · quietus · #92716 · no live Claude · ?embed=1 hides chrome
+      </footer>
+    </main>
+    <script>
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["quieted"]);
+      const CHIPS = [
+        "unrung", "quieted", "start-without-stop", "taskstop-silent",
+        "exit-stop-silent", "control-completion-tolls", "debug-file-missing",
+        "registry-cleared", "pairing-drift", "cousins", "has-clear-repro"
+      ];
+      const CHIP_FILES = {
+        unrung: "data/unrung.json",
+        quieted: "data/quieted.json",
+        "start-without-stop": "data/start-without-stop.json",
+        "taskstop-silent": "data/taskstop-silent.json",
+        "exit-stop-silent": "data/exit-stop-silent.json",
+        "control-completion-tolls": "data/control-completion-tolls.json",
+        "debug-file-missing": "data/debug-file-missing.json",
+        "registry-cleared": "data/registry-cleared.json",
+        "pairing-drift": "data/pairing-drift.json",
+        cousins: "data/cousins.json",
+        "has-clear-repro": "data/has-clear-repro.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "primary #92716", slot: "knell", ledger: "TaskStop + Exit-and-stop silent · control still tolls", shipped: "FAIL", scored: "FAIL", file: "data/92716.json" },
+        { id: "unrung", name: "idle unrung", slot: "docket", ledger: "ALARM: kill path never rings SubagentStop", shipped: "FAIL", scored: "FAIL", file: "data/unrung.json" },
+        { id: "start", name: "start-without-stop", slot: "pair", ledger: "SubagentStart without matching SubagentStop", shipped: "FAIL", scored: "FAIL", file: "data/start-without-stop.json" },
+        { id: "taskstop", name: "taskstop-silent", slot: "kill", ledger: "TaskStop a7e17cab67db81d3b · Stop bg:[] · no hook", shipped: "FAIL", scored: "FAIL", file: "data/taskstop-silent.json" },
+        { id: "exit", name: "exit-stop-silent", slot: "session", ledger: "/exit Exit and stop tasks · no SubagentStop", shipped: "FAIL", scored: "FAIL", file: "data/exit-stop-silent.json" },
+        { id: "control", name: "control-completion-tolls", slot: "toll", ledger: "SubagentStop a407d56a2f914aea2 last:done", shipped: "FAIL", scored: "FAIL", file: "data/control-completion-tolls.json" },
+        { id: "debug", name: "debug-file-missing", slot: "folio", ledger: "--debug-file has no SubagentStop line", shipped: "FAIL", scored: "FAIL", file: "data/debug-file-missing.json" },
+        { id: "registry", name: "registry-cleared", slot: "book", ledger: "agent gone from registry; only the hook is missing", shipped: "FAIL", scored: "FAIL", file: "data/registry-cleared.json" },
+        { id: "pairing", name: "pairing-drift", slot: "account", ledger: "Start/Stop pairing drifts after every kill", shipped: "FAIL", scored: "FAIL", file: "data/pairing-drift.json" },
+        { id: "quieted", name: "seeded quieted", slot: "settle", ledger: "every kill path rings SubagentStop", shipped: "pass", scored: "pass", file: "data/quieted.json" },
+        { id: "cousins", name: "cousins", slot: "cite-only neighbourhood", ledger: "#78463 #44971 #82249", shipped: "FAIL", scored: "FAIL", file: "data/cousins.json" },
+        { id: "repro", name: "has-clear-repro", slot: "filed narrative", ledger: "labeled has repro", shipped: "FAIL", scored: "FAIL", file: "data/has-clear-repro.json" }
+      ];
+      const BAYS = [
+        { id: "taskstop", name: "taskstop-silent", note: "TaskStop a7e17cab67db81d3b · next Stop bg:[] · no SubagentStop", file: "data/taskstop-silent.json", hold: false },
+        { id: "exit", name: "exit-stop-silent", note: "/exit → Exit and stop tasks · aeb8c19d42bf9982c never receives SubagentStop", file: "data/exit-stop-silent.json", hold: false },
+        { id: "control", name: "control-completion-tolls", note: "normal completion still fires SubagentStop with last_assistant_message done", file: "data/control-completion-tolls.json", hold: false }
+      ];
+      const PLATES = [
+        { id: "one", name: "1 · kill path silent", body: "TaskStop and Exit-and-stop clear the agent and never fire SubagentStop. Pairing should be 1:1.", code: "SubagentStart without SubagentStop" },
+        { id: "two", name: "2 · control still tolls", body: "Normal background completion fires SubagentStop with last_assistant_message. The hook is registered.", code: "control last:done" },
+        { id: "three", name: "3 · registry already empty", body: "Next Stop shows bg:[]. --debug-file has no kill-path line. background_tasks is not a substitute.", code: "registry clears · hook silent" }
+      ];
+      const RINGS = [
+        { id: "taskstop", name: "TaskStop", fail: "kill clears registry · no SubagentStop", hold: "TaskStop rings SubagentStop" },
+        { id: "exit", name: "Exit-and-stop", fail: "session ends · no SubagentStop", hold: "Exit-and-stop rings SubagentStop" },
+        { id: "control", name: "completion", fail: "control still tolls with last:done", hold: "kill and completion both toll" }
+      ];
+
+      const idle = {
+        source: "probe", issue: 92716, seed: "unrung", unrung: true, quieted: false,
+        startWithoutStop: true, taskstopSilent: true, exitStopSilent: true,
+        controlTolls: true, debugFileMissing: true, registryCleared: true,
+        pairingDrift: true, taskstopSubagentStop: false, exitStopSubagentStop: false,
+        controlSubagentStop: true, controlLastAssistantMessage: "done",
+        shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass",
+        hubCount: "UNRUNG",
+        log: ["[idle] TaskStop and Exit-and-stop never ring SubagentStop", "[unrung] registry clears · hook silent · control still tolls"]
+      };
+      const seeded = {
+        source: "probe", issue: 92716, seed: "quieted", unrung: false, quieted: true,
+        quietusQuieted: true,
+        shippedMark: "pass", scoredMark: "pass", isolateMark: "pass",
+        hubCount: "QUIETED",
+        log: ["[seeded] every kill path rings SubagentStop, pairing every SubagentStart"]
+      };
+      const startTicket = { ...idle, seed: "start-without-stop", hubCount: "START-WITHOUT-STOP", log: ["[start] SubagentStart without a matching SubagentStop"] };
+      const taskstopTicket = { ...idle, seed: "taskstop-silent", hubCount: "TASKSTOP-SILENT", log: ["[taskstop] a7e17cab67db81d3b · Stop bg:[] · no SubagentStop"] };
+      const exitTicket = { ...idle, seed: "exit-stop-silent", hubCount: "EXIT-STOP-SILENT", log: ["[exit] aeb8c19d42bf9982c · Exit and stop tasks · no SubagentStop"] };
+      const controlTicket = { ...idle, seed: "control-completion-tolls", hubCount: "CONTROL-COMPLETION-TOLLS", log: ["[control] a407d56a2f914aea2 last:done — hook still tolls"] };
+      const debugTicket = { ...idle, seed: "debug-file-missing", hubCount: "DEBUG-FILE-MISSING", log: ["[debug] --debug-file has no SubagentStop line for the killed agent"] };
+      const registryTicket = { ...idle, seed: "registry-cleared", hubCount: "REGISTRY-CLEARED", log: ["[registry] agent gone; only the hook is missing"] };
+      const pairingTicket = { ...idle, seed: "pairing-drift", hubCount: "PAIRING-DRIFT", log: ["[pair] Start/Stop pairing drifts after every kill"] };
+      const cousinsTicket = { ...idle, seed: "cousins", cousinsCiteOnly: [78463, 44971, 82249], hubCount: "COUSINS", log: ["[cousins] cite-only #78463 #44971 #82249 · primary stays #92716"] };
+      const reproTicket = { ...idle, seed: "has-clear-repro", hasClearRepro: true, hubCount: "HAS-CLEAR-REPRO", log: ["[repro] labeled has repro"] };
+      const FALLBACKS = {
+        unrung: idle,
+        quieted: seeded,
+        "start-without-stop": startTicket,
+        "taskstop-silent": taskstopTicket,
+        "exit-stop-silent": exitTicket,
+        "control-completion-tolls": controlTicket,
+        "debug-file-missing": debugTicket,
+        "registry-cleared": registryTicket,
+        "pairing-drift": pairingTicket,
+        cousins: cousinsTicket,
+        "has-clear-repro": reproTicket
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.quieted === true && t.unrung !== true);
+      }
+
+      function alreadyUnrung(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.unrung !== true) return false;
+        if (HOLD.has(seed) && t.unrung !== true) return false;
+        if (t.unrung === true) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.quieted !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const holding = remediating(t) && t.unrung !== true;
+        t.shippedMark = t.shippedMark || (holding ? "pass" : "FAIL");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (holding ? "pass" : "FAIL");
+        const chips = [];
+        if (holding || seed === "quieted") chips.push("quieted");
+        if (alreadyUnrung(t) || seed === "unrung" || t.unrung === true) chips.push("unrung");
+        if (seed === "start-without-stop" || t.startWithoutStop === true) chips.push("start-without-stop");
+        if (seed === "taskstop-silent" || t.taskstopSilent === true) chips.push("taskstop-silent");
+        if (seed === "exit-stop-silent" || t.exitStopSilent === true) chips.push("exit-stop-silent");
+        if (seed === "control-completion-tolls" || t.controlTolls === true) chips.push("control-completion-tolls");
+        if (seed === "debug-file-missing" || t.debugFileMissing === true) chips.push("debug-file-missing");
+        if (seed === "registry-cleared" || t.registryCleared === true) chips.push("registry-cleared");
+        if (seed === "pairing-drift" || t.pairingDrift === true) chips.push("pairing-drift");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        if (seed === "has-clear-repro" || t.hasClearRepro === true) chips.push("has-clear-repro");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (holding ? "quieted" : "unrung");
+        return { ticket: t, holding, alarm: alreadyUnrung(t), chips: unique, verdict };
+      }
+
+      const REASONS = {
+        unrung: "ALARM: quietus unrung; TaskStop and Exit-and-stop clear the registry and never ring SubagentStop. A registrar's death-knell that should close the account but stays silent. Score unrung or admit quieted.",
+        quieted: "Quietus already quieted. Every kill path rings SubagentStop, pairing every SubagentStart.",
+        "start-without-stop": "SubagentStart a7e17cab67db81d3b and aeb8c19d42bf9982c never receive a matching SubagentStop. Pairing should be 1:1.",
+        "taskstop-silent": "After TaskStop, next Stop shows bg:[]; agent a7e17cab67db81d3b is gone; no SubagentStop (checked again 75 s later). Two headless claude -p runs matched.",
+        "exit-stop-silent": "/exit → Exit and stop tasks ends the session with no SubagentStop for aeb8c19d42bf9982c.",
+        "control-completion-tolls": "Normal background completion still fires SubagentStop for a407d56a2f914aea2 with last_assistant_message done. The hook is registered and working.",
+        "debug-file-missing": "--debug-file has no SubagentStop line for the killed agent. Nothing about the missing hook appears in the debug log.",
+        "registry-cleared": "The killed agent is removed from the task registry; next main-thread Stop lists background_tasks as []. Only the hook is missing.",
+        "pairing-drift": "Hooks pairing SubagentStart with SubagentStop drift after every kill. background_tasks on Stop is not a substitute for the per-agent stop event.",
+        cousins: "Cite-only #78463 (API-error burst missing SubagentStop); #44971 (team-agent shutdown protocol); #82249 (DIFFERENT: on 2.1.261 control completion still tolls). Primary stays #92716.",
+        "has-clear-repro": "Issue labeled has repro: Claude Code 2.1.261; macOS 26.6; Haiku 4.5 parent and subagent; reproduced in claude -p headless and interactive REPL; published hook log."
+      };
+
+      function paintLog(result) {
+        const t = result.ticket;
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (result.holding
+            ? ["[quietus] quieted · every kill path rings SubagentStop"]
+            : ["[quietus] unrung · TaskStop and Exit-and-stop never ring SubagentStop"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          if (/unrung|FAIL|silent|no SubagentStop/i.test(line)) return `<span class="hit">${line}</span>`;
+          if (/quieted|hold|rings SubagentStop|still tolls/i.test(line)) return `<span class="ok">${line}</span>`;
+          return line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.holding ? "quieted · knell settled" : "unrung · kill path silent", "quietus path"],
+          ["isolate", t.isolateMark, "TaskStop / Exit-and-stop SubagentStop miss · not a mid-path denyWrite sieve · not a plugin PreToolUse slip", "not a clone"],
+          ["scored", t.scoredMark, result.holding ? "quieted" : "would score after the knell rings", "expected channel"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div>${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintHousing(result) {
+        document.getElementById("bell-tag").textContent = result.holding ? "BELL · SETTLED" : "BELL · SILENT";
+        const rings = document.getElementById("bell-rings");
+        const clapper = document.getElementById("clapper");
+        const ball = document.getElementById("clapper-ball");
+        const body = document.getElementById("bell-body");
+        if (result.holding) {
+          rings.setAttribute("stroke", "#b4cbb8");
+          rings.setAttribute("opacity", "0.55");
+          clapper.setAttribute("x2", "128");
+          ball.setAttribute("cx", "130");
+          ball.setAttribute("fill", "#b4cbb8");
+          body.setAttribute("fill", "#3c5648");
+        } else {
+          rings.setAttribute("stroke", "#8f3a2e");
+          rings.setAttribute("opacity", "0.15");
+          clapper.setAttribute("x2", "120");
+          ball.setAttribute("cx", "120");
+          ball.setAttribute("fill", "#e6d8be");
+          body.setAttribute("fill", "#6d542d");
+        }
+      }
+
+      function paintRings(result) {
+        document.getElementById("gauges").innerHTML = RINGS.map((ring) => {
+          const cls = result.holding ? "taut" : "slack";
+          const body = result.holding ? ring.hold : ring.fail;
+          return `<article class="slot ${cls}"><b>${ring.name}</b><span>${body}</span></article>`;
+        }).join("");
+      }
+
+      function paintPlates(result) {
+        document.getElementById("plates").innerHTML = PLATES.map((p) => {
+          const cls = result.holding ? "hold" : "on";
+          return `<article class="card ${cls}"><b>${p.name}</b><span>${p.body}</span><code>${p.code}</code></article>`;
+        }).join("");
+      }
+
+      function paintBays(result) {
+        document.getElementById("bays").innerHTML = BAYS.map((p) => {
+          const on = (result.holding && p.hold) || (!result.holding && !p.hold && (
+            (result.verdict === "taskstop-silent" && p.id === "taskstop") ||
+            (result.verdict === "exit-stop-silent" && p.id === "exit") ||
+            (result.verdict === "control-completion-tolls" && p.id === "control") ||
+            (result.verdict === "unrung" && p.id === "taskstop") ||
+            (result.verdict === "cousins" && p.id === "control")
+          )) ? "on" : "";
+          return `<article class="peg ${on}" data-bay="${p.id}"><b>${p.name}</b><span>${p.note}</span></article>`;
+        }).join("");
+        document.querySelectorAll("#bays [data-bay]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const bay = BAYS.find((p) => p.id === el.dataset.bay);
+            if (!bay) return;
+            try { apply(await loadNamed(bay.file)); }
+            catch { apply(bay.hold ? { ...seeded } : { ...idle }); }
+          });
+        });
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "bad" : "good"}">${m}</td>`;
+          return `<tr class="clickable ${active}" data-row="${row.id}">
+            <td>${row.name}</td><td>${row.slot}</td><td>${row.ledger}</td>
+            ${cell(row.shipped)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "unrung", unrung: "unrung", start: "start-without-stop",
+                taskstop: "taskstop-silent", exit: "exit-stop-silent",
+                control: "control-completion-tolls", debug: "debug-file-missing",
+                registry: "registry-cleared", pairing: "pairing-drift",
+                quieted: "quieted", cousins: "cousins", repro: "has-clear-repro"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92716 }); }
+          });
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bench = document.getElementById("bench");
+        bench.className = "registry " + (result.holding ? "quieted" : "unrung");
+        const v = document.getElementById("verdict");
+        v.className = "verdict-line " + result.verdict;
+        v.textContent = result.verdict;
+        document.getElementById("why").textContent = REASONS[result.verdict] || REASONS.unrung;
+        document.getElementById("probe").value = JSON.stringify(ticket, null, 2);
+        paintChips(result);
+        paintLog(result);
+        paintPaths(result);
+        paintHousing(result);
+        paintRings(result);
+        paintPlates(result);
+        paintBays(result);
+        const map = {
+          unrung: "unrung", quieted: "quieted",
+          "start-without-stop": "start",
+          "taskstop-silent": "taskstop",
+          "exit-stop-silent": "exit",
+          "control-completion-tolls": "control",
+          "debug-file-missing": "debug",
+          "registry-cleared": "registry",
+          "pairing-drift": "pairing",
+          cousins: "cousins",
+          "has-clear-repro": "repro"
+        };
+        paintMatrix(map[result.verdict] || (result.holding ? "quieted" : "primary"));
+      }
+
+      async function loadNamed(file) {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(file);
+        return res.json();
+      }
+
+      document.getElementById("score-quietus").addEventListener("click", () => apply(parseProbe(document.getElementById("probe").value)));
+      document.getElementById("pin-unrung").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("pin-quieted").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("admit-quieted").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("reset-quieted").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("toll-knell").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("leave-unrung").addEventListener("click", () => apply({ ...taskstopTicket }));
+      document.getElementById("load-fixtures").addEventListener("click", async () => {
+        try { apply(await loadNamed("data/92716.json")); }
+        catch { apply({ ...idle, seed: "unrung", hubCount: "92716" }); }
+      });
+      document.getElementById("probe").addEventListener("change", (ev) => apply(parseProbe(ev.target.value)));
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (ev) => { ev.preventDefault(); drop.classList.add("hot"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("hot"));
+      drop.addEventListener("drop", async (ev) => {
+        ev.preventDefault();
+        drop.classList.remove("hot");
+        const file = ev.dataTransfer.files[0];
+        if (!file) return;
+        apply(parseProbe(await file.text()));
+      });
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>

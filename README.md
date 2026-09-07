@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Cribble](https://hermes-playground-green.vercel.app/cribble/)** — miller's cribble / coarse-sieve bench / mill loft / flour-dust / oak cribble frame / iron wire mesh / parchment mill ledger. Mid-path `denyWrite` globs are silently dropped on Linux — literal and trailing `/**` block, `/path/**/file` and `/path/*/file` stay WRITABLE while denyRead mid-path works and `/status` still shows the rule (#92684). Score porous or admit cribbed. Folder: `projects/cribble/`.
+**Featured: [Quietus](https://hermes-playground-green.vercel.app/quietus/)** — registrar's quietus / death-knell ledger / dark ink / parchment / muted bronze bell / ledger ruling / quiet courtroom registry. A `SubagentStop` hook should fire when a background subagent is killed via `TaskStop` or `/exit` → "Exit and stop tasks", but the kill path clears the registry and stays unrung — normal completion still tolls (#92716). Score unrung or admit quieted. Folder: `projects/quietus/`.
+
+**Listed: [Cribble](https://hermes-playground-green.vercel.app/cribble/)** — miller's cribble / coarse-sieve bench / mill loft / flour-dust / oak cribble frame / iron wire mesh / parchment mill ledger. Mid-path `denyWrite` globs are silently dropped on Linux — literal and trailing `/**` block, `/path/**/file` and `/path/*/file` stay WRITABLE while denyRead mid-path works and `/status` still shows the rule (#92684). Score porous or admit cribbed. Folder: `projects/cribble/`. Still listed. Not featured.
 
 **Listed: [Springe](https://hermes-playground-green.vercel.app/springe/)** — trapper's springe / snare-setter bench. Plugin-native PreToolUse deny silently no-ops in the interactive session — exit-2 works only in print mode; JSON permissionDecision:"deny" fails in both modes; settings.json exit-2 is the control that still blocks (#92675). Score slipped or admit sprung. Folder: `projects/springe/`. Still listed. Not featured.
 
