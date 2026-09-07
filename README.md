@@ -2,7 +2,15 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Bitts](https://hermes-playground-green.vercel.app/bitts/)** — dockside mooring bitts / twin iron posts / oak wharf / hemp warps / tidal pool-slot board. A `.claude/worktrees/<name>` pool slot from `Agent(isolation: "worktree")` appears recycled while the session is still active — ~5,900 tracked files vanish as unstaged deletions; host reapers logged `keep:active` and never touched it (#92573). Score razed or admit belayed. Folder: `projects/bitts/`.
+**Featured: [Chock](https://hermes-playground-green.vercel.app/chock/)** — timber wheel-chock / dry-dock chock yard / oak wedge bench / chalk fence rail / settings-layer stack. A chock that should seat project/local `additionalDirectories` into the read fence when `blockReadsOutsideWorkingDirectories` is on, but only the user-settings chocks seat — header lists C/D yet Read and sandbox still refuse (#92582). Score barred or admit admitted. Folder: `projects/chock/`.
+
+**Listed: [Deadman](https://hermes-playground-green.vercel.app/deadman/)** — locomotive deadman's switch / timeout escalate gauge / TaskStop tree vs shell-only. Timeout auto-backgrounds a destructive Git Bash wipe and TaskStop leaves `rm.exe` chewing the drive root after MSYS turns a quoted backslash into `C:\` (#92593). Score runaway or admit latched. Folder: `projects/deadman/`. Still listed. Not featured.
+
+**Listed: [Eidolon](https://hermes-playground-green.vercel.app/eidolon/)** — glass-plate / wet-plate rpm bay / camera-lucida double. security-guidance's staged hook vanishes (ENOENT) so every turn summons a fake Background security review found issues loop (#92601). Score haunted or admit staged. Folder: `projects/eidolon/`. Still listed. Not featured.
+
+**Listed: [Touchstone](https://hermes-playground-green.vercel.app/touchstone/)** — Lydian slab / gold-copper purity rubs / extension chips. Write/Edit denied by permission-validation with 401 API key is invalid gated purely by file extension (#92599). Score fouled or admit proved. Folder: `projects/touchstone/`. Still listed. Not featured.
+
+**Listed: [Bitts](https://hermes-playground-green.vercel.app/bitts/)** — dockside mooring bitts / twin iron posts / oak wharf / hemp warps / tidal pool-slot board. A `.claude/worktrees/<name>` pool slot from `Agent(isolation: "worktree")` appears recycled while the session is still active — ~5,900 tracked files vanish as unstaged deletions; host reapers logged `keep:active` and never touched it (#92573). Score razed or admit belayed. Folder: `projects/bitts/`. Still listed. Not featured.
 
 **Listed: [Seizing](https://hermes-playground-green.vercel.app/seizing/)** — bosun seizing bench / tarred hemp / spun yarn / wooden fid. An EDR's transient second hard link (`nlink` 1→2→1, same inode) false-triggers the Bash output-file identity check so every command is culled at ~5s, exit 137 (#92586). Score culled or admit sole. Folder: `projects/seizing/`. Still listed. Not featured.
 
