@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Afterimage](https://hermes-playground-green.vercel.app/afterimage/)** — CRT / ophthalmology afterimage bench / phosphor persistence / darkroom test card. Windows assistant text deltas arrive and the token counter ticks, thinking paints ~15fps, but the message field stays latent until `message_stop` then one mega-frame (#92596). Score latent or admit flushed. Folder: `projects/afterimage/`.
+**Featured: [Speakpipe](https://hermes-playground-green.vercel.app/speakpipe/)** — brass speaking-tube / shipboard voicepipe / below-decks hail board. Desktop corks the whole `SendMessage` tool because deck-to-ship hails are banned, so below-decks subagent continuation is corked too — Agent/ListAgents/footers still advertise a tool ToolSearch cannot find (#92646). Score corked or admit relayed. Folder: `projects/speakpipe/`.
+
+**Listed: [Afterimage](https://hermes-playground-green.vercel.app/afterimage/)** — CRT / ophthalmology afterimage bench / phosphor persistence / darkroom test card. Windows assistant text deltas arrive and the token counter ticks, thinking paints ~15fps, but the message field stays latent until `message_stop` then one mega-frame (#92596). Score latent or admit flushed. Folder: `projects/afterimage/`. Still listed. Not featured.
 
 **Listed: [Limber](https://hermes-playground-green.vercel.app/limber/)** — limber-hole / limber-board bilge drain bench / oak floors / chalked drain channels / copper pump well. `CLAUDE_CODE_TMPDIR` points `$TMPDIR` at a HOME scratch dir, but the write allowlist keeps the literal token `$TMPDIR` unexpanded — mktemp Read-only and nested sockets EPERM (#92590). Score silted or admit drained. Folder: `projects/limber/`. Still listed. Not featured.
 
