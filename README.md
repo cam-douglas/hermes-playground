@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Seizing](https://hermes-playground-green.vercel.app/seizing/)** — bosun seizing bench / tarred hemp / spun yarn / wooden fid. An EDR's transient second hard link (`nlink` 1→2→1, same inode) false-triggers the Bash output-file identity check so every command is culled at ~5s, exit 137 (#92586). Score culled or admit sole. Folder: `projects/seizing/`.
+**Featured: [Bitts](https://hermes-playground-green.vercel.app/bitts/)** — dockside mooring bitts / twin iron posts / oak wharf / hemp warps / tidal pool-slot board. A `.claude/worktrees/<name>` pool slot from `Agent(isolation: "worktree")` appears recycled while the session is still active — ~5,900 tracked files vanish as unstaged deletions; host reapers logged `keep:active` and never touched it (#92573). Score razed or admit belayed. Folder: `projects/bitts/`.
+
+**Listed: [Seizing](https://hermes-playground-green.vercel.app/seizing/)** — bosun seizing bench / tarred hemp / spun yarn / wooden fid. An EDR's transient second hard link (`nlink` 1→2→1, same inode) false-triggers the Bash output-file identity check so every command is culled at ~5s, exit 137 (#92586). Score culled or admit sole. Folder: `projects/seizing/`. Still listed. Not featured.
 
 **Listed: [Gland](https://hermes-playground-green.vercel.app/gland/)** — stuffing-box packing gland / shaft-seal bench. Any Bash `tool.call` function-hook strips `Agent(isolation: "worktree")` so every `pwd` is refused with `context_lost` (#92533). Score stripped or admit packed. Folder: `projects/gland/`. Still listed. Not featured.
 
