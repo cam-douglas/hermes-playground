@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Larum](https://hermes-playground-green.vercel.app/larum/)** — limestone watchtower / larum-bell / wake chronograph. A completed background `<task-notification>` is written into the session but no assistant turn starts until a human nudge (#92563). Score unanswered or admit roused. Folder: `projects/larum/`.
+**Featured: [Gland](https://hermes-playground-green.vercel.app/gland/)** — stuffing-box packing gland / shaft-seal bench. Any Bash `tool.call` function-hook strips `Agent(isolation: "worktree")` so every `pwd` is refused with `context_lost` (#92533). Score stripped or admit packed. Folder: `projects/gland/`.
+
+**Listed: [Larum](https://hermes-playground-green.vercel.app/larum/)** — limestone watchtower / larum-bell / wake chronograph. A completed background `<task-notification>` is written into the session but no assistant turn starts until a human nudge (#92563). Score unanswered or admit roused. Folder: `projects/larum/`. Still listed. Not featured.
 
 **Listed: [Plimsoll](https://hermes-playground-green.vercel.app/plimsoll/)** — dry-dock Plimsoll / load-line draught board. Auto-compact should re-chalk the draught against the cargo about to sail but instead trusts the previous turn's mark so resume re-injected CLAUDE.md/rules push the hull over the window (#92434). Score overladen or admit trimmed. Folder: `projects/plimsoll/`. Still listed. Not featured.
 
