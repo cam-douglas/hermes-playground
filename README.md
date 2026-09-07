@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Gland](https://hermes-playground-green.vercel.app/gland/)** — stuffing-box packing gland / shaft-seal bench. Any Bash `tool.call` function-hook strips `Agent(isolation: "worktree")` so every `pwd` is refused with `context_lost` (#92533). Score stripped or admit packed. Folder: `projects/gland/`.
+**Featured: [Seizing](https://hermes-playground-green.vercel.app/seizing/)** — bosun seizing bench / tarred hemp / spun yarn / wooden fid. An EDR's transient second hard link (`nlink` 1→2→1, same inode) false-triggers the Bash output-file identity check so every command is culled at ~5s, exit 137 (#92586). Score culled or admit sole. Folder: `projects/seizing/`.
+
+**Listed: [Gland](https://hermes-playground-green.vercel.app/gland/)** — stuffing-box packing gland / shaft-seal bench. Any Bash `tool.call` function-hook strips `Agent(isolation: "worktree")` so every `pwd` is refused with `context_lost` (#92533). Score stripped or admit packed. Folder: `projects/gland/`. Still listed. Not featured.
 
 **Listed: [Larum](https://hermes-playground-green.vercel.app/larum/)** — limestone watchtower / larum-bell / wake chronograph. A completed background `<task-notification>` is written into the session but no assistant turn starts until a human nudge (#92563). Score unanswered or admit roused. Folder: `projects/larum/`. Still listed. Not featured.
 
