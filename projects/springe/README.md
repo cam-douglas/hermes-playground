@@ -79,7 +79,7 @@ Do NOT reuse seeded addressed / remoored / reaped / relayed / flushed / drained 
 
 Different surface: PLUGIN-NATIVE PRETOOLUSE ENFORCEMENT vs named-spawn foreign session id / session-end unreaped Bash orphans / Desktop overbroad SendMessage ban / Windows text paint deferral / unexpanded `$TMPDIR` / settings-layer read-fence miss / mid-incident timeout leftover / ENOENT fake notice.
 
-Product name stays **Springe**. Name/slug `springe` confirmed unused in catalog.json.
+Product name stays **Springe**. Name/slug `springe` confirmed unused in catalog.json (208 products before this ship; Gangway is #208).
 
 Different UI: trapper's springe / snare-setter desk / woodland parchment / bronze snare wire / moss / field-journal folio / source×protocol×mode matrix. Bodoni Moda / Nunito Sans / IBM Plex Mono. NOT Oswald/Source Sans 3. NOT Newsreader/Figtree/Fragment Mono. NOT Big Shoulders Display/Public Sans/Roboto Mono.
 
