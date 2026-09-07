@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Waybill](https://hermes-playground-green.vercel.app/waybill/)** — freight waybill / cargo consignment ticket / perforated stub / rubber stamp. Named agent spawn should stamp this session's berth on the team-file lookup but instead misroutes under a foreign session id — 0/21 match / regression 2.1.247+ / Windows (#92624). Score misrouted or admit addressed. Folder: `projects/waybill/`.
+**Featured: [Gangway](https://hermes-playground-green.vercel.app/gangway/)** — pier gangway / boarding brow / ship-to-shore steel ramp / wet dock night / sodium vapor / rope handrails / grated steel. After Chrome relaunches the session client never re-dials the new native-host socket while the host is healthy; the restored MCP tab group cannot be re-adopted (#92662). Score severed or admit remoored. Folder: `projects/gangway/`.
+
+**Listed: [Waybill](https://hermes-playground-green.vercel.app/waybill/)** — freight waybill / cargo consignment ticket / perforated stub / rubber stamp. Named agent spawn should stamp this session's berth on the team-file lookup but instead misroutes under a foreign session id — 0/21 match / regression 2.1.247+ / Windows (#92624). Score misrouted or admit addressed. Folder: `projects/waybill/`. Still listed. Not featured.
 
 **Listed: [Snatch](https://hermes-playground-green.vercel.app/snatch/)** — deck snatch-block / openable pulley / hinged cheek / sheave / beckets. Bash tool lines auto-backgrounded on timeout stay adrift with a dead parent for days — find.exe orphans holding ~10–11M handles each / Mycroft 9/9 unreaped including immortal tail -f (#92583). Score adrift or admit reaped. Folder: `projects/snatch/`. Still listed. Not featured.
 
