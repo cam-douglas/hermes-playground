@@ -1,0 +1,43 @@
+{
+  "source": "probe",
+  "issue": 92586,
+  "note": "Hold bisection. CLAUDE_CODE_TMPDIR on a separately mounted APFS RAM disk or sparse image: nlink stays 1 and the command survives. Boot-volume tmp (default or ~/cctmp 0700) is killed 137.",
+  "seed": "ramdisk-ok",
+  "scenario": "ramdisk-ok",
+  "culled": false,
+  "sole": true,
+  "ramdiskOk": true,
+  "nlink": [1],
+  "inodeUnchanged": true,
+  "survived": true,
+  "platform": "macos",
+  "version": "2.1.263",
+  "repro": "claude -p \"run: echo hi && sleep 7 && echo alive\" --allowedTools 'Bash(echo:*)'",
+  "bisection": [
+    { "config": "default tmp dir (boot volume)", "result": "killed, 137" },
+    { "config": "CLAUDE_CODE_TMPDIR=~/cctmp (boot volume, 0700)", "result": "killed, 137" },
+    { "config": "CLAUDE_CODE_TMPDIR=/Volumes/<apfs-ramdisk>/t", "result": "works" },
+    { "config": "CLAUDE_CODE_TMPDIR=/Volumes/<apfs-sparseimage>/t", "result": "works" }
+  ],
+  "workaround": "Point CLAUDE_CODE_TMPDIR at a directory on a separately mounted volume (settings.json env works).",
+  "shippedMark": "pass",
+  "scoredMark": "pass",
+  "isolateMark": "pass",
+  "hubCount": "RAMDISK-OK",
+  "boardText": "ramdisk-ok · separately mounted APFS volume · nlink stays 1 · command lives",
+  "bashCalls": [
+    {
+      "command": "echo hi && sleep 7 && echo alive",
+      "tmpdir": "/Volumes/<apfs-ramdisk>/t",
+      "ran": true,
+      "exit": 0,
+      "output": "hi\nalive"
+    }
+  ],
+  "log": [
+    "[ok] CLAUDE_CODE_TMPDIR on APFS ramdisk → works · nlink stays 1",
+    "[ok] CLAUDE_CODE_TMPDIR on APFS sparseimage → works · nlink stays 1",
+    "[contrast] default tmp and ~/cctmp on the boot volume → killed 137"
+  ],
+  "outputText": "ramdisk-ok; a separately mounted volume keeps the output eye sole"
+}
