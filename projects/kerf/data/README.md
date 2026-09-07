@@ -16,7 +16,7 @@ Fixtures record the published repros, error fragments (`'"C:\Program'`, `'"C:\AI
 | `program-files-block.json` | program-files-block | Repro 3. `C:\Program Files` → `'"C:\Program'` blocked. |
 | `user-dir-block.json` | user-dir-block | Repro 4. `C:\AI Projects` → `'"C:\AI'` blocked. |
 | `reversed-order-block.json` | reversed-order-block | Repro 5. Spaced path before Remove-Item — still blocked. |
-| `cousins.json` | cousins | Cite-only #73882 #73524. |
+| `cousins.json` | cousins | Cite-only #90645 #73524 #73882 #66549 #78513. |
 | `fixtures.json` | index | Row list for the kerf-gauge bench. |
 
 Drop any file onto `projects/kerf/index.html` or paste the JSON. The living page admits **riven** / Windows Remove-Item whole-command rive / #92539.

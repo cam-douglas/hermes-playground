@@ -122,12 +122,15 @@ test("reversed-order-block chip", () => {
 });
 
 test("cousins stay cite-only", () => {
-  const out = decide({ seed: "cousins", cousinsCiteOnly: [73882, 73524] });
+  const out = decide({ seed: "cousins", cousinsCiteOnly: [90645, 73524, 73882, 66549, 78513] });
   assert.equal(out.verdict, "cousins");
   assert.equal(out.riven, true);
   assert.match(out.reasons.join(" "), /#92539/);
-  assert.match(out.reasons.join(" "), /#73882/);
+  assert.match(out.reasons.join(" "), /#90645/);
   assert.match(out.reasons.join(" "), /#73524/);
+  assert.match(out.reasons.join(" "), /#73882/);
+  assert.match(out.reasons.join(" "), /#66549/);
+  assert.match(out.reasons.join(" "), /#78513/);
   assert.match(out.reasons.join(" "), /#92543/);
   assert.match(out.reasons.join(" "), /#92542/);
 });
@@ -217,7 +220,7 @@ test("HOLD is argbound only", () => {
 });
 
 test("cousins table is cite-only Remove-Item guard neighbourhood", () => {
-  assert.deepEqual(COUSINS.map((c) => c.id), [73882, 73524]);
+  assert.deepEqual(COUSINS.map((c) => c.id), [90645, 73524, 73882, 66549, 78513]);
 });
 
 test("living page is a joiner's kerf-gauge bench, not a clone", () => {

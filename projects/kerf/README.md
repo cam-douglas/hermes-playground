@@ -19,7 +19,7 @@ Idle word: **riven** (path cleaved at whitespace; false positive on fragment). S
 - **program-files-block** = `& "C:\Program Files\Git\bin\bash.exe" -c "echo hello"` → `'"C:\Program' is blocked`
 - **user-dir-block** = `$other = "C:\AI Projects\README.md"` → `'"C:\AI' is blocked` — user working dir, not a system path
 - **reversed-order-block** = spaced path BEFORE Remove-Item — still blocked; not proximity/line based
-- **cousins** = cite-only #73882 #73524
+- **cousins** = cite-only #90645 #73524 #73882 #66549 #78513
 
 Verdicts: riven, argbound, baseline-pass, nospace-pass, program-files-block, user-dir-block, reversed-order-block, cousins.
 
@@ -32,7 +32,7 @@ Hypothesis only (NON-BINDING): the Remove-Item guard tokenizes command text on w
 Sources:
 
 - Primary: [anthropics/claude-code#92539](https://github.com/anthropics/claude-code/issues/92539)
-- Cousins cite-only (NOT primary): [anthropics/claude-code#73882](https://github.com/anthropics/claude-code/issues/73882), [anthropics/claude-code#73524](https://github.com/anthropics/claude-code/issues/73524)
+- Cousins cite-only (NOT primary): [anthropics/claude-code#90645](https://github.com/anthropics/claude-code/issues/90645), [anthropics/claude-code#73524](https://github.com/anthropics/claude-code/issues/73524), [anthropics/claude-code#73882](https://github.com/anthropics/claude-code/issues/73882), [anthropics/claude-code#66549](https://github.com/anthropics/claude-code/issues/66549), [anthropics/claude-code#78513](https://github.com/anthropics/claude-code/issues/78513)
 
 What happened (from the issue — do not invent):
 
@@ -85,8 +85,11 @@ Different idle: **riven**. Different seeded: **argbound**. HOLD: **argbound**. A
 
 Cousins cite-only (NOT primary):
 
-- [#73882](https://github.com/anthropics/claude-code/issues/73882) — PowerShell safety guard false positive: here-string body text with paths like `/requirements.txt` blocked as `Remove-Item on system path`. Same guard neighbourhood; different trigger. Primary stays #92539.
-- [#73524](https://github.com/anthropics/claude-code/issues/73524) — PowerShell tool: non-overridable `Remove-Item on system path` guard over-blocks legitimate commands (AST target mis-attribution). Same neighbourhood; different defect. Primary stays #92539.
+- [#90645](https://github.com/anthropics/claude-code/issues/90645) — OPEN. PowerShell safety guard: Spanish word `del` inside a quoted commit message treated as Remove-Item, then blocks on a quote-split path fragment. Primary stays #92539.
+- [#73524](https://github.com/anthropics/claude-code/issues/73524) — OPEN. PowerShell tool: non-overridable `Remove-Item on system path` guard over-blocks legitimate commands (AST target mis-attribution). Primary stays #92539.
+- [#73882](https://github.com/anthropics/claude-code/issues/73882) — OPEN. PowerShell safety guard false positive: here-string body text with paths like `/requirements.txt` blocked as `Remove-Item on system path`. Primary stays #92539.
+- [#66549](https://github.com/anthropics/claude-code/issues/66549) — CLOSED historical: built-in command-safety analyzer false-positives on quoted Windows paths with spaces. Primary stays #92539.
+- [#78513](https://github.com/anthropics/claude-code/issues/78513) — CLOSED historical: PowerShell guard blocks Remove-Item for any direct child of a drive root. Primary stays #92539.
 
 #92543 is a different Windows Bash `-c` cut — neighbourhood contrast only, not a cousin of this groove.
 #92542 is a different deny unwrap wrapper bypass — not a cousin of this groove.
@@ -102,7 +105,7 @@ Cousins cite-only (NOT primary):
 5. Diagnostic **program-files-block** → `C:\Program Files` → `'"C:\Program'`.
 6. Diagnostic **user-dir-block** → `C:\AI Projects` → `'"C:\AI'`.
 7. Diagnostic **reversed-order-block** → spaced path before Remove-Item; still blocked.
-8. Diagnostic **cousins** → #73882 #73524 cite-only.
+8. Diagnostic **cousins** → #90645 #73524 #73882 #66549 #78513 cite-only.
 9. Assay UI: mill-dust oak, brass kerf gauge, indigo chalk, saw groove, path-ribbon with glowing cut, argument-bound vs whole-command toggle.
 10. Stay-off strip: remote-daemon overstay / Windows `-c` cut / stale auto-compact / VM host fd climb. Primary stays #92539.
 11. **Score the kerf** walks the probe ticket and lights chips on the mill bench. Chip-switch every verdict. Paste or drop JSON.

@@ -101,12 +101,24 @@ export const REPROS = {
 
 export const COUSINS = [
   {
-    id: 73882,
-    note: "PowerShell safety guard false positive: here-string body text with paths like /requirements.txt blocked as 'Remove-Item on system path' — same guard neighbourhood, different trigger"
+    id: 90645,
+    note: "PowerShell safety guard: Spanish word del inside a quoted commit message treated as Remove-Item, then blocks on a quote-split path fragment — same guard neighbourhood, different trigger"
   },
   {
     id: 73524,
     note: "PowerShell tool: non-overridable Remove-Item on system path guard over-blocks legitimate commands (AST target mis-attribution) — same guard neighbourhood, different defect"
+  },
+  {
+    id: 73882,
+    note: "PowerShell safety guard false positive: here-string body text with paths like /requirements.txt blocked as 'Remove-Item on system path' — same guard neighbourhood, different trigger"
+  },
+  {
+    id: 66549,
+    note: "CLOSED historical: built-in command-safety analyzer false-positives on quoted Windows paths with spaces"
+  },
+  {
+    id: 78513,
+    note: "CLOSED historical: PowerShell guard blocks Remove-Item for any direct child of a drive root"
   }
 ];
 
@@ -265,7 +277,7 @@ export function decide(probe = {}) {
 
   if (seed === "cousins" || (Array.isArray(t.cousinsCiteOnly) && seed === "cousins")) {
     reasons.push(
-      "cite-only #73882 here-string body text with paths like /requirements.txt blocked as Remove-Item on system path; #73524 non-overridable Remove-Item on system path guard over-blocks via AST target mis-attribution. Same PowerShell Remove-Item / protected-from-removal neighbourhood, different defect. Primary stays #92539. #92543 is Windows Bash -c shear — not this groove. #92542 is deny unwrap wrapper bypass — not this groove"
+      "cite-only #90645 Spanish del inside a quoted commit message treated as Remove-Item then quote-split path fragment; #73524 non-overridable Remove-Item on system path guard over-blocks via AST target mis-attribution; #73882 here-string body text with paths like /requirements.txt blocked as Remove-Item on system path; #66549 CLOSED historical quoted Windows paths with spaces; #78513 CLOSED historical Remove-Item of any direct child of a drive root. Same PowerShell Remove-Item / protected-from-removal neighbourhood, different defect. Primary stays #92539. #92543 is Windows Bash -c shear — not this groove. #92542 is deny unwrap wrapper bypass — not this groove"
     );
     return {
       verdict: "cousins",
