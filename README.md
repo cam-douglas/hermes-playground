@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Snatch](https://hermes-playground-green.vercel.app/snatch/)** — deck snatch-block / openable pulley / hinged cheek / sheave / beckets. Bash tool lines auto-backgrounded on timeout stay adrift with a dead parent for days — find.exe orphans holding ~10–11M handles each / Mycroft 9/9 unreaped including immortal tail -f (#92583). Score adrift or admit reaped. Folder: `projects/snatch/`.
+**Featured: [Waybill](https://hermes-playground-green.vercel.app/waybill/)** — freight waybill / cargo consignment ticket / perforated stub / rubber stamp. Named agent spawn should stamp this session's berth on the team-file lookup but instead misroutes under a foreign session id — 0/21 match / regression 2.1.247+ / Windows (#92624). Score misrouted or admit addressed. Folder: `projects/waybill/`.
+
+**Listed: [Snatch](https://hermes-playground-green.vercel.app/snatch/)** — deck snatch-block / openable pulley / hinged cheek / sheave / beckets. Bash tool lines auto-backgrounded on timeout stay adrift with a dead parent for days — find.exe orphans holding ~10–11M handles each / Mycroft 9/9 unreaped including immortal tail -f (#92583). Score adrift or admit reaped. Folder: `projects/snatch/`. Still listed. Not featured.
 
 **Listed: [Speakpipe](https://hermes-playground-green.vercel.app/speakpipe/)** — brass speaking-tube / shipboard voicepipe / below-decks hail board. Desktop corks the whole `SendMessage` tool because deck-to-ship hails are banned, so below-decks subagent continuation is corked too — Agent/ListAgents/footers still advertise a tool ToolSearch cannot find (#92646). Score corked or admit relayed. Folder: `projects/speakpipe/`. Still listed. Not featured.
 
