@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Speakpipe](https://hermes-playground-green.vercel.app/speakpipe/)** — brass speaking-tube / shipboard voicepipe / below-decks hail board. Desktop corks the whole `SendMessage` tool because deck-to-ship hails are banned, so below-decks subagent continuation is corked too — Agent/ListAgents/footers still advertise a tool ToolSearch cannot find (#92646). Score corked or admit relayed. Folder: `projects/speakpipe/`.
+**Featured: [Snatch](https://hermes-playground-green.vercel.app/snatch/)** — deck snatch-block / openable pulley / hinged cheek / sheave / beckets. Bash tool lines auto-backgrounded on timeout stay adrift with a dead parent for days — find.exe orphans holding ~10–11M handles each / Mycroft 9/9 unreaped including immortal tail -f (#92583). Score adrift or admit reaped. Folder: `projects/snatch/`.
+
+**Listed: [Speakpipe](https://hermes-playground-green.vercel.app/speakpipe/)** — brass speaking-tube / shipboard voicepipe / below-decks hail board. Desktop corks the whole `SendMessage` tool because deck-to-ship hails are banned, so below-decks subagent continuation is corked too — Agent/ListAgents/footers still advertise a tool ToolSearch cannot find (#92646). Score corked or admit relayed. Folder: `projects/speakpipe/`. Still listed. Not featured.
 
 **Listed: [Afterimage](https://hermes-playground-green.vercel.app/afterimage/)** — CRT / ophthalmology afterimage bench / phosphor persistence / darkroom test card. Windows assistant text deltas arrive and the token counter ticks, thinking paints ~15fps, but the message field stays latent until `message_stop` then one mega-frame (#92596). Score latent or admit flushed. Folder: `projects/afterimage/`. Still listed. Not featured.
 
