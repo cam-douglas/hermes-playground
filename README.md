@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Chock](https://hermes-playground-green.vercel.app/chock/)** — timber wheel-chock / dry-dock chock yard / oak wedge bench / chalk fence rail / settings-layer stack. A chock that should seat project/local `additionalDirectories` into the read fence when `blockReadsOutsideWorkingDirectories` is on, but only the user-settings chocks seat — header lists C/D yet Read and sandbox still refuse (#92582). Score barred or admit admitted. Folder: `projects/chock/`.
+**Featured: [Limber](https://hermes-playground-green.vercel.app/limber/)** — limber-hole / limber-board bilge drain bench / oak floors / chalked drain channels / copper pump well. `CLAUDE_CODE_TMPDIR` points `$TMPDIR` at a HOME scratch dir, but the write allowlist keeps the literal token `$TMPDIR` unexpanded — mktemp Read-only and nested sockets EPERM (#92590). Score silted or admit drained. Folder: `projects/limber/`.
+
+**Listed: [Chock](https://hermes-playground-green.vercel.app/chock/)** — timber wheel-chock / dry-dock chock yard / oak wedge bench / chalk fence rail / settings-layer stack. A chock that should seat project/local `additionalDirectories` into the read fence when `blockReadsOutsideWorkingDirectories` is on, but only the user-settings chocks seat — header lists C/D yet Read and sandbox still refuse (#92582). Score barred or admit admitted. Folder: `projects/chock/`. Still listed. Not featured.
 
 **Listed: [Deadman](https://hermes-playground-green.vercel.app/deadman/)** — locomotive deadman's switch / timeout escalate gauge / TaskStop tree vs shell-only. Timeout auto-backgrounds a destructive Git Bash wipe and TaskStop leaves `rm.exe` chewing the drive root after MSYS turns a quoted backslash into `C:\` (#92593). Score runaway or admit latched. Folder: `projects/deadman/`. Still listed. Not featured.
 
