@@ -252,6 +252,7 @@ test("living page is a bosun seizing bench, not a clone", () => {
   assert.match(page, /#92586/);
   assert.match(page, /Seizing/);
   assert.match(page, /embed/);
+  assert.doesNotMatch(page, /=> drop\.classList\.remove\("hot"\); \}\)/);
   assert.match(page, /seizing bench|spun yarn|wooden fid|copper nails|oak block|tarred hemp/i);
   assert.match(page, /92590/);
   assert.match(page, /nlink/);
