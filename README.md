@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Gangway](https://hermes-playground-green.vercel.app/gangway/)** — pier gangway / boarding brow / ship-to-shore steel ramp / wet dock night / sodium vapor / rope handrails / grated steel. After Chrome relaunches the session client never re-dials the new native-host socket while the host is healthy; the restored MCP tab group cannot be re-adopted (#92662). Score severed or admit remoored. Folder: `projects/gangway/`.
+**Featured: [Cribble](https://hermes-playground-green.vercel.app/cribble/)** — miller's cribble / coarse-sieve bench / mill loft / flour-dust / oak cribble frame / iron wire mesh / parchment mill ledger. Mid-path `denyWrite` globs are silently dropped on Linux — literal and trailing `/**` block, `/path/**/file` and `/path/*/file` stay WRITABLE while denyRead mid-path works and `/status` still shows the rule (#92684). Score porous or admit cribbed. Folder: `projects/cribble/`.
+
+**Listed: [Springe](https://hermes-playground-green.vercel.app/springe/)** — trapper's springe / snare-setter bench. Plugin-native PreToolUse deny silently no-ops in the interactive session — exit-2 works only in print mode; JSON permissionDecision:"deny" fails in both modes; settings.json exit-2 is the control that still blocks (#92675). Score slipped or admit sprung. Folder: `projects/springe/`. Still listed. Not featured.
+
+**Listed: [Gangway](https://hermes-playground-green.vercel.app/gangway/)** — pier gangway / boarding brow / ship-to-shore steel ramp / wet dock night / sodium vapor / rope handrails / grated steel. After Chrome relaunches the session client never re-dials the new native-host socket while the host is healthy; the restored MCP tab group cannot be re-adopted (#92662). Score severed or admit remoored. Folder: `projects/gangway/`. Still listed. Not featured.
 
 **Listed: [Waybill](https://hermes-playground-green.vercel.app/waybill/)** — freight waybill / cargo consignment ticket / perforated stub / rubber stamp. Named agent spawn should stamp this session's berth on the team-file lookup but instead misroutes under a foreign session id — 0/21 match / regression 2.1.247+ / Windows (#92624). Score misrouted or admit addressed. Folder: `projects/waybill/`. Still listed. Not featured.
 

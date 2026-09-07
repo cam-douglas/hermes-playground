@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cribble — miller's coarse-sieve bench for #92684</title>
+    <meta
+      name="description"
+      content="Cribble — miller's cribble / coarse-sieve bench for Claude Code #92684: mid-path denyWrite silently ignored on Linux. Idle word is porous."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Karla:ital,wght@0,400;0,600;0,700;1,400&family=Young+Serif&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --loft: #14100c;
+        --oak: #2c2116;
+        --beam: #4a3420;
+        --flour: #f3e6c8;
+        --flour-dim: #c9b48a;
+        --parchment: #e8d5a8;
+        --wire: #9a9180;
+        --iron: #6e6758;
+        --wheat: #c9a227;
+        --wheat-lit: #e8c96a;
+        --stain: #b85c38;
+        --stain-ink: #f0b090;
+        --grain: #6a8a4a;
+        --grain-lit: #b8d48a;
+        --dust: #8e8474;
+        --ink: #120e0a;
+        --rule: rgba(201, 162, 39, 0.32);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Karla, "Segoe UI", sans-serif;
+        color: var(--flour);
+        background:
+          radial-gradient(circle at 18% 12%, rgba(201, 162, 39, 0.16), transparent 34%),
+          radial-gradient(circle at 82% 8%, rgba(184, 92, 56, 0.12), transparent 30%),
+          repeating-linear-gradient(0deg, rgba(243, 230, 200, 0.03) 0 1px, transparent 1px 19px),
+          linear-gradient(180deg, #221910 0%, var(--oak) 48%, var(--loft) 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--wheat-lit); }
+      .wrap { width: min(1140px, calc(100% - 28px)); margin: 0 auto; padding: 20px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--grain-lit);
+        text-decoration: none;
+        border-bottom: 1px solid var(--wheat);
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--flour-dim);
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        align-items: end;
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 12px;
+        margin: 10px 0 16px;
+      }
+      .mast h1 {
+        font-family: "Young Serif", "Times New Roman", serif;
+        font-weight: 400;
+        font-size: clamp(52px, 10vw, 96px);
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 0.82;
+        color: var(--flour);
+        text-shadow: 0 10px 0 rgba(18, 14, 10, 0.45);
+      }
+      .folio {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--wheat-lit);
+        text-align: right;
+        border: 1px solid var(--wheat);
+        padding: 10px 12px;
+        background: rgba(42, 33, 22, 0.72);
+      }
+      .lede { max-width: 74em; color: var(--dust); line-height: 1.65; font-size: 16.5px; margin: 0 0 10px; }
+      .lede strong { color: var(--flour); font-family: "Young Serif", serif; }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--wheat-lit);
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 12px 0 20px;
+      }
+      .tags a, .tags span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        color: var(--dust);
+        background: rgba(18, 14, 10, 0.55);
+      }
+      .tags a { color: var(--stain-ink); border-color: rgba(184, 92, 56, 0.55); }
+      .loft {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 0;
+        border: 1px solid var(--wheat);
+        background:
+          linear-gradient(180deg, rgba(243, 230, 200, 0.08), transparent 28%),
+          var(--beam);
+        box-shadow: 0 24px 0 rgba(18, 14, 10, 0.55);
+      }
+      .loft.porous { outline: 2px solid rgba(184, 92, 56, 0.35); }
+      .loft.cribbed { outline: 2px solid rgba(184, 212, 138, 0.35); }
+      .mesh-pane {
+        background:
+          radial-gradient(circle at 50% 18%, rgba(201, 162, 39, 0.14), transparent 48%),
+          #1a140e;
+        border-right: 1px dashed var(--wheat);
+        padding: 16px 14px 18px;
+      }
+      .mesh-pane h2, .ledger h2 {
+        font-family: "Young Serif", serif;
+        font-size: 15px;
+        margin: 0 0 10px;
+        color: var(--flour);
+      }
+      .mesh-tag {
+        display: inline-block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        background: var(--grain);
+        color: var(--grain-lit);
+        padding: 4px 8px;
+        margin: 0 0 10px;
+      }
+      .loft.porous .mesh-tag { background: #4a2418; color: var(--stain-ink); }
+      .cribble-svg { width: 100%; height: auto; display: block; }
+      .ledger {
+        padding: 18px 20px 22px;
+        background:
+          repeating-linear-gradient(0deg, transparent 0 27px, rgba(201, 162, 39, 0.08) 27px 28px),
+          linear-gradient(180deg, #32261a, #261c14);
+      }
+      .verdict-line {
+        margin: 4px 0 8px;
+        font-family: "Young Serif", serif;
+        font-size: clamp(34px, 5vw, 52px);
+        letter-spacing: -0.02em;
+        color: var(--stain-ink);
+        line-height: 0.9;
+      }
+      .loft.cribbed .verdict-line { color: var(--grain-lit); }
+      .why { margin: 0 0 10px; color: var(--flour-dim); line-height: 1.55; max-width: 48em; }
+      .chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0 12px; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        border: 1px solid var(--wheat);
+        background: transparent;
+        color: var(--flour);
+        padding: 4px 7px;
+        cursor: pointer;
+      }
+      .chip.on { background: var(--stain); color: #1a100c; border-color: var(--stain); }
+      .chip.hold { background: var(--grain); color: #e8f6ec; border-color: var(--grain-lit); }
+      .gauges { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+      .slot {
+        border: 1px solid var(--rule);
+        padding: 8px;
+        background: rgba(18, 14, 10, 0.35);
+      }
+      .slot b {
+        display: block;
+        font-family: "Young Serif", serif;
+        font-size: 14px;
+      }
+      .slot span { font-size: 12px; color: var(--dust); }
+      .slot.slack { border-color: var(--stain); }
+      .slot.taut { border-color: var(--grain-lit); }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        line-height: 1.55;
+        background: rgba(18, 14, 10, 0.45);
+        border: 1px solid var(--rule);
+        padding: 8px;
+        min-height: 72px;
+        white-space: pre-wrap;
+        margin-top: 10px;
+      }
+      .log .hit { color: var(--stain-ink); }
+      .log .ok { color: var(--grain-lit); }
+      .paths { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 10px; }
+      .path { border: 1px solid var(--rule); padding: 7px; font-size: 12px; }
+      .path b { display: block; font-family: "Young Serif", serif; font-size: 13px; }
+      .path.fail { border-color: var(--stain); }
+      .path.ok { border-color: var(--grain-lit); }
+      .path .note { color: var(--dust); font-family: "IBM Plex Mono", monospace; font-size: 10px; }
+      .actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+      .act {
+        font-family: "Young Serif", serif;
+        letter-spacing: 0.02em;
+        border: 1px solid var(--wheat-lit);
+        background: transparent;
+        color: var(--flour);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .act.alarm { border-color: var(--stain); color: var(--stain-ink); }
+      .act.hold { border-color: var(--grain-lit); color: var(--grain-lit); }
+      .desk-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 20px 0;
+      }
+      .panel {
+        border: 1px solid var(--rule);
+        background: rgba(18, 14, 10, 0.58);
+        padding: 14px;
+      }
+      .panel h2, h2.sec {
+        font-family: "Young Serif", serif;
+        font-size: 22px;
+        margin: 0 0 10px;
+        color: var(--flour);
+      }
+      h2.sec { margin: 28px 0 10px; }
+      table.axis {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .axis th, .axis td {
+        border-bottom: 1px solid var(--rule);
+        padding: 8px 6px;
+        text-align: left;
+      }
+      .axis th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--wheat);
+      }
+      .axis .bad { color: var(--stain-ink); }
+      .axis .good { color: var(--grain-lit); }
+      .axis tr.clickable { cursor: pointer; }
+      .axis tr.active { background: rgba(184, 92, 56, 0.12); }
+      .pegs, .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .peg, .card {
+        border: 1px solid var(--rule);
+        padding: 10px;
+        background: rgba(28, 22, 16, 0.7);
+        cursor: pointer;
+      }
+      .peg.on, .card.on { border-color: var(--stain); }
+      .card.hold { border-color: var(--grain-lit); }
+      .peg b, .card b {
+        display: block;
+        font-family: "Young Serif", serif;
+        font-size: 15px;
+        color: var(--flour);
+      }
+      .peg span, .card span { color: var(--dust); font-size: 13px; }
+      .card code { display: block; margin-top: 6px; }
+      .drop {
+        border: 1px dashed var(--wheat);
+        padding: 12px;
+        color: var(--dust);
+        margin: 10px 0;
+      }
+      .drop.hot { border-color: var(--stain); color: var(--flour); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #120e0a;
+        color: var(--flour);
+        border: 1px solid var(--wheat);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .brief p { color: var(--dust); line-height: 1.65; }
+      .cousin-not-primary { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+      .cousin-not-primary span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px dashed var(--rule);
+        padding: 4px 8px;
+        color: var(--wheat-lit);
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        padding: 4px 8px;
+        color: var(--dust);
+      }
+      footer {
+        margin-top: 32px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--flour-dim);
+      }
+      @media (max-width: 820px) {
+        .mast, .loft, .desk-row, .gauges, .paths, .pegs, .cards {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="catalog chrome" href="/">hermes-playground catalog</a>
+      <div class="mark chrome">03:50 / hermes catalog #210 / #92684</div>
+      <header class="mast">
+        <h1>Cribble</h1>
+        <div class="folio">
+          FOLIO CB-210<br />
+          MILL CRIBBLE · DENYWRITE<br />
+          LITERAL × TRAIL × MID-PATH
+        </div>
+      </header>
+      <p class="lede">
+        03:50 cribble: a miller's cribble / coarse-sieve bench that should
+        catch mid-path denyWrite globs but instead stays <strong>porous</strong>
+        — literal and trailing <code>/**</code> block,
+        <code>/path/**/file</code> and <code>/path/*/file</code> stay
+        <code>WRITABLE</code> while denyRead mid-path works and
+        <code>/status</code> still shows the rule
+        (<a href="https://github.com/anthropics/claude-code/issues/92684">#92684</a>).
+        Score <strong>porous</strong> or admit <strong>cribbed</strong>.
+      </p>
+      <p class="lede">
+        Claude Code 2.1.263 · linux-arm64 · Docker node:22-bookworm-slim ·
+        sandbox via managed-settings · bubblewrap nested · reporter
+        Danubian-Narwhal · 0 comments.
+      </p>
+      <div class="tags chrome" aria-label="Native integrations">
+        <a href="https://github.com/anthropics/claude-code/issues/92684">GitHub issue #92684</a>
+        <span>denyWrite · mid-path glob</span>
+        <span>literal EACCES · trail EROFS</span>
+        <span>mid-path WRITABLE</span>
+        <span>area:security · area:sandbox</span>
+        <a href="/">Vercel catalog back-link</a>
+        <a href="hook/cribble.mjs">hook scorer</a>
+        <span>flour / oak / iron wire</span>
+      </div>
+
+      <section class="loft porous" id="bench">
+        <aside class="mesh-pane">
+          <h2>Oak cribble frame</h2>
+          <span class="mesh-tag" id="mesh-tag">MESH · OPEN</span>
+          <svg class="cribble-svg" id="cribble-svg" viewBox="0 0 240 280" role="img" aria-label="Oak cribble frame with iron wire mesh and flour grit">
+            <rect x="0" y="0" width="240" height="280" fill="#120e0a" />
+            <rect x="18" y="28" width="204" height="204" fill="#2c2116" stroke="#c9a227" stroke-width="8" />
+            <g id="wire-grid" stroke="#9a9180" stroke-width="1.1">
+              <line x1="34" y1="44" x2="34" y2="216" /><line x1="58" y1="44" x2="58" y2="216" />
+              <line x1="82" y1="44" x2="82" y2="216" /><line x1="106" y1="44" x2="106" y2="216" />
+              <line x1="130" y1="44" x2="130" y2="216" /><line x1="154" y1="44" x2="154" y2="216" />
+              <line x1="178" y1="44" x2="178" y2="216" /><line x1="202" y1="44" x2="202" y2="216" />
+              <line x1="26" y1="52" x2="214" y2="52" /><line x1="26" y1="76" x2="214" y2="76" />
+              <line x1="26" y1="100" x2="214" y2="100" /><line x1="26" y1="124" x2="214" y2="124" />
+              <line x1="26" y1="148" x2="214" y2="148" /><line x1="26" y1="172" x2="214" y2="172" />
+              <line x1="26" y1="196" x2="214" y2="196" /><line x1="26" y1="220" x2="214" y2="220" />
+            </g>
+            <circle id="grit-a" cx="82" cy="148" r="4" fill="#b85c38" />
+            <circle id="grit-b" cx="130" cy="172" r="3.4" fill="#b85c38" />
+            <circle id="grit-c" cx="178" cy="124" r="3.8" fill="#b85c38" />
+            <text x="22" y="20" fill="#c9a227" font-size="9" font-family="IBM Plex Mono, monospace">IRON WIRE</text>
+            <text x="22" y="268" fill="#c9b48a" font-size="9" font-family="IBM Plex Mono, monospace">FLOUR LOFT</text>
+          </svg>
+        </aside>
+        <div class="ledger">
+          <h2>Mill ledger · enforcement folio</h2>
+          <p class="verdict-line" id="verdict">porous</p>
+          <p class="why" id="why">
+            ALARM: cribble porous; mid-path denyWrite silently dropped / WRITABLE.
+          </p>
+          <div class="chips" id="chips"></div>
+          <div class="gauges" id="rings"></div>
+          <div class="log" id="log"></div>
+          <div class="paths" id="paths"></div>
+          <div class="actions">
+            <button class="act alarm" type="button" id="dust-mesh">Dust the mesh</button>
+            <button class="act hold" type="button" id="crib-grit">Crib the grit</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="desk-row">
+        <section class="panel" aria-label="denyWrite published table">
+          <h2>denyWrite · published table</h2>
+          <table class="axis">
+            <thead>
+              <tr>
+                <th>rule</th>
+                <th>target</th>
+                <th>result</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>/workspace/docs/probe.txt</code></td>
+                <td><code>/workspace/docs/probe.txt</code></td>
+                <td class="good">blocked:EACCES</td>
+              </tr>
+              <tr>
+                <td><code>/workspace/**/probe.txt</code></td>
+                <td><code>/workspace/docs/probe.txt</code></td>
+                <td class="bad">WRITABLE</td>
+              </tr>
+              <tr>
+                <td><code>/workspace/*/probe.txt</code></td>
+                <td><code>/workspace/docs/probe.txt</code></td>
+                <td class="bad">WRITABLE</td>
+              </tr>
+              <tr>
+                <td><code>/workspace/docs/**</code></td>
+                <td><code>/workspace/docs/probe.txt</code></td>
+                <td class="good">blocked:EROFS</td>
+              </tr>
+              <tr>
+                <td><code>/workspace/**</code></td>
+                <td><code>/workspace/docs/probe.txt</code></td>
+                <td class="good">blocked:EROFS</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="panel" aria-label="denyRead comparison">
+          <h2>denyRead · same shapes</h2>
+          <p class="why" style="color: var(--dust)">
+            Identical mid-path rules on <code>denyRead</code> all measure
+            <code>blocked:EACCES</code>. The write path is missing matching
+            the read path already performs — not a bubblewrap expressiveness
+            limit. <code>/status</code> still lists the dropped write rule
+            as active.
+          </p>
+        </section>
+      </div>
+
+      <h2 class="sec">Mesh bays</h2>
+      <div class="pegs" id="bays"></div>
+
+      <h2 class="sec">Isolation plates</h2>
+      <div class="cards" id="plates"></div>
+
+      <h2 class="sec">Miller ledger</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>ticket</th>
+            <th>bay</th>
+            <th>ledger</th>
+            <th>shipped</th>
+            <th>scored</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+
+      <h2 class="sec">Probe the cribble</h2>
+      <div class="drop" id="drop">Drop a fixture JSON here. Paste below.</div>
+      <textarea id="probe" spellcheck="false"></textarea>
+      <div class="actions">
+        <button class="act alarm" type="button" id="score-cribble">Score the cribble</button>
+        <button class="act alarm" type="button" id="pin-porous">Pin idle porous</button>
+        <button class="act hold" type="button" id="pin-cribbed">Pin seeded cribbed</button>
+        <button class="act hold" type="button" id="admit-cribbed">Admit cribbed</button>
+        <button class="act" type="button" id="load-fixtures">Load fixtures</button>
+        <button class="act hold" type="button" id="reset-cribbed">Reset to cribbed</button>
+      </div>
+
+      <section class="brief">
+        <h2 class="sec">Why Cribble is not a clone</h2>
+        <p>
+          <strong>Not Springe/#92675.</strong>
+          Plugin-native PreToolUse deny not enforced interactively. Different defect.
+        </p>
+        <p>
+          <strong>Not Gangway/#92662.</strong>
+          Chrome relaunch never re-dials native-host socket. Different defect.
+        </p>
+        <p>
+          <strong>Not Waybill/#92624 / Snatch/#92583 / Speakpipe/#92646 / Afterimage/#92596 / Limber/#92590 / Chock/#92582 / Deadman/#92593 / Eidolon/#92601 / Oubliette/#92095.</strong>
+          Cribble is specifically mid-path denyWrite fail-open on Linux.
+        </p>
+        <p>
+          <strong>Not Bitts / Sounder / Callboard / Knock / Annunciator.</strong>
+          Those prior catalog slugs are different surfaces. This product is a
+          miller's cribble for a denyWrite glob that silently drops.
+        </p>
+        <p class="cousin-not-primary" id="cousin-strip">
+          <span>cousin-not-primary #84863 sandbox reads unrestricted</span>
+          <span>cousin-not-primary #74081 Read deny globs E2BIG</span>
+          <span>cousin-not-primary #89762 sandbox covers Bash only</span>
+          <span>cousin-not-primary #81266 denyRead does not block</span>
+          <span>cousin-not-primary #85761 denyWithinAllow Edit/Write</span>
+          <span>cousin-not-primary #86054 Linux-in-Docker confinement</span>
+        </p>
+        <p>
+          Stay off:
+          <span class="stayoff">
+            <span>Springe/#92675 plugin-native PreToolUse slip</span>
+            <span>Gangway/#92662 Chrome never-redial</span>
+            <span>Waybill/#92624 named spawn foreign session id</span>
+            <span>Snatch/#92583 session-end Bash orphans</span>
+            <span>Speakpipe/#92646 Desktop SendMessage ban</span>
+            <span>Afterimage/#92596 Windows text paint</span>
+          </span>
+        </p>
+      </section>
+
+      <footer class="chrome">
+        hermes-playground · catalog #210 · cribble · #92684 · no live Claude · ?embed=1 hides chrome
+      </footer>
+    </main>
+    <script>
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["cribbed"]);
+      const CHIPS = [
+        "porous", "cribbed", "literal-eacces", "trail-erofs",
+        "mid-star2-writable", "mid-star1-writable", "denyread-mid-enforced",
+        "status-shows-active", "warning-misstates-read", "tool-vs-bash-asymmetry",
+        "cousins", "has-clear-repro"
+      ];
+      const CHIP_FILES = {
+        porous: "data/porous.json",
+        cribbed: "data/cribbed.json",
+        "literal-eacces": "data/literal-eacces.json",
+        "trail-erofs": "data/trail-erofs.json",
+        "mid-star2-writable": "data/mid-star2-writable.json",
+        "mid-star1-writable": "data/mid-star1-writable.json",
+        "denyread-mid-enforced": "data/denyread-mid-enforced.json",
+        "status-shows-active": "data/status-shows-active.json",
+        "warning-misstates-read": "data/warning-misstates-read.json",
+        "tool-vs-bash-asymmetry": "data/tool-vs-bash-asymmetry.json",
+        cousins: "data/cousins.json",
+        "has-clear-repro": "data/has-clear-repro.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "primary #92684", slot: "mesh", ledger: "mid-path WRITABLE · denyRead mid-path holds", shipped: "FAIL", scored: "FAIL", file: "data/92684.json" },
+        { id: "porous", name: "idle porous", slot: "flour", ledger: "ALARM: mid-path denyWrite silently dropped", shipped: "FAIL", scored: "FAIL", file: "data/porous.json" },
+        { id: "literal", name: "literal-eacces", slot: "stave", ledger: "literal path blocked:EACCES", shipped: "FAIL", scored: "FAIL", file: "data/literal-eacces.json" },
+        { id: "trail", name: "trail-erofs", slot: "remount", ledger: "trailing /** blocked:EROFS", shipped: "FAIL", scored: "FAIL", file: "data/trail-erofs.json" },
+        { id: "star2", name: "mid-star2-writable", slot: "wire", ledger: "/workspace/**/probe.txt WRITABLE", shipped: "FAIL", scored: "FAIL", file: "data/mid-star2-writable.json" },
+        { id: "star1", name: "mid-star1-writable", slot: "grit", ledger: "/workspace/*/probe.txt WRITABLE", shipped: "FAIL", scored: "FAIL", file: "data/mid-star1-writable.json" },
+        { id: "read", name: "denyread-mid-enforced", slot: "cloth", ledger: "denyRead mid-path all EACCES", shipped: "FAIL", scored: "FAIL", file: "data/denyread-mid-enforced.json" },
+        { id: "status", name: "status-shows-active", slot: "folio", ledger: "/status still lists the dropped rule", shipped: "FAIL", scored: "FAIL", file: "data/status-shows-active.json" },
+        { id: "warn", name: "warning-misstates-read", slot: "notice", ledger: "Edit/Read ignored overstates Read", shipped: "FAIL", scored: "FAIL", file: "data/warning-misstates-read.json" },
+        { id: "asym", name: "tool-vs-bash-asymmetry", slot: "mill-floor", ledger: "Write tool blocked · Bash writable", shipped: "FAIL", scored: "FAIL", file: "data/tool-vs-bash-asymmetry.json" },
+        { id: "cribbed", name: "seeded cribbed", slot: "catch", ledger: "deny correctly enforced", shipped: "pass", scored: "pass", file: "data/cribbed.json" },
+        { id: "cousins", name: "cousins", slot: "cite-only neighbourhood", ledger: "#84863 #74081 #89762 #81266 #85761 #86054", shipped: "FAIL", scored: "FAIL", file: "data/cousins.json" },
+        { id: "repro", name: "has-clear-repro", slot: "filed narrative", ledger: "labeled has repro", shipped: "FAIL", scored: "FAIL", file: "data/has-clear-repro.json" }
+      ];
+      const BAYS = [
+        { id: "star2", name: "mid-star2-writable", note: "/workspace/**/probe.txt against /workspace/docs/probe.txt measured WRITABLE", file: "data/mid-star2-writable.json", hold: false },
+        { id: "star1", name: "mid-star1-writable", note: "/workspace/*/probe.txt against /workspace/docs/probe.txt measured WRITABLE", file: "data/mid-star1-writable.json", hold: false },
+        { id: "read", name: "denyread-mid-enforced", note: "identical mid-path denyRead shapes all blocked:EACCES", file: "data/denyread-mid-enforced.json", hold: false }
+      ];
+      const PLATES = [
+        { id: "one", name: "1 · mid-path drop", body: "Literal and trailing /** catch. Mid-path /path/**/file and /path/*/file stay WRITABLE with no per-rule warning.", code: "denyWrite · mid-path WRITABLE" },
+        { id: "two", name: "2 · read mesh taut", body: "The same mid-path shapes on denyRead all measure blocked:EACCES. Not a bubblewrap expressiveness limit.", code: "denyRead · mid-path EACCES" },
+        { id: "three", name: "3 · faceplate lie", body: "/status still shows the rule as active. The generic warning overstates Read, omits denyWrite, and hides Bash fail-open.", code: "status active · warning misstates" }
+      ];
+      const RINGS = [
+        { id: "literal", name: "literal", fail: "exact path holds · blocked:EACCES", hold: "literal still holds and mid-path now matches" },
+        { id: "trail", name: "trailing /**", fail: "subtree remount holds · blocked:EROFS", hold: "trailing ** and mid-path both catch" },
+        { id: "mid", name: "mid-path", fail: "/**/file and /*/file stay WRITABLE", hold: "mid-path denyWrite enforced like denyRead" }
+      ];
+
+      const idle = {
+        source: "probe", issue: 92684, seed: "porous", porous: true, cribbed: false,
+        literalEacces: true, trailErofs: true, midStar2Writable: true, midStar1Writable: true,
+        denyReadMidEnforced: true, statusShowsActive: true, warningMisstatesRead: true,
+        toolVsBashAsymmetry: true, midStar2Result: "WRITABLE", midStar1Result: "WRITABLE",
+        shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass",
+        hubCount: "POROUS",
+        log: ["[idle] sandbox.filesystem.denyWrite mid-path stays WRITABLE", "[porous] literal EACCES · trailing EROFS · denyRead mid-path EACCES"]
+      };
+      const seeded = {
+        source: "probe", issue: 92684, seed: "cribbed", porous: false, cribbed: true,
+        cribbleCribbed: true,
+        shippedMark: "pass", scoredMark: "pass", isolateMark: "pass",
+        hubCount: "CRIBBED",
+        log: ["[seeded] mid-path denyWrite enforced identically to denyRead"]
+      };
+      const literalTicket = { ...idle, seed: "literal-eacces", hubCount: "LITERAL-EACCES", log: ["[literal] denyWrite exact path blocked:EACCES"] };
+      const trailTicket = { ...idle, seed: "trail-erofs", hubCount: "TRAIL-EROFS", log: ["[trail] denyWrite trailing /** blocked:EROFS"] };
+      const star2Ticket = { ...idle, seed: "mid-star2-writable", hubCount: "MID-STAR2-WRITABLE", log: ["[mid-star2] /workspace/**/probe.txt WRITABLE"] };
+      const star1Ticket = { ...idle, seed: "mid-star1-writable", hubCount: "MID-STAR1-WRITABLE", log: ["[mid-star1] /workspace/*/probe.txt WRITABLE"] };
+      const readTicket = { ...idle, seed: "denyread-mid-enforced", hubCount: "DENYREAD-MID-ENFORCED", log: ["[denyRead] mid-path shapes all blocked:EACCES"] };
+      const statusTicket = { ...idle, seed: "status-shows-active", hubCount: "STATUS-SHOWS-ACTIVE", log: ["[status] dropped rule still listed as active"] };
+      const warnTicket = { ...idle, seed: "warning-misstates-read", hubCount: "WARNING-MISSTATES-READ", log: ["[warning] Edit/Read will be ignored overstates Read"] };
+      const asymTicket = { ...idle, seed: "tool-vs-bash-asymmetry", hubCount: "TOOL-VS-BASH-ASYMMETRY", log: ["[asymmetry] Write tool blocked · Bash subprocess writable"] };
+      const cousinsTicket = { ...idle, seed: "cousins", cousinsCiteOnly: [84863, 74081, 89762, 81266, 85761, 86054], hubCount: "COUSINS", log: ["[cousins] cite-only #84863 #74081 #89762 #81266 #85761 #86054 · primary stays #92684"] };
+      const reproTicket = { ...idle, seed: "has-clear-repro", hasClearRepro: true, hubCount: "HAS-CLEAR-REPRO", log: ["[repro] labeled has repro"] };
+      const FALLBACKS = {
+        porous: idle,
+        cribbed: seeded,
+        "literal-eacces": literalTicket,
+        "trail-erofs": trailTicket,
+        "mid-star2-writable": star2Ticket,
+        "mid-star1-writable": star1Ticket,
+        "denyread-mid-enforced": readTicket,
+        "status-shows-active": statusTicket,
+        "warning-misstates-read": warnTicket,
+        "tool-vs-bash-asymmetry": asymTicket,
+        cousins: cousinsTicket,
+        "has-clear-repro": reproTicket
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.cribbed === true && t.porous !== true);
+      }
+
+      function alreadyPorous(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.porous !== true) return false;
+        if (HOLD.has(seed) && t.porous !== true) return false;
+        if (t.porous === true) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.cribbed !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const holding = remediating(t) && t.porous !== true;
+        t.shippedMark = t.shippedMark || (holding ? "pass" : "FAIL");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (holding ? "pass" : "FAIL");
+        const chips = [];
+        if (holding || seed === "cribbed") chips.push("cribbed");
+        if (alreadyPorous(t) || seed === "porous" || t.porous === true) chips.push("porous");
+        if (seed === "literal-eacces" || t.literalEacces === true) chips.push("literal-eacces");
+        if (seed === "trail-erofs" || t.trailErofs === true) chips.push("trail-erofs");
+        if (seed === "mid-star2-writable" || t.midStar2Writable === true) chips.push("mid-star2-writable");
+        if (seed === "mid-star1-writable" || t.midStar1Writable === true) chips.push("mid-star1-writable");
+        if (seed === "denyread-mid-enforced" || t.denyReadMidEnforced === true) chips.push("denyread-mid-enforced");
+        if (seed === "status-shows-active" || t.statusShowsActive === true) chips.push("status-shows-active");
+        if (seed === "warning-misstates-read" || t.warningMisstatesRead === true) chips.push("warning-misstates-read");
+        if (seed === "tool-vs-bash-asymmetry" || t.toolVsBashAsymmetry === true) chips.push("tool-vs-bash-asymmetry");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        if (seed === "has-clear-repro" || t.hasClearRepro === true) chips.push("has-clear-repro");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (holding ? "cribbed" : "porous");
+        return { ticket: t, holding, alarm: alreadyPorous(t), chips: unique, verdict };
+      }
+
+      const REASONS = {
+        porous: "ALARM: cribble porous; mid-path denyWrite silently dropped / WRITABLE. A miller's cribble that should catch flour grit but stays open. Score porous or admit cribbed.",
+        cribbed: "Cribble already cribbed. Mid-path denyWrite is enforced the same way denyRead is.",
+        "literal-eacces": "Control: denyWrite /workspace/docs/probe.txt against /workspace/docs/probe.txt measured blocked:EACCES. Literal branch holds.",
+        "trail-erofs": "Trailing ** remount: denyWrite /workspace/docs/** and /workspace/** against /workspace/docs/probe.txt measured blocked:EROFS.",
+        "mid-star2-writable": "denyWrite /workspace/**/probe.txt against /workspace/docs/probe.txt measured WRITABLE. Mid-path ** silently ignored.",
+        "mid-star1-writable": "denyWrite /workspace/*/probe.txt against /workspace/docs/probe.txt measured WRITABLE. Mid-path * silently ignored.",
+        "denyread-mid-enforced": "Identical mid-path shapes on denyRead all measured blocked:EACCES. Not a bubblewrap expressiveness limit.",
+        "status-shows-active": "The dropped mid-path rule still appears in /status as if it were active. Fail-open is invisible on the status faceplate.",
+        "warning-misstates-read": "Generic Linux glob warning says Edit/Read will be ignored. Overstates Read (denyRead mid-path holds); omits denyWrite; hides subprocess fail-open.",
+        "tool-vs-bash-asymmetry": "Tool-layer permissions.deny can block Write while a Bash subprocess remains writable. Dangerous asymmetry.",
+        cousins: "Cite-only #84863 open (reads unrestricted / self-edit settings); #74081 open (Read deny globs E2BIG); #89762 open (sandbox covers Bash only); #81266 closed (denyRead does not block); #85761 closed (denyWithinAllow Edit/Write); #86054 closed (Linux-in-Docker confinement miss). Primary stays #92684.",
+        "has-clear-repro": "Issue labeled has repro: Claude Code 2.1.263; linux-arm64; Docker node:22-bookworm-slim; sandbox via managed-settings; bubblewrap nested; published denyWrite / denyRead tables."
+      };
+
+      function paintLog(result) {
+        const t = result.ticket;
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (result.holding
+            ? ["[cribble] cribbed · deny correctly enforced"]
+            : ["[cribble] porous · mid-path denyWrite silently dropped"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          if (/porous|FAIL|WRITABLE|silently/i.test(line)) return `<span class="hit">${line}</span>`;
+          if (/cribbed|hold|enforced identically/i.test(line)) return `<span class="ok">${line}</span>`;
+          return line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.holding ? "cribbed · mesh taut" : "porous · grit falls through", "cribble path"],
+          ["isolate", t.isolateMark, "mid-path denyWrite fail-open · not a plugin PreToolUse slip · not a Chrome never-redial", "not a clone"],
+          ["scored", t.scoredMark, result.holding ? "cribbed" : "would score after the mesh is taut", "expected channel"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div>${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintHousing(result) {
+        document.getElementById("mesh-tag").textContent = result.holding ? "MESH · TAUT" : "MESH · OPEN";
+        const gritA = document.getElementById("grit-a");
+        const gritB = document.getElementById("grit-b");
+        const gritC = document.getElementById("grit-c");
+        const grid = document.getElementById("wire-grid");
+        if (result.holding) {
+          grid.setAttribute("stroke", "#b8d48a");
+          gritA.setAttribute("fill", "#b8d48a");
+          gritB.setAttribute("fill", "#b8d48a");
+          gritC.setAttribute("fill", "#b8d48a");
+          gritA.setAttribute("cy", "100");
+          gritB.setAttribute("cy", "124");
+          gritC.setAttribute("cy", "76");
+        } else {
+          grid.setAttribute("stroke", "#9a9180");
+          gritA.setAttribute("fill", "#b85c38");
+          gritB.setAttribute("fill", "#b85c38");
+          gritC.setAttribute("fill", "#b85c38");
+          gritA.setAttribute("cy", "148");
+          gritB.setAttribute("cy", "172");
+          gritC.setAttribute("cy", "124");
+        }
+      }
+
+      function paintRings(result) {
+        document.getElementById("rings").innerHTML = RINGS.map((ring) => {
+          const cls = result.holding ? "taut" : "slack";
+          const body = result.holding ? ring.hold : ring.fail;
+          return `<article class="slot ${cls}"><b>${ring.name}</b><span>${body}</span></article>`;
+        }).join("");
+      }
+
+      function paintPlates(result) {
+        document.getElementById("plates").innerHTML = PLATES.map((p) => {
+          const cls = result.holding ? "hold" : "on";
+          return `<article class="card ${cls}"><b>${p.name}</b><span>${p.body}</span><code>${p.code}</code></article>`;
+        }).join("");
+      }
+
+      function paintBays(result) {
+        document.getElementById("bays").innerHTML = BAYS.map((p) => {
+          const on = (result.holding && p.hold) || (!result.holding && !p.hold && (
+            (result.verdict === "mid-star2-writable" && p.id === "star2") ||
+            (result.verdict === "mid-star1-writable" && p.id === "star1") ||
+            (result.verdict === "denyread-mid-enforced" && p.id === "read") ||
+            (result.verdict === "porous" && p.id === "star2") ||
+            (result.verdict === "cousins" && p.id === "read")
+          )) ? "on" : "";
+          return `<article class="peg ${on}" data-bay="${p.id}"><b>${p.name}</b><span>${p.note}</span></article>`;
+        }).join("");
+        document.querySelectorAll("#bays [data-bay]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const bay = BAYS.find((p) => p.id === el.dataset.bay);
+            if (!bay) return;
+            try { apply(await loadNamed(bay.file)); }
+            catch { apply(bay.hold ? { ...seeded } : { ...idle }); }
+          });
+        });
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "bad" : "good"}">${m}</td>`;
+          return `<tr class="clickable ${active}" data-row="${row.id}">
+            <td>${row.name}</td><td>${row.slot}</td><td>${row.ledger}</td>
+            ${cell(row.shipped)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "porous", porous: "porous", literal: "literal-eacces",
+                trail: "trail-erofs", star2: "mid-star2-writable", star1: "mid-star1-writable",
+                read: "denyread-mid-enforced", status: "status-shows-active",
+                warn: "warning-misstates-read", asym: "tool-vs-bash-asymmetry",
+                cribbed: "cribbed", cousins: "cousins", repro: "has-clear-repro"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92684 }); }
+          });
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bench = document.getElementById("bench");
+        bench.className = "loft " + (result.holding ? "cribbed" : "porous");
+        const v = document.getElementById("verdict");
+        v.className = "verdict-line " + result.verdict;
+        v.textContent = result.verdict;
+        document.getElementById("why").textContent = REASONS[result.verdict] || REASONS.porous;
+        document.getElementById("probe").value = JSON.stringify(ticket, null, 2);
+        paintChips(result);
+        paintLog(result);
+        paintPaths(result);
+        paintHousing(result);
+        paintRings(result);
+        paintPlates(result);
+        paintBays(result);
+        const map = {
+          porous: "porous", cribbed: "cribbed",
+          "literal-eacces": "literal",
+          "trail-erofs": "trail",
+          "mid-star2-writable": "star2",
+          "mid-star1-writable": "star1",
+          "denyread-mid-enforced": "read",
+          "status-shows-active": "status",
+          "warning-misstates-read": "warn",
+          "tool-vs-bash-asymmetry": "asym",
+          cousins: "cousins",
+          "has-clear-repro": "repro"
+        };
+        paintMatrix(map[result.verdict] || (result.holding ? "cribbed" : "primary"));
+      }
+
+      async function loadNamed(file) {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(file);
+        return res.json();
+      }
+
+      document.getElementById("score-cribble").addEventListener("click", () => apply(parseProbe(document.getElementById("probe").value)));
+      document.getElementById("pin-porous").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("pin-cribbed").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("admit-cribbed").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("reset-cribbed").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("crib-grit").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("dust-mesh").addEventListener("click", () => apply({ ...star2Ticket }));
+      document.getElementById("load-fixtures").addEventListener("click", async () => {
+        try { apply(await loadNamed("data/92684.json")); }
+        catch { apply({ ...idle, seed: "porous", hubCount: "92684" }); }
+      });
+      document.getElementById("probe").addEventListener("change", (ev) => apply(parseProbe(ev.target.value)));
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (ev) => { ev.preventDefault(); drop.classList.add("hot"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("hot"));
+      drop.addEventListener("drop", async (ev) => {
+        ev.preventDefault();
+        drop.classList.remove("hot");
+        const file = ev.dataTransfer.files[0];
+        if (!file) return;
+        apply(parseProbe(await file.text()));
+      });
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
