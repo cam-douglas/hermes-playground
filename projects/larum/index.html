@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Larum — watchtower chronograph for #92563</title>
+    <meta
+      name="description"
+      content="Larum — a limestone watchtower larum for Claude Code #92563: a completed background task-notification is written into the session, then no assistant turn ever starts. Idle word is unanswered."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,800;1,9..144,500;1,9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --dusk: #16101f;
+        --violet: #22182e;
+        --ashlar: #d4c4a8;
+        --stone: #b8a078;
+        --mortar: #8a7355;
+        --bronze: #c4782a;
+        --bronze-hot: #e09040;
+        --lantern: #f4d06a;
+        --moon: #d4dce8;
+        --unanswered: #d45a3a;
+        --roused: #6a9e78;
+        --ink: #f2ead8;
+        --mute: #9aa0b4;
+        --rule: rgba(212, 196, 168, 0.18);
+        --slot: #1c1428;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Figtree, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 78% 6%, rgba(244, 208, 106, 0.1), transparent 42%),
+          radial-gradient(ellipse at 8% 88%, rgba(106, 158, 120, 0.08), transparent 46%),
+          radial-gradient(circle at 18% 12%, rgba(212, 220, 232, 0.14) 0 1px, transparent 2px),
+          radial-gradient(circle at 72% 28%, rgba(212, 220, 232, 0.1) 0 1px, transparent 2px),
+          radial-gradient(circle at 40% 70%, rgba(212, 220, 232, 0.08) 0 1px, transparent 2px),
+          linear-gradient(180deg, #1a1428 0%, var(--dusk) 48%, #0e0a14 100%);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--bronze-hot); }
+      .wrap { width: min(1240px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--mute);
+        text-decoration: none;
+        border-bottom: 2px solid var(--bronze);
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: var(--bronze);
+      }
+      h1 {
+        font-family: Fraunces, Georgia, serif;
+        font-size: clamp(56px, 11vw, 112px);
+        letter-spacing: -0.04em;
+        margin: 6px 0 8px;
+        font-weight: 800;
+        line-height: 0.84;
+        color: var(--ashlar);
+      }
+      h1 em {
+        font-style: italic;
+        display: block;
+        font-family: Fraunces, Georgia, serif;
+        font-size: 0.2em;
+        letter-spacing: 0.08em;
+        font-weight: 500;
+        color: var(--lantern);
+        margin-top: 12px;
+      }
+      .lede { max-width: 74em; color: var(--mute); line-height: 1.65; font-size: 16px; }
+      .lede code, code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--lantern);
+      }
+      .tower {
+        margin: 22px 0 0;
+        border: 1px solid var(--rule);
+        background:
+          linear-gradient(180deg, rgba(34, 24, 46, 0.92), rgba(22, 16, 31, 0.98)),
+          repeating-linear-gradient(90deg, transparent 0 13px, rgba(184, 160, 120, 0.04) 13px 14px);
+        box-shadow: 0 28px 56px rgba(8, 4, 12, 0.45), inset 0 0 80px rgba(196, 120, 42, 0.05);
+        padding: 18px 18px 20px;
+        position: relative;
+        overflow: hidden;
+      }
+      .tower::before {
+        content: "WATCH 195";
+        position: absolute;
+        top: 14px;
+        right: 18px;
+        font-family: Fraunces, serif;
+        letter-spacing: 0.16em;
+        font-size: 13px;
+        color: var(--bronze);
+      }
+      .tower.unanswered, .tower.last-of-batch, .tower.synthetic-repair, .tower.cousins {
+        box-shadow: 0 0 0 3px rgba(212, 90, 58, 0.45), 0 28px 56px rgba(8, 4, 12, 0.45);
+      }
+      .tower.roused, .tower.delivered-and-roused {
+        box-shadow: 0 0 0 3px rgba(106, 158, 120, 0.45), 0 28px 56px rgba(8, 4, 12, 0.45);
+      }
+      .face {
+        display: grid;
+        grid-template-columns: minmax(260px, 340px) 1fr;
+        gap: 18px;
+        align-items: stretch;
+      }
+      @media (max-width: 860px) {
+        .face { grid-template-columns: 1fr; }
+        .tower::before { position: static; display: block; margin-bottom: 8px; }
+      }
+      .keep {
+        background:
+          linear-gradient(180deg, #2a2438 0%, #1c1626 100%);
+        border: 1px solid rgba(212, 196, 168, 0.2);
+        min-height: 420px;
+        position: relative;
+        overflow: hidden;
+      }
+      .keep svg { display: block; width: 100%; height: auto; }
+      .bell-copy {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .keep.silent .bell-copy { color: var(--unanswered); }
+      .keep.ringing .bell-copy { color: var(--roused); }
+      .ledger {
+        display: grid;
+        gap: 12px;
+      }
+      .score {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: baseline;
+      }
+      .verdict {
+        font-family: Fraunces, Georgia, serif;
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin: 0;
+      }
+      .verdict.unanswered, .verdict.last-of-batch, .verdict.synthetic-repair, .verdict.cousins {
+        color: var(--unanswered);
+      }
+      .verdict.roused, .verdict.delivered-and-roused { color: var(--roused); }
+      .why { color: var(--mute); line-height: 1.55; margin: 0; max-width: 62em; }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid var(--rule);
+        background: var(--slot);
+        color: var(--mute);
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      .chip.on { color: var(--unanswered); border-color: var(--unanswered); }
+      .chip.hold { color: var(--roused); border-color: var(--roused); }
+      .chrono {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 14px;
+        align-items: center;
+        border: 1px solid var(--rule);
+        background: rgba(12, 8, 18, 0.55);
+        padding: 12px;
+      }
+      @media (max-width: 720px) { .chrono { grid-template-columns: 1fr; } }
+      .clock { width: 180px; height: 180px; margin: 0 auto; }
+      .clock svg { width: 100%; height: 100%; }
+      .beats { display: grid; gap: 6px; }
+      .beat {
+        display: grid;
+        grid-template-columns: 72px 1fr;
+        gap: 8px;
+        font-size: 13px;
+        padding: 6px 8px;
+        border-left: 3px solid transparent;
+        background: rgba(28, 20, 40, 0.45);
+      }
+      .beat.on { border-left-color: var(--bronze); background: rgba(196, 120, 42, 0.12); }
+      .beat.miss { border-left-color: var(--unanswered); }
+      .beat.hold { border-left-color: var(--roused); }
+      .beat b {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--lantern);
+        font-weight: 500;
+      }
+      .log {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        background: #0c0a12;
+        border: 1px solid var(--rule);
+        padding: 12px 14px;
+        min-height: 118px;
+        white-space: pre-wrap;
+        color: var(--moon);
+      }
+      .log .hit { color: var(--unanswered); }
+      .log .ok { color: var(--roused); }
+      .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      @media (max-width: 800px) { .paths { grid-template-columns: 1fr; } }
+      .path {
+        border: 1px solid var(--rule);
+        padding: 10px 12px;
+        background: rgba(20, 14, 30, 0.7);
+      }
+      .path b { display: block; font-family: Fraunces, serif; font-size: 18px; margin-bottom: 4px; }
+      .path.fail { border-color: rgba(212, 90, 58, 0.45); }
+      .path.ok { border-color: rgba(106, 158, 120, 0.45); }
+      .path .note { display: block; margin-top: 6px; font-size: 12px; color: var(--mute); }
+      .matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+      .matrix th, .matrix td { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--rule); }
+      .matrix th { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); }
+      .matrix tr.clickable { cursor: pointer; }
+      .matrix tr.active { background: rgba(196, 120, 42, 0.1); }
+      .fail-cell { color: var(--unanswered); }
+      .pass-cell { color: var(--roused); }
+      .prints { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      @media (max-width: 800px) { .prints { grid-template-columns: 1fr; } }
+      .print {
+        border: 1px solid var(--rule);
+        padding: 12px;
+        background: rgba(28, 20, 40, 0.5);
+        min-height: 140px;
+      }
+      .print b {
+        display: block;
+        font-family: Fraunces, serif;
+        font-size: 20px;
+        margin-bottom: 6px;
+      }
+      .print.on { outline: 2px solid var(--unanswered); }
+      .print.hold { outline: 2px solid var(--roused); }
+      .print code { display: block; margin-top: 8px; font-size: 11px; color: var(--ashlar); }
+      .posts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      @media (max-width: 800px) { .posts { grid-template-columns: 1fr; } }
+      .post {
+        border: 1px solid var(--rule);
+        padding: 12px;
+        cursor: pointer;
+        background: rgba(16, 10, 22, 0.7);
+      }
+      .post b { display: block; font-family: Fraunces, serif; font-size: 20px; }
+      .post span { display: block; margin-top: 6px; color: var(--mute); font-size: 13px; }
+      .post.on { border-color: var(--bronze); }
+      textarea {
+        width: 100%;
+        min-height: 110px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: #0c0a12;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        padding: 10px;
+        resize: vertical;
+      }
+      .drop {
+        border: 1px dashed rgba(184, 160, 120, 0.4);
+        padding: 14px;
+        text-align: center;
+        color: var(--mute);
+        font-size: 13px;
+      }
+      .drop.hot { border-color: var(--lantern); color: var(--lantern); }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      button.act {
+        font-family: Figtree, sans-serif;
+        font-weight: 600;
+        border: 1px solid var(--bronze);
+        background: transparent;
+        color: var(--ashlar);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      button.act.hold { border-color: var(--roused); color: var(--roused); }
+      button.act.alarm { border-color: var(--unanswered); color: var(--unanswered); }
+      h2 {
+        font-family: Fraunces, Georgia, serif;
+        font-size: 28px;
+        margin: 28px 0 10px;
+        color: var(--ashlar);
+      }
+      .brief p { color: var(--mute); line-height: 1.65; }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        padding: 4px 8px;
+        color: var(--mute);
+      }
+      footer {
+        margin-top: 36px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="catalog chrome" href="/">hermes-playground catalog</a>
+      <div class="mark chrome">#92563 · limestone watch · larum bell</div>
+      <h1>Larum<em>a watchtower chronograph for a written notice that never starts a turn</em></h1>
+      <p class="lede">
+        11:50 larum: a watchtower larum that should start an assistant turn
+        the moment a completed background <code>&lt;task-notification&gt;</code>
+        is written into the session but instead leaves the notice
+        <strong>unanswered</strong> in history until a human nudge —
+        ~1% drops, worst on the last of a parallel batch
+        (<a href="https://github.com/anthropics/claude-code/issues/92563">#92563</a>).
+        Score unanswered or admit <strong>roused</strong>.
+      </p>
+      <p class="lede">
+        This is not Oubliette. Oubliette voids a child notice against a
+        parent that never receives the queue. Here the notice
+        <em>is</em> fully written into conversation history — type user,
+        origin task-notification, status completed — and the missing
+        piece is specifically the model invocation after that append.
+        Tocsin, Alarum, Knell, Hangfire, Heliostat, and Nixie are
+        cousins only: different wake and delivery paradigms.
+      </p>
+
+      <section class="tower" id="tower">
+        <div class="face">
+          <aside class="keep silent" id="keep">
+            <svg viewBox="0 0 320 420" role="img" aria-label="Limestone watchtower with a bronze larum">
+              <rect x="0" y="0" width="320" height="420" fill="#16101f" />
+              <circle cx="248" cy="48" r="22" fill="#d4dce8" opacity="0.85" />
+              <circle cx="60" cy="36" r="1.2" fill="#d4dce8" />
+              <circle cx="110" cy="58" r="1" fill="#d4dce8" />
+              <circle cx="190" cy="30" r="1.1" fill="#d4dce8" />
+              <polygon points="70,168 160,78 250,168" fill="#8a7355" />
+              <rect x="88" y="168" width="144" height="210" fill="#b8a078" />
+              <rect x="88" y="168" width="144" height="210" fill="url(#ashlar)" />
+              <rect x="78" y="158" width="28" height="22" fill="#d4c4a8" />
+              <rect x="122" y="158" width="28" height="22" fill="#d4c4a8" />
+              <rect x="166" y="158" width="28" height="22" fill="#d4c4a8" />
+              <rect x="210" y="158" width="28" height="22" fill="#d4c4a8" />
+              <rect x="138" y="210" width="44" height="58" fill="#1c1428" />
+              <rect x="108" y="292" width="18" height="28" fill="#1c1428" />
+              <rect x="194" y="292" width="18" height="28" fill="#1c1428" />
+              <path id="bell" d="M148 96 h24 l8 22 h-40 z" fill="#c4782a" />
+              <ellipse cx="160" cy="120" rx="22" ry="6" fill="#e09040" />
+              <circle id="clapper" cx="160" cy="126" r="4" fill="#f4d06a" />
+              <rect x="70" y="378" width="180" height="18" fill="#8a7355" />
+              <defs>
+                <pattern id="ashlar" width="24" height="14" patternUnits="userSpaceOnUse">
+                  <rect width="24" height="14" fill="#b8a078" />
+                  <path d="M0 14 H24 M12 0 V14" stroke="#8a7355" stroke-width="0.6" />
+                </pattern>
+              </defs>
+            </svg>
+            <div class="bell-copy" id="bell-copy">larum silent · notice in the ledger · no turn</div>
+          </aside>
+          <div class="ledger">
+            <div class="score">
+              <p class="verdict unanswered" id="verdict">unanswered</p>
+              <p class="why" id="why">
+                Completed background-task notice written into history.
+                Zero assistant entries. The watch idles until a human nudge.
+              </p>
+            </div>
+            <div class="chips" id="chips"></div>
+            <div class="chrono">
+              <div class="clock" id="clock"></div>
+              <div class="beats" id="beats"></div>
+            </div>
+            <div class="log" id="log"></div>
+            <div class="paths" id="paths"></div>
+          </div>
+        </div>
+      </section>
+
+      <h2>Watch posts</h2>
+      <div class="posts" id="posts"></div>
+
+      <h2>Fingerprint tablets</h2>
+      <div class="prints" id="prints"></div>
+
+      <h2>Wake matrix</h2>
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>post</th>
+            <th>notice</th>
+            <th>turn</th>
+            <th>shipped</th>
+            <th>scored</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+
+      <h2>Probe the ledger</h2>
+      <div class="drop" id="drop">Drop a fixture JSON or sample JSONL here. Paste below.</div>
+      <textarea id="probe" spellcheck="false"></textarea>
+      <div class="actions">
+        <button class="act alarm" type="button" id="score-unanswered">score unanswered</button>
+        <button class="act hold" type="button" id="score-roused">admit roused</button>
+        <button class="act" type="button" id="load-primary">load #92563</button>
+        <button class="act" type="button" id="load-batch">last of batch</button>
+        <button class="act" type="button" id="load-repair">synthetic repair</button>
+      </div>
+
+      <section class="brief">
+        <h2>Why Larum is not a clone</h2>
+        <p>
+          <strong>Not Oubliette/#92095.</strong> Oubliette voids or forgets
+          child notices against a parent that never receives the queue —
+          the notice never lands until an unrelated wake. Larum's notice
+          <em>is</em> fully written into conversation history. The missing
+          piece is specifically the model invocation / turn schedule after
+          that append.
+        </p>
+        <p>
+          <strong>Not Tocsin / Alarum / Knell / Hangfire / Heliostat / Nixie.</strong>
+          Those are different wake, queue, and delivery paradigms. Cite
+          only as cousins. Alarum is the opposite polarity: a post-goodbye
+          kill notification starts a turn after the session has already
+          ended. Hangfire demotes a queued <code>/compact</code>. Heliostat
+          waits on DECSET 2031. Nixie reports queued then settles
+          undelivered. <a href="https://github.com/anthropics/claude-code/issues/88742">#88742</a>
+          is related and different: enqueue succeeds but the wake effect
+          is missed, so the item may sit undelivered. Here the item is
+          already in the ledger.
+        </p>
+        <p>
+          Cousins cite-only:
+          <a href="https://github.com/anthropics/claude-code/issues/21165">#21165</a> CLOSED ·
+          <a href="https://github.com/anthropics/claude-code/issues/39632">#39632</a> CLOSED race before enqueue ·
+          <a href="https://github.com/anthropics/claude-code/issues/75043">#75043</a> OPEN nested async ·
+          <a href="https://github.com/anthropics/claude-code/issues/23909">#23909</a> CLOSED ·
+          <a href="https://github.com/anthropics/claude-code/issues/67524">#67524</a> CLOSED ·
+          also related
+          <a href="https://github.com/anthropics/claude-code/issues/88742">#88742</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/90555">#90555</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/45581">#45581</a>,
+          <a href="https://github.com/anthropics/claude-code/issues/20754">#20754</a>.
+          Primary stays
+          <a href="https://github.com/anthropics/claude-code/issues/92563">#92563</a>.
+        </p>
+        <p>
+          Ruled out per the issue: model behavior, permissions
+          (<code>bypassPermissions</code>), API errors, payload size,
+          compaction, agent failure, host suspend. ~7 of ~580 notices
+          drop (~1%), disproportionately the last of a parallel batch.
+          Recovery after a human nudge uses the already-delivered result.
+        </p>
+        <p>
+          Stay off:
+          <span class="stayoff">
+            <span>Oubliette forgotten queue #92095</span>
+            <span>Alarum unwanted post-goodbye wake</span>
+            <span>Hangfire compact demotion</span>
+            <span>Heliostat DECSET wake-bell</span>
+          </span>
+        </p>
+      </section>
+
+      <footer class="chrome">
+        hermes-playground · catalog #195 · larum · #92563 · no live Claude
+      </footer>
+    </main>
+    <script>
+      const HOLD = new Set(["roused", "delivered-and-roused"]);
+      const CHIPS = [
+        "unanswered", "roused", "last-of-batch",
+        "delivered-and-roused", "synthetic-repair", "cousins"
+      ];
+      const CHIP_FILES = {
+        unanswered: "data/unanswered.json",
+        roused: "data/roused.json",
+        "last-of-batch": "data/last-of-batch.json",
+        "delivered-and-roused": "data/delivered-and-roused.json",
+        "synthetic-repair": "data/synthetic-repair.json",
+        cousins: "data/cousins.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "primary #92563", notice: "completed task-notification", turn: "none · idle until nudge", shipped: "FAIL", scored: "FAIL", file: "data/92563.json" },
+        { id: "unanswered", name: "idle unanswered", notice: "written into history", turn: "no assistant entry", shipped: "FAIL", scored: "FAIL", file: "data/unanswered.json" },
+        { id: "batch", name: "last-of-batch", notice: "final of a parallel three", turn: "siblings already used; last silent", shipped: "FAIL", scored: "FAIL", file: "data/last-of-batch.json" },
+        { id: "repair", name: "synthetic-repair", notice: "stalled notice still in ledger", turn: "isMeta Continue… + synthetic", shipped: "FAIL", scored: "FAIL", file: "data/synthetic-repair.json" },
+        { id: "roused", name: "seeded roused", notice: "same completed notice", turn: "assistant turn starts", shipped: "pass", scored: "pass", file: "data/roused.json" },
+        { id: "ok", name: "delivered-and-roused", notice: "~575 / ~580", turn: "seconds to two minutes", shipped: "pass", scored: "pass", file: "data/delivered-and-roused.json" },
+        { id: "cousins", name: "cousins", notice: "cite-only neighbourhood", turn: "different paradigms", shipped: "FAIL", scored: "FAIL", file: "data/cousins.json" }
+      ];
+      const POSTS = [
+        { id: "ok", name: "delivered-and-roused", note: "~99% · enqueue · dequeue · notice · assistant", file: "data/delivered-and-roused.json", hold: true },
+        { id: "batch", name: "unanswered last-of-batch", note: "final notice written; nothing else left to wake", file: "data/last-of-batch.json", hold: false },
+        { id: "repair", name: "synthetic repair after nudge", note: "Continue from where you left off. + No response requested.", file: "data/synthetic-repair.json", hold: false }
+      ];
+      const PRINTS = [
+        { id: "one", name: "1 · user notice", body: "type:\"user\" with origin.kind:\"task-notification\" and <status>completed</status>", code: "origin.kind task-notification" },
+        { id: "two", name: "2 · no assistant", body: "zero assistant entries between that notice and the next real user message", code: "no type:assistant" },
+        { id: "three", name: "3 · repair pair", body: "isMeta user Continue from where you left off. + synthetic assistant No response requested. parentUuid → stalled notice", code: "model:\"<synthetic>\"" }
+      ];
+      const BEATS = [
+        { id: "wait", at: "T+0s", text: "assistant ends waiting for the last reviewer" },
+        { id: "queue", at: "T+8s", text: "queue-operation enqueue, then dequeue" },
+        { id: "notice", at: "T+8s", text: "user entry · full task-notification · status completed" },
+        { id: "silence", at: "—", text: "NOTHING · no assistant · no API error" },
+        { id: "nudge", at: "later", text: "human nudge · harness repair pair · turn resumes" }
+      ];
+
+      const idle = {
+        source: "probe", issue: 92563, seed: "unanswered", unanswered: true, roused: false,
+        lastOfBatch: true, shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass",
+        hubCount: "UNANSWERED",
+        log: ["[idle] type:user origin.kind:task-notification <status>completed</status>", "[silence] zero assistant entries · session idles"]
+      };
+      const seeded = {
+        source: "probe", issue: 92563, seed: "roused", unanswered: false, roused: true,
+        deliveredAndRoused: true, shippedMark: "pass", scoredMark: "pass", isolateMark: "pass",
+        hubCount: "ROUSED",
+        log: ["[seeded] notice written · assistant turn starts · ~99% path"]
+      };
+      const batchTicket = { ...idle, seed: "last-of-batch", lastOfBatch: true, hubCount: "LAST-OF-BATCH", log: ["[batch] last pending notice of a parallel three · nothing else to wake"] };
+      const repairTicket = { ...idle, seed: "synthetic-repair", syntheticRepair: true, lastOfBatch: false, hubCount: "SYNTHETIC-REPAIR", log: ["[repair] isMeta Continue from where you left off.", "[repair] assistant No response requested. model:<synthetic>"] };
+      const okTicket = { ...seeded, seed: "delivered-and-roused", deliveredAndRoused: true, hubCount: "DELIVERED-AND-ROUSED", log: ["[hold] ~575 of ~580 notices answered within seconds to two minutes"] };
+      const cousinsTicket = { ...idle, seed: "cousins", cousinsCiteOnly: [21165, 39632, 75043, 23909, 67524, 88742, 90555, 45581, 20754], hubCount: "COUSINS", log: ["[cousins] cite-only wake neighbourhood · primary stays #92563"] };
+      const FALLBACKS = {
+        unanswered: idle,
+        roused: seeded,
+        "last-of-batch": batchTicket,
+        "delivered-and-roused": okTicket,
+        "synthetic-repair": repairTicket,
+        cousins: cousinsTicket
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.roused === true && t.unanswered !== true);
+      }
+
+      function alreadyUnanswered(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.unanswered !== true) return false;
+        if (HOLD.has(seed) && t.unanswered !== true) return false;
+        if (t.unanswered === true) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.roused !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const holding = remediating(t) && t.unanswered !== true;
+        t.shippedMark = t.shippedMark || (holding ? "pass" : "FAIL");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (holding ? "pass" : "FAIL");
+        const chips = [];
+        if (holding || seed === "roused") chips.push("roused");
+        if (alreadyUnanswered(t) || seed === "unanswered" || t.unanswered === true) chips.push("unanswered");
+        if (seed === "last-of-batch" || t.lastOfBatch === true) chips.push("last-of-batch");
+        if (seed === "delivered-and-roused" || t.deliveredAndRoused === true) chips.push("delivered-and-roused");
+        if (seed === "synthetic-repair" || t.syntheticRepair === true) chips.push("synthetic-repair");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (holding ? "roused" : "unanswered");
+        return { ticket: t, holding, alarm: alreadyUnanswered(t), chips: unique, verdict };
+      }
+
+      const REASONS = {
+        unanswered: "A larum is the watchtower bell that should start a turn the moment a completed background task-notification is written into the session. The notice is enqueued, dequeued, and appended — then no assistant turn ever starts. Admit unanswered.",
+        roused: "Watch already roused. A completed task-notification is written into history and an assistant turn starts. That is the ~99% path.",
+        "last-of-batch": "Disproportionately the last pending notice of a parallel batch. A non-final drop is masked by the next completion; the final one leaves nothing else to trigger a turn.",
+        "delivered-and-roused": "~575 of ~580 notifications answered within seconds to two minutes. Enqueue, dequeue, user-role task-notification, then an assistant entry.",
+        "synthetic-repair": "At the next human nudge the harness inserts an isMeta user Continue from where you left off. plus a synthetic assistant No response requested. whose parentUuid references the stalled notice.",
+        cousins: "Cite-only #21165 CLOSED, #39632 CLOSED race before enqueue, #75043 OPEN nested async, #23909 CLOSED, #67524 CLOSED, also related #88742 (item may sit undelivered), #90555, #45581, #20754. Not Oubliette. Primary stays #92563."
+      };
+
+      function paintLog(result) {
+        const t = result.ticket;
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (result.holding
+            ? ["[tower] roused · notice written · assistant turn starts"]
+            : ["[tower] unanswered · notice in history · no turn"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          if (/unanswered|silence|FAIL|repair|last/i.test(line)) return `<span class="hit">${line}</span>`;
+          if (/roused|hold|assistant turn/i.test(line)) return `<span class="ok">${line}</span>`;
+          return line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.holding ? "roused · assistant turn starts" : "unanswered · notice in history, no turn", "larum path"],
+          ["isolate", t.isolateMark, "written-notice-with-no-turn · not Oubliette forgotten queue · not Alarum unwanted wake", "not a clone"],
+          ["scored", t.scoredMark, result.holding ? "roused" : "would score after the turn starts on the persisted notice", "expected rail"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div>${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintClock(result) {
+        const silent = !result.holding;
+        const angle = silent ? 198 : 118;
+        document.getElementById("clock").innerHTML = `
+          <svg viewBox="0 0 180 180" aria-hidden="true">
+            <circle cx="90" cy="90" r="78" fill="#0c0a12" stroke="#8a7355" stroke-width="4" />
+            <circle cx="90" cy="90" r="62" fill="none" stroke="rgba(212,196,168,0.2)" stroke-width="8" />
+            <circle cx="90" cy="90" r="4" fill="#f4d06a" />
+            <line x1="90" y1="90" x2="${90 + 48 * Math.sin(angle * Math.PI / 180)}" y2="${90 - 48 * Math.cos(angle * Math.PI / 180)}" stroke="${silent ? "#d45a3a" : "#6a9e78"}" stroke-width="3" />
+            <text x="90" y="36" text-anchor="middle" fill="#f4d06a" font-family="JetBrains Mono" font-size="8">T+0</text>
+            <text x="148" y="94" text-anchor="middle" fill="#d4c4a8" font-family="JetBrains Mono" font-size="8">T+8s</text>
+            <text x="90" y="160" text-anchor="middle" fill="${silent ? "#d45a3a" : "#6a9e78"}" font-family="JetBrains Mono" font-size="8">${silent ? "idle" : "turn"}</text>
+          </svg>`;
+      }
+
+      function paintBeats(result) {
+        document.getElementById("beats").innerHTML = BEATS.map((beat) => {
+          const miss = !result.holding && (beat.id === "silence" || beat.id === "nudge");
+          const hold = result.holding && (beat.id === "notice" || beat.id === "queue");
+          const on = miss || hold || beat.id === "wait";
+          const tone = miss ? "miss" : hold ? "hold" : "";
+          return `<div class="beat ${tone} ${on ? "on" : ""}"><b>${beat.at}</b><span>${beat.text}</span></div>`;
+        }).join("");
+      }
+
+      function paintKeep(result) {
+        const keep = document.getElementById("keep");
+        keep.classList.toggle("silent", !result.holding);
+        keep.classList.toggle("ringing", result.holding);
+        document.getElementById("bell-copy").textContent = result.holding
+          ? "larum ringing · notice in the ledger · turn started"
+          : "larum silent · notice in the ledger · no turn";
+        const bell = document.getElementById("bell");
+        const clapper = document.getElementById("clapper");
+        if (bell) bell.setAttribute("fill", result.holding ? "#6a9e78" : "#c4782a");
+        if (clapper) clapper.setAttribute("fill", result.holding ? "#f4d06a" : "#d45a3a");
+      }
+
+      function paintPrints(result) {
+        document.getElementById("prints").innerHTML = PRINTS.map((p) => {
+          const cls = result.holding ? "hold" : "on";
+          return `<article class="print ${cls}"><b>${p.name}</b><span>${p.body}</span><code>${p.code}</code></article>`;
+        }).join("");
+      }
+
+      function paintPosts(result) {
+        document.getElementById("posts").innerHTML = POSTS.map((p) => {
+          const on = (result.holding && p.hold) || (!result.holding && !p.hold && (
+            (result.verdict === "last-of-batch" && p.id === "batch") ||
+            (result.verdict === "synthetic-repair" && p.id === "repair") ||
+            (result.verdict === "unanswered" && p.id === "batch") ||
+            (result.verdict === "cousins" && p.id === "batch")
+          )) ? "on" : "";
+          return `<article class="post ${on}" data-post="${p.id}"><b>${p.name}</b><span>${p.note}</span></article>`;
+        }).join("");
+        document.querySelectorAll("#posts [data-post]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const post = POSTS.find((p) => p.id === el.dataset.post);
+            if (!post) return;
+            try { apply(await loadNamed(post.file)); }
+            catch { apply(post.hold ? { ...seeded } : { ...idle }); }
+          });
+        });
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "fail-cell" : "pass-cell"}">${m}</td>`;
+          return `<tr class="clickable ${active}" data-row="${row.id}">
+            <td>${row.name}</td><td>${row.notice}</td><td>${row.turn}</td>
+            ${cell(row.shipped)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "unanswered", unanswered: "unanswered", batch: "last-of-batch",
+                repair: "synthetic-repair", roused: "roused", ok: "delivered-and-roused", cousins: "cousins"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92563 }); }
+          });
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const tower = document.getElementById("tower");
+        tower.className = "tower " + result.verdict;
+        const v = document.getElementById("verdict");
+        v.className = "verdict " + result.verdict;
+        v.textContent = result.verdict;
+        document.getElementById("why").textContent = REASONS[result.verdict] || REASONS.unanswered;
+        document.getElementById("probe").value = JSON.stringify(ticket, null, 2);
+        paintChips(result);
+        paintLog(result);
+        paintPaths(result);
+        paintClock(result);
+        paintBeats(result);
+        paintKeep(result);
+        paintPrints(result);
+        paintPosts(result);
+        const map = {
+          unanswered: "unanswered", roused: "roused", "last-of-batch": "batch",
+          "synthetic-repair": "repair", "delivered-and-roused": "ok", cousins: "cousins"
+        };
+        paintMatrix(map[result.verdict] || (result.holding ? "roused" : "primary"));
+      }
+
+      async function loadNamed(file) {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(file);
+        return res.json();
+      }
+
+      document.getElementById("score-unanswered").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("score-roused").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("load-primary").addEventListener("click", async () => {
+        try { apply(await loadNamed("data/92563.json")); }
+        catch { apply({ ...idle, seed: "unanswered", hubCount: "92563" }); }
+      });
+      document.getElementById("load-batch").addEventListener("click", async () => {
+        try { apply(await loadNamed("data/last-of-batch.json")); }
+        catch { apply({ ...batchTicket }); }
+      });
+      document.getElementById("load-repair").addEventListener("click", async () => {
+        try { apply(await loadNamed("data/synthetic-repair.json")); }
+        catch { apply({ ...repairTicket }); }
+      });
+      document.getElementById("probe").addEventListener("change", (ev) => apply(parseProbe(ev.target.value)));
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (ev) => { ev.preventDefault(); drop.classList.add("hot"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("hot"));
+      drop.addEventListener("drop", async (ev) => {
+        ev.preventDefault();
+        drop.classList.remove("hot");
+        const file = ev.dataTransfer.files[0];
+        if (!file) return;
+        apply(parseProbe(await file.text()));
+      });
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>

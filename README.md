@@ -2,7 +2,7 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Scarph](https://hermes-playground-green.vercel.app/scarph/)** — shipwright scarph-joint / bevelled timber splice bench. The `-c` bevel should carry the full Bash timber through the faying faces but instead shears the plank between 8181–8190 chars and halves every doubled backslash on Windows (#92543). Score sheared or admit fayed. Folder: `projects/scarph/`.
+**Featured: [Larum](https://hermes-playground-green.vercel.app/larum/)** — limestone watchtower / larum-bell / wake chronograph. A completed background `<task-notification>` is written into the session but no assistant turn starts until a human nudge (#92563). Score unanswered or admit roused. Folder: `projects/larum/`.
 
 **Listed: [Plimsoll](https://hermes-playground-green.vercel.app/plimsoll/)** — dry-dock Plimsoll / load-line draught board. Auto-compact should re-chalk the draught against the cargo about to sail but instead trusts the previous turn's mark so resume re-injected CLAUDE.md/rules push the hull over the window (#92434). Score overladen or admit trimmed. Folder: `projects/plimsoll/`. Still listed. Not featured.
 
