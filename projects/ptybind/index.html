@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ptybind — ConPTY bind plate for #92757</title>
+    <meta
+      name="description"
+      content="Ptybind — a console-bind / ConPTY mux plate for Claude Code #92757: Ctrl+G editor renders but receives no keystrokes. Idle word is piped."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --void: #050806;
+        --plate: #0b120e;
+        --pane: #101a14;
+        --lattice: #1a2c20;
+        --phosphor: #6dff7a;
+        --phosphor-dim: #3d9a52;
+        --phosphor-hot: #c8ffc0;
+        --brass: #c9a46c;
+        --brass-deep: #8a6a38;
+        --scan: rgba(109, 255, 122, 0.045);
+        --ink: #d7f5d4;
+        --mute: #7a9a7e;
+        --rule: rgba(109, 255, 122, 0.18);
+        --alarm: #ff7a4a;
+        --hold-ok: #6dff7a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Karla, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          repeating-linear-gradient(180deg, transparent 0 2px, var(--scan) 2px 3px),
+          radial-gradient(ellipse at 50% -10%, rgba(109, 255, 122, 0.16), transparent 46%),
+          var(--void);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--phosphor); }
+      .wrap { width: min(1180px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 88px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--brass);
+        text-decoration: none;
+        border-bottom: 1px solid var(--brass-deep);
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .scanbar {
+        height: 10px;
+        background:
+          linear-gradient(90deg, transparent, rgba(109, 255, 122, 0.55), transparent),
+          var(--lattice);
+        margin: 8px 0 16px;
+        box-shadow: 0 18px 50px rgba(109, 255, 122, 0.18);
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr 220px;
+        gap: 18px;
+        align-items: end;
+        border-bottom: 1px solid var(--phosphor-dim);
+        padding-bottom: 14px;
+        margin: 0 0 16px;
+      }
+      .mast h1 {
+        font-family: Newsreader, "Times New Roman", serif;
+        font-weight: 700;
+        font-size: clamp(52px, 10vw, 96px);
+        letter-spacing: -0.04em;
+        margin: 0;
+        line-height: 0.84;
+        color: var(--phosphor);
+        text-shadow: 0 0 18px rgba(109, 255, 122, 0.45);
+      }
+      .bind-mark {
+        width: 220px;
+        height: 112px;
+        filter: drop-shadow(0 0 12px rgba(201, 164, 108, 0.28));
+      }
+      .lede {
+        max-width: 76em;
+        color: var(--mute);
+        line-height: 1.62;
+        font-size: 16px;
+        margin: 0 0 10px;
+      }
+      .lede strong {
+        color: var(--phosphor-hot);
+        font-family: Newsreader, serif;
+        font-style: italic;
+        font-weight: 400;
+      }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--phosphor);
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 12px 0 18px;
+      }
+      .tags a, .tags span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        color: var(--mute);
+        background: var(--plate);
+      }
+      .tags a { color: var(--brass); border-color: rgba(201, 164, 108, 0.45); }
+
+      .folio {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 0 0 18px;
+      }
+      .sheet {
+        background:
+          linear-gradient(180deg, rgba(109, 255, 122, 0.06), transparent 28%),
+          var(--pane);
+        min-height: 214px;
+        padding: 18px 16px 20px;
+        border: 1px solid var(--phosphor-dim);
+        position: relative;
+        box-shadow: inset 0 0 0 8px rgba(5, 8, 6, 0.45);
+      }
+      .sheet::before,
+      .sheet::after,
+      .sheet .screw-br,
+      .sheet .screw-tl {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 35% 35%, #f0d9a0, var(--brass) 55%, var(--brass-deep));
+        box-shadow: 0 0 0 2px #1a1408;
+      }
+      .sheet::before { top: 8px; left: 8px; }
+      .sheet::after { bottom: 8px; right: 8px; }
+      .sheet .screw-tl { top: 8px; right: 8px; }
+      .sheet .screw-br { bottom: 8px; left: 8px; }
+      .sheet .eyebrow {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin-bottom: 8px;
+      }
+      .sheet h2 {
+        font-family: Newsreader, serif;
+        font-style: italic;
+        font-size: 28px;
+        margin: 0 0 8px;
+        color: var(--phosphor);
+      }
+      .sheet .mode {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        margin: 0 0 8px;
+      }
+      .sheet .note { font-size: 13px; line-height: 1.5; color: var(--ink); }
+      .impression {
+        display: inline-block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        margin-bottom: 8px;
+        background: var(--hold-ok);
+        color: var(--void);
+      }
+      .sheet.swallow-sheet.alarm { outline: 2px solid var(--alarm); }
+      .sheet.swallow-sheet.alarm .impression { background: var(--alarm); color: var(--void); }
+      .sheet.swallow-sheet .impression { background: var(--brass-deep); color: var(--ink); }
+      .die-row {
+        display: flex;
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .die {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 16px;
+        letter-spacing: 0.12em;
+        border: 1px dashed var(--phosphor);
+        color: var(--phosphor);
+        padding: 4px 8px;
+      }
+
+      .bench {
+        border: 1px solid var(--phosphor-dim);
+        background:
+          linear-gradient(180deg, rgba(109, 255, 122, 0.08), transparent 36%),
+          var(--plate);
+        padding: 20px 20px 22px;
+        margin-bottom: 16px;
+        box-shadow: inset 0 0 0 8px rgba(61, 154, 82, 0.12);
+      }
+      .bench.piped { box-shadow: inset 0 0 0 8px rgba(109, 255, 122, 0.22); }
+      .bench.swallowed { box-shadow: inset 0 0 0 8px rgba(255, 122, 74, 0.32); }
+      .bench.unbound { box-shadow: inset 0 0 0 8px rgba(201, 164, 108, 0.36); }
+      .press-tag {
+        display: inline-block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: var(--phosphor-dim);
+        color: var(--void);
+        padding: 4px 8px;
+        margin: 0 0 10px;
+      }
+      .bench.swallowed .press-tag { background: var(--alarm); color: var(--void); }
+      .bench.unbound .press-tag { background: var(--brass); color: var(--void); }
+      .verdict {
+        margin: 4px 0 8px;
+        font-family: Newsreader, serif;
+        font-style: italic;
+        font-size: clamp(42px, 6vw, 72px);
+        letter-spacing: -0.03em;
+        color: var(--phosphor);
+        line-height: 0.88;
+        text-shadow: 0 0 14px rgba(109, 255, 122, 0.35);
+      }
+      .bench.swallowed .verdict { color: var(--alarm); text-shadow: 0 0 14px rgba(255, 122, 74, 0.35); }
+      .bench.piped .verdict,
+      .bench.unbound .verdict { color: var(--hold-ok); }
+      .why { margin: 0 0 10px; color: var(--mute); line-height: 1.55; max-width: 58em; }
+      .chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0 12px; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        border: 1px solid var(--phosphor);
+        background: transparent;
+        color: var(--ink);
+        padding: 4px 7px;
+        cursor: pointer;
+      }
+      .chip.on { background: var(--alarm); color: var(--void); border-color: var(--alarm); }
+      .chip.hold { background: var(--hold-ok); color: var(--void); border-color: var(--hold-ok); }
+      .gauges { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+      .slot {
+        border: 1px solid var(--rule);
+        padding: 10px;
+        background: rgba(5, 8, 6, 0.45);
+      }
+      .slot b {
+        display: block;
+        font-family: Newsreader, serif;
+        font-style: italic;
+        font-size: 16px;
+      }
+      .slot span { font-size: 12px; color: var(--mute); }
+      .slot.warn { border-color: var(--alarm); }
+      .slot.ok { border-color: var(--hold-ok); }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        line-height: 1.55;
+        background: #030504;
+        color: var(--phosphor-hot);
+        border: 1px dashed var(--phosphor-dim);
+        padding: 8px;
+        min-height: 72px;
+        white-space: pre-wrap;
+        margin-top: 10px;
+      }
+      .log .hit { color: #ffb199; }
+      .log .ok { color: #9eefb0; }
+      .paths { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+      .path { border: 1px solid var(--rule); padding: 8px; font-size: 12px; }
+      .path b { display: block; font-family: Newsreader, serif; font-style: italic; font-size: 15px; }
+      .path.fail { border-color: var(--alarm); }
+      .path.ok { border-color: var(--hold-ok); }
+      .path .note { color: var(--mute); font-family: "IBM Plex Mono", monospace; font-size: 10px; }
+      .actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+      .act {
+        font-family: Newsreader, serif;
+        font-style: italic;
+        letter-spacing: 0.01em;
+        border: 1px solid var(--phosphor);
+        background: transparent;
+        color: var(--ink);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .act.alarm { border-color: var(--alarm); color: var(--alarm); }
+      .act.hold { border-color: var(--hold-ok); color: var(--hold-ok); }
+
+      .adapters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 16px 0;
+      }
+      .adapter {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px dashed var(--brass-deep);
+        padding: 8px 10px;
+        color: var(--mute);
+        background: var(--plate);
+      }
+      .adapter em { color: var(--brass); font-style: normal; }
+
+      .typecase {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 12px 0 4px;
+      }
+      .sort {
+        border: 1px dashed var(--phosphor);
+        background: #07100a;
+        color: var(--phosphor);
+        padding: 12px 10px 10px;
+        text-align: center;
+        min-height: 74px;
+      }
+      .sort b {
+        display: block;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 22px;
+        letter-spacing: 0.08em;
+      }
+      .sort span {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-top: 6px;
+      }
+      .sort.halo { background: #1a0e0a; border-color: var(--alarm); color: #ffc8b6; }
+      .sort.clean { background: #0a1810; border-color: var(--hold-ok); color: #d8efe2; }
+      .sort.hold { background: #10140c; border-color: var(--brass); color: var(--brass); }
+
+      .desk-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 20px 0;
+      }
+      .panel {
+        border: 1px solid var(--rule);
+        background: var(--plate);
+        padding: 14px;
+      }
+      .panel h2, h2.sec {
+        font-family: Newsreader, serif;
+        font-style: italic;
+        font-size: 26px;
+        margin: 0 0 10px;
+        color: var(--phosphor);
+      }
+      h2.sec { margin: 28px 0 10px; }
+      table.axis {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .axis th, .axis td {
+        border-bottom: 1px solid var(--rule);
+        padding: 8px 6px;
+        text-align: left;
+      }
+      .axis th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .axis .bad { color: var(--alarm); }
+      .axis .good { color: var(--hold-ok); }
+      .axis tr.clickable { cursor: pointer; }
+      .axis tr.active { background: rgba(255, 122, 74, 0.12); }
+      .rolls, .slips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .roll, .slip {
+        border: 1px solid var(--rule);
+        padding: 10px;
+        background: var(--plate);
+        cursor: pointer;
+      }
+      .roll.on, .slip.on { border-color: var(--alarm); }
+      .slip.hold { border-color: var(--hold-ok); }
+      .roll b, .slip b {
+        display: block;
+        font-family: Newsreader, serif;
+        font-style: italic;
+        font-size: 16px;
+        color: var(--phosphor);
+      }
+      .roll span, .slip span { color: var(--mute); font-size: 13px; }
+      .slip code { display: block; margin-top: 6px; }
+      .drop {
+        border: 1px dashed var(--phosphor);
+        padding: 12px;
+        color: var(--mute);
+        margin: 10px 0;
+        background: var(--plate);
+      }
+      .drop.hot { border-color: var(--alarm); color: var(--ink); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        background: #030504;
+        color: var(--phosphor-hot);
+        border: 1px solid var(--phosphor-dim);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .brief p { color: var(--mute); line-height: 1.65; }
+      .cousin-not-primary { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+      .cousin-not-primary span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px dashed var(--rule);
+        padding: 4px 8px;
+        color: var(--brass);
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        padding: 4px 8px;
+        color: var(--mute);
+      }
+      footer {
+        margin-top: 32px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      @media (max-width: 820px) {
+        .mast, .desk-row, .gauges, .paths, .rolls, .slips, .folio, .typecase {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <a class="catalog chrome" href="/">hermes-playground catalog</a>
+      <div class="mark chrome">12:50 / hermes catalog #218 / #92757</div>
+      <div class="scanbar" aria-hidden="true"></div>
+      <header class="mast">
+        <h1>Ptybind</h1>
+        <svg class="bind-mark" id="bind-plate" viewBox="0 0 220 112" aria-hidden="true">
+          <rect x="10" y="14" width="200" height="84" fill="#0b120e" stroke="#c9a46c" stroke-width="3" />
+          <rect x="22" y="26" width="176" height="60" fill="none" stroke="#6dff7a" stroke-dasharray="5 4" />
+          <text x="110" y="62" text-anchor="middle" fill="#6dff7a" font-family="monospace" font-size="18">PTY BIND</text>
+          <circle cx="18" cy="22" r="5" fill="#c9a46c" />
+          <circle cx="202" cy="22" r="5" fill="#c9a46c" />
+          <circle cx="18" cy="90" r="5" fill="#c9a46c" />
+          <circle cx="202" cy="90" r="5" fill="#c9a46c" />
+        </svg>
+      </header>
+      <p class="lede">
+        12:50 ptybind: a console-bind / ConPTY mux plate that shows Ctrl+G
+        external editor rendering but receiving no keystrokes inside ConPTY
+        multiplexers on Windows
+        (<a href="https://github.com/anthropics/claude-code/issues/92757">#92757</a>).
+        Score <strong>swallowed</strong> or admit <strong>unbound</strong>.
+      </p>
+      <p class="lede">
+        Claude Code 2.1.263 on Windows 11 Pro 10.0.26200.9168 · Windows Terminal + Git Bash (MINGW64) inside psmux / wtmux.
+        Dark phosphor atelier, not a cargo hold.
+      </p>
+      <div class="tags chrome" aria-label="Native integrations">
+        <a href="https://github.com/anthropics/claude-code/issues/92757">GitHub issue #92757</a>
+        <span>Ctrl+G</span>
+        <span>ConPTY mux</span>
+        <span>area:tui · platform:windows</span>
+        <a href="/">Vercel catalog back-link</a>
+        <a href="hook/ptybind.mjs">hook scorer</a>
+        <span>phosphor green / brass bind-screws / mux pane lattice</span>
+      </div>
+
+      <section class="folio" aria-label="parent raw-mode pane versus child editor pane">
+        <article class="sheet piped-sheet" id="sheet-piped">
+          <span class="screw-tl" aria-hidden="true"></span>
+          <span class="screw-br" aria-hidden="true"></span>
+          <div class="eyebrow">parent pane / raw-mode stdin</div>
+          <span class="impression" id="impression-piped">BOUND</span>
+          <h2>Parent still reading</h2>
+          <p class="mode"><code>setRawMode(true)</code> · then pause</p>
+          <p class="note">
+            Parent holds stdin in raw mode, then <code>setRawMode(false)</code> and
+            <code>pause()</code> before <code>spawnSync(..., { stdio: 'inherit' })</code>.
+            An honest plate hands the console read to the child.
+          </p>
+          <div class="die-row">
+            <span class="die">RAW</span>
+            <span class="die" id="parent-mark">STDIN</span>
+          </div>
+        </article>
+        <article class="sheet swallow-sheet" id="sheet-swallowed">
+          <span class="screw-tl" aria-hidden="true"></span>
+          <span class="screw-br" aria-hidden="true"></span>
+          <div class="eyebrow">child editor / keys dead</div>
+          <span class="impression" id="impression-swallowed">DRAW</span>
+          <h2>Renders · no keys</h2>
+          <p class="mode"><code>Ctrl+G</code> · vim opens</p>
+          <p class="note">
+            The editor draws correctly. <code>i</code>, Esc and Ctrl+C are all dead.
+            Sometimes an <code>i</code> later appears in Claude's own prompt.
+          </p>
+          <div class="die-row">
+            <span class="die">PTY</span>
+            <span class="die" id="child-mark">DEAD</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="bench piped" id="bench">
+        <span class="press-tag" id="press-tag">HOLD · PIPED</span>
+        <h2 class="sec" style="margin-top:0">Ptybind faceplate</h2>
+        <p class="verdict" id="verdict">piped</p>
+        <p class="why" id="why">
+          HOLD: idle plate is piped — editor receives keys / input correctly handed to child.
+        </p>
+        <div class="chips" id="chips"></div>
+        <div class="typecase" id="typecase"></div>
+        <div class="gauges" id="gauges"></div>
+        <div class="log" id="log"></div>
+        <div class="paths" id="paths"></div>
+        <div class="actions">
+          <button class="act alarm" type="button" id="bind-plate">Bind the plate</button>
+          <button class="act hold" type="button" id="tear-stdin">Tear down stdin</button>
+        </div>
+      </section>
+
+      <div class="adapters chrome" aria-label="demo adapters">
+        <span class="adapter">GitHub · <em>Would file a #92757 follow-up on the ConPTY bind race</em></span>
+        <span class="adapter">Slack · <em>Would post the plate verdict to #hermes-catalog</em></span>
+        <span class="adapter">Linear · <em>Would open a swallowed-keys ticket</em></span>
+      </div>
+
+      <div class="desk-row">
+        <section class="panel" aria-label="raw-mode console ledger">
+          <h2>Raw-mode console ledger</h2>
+          <table class="axis">
+            <thead>
+              <tr>
+                <th>pane</th>
+                <th>draw</th>
+                <th>keys</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>parent raw-mode</td>
+                <td class="good">prompt lives</td>
+                <td class="bad">still reading</td>
+              </tr>
+              <tr>
+                <td>child editor</td>
+                <td class="good">renders</td>
+                <td class="bad">i Esc Ctrl+C dead</td>
+              </tr>
+              <tr>
+                <td>ConPTY mux</td>
+                <td class="good">psmux / wtmux</td>
+                <td class="bad">intersection fail</td>
+              </tr>
+              <tr>
+                <td>GUI editor</td>
+                <td class="good">gvim -f</td>
+                <td class="good">never touches stdin</td>
+              </tr>
+              <tr>
+                <td>node repro</td>
+                <td class="good">no Claude Code</td>
+                <td class="bad">same dead keys</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="panel" aria-label="what this is not">
+          <h2>What this is not</h2>
+          <p class="why">
+            Not a cargo-hold crib. Not a letterpress tympan. Not a locksmith casement.
+            Not a mason notch. Not a censor stamp. Not a herald folio. Not a mill sieve.
+            Not a trapper snare. Not a pier brow. Not a freight consignment note.
+            This plate is the ConPTY bind assay for Ctrl+G.
+          </p>
+        </section>
+      </div>
+
+      <h2 class="sec">Mux panes</h2>
+      <div class="rolls" id="bays"></div>
+
+      <h2 class="sec">Bind screws</h2>
+      <div class="slips" id="plates"></div>
+
+      <h2 class="sec">Control matrix</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>parent</th>
+            <th>environment</th>
+            <th>editor gets input?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>vim alone</td><td>Windows Terminal, direct</td><td class="good">yes</td></tr>
+          <tr><td>vim alone</td><td>psmux pane</td><td class="good">yes</td></tr>
+          <tr><td>git commit → same vim.exe</td><td>psmux pane</td><td class="good">yes</td></tr>
+          <tr><td>less (raw-mode TUI), v</td><td>psmux pane</td><td class="good">yes</td></tr>
+          <tr><td>Claude Code</td><td>Windows Terminal, direct</td><td class="good">yes</td></tr>
+          <tr><td>Claude Code</td><td>real tmux on WSL</td><td class="good">yes</td></tr>
+          <tr><td>Claude Code</td><td>psmux / wtmux pane</td><td class="bad">no</td></tr>
+          <tr><td>repro.js</td><td>psmux pane</td><td class="bad">no</td></tr>
+        </tbody>
+      </table>
+
+      <h2 class="sec">Plate matrix</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>ticket</th>
+            <th>pane</th>
+            <th>tally</th>
+            <th>shipped</th>
+            <th>scored</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+
+      <h2 class="sec">Probe the plate</h2>
+      <div class="drop" id="drop">Drop a fixture JSON here. Paste below.</div>
+      <textarea id="probe" spellcheck="false"></textarea>
+      <div class="actions">
+        <button class="act alarm" type="button" id="score-swallowed">Score swallowed</button>
+        <button class="act hold" type="button" id="pin-piped">Pin idle piped</button>
+        <button class="act alarm" type="button" id="seed-swallowed">Seed swallowed</button>
+        <button class="act hold" type="button" id="admit-unbound">Admit unbound</button>
+        <button class="act" type="button" id="load-fixtures">Load fixtures</button>
+        <button class="act hold" type="button" id="reset-piped">Reset to piped</button>
+      </div>
+
+      <section class="brief">
+        <h2 class="sec">Why Ptybind is not a clone</h2>
+        <p>
+          <strong>Cousins cite-only.</strong>
+          #73301 CLOSED stale — WezTerm same symptom. #84264 OPEN — Ctrl+G kills the
+          Windows Terminal window. #58664 CLOSED — hang instead of launch.
+          #88775 OPEN — bg-spare daemon no controlling tty for emacs.
+          Primary stays #92757.
+        </p>
+        <p>
+          <strong>NOT Dunnage/#92746.</strong>
+          RemoteTrigger list cursor ignore. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Setoff/#92750.</strong>
+          Subagent MEMORY.md + skill_listing. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Espagnolette/#92694.</strong>
+          AskUserQuestion selection keys. Already shipped.
+        </p>
+        <p>
+          Ptybind is specifically CTRL+G EXTERNAL EDITOR RENDERS CORRECTLY BUT
+          RECEIVES NO KEYSTROKES INSIDE CONPTY MULTIPLEXERS ON WINDOWS.
+        </p>
+        <p class="cousin-not-primary" id="cousin-strip">
+          <span>cousin-not-primary #73301 CLOSED · #84264 OPEN · #58664 CLOSED · #88775 OPEN — Ctrl+G neighbourhood, different failures</span>
+        </p>
+        <p>
+          Stay off:
+          <span class="stayoff">
+            <span>Dunnage/#92746 already shipped</span>
+            <span>Setoff/#92750 already shipped</span>
+            <span>Espagnolette/#92694 already shipped</span>
+            <span>Imprimatur/#92740 already shipped</span>
+            <span>Byname/#92738 already shipped</span>
+          </span>
+        </p>
+      </section>
+
+      <footer class="chrome">
+        hermes-playground · catalog #218 · ptybind · #92757 · no live Claude · ?embed=1 hides chrome
+      </footer>
+    </main>
+    <script>
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["piped", "unbound"]);
+      const CHIPS = [
+        "piped", "swallowed", "unbound", "editor-renders", "keys-dead",
+        "parent-consuming", "conpty-mux", "gui-workaround", "node-repro",
+        "control-matrix", "has-clear-repro", "cousins"
+      ];
+      const CHIP_FILES = {
+        piped: "data/piped.json",
+        swallowed: "data/swallowed.json",
+        unbound: "data/unbound.json",
+        "editor-renders": "data/editor-renders.json",
+        "keys-dead": "data/keys-dead.json",
+        "parent-consuming": "data/parent-consuming.json",
+        "conpty-mux": "data/conpty-mux.json",
+        "gui-workaround": "data/gui-workaround.json",
+        "node-repro": "data/node-repro.json",
+        "control-matrix": "data/control-matrix.json",
+        cousins: "data/cousins.json",
+        "has-clear-repro": "data/has-clear-repro.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "primary #92757", slot: "hold", fastener: "Ctrl+G editor renders but no keystroke reaches it in ConPTY mux", shipped: "FAIL", scored: "FAIL", file: "data/92757.json" },
+        { id: "piped", name: "idle piped", slot: "parent pane", fastener: "HOLD: editor receives keys / input handed to child", shipped: "pass", scored: "pass", file: "data/piped.json" },
+        { id: "swallowed", name: "seeded swallowed", slot: "child pane", fastener: "ALARM: parent still consuming; keys dead", shipped: "FAIL", scored: "FAIL", file: "data/swallowed.json" },
+        { id: "draw", name: "editor-renders", slot: "draw", fastener: "editor draws correctly; pane survives; only input is lost", shipped: "FAIL", scored: "FAIL", file: "data/editor-renders.json" },
+        { id: "keys", name: "keys-dead", slot: "keys", fastener: "i, Esc and Ctrl+C are all dead", shipped: "FAIL", scored: "FAIL", file: "data/keys-dead.json" },
+        { id: "parent", name: "parent-consuming", slot: "race", fastener: "an i later appeared in Claude's own prompt", shipped: "FAIL", scored: "FAIL", file: "data/parent-consuming.json" },
+        { id: "mux", name: "conpty-mux", slot: "lattice", fastener: "failure is Claude Code / raw-mode Node inside psmux / wtmux", shipped: "FAIL", scored: "FAIL", file: "data/conpty-mux.json" },
+        { id: "gui", name: "gui-workaround", slot: "gvim", fastener: "gvim -f never touches the terminal input path", shipped: "FAIL", scored: "FAIL", file: "data/gui-workaround.json" },
+        { id: "node", name: "node-repro", slot: "repro.js", fastener: "13-line Node raw-mode + stdio inherit fails with no Claude Code", shipped: "FAIL", scored: "FAIL", file: "data/node-repro.json" },
+        { id: "matrix", name: "control-matrix", slot: "assay", fastener: "works outside mux / GUI; fails in ConPTY mux", shipped: "FAIL", scored: "FAIL", file: "data/control-matrix.json" },
+        { id: "unbound", name: "admit unbound", slot: "torn down", fastener: "hypothetical parent stdin fully torn down before spawn", shipped: "pass", scored: "pass", file: "data/unbound.json" },
+        { id: "cousins", name: "cousins", slot: "cite-only neighbourhood", fastener: "#73301 CLOSED · #84264 OPEN · #58664 CLOSED · #88775 OPEN", shipped: "FAIL", scored: "FAIL", file: "data/cousins.json" },
+        { id: "repro", name: "has-clear-repro", slot: "filed narrative", fastener: "labeled has repro", shipped: "FAIL", scored: "FAIL", file: "data/has-clear-repro.json" }
+      ];
+      const BAYS = [
+        { id: "keys", name: "keys-dead", note: "i, Esc and Ctrl+C are all dead in the opened editor.", file: "data/keys-dead.json", hold: false },
+        { id: "parent", name: "parent-consuming", note: "An i intended for the editor later appeared in Claude's own prompt.", file: "data/parent-consuming.json", hold: false },
+        { id: "mux", name: "conpty-mux", note: "Failure is Claude Code / raw-mode Node inside psmux / wtmux.", file: "data/conpty-mux.json", hold: false }
+      ];
+      const PLATES = [
+        { id: "one", name: "1 · editor draws", body: "Ctrl+G opens the external terminal editor and it renders correctly.", code: "pane survives" },
+        { id: "two", name: "2 · keys swallowed", body: "i, Esc and Ctrl+C do nothing. Parent may still consume the stroke.", code: "parent wins race" },
+        { id: "three", name: "3 · node repro", body: "Raw-mode stdin then spawn with stdio inherit fails the same way with no Claude Code.", code: "repro.js" }
+      ];
+      const RINGS = [
+        { id: "draw", name: "editor draw", fail: "renders correctly; only input is lost", hold: "keys reach the child" },
+        { id: "keys", name: "keystrokes", fail: "i / Esc / Ctrl+C dead", hold: "child owns the console read" },
+        { id: "mux", name: "ConPTY mux", fail: "psmux / wtmux intersection", hold: "handoff works in the mux pane" }
+      ];
+      const SORTS = [
+        { label: "DRAW", kind: "halo", note: "editor paints" },
+        { label: "KEYS", kind: "halo", note: "all dead" },
+        { label: "RACE", kind: "halo", note: "parent consumes" }
+      ];
+
+      const idle = {
+        source: "probe", issue: 92757, seed: "piped", piped: true, swallowed: false, unbound: false,
+        shippedMark: "pass", scoredMark: "pass", isolateMark: "pass",
+        hubCount: "PIPED",
+        log: ["[idle] plate is piped — editor receives keys / input correctly handed to child"]
+      };
+      const seeded = {
+        source: "probe", issue: 92757, seed: "swallowed", piped: false, swallowed: true, unbound: false,
+        keysDead: true, editorRenders: true, parentConsuming: true, conptyMux: true,
+        nodeRepro: true, guiWorkaround: true, controlMatrix: true,
+        shippedMark: "FAIL", scoredMark: "FAIL", isolateMark: "pass",
+        hubCount: "SWALLOWED",
+        log: ["[seeded] #92757 swallowed path — editor renders; no keystroke reaches it", "[swallowed] parent still consuming input"]
+      };
+      const holdUnbound = {
+        source: "probe", issue: 92757, seed: "unbound", piped: false, swallowed: false, unbound: true,
+        plateUnbound: true,
+        shippedMark: "pass", scoredMark: "pass", isolateMark: "pass",
+        hubCount: "UNBOUND",
+        log: ["[admit] plate already unbound — parent stdin fully torn down before spawn so the editor gets keys"]
+      };
+      const drawTicket = { ...seeded, seed: "editor-renders", hubCount: "EDITOR-RENDERS", log: ["[editor-renders] editor draws correctly; only input is lost"] };
+      const keysTicket = { ...seeded, seed: "keys-dead", hubCount: "KEYS-DEAD", log: ["[keys-dead] i, Esc and Ctrl+C are all dead"] };
+      const parentTicket = { ...seeded, seed: "parent-consuming", hubCount: "PARENT-CONSUMING", log: ["[parent-consuming] an i later appeared in Claude's own prompt"] };
+      const muxTicket = { ...seeded, seed: "conpty-mux", hubCount: "CONPTY-MUX", log: ["[conpty-mux] Claude Code / raw-mode Node inside psmux / wtmux"] };
+      const guiTicket = { ...seeded, seed: "gui-workaround", hubCount: "GUI-WORKAROUND", log: ["[gui-workaround] gvim -f never touches the terminal input path"] };
+      const nodeTicket = { ...seeded, seed: "node-repro", hubCount: "NODE-REPRO", log: ["[node-repro] 13-line Node raw-mode + stdio inherit"] };
+      const matrixTicket = { ...seeded, seed: "control-matrix", hubCount: "CONTROL-MATRIX", log: ["[control-matrix] works outside mux; fails in ConPTY mux"] };
+      const cousinsTicket = { ...seeded, seed: "cousins", cousinsCiteOnly: [73301, 84264, 58664, 88775], hubCount: "COUSINS", log: ["[cousins] #73301 CLOSED · #84264 OPEN · #58664 CLOSED · #88775 OPEN · primary stays #92757"] };
+      const reproTicket = { ...seeded, seed: "has-clear-repro", hasClearRepro: true, hubCount: "HAS-CLEAR-REPRO", log: ["[repro] labeled has repro"] };
+      const FALLBACKS = {
+        piped: idle,
+        swallowed: seeded,
+        unbound: holdUnbound,
+        "editor-renders": drawTicket,
+        "keys-dead": keysTicket,
+        "parent-consuming": parentTicket,
+        "conpty-mux": muxTicket,
+        "gui-workaround": guiTicket,
+        "node-repro": nodeTicket,
+        "control-matrix": matrixTicket,
+        cousins: cousinsTicket,
+        "has-clear-repro": reproTicket
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.unbound === true && t.swallowed !== true) || (t.piped === true && t.swallowed !== true);
+      }
+
+      function alreadySwallowed(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.swallowed !== true) return false;
+        if (HOLD.has(seed) && t.swallowed !== true) return false;
+        if (t.swallowed === true) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.piped !== true && t.unbound !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const holding = remediating(t) && t.swallowed !== true;
+        t.shippedMark = t.shippedMark || (holding ? "pass" : "FAIL");
+        t.isolateMark = t.isolateMark || "pass";
+        t.scoredMark = t.scoredMark || (holding ? "pass" : "FAIL");
+        const chips = [];
+        if (seed === "piped" || (holding && t.piped === true)) chips.push("piped");
+        if (holding || seed === "unbound") {
+          if (seed === "unbound" || t.unbound === true) chips.push("unbound");
+          if (seed === "piped" || t.piped === true) chips.push("piped");
+        }
+        if (alreadySwallowed(t) || seed === "swallowed" || t.swallowed === true) chips.push("swallowed");
+        if (seed === "editor-renders" || t.editorRenders === true) chips.push("editor-renders");
+        if (seed === "keys-dead" || t.keysDead === true) chips.push("keys-dead");
+        if (seed === "parent-consuming" || t.parentConsuming === true) chips.push("parent-consuming");
+        if (seed === "conpty-mux" || t.conptyMux === true) chips.push("conpty-mux");
+        if (seed === "gui-workaround" || t.guiWorkaround === true) chips.push("gui-workaround");
+        if (seed === "node-repro" || t.nodeRepro === true) chips.push("node-repro");
+        if (seed === "control-matrix" || t.controlMatrix === true) chips.push("control-matrix");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        if (seed === "has-clear-repro" || t.hasClearRepro === true) chips.push("has-clear-repro");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (holding ? (t.unbound ? "unbound" : "piped") : "swallowed");
+        return { ticket: t, holding, alarm: alreadySwallowed(t), chips: unique, verdict };
+      }
+
+      const REASONS = {
+        piped: "HOLD: idle plate is piped — editor receives keys / input correctly handed to child. Score swallowed or admit unbound.",
+        swallowed: "ALARM: keys swallowed; Ctrl+G external editor renders correctly but no keystroke reaches it inside ConPTY multiplexers on Windows (i, Esc, Ctrl+C all dead). Score swallowed or admit unbound.",
+        unbound: "Plate already unbound. Parent stdin fully torn down before spawn so the editor gets keys.",
+        "editor-renders": "The external terminal editor opens and draws correctly; the pane survives; only input is lost.",
+        "keys-dead": "i, Esc and Ctrl+C are all dead in the opened editor; none of them do anything.",
+        "parent-consuming": "During one failure, an i keystroke intended for the editor was later delivered into Claude Code's own prompt as a submitted message.",
+        "conpty-mux": "Failure is the intersection of Claude Code / raw-mode Node with a ConPTY multiplexer pane (psmux, wtmux).",
+        "gui-workaround": "Set EDITOR to a GUI editor (gvim -f), which never touches the terminal's input path and works in every environment above.",
+        "node-repro": "A 13-line Node script that only puts stdin in raw mode, waits for one key, leaves raw mode and spawns an editor with stdio inherit fails the same way with no Claude Code.",
+        "control-matrix": "vim alone, git commit, less+v, Claude Code direct, and Claude Code on real tmux/WSL all hand keys; Claude Code and repro.js inside psmux/wtmux do not.",
+        cousins: "Cite-only neighbourhood: #73301 CLOSED stale (WezTerm same symptom), #84264 OPEN (window killed), #58664 CLOSED (hang), #88775 OPEN (bg-spare emacs). Primary stays #92757.",
+        "has-clear-repro": "Issue labeled has repro: Claude Code 2.1.263 on Windows 11 Pro 10.0.26200.9168, Windows Terminal + Git Bash (MINGW64) inside psmux / wtmux."
+      };
+
+      function paintLog(result) {
+        const t = result.ticket;
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (result.holding
+            ? ["[ptybind] plate piped / unbound — child owns the console read"]
+            : ["[ptybind] swallowed · editor renders · keys dead"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          if (/swallowed|FAIL|dead|consuming/i.test(line)) return `<span class="hit">${line}</span>`;
+          if (/piped|unbound|hold|handed to child|gets keys/i.test(line)) return `<span class="ok">${line}</span>`;
+          return line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.holding ? "piped / unbound · plate holds" : "swallowed · keys never reach the editor", "ptybind path"],
+          ["isolate", t.isolateMark, "CTRL+G ConPTY mux keys dead · not a crib · not a tympan", "not a clone"],
+          ["scored", t.scoredMark, result.holding ? (result.verdict === "unbound" ? "unbound" : "piped") : "would score after a hypothetical tear-down unbinds the plate", "expected channel"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div>${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintHousing(result) {
+        const alarm = result.alarm;
+        const unbound = result.verdict === "unbound";
+        document.getElementById("press-tag").textContent = unbound
+          ? "HOLD · UNBOUND"
+          : (alarm ? "HOLD · SWALLOWED" : "HOLD · PIPED");
+        const facing = document.getElementById("sheet-swallowed");
+        const latch = document.getElementById("impression-swallowed");
+        if (alarm) {
+          facing.className = "sheet swallow-sheet alarm";
+          latch.textContent = "SWALLOWED";
+        } else {
+          facing.className = "sheet swallow-sheet";
+          latch.textContent = unbound ? "HANDED" : "DRAW";
+        }
+        document.getElementById("impression-piped").textContent = unbound ? "UNBOUND" : "BOUND";
+      }
+
+      function paintSorts(result) {
+        document.getElementById("typecase").innerHTML = SORTS.map((k) => {
+          let cls = k.kind;
+          if (result.holding) cls = "hold";
+          return `<article class="sort ${cls}"><b>${k.label}</b><span>${result.holding ? "held" : k.note}</span></article>`;
+        }).join("");
+      }
+
+      function paintRings(result) {
+        document.getElementById("gauges").innerHTML = RINGS.map((ring) => {
+          const cls = result.holding ? "ok" : "warn";
+          const body = result.holding ? ring.hold : ring.fail;
+          return `<article class="slot ${cls}"><b>${ring.name}</b><span>${body}</span></article>`;
+        }).join("");
+      }
+
+      function paintPlates(result) {
+        document.getElementById("plates").innerHTML = PLATES.map((p) => {
+          const cls = result.holding ? "hold" : "on";
+          return `<article class="slip ${cls}"><b>${p.name}</b><span>${p.body}</span><code>${p.code}</code></article>`;
+        }).join("");
+      }
+
+      function paintBays(result) {
+        document.getElementById("bays").innerHTML = BAYS.map((p) => {
+          const on = (result.holding && p.hold) || (!result.holding && !p.hold && (
+            (result.verdict === "keys-dead" && p.id === "keys") ||
+            (result.verdict === "parent-consuming" && p.id === "parent") ||
+            (result.verdict === "conpty-mux" && p.id === "mux") ||
+            (result.verdict === "swallowed" && p.id === "keys") ||
+            (result.verdict === "cousins" && p.id === "mux")
+          )) ? "on" : "";
+          return `<article class="roll ${on}" data-bay="${p.id}"><b>${p.name}</b><span>${p.note}</span></article>`;
+        }).join("");
+        document.querySelectorAll("#bays [data-bay]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const bay = BAYS.find((p) => p.id === el.dataset.bay);
+            if (!bay) return;
+            try { apply(await loadNamed(bay.file)); }
+            catch { apply(bay.hold ? { ...holdUnbound } : { ...seeded }); }
+          });
+        });
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "bad" : "good"}">${m}</td>`;
+          return `<tr class="clickable ${active}" data-row="${row.id}">
+            <td>${row.name}</td><td>${row.slot}</td><td>${row.fastener}</td>
+            ${cell(row.shipped)}${cell(row.scored)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "swallowed", piped: "piped", swallowed: "swallowed",
+                draw: "editor-renders", keys: "keys-dead",
+                parent: "parent-consuming", mux: "conpty-mux",
+                gui: "gui-workaround", node: "node-repro",
+                matrix: "control-matrix",
+                unbound: "unbound", cousins: "cousins", repro: "has-clear-repro"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92757 }); }
+          });
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bench = document.getElementById("bench");
+        const face = result.verdict === "unbound" ? "unbound" : (result.holding ? "piped" : "swallowed");
+        bench.className = "bench " + face;
+        const v = document.getElementById("verdict");
+        v.className = "verdict " + result.verdict;
+        v.textContent = result.verdict;
+        document.getElementById("why").textContent = REASONS[result.verdict] || REASONS.piped;
+        document.getElementById("probe").value = JSON.stringify(ticket, null, 2);
+        paintChips(result);
+        paintLog(result);
+        paintPaths(result);
+        paintHousing(result);
+        paintSorts(result);
+        paintRings(result);
+        paintPlates(result);
+        paintBays(result);
+        const map = {
+          piped: "piped", swallowed: "swallowed", unbound: "unbound",
+          "editor-renders": "draw",
+          "keys-dead": "keys",
+          "parent-consuming": "parent",
+          "conpty-mux": "mux",
+          "gui-workaround": "gui",
+          "node-repro": "node",
+          "control-matrix": "matrix",
+          cousins: "cousins",
+          "has-clear-repro": "repro"
+        };
+        paintMatrix(map[result.verdict] || (result.holding ? "piped" : "primary"));
+      }
+
+      async function loadNamed(file) {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(file);
+        return res.json();
+      }
+
+      document.getElementById("score-swallowed").addEventListener("click", () => apply(parseProbe(document.getElementById("probe").value)));
+      document.getElementById("pin-piped").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("seed-swallowed").addEventListener("click", () => apply({ ...seeded }));
+      document.getElementById("admit-unbound").addEventListener("click", () => apply({ ...holdUnbound }));
+      document.getElementById("reset-piped").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("bind-plate").addEventListener("click", () => apply({ ...keysTicket }));
+      document.getElementById("tear-stdin").addEventListener("click", () => apply({ ...holdUnbound }));
+      document.getElementById("load-fixtures").addEventListener("click", async () => {
+        try { apply(await loadNamed("data/92757.json")); }
+        catch { apply({ ...seeded, seed: "swallowed", hubCount: "92757" }); }
+      });
+      document.getElementById("probe").addEventListener("change", (ev) => apply(parseProbe(ev.target.value)));
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (ev) => { ev.preventDefault(); drop.classList.add("hot"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("hot"));
+      drop.addEventListener("drop", async (ev) => {
+        ev.preventDefault();
+        drop.classList.remove("hot");
+        const file = ev.dataTransfer.files[0];
+        if (!file) return;
+        apply(parseProbe(await file.text()));
+      });
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
