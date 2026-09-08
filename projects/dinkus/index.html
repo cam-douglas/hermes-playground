@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dinkus — compositor hairline-rule bench for #92798</title>
+    <meta
+      name="description"
+      content="Dinkus — a compositor's hairline-rule bench for Claude Code #92798: plugin-settings sed ranges reopen on body ---. Idle word is bound."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500;600&family=Zilla+Slab:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --slate: #1a2229;
+        --slate-lift: #242d36;
+        --zinc: #8b959e;
+        --zinc-hot: #b4bcc4;
+        --zinc-deep: #5c656e;
+        --vermilion: #d6452e;
+        --vermilion-hot: #ef5a40;
+        --cream: #f3ead6;
+        --cream-ink: #2a2418;
+        --ink: #e6edf2;
+        --mute: #8d97a1;
+        --hold: #7aa3b5;
+        --alarm: #d6452e;
+        --rule: rgba(243, 234, 214, 0.12);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 86% 8%, rgba(214, 69, 46, 0.14), transparent 38%),
+          repeating-linear-gradient(90deg, rgba(139, 149, 158, 0.08) 0 1px, transparent 1px 28px),
+          var(--slate);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--vermilion-hot); }
+      .shop { width: min(1160px, calc(100% - 28px)); margin: 0 auto; padding: 20px 0 96px; }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--zinc-hot);
+        text-decoration: none;
+        border-bottom: 1px solid var(--zinc);
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .hairline {
+        height: 3px;
+        margin: 12px 0 18px;
+        background:
+          linear-gradient(90deg, transparent, var(--zinc-deep) 8%, var(--vermilion) 48%, var(--zinc-hot) 92%, transparent);
+        box-shadow: 0 0 18px rgba(214, 69, 46, 0.28);
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr 210px;
+        gap: 22px;
+        align-items: end;
+        border-bottom: 2px solid var(--zinc-deep);
+        padding-bottom: 16px;
+        margin: 0 0 16px;
+      }
+      .mast h1 {
+        font-family: "Zilla Slab", "Times New Roman", serif;
+        font-weight: 700;
+        font-size: clamp(52px, 9vw, 92px);
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 0.86;
+        color: var(--cream);
+      }
+      .stick-mark { width: 210px; height: 168px; }
+      .lede {
+        max-width: 78em;
+        color: var(--mute);
+        line-height: 1.64;
+        font-size: 16px;
+        margin: 0 0 10px;
+      }
+      .lede strong {
+        color: var(--vermilion-hot);
+        font-family: "Zilla Slab", serif;
+        font-style: italic;
+        font-weight: 600;
+      }
+      .lede code, code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--cream);
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 12px 0 18px;
+      }
+      .tags a, .tags span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        color: var(--mute);
+        background: var(--slate-lift);
+      }
+      .tags a { color: var(--vermilion-hot); border-color: rgba(214, 69, 46, 0.45); }
+
+      .slips {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 18px;
+      }
+      .slip-btn {
+        border: 0;
+        cursor: pointer;
+        min-height: 78px;
+        padding: 12px 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        text-align: left;
+        background: linear-gradient(180deg, #2c3540, var(--slate-lift));
+        color: var(--ink);
+        box-shadow: inset 0 0 0 1px var(--zinc-deep);
+      }
+      .slip-btn b {
+        display: block;
+        font-family: "Zilla Slab", serif;
+        font-style: italic;
+        font-size: 20px;
+        color: var(--vermilion-hot);
+      }
+      .slip-btn.on { outline: 2px solid var(--alarm); }
+      .slip-btn.hold { outline: 2px solid var(--hold); }
+
+      .folio {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 0 0 18px;
+      }
+      .sheet {
+        min-height: 214px;
+        padding: 18px 16px 20px;
+        position: relative;
+      }
+      .sheet.galley-sheet {
+        background:
+          linear-gradient(180deg, #f8f1e2, var(--cream)),
+          repeating-linear-gradient(180deg, transparent 0 22px, rgba(42, 36, 24, 0.08) 22px 23px);
+        border: 1px solid var(--zinc);
+        color: var(--cream-ink);
+      }
+      .sheet.galley-sheet code { color: var(--vermilion); }
+      .sheet.chase-sheet {
+        background:
+          linear-gradient(180deg, rgba(214, 69, 46, 0.18), transparent 38%),
+          var(--slate-lift);
+        color: var(--ink);
+        border: 1px solid var(--zinc-deep);
+      }
+      .sheet .eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--vermilion-hot);
+        margin-bottom: 8px;
+      }
+      .sheet h2 {
+        font-family: "Zilla Slab", serif;
+        font-style: italic;
+        font-size: 28px;
+        margin: 0 0 8px;
+      }
+      .sheet.galley-sheet h2 { color: var(--vermilion); }
+      .impression {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--vermilion);
+      }
+      .sheet .mode { margin: 0 0 8px; }
+      .sheet .note { margin: 0; color: inherit; opacity: 0.86; line-height: 1.5; }
+      .die-row { display: flex; gap: 8px; margin-top: 14px; }
+      .die {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border: 1px solid currentColor;
+        opacity: 0.8;
+      }
+
+      .bench {
+        padding: 22px 18px 24px;
+        background: var(--slate-lift);
+        border: 1px solid var(--zinc-deep);
+        margin: 0 0 18px;
+      }
+      .bench.bound { box-shadow: 0 0 0 2px rgba(122, 163, 181, 0.35); }
+      .bench.leaked { box-shadow: 0 0 0 2px rgba(214, 69, 46, 0.45); }
+      .bench.closed { box-shadow: 0 0 0 2px rgba(122, 163, 181, 0.7); }
+      .press-tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--zinc-hot);
+      }
+      .sec {
+        font-family: "Zilla Slab", serif;
+        font-style: italic;
+        font-size: 28px;
+        margin: 22px 0 10px;
+        color: var(--cream);
+      }
+      .verdict {
+        font-family: "Zilla Slab", serif;
+        font-size: clamp(36px, 6vw, 56px);
+        margin: 6px 0 8px;
+        line-height: 0.95;
+      }
+      .verdict.bound, .verdict.closed { color: var(--hold); }
+      .verdict.leaked { color: var(--vermilion-hot); }
+      .why { color: var(--mute); line-height: 1.55; margin: 0 0 12px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+      .chip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--zinc-deep);
+        background: transparent;
+        color: var(--mute);
+        padding: 5px 8px;
+        cursor: pointer;
+      }
+      .chip.on { color: var(--vermilion-hot); border-color: var(--vermilion); }
+      .chip.hold { color: var(--hold); border-color: var(--hold); }
+      .typecase, .gauges, .paths {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .sort, .slot, .path {
+        padding: 10px;
+        border: 1px solid var(--zinc-deep);
+        background: #1c252d;
+        min-height: 72px;
+      }
+      .sort b, .slot b, .path b {
+        display: block;
+        font-family: "Zilla Slab", serif;
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+      .sort.hold, .slot.ok, .path.ok { border-color: var(--hold); }
+      .sort.halo, .slot.warn, .path.fail { border-color: var(--vermilion); }
+      .log {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        line-height: 1.55;
+        padding: 12px;
+        background: #12181e;
+        border: 1px solid var(--zinc-deep);
+        margin: 0 0 12px;
+        min-height: 88px;
+      }
+      .log .hit { color: var(--vermilion-hot); }
+      .log .ok { color: var(--hold); }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .act {
+        font-family: "Atkinson Hyperlegible", sans-serif;
+        font-weight: 700;
+        border: 1px solid var(--zinc);
+        background: #2a333c;
+        color: var(--cream);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .act.alarm { border-color: var(--vermilion); color: var(--vermilion-hot); }
+      .act.hold { border-color: var(--hold); color: var(--hold); }
+      .adapters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 0 0 18px;
+        color: var(--mute);
+        font-size: 13px;
+      }
+      .adapter em { color: var(--cream); font-style: italic; }
+      .desk-row {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 14px;
+        margin: 0 0 18px;
+      }
+      .panel {
+        padding: 16px;
+        background: #1c252d;
+        border: 1px solid var(--zinc-deep);
+      }
+      .axis {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .axis th, .axis td {
+        border-bottom: 1px solid var(--rule);
+        padding: 8px 6px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .axis th {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .axis .bad { color: var(--vermilion-hot); }
+      .axis .good { color: var(--hold); }
+      .axis tr.clickable { cursor: pointer; }
+      .axis tr.active { background: rgba(214, 69, 46, 0.1); }
+      .rolls, .plates {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 18px;
+      }
+      .roll, .plate {
+        padding: 12px;
+        border: 1px solid var(--zinc-deep);
+        background: var(--slate-lift);
+        min-height: 96px;
+        cursor: pointer;
+      }
+      .roll.on, .plate.on { outline: 2px solid var(--vermilion); }
+      .plate.hold { outline: 2px solid var(--hold); }
+      .roll b, .plate b {
+        display: block;
+        font-family: "Zilla Slab", serif;
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .plate code { display: block; margin-top: 8px; color: var(--vermilion-hot); }
+      .drop {
+        padding: 18px;
+        border: 1px dashed var(--zinc);
+        text-align: center;
+        color: var(--mute);
+        margin: 0 0 10px;
+      }
+      .drop.hot { border-color: var(--vermilion); color: var(--vermilion-hot); }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        background: #12181e;
+        color: var(--cream);
+        border: 1px solid var(--zinc-deep);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        padding: 12px;
+      }
+      .brief p { color: var(--mute); line-height: 1.6; }
+      .cousin-not-primary {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--zinc-hot);
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 8px; }
+      .stayoff span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--zinc-deep);
+        padding: 4px 7px;
+      }
+      footer {
+        margin-top: 28px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      @media (max-width: 820px) {
+        .mast, .desk-row, .folio, .slips, .typecase, .gauges, .paths, .rolls, .plates {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shop">
+      <a class="catalog chrome" href="/">hermes-playground catalog</a>
+      <div class="mark chrome">17:50 / hermes catalog #223 / #92798</div>
+      <div class="hairline" aria-hidden="true"></div>
+      <header class="mast">
+        <h1>Dinkus</h1>
+        <svg class="stick-mark" id="chase-gauge" viewBox="0 0 210 168" aria-hidden="true">
+          <rect x="18" y="28" width="174" height="92" fill="#5c656e" />
+          <rect x="28" y="38" width="154" height="72" fill="#f3ead6" />
+          <line id="dinkus-rule" x1="40" y1="74" x2="170" y2="74" stroke="#d6452e" stroke-width="3" />
+          <text x="105" y="58" text-anchor="middle" fill="#2a2418" font-family="serif" font-size="13">GALLEY</text>
+          <text x="105" y="98" text-anchor="middle" fill="#d6452e" font-family="serif" font-size="16">* * *</text>
+          <rect x="8" y="128" width="194" height="18" fill="#8b959e" />
+          <text x="105" y="142" text-anchor="middle" fill="#1a2229" font-family="monospace" font-size="10">ZINC CHASE</text>
+        </svg>
+      </header>
+      <p class="lede">
+        17:50 dinkus: a compositor's hairline-rule bench that should keep
+        plugin-settings frontmatter <strong>bound</strong> at the first
+        <code>---</code>; instead sed ranges reopen on body horizontal rules so
+        <code>enabled: false</code> leaks and plugins take the silent disabled
+        path
+        (<a href="https://github.com/anthropics/claude-code/issues/92798">#92798</a>).
+        Score <strong>leaked</strong> or admit <strong>closed</strong>.
+      </p>
+      <p class="lede">
+        Scripts in <code>plugins/plugin-dev/skills/plugin-settings/scripts/</code>
+        extract with <code>sed -n '/^---$/,/^---$/{ /^---$/d; p; }'</code>.
+        Cool slate and vermilion, not a brass nameplate and not a marble basin.
+      </p>
+      <div class="tags chrome" aria-label="Native integrations">
+        <a href="https://github.com/anthropics/claude-code/issues/92798">GitHub issue #92798</a>
+        <span>parse-frontmatter.sh</span>
+        <span>validate-settings.sh</span>
+        <span>area:plugins · bug · has repro</span>
+        <a href="/">Vercel catalog back-link</a>
+        <a href="hook/dinkus.mjs">hook scorer</a>
+        <span>zinc / vermilion / galley</span>
+      </div>
+
+      <div class="slips" id="slips" aria-label="galley slips">
+        <button class="slip-btn" type="button" data-slip="open"><b>Line 1</b>opening ---</button>
+        <button class="slip-btn" type="button" data-slip="body"><b>Body dinkus</b>hairline in the docs</button>
+        <button class="slip-btn" type="button" data-slip="help"><b>Help path</b>ENABLED vs true</button>
+      </div>
+
+      <section class="folio" aria-label="galley versus chase">
+        <article class="sheet galley-sheet" id="sheet-bound">
+          <div class="eyebrow">cream galley / first chase</div>
+          <span class="impression" id="impression-bound">FOLIO ON</span>
+          <h2>Hairline stays in the body</h2>
+          <p class="mode"><code>enabled: true</code></p>
+          <p class="note">
+            Frontmatter stops at the first closing <code>---</code>. The
+            compositor's dinkus is ornament in the docs, not a second chase.
+          </p>
+          <div class="die-row">
+            <span class="die">SLIP</span>
+            <span class="die" id="slip-mark">ON</span>
+          </div>
+        </article>
+        <article class="sheet chase-sheet" id="sheet-leaked">
+          <div class="eyebrow">zinc chase / reopened range</div>
+          <span class="impression" id="impression-leaked">CHASE OPEN</span>
+          <h2>Body rule starts a second range</h2>
+          <p class="mode"><code>true\nfalse</code></p>
+          <p class="note">
+            A sed range reopens every time <code>/^---$/</code> matches again.
+            Docs <code>enabled: false</code> bleeds into the chase.
+          </p>
+          <div class="die-row">
+            <span class="die">SED</span>
+            <span class="die" id="sed-mark">REOPEN</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="bench bound" id="bench">
+        <span class="press-tag" id="press-tag">HOLD · BOUND</span>
+        <h2 class="sec" style="margin-top:0">Chase meter</h2>
+        <p class="verdict" id="verdict">bound</p>
+        <p class="why" id="why">
+          HOLD: idle folio is bound — frontmatter stops at the first closing ---; body hairlines stay in the body.
+        </p>
+        <div class="chips" id="chips"></div>
+        <div class="typecase" id="typecase"></div>
+        <div class="gauges" id="gauges"></div>
+        <div class="log" id="log"></div>
+        <div class="paths" id="paths"></div>
+        <div class="actions">
+          <button class="act alarm" type="button" id="reopen-chase">Reopen the chase</button>
+          <button class="act hold" type="button" id="close-folio">Close the folio</button>
+        </div>
+      </section>
+
+      <div class="adapters chrome" aria-label="demo adapters">
+        <span class="adapter">GitHub · <em>Would file a #92798 follow-up on the reopened chase</em></span>
+        <span class="adapter">Slack · <em>Would post the dinkus verdict to #hermes-catalog</em></span>
+        <span class="adapter">Linear · <em>Would open a leaked-hairline ticket</em></span>
+      </div>
+
+      <div class="desk-row">
+        <section class="panel" aria-label="chase ledger">
+          <h2>Chase ledger</h2>
+          <table class="axis">
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>main</th>
+                <th>tally</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>parse-frontmatter.sh</td>
+                <td class="bad">sed range</td>
+                <td class="bad">reopens on body ---</td>
+              </tr>
+              <tr>
+                <td>enabled lookup</td>
+                <td class="bad">true\nfalse</td>
+                <td class="bad">help compare fails</td>
+              </tr>
+              <tr>
+                <td>disabled path</td>
+                <td class="bad">silent</td>
+                <td class="bad">nothing printed</td>
+              </tr>
+              <tr>
+                <td>false value</td>
+                <td class="bad">missing</td>
+                <td class="bad">[ -z "$VALUE" ]</td>
+              </tr>
+              <tr>
+                <td>validate Check 3</td>
+                <td class="bad">counts any ---</td>
+                <td class="bad">2+ passes with no folio</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="panel" aria-label="what this is not">
+          <h2>What this is not</h2>
+          <p class="why">
+            Not a twin nameplate desk. Not a marble basin. Not a rush-candle atelier.
+            Not a piano action rail. Not a generic markdown linter.
+            This galley is the hairline-rule assay for a plugin-settings sed range.
+          </p>
+        </section>
+      </div>
+
+      <h2 class="sec">Published repro</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>step</th>
+            <th>mark</th>
+            <th>note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>frontmatter</td><td class="good">enabled: true</td><td>first chase</td></tr>
+          <tr><td>body dinkus</td><td class="bad">---</td><td>hairline in the docs section</td></tr>
+          <tr><td>docs key</td><td class="bad">enabled: false</td><td>should stay in the body</td></tr>
+          <tr><td>parser out</td><td class="bad">true\nfalse</td><td>ENABLED vs "true" fails</td></tr>
+        </tbody>
+      </table>
+
+      <h2 class="sec">Also in the same two files</h2>
+      <div class="rolls" id="bays"></div>
+
+      <h2 class="sec">Galley plates</h2>
+      <div class="plates" id="plates"></div>
+
+      <h2 class="sec">Chase matrix</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>ticket</th>
+            <th>slip</th>
+            <th>tally</th>
+            <th>shipped</th>
+            <th>assay</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+
+      <h2 class="sec">Probe the chase</h2>
+      <div class="drop" id="drop">Drop a fixture JSON here. Paste below.</div>
+      <textarea id="probe" spellcheck="false"></textarea>
+      <div class="actions">
+        <button class="act alarm" type="button" id="score-leaked">Score leaked</button>
+        <button class="act hold" type="button" id="pin-bound">Pin idle bound</button>
+        <button class="act alarm" type="button" id="load-leaked">Load leaked</button>
+        <button class="act hold" type="button" id="admit-closed">Admit closed</button>
+        <button class="act" type="button" id="load-fixtures">Load fixtures</button>
+        <button class="act hold" type="button" id="reset-bound">Reset to bound</button>
+      </div>
+
+      <section class="brief">
+        <h2 class="sec">Research brief</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/92798">anthropics/claude-code#92798</a>
+          (OPEN, bug, has repro, area:plugins). Filed 2026-09-08T07:25:28Z.
+          Reporter Sagexd08. Repo at main (ab9b2cf). Scripts in
+          <code>plugins/plugin-dev/skills/plugin-settings/scripts/</code>
+          both pull frontmatter with
+          <code>sed -n '/^---$/,/^---$/{ /^---$/d; p; }'</code>.
+          A sed range reopens every time the start pattern matches again.
+          Repro file <code>.claude/my-plugin.local.md</code> with
+          <code>enabled: true</code>, a body <code>---</code>, and docs
+          <code>enabled: false</code> returns <code>true\nfalse</code>.
+          Help-style <code>ENABLED=$(... enabled)</code> compare against
+          <code>"true"</code> fails and the plugin takes the disabled path
+          with nothing printed. Also: <code>enabled: false</code> errors as
+          field not found; missing closing <code>---</code> runs to EOF;
+          dotted keys match as regex; validate Check 3 / 7 / 8 hairline
+          side-effects.
+        </p>
+        <h2 class="sec">Why Dinkus is not a clone</h2>
+        <p>
+          <strong>Cousins cite-only.</strong>
+          #52755 CLOSED — TUI <code>---</code> divider.
+          #44901 CLOSED — plugin frontmatter docs.
+          #19377 CLOSED — rules <code>paths:</code> frontmatter docs.
+          Primary stays #92798.
+        </p>
+        <p>
+          <strong>NOT Homonym/#92787.</strong>
+          Desktop UUID connector mounts. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Clepsydra/#92776.</strong>
+          OTel mid-session meter. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Rushlight/#92784.</strong>
+          Session-scoped TCC AppData. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Letoff/#92771. NOT Espagnolette/#92694. NOT Cribble/#92684. NOT Springe/#92675.</strong>
+        </p>
+        <p>
+          NOT a generic markdown linter. NOT a live Claude session.
+          NOT an exploit.
+        </p>
+        <p>
+          Dinkus is specifically PLUGIN SETTINGS FRONTMATTER PARSER TREATS
+          EVERY <code>---</code> AS A SED RANGE DELIMITER SO BODY HORIZONTAL
+          RULES LEAK INTO FRONTMATTER AND SILENTLY DISABLE PLUGINS.
+        </p>
+        <p class="cousin-not-primary" id="cousin-strip">
+          <span>cousin-not-primary #52755 CLOSED — TUI --- divider, different shape</span>
+        </p>
+        <p>
+          Stay off:
+          <span class="stayoff">
+            <span>Homonym/#92787 already shipped</span>
+            <span>Clepsydra/#92776 already shipped</span>
+            <span>Rushlight/#92784 already shipped</span>
+            <span>Letoff/#92771 already shipped</span>
+            <span>Espagnolette/#92694 already shipped</span>
+          </span>
+        </p>
+      </section>
+
+      <footer class="chrome">
+        hermes-playground · catalog #223 · dinkus · #92798 · no live Claude · ?embed=1 hides chrome
+      </footer>
+    </main>
+    <script>
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["bound", "closed"]);
+      const CHIPS = [
+        "bound", "leaked", "closed", "sed-range-reopen", "body-hr-bleed",
+        "enabled-true-false-concat", "silent-disabled-path", "false-as-missing",
+        "validate-hr-count", "has-clear-repro", "cousins"
+      ];
+      const CHIP_FILES = {
+        bound: "data/bound.json",
+        leaked: "data/leaked.json",
+        closed: "data/closed.json",
+        "sed-range-reopen": "data/sed-range-reopen.json",
+        "body-hr-bleed": "data/body-hr-bleed.json",
+        "enabled-true-false-concat": "data/enabled-true-false-concat.json",
+        "silent-disabled-path": "data/silent-disabled-path.json",
+        "false-as-missing": "data/false-as-missing.json",
+        "validate-hr-count": "data/validate-hr-count.json",
+        cousins: "data/cousins.json",
+        "has-clear-repro": "data/has-clear-repro.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "primary #92798", slot: "hold", fastener: "sed range reopens on body ---; true\\nfalse", shipped: "FAIL", assay: "FAIL", file: "data/92798.json" },
+        { id: "bound", name: "idle bound", slot: "cream galley", fastener: "HOLD: frontmatter stops at the first closing ---", shipped: "pass", assay: "pass", file: "data/bound.json" },
+        { id: "leaked", name: "path leaked", slot: "zinc chase", fastener: "ALARM: body keys bleed into frontmatter", shipped: "FAIL", assay: "FAIL", file: "data/leaked.json" },
+        { id: "sed", name: "sed-range-reopen", slot: "address range", fastener: "start pattern matches again", shipped: "FAIL", assay: "FAIL", file: "data/sed-range-reopen.json" },
+        { id: "bleed", name: "body-hr-bleed", slot: "hairline", fastener: "whatever follows treated as frontmatter", shipped: "FAIL", assay: "FAIL", file: "data/body-hr-bleed.json" },
+        { id: "concat", name: "enabled-true-false-concat", slot: "lookup", fastener: "parser returns true\\nfalse", shipped: "FAIL", assay: "FAIL", file: "data/enabled-true-false-concat.json" },
+        { id: "silent", name: "silent-disabled-path", slot: "help", fastener: "ENABLED vs true fails; nothing printed", shipped: "FAIL", assay: "FAIL", file: "data/silent-disabled-path.json" },
+        { id: "false", name: "false-as-missing", slot: "-z VALUE", fastener: "enabled: false errors as field not found", shipped: "FAIL", assay: "FAIL", file: "data/false-as-missing.json" },
+        { id: "validate", name: "validate-hr-count", slot: "Check 3/7/8", fastener: "any --- counts; boolean warn; body short", shipped: "FAIL", assay: "FAIL", file: "data/validate-hr-count.json" },
+        { id: "closed", name: "admit closed", slot: "line 1", fastener: "hypothetical: quit at first close", shipped: "pass", assay: "pass", file: "data/closed.json" },
+        { id: "cousins", name: "cousins", slot: "cite-only neighbourhood", fastener: "#52755 #44901 #19377 CLOSED", shipped: "FAIL", assay: "FAIL", file: "data/cousins.json" },
+        { id: "repro", name: "has-clear-repro", slot: "filed narrative", fastener: "labeled has repro", shipped: "FAIL", assay: "FAIL", file: "data/has-clear-repro.json" }
+      ];
+      const BAYS = [
+        { id: "sed", name: "sed-range-reopen", note: "sed -n '/^---$/,/^---$/{ /^---$/d; p; }' reopens on every start match.", file: "data/sed-range-reopen.json", hold: false },
+        { id: "false", name: "false-as-missing", note: "enabled: false errors with Field 'enabled' not found. Check is [ -z \"$VALUE\" ].", file: "data/false-as-missing.json", hold: false },
+        { id: "validate", name: "validate-hr-count", note: "Check 3 counts any ---. Check 7 warns boolean on leaked multi-line. Check 8 drops body rules.", file: "data/validate-hr-count.json", hold: false }
+      ];
+      const PLATES = [
+        { id: "one", name: "1 · published repro", body: ".claude/my-plugin.local.md with enabled: true, a body ---, and docs enabled: false.", code: "true\\nfalse" },
+        { id: "two", name: "2 · silent path", body: "Help text says ENABLED=$(... enabled); compare against \"true\" fails; nothing printed.", code: "disabled path" },
+        { id: "three", name: "3 · cited contrast", body: "NON-BINDING: Sagexd08 branch requires opening --- on line 1 and quits at first close.", code: "invite verify" }
+      ];
+      const RINGS = [
+        { id: "folio", name: "first chase", fail: "enabled: true is not the only value", hold: "frontmatter stops at first close" },
+        { id: "dinkus", name: "body hairline", fail: "--- reopens the sed range", hold: "dinkus stays in the body" },
+        { id: "help", name: "ENABLED check", fail: "true\\nfalse fails the true test", hold: "lookup returns a single true" }
+      ];
+      const SORTS = [
+        { label: "SED", kind: "halo", note: "reopen" },
+        { label: "T/F", kind: "halo", note: "concat" },
+        { label: "OFF", kind: "halo", note: "silent" }
+      ];
+
+      const idle = {
+        source: "probe", issue: 92798, seed: "bound", bound: true, leaked: false, closed: false,
+        shippedMark: "pass", assayMark: "pass", isolateMark: "pass",
+        hubCount: "BOUND",
+        log: ["[idle] folio is bound — frontmatter stops at the first closing ---; body hairlines stay in the body"]
+      };
+      const leakedPath = {
+        source: "probe", issue: 92798, seed: "leaked", bound: false, leaked: true, closed: false,
+        sedRangeReopen: true, bodyHrBleed: true, enabledTrueFalseConcat: true,
+        silentDisabledPath: true, falseAsMissing: true, validateHrCount: true,
+        shippedMark: "FAIL", assayMark: "FAIL", isolateMark: "pass",
+        hubCount: "LEAKED",
+        log: ["[path] #92798 leaked path — sed range reopens on body ---", "[leaked] body keys bleed; true\\nfalse; silent disabled path"]
+      };
+      const holdClosed = {
+        source: "probe", issue: 92798, seed: "closed", bound: false, leaked: false, closed: true,
+        folioClosed: true,
+        shippedMark: "pass", assayMark: "pass", isolateMark: "pass",
+        hubCount: "CLOSED",
+        log: ["[admit] folio already closed — opening --- on line 1; quits at first close; body rules cannot reopen"]
+      };
+      const sedTicket = { ...leakedPath, seed: "sed-range-reopen", hubCount: "SED-RANGE-REOPEN", log: ["[sed-range-reopen] start pattern matches again; second range opens"] };
+      const bleedTicket = { ...leakedPath, seed: "body-hr-bleed", hubCount: "BODY-HR-BLEED", log: ["[body-hr-bleed] horizontal rule in the body; whatever follows treated as frontmatter"] };
+      const concatTicket = { ...leakedPath, seed: "enabled-true-false-concat", hubCount: "ENABLED-TRUE-FALSE-CONCAT", log: ["[enabled-true-false-concat] my-plugin.local.md enabled returns true\\nfalse"] };
+      const silentTicket = { ...leakedPath, seed: "silent-disabled-path", hubCount: "SILENT-DISABLED-PATH", log: ["[silent-disabled-path] compare against \"true\" fails; nothing printed"] };
+      const falseTicket = { ...leakedPath, seed: "false-as-missing", hubCount: "FALSE-AS-MISSING", log: ["[false-as-missing] Field 'enabled' not found; [ -z \"$VALUE\" ]"] };
+      const validateTicket = { ...leakedPath, seed: "validate-hr-count", hubCount: "VALIDATE-HR-COUNT", log: ["[validate-hr-count] Check 3 / Check 7 / Check 8 hairline side-effects"] };
+      const cousinsTicket = { ...leakedPath, seed: "cousins", cousinsCiteOnly: [52755, 44901, 19377], hubCount: "COUSINS", log: ["[cousins] #52755 #44901 #19377 CLOSED · primary stays #92798"] };
+      const reproTicket = { ...leakedPath, seed: "has-clear-repro", hasClearRepro: true, hubCount: "HAS-CLEAR-REPRO", log: ["[repro] labeled has repro"] };
+      const FALLBACKS = {
+        bound: idle,
+        leaked: leakedPath,
+        closed: holdClosed,
+        "sed-range-reopen": sedTicket,
+        "body-hr-bleed": bleedTicket,
+        "enabled-true-false-concat": concatTicket,
+        "silent-disabled-path": silentTicket,
+        "false-as-missing": falseTicket,
+        "validate-hr-count": validateTicket,
+        cousins: cousinsTicket,
+        "has-clear-repro": reproTicket
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.closed === true && t.leaked !== true) || (t.bound === true && t.leaked !== true);
+      }
+
+      function alreadyLeaked(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.leaked !== true) return false;
+        if (HOLD.has(seed) && t.leaked !== true) return false;
+        if (t.leaked === true) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.bound !== true && t.closed !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const holding = remediating(t) && t.leaked !== true;
+        t.shippedMark = t.shippedMark || (holding ? "pass" : "FAIL");
+        t.isolateMark = t.isolateMark || "pass";
+        t.assayMark = t.assayMark || (holding ? "pass" : "FAIL");
+        const chips = [];
+        if (seed === "bound" || (holding && t.bound === true)) chips.push("bound");
+        if (holding || seed === "closed") {
+          if (seed === "closed" || t.closed === true) chips.push("closed");
+          if (seed === "bound" || t.bound === true) chips.push("bound");
+        }
+        if (alreadyLeaked(t) || seed === "leaked" || t.leaked === true) chips.push("leaked");
+        if (seed === "sed-range-reopen" || t.sedRangeReopen === true) chips.push("sed-range-reopen");
+        if (seed === "body-hr-bleed" || t.bodyHrBleed === true) chips.push("body-hr-bleed");
+        if (seed === "enabled-true-false-concat" || t.enabledTrueFalseConcat === true) chips.push("enabled-true-false-concat");
+        if (seed === "silent-disabled-path" || t.silentDisabledPath === true) chips.push("silent-disabled-path");
+        if (seed === "false-as-missing" || t.falseAsMissing === true) chips.push("false-as-missing");
+        if (seed === "validate-hr-count" || t.validateHrCount === true) chips.push("validate-hr-count");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        if (seed === "has-clear-repro" || t.hasClearRepro === true) chips.push("has-clear-repro");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (holding ? (t.closed ? "closed" : "bound") : "leaked");
+        return { ticket: t, holding, alarm: alreadyLeaked(t), chips: unique, verdict };
+      }
+
+      const REASONS = {
+        bound: "HOLD: idle folio is bound — frontmatter stops at the first closing ---; body hairlines stay in the body. Score leaked or admit closed.",
+        leaked: "ALARM: sed range reopens on body ---; body keys bleed into frontmatter. Parser returns true\\nfalse; plugin takes the silent disabled path. Score leaked or admit closed.",
+        closed: "Folio already closed. Parser requires opening --- on line 1 and quits at first close; body rules cannot reopen.",
+        "sed-range-reopen": "sed -n '/^---$/,/^---$/{ /^---$/d; p; }' reopens every time the start pattern matches again, so any --- further down the file starts a second range.",
+        "body-hr-bleed": "A horizontal rule in the body of a settings file makes whatever follows it get treated as frontmatter.",
+        "enabled-true-false-concat": "Published repro: parse-frontmatter.sh .claude/my-plugin.local.md enabled returns true\\nfalse.",
+        "silent-disabled-path": "Help-style ENABLED=$(... enabled) compare against \"true\" fails on true\\nfalse; plugin takes the disabled path with nothing printed.",
+        "false-as-missing": "enabled: false errors with Field 'enabled' not found. The not-found check is [ -z \"$VALUE\" ].",
+        "validate-hr-count": "validate-settings.sh Check 3 counts --- anywhere (2+ passes with no frontmatter). Check 7 warns boolean on leaked multi-line. Check 8 drops body rules from the body line count.",
+        cousins: "Cite-only neighbourhood: #52755 CLOSED TUI --- divider; #44901 CLOSED plugin frontmatter docs; #19377 CLOSED rules paths: docs. Primary stays #92798.",
+        "has-clear-repro": "Issue labeled has repro: parse-frontmatter.sh returns body content as frontmatter when the markdown body contains ---; filed 2026-09-08T07:25:28Z."
+      };
+
+      function paintLog(result) {
+        const t = result.ticket;
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (result.holding
+            ? ["[dinkus] folio bound / closed — hairline stays in the body"]
+            : ["[dinkus] leaked · sed range reopens on body ---"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          if (/leaked|FAIL|bleed|reopen|disabled/i.test(line)) return `<span class="hit">${line}</span>`;
+          if (/bound|closed|hold|first closing/i.test(line)) return `<span class="ok">${line}</span>`;
+          return line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.holding ? "bound / closed · folio holds" : "leaked · body --- reopens the chase", "dinkus path"],
+          ["isolate", t.isolateMark, "plugin-settings sed range · not a nameplate · not a cistern", "not a clone"],
+          ["assay", t.assayMark, result.holding ? (result.verdict === "closed" ? "closed" : "bound") : "would hold after a hypothetical line-1 close path", "expected channel"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div>${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintHousing(result) {
+        const alarm = result.alarm;
+        const closed = result.verdict === "closed";
+        document.getElementById("press-tag").textContent = closed
+          ? "HOLD · CLOSED"
+          : (alarm ? "ALARM · LEAKED" : "HOLD · BOUND");
+        const facing = document.getElementById("sheet-leaked");
+        const latch = document.getElementById("impression-leaked");
+        if (alarm) {
+          facing.className = "sheet chase-sheet alarm";
+          latch.textContent = "LEAKED";
+        } else {
+          facing.className = "sheet chase-sheet";
+          latch.textContent = closed ? "CLOSED" : "CHASE OPEN";
+        }
+        document.getElementById("impression-bound").textContent = closed ? "CLOSED" : "FOLIO ON";
+        const rule = document.getElementById("dinkus-rule");
+        if (rule) {
+          rule.setAttribute("stroke", alarm ? "#ef5a40" : "#7aa3b5");
+          rule.setAttribute("stroke-width", alarm ? "5" : "3");
+        }
+      }
+
+      function paintSorts(result) {
+        document.getElementById("typecase").innerHTML = SORTS.map((k) => {
+          let cls = k.kind;
+          if (result.holding) cls = "hold";
+          return `<article class="sort ${cls}"><b>${k.label}</b><span>${result.holding ? "held" : k.note}</span></article>`;
+        }).join("");
+      }
+
+      function paintRings(result) {
+        document.getElementById("gauges").innerHTML = RINGS.map((ring) => {
+          const cls = result.holding ? "ok" : "warn";
+          const body = result.holding ? ring.hold : ring.fail;
+          return `<article class="slot ${cls}"><b>${ring.name}</b><span>${body}</span></article>`;
+        }).join("");
+      }
+
+      function paintPlates(result) {
+        document.getElementById("plates").innerHTML = PLATES.map((p) => {
+          const cls = result.holding ? "hold" : "on";
+          return `<article class="plate ${cls}"><b>${p.name}</b><span>${p.body}</span><code>${p.code}</code></article>`;
+        }).join("");
+      }
+
+      function paintBays(result) {
+        document.getElementById("bays").innerHTML = BAYS.map((p) => {
+          const on = (result.holding && p.hold) || (!result.holding && !p.hold && (
+            (result.verdict === "sed-range-reopen" && p.id === "sed") ||
+            (result.verdict === "false-as-missing" && p.id === "false") ||
+            (result.verdict === "validate-hr-count" && p.id === "validate") ||
+            (result.verdict === "leaked" && p.id === "sed") ||
+            (result.verdict === "cousins" && p.id === "validate")
+          )) ? "on" : "";
+          return `<article class="roll ${on}" data-bay="${p.id}"><b>${p.name}</b><span>${p.note}</span></article>`;
+        }).join("");
+        document.querySelectorAll("#bays [data-bay]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const bay = BAYS.find((p) => p.id === el.dataset.bay);
+            if (!bay) return;
+            try { apply(await loadNamed(bay.file)); }
+            catch { apply(bay.hold ? { ...holdClosed } : { ...leakedPath }); }
+          });
+        });
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "bad" : "good"}">${m}</td>`;
+          return `<tr class="clickable ${active}" data-row="${row.id}">
+            <td>${row.name}</td><td>${row.slot}</td><td>${row.fastener}</td>
+            ${cell(row.shipped)}${cell(row.assay)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "leaked", bound: "bound", leaked: "leaked",
+                sed: "sed-range-reopen", bleed: "body-hr-bleed",
+                concat: "enabled-true-false-concat", silent: "silent-disabled-path",
+                false: "false-as-missing", validate: "validate-hr-count",
+                closed: "closed", cousins: "cousins", repro: "has-clear-repro"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92798 }); }
+          });
+        });
+      }
+
+      function paintSlips(result) {
+        document.querySelectorAll("#slips [data-slip]").forEach((btn) => {
+          btn.classList.remove("on", "hold");
+          if (result.holding) {
+            if (btn.dataset.slip === "open") btn.classList.add("hold");
+          } else if (btn.dataset.slip === "body" || btn.dataset.slip === "help") {
+            btn.classList.add("on");
+          }
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bench = document.getElementById("bench");
+        const face = result.verdict === "closed" ? "closed" : (result.holding ? "bound" : "leaked");
+        bench.className = "bench " + face;
+        const v = document.getElementById("verdict");
+        v.className = "verdict " + result.verdict;
+        v.textContent = result.verdict;
+        document.getElementById("why").textContent = REASONS[result.verdict] || REASONS.bound;
+        document.getElementById("probe").value = JSON.stringify(ticket, null, 2);
+        paintChips(result);
+        paintLog(result);
+        paintPaths(result);
+        paintHousing(result);
+        paintSorts(result);
+        paintRings(result);
+        paintPlates(result);
+        paintBays(result);
+        paintSlips(result);
+        const map = {
+          bound: "bound", leaked: "leaked", closed: "closed",
+          "sed-range-reopen": "sed",
+          "body-hr-bleed": "bleed",
+          "enabled-true-false-concat": "concat",
+          "silent-disabled-path": "silent",
+          "false-as-missing": "false",
+          "validate-hr-count": "validate",
+          cousins: "cousins",
+          "has-clear-repro": "repro"
+        };
+        paintMatrix(map[result.verdict] || (result.holding ? "bound" : "primary"));
+      }
+
+      async function loadNamed(file) {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(file);
+        return res.json();
+      }
+
+      document.getElementById("score-leaked").addEventListener("click", () => apply(parseProbe(document.getElementById("probe").value)));
+      document.getElementById("pin-bound").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("load-leaked").addEventListener("click", () => apply({ ...leakedPath }));
+      document.getElementById("admit-closed").addEventListener("click", () => apply({ ...holdClosed }));
+      document.getElementById("reset-bound").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("reopen-chase").addEventListener("click", () => apply({ ...leakedPath }));
+      document.getElementById("close-folio").addEventListener("click", () => apply({ ...holdClosed }));
+      document.getElementById("load-fixtures").addEventListener("click", async () => {
+        try { apply(await loadNamed("data/92798.json")); }
+        catch { apply({ ...leakedPath, seed: "leaked", hubCount: "92798" }); }
+      });
+      document.getElementById("probe").addEventListener("change", (ev) => apply(parseProbe(ev.target.value)));
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (ev) => { ev.preventDefault(); drop.classList.add("hot"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("hot"));
+      drop.addEventListener("drop", async (ev) => {
+        ev.preventDefault();
+        drop.classList.remove("hot");
+        const file = ev.dataTransfer.files[0];
+        if (!file) return;
+        apply(parseProbe(await file.text()));
+      });
+      document.querySelectorAll("#slips [data-slip]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const slip = btn.dataset.slip;
+          if (slip === "open") apply({ ...idle });
+          else if (slip === "help") apply({ ...silentTicket });
+          else apply({ ...leakedPath });
+        });
+      });
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
