@@ -66,6 +66,7 @@ test("idle collated is a hold; auto-compact matches the disk exemplar", () => {
   assert.equal(result.collated, true);
   assert.equal(result.phrase, "admit collated");
   assert.equal(result.matchesDisk, true);
+  assert.equal(result.lagMinutes, 0);
   for (const word of FORBIDDEN_IDLE) {
     assert.notEqual(result.idleWord, word);
   }

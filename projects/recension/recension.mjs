@@ -399,7 +399,7 @@ export function scoreWitness(input = {}) {
   const lagMinutes =
     row.lagMinutes != null
       ? Number(row.lagMinutes)
-      : ticket.t === "22:49"
+      : ticket.t === "22:49" && behind > 0
         ? HEADLINE_LAG_MINUTES
         : 0;
 
