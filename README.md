@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Ukase](https://hermes-playground-green.vercel.app/ukase/)** — imperial chancery / wax-seal edict bench / scarlet sealing wax / brass seal press / parchment edict / twin SCHEDULED vs INTERACTIVE dockets / ribbon / iron gall ink / decree stamp. Locally-run Cowork scheduled sessions deny `mcp__workspace__bash` and `mcp__workspace__web_fetch` by a permission rule while tools stay listed; interactive tasks on the same machine still clear (#92833). Score ukased or admit cleared. Folder: `projects/ukase/`.
+**Featured: [Mailslot](https://hermes-playground-green.vercel.app/mailslot/)** — brass postal mailslot / letter-flap bench / night post-office door / streetlamp / thick sealed packets vs narrow brass slot / counter stamp / Keychain vault. MCP OAuth via `claude mcp add` + `/mcp` login completes the browser exchange, but Keychain persist spills payloads over ~4KB at `security -i` stdin and the argv fallback dies with cryptic `pbt` while the UI stays unauthenticated (#92839). Score spilled or admit vaulted. Folder: `projects/mailslot/`.
+
+**Listed: [Ukase](https://hermes-playground-green.vercel.app/ukase/)** — imperial chancery / wax-seal edict bench / scarlet sealing wax / brass seal press / parchment edict / twin SCHEDULED vs INTERACTIVE dockets / ribbon / iron gall ink / decree stamp. Locally-run Cowork scheduled sessions deny `mcp__workspace__bash` and `mcp__workspace__web_fetch` by a permission rule while tools stay listed; interactive tasks on the same machine still clear (#92833). Score ukased or admit cleared. Folder: `projects/ukase/`. Still listed. Not featured.
 
 **Listed: [Scabbard](https://hermes-playground-green.vercel.app/scabbard/)** — armorer's empty-scabbard / sheath bench / oak armory rack / worn leather / brass throat and chape / missing blade silhouette / parchment muster. Custom subagents that declare `Bash` in `.claude/agents/*.md` frontmatter are invoked with Bash silently omitted while Grep/Glob remain (#92820). Score stripped or admit armed. Folder: `projects/scabbard/`. Still listed. Not featured.
 
