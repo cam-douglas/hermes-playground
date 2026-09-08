@@ -1,6 +1,6 @@
 # Dunnage
 
-A **stevedore's dunnage crib** — dark hold timber, hemp rope chalk tallies, crate stencil numbers, north-port skylight; Bitter + Plus Jakarta Sans + Fragment Mono — for a real Claude Code defect: **REMOTETRIGGER ACTION=LIST RETURNS HAS_MORE/NEXT_CURSOR BUT IGNORES THE CURSOR ARGUMENT SO ROUTINE LISTS BEYOND 20 CANNOT BE PAGED.** When a hypothetical restow yields a distinct page 2+ or stops advertising `has_more`/`next_cursor`, the crib is **advanced**.
+A **stevedore's dunnage crib** — dark hold timber, hemp rope chalk tallies, crate stencil numbers, north-port skylight; Literata + Red Hat Text + Fira Code — for a real Claude Code defect: **REMOTETRIGGER ACTION=LIST RETURNS HAS_MORE/NEXT_CURSOR BUT IGNORES THE CURSOR ARGUMENT SO ROUTINE LISTS BEYOND 20 CANNOT BE PAGED.** When a hypothetical restow yields a distinct page 2+ or stops advertising `has_more`/`next_cursor`, the crib is **advanced**.
 
 Primary:
 
@@ -81,7 +81,7 @@ Different surface: RemoteTrigger `action=list` pagination vs subagent first-requ
 
 Product name stays **Dunnage**. Name/slug `dunnage` confirmed unused in catalog.json (216 products before this ship; Setoff is #216).
 
-Different UI: stevedore's dunnage crib / cargo-hold page ledger / dark hold timber / hemp rope chalk tallies / crate stencil numbers / north-port skylight. Bitter / Plus Jakarta Sans / Fragment Mono. NOT DM Serif Display / Commissioner / Azeret Mono (Setoff). NOT Instrument Serif / Figtree / JetBrains Mono (Espagnolette). NOT Playfair Display / DM Sans / Fira Code (Imprimatur). NOT Newsreader / Sora (Byname). NOT Ibarra Real Nova / Geist Mono (Crenel used Plus Jakarta — body reuse is the locked trio with Bitter). NOT Cardo / Public Sans (Quietus used Fragment Mono — mono reuse is the locked trio with Bitter). NOT Young Serif / Karla (Cribble). NOT Bodoni / Nunito (Springe). NOT letterpress tympan / locksmith casement / mason crenel / censor stamp / herald folio / mill cribble / trapper springe / pier gangway / freight waybill.
+Different UI: stevedore's dunnage crib / cargo-hold page ledger / dark hold timber / hemp rope chalk tallies / crate stencil numbers / north-port skylight. Literata / Red Hat Text / Fira Code. NOT Bitter / Manrope / IBM Plex Mono (Chock). NOT Fragment Mono (Snatch / Quietus). NOT Plus Jakarta Sans (Crenel). NOT DM Serif Display / Commissioner / Azeret Mono (Setoff). NOT Instrument Serif / Figtree / JetBrains Mono (Espagnolette). NOT Playfair Display / DM Sans (Imprimatur used Fira Code in a different trio — Dunnage locks Fira Code with Literata + Red Hat Text). NOT Newsreader / Sora (Byname). NOT Ibarra Real Nova / Geist Mono. NOT Cardo / Public Sans. NOT Young Serif / Karla (Cribble). NOT Bodoni / Nunito (Springe). NOT letterpress tympan / locksmith casement / mason crenel / censor stamp / herald folio / mill cribble / trapper springe / pier gangway / freight waybill.
 
 Different verbs: Score echoed, Admit advanced, Pin idle berthed, Seed echoed, Reset to berthed, Load fixtures, Walk the cursor, Restow the crib.
 

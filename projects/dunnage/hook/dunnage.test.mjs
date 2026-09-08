@@ -346,9 +346,13 @@ test("fixtures encode issue facts and score their seeds", () => {
 });
 
 test("living page is a stevedore dunnage crib, not a clone", () => {
-  assert.match(page, /Bitter/);
-  assert.match(page, /Plus Jakarta Sans/);
-  assert.match(page, /Fragment Mono/);
+  assert.match(page, /Literata/);
+  assert.match(page, /Red Hat Text/);
+  assert.match(page, /Fira Code/);
+  assert.doesNotMatch(page, /Bitter/);
+  assert.doesNotMatch(page, /Plus Jakarta/);
+  assert.doesNotMatch(page, /Fragment Mono/);
+  assert.doesNotMatch(page, /Manrope/);
   assert.doesNotMatch(page, /DM Serif Display/);
   assert.doesNotMatch(page, /Commissioner/);
   assert.doesNotMatch(page, /Azeret Mono/);
@@ -357,7 +361,6 @@ test("living page is a stevedore dunnage crib, not a clone", () => {
   assert.doesNotMatch(page, /JetBrains Mono/);
   assert.doesNotMatch(page, /Playfair Display/);
   assert.doesNotMatch(page, /DM Sans/);
-  assert.doesNotMatch(page, /Fira Code/);
   assert.doesNotMatch(page, /Newsreader/);
   assert.doesNotMatch(page, /Sora/);
   assert.doesNotMatch(page, /Ibarra Real Nova/);
