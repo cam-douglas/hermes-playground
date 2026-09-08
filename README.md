@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Dryjoint](https://hermes-playground-green.vercel.app/dryjoint/)** — electronics dry-joint / cold-solder bench / FR4 pcb / copper traces / flux stains / solder pads. VS Code chat markdown file links should stay fused to the existing `open_file` bridge, but rendered `<a>` anchors never call it and binary `showTextDocument` rejects silent (#92809). Score dry or admit bonded. Folder: `projects/dryjoint/`.
+**Featured: [Deadletter](https://hermes-playground-green.vercel.app/deadletter/)** — postal dead-letter / undeliverable-mail bench / sorting desk / pigeonholes / stamped envelopes / undeliverable tray. Completed shell `tool_result`s should stay receipted after worktree transitions, but PostToolUse orchestration loses the result after `tool_dispatch_end outcome=ok` while print/SDK still delivers (#90049). Score lost or admit filed. Folder: `projects/deadletter/`.
+
+**Listed: [Dryjoint](https://hermes-playground-green.vercel.app/dryjoint/)** — electronics dry-joint / cold-solder bench / FR4 pcb / copper traces / flux stains / solder pads. VS Code chat markdown file links should stay fused to the existing `open_file` bridge, but rendered `<a>` anchors never call it and binary `showTextDocument` rejects silent (#92809). Score dry or admit bonded. Folder: `projects/dryjoint/`. Still listed. Not featured.
 
 **Listed: [Dinkus](https://hermes-playground-green.vercel.app/dinkus/)** — compositor's hairline-rule bench / cool slate desk / zinc chase / vermilion dinkus mark / cream galley slip. Plugin-settings sed ranges reopen on body `---` so `enabled:false` leaks and plugins take the silent disabled path (#92798). Score leaked or admit closed. Folder: `projects/dinkus/`. Still listed. Not featured.
 
