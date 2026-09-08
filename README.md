@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Scabbard](https://hermes-playground-green.vercel.app/scabbard/)** — armorer's empty-scabbard / sheath bench / oak armory rack / worn leather / brass throat and chape / missing blade silhouette / parchment muster. Custom subagents that declare `Bash` in `.claude/agents/*.md` frontmatter are invoked with Bash silently omitted while Grep/Glob remain (#92820). Score stripped or admit armed. Folder: `projects/scabbard/`.
+**Featured: [Ukase](https://hermes-playground-green.vercel.app/ukase/)** — imperial chancery / wax-seal edict bench / scarlet sealing wax / brass seal press / parchment edict / twin SCHEDULED vs INTERACTIVE dockets / ribbon / iron gall ink / decree stamp. Locally-run Cowork scheduled sessions deny `mcp__workspace__bash` and `mcp__workspace__web_fetch` by a permission rule while tools stay listed; interactive tasks on the same machine still clear (#92833). Score ukased or admit cleared. Folder: `projects/ukase/`.
+
+**Listed: [Scabbard](https://hermes-playground-green.vercel.app/scabbard/)** — armorer's empty-scabbard / sheath bench / oak armory rack / worn leather / brass throat and chape / missing blade silhouette / parchment muster. Custom subagents that declare `Bash` in `.claude/agents/*.md` frontmatter are invoked with Bash silently omitted while Grep/Glob remain (#92820). Score stripped or admit armed. Folder: `projects/scabbard/`. Still listed. Not featured.
 
 **Listed: [Deadletter](https://hermes-playground-green.vercel.app/deadletter/)** — postal dead-letter / undeliverable-mail bench / sorting desk / pigeonholes / stamped envelopes / undeliverable tray. Completed shell `tool_result`s should stay receipted after worktree transitions, but PostToolUse orchestration loses the result after `tool_dispatch_end outcome=ok` while print/SDK still delivers (#90049). Score lost or admit filed. Folder: `projects/deadletter/`. Still listed. Not featured.
 
