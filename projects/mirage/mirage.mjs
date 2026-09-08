@@ -21,9 +21,7 @@
  * No Desktop hooks. No payloads.
  */
 
-import { readFileSync } from "node:fs";
-import { stdin } from "node:process";
-import { pathToFileURL } from "node:url";
+/* Browser-safe: no top-level node: imports. CLI I/O is loaded only in main(). */
 
 export const VERDICTS = Object.freeze([
   "confirmed",
@@ -531,18 +529,20 @@ function safeParse(text) {
   }
 }
 
-async function readStdin() {
-  const chunks = [];
-  for await (const chunk of stdin) chunks.push(chunk);
-  return Buffer.concat(chunks).toString("utf8");
-}
-
-export async function main(argv = process.argv.slice(2)) {
+export async function main(argv) {
+  const [{ readFileSync }, { stdin }, { pathToFileURL }] = await Promise.all([
+    import("node:fs"),
+    import("node:process"),
+    import("node:url"),
+  ]);
+  const args = argv || (typeof process !== "undefined" ? process.argv.slice(2) : []);
   let ticket;
-  if (argv[0] && argv[0] !== "-") {
-    ticket = JSON.parse(readFileSync(argv[0], "utf8"));
-  } else if (!stdin.isTTY) {
-    ticket = await readStdin();
+  if (args[0] && args[0] !== "-") {
+    ticket = JSON.parse(readFileSync(args[0], "utf8"));
+  } else if (stdin && !stdin.isTTY) {
+    const chunks = [];
+    for await (const chunk of stdin) chunks.push(chunk);
+    ticket = safeParse(Buffer.concat(chunks).toString("utf8"));
   } else {
     ticket = emptyTicket();
   }
@@ -551,13 +551,21 @@ export async function main(argv = process.argv.slice(2)) {
   return result;
 }
 
-const invoked = process.argv[1]
-  ? import.meta.url === pathToFileURL(process.argv[1]).href
-  : false;
+const runningInNode = typeof process !== "undefined" && !!process.versions?.node;
 
-if (invoked) {
-  main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  });
+if (runningInNode) {
+  import("node:url")
+    .then(({ pathToFileURL }) => {
+      const invoked = process.argv[1]
+        ? import.meta.url === pathToFileURL(process.argv[1]).href
+        : false;
+      if (invoked) {
+        return main();
+      }
+      return null;
+    })
+    .catch((error) => {
+      console.error(error);
+      if (typeof process !== "undefined") process.exitCode = 1;
+    });
 }

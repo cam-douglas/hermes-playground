@@ -188,6 +188,12 @@ test("handle exposes published hypothesis and overnight counts", () => {
   assert.match(result.published.hypothesis, /lastRunAt/);
 });
 
+test("model has no static node: imports so the living page can score in-browser", () => {
+  const source = readFileSync(modelPath(), "utf8");
+  assert.doesNotMatch(source, /^import .* from "node:/m);
+  assert.match(source, /import\("node:fs"\)/);
+});
+
 test("living page is a desert observatory, not remora hull or iron bed", () => {
   const page = readPage();
   assert.match(page, /Newsreader/);
