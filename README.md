@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Mirage](https://hermes-playground-green.vercel.app/mirage/)** — desert observatory / heat-haze bench / dark desert night / shimmer / false oasis. A scheduled dispatch should stay confirmed (Spawning → Dispatch acknowledged by renderer → Confirmed task run within ~1s); instead the renderer acknowledges, no session starts, stale pending dispatch is cleared, and lastRunAt is stamped anyway so the task list lies (#92920). Score miraged or admit confirmed. Folder: `projects/mirage/`.
+**Featured: [Recension](https://hermes-playground-green.vercel.app/recension/)** — scriptorium / textual-criticism collation desk / dark manuscript oak / iron-gall / parchment witnesses / stemma of versions A–F. Auto-compact should keep instruction files collated (re-read CLAUDE.md/MEMORY.md from disk); instead the last-user-prompt snapshot is stereotyped back into context and disk is ignored until the next user prompt (#92949). Score stereotyped or admit collated. Folder: `projects/recension/`.
+
+**Listed: [Mirage](https://hermes-playground-green.vercel.app/mirage/)** — desert observatory / heat-haze bench / dark desert night / shimmer / false oasis. A scheduled dispatch should stay confirmed (Spawning → Dispatch acknowledged by renderer → Confirmed task run within ~1s); instead the renderer acknowledges, no session starts, stale pending dispatch is cleared, and lastRunAt is stamped anyway so the task list lies (#92920). Score miraged or admit confirmed. Folder: `projects/mirage/`. Still listed. Not featured.
 
 **Listed: [Remora](https://hermes-playground-green.vercel.app/remora/)** — hull-clinging remora / process-tree sounding bench / teal-ink deep water / barnacle copper / pale foam linen. A PostToolUse wait should stay loosed the moment the configured hook process exits; instead a persistent redirected child still clings so the tool_result stays held ~90s after hook.ps1 already swam away (#92934). Score clung or admit loosed. Folder: `projects/remora/`. Still listed. Not featured.
 
