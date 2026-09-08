@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Deadletter](https://hermes-playground-green.vercel.app/deadletter/)** — postal dead-letter / undeliverable-mail bench / sorting desk / pigeonholes / stamped envelopes / undeliverable tray. Completed shell `tool_result`s should stay receipted after worktree transitions, but PostToolUse orchestration loses the result after `tool_dispatch_end outcome=ok` while print/SDK still delivers (#90049). Score lost or admit filed. Folder: `projects/deadletter/`.
+**Featured: [Scabbard](https://hermes-playground-green.vercel.app/scabbard/)** — armorer's empty-scabbard / sheath bench / oak armory rack / worn leather / brass throat and chape / missing blade silhouette / parchment muster. Custom subagents that declare `Bash` in `.claude/agents/*.md` frontmatter are invoked with Bash silently omitted while Grep/Glob remain (#92820). Score stripped or admit armed. Folder: `projects/scabbard/`.
+
+**Listed: [Deadletter](https://hermes-playground-green.vercel.app/deadletter/)** — postal dead-letter / undeliverable-mail bench / sorting desk / pigeonholes / stamped envelopes / undeliverable tray. Completed shell `tool_result`s should stay receipted after worktree transitions, but PostToolUse orchestration loses the result after `tool_dispatch_end outcome=ok` while print/SDK still delivers (#90049). Score lost or admit filed. Folder: `projects/deadletter/`. Still listed. Not featured.
 
 **Listed: [Dryjoint](https://hermes-playground-green.vercel.app/dryjoint/)** — electronics dry-joint / cold-solder bench / FR4 pcb / copper traces / flux stains / solder pads. VS Code chat markdown file links should stay fused to the existing `open_file` bridge, but rendered `<a>` anchors never call it and binary `showTextDocument` rejects silent (#92809). Score dry or admit bonded. Folder: `projects/dryjoint/`. Still listed. Not featured.
 
