@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deadletter — postal dead-letter bench for #90049</title>
+    <meta
+      name="description"
+      content="Deadletter — a postal dead-letter / undeliverable-mail bench for Claude Code #90049: completed shell tool_results should stay receipted after worktree transitions; PostToolUse loses them after dispatch-ok. Idle word is receipted."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,600;6..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --desk: #16110d;
+        --desk-lift: #221910;
+        --hole: #0e0b08;
+        --wax: #c24a3a;
+        --wax-hot: #e05a45;
+        --kraft: #c9a36a;
+        --paper: #ead9b8;
+        --brass: #b8944a;
+        --ink: #efe4cf;
+        --mute: #9a8b72;
+        --hold: #7faf7a;
+        --alarm: #e05a45;
+        --rule: rgba(201, 163, 106, 0.22);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Figtree, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 8% 0%, rgba(194, 74, 58, 0.18), transparent 40%),
+          radial-gradient(ellipse at 92% 12%, rgba(184, 148, 74, 0.12), transparent 34%),
+          repeating-linear-gradient(90deg, rgba(201, 163, 106, 0.05) 0 1px, transparent 1px 42px),
+          var(--desk);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--kraft); }
+      .office { width: min(1160px, calc(100% - 28px)); margin: 0 auto; padding: 20px 0 96px; }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--paper);
+        text-decoration: none;
+        border-bottom: 1px solid var(--wax);
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .cancel {
+        height: 4px;
+        margin: 12px 0 18px;
+        background:
+          linear-gradient(90deg, transparent, var(--wax) 12%, var(--brass) 48%, var(--kraft) 86%, transparent);
+        box-shadow: 0 0 18px rgba(194, 74, 58, 0.35);
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr 220px;
+        gap: 22px;
+        align-items: end;
+        border-bottom: 2px solid var(--wax);
+        padding-bottom: 16px;
+        margin: 0 0 16px;
+      }
+      .mast h1 {
+        font-family: Newsreader, "Times New Roman", serif;
+        font-weight: 700;
+        font-size: clamp(52px, 9vw, 92px);
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 0.86;
+        color: var(--paper);
+      }
+      .seal-mark { width: 220px; height: 168px; }
+      .lede {
+        max-width: 78em;
+        color: var(--mute);
+        line-height: 1.64;
+        font-size: 16px;
+        margin: 0 0 10px;
+      }
+      .lede strong {
+        color: var(--wax-hot);
+        font-family: Newsreader, serif;
+        font-weight: 600;
+      }
+      .lede code, code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--paper);
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 12px 0 18px;
+      }
+      .tags a, .tags span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        color: var(--mute);
+        background: var(--desk-lift);
+      }
+      .tags a { color: var(--kraft); border-color: rgba(224, 90, 69, 0.45); }
+
+      .holes {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 18px;
+      }
+      .hole-btn {
+        border: 0;
+        cursor: pointer;
+        min-height: 78px;
+        padding: 12px 10px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        text-align: left;
+        background: linear-gradient(180deg, #2c2218, var(--desk-lift));
+        color: var(--ink);
+        box-shadow: inset 0 0 0 1px var(--kraft);
+      }
+      .hole-btn b {
+        display: block;
+        font-family: Newsreader, serif;
+        font-size: 20px;
+        color: var(--wax-hot);
+      }
+      .hole-btn.on { outline: 2px solid var(--alarm); }
+      .hole-btn.hold { outline: 2px solid var(--hold); }
+
+      .trays {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 0 0 18px;
+      }
+      .envelope {
+        min-height: 214px;
+        padding: 18px 16px 20px;
+        position: relative;
+      }
+      .envelope.ok-sheet {
+        background:
+          linear-gradient(180deg, rgba(127, 175, 122, 0.14), transparent 40%),
+          var(--desk-lift);
+        border: 1px solid var(--hold);
+        color: var(--ink);
+      }
+      .envelope.lost-sheet {
+        background:
+          linear-gradient(180deg, rgba(224, 90, 69, 0.2), transparent 38%),
+          var(--hole);
+        color: var(--ink);
+        border: 1px solid var(--wax);
+      }
+      .envelope .eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--wax-hot);
+        margin-bottom: 8px;
+      }
+      .envelope h2 {
+        font-family: Newsreader, serif;
+        font-size: 28px;
+        margin: 0 0 8px;
+      }
+      .impression {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .envelope .mode { margin: 0 0 8px; }
+      .envelope .note { margin: 0; color: inherit; opacity: 0.86; line-height: 1.5; }
+      .stamp-row { display: flex; gap: 8px; margin-top: 14px; }
+      .stamp {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border: 1px solid currentColor;
+        opacity: 0.8;
+      }
+
+      .desk {
+        padding: 22px 18px 24px;
+        background: var(--desk-lift);
+        border: 1px solid var(--kraft);
+        margin: 0 0 18px;
+      }
+      .desk.receipted { box-shadow: 0 0 0 2px rgba(127, 175, 122, 0.35); }
+      .desk.lost { box-shadow: 0 0 0 2px rgba(224, 90, 69, 0.5); }
+      .desk.filed { box-shadow: 0 0 0 2px rgba(127, 175, 122, 0.7); }
+      .press-tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--paper);
+      }
+      .sec {
+        font-family: Newsreader, serif;
+        font-size: 28px;
+        margin: 22px 0 10px;
+        color: var(--paper);
+      }
+      .verdict {
+        font-family: Newsreader, serif;
+        font-size: clamp(36px, 6vw, 56px);
+        margin: 6px 0 8px;
+        line-height: 0.95;
+      }
+      .verdict.receipted, .verdict.filed { color: var(--hold); }
+      .verdict.lost { color: var(--wax-hot); }
+      .why { color: var(--mute); line-height: 1.55; margin: 0 0 12px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+      .chip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--kraft);
+        background: transparent;
+        color: var(--mute);
+        padding: 5px 8px;
+        cursor: pointer;
+      }
+      .chip.on { color: var(--wax-hot); border-color: var(--alarm); }
+      .chip.hold { color: var(--hold); border-color: var(--hold); }
+      .typecase, .gauges, .paths {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .sort, .slot, .path {
+        padding: 10px;
+        border: 1px solid var(--rule);
+        background: var(--hole);
+        min-height: 72px;
+      }
+      .sort b, .slot b, .path b {
+        display: block;
+        font-family: Newsreader, serif;
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+      .sort.hold, .slot.ok, .path.ok { border-color: var(--hold); }
+      .sort.halo, .slot.warn, .path.fail { border-color: var(--alarm); }
+      .log {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        line-height: 1.55;
+        padding: 12px;
+        background: var(--hole);
+        border: 1px solid var(--rule);
+        margin: 0 0 12px;
+        min-height: 88px;
+      }
+      .log .hit { color: var(--wax-hot); }
+      .log .ok { color: var(--hold); }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .act {
+        font-family: Figtree, sans-serif;
+        font-weight: 700;
+        border: 1px solid var(--kraft);
+        background: #2c2218;
+        color: var(--paper);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .act.alarm { border-color: var(--alarm); color: var(--wax-hot); }
+      .act.hold { border-color: var(--hold); color: var(--hold); }
+      .adapters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 0 0 18px;
+        color: var(--mute);
+        font-size: 13px;
+      }
+      .adapter em { color: var(--paper); font-style: italic; }
+      .desk-row {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 14px;
+        margin: 0 0 18px;
+      }
+      .panel {
+        padding: 16px;
+        background: var(--hole);
+        border: 1px solid var(--rule);
+      }
+      .axis {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .axis th, .axis td {
+        border-bottom: 1px solid var(--rule);
+        padding: 8px 6px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .axis th {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .axis .bad { color: var(--wax-hot); }
+      .axis .good { color: var(--hold); }
+      .axis tr.clickable { cursor: pointer; }
+      .axis tr.active { background: rgba(224, 90, 69, 0.1); }
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin: 0 0 18px;
+      }
+      .flow article {
+        padding: 12px;
+        border: 1px solid var(--rule);
+        background: var(--desk-lift);
+        min-height: 96px;
+      }
+      .flow b {
+        display: block;
+        font-family: Newsreader, serif;
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .rolls, .plates {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 18px;
+      }
+      .roll, .plate {
+        padding: 12px;
+        border: 1px solid var(--rule);
+        background: var(--desk-lift);
+        min-height: 96px;
+        cursor: pointer;
+      }
+      .roll.on, .plate.on { outline: 2px solid var(--alarm); }
+      .plate.hold { outline: 2px solid var(--hold); }
+      .roll b, .plate b {
+        display: block;
+        font-family: Newsreader, serif;
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .plate code { display: block; margin-top: 8px; color: var(--wax-hot); }
+      .drop {
+        padding: 18px;
+        border: 1px dashed var(--kraft);
+        text-align: center;
+        color: var(--mute);
+        margin: 0 0 10px;
+      }
+      .drop.hot { border-color: var(--alarm); color: var(--wax-hot); }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        background: var(--hole);
+        color: var(--paper);
+        border: 1px solid var(--rule);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        padding: 12px;
+      }
+      .brief p { color: var(--mute); line-height: 1.6; }
+      .cousin-not-primary {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--paper);
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 8px; }
+      .stayoff span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        padding: 4px 7px;
+      }
+      footer {
+        margin-top: 28px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      @media (max-width: 820px) {
+        .mast, .desk-row, .trays, .holes, .typecase, .gauges, .paths, .rolls, .plates, .flow {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="office">
+      <a class="catalog chrome" href="/">hermes-playground catalog</a>
+      <div class="mark chrome">19:50 / hermes catalog #225 / #90049</div>
+      <div class="cancel" aria-hidden="true"></div>
+      <header class="mast">
+        <h1>Deadletter</h1>
+        <svg class="seal-mark" id="seal-gauge" viewBox="0 0 220 168" aria-hidden="true">
+          <rect x="10" y="16" width="200" height="136" fill="#0e0b08" stroke="#c9a36a" stroke-width="2" />
+          <rect x="22" y="30" width="52" height="36" fill="#221910" stroke="#b8944a" />
+          <rect x="84" y="30" width="52" height="36" fill="#221910" stroke="#b8944a" />
+          <rect x="146" y="30" width="52" height="36" fill="#221910" stroke="#b8944a" />
+          <rect x="22" y="78" width="52" height="36" fill="#221910" stroke="#c24a3a" />
+          <rect x="84" y="78" width="52" height="36" fill="#ead9b8" stroke="#c24a3a" />
+          <rect x="146" y="78" width="52" height="36" fill="#221910" stroke="#b8944a" />
+          <circle id="wax-seal" cx="110" cy="96" r="11" fill="#c24a3a" />
+          <text x="110" y="142" text-anchor="middle" fill="#c9a36a" font-family="monospace" font-size="10">UNDELIVERABLE</text>
+        </svg>
+      </header>
+      <p class="lede">
+        19:50 deadletter: a postal dead-letter bench that should keep
+        completed shell <code>tool_result</code>s <strong>receipted</strong>
+        into the interactive transcript after worktree transitions; instead
+        PostToolUse orchestration <strong>lost</strong> the result after
+        <code>tool_dispatch_end outcome=ok</code> while print/SDK still
+        delivers
+        (<a href="https://github.com/anthropics/claude-code/issues/90049">#90049</a>).
+        Score <strong>lost</strong> or admit <strong>filed</strong>.
+      </p>
+      <p class="lede">
+        Windows interactive CLI. First Bash or PowerShell after session start /
+        <code>EnterWorktree</code> / <code>ExitWorktree</code>. Command
+        side-effects are real. The packet never reaches the next pigeonhole.
+        Wax and kraft, not a solder pad and not a galley slip.
+      </p>
+      <div class="tags chrome" aria-label="Native integrations">
+        <a href="https://github.com/anthropics/claude-code/issues/90049">GitHub issue #90049</a>
+        <span>tool_dispatch_end outcome=ok</span>
+        <span>PostToolUse</span>
+        <span>platform:windows · bug · has repro · area:bash</span>
+        <a href="/">Vercel catalog back-link</a>
+        <a href="hook/deadletter.mjs">hook scorer</a>
+        <span>pigeonhole / envelope / wax</span>
+      </div>
+
+      <div class="holes" id="holes" aria-label="pigeonholes">
+        <button class="hole-btn" type="button" data-hole="dispatch"><b>Dispatch hole</b>outcome=ok stamp</button>
+        <button class="hole-btn" type="button" data-hole="tray"><b>Undeliverable tray</b>no tool_result</button>
+        <button class="hole-btn" type="button" data-hole="hooks"><b>Hook pigeonhole</b>blocking iterator</button>
+      </div>
+
+      <section class="trays" aria-label="receipted versus undeliverable">
+        <article class="envelope ok-sheet" id="sheet-receipted">
+          <div class="eyebrow">sorting desk / receipted pigeonhole</div>
+          <span class="impression" id="impression-receipted">PACKET IN</span>
+          <h2>Print and SDK still deliver</h2>
+          <p class="mode"><code>claude -p</code> persists the result</p>
+          <p class="note">
+            Same hooks, same model, same <code>git worktree add</code>.
+            The print path receipts the letter.
+          </p>
+          <div class="stamp-row">
+            <span class="stamp">PRINT</span>
+            <span class="stamp" id="print-mark">OK</span>
+          </div>
+        </article>
+        <article class="envelope lost-sheet" id="sheet-lost">
+          <div class="eyebrow">undeliverable / missing tool_result</div>
+          <span class="impression" id="impression-lost">TRAY OPEN</span>
+          <h2>Interactive tray never receipts</h2>
+          <p class="mode"><code>dispatch-ok → no persist</code></p>
+          <p class="note">
+            Transcript ends at assistant <code>tool_use</code>.
+            Process stays busy. No shell child.
+          </p>
+          <div class="stamp-row">
+            <span class="stamp">INTERACTIVE</span>
+            <span class="stamp" id="tray-mark">LOST</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="desk receipted" id="bench">
+        <span class="press-tag" id="press-tag">HOLD · RECEIPTED</span>
+        <h2 class="sec" style="margin-top:0">Faceplate meter</h2>
+        <p class="verdict" id="verdict">receipted</p>
+        <p class="why" id="why">
+          HOLD: idle pigeonhole is receipted — completed shell tool_results stay receipted into the interactive transcript after worktree transitions.
+        </p>
+        <div class="chips" id="chips"></div>
+        <div class="typecase" id="typecase"></div>
+        <div class="gauges" id="gauges"></div>
+        <div class="log" id="log"></div>
+        <div class="paths" id="paths"></div>
+        <div class="actions">
+          <button class="act alarm" type="button" id="stamp-tray">Stamp the tray</button>
+          <button class="act hold" type="button" id="file-letter">File the letter</button>
+        </div>
+      </section>
+
+      <div class="adapters chrome" aria-label="demo adapters">
+        <span class="adapter">GitHub · <em>Would file a #90049 follow-up on the undeliverable tray</em></span>
+        <span class="adapter">Slack · <em>Would post the deadletter verdict to #hermes-catalog</em></span>
+        <span class="adapter">Linear · <em>Would open a dispatch-ok-no-persist ticket</em></span>
+      </div>
+
+      <div class="desk-row">
+        <section class="panel" aria-label="tray ledger">
+          <h2>Tray ledger</h2>
+          <table class="axis">
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>main</th>
+                <th>tally</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>dispatch</td>
+                <td class="good">outcome=ok</td>
+                <td class="good">durationMs recorded</td>
+              </tr>
+              <tr>
+                <td>command</td>
+                <td class="good">completed</td>
+                <td class="good">git worktree created</td>
+              </tr>
+              <tr>
+                <td>tool_result</td>
+                <td class="bad">missing</td>
+                <td class="bad">transcript ends at tool_use</td>
+              </tr>
+              <tr>
+                <td>process</td>
+                <td class="bad">busy</td>
+                <td class="bad">no shell child</td>
+              </tr>
+              <tr>
+                <td>print/SDK</td>
+                <td class="good">delivers</td>
+                <td class="good">same hooks</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="panel" aria-label="what this is not">
+          <h2>What this is not</h2>
+          <p class="why">
+            Not a solder pad. Not a galley slip. Not a twin nameplate desk.
+            Not a marble basin. Not a rush-candle atelier.
+            This desk is the dead-letter assay for a missing tool_result.
+          </p>
+        </section>
+      </div>
+
+      <h2 class="sec">Dispatch → PostToolUse → missing persist</h2>
+      <div class="flow" aria-label="flow diagram">
+        <article>
+          <b>1 · await tool.call</b>
+          <span>shell finishes; side-effects real</span>
+        </article>
+        <article>
+          <b>2 · dispatch-ok</b>
+          <span><code>tool_dispatch_end outcome=ok</code></span>
+        </article>
+        <article>
+          <b>3 · PostToolUse</b>
+          <span>async iteration after worktree transition</span>
+        </article>
+        <article>
+          <b>4 · no persist</b>
+          <span>construct/push never reaches the consumer</span>
+        </article>
+      </div>
+
+      <h2 class="sec">Published A/B</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>control</th>
+            <th>mark</th>
+            <th>note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>hooks removed</td><td class="good">delivers</td><td>PostToolUse / PostToolUseFailure off; first post-transition PowerShell persists</td></tr>
+          <tr><td>hooks restored</td><td class="bad">loses</td><td>dispatch-ok then no tool_result; no hook child remains</td></tr>
+          <tr><td>async:true</td><td class="good">persists</td><td>async_hook_33956 PostToolUse:PowerShell; next model turn runs</td></tr>
+          <tr><td>print/SDK</td><td class="good">delivers</td><td>claude -p with the same hooks</td></tr>
+          <tr><td>proxy on/off</td><td class="bad">still loses</td><td>SSE tool_use sequence complete at proxy</td></tr>
+          <tr><td>duplicate hooks</td><td class="bad">not required</td><td>one PostToolUse still hangs</td></tr>
+        </tbody>
+      </table>
+
+      <h2 class="sec">Undeliverable bays</h2>
+      <div class="rolls" id="bays"></div>
+
+      <h2 class="sec">Cancel plates</h2>
+      <div class="plates" id="plates"></div>
+
+      <h2 class="sec">Pigeonhole matrix</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>ticket</th>
+            <th>hole</th>
+            <th>tally</th>
+            <th>shipped</th>
+            <th>assay</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+
+      <h2 class="sec">Probe the tray</h2>
+      <div class="drop" id="drop">Drop a fixture JSON here. Paste below.</div>
+      <textarea id="probe" spellcheck="false"></textarea>
+      <div class="actions">
+        <button class="act alarm" type="button" id="score-lost">Score lost</button>
+        <button class="act hold" type="button" id="pin-receipted">Pin idle receipted</button>
+        <button class="act alarm" type="button" id="load-lost">Load lost</button>
+        <button class="act hold" type="button" id="admit-filed">Admit filed</button>
+        <button class="act" type="button" id="load-fixtures">Load fixtures</button>
+        <button class="act hold" type="button" id="reset-receipted">Reset to receipted</button>
+      </div>
+
+      <section class="brief">
+        <h2 class="sec">Research brief</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/90049">anthropics/claude-code#90049</a>
+          (OPEN, bug, has repro, platform:windows, area:bash). Filed
+          2026-08-27T09:59:22Z. Updated diagnosis 2026-09-07/08 by
+          simon-bauer-sonarsource. Claude Code 2.1.247 → 2.1.263, Windows 11.
+          After a worktree context transition the first Bash or PowerShell
+          tool call can complete with <code>tool_dispatch_end outcome=ok</code>
+          yet never persist a matching <code>tool_result</code>. Transcript
+          ends at assistant <code>tool_use</code>. Interactive process stays
+          busy with no shell child. Original pre-spawn hang diagnosis was
+          incorrect.
+        </p>
+        <h2 class="sec">Why Deadletter is not a clone</h2>
+        <p>
+          <strong>Cousins cite-only.</strong>
+          #84154 stale — Bash intermittently minutes to return despite a
+          &lt;10ms command; same early symptom class. Primary stays #90049.
+        </p>
+        <p>
+          <strong>NOT Dryjoint/#92809.</strong>
+          VS Code chat anchors never call open_file. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Dinkus/#92798.</strong>
+          Plugin-settings sed frontmatter range. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Homonym/#92787.</strong>
+          Desktop UUID connector mounts. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Clepsydra/#92776.</strong>
+          OTel mid-session meter. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Rushlight/#92784. NOT Letoff/#92771. NOT Ptybind/#92757. NOT Espagnolette/#92694.</strong>
+        </p>
+        <p>
+          NOT a clone of Claude Code. NOT a live patch to anthropics/claude-code.
+          NOT an exploit.
+        </p>
+        <p>
+          Deadletter is specifically AFTER A WORKTREE TRANSITION THE FIRST
+          BASH OR POWERSHELL TOOL CALL CAN COMPLETE WITH TOOL_DISPATCH_END
+          OUTCOME=OK YET NEVER PERSIST A MATCHING TOOL_RESULT.
+        </p>
+        <p class="cousin-not-primary" id="cousin-strip">
+          <span>cousin-not-primary #84154 stale — same early symptom class, different writeup</span>
+        </p>
+        <p>
+          Stay off:
+          <span class="stayoff">
+            <span>Dryjoint/#92809 already shipped</span>
+            <span>Dinkus/#92798 already shipped</span>
+            <span>Homonym/#92787 already shipped</span>
+            <span>Clepsydra/#92776 already shipped</span>
+            <span>Rushlight/#92784 already shipped</span>
+          </span>
+        </p>
+      </section>
+
+      <footer class="chrome">
+        hermes-playground · catalog #225 · deadletter · #90049 · no live Claude · ?embed=1 hides chrome
+      </footer>
+    </main>
+    <script>
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["receipted", "filed"]);
+      const CHIPS = [
+        "receipted", "lost", "filed", "dispatch-ok-no-persist", "posttooluse-orchestration",
+        "worktree-transition", "print-sdk-ok", "async-hook-mitigation", "bash-and-powershell",
+        "has-clear-repro", "cousins"
+      ];
+      const CHIP_FILES = {
+        receipted: "data/receipted.json",
+        lost: "data/lost.json",
+        filed: "data/filed.json",
+        "dispatch-ok-no-persist": "data/dispatch-ok-no-persist.json",
+        "posttooluse-orchestration": "data/posttooluse-orchestration.json",
+        "worktree-transition": "data/worktree-transition.json",
+        "print-sdk-ok": "data/print-sdk-ok.json",
+        "async-hook-mitigation": "data/async-hook-mitigation.json",
+        "bash-and-powershell": "data/bash-and-powershell.json",
+        cousins: "data/cousins.json",
+        "has-clear-repro": "data/has-clear-repro.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "primary #90049", slot: "hold", fastener: "dispatch-ok then no tool_result", shipped: "FAIL", assay: "FAIL", file: "data/90049.json" },
+        { id: "receipted", name: "idle receipted", slot: "pigeonhole", fastener: "HOLD: completed tool_results stay receipted", shipped: "pass", assay: "pass", file: "data/receipted.json" },
+        { id: "lost", name: "path lost", slot: "undeliverable", fastener: "ALARM: PostToolUse loses the result after dispatch-ok", shipped: "FAIL", assay: "FAIL", file: "data/lost.json" },
+        { id: "dispatch", name: "dispatch-ok-no-persist", slot: "stamp", fastener: "outcome=ok; no matching tool_result", shipped: "FAIL", assay: "FAIL", file: "data/dispatch-ok-no-persist.json" },
+        { id: "hooks", name: "posttooluse-orchestration", slot: "iterator", fastener: "await tool.call → dispatch-ok → PostToolUse", shipped: "FAIL", assay: "FAIL", file: "data/posttooluse-orchestration.json" },
+        { id: "worktree", name: "worktree-transition", slot: "first call", fastener: "EnterWorktree / ExitWorktree / session start", shipped: "FAIL", assay: "FAIL", file: "data/worktree-transition.json" },
+        { id: "print", name: "print-sdk-ok", slot: "claude -p", fastener: "print/SDK delivers; interactive loses", shipped: "FAIL", assay: "FAIL", file: "data/print-sdk-ok.json" },
+        { id: "async", name: "async-hook-mitigation", slot: "async:true", fastener: "async_hook_33956 persists tool_result", shipped: "FAIL", assay: "FAIL", file: "data/async-hook-mitigation.json" },
+        { id: "shells", name: "bash-and-powershell", slot: "both shells", fastener: "not Bash-specific", shipped: "FAIL", assay: "FAIL", file: "data/bash-and-powershell.json" },
+        { id: "filed", name: "admit filed", slot: "file", fastener: "hypothetical: close/consume the stream", shipped: "pass", assay: "pass", file: "data/filed.json" },
+        { id: "cousins", name: "cousins", slot: "cite-only neighbourhood", fastener: "#84154 stale", shipped: "FAIL", assay: "FAIL", file: "data/cousins.json" },
+        { id: "repro", name: "has-clear-repro", slot: "filed narrative", fastener: "labeled has repro", shipped: "FAIL", assay: "FAIL", file: "data/has-clear-repro.json" }
+      ];
+      const BAYS = [
+        { id: "dispatch", name: "dispatch-ok-no-persist", note: "tool_dispatch_end outcome=ok durationMs recorded. Command completed. No matching tool_result persisted.", file: "data/dispatch-ok-no-persist.json", hold: false },
+        { id: "hooks", name: "posttooluse-orchestration", note: "await tool.call → dispatch-ok → async PostToolUse iteration → construct/push tool_result. Interactive consumer fails to close/consume.", file: "data/posttooluse-orchestration.json", hold: false },
+        { id: "async", name: "async-hook-mitigation", note: "async:true PostToolUse completes and persists tool_result. async_hook_33956 registered as PostToolUse:PowerShell.", file: "data/async-hook-mitigation.json", hold: false }
+      ];
+      const PLATES = [
+        { id: "one", name: "1 · published dispatch", body: "PowerShell toolu_01J7bPw5ZW4YSjTkJRCwtZDM. Start 19:38:42.198Z. End 19:38:45.356Z. outcome=ok durationMs=3158.", code: "no tool_result" },
+        { id: "two", name: "2 · hooks A/B", body: "Without PostToolUse/PostToolUseFailure the first post-transition PowerShell persists. Restored hooks lose again. Duplicates not required.", code: "blocking iterator" },
+        { id: "three", name: "3 · cited contrast", body: "NON-BINDING: interactive PostToolUse stream after a worktree transition fails to close/consume. print/SDK and async:true bypass.", code: "invite verify" }
+      ];
+      const RINGS = [
+        { id: "dispatch", name: "dispatch stamp", fail: "outcome=ok then no persist", hold: "tool_result receipted after dispatch-ok" },
+        { id: "hooks", name: "PostToolUse hole", fail: "blocking iterator after worktree transition", hold: "stream closed/consumed" },
+        { id: "print", name: "print/SDK", fail: "interactive loses while print delivers", hold: "both surfaces receipt the letter" }
+      ];
+      const SORTS = [
+        { label: "OK", kind: "halo", note: "dispatch" },
+        { label: "PTU", kind: "halo", note: "iterator" },
+        { label: "NIL", kind: "halo", note: "no persist" }
+      ];
+
+      const idle = {
+        source: "probe", issue: 90049, seed: "receipted", receipted: true, lost: false, filed: false,
+        shippedMark: "pass", assayMark: "pass", isolateMark: "pass",
+        hubCount: "RECEIPTED",
+        log: ["[idle] pigeonhole is receipted — completed shell tool_results stay receipted into the interactive transcript after worktree transitions"]
+      };
+      const lostPath = {
+        source: "probe", issue: 90049, seed: "lost", receipted: false, lost: true, filed: false,
+        dispatchOkNoPersist: true, postToolUseOrchestration: true, worktreeTransition: true,
+        printSdkOk: true, asyncHookMitigation: true, bashAndPowershell: true,
+        shippedMark: "FAIL", assayMark: "FAIL", isolateMark: "pass",
+        hubCount: "LOST",
+        log: ["[path] #90049 lost path — PostToolUse orchestration loses the result after tool_dispatch_end outcome=ok", "[lost] transcript ends at assistant tool_use; no next model turn; process stays busy with no shell child"]
+      };
+      const holdFiled = {
+        source: "probe", issue: 90049, seed: "filed", receipted: false, lost: false, filed: true,
+        letterFiled: true,
+        shippedMark: "pass", assayMark: "pass", isolateMark: "pass",
+        hubCount: "FILED",
+        log: ["[admit] letter already filed — interactive consumer closes/consumes the PostToolUse stream after a worktree transition"]
+      };
+      const dispatchTicket = { ...lostPath, seed: "dispatch-ok-no-persist", hubCount: "DISPATCH-OK-NO-PERSIST", log: ["[dispatch-ok-no-persist] tool_dispatch_end outcome=ok; no matching tool_result persisted"] };
+      const hooksTicket = { ...lostPath, seed: "posttooluse-orchestration", hubCount: "POSTTOOLUSE-ORCHESTRATION", log: ["[posttooluse-orchestration] await tool.call → dispatch-ok → async PostToolUse iteration"] };
+      const worktreeTicket = { ...lostPath, seed: "worktree-transition", hubCount: "WORKTREE-TRANSITION", log: ["[worktree-transition] first call after EnterWorktree/ExitWorktree/session start"] };
+      const printTicket = { ...lostPath, seed: "print-sdk-ok", hubCount: "PRINT-SDK-OK", log: ["[print-sdk-ok] cc_entrypoint=cli hangs; claude -p succeeds"] };
+      const asyncTicket = { ...lostPath, seed: "async-hook-mitigation", hubCount: "ASYNC-HOOK-MITIGATION", log: ["[async-hook-mitigation] async:true PostToolUse persists tool_result"] };
+      const shellsTicket = { ...lostPath, seed: "bash-and-powershell", hubCount: "BASH-AND-POWERSHELL", log: ["[bash-and-powershell] Bash AND native PowerShell both affected"] };
+      const cousinsTicket = { ...lostPath, seed: "cousins", cousinsCiteOnly: [84154], hubCount: "COUSINS", log: ["[cousins] #84154 stale · primary stays #90049"] };
+      const reproTicket = { ...lostPath, seed: "has-clear-repro", hasClearRepro: true, hubCount: "HAS-CLEAR-REPRO", log: ["[repro] labeled has repro"] };
+      const FALLBACKS = {
+        receipted: idle,
+        lost: lostPath,
+        filed: holdFiled,
+        "dispatch-ok-no-persist": dispatchTicket,
+        "posttooluse-orchestration": hooksTicket,
+        "worktree-transition": worktreeTicket,
+        "print-sdk-ok": printTicket,
+        "async-hook-mitigation": asyncTicket,
+        "bash-and-powershell": shellsTicket,
+        cousins: cousinsTicket,
+        "has-clear-repro": reproTicket
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.filed === true && t.lost !== true) || (t.receipted === true && t.lost !== true);
+      }
+
+      function alreadyLost(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.lost !== true) return false;
+        if (HOLD.has(seed) && t.lost !== true) return false;
+        if (t.lost === true) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.receipted !== true && t.filed !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const holding = remediating(t) && t.lost !== true;
+        t.shippedMark = t.shippedMark || (holding ? "pass" : "FAIL");
+        t.isolateMark = t.isolateMark || "pass";
+        t.assayMark = t.assayMark || (holding ? "pass" : "FAIL");
+        const chips = [];
+        if (seed === "receipted" || (holding && t.receipted === true)) chips.push("receipted");
+        if (holding || seed === "filed") {
+          if (seed === "filed" || t.filed === true) chips.push("filed");
+          if (seed === "receipted" || t.receipted === true) chips.push("receipted");
+        }
+        if (alreadyLost(t) || seed === "lost" || t.lost === true) chips.push("lost");
+        if (seed === "dispatch-ok-no-persist" || t.dispatchOkNoPersist === true) chips.push("dispatch-ok-no-persist");
+        if (seed === "posttooluse-orchestration" || t.postToolUseOrchestration === true) chips.push("posttooluse-orchestration");
+        if (seed === "worktree-transition" || t.worktreeTransition === true) chips.push("worktree-transition");
+        if (seed === "print-sdk-ok" || t.printSdkOk === true) chips.push("print-sdk-ok");
+        if (seed === "async-hook-mitigation" || t.asyncHookMitigation === true) chips.push("async-hook-mitigation");
+        if (seed === "bash-and-powershell" || t.bashAndPowershell === true) chips.push("bash-and-powershell");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        if (seed === "has-clear-repro" || t.hasClearRepro === true) chips.push("has-clear-repro");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (holding ? (t.filed ? "filed" : "receipted") : "lost");
+        return { ticket: t, holding, alarm: alreadyLost(t), chips: unique, verdict };
+      }
+
+      const REASONS = {
+        receipted: "HOLD: idle pigeonhole is receipted — completed shell tool_results stay receipted into the interactive transcript after worktree transitions. Score lost or admit filed.",
+        lost: "ALARM: PostToolUse orchestration loses the result after tool_dispatch_end outcome=ok while print/SDK still delivers. Score lost or admit filed.",
+        filed: "Letter already filed. Hypothetical: interactive consumer closes/consumes the PostToolUse stream after a worktree transition so the completed tool_result is filed.",
+        "dispatch-ok-no-persist": "tool_dispatch_start → tool_dispatch_end outcome=ok durationMs recorded. Command completed. No matching tool_result persisted. Transcript ends at tool_use.",
+        "posttooluse-orchestration": "await tool.call → tool_dispatch_end ok → async PostToolUse iteration → construct/push tool_result. Interactive consumer fails to close/consume after a worktree transition.",
+        "worktree-transition": "First Bash or PowerShell call after session start / EnterWorktree / ExitWorktree. Repeat of the same command often fine.",
+        "print-sdk-ok": "cc_entrypoint=cli interactive hangs. cc_entrypoint=sdk-cli claude -p succeeds with the same hooks.",
+        "async-hook-mitigation": "async:true PostToolUse completes and persists tool_result. 17 ms later async_hook_33956 registered as PostToolUse:PowerShell.",
+        "bash-and-powershell": "Not Bash-specific. Native PowerShell also loses the completed result after dispatch-ok. Original pre-spawn hang diagnosis was incorrect.",
+        cousins: "Cite-only neighbourhood: #84154 stale — Bash intermittently minutes to return despite a <10ms command. Primary stays #90049.",
+        "has-clear-repro": "Issue labeled has repro: first Bash or PowerShell after a worktree transition; dispatch-ok; no tool_result; filed 2026-08-27T09:59:22Z."
+      };
+
+      function paintLog(result) {
+        const t = result.ticket;
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (result.holding
+            ? ["[deadletter] pigeonhole receipted / filed — tool_result stays in the transcript"]
+            : ["[deadletter] lost · dispatch-ok then no tool_result"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          if (/lost|FAIL|no tool_result|hang|busy/i.test(line)) return `<span class="hit">${line}</span>`;
+          if (/receipted|filed|hold|persists|delivers/i.test(line)) return `<span class="ok">${line}</span>`;
+          return line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.holding ? "receipted / filed · tray holds" : "lost · dispatch-ok then no persist", "deadletter path"],
+          ["isolate", t.isolateMark, "PostToolUse stream after worktree transition · not a solder pad · not a galley", "not a clone"],
+          ["assay", t.assayMark, result.holding ? (result.verdict === "filed" ? "filed" : "receipted") : "would hold after a hypothetical stream-close path", "expected channel"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div>${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintHousing(result) {
+        const alarm = result.alarm;
+        const filed = result.verdict === "filed";
+        document.getElementById("press-tag").textContent = filed
+          ? "HOLD · FILED"
+          : (alarm ? "ALARM · LOST" : "HOLD · RECEIPTED");
+        const facing = document.getElementById("sheet-lost");
+        const latch = document.getElementById("impression-lost");
+        if (alarm) {
+          facing.className = "envelope lost-sheet alarm";
+          latch.textContent = "LOST";
+        } else {
+          facing.className = "envelope lost-sheet";
+          latch.textContent = filed ? "FILED" : "TRAY OPEN";
+        }
+        document.getElementById("impression-receipted").textContent = filed ? "FILED" : "PACKET IN";
+        const seal = document.getElementById("wax-seal");
+        if (seal) {
+          seal.setAttribute("fill", alarm ? "#e05a45" : "#7faf7a");
+        }
+      }
+
+      function paintSorts(result) {
+        document.getElementById("typecase").innerHTML = SORTS.map((k) => {
+          let cls = k.kind;
+          if (result.holding) cls = "hold";
+          return `<article class="sort ${cls}"><b>${k.label}</b><span>${result.holding ? "held" : k.note}</span></article>`;
+        }).join("");
+      }
+
+      function paintRings(result) {
+        document.getElementById("gauges").innerHTML = RINGS.map((ring) => {
+          const cls = result.holding ? "ok" : "warn";
+          const body = result.holding ? ring.hold : ring.fail;
+          return `<article class="slot ${cls}"><b>${ring.name}</b><span>${body}</span></article>`;
+        }).join("");
+      }
+
+      function paintPlates(result) {
+        document.getElementById("plates").innerHTML = PLATES.map((p) => {
+          const cls = result.holding ? "hold" : "on";
+          return `<article class="plate ${cls}"><b>${p.name}</b><span>${p.body}</span><code>${p.code}</code></article>`;
+        }).join("");
+      }
+
+      function paintBays(result) {
+        document.getElementById("bays").innerHTML = BAYS.map((p) => {
+          const on = (result.holding && p.hold) || (!result.holding && !p.hold && (
+            (result.verdict === "dispatch-ok-no-persist" && p.id === "dispatch") ||
+            (result.verdict === "posttooluse-orchestration" && p.id === "hooks") ||
+            (result.verdict === "async-hook-mitigation" && p.id === "async") ||
+            (result.verdict === "lost" && p.id === "dispatch") ||
+            (result.verdict === "cousins" && p.id === "hooks")
+          )) ? "on" : "";
+          return `<article class="roll ${on}" data-bay="${p.id}"><b>${p.name}</b><span>${p.note}</span></article>`;
+        }).join("");
+        document.querySelectorAll("#bays [data-bay]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const bay = BAYS.find((p) => p.id === el.dataset.bay);
+            if (!bay) return;
+            try { apply(await loadNamed(bay.file)); }
+            catch { apply(bay.hold ? { ...holdFiled } : { ...lostPath }); }
+          });
+        });
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "bad" : "good"}">${m}</td>`;
+          return `<tr class="clickable ${active}" data-row="${row.id}">
+            <td>${row.name}</td><td>${row.slot}</td><td>${row.fastener}</td>
+            ${cell(row.shipped)}${cell(row.assay)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "lost", receipted: "receipted", lost: "lost",
+                dispatch: "dispatch-ok-no-persist", hooks: "posttooluse-orchestration",
+                worktree: "worktree-transition", print: "print-sdk-ok",
+                async: "async-hook-mitigation", shells: "bash-and-powershell",
+                filed: "filed", cousins: "cousins", repro: "has-clear-repro"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 90049 }); }
+          });
+        });
+      }
+
+      function paintHoles(result) {
+        document.querySelectorAll("#holes [data-hole]").forEach((btn) => {
+          btn.classList.remove("on", "hold");
+          if (result.holding) {
+            if (btn.dataset.hole === "dispatch") btn.classList.add("hold");
+          } else if (btn.dataset.hole === "tray" || btn.dataset.hole === "hooks") {
+            btn.classList.add("on");
+          }
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bench = document.getElementById("bench");
+        const face = result.verdict === "filed" ? "filed" : (result.holding ? "receipted" : "lost");
+        bench.className = "desk " + face;
+        const v = document.getElementById("verdict");
+        v.className = "verdict " + result.verdict;
+        v.textContent = result.verdict;
+        document.getElementById("why").textContent = REASONS[result.verdict] || REASONS.receipted;
+        document.getElementById("probe").value = JSON.stringify(ticket, null, 2);
+        paintChips(result);
+        paintLog(result);
+        paintPaths(result);
+        paintHousing(result);
+        paintSorts(result);
+        paintRings(result);
+        paintPlates(result);
+        paintBays(result);
+        paintHoles(result);
+        const map = {
+          receipted: "receipted", lost: "lost", filed: "filed",
+          "dispatch-ok-no-persist": "dispatch",
+          "posttooluse-orchestration": "hooks",
+          "worktree-transition": "worktree",
+          "print-sdk-ok": "print",
+          "async-hook-mitigation": "async",
+          "bash-and-powershell": "shells",
+          cousins: "cousins",
+          "has-clear-repro": "repro"
+        };
+        paintMatrix(map[result.verdict] || (result.holding ? "receipted" : "primary"));
+      }
+
+      async function loadNamed(file) {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(file);
+        return res.json();
+      }
+
+      document.getElementById("score-lost").addEventListener("click", () => apply(parseProbe(document.getElementById("probe").value)));
+      document.getElementById("pin-receipted").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("load-lost").addEventListener("click", () => apply({ ...lostPath }));
+      document.getElementById("admit-filed").addEventListener("click", () => apply({ ...holdFiled }));
+      document.getElementById("reset-receipted").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("stamp-tray").addEventListener("click", () => apply({ ...lostPath }));
+      document.getElementById("file-letter").addEventListener("click", () => apply({ ...holdFiled }));
+      document.getElementById("load-fixtures").addEventListener("click", async () => {
+        try { apply(await loadNamed("data/90049.json")); }
+        catch { apply({ ...lostPath, seed: "lost", hubCount: "90049" }); }
+      });
+      document.getElementById("probe").addEventListener("change", (ev) => apply(parseProbe(ev.target.value)));
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (ev) => { ev.preventDefault(); drop.classList.add("hot"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("hot"));
+      drop.addEventListener("drop", async (ev) => {
+        ev.preventDefault();
+        drop.classList.remove("hot");
+        const file = ev.dataTransfer.files[0];
+        if (!file) return;
+        apply(parseProbe(await file.text()));
+      });
+      document.querySelectorAll("#holes [data-hole]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const hole = btn.dataset.hole;
+          if (hole === "dispatch") apply({ ...dispatchTicket });
+          else if (hole === "hooks") apply({ ...hooksTicket });
+          else apply({ ...lostPath });
+        });
+      });
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
