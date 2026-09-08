@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Homonym](https://hermes-playground-green.vercel.app/homonym/)** — lexicographer / registrar twin-nameplate desk / parchment folio / iron-gall ink / brass nameplate / UUID ghost plate. Desktop local sessions mount claude.ai connectors under connection UUIDs so documented `mcp__claude_ai_<name>__*` ask/deny rules silently miss (#92787). Score orphaned or admit keyed. Folder: `projects/homonym/`.
+**Featured: [Dryjoint](https://hermes-playground-green.vercel.app/dryjoint/)** — electronics dry-joint / cold-solder bench / FR4 pcb / copper traces / flux stains / solder pads. VS Code chat markdown file links should stay fused to the existing `open_file` bridge, but rendered `<a>` anchors never call it and binary `showTextDocument` rejects silent (#92809). Score dry or admit bonded. Folder: `projects/dryjoint/`.
+
+**Listed: [Dinkus](https://hermes-playground-green.vercel.app/dinkus/)** — compositor's hairline-rule bench / cool slate desk / zinc chase / vermilion dinkus mark / cream galley slip. Plugin-settings sed ranges reopen on body `---` so `enabled:false` leaks and plugins take the silent disabled path (#92798). Score leaked or admit closed. Folder: `projects/dinkus/`. Still listed. Not featured.
+
+**Listed: [Homonym](https://hermes-playground-green.vercel.app/homonym/)** — lexicographer / registrar twin-nameplate desk / parchment folio / iron-gall ink / brass nameplate / UUID ghost plate. Desktop local sessions mount claude.ai connectors under connection UUIDs so documented `mcp__claude_ai_<name>__*` ask/deny rules silently miss (#92787). Score orphaned or admit keyed. Folder: `projects/homonym/`. Still listed. Not featured.
 
 **Listed: [Rushlight](https://hermes-playground-green.vercel.app/rushlight/)** — iron sconce / rush-pith atelier / soot wall / amber wick. The TCC AppData grant should stay lit across sessions of the same Claude Code version, but tccd stores it session-scoped and 2.1.258 re-prompts every session (#92784). Score snuffed or admit tenured. Folder: `projects/rushlight/`. Still listed. Not featured.
 

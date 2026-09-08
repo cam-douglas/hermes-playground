@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dryjoint — electronics dry-joint bench for #92809</title>
+    <meta
+      name="description"
+      content="Dryjoint — an electronics dry-joint / cold-solder bench for Claude Code #92809: chat markdown file links never call the existing open_file bridge. Idle word is fused."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --pcb: #101612;
+        --pcb-lift: #18221b;
+        --mask: #0c1210;
+        --copper: #c47a3a;
+        --copper-hot: #e08a42;
+        --solder: #c8cdd2;
+        --flux: #c9a227;
+        --flux-stain: rgba(201, 162, 39, 0.16);
+        --ink: #e7eee8;
+        --mute: #8b978c;
+        --hold: #6ec4a2;
+        --alarm: #e08a42;
+        --rule: rgba(196, 122, 58, 0.22);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Manrope, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 12% 0%, rgba(196, 122, 58, 0.16), transparent 42%),
+          radial-gradient(ellipse at 88% 18%, var(--flux-stain), transparent 36%),
+          repeating-linear-gradient(90deg, rgba(196, 122, 58, 0.07) 0 1px, transparent 1px 36px),
+          repeating-linear-gradient(0deg, rgba(110, 196, 162, 0.04) 0 1px, transparent 1px 36px),
+          var(--pcb);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--copper-hot); }
+      .lab { width: min(1160px, calc(100% - 28px)); margin: 0 auto; padding: 20px 0 96px; }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--solder);
+        text-decoration: none;
+        border-bottom: 1px solid var(--copper);
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+      }
+      .mark {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      .trace {
+        height: 4px;
+        margin: 12px 0 18px;
+        background:
+          linear-gradient(90deg, transparent, var(--copper) 10%, var(--flux) 48%, var(--solder) 88%, transparent);
+        box-shadow: 0 0 18px rgba(196, 122, 58, 0.35);
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr 210px;
+        gap: 22px;
+        align-items: end;
+        border-bottom: 2px solid var(--copper);
+        padding-bottom: 16px;
+        margin: 0 0 16px;
+      }
+      .mast h1 {
+        font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        font-weight: 700;
+        font-size: clamp(52px, 9vw, 92px);
+        letter-spacing: -0.04em;
+        margin: 0;
+        line-height: 0.86;
+        color: var(--solder);
+      }
+      .pad-mark { width: 210px; height: 168px; }
+      .lede {
+        max-width: 78em;
+        color: var(--mute);
+        line-height: 1.64;
+        font-size: 16px;
+        margin: 0 0 10px;
+      }
+      .lede strong {
+        color: var(--copper-hot);
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 600;
+      }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--solder);
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 12px 0 18px;
+      }
+      .tags a, .tags span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        color: var(--mute);
+        background: var(--pcb-lift);
+      }
+      .tags a { color: var(--copper-hot); border-color: rgba(224, 138, 66, 0.45); }
+
+      .pads {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 18px;
+      }
+      .pad-btn {
+        border: 0;
+        cursor: pointer;
+        min-height: 78px;
+        padding: 12px 10px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        text-align: left;
+        background: linear-gradient(180deg, #223028, var(--pcb-lift));
+        color: var(--ink);
+        box-shadow: inset 0 0 0 1px var(--copper);
+      }
+      .pad-btn b {
+        display: block;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 20px;
+        color: var(--copper-hot);
+      }
+      .pad-btn.on { outline: 2px solid var(--alarm); }
+      .pad-btn.hold { outline: 2px solid var(--hold); }
+
+      .boards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 0 0 18px;
+      }
+      .sheet {
+        min-height: 214px;
+        padding: 18px 16px 20px;
+        position: relative;
+      }
+      .sheet.bridge-sheet {
+        background:
+          linear-gradient(180deg, rgba(110, 196, 162, 0.14), transparent 40%),
+          var(--pcb-lift);
+        border: 1px solid var(--hold);
+        color: var(--ink);
+      }
+      .sheet.joint-sheet {
+        background:
+          linear-gradient(180deg, rgba(224, 138, 66, 0.2), transparent 38%),
+          var(--mask);
+        color: var(--ink);
+        border: 1px solid var(--copper);
+      }
+      .sheet .eyebrow {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--copper-hot);
+        margin-bottom: 8px;
+      }
+      .sheet h2 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 28px;
+        margin: 0 0 8px;
+      }
+      .impression {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--flux);
+      }
+      .sheet .mode { margin: 0 0 8px; }
+      .sheet .note { margin: 0; color: inherit; opacity: 0.86; line-height: 1.5; }
+      .die-row { display: flex; gap: 8px; margin-top: 14px; }
+      .die {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 8px;
+        border: 1px solid currentColor;
+        opacity: 0.8;
+      }
+
+      .bench {
+        padding: 22px 18px 24px;
+        background: var(--pcb-lift);
+        border: 1px solid var(--copper);
+        margin: 0 0 18px;
+      }
+      .bench.fused { box-shadow: 0 0 0 2px rgba(110, 196, 162, 0.35); }
+      .bench.dry { box-shadow: 0 0 0 2px rgba(224, 138, 66, 0.5); }
+      .bench.bonded { box-shadow: 0 0 0 2px rgba(110, 196, 162, 0.7); }
+      .press-tag {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--solder);
+      }
+      .sec {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 28px;
+        margin: 22px 0 10px;
+        color: var(--solder);
+      }
+      .verdict {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: clamp(36px, 6vw, 56px);
+        margin: 6px 0 8px;
+        line-height: 0.95;
+      }
+      .verdict.fused, .verdict.bonded { color: var(--hold); }
+      .verdict.dry { color: var(--copper-hot); }
+      .why { color: var(--mute); line-height: 1.55; margin: 0 0 12px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--copper);
+        background: transparent;
+        color: var(--mute);
+        padding: 5px 8px;
+        cursor: pointer;
+      }
+      .chip.on { color: var(--copper-hot); border-color: var(--alarm); }
+      .chip.hold { color: var(--hold); border-color: var(--hold); }
+      .typecase, .gauges, .paths {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 12px;
+      }
+      .sort, .slot, .path {
+        padding: 10px;
+        border: 1px solid var(--rule);
+        background: var(--mask);
+        min-height: 72px;
+      }
+      .sort b, .slot b, .path b {
+        display: block;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+      .sort.hold, .slot.ok, .path.ok { border-color: var(--hold); }
+      .sort.halo, .slot.warn, .path.fail { border-color: var(--alarm); }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        line-height: 1.55;
+        padding: 12px;
+        background: var(--mask);
+        border: 1px solid var(--rule);
+        margin: 0 0 12px;
+        min-height: 88px;
+      }
+      .log .hit { color: var(--copper-hot); }
+      .log .ok { color: var(--hold); }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .act {
+        font-family: Manrope, sans-serif;
+        font-weight: 700;
+        border: 1px solid var(--copper);
+        background: #223028;
+        color: var(--solder);
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .act.alarm { border-color: var(--alarm); color: var(--copper-hot); }
+      .act.hold { border-color: var(--hold); color: var(--hold); }
+      .adapters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 0 0 18px;
+        color: var(--mute);
+        font-size: 13px;
+      }
+      .adapter em { color: var(--solder); font-style: italic; }
+      .desk-row {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 14px;
+        margin: 0 0 18px;
+      }
+      .panel {
+        padding: 16px;
+        background: var(--mask);
+        border: 1px solid var(--rule);
+      }
+      .axis {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .axis th, .axis td {
+        border-bottom: 1px solid var(--rule);
+        padding: 8px 6px;
+        text-align: left;
+        vertical-align: top;
+      }
+      .axis th {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .axis .bad { color: var(--copper-hot); }
+      .axis .good { color: var(--hold); }
+      .axis tr.clickable { cursor: pointer; }
+      .axis tr.active { background: rgba(224, 138, 66, 0.1); }
+      .rolls, .plates {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin: 0 0 18px;
+      }
+      .roll, .plate {
+        padding: 12px;
+        border: 1px solid var(--rule);
+        background: var(--pcb-lift);
+        min-height: 96px;
+        cursor: pointer;
+      }
+      .roll.on, .plate.on { outline: 2px solid var(--alarm); }
+      .plate.hold { outline: 2px solid var(--hold); }
+      .roll b, .plate b {
+        display: block;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .plate code { display: block; margin-top: 8px; color: var(--copper-hot); }
+      .drop {
+        padding: 18px;
+        border: 1px dashed var(--copper);
+        text-align: center;
+        color: var(--mute);
+        margin: 0 0 10px;
+      }
+      .drop.hot { border-color: var(--alarm); color: var(--copper-hot); }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        background: var(--mask);
+        color: var(--solder);
+        border: 1px solid var(--rule);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 12px;
+      }
+      .brief p { color: var(--mute); line-height: 1.6; }
+      .cousin-not-primary {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        color: var(--solder);
+      }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 8px; }
+      .stayoff span {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        border: 1px solid var(--rule);
+        padding: 4px 7px;
+      }
+      footer {
+        margin-top: 28px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        color: var(--mute);
+      }
+      @media (max-width: 820px) {
+        .mast, .desk-row, .boards, .pads, .typecase, .gauges, .paths, .rolls, .plates {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="lab">
+      <a class="catalog chrome" href="/">hermes-playground catalog</a>
+      <div class="mark chrome">18:50 / hermes catalog #224 / #92809</div>
+      <div class="trace" aria-hidden="true"></div>
+      <header class="mast">
+        <h1>Dryjoint</h1>
+        <svg class="pad-mark" id="pad-gauge" viewBox="0 0 210 168" aria-hidden="true">
+          <rect x="8" y="18" width="194" height="132" fill="#0c1210" stroke="#c47a3a" stroke-width="2" />
+          <path d="M18 50 H80 V70 H130" fill="none" stroke="#c47a3a" stroke-width="4" />
+          <path d="M130 70 H190" fill="none" stroke="#c47a3a" stroke-width="4" />
+          <circle id="solder-pad" cx="80" cy="60" r="10" fill="#c8cdd2" />
+          <circle id="dry-gap" cx="130" cy="70" r="10" fill="#18221b" stroke="#e08a42" stroke-width="3" />
+          <text x="105" y="112" text-anchor="middle" fill="#c9a227" font-family="monospace" font-size="11">FLUX STAIN</text>
+          <text x="105" y="136" text-anchor="middle" fill="#c8cdd2" font-family="monospace" font-size="10">OPEN_FILE PAD</text>
+        </svg>
+      </header>
+      <p class="lede">
+        18:50 dryjoint: an electronics dry-joint / cold-solder bench that should
+        keep chat markdown file links <strong>fused</strong> to the existing
+        <code>open_file</code> bridge; instead VS Code chat anchors stay
+        <strong>dry</strong> (never call the bridge) and binary opens fail silent
+        (<a href="https://github.com/anthropics/claude-code/issues/92809">#92809</a>).
+        Score <strong>dry</strong> or admit <strong>bonded</strong>.
+      </p>
+      <p class="lede">
+        The system prompt <code>## Code References in Text</code> tells Claude
+        to emit <code>[name](path)</code>. File chips already use the bridge.
+        Rendered <code>&lt;a&gt;</code> anchors never do. Copper and flux, not a
+        galley slip and not a marble basin.
+      </p>
+      <div class="tags chrome" aria-label="Native integrations">
+        <a href="https://github.com/anthropics/claude-code/issues/92809">GitHub issue #92809</a>
+        <span>open_file bridge</span>
+        <span>showTextDocument</span>
+        <span>platform:vscode · bug · has repro</span>
+        <a href="/">Vercel catalog back-link</a>
+        <a href="hook/dryjoint.mjs">hook scorer</a>
+        <span>solder / copper / flux</span>
+      </div>
+
+      <div class="pads" id="pads" aria-label="solder pads">
+        <button class="pad-btn" type="button" data-pad="bridge"><b>Bridge pad</b>file chips + diff view</button>
+        <button class="pad-btn" type="button" data-pad="anchor"><b>Chat anchor</b>styled, no current</button>
+        <button class="pad-btn" type="button" data-pad="binary"><b>Binary joint</b>.png / .pdf reject</button>
+      </div>
+
+      <section class="boards" aria-label="bridge versus dry joint">
+        <article class="sheet bridge-sheet" id="sheet-fused">
+          <div class="eyebrow">FR4 / existing bridge</div>
+          <span class="impression" id="impression-fused">PAD ON</span>
+          <h2>File chips already carry current</h2>
+          <p class="mode"><code>openFile → sendRequest(open_file)</code></p>
+          <p class="note">
+            Host resolves <code>cwd</code>, falls back when missing, and
+            <code>revealInExplorer</code> for directories. The pad is there.
+          </p>
+          <div class="die-row">
+            <span class="die">BRIDGE</span>
+            <span class="die" id="bridge-mark">LIVE</span>
+          </div>
+        </article>
+        <article class="sheet joint-sheet" id="sheet-dry">
+          <div class="eyebrow">cold-solder / unwired &lt;a&gt;</div>
+          <span class="impression" id="impression-dry">JOINT OPEN</span>
+          <h2>Chat anchors never reach the pad</h2>
+          <p class="mode"><code>click → silent no-op</code></p>
+          <p class="note">
+            Looks bonded (link styling) but carries no current.
+            <code>showTextDocument(uri).then(cb)</code> has no catch.
+          </p>
+          <div class="die-row">
+            <span class="die">ANCHOR</span>
+            <span class="die" id="anchor-mark">DRY</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="bench fused" id="bench">
+        <span class="press-tag" id="press-tag">HOLD · FUSED</span>
+        <h2 class="sec" style="margin-top:0">Joint meter</h2>
+        <p class="verdict" id="verdict">fused</p>
+        <p class="why" id="why">
+          HOLD: idle pad is fused — chat markdown file links call the existing open_file bridge; binary opens have a catch.
+        </p>
+        <div class="chips" id="chips"></div>
+        <div class="typecase" id="typecase"></div>
+        <div class="gauges" id="gauges"></div>
+        <div class="log" id="log"></div>
+        <div class="paths" id="paths"></div>
+        <div class="actions">
+          <button class="act alarm" type="button" id="lift-joint">Lift the joint</button>
+          <button class="act hold" type="button" id="solder-pad">Solder the pad</button>
+        </div>
+      </section>
+
+      <div class="adapters chrome" aria-label="demo adapters">
+        <span class="adapter">GitHub · <em>Would file a #92809 follow-up on the dry pad</em></span>
+        <span class="adapter">Slack · <em>Would post the dryjoint verdict to #hermes-catalog</em></span>
+        <span class="adapter">Linear · <em>Would open an unwired-anchor ticket</em></span>
+      </div>
+
+      <div class="desk-row">
+        <section class="panel" aria-label="joint ledger">
+          <h2>Joint ledger</h2>
+          <table class="axis">
+            <thead>
+              <tr>
+                <th>path</th>
+                <th>main</th>
+                <th>tally</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>file chips / diff</td>
+                <td class="good">open_file</td>
+                <td class="good">bridge already used</td>
+              </tr>
+              <tr>
+                <td>chat &lt;a&gt;</td>
+                <td class="bad">unwired</td>
+                <td class="bad">never call openFile</td>
+              </tr>
+              <tr>
+                <td>showTextDocument</td>
+                <td class="bad">.then(cb)</td>
+                <td class="bad">no rejection handler</td>
+              </tr>
+              <tr>
+                <td>.png / .pdf</td>
+                <td class="bad">reject</td>
+                <td class="bad">user sees nothing</td>
+              </tr>
+              <tr>
+                <td>system prompt</td>
+                <td class="bad">[name](path)</td>
+                <td class="bad">dead on arrival</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="panel" aria-label="what this is not">
+          <h2>What this is not</h2>
+          <p class="why">
+            Not a galley slip. Not a twin nameplate desk. Not a marble basin.
+            Not a rush-candle atelier. Not a piano action rail.
+            This bench is the dry-joint assay for an unwired chat anchor.
+          </p>
+        </section>
+      </div>
+
+      <h2 class="sec">Published repro</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>step</th>
+            <th>mark</th>
+            <th>note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>mandate</td><td class="good">[name](path)</td><td>system prompt ## Code References in Text</td></tr>
+          <tr><td>text link</td><td class="bad">[note.md](docs/note.md)</td><td>click does nothing</td></tr>
+          <tr><td>binary link</td><td class="bad">[chart.png](docs/chart.png)</td><td>would still fail silent after wiring</td></tr>
+          <tr><td>bridge</td><td class="good">open_file</td><td>already used by file chips and diff view</td></tr>
+        </tbody>
+      </table>
+
+      <h2 class="sec">Second dry joint</h2>
+      <div class="rolls" id="bays"></div>
+
+      <h2 class="sec">Solder plates</h2>
+      <div class="plates" id="plates"></div>
+
+      <h2 class="sec">Joint matrix</h2>
+      <table class="axis">
+        <thead>
+          <tr>
+            <th>ticket</th>
+            <th>pad</th>
+            <th>tally</th>
+            <th>shipped</th>
+            <th>assay</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+
+      <h2 class="sec">Probe the pad</h2>
+      <div class="drop" id="drop">Drop a fixture JSON here. Paste below.</div>
+      <textarea id="probe" spellcheck="false"></textarea>
+      <div class="actions">
+        <button class="act alarm" type="button" id="score-dry">Score dry</button>
+        <button class="act hold" type="button" id="pin-fused">Pin idle fused</button>
+        <button class="act alarm" type="button" id="load-dry">Load dry</button>
+        <button class="act hold" type="button" id="admit-bonded">Admit bonded</button>
+        <button class="act" type="button" id="load-fixtures">Load fixtures</button>
+        <button class="act hold" type="button" id="reset-fused">Reset to fused</button>
+      </div>
+
+      <section class="brief">
+        <h2 class="sec">Research brief</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/92809">anthropics/claude-code#92809</a>
+          (OPEN, bug, has repro, platform:vscode). Filed 2026-09-08T08:45:25Z.
+          Reporter 0nelight. Extension
+          <code>anthropic.claude-code-2.1.263-linux-x64</code>, VS Code 1.132.0,
+          Debian 13. Chat markdown file links are styled as links but clicking
+          them does nothing. The host already has
+          <code>webview openFile</code> → <code>sendRequest({type:"open_file"})</code>
+          → <code>case "open_file"</code> → <code>this.openFile</code>, used by
+          file chips and the diff view. Rendered <code>&lt;a&gt;</code> never
+          call it. Second defect:
+          <code>vscode.window.showTextDocument(uri).then(cb)</code> has no
+          rejection handler, so <code>.png</code> / <code>.pdf</code> reject
+          silent. Last working 2.1.4 (per #10846). Still dry in 2.1.263.
+        </p>
+        <h2 class="sec">Why Dryjoint is not a clone</h2>
+        <p>
+          <strong>Cousins cite-only.</strong>
+          #10846 CLOSED/LOCKED — markdown links do not open files (fixed in 2.1.4).
+          #16056 CLOSED/LOCKED — macOS same class.
+          #44713 CLOSED/LOCKED — regression in 2.1.92.
+          #51015 CLOSED/LOCKED — file:/// and directory paths.
+          #57100 CLOSED/LOCKED — 2.1.132 recurrence.
+          #72889 CLOSED — look clickable, do not navigate.
+          Primary stays #92809.
+        </p>
+        <p>
+          <strong>NOT Dinkus/#92798.</strong>
+          Plugin-settings sed frontmatter range. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Homonym/#92787.</strong>
+          Desktop UUID connector mounts. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Clepsydra/#92776.</strong>
+          OTel mid-session meter. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Rushlight/#92784.</strong>
+          Session-scoped TCC AppData. Already shipped.
+        </p>
+        <p>
+          <strong>NOT Letoff/#92771. NOT Ptybind/#92757. NOT Espagnolette/#92694.</strong>
+        </p>
+        <p>
+          NOT a clone of Claude Code. NOT a live VS Code extension patch.
+          NOT an exploit.
+        </p>
+        <p>
+          Dryjoint is specifically VS CODE CHAT MARKDOWN FILE LINKS ARE STYLED
+          AS LINKS BUT NEVER CALL THE EXISTING OPEN_FILE BRIDGE; BINARY
+          SHOWTEXTDOCUMENT REJECTS SILENT.
+        </p>
+        <p class="cousin-not-primary" id="cousin-strip">
+          <span>cousin-not-primary #10846 CLOSED/LOCKED — reported fixed in 2.1.4, different writeup</span>
+        </p>
+        <p>
+          Stay off:
+          <span class="stayoff">
+            <span>Dinkus/#92798 already shipped</span>
+            <span>Homonym/#92787 already shipped</span>
+            <span>Clepsydra/#92776 already shipped</span>
+            <span>Rushlight/#92784 already shipped</span>
+            <span>Letoff/#92771 already shipped</span>
+          </span>
+        </p>
+      </section>
+
+      <footer class="chrome">
+        hermes-playground · catalog #224 · dryjoint · #92809 · no live Claude · ?embed=1 hides chrome
+      </footer>
+    </main>
+    <script>
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["fused", "bonded"]);
+      const CHIPS = [
+        "fused", "dry", "bonded", "unwired-anchor", "bridge-exists-unused",
+        "silent-binary-reject", "showTextDocument-no-catch", "markdown-mandate",
+        "has-clear-repro", "cousins"
+      ];
+      const CHIP_FILES = {
+        fused: "data/fused.json",
+        dry: "data/dry.json",
+        bonded: "data/bonded.json",
+        "unwired-anchor": "data/unwired-anchor.json",
+        "bridge-exists-unused": "data/bridge-exists-unused.json",
+        "silent-binary-reject": "data/silent-binary-reject.json",
+        "showTextDocument-no-catch": "data/showTextDocument-no-catch.json",
+        "markdown-mandate": "data/markdown-mandate.json",
+        cousins: "data/cousins.json",
+        "has-clear-repro": "data/has-clear-repro.json"
+      };
+      const MATRIX = [
+        { id: "primary", name: "primary #92809", slot: "hold", fastener: "chat anchors stay dry; never call open_file", shipped: "FAIL", assay: "FAIL", file: "data/92809.json" },
+        { id: "fused", name: "idle fused", slot: "FR4 pad", fastener: "HOLD: chat anchors call the existing open_file bridge", shipped: "pass", assay: "pass", file: "data/fused.json" },
+        { id: "dry", name: "path dry", slot: "cold-solder", fastener: "ALARM: rendered <a> never call openFile", shipped: "FAIL", assay: "FAIL", file: "data/dry.json" },
+        { id: "unwired", name: "unwired-anchor", slot: "chat <a>", fastener: "styled as links; silent no-op", shipped: "FAIL", assay: "FAIL", file: "data/unwired-anchor.json" },
+        { id: "bridge", name: "bridge-exists-unused", slot: "chips + diff", fastener: "open_file already used elsewhere", shipped: "FAIL", assay: "FAIL", file: "data/bridge-exists-unused.json" },
+        { id: "binary", name: "silent-binary-reject", slot: ".png / .pdf", fastener: "showTextDocument rejects; user sees nothing", shipped: "FAIL", assay: "FAIL", file: "data/silent-binary-reject.json" },
+        { id: "catch", name: "showTextDocument-no-catch", slot: ".then(cb)", fastener: "no rejection handler", shipped: "FAIL", assay: "FAIL", file: "data/showTextDocument-no-catch.json" },
+        { id: "mandate", name: "markdown-mandate", slot: "system prompt", fastener: "[name](path) dead on arrival", shipped: "FAIL", assay: "FAIL", file: "data/markdown-mandate.json" },
+        { id: "bonded", name: "admit bonded", slot: "solder", fastener: "hypothetical: wire anchors + catch", shipped: "pass", assay: "pass", file: "data/bonded.json" },
+        { id: "cousins", name: "cousins", slot: "cite-only neighbourhood", fastener: "#10846 #16056 #44713 #51015 #57100 #72889 CLOSED", shipped: "FAIL", assay: "FAIL", file: "data/cousins.json" },
+        { id: "repro", name: "has-clear-repro", slot: "filed narrative", fastener: "labeled has repro", shipped: "FAIL", assay: "FAIL", file: "data/has-clear-repro.json" }
+      ];
+      const BAYS = [
+        { id: "unwired", name: "unwired-anchor", note: "Rendered <a> elements are styled as links but never call openFile(); the click is a silent no-op.", file: "data/unwired-anchor.json", hold: false },
+        { id: "binary", name: "silent-binary-reject", note: "showTextDocument rejects for .png/.pdf. With no onRejected and no .catch the user sees nothing.", file: "data/silent-binary-reject.json", hold: false },
+        { id: "catch", name: "showTextDocument-no-catch", note: "vscode.window.showTextDocument(uri).then(cb) has no rejection handler.", file: "data/showTextDocument-no-catch.json", hold: false }
+      ];
+      const PLATES = [
+        { id: "one", name: "1 · published repro", body: "Ask for docs/note.md and docs/chart.png. Claude emits [name](path). Click either link. Nothing.", code: "silent no-op" },
+        { id: "two", name: "2 · existing bridge", body: "File chips and the diff view already call webview openFile → sendRequest(open_file) → this.openFile.", code: "bridge unused by <a>" },
+        { id: "three", name: "3 · cited contrast", body: "NON-BINDING: wire unsized href + #L n / #L n-L m into openFile(); give showTextDocument a catch to vscode.open.", code: "invite verify" }
+      ];
+      const RINGS = [
+        { id: "anchor", name: "chat <a>", fail: "styled link never calls openFile", hold: "anchor soldered to the bridge" },
+        { id: "bridge", name: "open_file pad", fail: "chips use it; chat does not", hold: "one pad, every file ref" },
+        { id: "binary", name: "binary catch", fail: ".png/.pdf reject silent", hold: "rejection falls back to vscode.open" }
+      ];
+      const SORTS = [
+        { label: "A", kind: "halo", note: "unwired" },
+        { label: "OF", kind: "halo", note: "unused" },
+        { label: "BIN", kind: "halo", note: "silent" }
+      ];
+
+      const idle = {
+        source: "probe", issue: 92809, seed: "fused", fused: true, dry: false, bonded: false,
+        shippedMark: "pass", assayMark: "pass", isolateMark: "pass",
+        hubCount: "FUSED",
+        log: ["[idle] pad is fused — chat markdown file links call the existing open_file bridge; binary opens have a catch"]
+      };
+      const dryPath = {
+        source: "probe", issue: 92809, seed: "dry", fused: false, dry: true, bonded: false,
+        unwiredAnchor: true, bridgeExistsUnused: true, silentBinaryReject: true,
+        showTextDocumentNoCatch: true, markdownMandate: true,
+        shippedMark: "FAIL", assayMark: "FAIL", isolateMark: "pass",
+        hubCount: "DRY",
+        log: ["[path] #92809 dry path — chat <a> anchors stay dry (never call the existing open_file bridge)", "[dry] binary showTextDocument rejects silent; click is a silent no-op"]
+      };
+      const holdBonded = {
+        source: "probe", issue: 92809, seed: "bonded", fused: false, dry: false, bonded: true,
+        padBonded: true,
+        shippedMark: "pass", assayMark: "pass", isolateMark: "pass",
+        hubCount: "BONDED",
+        log: ["[admit] pad already bonded — anchors call existing openFile; rejection handler that falls back to vscode.open"]
+      };
+      const unwiredTicket = { ...dryPath, seed: "unwired-anchor", hubCount: "UNWIRED-ANCHOR", log: ["[unwired-anchor] rendered <a> never call openFile; styled as links but silent no-op"] };
+      const bridgeTicket = { ...dryPath, seed: "bridge-exists-unused", hubCount: "BRIDGE-EXISTS-UNUSED", log: ["[bridge-exists-unused] file chips and the diff view already use the open_file bridge"] };
+      const binaryTicket = { ...dryPath, seed: "silent-binary-reject", hubCount: "SILENT-BINARY-REJECT", log: ["[silent-binary-reject] .png/.pdf reject; user sees nothing at all"] };
+      const catchTicket = { ...dryPath, seed: "showTextDocument-no-catch", hubCount: "SHOWTEXTDOCUMENT-NO-CATCH", log: ["[showTextDocument-no-catch] showTextDocument(uri).then(cb) has no rejection handler"] };
+      const mandateTicket = { ...dryPath, seed: "markdown-mandate", hubCount: "MARKDOWN-MANDATE", log: ["[markdown-mandate] ## Code References in Text mandates [name](path); dead on arrival"] };
+      const cousinsTicket = { ...dryPath, seed: "cousins", cousinsCiteOnly: [10846, 16056, 44713, 51015, 57100, 72889], hubCount: "COUSINS", log: ["[cousins] #10846 #16056 #44713 #51015 #57100 #72889 CLOSED · primary stays #92809"] };
+      const reproTicket = { ...dryPath, seed: "has-clear-repro", hasClearRepro: true, hubCount: "HAS-CLEAR-REPRO", log: ["[repro] labeled has repro"] };
+      const FALLBACKS = {
+        fused: idle,
+        dry: dryPath,
+        bonded: holdBonded,
+        "unwired-anchor": unwiredTicket,
+        "bridge-exists-unused": bridgeTicket,
+        "silent-binary-reject": binaryTicket,
+        "showTextDocument-no-catch": catchTicket,
+        "markdown-mandate": mandateTicket,
+        cousins: cousinsTicket,
+        "has-clear-repro": reproTicket
+      };
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...idle, parseError: true }; }
+      }
+
+      function remediating(t) {
+        const seed = String(t.seed || "");
+        return HOLD.has(seed) || (t.bonded === true && t.dry !== true) || (t.fused === true && t.dry !== true);
+      }
+
+      function alreadyDry(t) {
+        const seed = String(t.seed || "");
+        if (remediating(t) && t.dry !== true) return false;
+        if (HOLD.has(seed) && t.dry !== true) return false;
+        if (t.dry === true) return true;
+        if (CHIPS.includes(seed) && !HOLD.has(seed)) return true;
+        return t.fused !== true && t.bonded !== true && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const holding = remediating(t) && t.dry !== true;
+        t.shippedMark = t.shippedMark || (holding ? "pass" : "FAIL");
+        t.isolateMark = t.isolateMark || "pass";
+        t.assayMark = t.assayMark || (holding ? "pass" : "FAIL");
+        const chips = [];
+        if (seed === "fused" || (holding && t.fused === true)) chips.push("fused");
+        if (holding || seed === "bonded") {
+          if (seed === "bonded" || t.bonded === true) chips.push("bonded");
+          if (seed === "fused" || t.fused === true) chips.push("fused");
+        }
+        if (alreadyDry(t) || seed === "dry" || t.dry === true) chips.push("dry");
+        if (seed === "unwired-anchor" || t.unwiredAnchor === true) chips.push("unwired-anchor");
+        if (seed === "bridge-exists-unused" || t.bridgeExistsUnused === true) chips.push("bridge-exists-unused");
+        if (seed === "silent-binary-reject" || t.silentBinaryReject === true) chips.push("silent-binary-reject");
+        if (seed === "showTextDocument-no-catch" || t.showTextDocumentNoCatch === true) chips.push("showTextDocument-no-catch");
+        if (seed === "markdown-mandate" || t.markdownMandate === true) chips.push("markdown-mandate");
+        if (seed === "cousins" || Array.isArray(t.cousinsCiteOnly)) chips.push("cousins");
+        if (seed === "has-clear-repro" || t.hasClearRepro === true) chips.push("has-clear-repro");
+        const unique = [...new Set(chips)];
+        let verdict = seed && CHIPS.includes(seed) ? seed : (holding ? (t.bonded ? "bonded" : "fused") : "dry");
+        return { ticket: t, holding, alarm: alreadyDry(t), chips: unique, verdict };
+      }
+
+      const REASONS = {
+        fused: "HOLD: idle pad is fused — chat markdown file links call the existing open_file bridge; binary opens have a catch. Score dry or admit bonded.",
+        dry: "ALARM: chat <a> anchors stay dry (never call the existing open_file bridge) and binary showTextDocument rejects silent. Score dry or admit bonded.",
+        bonded: "Pad already bonded. Hypothetical: chat anchors call existing openFile(); showTextDocument has a rejection handler that falls back to vscode.open.",
+        "unwired-anchor": "Rendered <a> elements in the chat panel are styled as links but never call openFile(); the click is a silent no-op.",
+        "bridge-exists-unused": "webview openFile → sendRequest({type:\"open_file\"}) → extension case \"open_file\" → this.openFile is already used by file chips and the diff view.",
+        "silent-binary-reject": "showTextDocument rejects for non-text files (.png/.pdf); with no onRejected and no .catch the user sees nothing at all.",
+        "showTextDocument-no-catch": "vscode.window.showTextDocument(uri).then(cb) has no rejection handler; defect 2 stays dry even after anchors are wired.",
+        "markdown-mandate": "The extension system prompt (## Code References in Text) instructs Claude to emit [name](path) file references; those links are dead on arrival.",
+        cousins: "Cite-only neighbourhood: #10846 #16056 #44713 #51015 #57100 #72889 CLOSED/LOCKED prior reports. Primary stays #92809.",
+        "has-clear-repro": "Issue labeled has repro: ask for docs/note.md + docs/chart.png; Claude emits [name](path); click does nothing; filed 2026-09-08T08:45:25Z."
+      };
+
+      function paintLog(result) {
+        const t = result.ticket;
+        const lines = Array.isArray(t.log) && t.log.length
+          ? t.log
+          : (result.holding
+            ? ["[dryjoint] pad fused / bonded — anchors call the bridge"]
+            : ["[dryjoint] dry · chat <a> never call openFile"]);
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          if (/dry|FAIL|unwired|reject|silent/i.test(line)) return `<span class="hit">${line}</span>`;
+          if (/fused|bonded|hold|open_file bridge/i.test(line)) return `<span class="ok">${line}</span>`;
+          return line;
+        }).join("\n");
+      }
+
+      function paintPaths(result) {
+        const t = result.ticket;
+        const rows = [
+          ["shipped", t.shippedMark, result.holding ? "fused / bonded · pad holds" : "dry · chat <a> never call the bridge", "dryjoint path"],
+          ["isolate", t.isolateMark, "chat-panel open_file dry joint · not a galley · not a cistern", "not a clone"],
+          ["assay", t.assayMark, result.holding ? (result.verdict === "bonded" ? "bonded" : "fused") : "would hold after a hypothetical wired-anchor + catch path", "expected channel"]
+        ];
+        document.getElementById("paths").innerHTML = rows.map(([name, mk, face, note]) => {
+          const cls = mk === "FAIL" ? "fail" : "ok";
+          return `<article class="path ${cls}"><b>${name}</b><div>${face}</div><span class="note">${mk} · ${note}</span></article>`;
+        }).join("");
+      }
+
+      function paintHousing(result) {
+        const alarm = result.alarm;
+        const bonded = result.verdict === "bonded";
+        document.getElementById("press-tag").textContent = bonded
+          ? "HOLD · BONDED"
+          : (alarm ? "ALARM · DRY" : "HOLD · FUSED");
+        const facing = document.getElementById("sheet-dry");
+        const latch = document.getElementById("impression-dry");
+        if (alarm) {
+          facing.className = "sheet joint-sheet alarm";
+          latch.textContent = "DRY";
+        } else {
+          facing.className = "sheet joint-sheet";
+          latch.textContent = bonded ? "BONDED" : "JOINT OPEN";
+        }
+        document.getElementById("impression-fused").textContent = bonded ? "BONDED" : "PAD ON";
+        const gap = document.getElementById("dry-gap");
+        if (gap) {
+          gap.setAttribute("stroke", alarm ? "#e08a42" : "#6ec4a2");
+          gap.setAttribute("fill", alarm ? "#18221b" : "#c8cdd2");
+        }
+      }
+
+      function paintSorts(result) {
+        document.getElementById("typecase").innerHTML = SORTS.map((k) => {
+          let cls = k.kind;
+          if (result.holding) cls = "hold";
+          return `<article class="sort ${cls}"><b>${k.label}</b><span>${result.holding ? "held" : k.note}</span></article>`;
+        }).join("");
+      }
+
+      function paintRings(result) {
+        document.getElementById("gauges").innerHTML = RINGS.map((ring) => {
+          const cls = result.holding ? "ok" : "warn";
+          const body = result.holding ? ring.hold : ring.fail;
+          return `<article class="slot ${cls}"><b>${ring.name}</b><span>${body}</span></article>`;
+        }).join("");
+      }
+
+      function paintPlates(result) {
+        document.getElementById("plates").innerHTML = PLATES.map((p) => {
+          const cls = result.holding ? "hold" : "on";
+          return `<article class="plate ${cls}"><b>${p.name}</b><span>${p.body}</span><code>${p.code}</code></article>`;
+        }).join("");
+      }
+
+      function paintBays(result) {
+        document.getElementById("bays").innerHTML = BAYS.map((p) => {
+          const on = (result.holding && p.hold) || (!result.holding && !p.hold && (
+            (result.verdict === "unwired-anchor" && p.id === "unwired") ||
+            (result.verdict === "silent-binary-reject" && p.id === "binary") ||
+            (result.verdict === "showTextDocument-no-catch" && p.id === "catch") ||
+            (result.verdict === "dry" && p.id === "unwired") ||
+            (result.verdict === "cousins" && p.id === "catch")
+          )) ? "on" : "";
+          return `<article class="roll ${on}" data-bay="${p.id}"><b>${p.name}</b><span>${p.note}</span></article>`;
+        }).join("");
+        document.querySelectorAll("#bays [data-bay]").forEach((el) => {
+          el.addEventListener("click", async () => {
+            const bay = BAYS.find((p) => p.id === el.dataset.bay);
+            if (!bay) return;
+            try { apply(await loadNamed(bay.file)); }
+            catch { apply(bay.hold ? { ...holdBonded } : { ...dryPath }); }
+          });
+        });
+      }
+
+      function paintMatrix(activeId) {
+        document.getElementById("matrix-body").innerHTML = MATRIX.map((row) => {
+          const active = activeId === row.id ? "active" : "";
+          const cell = (m) => `<td class="${m === "FAIL" ? "bad" : "good"}">${m}</td>`;
+          return `<tr class="clickable ${active}" data-row="${row.id}">
+            <td>${row.name}</td><td>${row.slot}</td><td>${row.fastener}</td>
+            ${cell(row.shipped)}${cell(row.assay)}
+          </tr>`;
+        }).join("");
+        document.querySelectorAll("#matrix-body tr").forEach((tr) => {
+          tr.addEventListener("click", async () => {
+            const row = MATRIX.find((r) => r.id === tr.dataset.row);
+            if (!row) return;
+            try { apply(await loadNamed(row.file)); }
+            catch {
+              const map = {
+                primary: "dry", fused: "fused", dry: "dry",
+                unwired: "unwired-anchor", bridge: "bridge-exists-unused",
+                binary: "silent-binary-reject", catch: "showTextDocument-no-catch",
+                mandate: "markdown-mandate",
+                bonded: "bonded", cousins: "cousins", repro: "has-clear-repro"
+              };
+              apply(FALLBACKS[map[row.id]] || idle);
+            }
+          });
+        });
+      }
+
+      function paintChips(result) {
+        document.getElementById("chips").innerHTML = CHIPS.map((chip) => {
+          const on = result.chips.includes(chip);
+          const cls = HOLD.has(chip) ? "hold" : "on";
+          return `<button class="chip ${on ? cls : ""}" data-chip="${chip}">${chip}</button>`;
+        }).join("");
+        document.querySelectorAll("#chips [data-chip]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const chip = btn.dataset.chip;
+            try { apply(await loadNamed(CHIP_FILES[chip])); }
+            catch { apply({ ...(FALLBACKS[chip] || idle), seed: chip, issue: 92809 }); }
+          });
+        });
+      }
+
+      function paintPads(result) {
+        document.querySelectorAll("#pads [data-pad]").forEach((btn) => {
+          btn.classList.remove("on", "hold");
+          if (result.holding) {
+            if (btn.dataset.pad === "bridge") btn.classList.add("hold");
+          } else if (btn.dataset.pad === "anchor" || btn.dataset.pad === "binary") {
+            btn.classList.add("on");
+          }
+        });
+      }
+
+      function apply(ticket) {
+        const result = scoreMark(ticket);
+        const bench = document.getElementById("bench");
+        const face = result.verdict === "bonded" ? "bonded" : (result.holding ? "fused" : "dry");
+        bench.className = "bench " + face;
+        const v = document.getElementById("verdict");
+        v.className = "verdict " + result.verdict;
+        v.textContent = result.verdict;
+        document.getElementById("why").textContent = REASONS[result.verdict] || REASONS.fused;
+        document.getElementById("probe").value = JSON.stringify(ticket, null, 2);
+        paintChips(result);
+        paintLog(result);
+        paintPaths(result);
+        paintHousing(result);
+        paintSorts(result);
+        paintRings(result);
+        paintPlates(result);
+        paintBays(result);
+        paintPads(result);
+        const map = {
+          fused: "fused", dry: "dry", bonded: "bonded",
+          "unwired-anchor": "unwired",
+          "bridge-exists-unused": "bridge",
+          "silent-binary-reject": "binary",
+          "showTextDocument-no-catch": "catch",
+          "markdown-mandate": "mandate",
+          cousins: "cousins",
+          "has-clear-repro": "repro"
+        };
+        paintMatrix(map[result.verdict] || (result.holding ? "fused" : "primary"));
+      }
+
+      async function loadNamed(file) {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(file);
+        return res.json();
+      }
+
+      document.getElementById("score-dry").addEventListener("click", () => apply(parseProbe(document.getElementById("probe").value)));
+      document.getElementById("pin-fused").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("load-dry").addEventListener("click", () => apply({ ...dryPath }));
+      document.getElementById("admit-bonded").addEventListener("click", () => apply({ ...holdBonded }));
+      document.getElementById("reset-fused").addEventListener("click", () => apply({ ...idle }));
+      document.getElementById("lift-joint").addEventListener("click", () => apply({ ...dryPath }));
+      document.getElementById("solder-pad").addEventListener("click", () => apply({ ...holdBonded }));
+      document.getElementById("load-fixtures").addEventListener("click", async () => {
+        try { apply(await loadNamed("data/92809.json")); }
+        catch { apply({ ...dryPath, seed: "dry", hubCount: "92809" }); }
+      });
+      document.getElementById("probe").addEventListener("change", (ev) => apply(parseProbe(ev.target.value)));
+      const drop = document.getElementById("drop");
+      drop.addEventListener("dragover", (ev) => { ev.preventDefault(); drop.classList.add("hot"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("hot"));
+      drop.addEventListener("drop", async (ev) => {
+        ev.preventDefault();
+        drop.classList.remove("hot");
+        const file = ev.dataTransfer.files[0];
+        if (!file) return;
+        apply(parseProbe(await file.text()));
+      });
+      document.querySelectorAll("#pads [data-pad]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const pad = btn.dataset.pad;
+          if (pad === "bridge") apply({ ...idle });
+          else if (pad === "binary") apply({ ...binaryTicket });
+          else apply({ ...dryPath });
+        });
+      });
+
+      apply({ ...idle });
+    </script>
+  </body>
+</html>
