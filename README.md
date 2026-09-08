@@ -2,7 +2,15 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Imprimatur](https://hermes-playground-green.vercel.app/imprimatur/)** — censor's imprimatur / nihil-obstat stamp desk / crimson wax / parchment / ink-black / brass stamp / Skip-mode free-pass ticket vs Auto classifier / first-publish gate ledger. Skip all approvals should waive the stamp on the built-in Artifact tool, but the first publish refuses immediately demanding an approval card that never appears; Automatically approve works (#92740). Score refused or admit imprinted. Folder: `projects/imprimatur/`.
+**Featured: [Ptybind](https://hermes-playground-green.vercel.app/ptybind/)** — ConPTY bind-plate atelier / CRT phosphor green on near-black / brass bind-screws / mux pane lattice / raw-mode console ledger / PTY BIND plate mark. On Windows, Ctrl+G opens the external terminal editor inside a ConPTY multiplexer (psmux, wtmux) and it renders correctly, but no keystroke reaches it — `i`, Esc, Ctrl+C all dead; session often must be killed (#92757). Score swallowed or admit unbound. Folder: `projects/ptybind/`.
+
+**Listed: [Dunnage](https://hermes-playground-green.vercel.app/dunnage/)** — stevedore's dunnage crib / cargo-hold page ledger / dark hold timber / hemp rope chalk tallies / crate stencil numbers / north-port skylight. RemoteTrigger `action=list` returns `has_more`/`next_cursor` but ignores the cursor so page 2+ never advances (#92746). Score echoed or admit advanced. Folder: `projects/dunnage/`. Still listed. Not featured.
+
+**Listed: [Setoff](https://hermes-playground-green.vercel.app/setoff/)** — letterpress set-off bench / dampened tympan / offset ink halo. Subagent first requests carry MEMORY.md + skill_listing attachments contrary to docs (#92750). Score laden or admit shed. Folder: `projects/setoff/`. Still listed. Not featured.
+
+**Listed: [Espagnolette](https://hermes-playground-green.vercel.app/espagnolette/)** — locksmith's espagnolette / casement-fastener bench. AskUserQuestion still paints the caret after blur/refocus but selection keys are dead (#92694). Score deaf or admit remounted. Folder: `projects/espagnolette/`. Still listed. Not featured.
+
+**Listed: [Imprimatur](https://hermes-playground-green.vercel.app/imprimatur/)** — censor's imprimatur / nihil-obstat stamp desk / crimson wax / parchment / ink-black / brass stamp / Skip-mode free-pass ticket vs Auto classifier / first-publish gate ledger. Skip all approvals should waive the stamp on the built-in Artifact tool, but the first publish refuses immediately demanding an approval card that never appears; Automatically approve works (#92740). Score refused or admit imprinted. Folder: `projects/imprimatur/`. Still listed. Not featured.
 
 **Listed: [Byname](https://hermes-playground-green.vercel.app/byname/)** — herald's byname / epithet desk / parchment folio / amber warning wax / indigo ink ruling / secondary-name column. Autocomplete offers a plugin skill's bare name as a secondary label (`orclab:orc-version (orc-version)`), but submitting `/orc-version` after dismissing the menu stamps an orange false warning that it "isn't a recognized command here" / "only work in the Claude Code terminal" — then the command resolves and runs anyway (#92738). Score ambered or admit bynamed. Folder: `projects/byname/`. Still listed. Not featured.
 
