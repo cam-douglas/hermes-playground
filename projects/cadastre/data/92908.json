@@ -1,0 +1,61 @@
+{
+  "source": "probe",
+  "issue": 92908,
+  "note": "Primary #92908. Windows: .claude.json is saved as a whole-file read-modify-write behind a best-effort lock that is abandoned after 15 s — entries written by one process disappear again, trust flags included.",
+  "seed": "escheated",
+  "enrolled": false,
+  "escheated": true,
+  "regranted": true,
+  "title": "[BUG] Windows: `.claude.json` is saved as a whole-file read-modify-write behind a best-effort lock that is abandoned after 15 s — entries written by one process disappear again, trust flags included",
+  "state": "open",
+  "labels": ["bug", "has repro", "platform:windows", "area:core", "area:permissions", "data-loss"],
+  "os": "Windows 11 Enterprise 10.0.26200",
+  "claudeDesktopRead": "1.46388.4",
+  "claudeDesktopCurrent": "1.49585.0",
+  "claudeDesktopInstalled": "2026-09-08 18:42",
+  "hostCli": "2.1.260",
+  "workload": "many parallel sessions across worktrees from the desktop app",
+  "roll": {
+    "path": "~/.claude.json",
+    "bytes": "215.7 KB",
+    "projectKeys": 334,
+    "asOf": "2026-09-08",
+    "validJson": true,
+    "contentLostNotCorrupted": true
+  },
+  "lock": {
+    "inProcess": "Rvn.runExclusive",
+    "crossProcess": "advisory mkdir Hvn/eCn",
+    "mkdirMode": 448,
+    "stealMs": 10000,
+    "timeoutMs": 15000,
+    "constants": { "Bvn": "1e4", "QSn": "1e4", "Vvn": "15e3", "$Sn": "15e3" }
+  },
+  "abandonPaths": [
+    "wait >15 s → warn Timed out waiting… writing without it and proceed",
+    "lock mtime >10 s → delete and take over",
+    "mkdir non-EEXIST (EPERM) → warn Cannot create… writing without it and proceed"
+  ],
+  "atomicWrite": "Vr: tmp + fsync + rename",
+  "eventCount": 8,
+  "newestTimeout": "2026-09-08 19:42:45 — one hour after 1.49585.0 install",
+  "absentInLogs": ["Failed to save config", "Failed to parse config"],
+  "trust": {
+    "keysWrittenThenGone": true,
+    "handAddedKeyDidNotSurviveSevenMinutes": true,
+    "mustRegrant": true,
+    "dialogOftenSkipped": true,
+    "sessionStartsUntrusted": true
+  },
+  "reporterAsks": [
+    "do not write without the lock",
+    "raise/remove the 10 s steal or refresh mtime",
+    "log the loss not just the lock"
+  ],
+  "hubCount": "ESCHEATED",
+  "log": [
+    "[92908] whole-file RMW behind advisory mkdir lock; abandoned after 15 s, stolen if older than 10 s, or skipped on mkdir failure",
+    "[92908] eight lock-integrity events 2026-08-25→2026-09-08; hasTrustDialogAccepted parcels escheat",
+    "[92908] Desktop 1.46388.4 unchanged in 1.49585.0; host CLI 2.1.260; 215.7 KB / 334 keys"
+  ]
+}

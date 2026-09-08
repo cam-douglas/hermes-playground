@@ -1,0 +1,1324 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cadastre — cadastral surveyor's bench for #92908</title>
+    <meta
+      name="description"
+      content="Cadastre — a cadastral / land-registry surveyor's bench for Claude Code #92908: whole-file RMW writers abandon the mkdir lock so hasTrustDialogAccepted parcels escheat. Idle word is enrolled."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cousine:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --baize: #16351f;
+        --baize-deep: #0d2214;
+        --felt: #1e4a2c;
+        --brass: #c9a227;
+        --brass-hot: #e8c04a;
+        --brass-dim: #8a7018;
+        --cream: #f3e6c8;
+        --cream-edge: #d8c49a;
+        --iron: #3a3a38;
+        --iron-lit: #5a5a54;
+        --ink: #1a1610;
+        --mute: #9aaa92;
+        --enrolled: #6baf6a;
+        --escheated: #c44a3a;
+        --regranted: #c8882a;
+        --rule: rgba(201, 162, 39, 0.32);
+        --paper-ink: #2a2218;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Work Sans", "Segoe UI", sans-serif;
+        color: var(--cream);
+        background:
+          radial-gradient(ellipse at 16% 6%, rgba(201, 162, 39, 0.12), transparent 38%),
+          radial-gradient(ellipse at 84% 0%, rgba(196, 74, 58, 0.08), transparent 32%),
+          repeating-linear-gradient(90deg, rgba(30, 74, 44, 0.45) 0 3px, transparent 3px 14px),
+          repeating-linear-gradient(0deg, rgba(13, 34, 20, 0.35) 0 2px, transparent 2px 11px),
+          var(--baize-deep);
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass-hot); }
+      .yard { width: min(1180px, calc(100% - 28px)); margin: 0 auto; padding: 22px 0 108px; }
+      .catalog {
+        display: inline-block;
+        font-family: Cousine, ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--cream);
+        text-decoration: none;
+        border-bottom: 1px solid var(--brass);
+        padding-bottom: 3px;
+        margin-bottom: 12px;
+      }
+      .chain {
+        height: 16px;
+        margin: 12px 0 22px;
+        background:
+          linear-gradient(90deg, transparent, var(--iron) 8%, var(--brass-dim) 40%, var(--brass) 50%, var(--brass-dim) 60%, var(--iron) 92%, transparent);
+        position: relative;
+        box-shadow: 0 12px 28px rgba(8, 16, 10, 0.7);
+      }
+      .chain::after {
+        content: "CADASTRAL SURVEY · PARCEL ROLL";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-family: "Crimson Pro", Georgia, serif;
+        font-size: 10px;
+        letter-spacing: 0.34em;
+        color: var(--ink);
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr 228px;
+        gap: 22px;
+        align-items: end;
+        border-bottom: 3px double var(--brass);
+        padding-bottom: 16px;
+        margin: 0 0 18px;
+      }
+      .mast h1 {
+        font-family: "Crimson Pro", Georgia, "Times New Roman", serif;
+        font-weight: 700;
+        font-size: clamp(52px, 10vw, 104px);
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 0.78;
+        color: var(--cream);
+        text-shadow: 0 2px 0 #061208, 0 18px 44px rgba(201, 162, 39, 0.22);
+      }
+      .plate {
+        border: 2px solid var(--brass);
+        background:
+          radial-gradient(circle at 70% 16%, rgba(201, 162, 39, 0.18), transparent 48%),
+          var(--felt);
+        min-height: 156px;
+        padding: 12px 14px;
+      }
+      .plate .k {
+        font-family: Cousine, monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass-hot);
+      }
+      .plate .v {
+        font-family: "Crimson Pro", serif;
+        font-size: 32px;
+        margin: 8px 0 4px;
+        color: var(--cream);
+      }
+      .lede {
+        max-width: 78em;
+        color: var(--mute);
+        line-height: 1.64;
+        font-size: 16px;
+        margin: 0 0 12px;
+      }
+      .lede strong {
+        color: var(--brass-hot);
+        font-family: "Crimson Pro", serif;
+        font-weight: 700;
+      }
+      .lede em { font-style: italic; color: var(--cream); }
+      .lede code, code {
+        font-family: Cousine, monospace;
+        font-size: 12.5px;
+        color: var(--cream);
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 18px;
+      }
+      .tags a, .tags span {
+        font-family: Cousine, monospace;
+        font-size: 10px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        color: var(--mute);
+        background: var(--baize);
+      }
+      .tags a { color: var(--brass-hot); border-color: rgba(201, 162, 39, 0.5); }
+      .desk {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 16px;
+        margin: 0 0 16px;
+      }
+      .instrument {
+        background:
+          linear-gradient(180deg, rgba(30, 74, 44, 0.96), var(--baize-deep));
+        border: 1px solid rgba(201, 162, 39, 0.36);
+        padding: 14px 10px 10px;
+        min-height: 480px;
+        position: relative;
+      }
+      .instrument svg { display: block; width: 100%; height: auto; }
+      .instrument .peg-label {
+        font-family: Cousine, monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass-hot);
+        text-align: center;
+        margin-top: 8px;
+      }
+      .map-wrap { display: grid; gap: 12px; }
+      .parcel-folio {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        background: var(--iron-lit);
+        border: 8px solid var(--iron);
+        box-shadow: 0 18px 40px rgba(6, 12, 8, 0.55), inset 0 0 0 1px #8a7018;
+        min-height: 320px;
+      }
+      .sheet {
+        padding: 18px 16px 14px;
+        background:
+          repeating-linear-gradient(0deg, transparent 0 27px, rgba(42, 34, 24, 0.07) 27px 28px),
+          repeating-linear-gradient(90deg, transparent 0 39px, rgba(42, 34, 24, 0.05) 39px 40px),
+          var(--cream);
+        color: var(--paper-ink);
+        position: relative;
+      }
+      .sheet.held { box-shadow: inset -18px 0 24px rgba(58, 58, 56, 0.12); border-right: 1px solid #c8b48a; }
+      .sheet.void { box-shadow: inset 18px 0 24px rgba(58, 58, 56, 0.12); }
+      .sheet .eyebrow {
+        font-family: Cousine, monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #5a3a12;
+        margin-bottom: 8px;
+      }
+      .sheet h2 {
+        font-family: "Crimson Pro", serif;
+        font-size: 22px;
+        margin: 0 0 10px;
+        color: var(--ink);
+      }
+      .lots { margin: 0; padding: 0; list-style: none; }
+      .lots li {
+        display: grid;
+        grid-template-columns: 2.6em 1fr auto;
+        gap: 8px;
+        font-family: "Crimson Pro", Georgia, serif;
+        font-size: 17px;
+        line-height: 1.7;
+        border-bottom: 1px dotted rgba(42, 34, 24, 0.16);
+      }
+      .lots .n {
+        font-family: Cousine, monospace;
+        font-weight: 700;
+        color: #3a6a32;
+        font-size: 12px;
+        align-self: center;
+      }
+      .lots li.gone .n { color: var(--escheated); }
+      .lots li.kept .n { color: #3a6a32; }
+      .lots .mark {
+        font-family: Cousine, monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        align-self: center;
+      }
+      .card {
+        background: var(--baize);
+        border: 1px solid var(--rule);
+        padding: 14px 14px 12px;
+      }
+      .card .eyebrow {
+        font-family: Cousine, monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass-hot);
+        margin-bottom: 8px;
+      }
+      .card h2 {
+        font-family: "Crimson Pro", serif;
+        font-size: 22px;
+        margin: 0 0 8px;
+      }
+      .mono {
+        font-family: Cousine, monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        margin: 0;
+      }
+      .trays {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .tray {
+        min-height: 148px;
+        padding: 12px;
+        border: 1px solid var(--rule);
+        background: var(--baize-deep);
+      }
+      .tray b {
+        display: block;
+        font-family: "Crimson Pro", serif;
+        font-size: 16px;
+        letter-spacing: 0.08em;
+        color: var(--brass-hot);
+      }
+      .tray span {
+        display: block;
+        font-family: Cousine, monospace;
+        font-size: 11px;
+        color: var(--mute);
+        margin-top: 8px;
+        line-height: 1.5;
+      }
+      .tray .stamp {
+        margin-top: 14px;
+        display: inline-block;
+        font-family: "Crimson Pro", serif;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        padding: 4px 10px;
+        border: 2px solid currentColor;
+      }
+      .tray.hold { outline: 2px solid var(--enrolled); }
+      .tray.cut { outline: 2px solid var(--escheated); }
+      .tray.hold .stamp { color: var(--enrolled); }
+      .tray.cut .stamp { color: var(--escheated); }
+      .score {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin: 0 0 16px;
+        padding: 14px 16px;
+        border: 2px solid var(--brass);
+        background: linear-gradient(90deg, rgba(201, 162, 39, 0.1), transparent 42%), var(--felt);
+      }
+      .score .line {
+        font-family: Cousine, monospace;
+        font-size: 15px;
+        letter-spacing: 0.03em;
+      }
+      .score .line em { font-style: normal; color: var(--brass-hot); }
+      .score.alarm { border-color: var(--escheated); }
+      .score.alarm .line em { color: #f0a090; }
+      .score.hold { border-color: var(--enrolled); }
+      .score.hold .line em { color: var(--enrolled); }
+      .badge {
+        font-family: "Crimson Pro", serif;
+        font-size: 22px;
+        letter-spacing: 0.08em;
+        padding: 4px 12px;
+        border: 1px solid currentColor;
+      }
+      .pegs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+        gap: 8px;
+        margin: 0 0 16px;
+      }
+      .peg {
+        border: 0;
+        cursor: pointer;
+        min-height: 88px;
+        padding: 10px;
+        text-align: left;
+        font-family: Cousine, monospace;
+        font-size: 11px;
+        color: var(--cream);
+        background: linear-gradient(180deg, #2a5a38, var(--baize));
+        box-shadow: inset 0 0 0 1px rgba(201, 162, 39, 0.35);
+      }
+      .peg b {
+        display: block;
+        font-family: "Crimson Pro", serif;
+        font-size: 15px;
+        color: var(--cream);
+        margin-bottom: 4px;
+      }
+      .peg.on { outline: 2px solid var(--escheated); }
+      .peg.hold { outline: 2px solid var(--enrolled); }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 18px;
+      }
+      .act {
+        border: 1px solid var(--rule);
+        background: var(--baize-deep);
+        color: var(--cream);
+        font-family: "Work Sans", sans-serif;
+        font-size: 14px;
+        padding: 10px 12px;
+        cursor: pointer;
+      }
+      .act.alarm { border-color: var(--escheated); color: #f0c0b0; }
+      .act.hold { border-color: var(--enrolled); color: #d8e8c4; }
+      .assay {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 0 0 18px;
+      }
+      select, textarea {
+        width: 100%;
+        min-height: 44px;
+        background: var(--cream);
+        color: var(--paper-ink);
+        border: 1px solid var(--cream-edge);
+        font-family: Cousine, monospace;
+        font-size: 13px;
+        line-height: 1.55;
+        padding: 10px 12px;
+      }
+      textarea { min-height: 150px; resize: vertical; }
+      .integrations {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 0 0 18px;
+      }
+      .plaque {
+        background: var(--baize-deep);
+        border: 1px solid var(--rule);
+        padding: 12px 12px 10px;
+      }
+      .plaque h3 {
+        font-family: "Crimson Pro", serif;
+        font-size: 18px;
+        margin: 0 0 6px;
+      }
+      .plaque p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.5; }
+      .brief { border-top: 1px solid var(--rule); padding-top: 16px; }
+      .sec {
+        font-family: "Crimson Pro", serif;
+        font-size: 28px;
+        margin: 18px 0 8px;
+        color: var(--cream);
+      }
+      .brief p { color: var(--mute); line-height: 1.62; }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: Cousine, monospace;
+        font-size: 10px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid var(--rule);
+        padding: 4px 7px;
+        color: var(--mute);
+      }
+      footer.chrome {
+        margin-top: 28px;
+        font-family: Cousine, monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .log {
+        font-family: Cousine, monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        background: var(--baize-deep);
+        border: 1px solid var(--rule);
+        padding: 12px;
+        min-height: 92px;
+        white-space: pre-wrap;
+        margin: 0 0 16px;
+      }
+      .log .hit { color: #f0a898; }
+      .log .ok { color: #c8d8a4; }
+      .log .warn { color: #e8c872; }
+      .weights {
+        display: flex;
+        gap: 8px;
+        margin: 10px 0 0;
+      }
+      .weight {
+        width: 28px;
+        height: 18px;
+        background: linear-gradient(180deg, #6a6a64, #2a2a28);
+        border: 1px solid #8a8a82;
+        box-shadow: inset 0 1px 0 #9a9a92;
+      }
+      @media (max-width: 860px) {
+        .mast, .desk, .integrations, .trays, .pegs, .parcel-folio, .assay { grid-template-columns: 1fr; }
+        .sheet.held { border-right: 0; border-bottom: 1px solid #c8b48a; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="yard">
+      <a class="catalog chrome" href="/">hermes-playground catalog</a>
+      <div class="chain" aria-hidden="true"></div>
+      <header class="mast">
+        <div>
+          <h1>Cadastre</h1>
+          <p class="lede">
+            Cadastral <strong>surveyor's bench</strong> for
+            <a href="https://github.com/anthropics/claude-code/issues/92908">anthropics/claude-code#92908</a>.
+            Workspace-trust parcels should stay <em>enrolled</em> on the
+            <code>~/.claude.json</code> roll under a held stake. Instead
+            whole-file RMW writers abandon the mkdir lock after 15s, steal
+            locks older than 10s, or write without it on mkdir failure —
+            warn only — so <code>hasTrustDialogAccepted</code> parcels
+            <em>escheat</em> and trust must be <em>regranted</em>.
+            Score <em>escheated</em> or admit <em>enrolled</em>.
+          </p>
+        </div>
+        <aside class="plate" id="inventory-plate">
+          <div class="k">catalog inventory</div>
+          <div class="v">#231</div>
+          <div class="k" id="plate-seed">idle · enrolled</div>
+        </aside>
+      </header>
+
+      <div class="tags">
+        <a href="https://github.com/anthropics/claude-code/issues/92908">#92908 open</a>
+        <span>bug</span>
+        <span>has repro</span>
+        <span>platform:windows</span>
+        <span>area:core</span>
+        <span>area:permissions</span>
+        <span>data-loss</span>
+        <span>1.49585.0</span>
+        <span>CLI 2.1.260</span>
+        <span>idle enrolled</span>
+        <span>score escheated</span>
+      </div>
+
+      <div class="pegs" id="pegs"></div>
+
+      <section class="desk">
+        <figure class="instrument" aria-label="brass theodolite, iron map-weights, inked cadastral roll">
+          <svg id="desk-svg" viewBox="0 0 200 440" role="img" aria-labelledby="desk-title">
+            <title id="desk-title">Green baize desk, brass theodolite, cream parcel map, iron weights, inked roll</title>
+            <defs>
+              <linearGradient id="brassGrad" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="#e8c04a" />
+                <stop offset="1" stop-color="#8a7018" />
+              </linearGradient>
+              <linearGradient id="baizeGrad" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="#245c38" />
+                <stop offset="1" stop-color="#0d2214" />
+              </linearGradient>
+            </defs>
+            <rect x="6" y="6" width="188" height="428" rx="3" fill="#0a1810" stroke="#8a7018" />
+            <rect x="18" y="24" width="164" height="392" fill="url(#baizeGrad)" stroke="#c9a227" />
+            <ellipse id="brass-glow" cx="100" cy="78" rx="46" ry="28" fill="#c9a227" opacity="0.16" />
+            <rect x="86" y="118" width="28" height="54" fill="url(#brassGrad)" />
+            <circle cx="100" cy="110" r="22" fill="none" stroke="#e8c04a" stroke-width="3" />
+            <circle cx="100" cy="110" r="6" fill="#e8c04a" />
+            <line x1="100" y1="88" x2="100" y2="72" stroke="#e8c04a" stroke-width="2" />
+            <polygon points="100,58 94,74 106,74" fill="#c9a227" />
+            <text x="100" y="192" text-anchor="middle" font-family="Crimson Pro, serif" font-size="11" fill="#f3e6c8" letter-spacing="2">THEODOLITE</text>
+            <rect x="38" y="208" width="124" height="54" fill="#f3e6c8" stroke="#c9a227" />
+            <text id="roll-word" x="100" y="230" text-anchor="middle" font-family="Cousine, monospace" font-size="8" fill="#1a1610">~/.claude.json</text>
+            <text id="roll-keys" x="100" y="248" text-anchor="middle" font-family="Cousine, monospace" font-size="8" fill="#1a1610">334 keys · 215.7 KB</text>
+            <rect x="44" y="274" width="22" height="14" fill="#3a3a38" stroke="#8a8a82" />
+            <rect x="134" y="274" width="22" height="14" fill="#3a3a38" stroke="#8a8a82" />
+            <text x="100" y="304" text-anchor="middle" font-family="Cousine, monospace" font-size="7" fill="#9aaa92">IRON WEIGHTS</text>
+            <text id="desk-word" x="100" y="334" text-anchor="middle" font-family="Cousine, monospace" font-size="10" fill="#6baf6a">ENROLLED</text>
+            <rect id="stake-tag" x="28" y="348" width="144" height="48" rx="2" fill="#f3e6c8" stroke="#c9a227" />
+            <text id="stake-word" x="100" y="368" text-anchor="middle" font-family="Cousine, monospace" font-size="8" fill="#1a1610">stake held</text>
+            <text id="stake-word-2" x="100" y="384" text-anchor="middle" font-family="Cousine, monospace" font-size="8" fill="#1a1610">parcels on the roll</text>
+            <text x="100" y="414" text-anchor="middle" font-family="Crimson Pro, serif" font-size="10" fill="#9aaa92" letter-spacing="2">GREEN BAIZE</text>
+          </svg>
+          <figcaption class="peg-label" id="desk-caption">theodolite sighted · stake held</figcaption>
+        </figure>
+
+        <div class="map-wrap">
+          <article class="parcel-folio" aria-label="enrolled parcels versus escheated lots">
+            <div class="sheet held">
+              <div class="eyebrow">held stake · enrolled</div>
+              <h2>Parcel roll</h2>
+              <ol class="lots" id="held-lots"></ol>
+              <div class="weights" aria-hidden="true"><span class="weight"></span><span class="weight"></span></div>
+            </div>
+            <div class="sheet void">
+              <div class="eyebrow">abandoned stake · escheat</div>
+              <h2>After the write</h2>
+              <ol class="lots" id="void-lots"></ol>
+              <div class="weights" aria-hidden="true"><span class="weight"></span></div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="eyebrow">stake assay · lock vs roll</div>
+            <div class="trays" id="trays"></div>
+          </article>
+          <article class="card">
+            <div class="eyebrow">cadastral ledger</div>
+            <pre class="mono" id="ledger-card">[idle] trust parcels stay enrolled
+file: ~/.claude.json
+keys: 334 · 215.7 KB
+stake: held · mkdir lock
+trust: hasTrustDialogAccepted remains</pre>
+          </article>
+        </div>
+      </section>
+
+      <div class="score hold" id="score">
+        <div class="line" id="score-line">admit <em>enrolled</em> — trust parcels stay on the roll under a held stake</div>
+        <div class="badge" id="score-badge">ENROLLED</div>
+      </div>
+      <pre class="log" id="log">[idle] cadastre enrolled — trust parcels stay on the roll under a held stake</pre>
+
+      <div class="acts">
+        <button class="act alarm" type="button" id="score-escheated">Score escheated</button>
+        <button class="act hold" type="button" id="admit-enrolled">Admit enrolled</button>
+        <button class="act hold" type="button" id="pin-enrolled">Pin idle enrolled</button>
+        <button class="act alarm" type="button" id="load-escheated">Load escheated</button>
+        <button class="act alarm" type="button" id="load-regranted">Load regranted</button>
+        <button class="act" type="button" id="load-fixtures">Load fixtures</button>
+        <button class="act hold" type="button" id="reset-enrolled">Reset to enrolled</button>
+      </div>
+
+      <section class="assay" aria-label="lock-path assay">
+        <article class="card">
+          <div class="eyebrow">lock assay · pick an abandon path</div>
+          <h2>Stake path</h2>
+          <select id="lock-path">
+            <option value="held">held stake — mkdir lock kept</option>
+            <option value="timeout-write">timeout-write — wait &gt;15 s then write without lock</option>
+            <option value="steal-10s">steal-10s — lock mtime &gt;10 s deleted and taken</option>
+            <option value="eperm-skip">eperm-skip — mkdir EPERM, write without lock</option>
+            <option value="taken-over">taken-over — release sees ino/birthtime changed</option>
+          </select>
+          <textarea id="parcel-input" spellcheck="false">C:\&lt;dir&gt;\&lt;repo&gt;  hasTrustDialogAccepted=true
+C:\&lt;dir&gt;\&lt;other&gt; hasTrustDialogAccepted=true</textarea>
+          <div class="acts">
+            <button class="act alarm" type="button" id="assay-lock">Assay this stake</button>
+          </div>
+        </article>
+        <article class="card">
+          <div class="eyebrow">diagnostic reconstruction · not a live write</div>
+          <h2>Would the roll keep them?</h2>
+          <pre class="mono" id="assay-out">Pick a stake path and press Assay this stake. Diagnostic only — no live Claude, no write to ~/.claude.json.</pre>
+        </article>
+      </section>
+
+      <section class="integrations" aria-label="published facts">
+        <article class="plaque">
+          <h3>GitHub #92908</h3>
+          <p>
+            Cite
+            <a href="https://github.com/anthropics/claude-code/issues/92908">anthropics/claude-code#92908</a>
+            (OPEN, bug, has repro, platform:windows, area:core, area:permissions, data-loss).
+            Windows 11 Enterprise 10.0.26200. Desktop 1.46388.4 unchanged in 1.49585.0.
+            Host CLI 2.1.260.
+          </p>
+        </article>
+        <article class="plaque">
+          <h3>Held stake</h3>
+          <p>
+            Cross-process guard is an advisory <code>mkdir</code> lock
+            (<code>Hvn</code>/<code>eCn</code>, mode 448). In-process mutex
+            only is <code>Rvn.runExclusive</code>. The lock is what should
+            keep trust parcels enrolled.
+          </p>
+        </article>
+        <article class="plaque">
+          <h3>Three abandon paths</h3>
+          <p>
+            Wait &gt;15 s → warn <code>Timed out waiting… writing without it</code>.
+            Lock mtime &gt;10 s → delete and take over. mkdir non-EEXIST
+            (EPERM) → warn <code>Cannot create… writing without it</code>.
+          </p>
+        </article>
+        <article class="plaque">
+          <h3>Warn only</h3>
+          <p>
+            <code>Vr</code> writes atomically (tmp + fsync + rename). JSON
+            stays valid. No <code>Failed to save config</code> / 
+            <code>Failed to parse config</code>. Content is lost, not corrupted.
+            Eight lock-integrity events 2026-08-25→2026-09-08.
+          </p>
+        </article>
+      </section>
+
+      <section class="brief">
+        <h2 class="sec">Research brief</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/92908">anthropics/claude-code#92908</a>
+          (OPEN, bug, has repro, platform:windows, area:core, area:permissions, data-loss).
+          Title:
+          <code>[BUG] Windows: `.claude.json` is saved as a whole-file read-modify-write behind a best-effort lock that is abandoned after 15 s — entries written by one process disappear again, trust flags included</code>.
+          Facts from the issue body only.
+        </p>
+        <p>
+          Every change to <code>~/.claude.json</code> is a whole-file
+          read-modify-write. The only cross-process protection is an
+          advisory lock created with <code>mkdir</code>. It is given up in
+          three ways: after a 15 s wait the writer proceeds without it, a
+          lock older than 10 s may be deleted and taken over, and if
+          <code>mkdir</code> fails outright the writer proceeds without it
+          too. Nothing surfaces above <code>warn</code>. On the reporter
+          machine the lock was abandoned or stolen 8 times between
+          2026-08-25 and 2026-09-08. <code>hasTrustDialogAccepted</code>
+          keys were written and are gone again.
+        </p>
+        <p>
+          Environment: Windows 11 Enterprise 10.0.26200; Claude Desktop
+          1.46388.4, unchanged in 1.49585.0 (installed 2026-09-08 18:42);
+          host CLI 2.1.260; many parallel sessions across worktrees;
+          <code>~/.claude.json</code> 215.7 KB / 334 project keys.
+          Constants: Bvn/QSn = 1e4 (10 s steal), Vvn/$Sn = 15e3 (15 s timeout).
+          Newest timeout one hour after 1.49585.0 install. A hand-added key
+          with the app closed did not survive seven minutes after reopen.
+          Diagnostic assay only — no live Claude, no secrets, no network to
+          Anthropic.
+        </p>
+        <h2 class="sec">Why Cadastre is not a clone</h2>
+        <p>
+          <strong>NOT Rubric/#92855.</strong>
+          TUI ordered-list renumber — just shipped #230. Cite only.
+        </p>
+        <p>
+          <strong>NOT Sheave/#92827.</strong>
+          Queued <code>/Users</code> path as slash. Cite only.
+        </p>
+        <p>
+          <strong>NOT Mailslot/#92839.</strong>
+          Keychain argv-fallback. Cite only.
+        </p>
+        <p>
+          <strong>NOT Ukase/#92833. NOT Scabbard/#92820. NOT Deadletter/#90049.
+          NOT Dryjoint/#92809.</strong>
+          Already shipped. Do not touch.
+        </p>
+        <p>
+          <strong>NOT Quill/#92788. NOT Nullity/#92825. NOT #92872.</strong>
+          Backup only — do not ship.
+        </p>
+        <p>
+          NOT a clone of Claude Code. NOT a live patch to anthropics/claude-code.
+          NOT an exploit. NOT a live Claude session.
+        </p>
+        <p>
+          Cadastre is specifically: A CADASTRAL ROLL THAT SHOULD KEEP TRUST
+          PARCELS ENROLLED UNDER A HELD STAKE; INSTEAD CONCURRENT WHOLE-FILE
+          WRITERS ABANDON/STEAL THE STAKE AND PARCELS ESCHEAT.
+        </p>
+        <p>
+          Hypothesis only (NON-BINDING): classic lost-update RMW under a
+          best-effort advisory lock that prefers availability over integrity.
+          Invite verify against #92908 text only.
+          Do NOT implement a fix in anthropics/claude-code.
+        </p>
+        <p>
+          Stay off:
+          <span class="stayoff">
+            <span>Rubric/#92855 already shipped</span>
+            <span>Sheave/#92827 already shipped</span>
+            <span>Quill/#92788 do not ship</span>
+            <span>Nullity/#92825 do not ship</span>
+          </span>
+        </p>
+      </section>
+
+      <footer class="chrome">
+        hermes-playground · catalog #231 · cadastre · #92908 · no live Claude · ?embed=1 hides chrome
+      </footer>
+    </main>
+    <script>
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["enrolled"]);
+      const CHIPS = [
+        "enrolled",
+        "escheated",
+        "regranted",
+        "timeout-write",
+        "steal-10s",
+        "eperm-skip",
+        "taken-over",
+        "warn-only",
+        "eight-events",
+        "desktop-cli",
+        "334-keys",
+        "before-after"
+      ];
+
+      const PEGS = [
+        { seed: "enrolled", name: "enrolled", note: "idle · stake held", hold: true },
+        { seed: "escheated", name: "escheated", note: "parcels vanish" },
+        { seed: "regranted", name: "regranted", note: "trust again" },
+        { seed: "timeout-write", name: "15s", note: "write without lock" },
+        { seed: "steal-10s", name: "10s", note: "mtime steal" },
+        { seed: "eperm-skip", name: "EPERM", note: "mkdir skipped" },
+        { seed: "taken-over", name: "taken", note: "ino/birthtime" },
+        { seed: "warn-only", name: "warn", note: "JSON valid · silent" },
+        { seed: "eight-events", name: "8 lines", note: "08-25 → 09-08" },
+        { seed: "desktop-cli", name: "writers", note: "Desktop + CLI" },
+        { seed: "334-keys", name: "334", note: "215.7 KB roll" },
+        { seed: "before-after", name: "1.49585", note: "unchanged lock" }
+      ];
+
+      const DEFAULT_HELD = [
+        { key: "C:\\<dir>\\<repo>", trust: true, onRoll: true },
+        { key: "C:\\<dir>\\<other>", trust: true, onRoll: true }
+      ];
+      const DEFAULT_VOID = [
+        { key: "C:\\<dir>\\<repo>", trust: false, onRoll: false },
+        { key: "C:\\<dir>\\<other>", trust: false, onRoll: false }
+      ];
+
+      const FALLBACKS = {
+        enrolled: {
+          source: "probe",
+          issue: 92908,
+          seed: "enrolled",
+          enrolled: true,
+          escheated: false,
+          regranted: false,
+          lockHeld: true,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_HELD,
+          hubCount: "ENROLLED",
+          log: [
+            "[idle] cadastre enrolled — trust parcels stay on the roll under a held stake",
+            "[idle] mkdir lock held; whole-file write does not overwrite a competing enrolment"
+          ]
+        },
+        escheated: {
+          source: "probe",
+          issue: 92908,
+          seed: "escheated",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "ESCHEATED",
+          log: [
+            "[path] #92908 escheated — lock abandoned/stolen/skipped; parcels vanish from the roll",
+            "[path] hasTrustDialogAccepted written then gone; trust must be regranted"
+          ]
+        },
+        regranted: {
+          source: "probe",
+          issue: 92908,
+          seed: "regranted",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "REGRANTED",
+          log: [
+            "[regranted] trust keys written then gone; hand-added key did not survive seven minutes after reopen",
+            "[regranted] dialog often skipped; session starts untrusted — trust must be regranted"
+          ]
+        },
+        "timeout-write": {
+          source: "probe",
+          issue: 92908,
+          seed: "timeout-write",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "TIMEOUT-WRITE",
+          log: [
+            "[timeout-write] wait >15 s → warn Timed out waiting… writing without it and proceed",
+            "[timeout-write] Vvn/$Sn = 15e3; newest timeout one hour after 1.49585.0 install"
+          ]
+        },
+        "steal-10s": {
+          source: "probe",
+          issue: 92908,
+          seed: "steal-10s",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "STEAL-10S",
+          log: [
+            "[steal-10s] lock mtime > 10 s → delete and take over",
+            "[steal-10s] Bvn/QSn = 1e4; a save slower than 10 s loses its lock to a second writer"
+          ]
+        },
+        "eperm-skip": {
+          source: "probe",
+          issue: 92908,
+          seed: "eperm-skip",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "EPERM-SKIP",
+          log: [
+            "[eperm-skip] mkdir non-EEXIST failure (EPERM) → warn Cannot create… writing without it and proceed",
+            "[eperm-skip] 2026-08-25 10:20:58 [warn] Cannot create <cfg>.lock: Error: EPERM… writing without it"
+          ]
+        },
+        "taken-over": {
+          source: "probe",
+          issue: 92908,
+          seed: "taken-over",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "TAKEN-OVER",
+          log: [
+            "[taken-over] release sees lock ino/birthtime changed; leaves it",
+            "[taken-over] 09-04 23:21:27 and 09-06 14:41:54 — taken over during the save; leaving it"
+          ]
+        },
+        "warn-only": {
+          source: "probe",
+          issue: 92908,
+          seed: "warn-only",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "WARN-ONLY",
+          log: [
+            "[warn-only] nothing above warn; JSON stays valid; no user-visible error",
+            "[warn-only] no Failed to save config / Failed to parse config — content lost, not corrupted"
+          ]
+        },
+        "eight-events": {
+          source: "probe",
+          issue: 92908,
+          seed: "eight-events",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "EIGHT-EVENTS",
+          log: [
+            "[eight-events] 8 lock-integrity log lines 2026-08-25→2026-09-08",
+            "[eight-events] EPERM once; timeouts 08-25/09-03/09-06×2/09-08; taken-over 09-04 and 09-06",
+            "2026-08-25 10:20:58 [warn] Cannot create <cfg>.lock: Error: EPERM… writing without it",
+            "2026-09-08 19:42:45 [warn] Timed out waiting for <cfg>.lock; writing without it"
+          ]
+        },
+        "desktop-cli": {
+          source: "probe",
+          issue: 92908,
+          seed: "desktop-cli",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "DESKTOP-CLI",
+          log: [
+            "[desktop-cli] Desktop 1.46388.4 / 1.49585.0 and host CLI 2.1.260 both maintain ~/.claude.json",
+            "[desktop-cli] in-process mutex only; cross-process guard is advisory mkdir Hvn/eCn"
+          ]
+        },
+        "334-keys": {
+          source: "probe",
+          issue: 92908,
+          seed: "334-keys",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "334-KEYS",
+          log: [
+            "[334-keys] ~/.claude.json 215.7 KB / 334 project keys on 2026-09-08",
+            "[334-keys] RMW window spans parse, merge, 215 KB copyFile backup, and write"
+          ]
+        },
+        "before-after": {
+          source: "probe",
+          issue: 92908,
+          seed: "before-after",
+          enrolled: false,
+          escheated: true,
+          regranted: true,
+          lockHeld: false,
+          parcels: DEFAULT_HELD,
+          after: DEFAULT_VOID,
+          hubCount: "BEFORE-AFTER",
+          log: [
+            "[before-after] 1.46388.4 lock bodies unchanged in 1.49585.0 (eCn / ZSn / QSn=1e4 / $Sn=15e3)",
+            "[before-after] newest timeout 19:42 — one hour after 1.49585.0 install 18:42"
+          ]
+        }
+      };
+
+      const REASONS = {
+        enrolled: "HOLD: idle surveyor is enrolled — trust parcels stay on the roll under a held stake. Score escheated or admit enrolled.",
+        escheated: "ALARM: lock abandoned/stolen/skipped. hasTrustDialogAccepted parcels vanish from the roll. Score escheated or admit enrolled.",
+        regranted: "Seeded loss. Reporter must grant workspace trust again. Hand-added key did not survive seven minutes after reopen.",
+        "timeout-write": "Wait >15 s → warn Timed out waiting… writing without it. Vvn/$Sn = 15e3.",
+        "steal-10s": "Lock mtime >10 s → delete and take over. Bvn/QSn = 1e4.",
+        "eperm-skip": "mkdir EPERM → warn Cannot create… writing without it and proceed. Mode 448.",
+        "taken-over": "Release sees lock ino/birthtime changed; leaves it. Events on 09-04 and 09-06.",
+        "warn-only": "Nothing above warn. JSON stays valid. No Failed to save/parse config. Content lost, not corrupted.",
+        "eight-events": "8 lock-integrity lines 2026-08-25→2026-09-08. Newest timeout one hour after 1.49585.0.",
+        "desktop-cli": "Desktop and host CLI both write ~/.claude.json. In-process mutex only; advisory mkdir across processes.",
+        "334-keys": "215.7 KB / 334 project keys. The RMW window is not small on a loaded machine.",
+        "before-after": "1.46388.4 lock bodies unchanged in 1.49585.0. Trust written then gone."
+      };
+
+      const LEDGER = {
+        enrolled: `[idle] trust parcels stay enrolled
+file: ~/.claude.json
+keys: 334 · 215.7 KB
+stake: held · mkdir lock
+trust: hasTrustDialogAccepted remains`,
+        escheated: `[path] lock abandoned/stolen/skipped
+file: ~/.claude.json still valid JSON
+keys: written then gone
+stake: not held
+trust: parcels escheat`,
+        regranted: `hand-added key: gone after 7 minutes
+dialog: often skipped
+session: starts untrusted
+must: regrant workspace trust`,
+        "timeout-write": `Vvn/$Sn = 15e3
+warn: Timed out waiting… writing without it
+newest: 2026-09-08 19:42:45
+one hour after 1.49585.0 install`,
+        "steal-10s": `Bvn/QSn = 1e4
+rule: mtime > 10 s → rm lock and take
+save slower than 10 s invites a concurrent writer`,
+        "eperm-skip": `mkdir mode 448
+EPERM ≠ EEXIST → write without it
+2026-08-25 10:20:58 [warn] Cannot create…`,
+        "taken-over": `release compares ino + birthtimeMs
+changed → leave the lock
+09-04 23:21:27 · 09-06 14:41:54`,
+        "warn-only": `max level: warn
+Vr: tmp + fsync + rename
+no Failed to save/parse config
+content lost, not corrupted`,
+        "eight-events": `EPERM 08-25
+timeouts 08-25 / 09-03 / 09-06×2 / 09-08
+taken-over 09-04 / 09-06
+eight lines, all warn`,
+        "desktop-cli": `Desktop 1.46388.4 / 1.49585.0
+host CLI 2.1.260
+shared file: ~/.claude.json
+Rvn.runExclusive is in-process only`,
+        "334-keys": `215.7 KB · 334 project keys
+2026-09-08
+window: parse + merge + copyFile + write`,
+        "before-after": `1.46388.4: Hvn / zvn / Bvn=1e4 / Vvn=15e3
+1.49585.0: eCn / ZSn / QSn=1e4 / $Sn=15e3
+bodies identical · newest timeout after install`
+      };
+
+      function parseParcels(ticket) {
+        const raw = ticket.parcels || ticket.after || DEFAULT_HELD;
+        return (Array.isArray(raw) ? raw : []).map((row) => {
+          if (typeof row === "string") {
+            return { key: row, trust: true, onRoll: ticket.enrolled !== false };
+          }
+          return {
+            key: row.key || row.path || "C:\\<dir>\\<repo>",
+            trust: row.hasTrustDialogAccepted !== false && row.trust !== false,
+            onRoll: row.onRoll !== false && row.fate !== "escheated"
+          };
+        });
+      }
+
+      function parseProbe(raw) {
+        try { return JSON.parse(raw); }
+        catch { return { ...FALLBACKS.enrolled, parseError: true }; }
+      }
+
+      function remediating(ticket) {
+        const seed = String(ticket.seed || "");
+        return HOLD.has(seed) || (ticket.enrolled === true && ticket.escheated !== true);
+      }
+
+      function alreadyEscheated(ticket) {
+        if (remediating(ticket) && ticket.escheated !== true) return false;
+        if (ticket.escheated === true || ticket.regranted === true) return true;
+        const seed = String(ticket.seed || "");
+        return CHIPS.includes(seed) && !HOLD.has(seed);
+      }
+
+      function scoreMark(ticket) {
+        const t = { ...ticket };
+        const seed = String(t.seed || "");
+        const holding = remediating(t) && t.escheated !== true;
+        const alarm = alreadyEscheated(t);
+        const verdict = seed && CHIPS.includes(seed) ? seed : (holding ? "enrolled" : "escheated");
+        return { ticket: t, holding, alarm, verdict };
+      }
+
+      function renderLots(targetId, parcels, voided) {
+        const host = document.getElementById(targetId);
+        const rows = Array.isArray(parcels) ? parcels : [];
+        host.innerHTML = rows.map((row, index) => {
+          const gone = voided || row.onRoll === false;
+          return `<li class="${gone ? "gone" : "kept"}"><span class="n">P${index + 1}</span><span>${row.key}</span><span class="mark">${gone ? "escheat" : "enrolled"}</span></li>`;
+        }).join("") || `<li class="kept"><span class="n">·</span><span>empty roll</span><span class="mark">—</span></li>`;
+      }
+
+      function paintDesk(result) {
+        const word = document.getElementById("desk-word");
+        const stake = document.getElementById("stake-word");
+        const stake2 = document.getElementById("stake-word-2");
+        const glow = document.getElementById("brass-glow");
+        const tag = document.getElementById("stake-tag");
+        if (result.holding) {
+          word.textContent = "ENROLLED";
+          word.setAttribute("fill", "#6baf6a");
+          stake.textContent = "stake held";
+          stake2.textContent = "parcels on the roll";
+          glow.setAttribute("opacity", "0.22");
+          tag.setAttribute("stroke", "#6baf6a");
+        } else if (result.verdict === "regranted") {
+          word.textContent = "REGRANTED";
+          word.setAttribute("fill", "#c8882a");
+          stake.textContent = "trust vanished";
+          stake2.textContent = "must regrant";
+          glow.setAttribute("opacity", "0.08");
+          tag.setAttribute("stroke", "#c8882a");
+        } else {
+          word.textContent = String(result.verdict || "escheated").toUpperCase();
+          word.setAttribute("fill", "#c44a3a");
+          stake.textContent = "stake abandoned";
+          stake2.textContent = "parcels escheat";
+          glow.setAttribute("opacity", "0.06");
+          tag.setAttribute("stroke", "#c44a3a");
+        }
+        document.getElementById("desk-caption").textContent = result.holding
+          ? "theodolite sighted · stake held"
+          : result.verdict === "regranted"
+            ? "iron weights shifted · trust regranted"
+            : "lock abandoned · parcels escheat";
+      }
+
+      function paintTrays(result) {
+        const lockNote = result.holding
+          ? "advisory mkdir lock held; in-process mutex serialises one process"
+          : result.verdict === "timeout-write"
+            ? "15 s wait then write without the lock — Timed out waiting…"
+            : result.verdict === "steal-10s"
+              ? "lock mtime >10 s deleted and taken — concurrent writers by design"
+              : result.verdict === "eperm-skip"
+                ? "mkdir EPERM → Cannot create… writing without it"
+                : result.verdict === "taken-over"
+                  ? "release sees ino/birthtime changed; leaves the lock"
+                  : "lock abandoned, stolen, or skipped — warn only";
+        const rollNote = result.holding
+          ? "hasTrustDialogAccepted parcels stay enrolled on the 334-key roll"
+          : result.verdict === "warn-only"
+            ? "JSON stays valid (Vr tmp+fsync+rename); content is lost, not corrupted"
+            : result.verdict === "desktop-cli"
+              ? "Desktop and host CLI both write the same ~/.claude.json"
+              : "trust parcels vanish; reporter must regrant workspace trust";
+        document.getElementById("trays").innerHTML = `
+          <div class="tray ${result.holding ? "hold" : "cut"}">
+            <b>STAKE</b>
+            <span>${lockNote}</span>
+            <span class="stamp">${result.holding ? "HELD" : "ABANDONED"}</span>
+          </div>
+          <div class="tray ${result.holding ? "hold" : "cut"}">
+            <b>ROLL</b>
+            <span>${rollNote}</span>
+            <span class="stamp">${result.holding ? "ENROLLED" : (result.verdict === "regranted" ? "REGRANTED" : "ESCHEATED")}</span>
+          </div>
+        `;
+      }
+
+      function paintLog(result) {
+        const ticket = result.ticket;
+        const lines = Array.isArray(ticket.log) && ticket.log.length
+          ? ticket.log
+          : [result.holding ? "[cadastre] enrolled — trust parcels stay on the roll" : "[cadastre] escheated · parcels vanish"];
+        document.getElementById("log").innerHTML = lines.map((line) => {
+          if (/warn|timeout|EPERM|taken over|without it/i.test(line)) return `<span class="warn">${line}</span>`;
+          if (/escheat|regrant|vanish|gone|stolen|abandon/i.test(line)) return `<span class="hit">${line}</span>`;
+          if (/enrolled|held|idle|remains/i.test(line)) return `<span class="ok">${line}</span>`;
+          return line;
+        }).join("\n");
+      }
+
+      function paint(ticket) {
+        const result = scoreMark(ticket);
+        const score = document.getElementById("score");
+        const line = document.getElementById("score-line");
+        const badge = document.getElementById("score-badge");
+        score.className = "score " + (result.holding ? "hold" : "alarm");
+        if (result.holding) {
+          line.innerHTML = "admit <em>enrolled</em> — trust parcels stay on the roll under a held stake";
+          badge.textContent = "ENROLLED";
+        } else if (result.verdict === "regranted") {
+          line.innerHTML = "score <em>escheated</em> — seeded <code>regranted</code>: trust must be granted again";
+          badge.textContent = "REGRANTED";
+        } else if (result.verdict === "timeout-write") {
+          line.innerHTML = "score <em>escheated</em> — 15 s give-up then write without lock";
+          badge.textContent = "TIMEOUT-WRITE";
+        } else if (result.verdict === "steal-10s") {
+          line.innerHTML = "score <em>escheated</em> — lock mtime &gt;10 s deleted and taken";
+          badge.textContent = "STEAL-10S";
+        } else if (result.verdict === "eperm-skip") {
+          line.innerHTML = "score <em>escheated</em> — mkdir EPERM → write without lock";
+          badge.textContent = "EPERM-SKIP";
+        } else if (result.verdict === "taken-over") {
+          line.innerHTML = "score <em>escheated</em> — release sees lock ino/birthtime changed; leaves it";
+          badge.textContent = "TAKEN-OVER";
+        } else if (result.verdict === "warn-only") {
+          line.innerHTML = "score <em>escheated</em> — nothing above warn; JSON stays valid; no user-visible error";
+          badge.textContent = "WARN-ONLY";
+        } else if (result.verdict === "eight-events") {
+          line.innerHTML = "score <em>escheated</em> — 8 lock-integrity log lines 2026-08-25→2026-09-08";
+          badge.textContent = "EIGHT-EVENTS";
+        } else if (result.verdict === "desktop-cli") {
+          line.innerHTML = "score <em>escheated</em> — Desktop + host CLI both write the same file";
+          badge.textContent = "DESKTOP-CLI";
+        } else if (result.verdict === "334-keys") {
+          line.innerHTML = "score <em>escheated</em> — 215.7 KB / 334 project keys; RMW window is not small";
+          badge.textContent = "334-KEYS";
+        } else if (result.verdict === "before-after") {
+          line.innerHTML = "score <em>escheated</em> — 1.46388.4 lock bodies unchanged in 1.49585.0";
+          badge.textContent = "BEFORE-AFTER";
+        } else {
+          line.innerHTML = "score <em>escheated</em> — lock abandoned/stolen → parcels vanish from the roll";
+          badge.textContent = String(result.verdict || "escheated").toUpperCase();
+        }
+        document.getElementById("plate-seed").textContent = (result.holding ? "idle · " : "path · ") + result.verdict;
+        document.getElementById("ledger-card").textContent =
+          LEDGER[result.verdict] || (result.holding ? LEDGER.enrolled : LEDGER.escheated);
+        const held = parseParcels(ticket);
+        const after = result.holding ? held : (ticket.after && Array.isArray(ticket.after) ? parseParcels({ parcels: ticket.after, enrolled: false }) : DEFAULT_VOID);
+        renderLots("held-lots", held, false);
+        renderLots("void-lots", after, !result.holding);
+        paintDesk(result);
+        paintTrays(result);
+        paintLog(result);
+        document.querySelectorAll(".peg").forEach((btn) => {
+          const seed = btn.getAttribute("data-seed");
+          btn.classList.toggle("on", seed === result.verdict && !result.holding);
+          btn.classList.toggle("hold", seed === result.verdict && result.holding);
+        });
+        const reason = REASONS[result.verdict];
+        if (reason) {
+          const extra = document.createElement("div");
+          extra.textContent = reason;
+          extra.className = result.holding ? "ok" : "hit";
+          document.getElementById("log").append("\n");
+          document.getElementById("log").append(extra);
+        }
+      }
+
+      function applySeed(seed) {
+        paint(FALLBACKS[seed] || FALLBACKS.enrolled);
+      }
+
+      function assayLock() {
+        const path = document.getElementById("lock-path").value;
+        const held = path === "held";
+        const seed = held ? "enrolled" : path;
+        const lines = document.getElementById("parcel-input").value.split(/\r?\n/).filter((line) => line.trim());
+        const parcels = lines.length ? lines.map((line) => ({ key: line.replace(/\s+hasTrustDialogAccepted.*$/, "").trim() || line, trust: true, onRoll: held })) : DEFAULT_HELD;
+        const after = held ? parcels : parcels.map((row) => ({ ...row, trust: false, onRoll: false }));
+        const ticket = {
+          source: "lock-assay",
+          issue: 92908,
+          seed,
+          enrolled: held,
+          escheated: !held,
+          regranted: !held,
+          lockHeld: held,
+          parcels,
+          after,
+          hubCount: held ? "ENROLLED" : String(seed).toUpperCase(),
+          log: held
+            ? ["[assay] enrolled — held stake; trust parcels stay on the roll"]
+            : [
+                "[assay] " + seed + " — stake abandoned; parcels escheat",
+                "[assay] diagnostic reconstruction of published #92908 lock paths only"
+              ]
+        };
+        paint(ticket);
+        document.getElementById("assay-out").textContent = held
+          ? "enrolled\nstake held\n" + parcels.map((row) => row.key + "  hasTrustDialogAccepted stays").join("\n")
+          : seed + "\nstake abandoned — warn only\n" + after.map((row) => row.key + "  escheats; trust must be regranted").join("\n") + "\n\nHypothesis only (NON-BINDING): classic lost-update RMW under a best-effort advisory lock that prefers availability over integrity. Invite verify against #92908.";
+      }
+
+      document.getElementById("pegs").innerHTML = PEGS.map((peg) =>
+        `<button class="peg${peg.hold ? " hold" : ""}" type="button" data-seed="${peg.seed}"><b>${peg.name}</b>${peg.note}</button>`
+      ).join("");
+      document.getElementById("pegs").addEventListener("click", (event) => {
+        const btn = event.target.closest(".peg");
+        if (!btn) return;
+        applySeed(btn.getAttribute("data-seed"));
+      });
+
+      document.getElementById("score-escheated").addEventListener("click", () => applySeed("escheated"));
+      document.getElementById("load-escheated").addEventListener("click", () => applySeed("escheated"));
+      document.getElementById("load-regranted").addEventListener("click", () => applySeed("regranted"));
+      document.getElementById("admit-enrolled").addEventListener("click", () => applySeed("enrolled"));
+      document.getElementById("pin-enrolled").addEventListener("click", () => applySeed("enrolled"));
+      document.getElementById("reset-enrolled").addEventListener("click", () => applySeed("enrolled"));
+      document.getElementById("assay-lock").addEventListener("click", assayLock);
+      document.getElementById("load-fixtures").addEventListener("click", async () => {
+        try {
+          const res = await fetch("data/fixtures.json");
+          if (!res.ok) throw new Error("fixtures");
+          const data = await res.json();
+          const firstAlarm = (data.rows || []).find((row) => row.seed && !HOLD.has(row.seed));
+          applySeed(firstAlarm ? firstAlarm.seed : "escheated");
+        } catch {
+          applySeed("escheated");
+        }
+      });
+
+      document.body.addEventListener("dragover", (event) => event.preventDefault());
+      document.body.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (!file) return;
+        paint(parseProbe(await file.text()));
+      });
+
+      applySeed("enrolled");
+    </script>
+  </body>
+</html>
