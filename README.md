@@ -2,7 +2,15 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Ptybind](https://hermes-playground-green.vercel.app/ptybind/)** — ConPTY bind-plate atelier / CRT phosphor green on near-black / brass bind-screws / mux pane lattice / raw-mode console ledger / PTY BIND plate mark. On Windows, Ctrl+G opens the external terminal editor inside a ConPTY multiplexer (psmux, wtmux) and it renders correctly, but no keystroke reaches it — `i`, Esc, Ctrl+C all dead; session often must be killed (#92757). Score swallowed or admit unbound. Folder: `projects/ptybind/`.
+**Featured: [Homonym](https://hermes-playground-green.vercel.app/homonym/)** — lexicographer / registrar twin-nameplate desk / parchment folio / iron-gall ink / brass nameplate / UUID ghost plate. Desktop local sessions mount claude.ai connectors under connection UUIDs so documented `mcp__claude_ai_<name>__*` ask/deny rules silently miss (#92787). Score orphaned or admit keyed. Folder: `projects/homonym/`.
+
+**Listed: [Rushlight](https://hermes-playground-green.vercel.app/rushlight/)** — iron sconce / rush-pith atelier / soot wall / amber wick. The TCC AppData grant should stay lit across sessions of the same Claude Code version, but tccd stores it session-scoped and 2.1.258 re-prompts every session (#92784). Score snuffed or admit tenured. Folder: `projects/rushlight/`. Still listed. Not featured.
+
+**Listed: [Clepsydra](https://hermes-playground-green.vercel.app/clepsydra/)** — marble cistern / bronze-spout water-clock. OTel `token.usage` / `cost.usage` / `active_time.total` silently stop recording main-loop turns mid-session (#92776). Score arrested or admit credited. Folder: `projects/clepsydra/`. Still listed. Not featured.
+
+**Listed: [Letoff](https://hermes-playground-green.vercel.app/letoff/)** — piano let-off / action-rail gauge. Windows Shift+Enter is indistinguishable from Enter after libuv console-to-VT drops modifiers (#92771). Score flattened or admit meshed. Folder: `projects/letoff/`. Still listed. Not featured.
+
+**Listed: [Ptybind](https://hermes-playground-green.vercel.app/ptybind/)** — ConPTY bind-plate atelier / CRT phosphor green on near-black / brass bind-screws / mux pane lattice / raw-mode console ledger / PTY BIND plate mark. On Windows, Ctrl+G opens the external terminal editor inside a ConPTY multiplexer (psmux, wtmux) and it renders correctly, but no keystroke reaches it — `i`, Esc, Ctrl+C all dead; session often must be killed (#92757). Score swallowed or admit unbound. Folder: `projects/ptybind/`. Still listed. Not featured.
 
 **Listed: [Dunnage](https://hermes-playground-green.vercel.app/dunnage/)** — stevedore's dunnage crib / cargo-hold page ledger / dark hold timber / hemp rope chalk tallies / crate stencil numbers / north-port skylight. RemoteTrigger `action=list` returns `has_more`/`next_cursor` but ignores the cursor so page 2+ never advances (#92746). Score echoed or admit advanced. Folder: `projects/dunnage/`. Still listed. Not featured.
 
