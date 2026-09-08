@@ -1,0 +1,63 @@
+{
+  "source": "probe",
+  "issue": 92934,
+  "note": "Primary #92934. Windows: a synchronous PostToolUse command hook can delay the tool result until a persistent descendant exits, even though the configured hook process has already exited successfully. Separate from #90049.",
+  "seed": "clung",
+  "verdict": "clung",
+  "loosed": false,
+  "clung": true,
+  "rehitched": false,
+  "parentExited": true,
+  "childHolds": true,
+  "redirectedStdio": true,
+  "syncStall": true,
+  "asyncBypass": false,
+  "parentExitMs": 0,
+  "childHoldMs": 90000,
+  "toolDispatchMs": 925,
+  "postToolUseWaitMs": 91931,
+  "title": "Windows: synchronous PostToolUse delays tool results until a persistent child exits",
+  "state": "open",
+  "labels": ["bug", "has repro", "platform:windows", "area:hooks"],
+  "filedAt": "2026-09-08T20:56:20Z",
+  "reporter": "simon-bauer-sonarsource",
+  "version": "2.1.263",
+  "os": "Windows 11 Pro 10.0.26100",
+  "surface": "Interactive CLI",
+  "tool": "PowerShell",
+  "toolUseId": "call_JDUVNrA2A9kA9qxZ48LWiZz9",
+  "matcher": "PowerShell",
+  "hookTimeout": 120,
+  "hookCommand": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\\temp\\hook.ps1",
+  "childScript": "Start-Sleep -Seconds 90",
+  "stdioRedirects": {
+    "stdin": "C:\\temp\\in.txt",
+    "stdout": "C:\\temp\\out.txt",
+    "stderr": "C:\\temp\\err.txt"
+  },
+  "harmlessTool": "Get-Date -Format o",
+  "stall": {
+    "tool_dispatch_end": "tool=PowerShell toolUseId=call_JDUVNrA2A9kA9qxZ48LWiZz9 outcome=ok durationMs=925",
+    "slowHook": "Slow PostToolUse hooks: 91931ms for PowerShell (1 hooks)"
+  },
+  "expected": "The tool result is delivered when hook.ps1 exits.",
+  "observed": "The main tool completes, and hook.ps1 exits immediately, but Claude Code delays the tool result until child.ps1 exits about 90 seconds later.",
+  "separateFrom": {
+    "issue": 90049,
+    "product": "Deadletter",
+    "why": "does not require EnterWorktree; bounded wait rather than worktree-transition result-loss"
+  },
+  "asyncControl": "Configuring the hook with async: true avoids the blocking path in this control.",
+  "mechanismNote": "This is one controlled reproduction; it does not establish the internal mechanism.",
+  "cousinsCiteOnly": [90049],
+  "hubCount": "CLUNG",
+  "boardText": "#92934 · clung · parent-exited · child-holds · redirected-stdio · sync-stall 91931ms",
+  "log": [
+    "[92934] OPEN · bug · has repro · platform:windows · area:hooks · Claude Code 2.1.263 · Windows 11 Pro 10.0.26100 · Interactive CLI",
+    "[92934] Get-Date -Format o → tool_dispatch_end outcome=ok durationMs=925",
+    "[92934] hook.ps1 reads stdin, Start-Process child.ps1 with redirected stdio, exit 0",
+    "[92934] Slow PostToolUse hooks: 91931ms for PowerShell (1 hooks)",
+    "[92934] child has stdin/stdout/stderr redirected to files; async:true avoids the blocking path",
+    "[92934] separate from #90049 — no EnterWorktree; bounded wait, not result-loss"
+  ]
+}
