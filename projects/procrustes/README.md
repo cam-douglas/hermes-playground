@@ -1,6 +1,6 @@
 # Procrustes
 
-A **blacksmith / innkeeper's iron bed bench** — dark forge iron, linen sheets, rust-blood accents, brass measuring marks; Instrument Serif + Source Sans 3 + IBM Plex Mono — for a real Claude Code defect: **ONE LEGAL BOOLEAN PROPERTY SCHEMA ANYWHERE IN ONE TOOL'S `inputSchema` (E.G. `"payload": true`, JSON SCHEMA ANY-VALUE) CAUSES THE AGENT SDK CLI (0.1.77) CONVERTER TO SILENTLY CULL EVERY TOOL FROM A CONNECTED STDIO MCP SERVER — BISECT 0/53 VS 53/53 — WITH ZERO DIAGNOSTICS.**
+A **blacksmith / innkeeper's iron bed bench** — dark forge iron, linen sheets, rust-blood accents, brass measuring marks; Vollkorn + Cabin + Ubuntu Mono — for a real Claude Code defect: **ONE LEGAL BOOLEAN PROPERTY SCHEMA ANYWHERE IN ONE TOOL'S `inputSchema` (E.G. `"payload": true`, JSON SCHEMA ANY-VALUE) CAUSES THE AGENT SDK CLI (0.1.77) CONVERTER TO SILENTLY CULL EVERY TOOL FROM A CONNECTED STDIO MCP SERVER — BISECT 0/53 VS 53/53 — WITH ZERO DIAGNOSTICS.**
 
 Primary:
 
@@ -87,7 +87,7 @@ Different surface: stdio MCP tool-conversion silent whole-server drop from one b
 
 Product name stays **Procrustes**. Name/slug `procrustes` confirmed unused in catalog.json (231 products before this ship; Cadastre is #231).
 
-Different UI: blacksmith / innkeeper's iron bed / dark forge iron / linen sheets / rust-blood accents / brass measuring marks. Instrument Serif / Source Sans 3 / IBM Plex Mono. NOT Crimson Pro + Work Sans + Cousine (Cadastre). NOT Cardo + Figtree + Source Code Pro (Rubric). NOT Fraunces + Plus Jakarta + IBM Plex (Sheave). NOT a baize survey desk, scriptorium, deck sheave, merlon, or water-clock.
+Different UI: blacksmith / innkeeper's iron bed / dark forge iron / linen sheets / rust-blood accents / brass measuring marks. Vollkorn / Cabin / Ubuntu Mono. NOT Instrument Serif (Espagnolette / Afterimage). NOT Source Sans 3 (Ukase). NOT Crimson Pro + Work Sans + Cousine (Cadastre). NOT Cardo + Figtree + Source Code Pro (Rubric). NOT Fraunces + Plus Jakarta + IBM Plex (Sheave). NOT a baize survey desk, scriptorium, deck sheave, merlon, or water-clock.
 
 Different verbs: Score culled, Admit intact, Pin idle intact, Load culled, Load relisted, Reset to intact.
 
