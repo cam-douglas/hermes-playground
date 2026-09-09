@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Interlock](https://hermes-playground-green.vercel.app/interlock/)** — plant-floor safety INTERLOCK booth / machine-guard lockout / safety yellow / machine graphite / red E-stop / cool steel / hazard stripes. A folder should stay passable for Dispatch (busy-check = turn in flight, not attached-CLI); instead a UI-warmed idle session interlocks the cwd via exclusiveCwd so start_code_task fails already-active (#92976). Score interlocked or admit passable. Folder: `projects/interlock/`.
+**Featured: [Ferrule](https://hermes-playground-green.vercel.app/ferrule/)** — metalwork / plumbing / cable-clamp ferrule booth / brushed steel / gunmetal / copper / oil-black bench / cyan instrument LEDs. The OAuth callback should stay ephemeral (OS-assigned port 0 / CLI-parity); instead Desktop ferrules the listener to TCP 53280 so a Hyper-V excluded range refuses the bind with EACCES and consent never opens (#92968). Score ferruled or admit ephemeral. Folder: `projects/ferrule/`.
+
+**Listed: [Interlock](https://hermes-playground-green.vercel.app/interlock/)** — plant-floor safety INTERLOCK booth / machine-guard lockout / safety yellow / machine graphite / red E-stop / cool steel / hazard stripes. A folder should stay passable for Dispatch (busy-check = turn in flight, not attached-CLI); instead a UI-warmed idle session interlocks the cwd via exclusiveCwd so start_code_task fails already-active (#92976). Score interlocked or admit passable. Folder: `projects/interlock/`. Still listed. Not featured.
 
 **Listed: [Shibboleth](https://hermes-playground-green.vercel.app/shibboleth/)** — river-ford / border watchword booth / dusk indigo bank / wet-stone grey / parchment lantern amber / password lodge. Remote Control should stay admitted (GrowthBook flags load; eligibility verified); instead the bundled clientKey returns 400 Invalid API Key, zero flags load, and doctor misreports the flag service as unreachable so Remote Control fails closed (#92966). Score shibbolethed or admit admitted. Folder: `projects/shibboleth/`. Still listed. Not featured.
 
