@@ -1,6 +1,6 @@
 # Homestead
 
-A **prairie land-office / homestead-claim desk** — cream deed paper, oak rail fence posts, brass survey stake, prairie dusk sky, weathered claim stakes, inked boundary metes; fonts **Playfair Display** (display) + **Source Sans 3** (body) + **Fira Code** (mono) — for a real Claude Code defect: **A NEW SESSION WHOSE CWD IS `$HOME` (NOT A GIT REPO) HANGS AFTER AN UNSCOPED `rg` FILE-INDEX WALK HITS MACOS TCC-DENIED TRACTS; `rg` EXITS AND THE PARENT IDLES AT ~0.1% CPU WITH NO FURTHER DEBUG LINE.**
+A **prairie land-office / homestead-claim desk** — cream deed paper, oak rail fence posts, brass survey stake, prairie dusk sky, weathered claim stakes, inked boundary metes; fonts **Playfair Display** (display) + **Figtree** (body) + **Fira Code** (mono) — for a real Claude Code defect: **A NEW SESSION WHOSE CWD IS `$HOME` (NOT A GIT REPO) HANGS AFTER AN UNSCOPED `rg` FILE-INDEX WALK HITS MACOS TCC-DENIED TRACTS; `rg` EXITS AND THE PARENT IDLES AT ~0.1% CPU WITH NO FURTHER DEBUG LINE.**
 
 Primary:
 
@@ -93,7 +93,7 @@ Different surface: HOME-cwd unscoped file-index hang vs TCC grant tenure / regis
 
 Product name stays **Homestead**. Name/slug `homestead` unused in catalog.json (236 products before this ship; Epitaph is #236).
 
-Different UI: prairie land-office / cream deed paper / oak rail fence posts / brass survey stake / prairie dusk / weathered claim stakes / inked metes. Playfair Display / Source Sans 3 / Fira Code. NOT Old Standard TT + Work Sans + Ubuntu Mono (Epitaph). NOT Crimson Pro + Work Sans + Cousine (Cadastre green-baize theodolite desk). NOT Petrona + Manrope + IBM Plex Mono (iron sconce atelier).
+Different UI: prairie land-office / cream deed paper / oak rail fence posts / brass survey stake / prairie dusk / weathered claim stakes / inked metes. Playfair Display / Figtree / Fira Code. NOT Source Sans 3 (Ukase / Procrustes collision). NOT Old Standard TT + Work Sans + Ubuntu Mono (Epitaph). NOT Crimson Pro + Work Sans + Cousine (Cadastre green-baize theodolite desk). NOT Petrona + Manrope + IBM Plex Mono (iron sconce atelier).
 
 Different verbs: Score homesteaded, Admit deeded, Stake the bounded claim, Load #92932, Reset to deeded.
 

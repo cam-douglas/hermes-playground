@@ -284,7 +284,8 @@ test("model has no static node: imports so the living page can score in-browser"
 test("living page is a prairie land-office claim desk, not cadastre baize or rushlight sconce", () => {
   const page = readPage();
   assert.match(page, /Playfair Display/);
-  assert.match(page, /Source Sans 3/);
+  assert.match(page, /Figtree/);
+  assert.doesNotMatch(page, /Source Sans 3/);
   assert.match(page, /Fira Code/);
   assert.match(page, /prairie|land-office|homestead-claim|deed paper|survey stake|metes/i);
   assert.match(page, /score homesteaded or admit deeded/i);
