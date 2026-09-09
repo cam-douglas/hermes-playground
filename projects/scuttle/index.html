@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scuttle — naval shipyard booth for #93154</title>
+    <meta
+      name="description"
+      content="Scuttle — a naval damage-control / shipyard booth for Claude Code #93154: remote SSH daemon destroys all running sessions on transient reconnect instead of reattaching. Idle word is moored."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;600&family=Lexend:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --navy: #071422;
+        --steel: #3a424c;
+        --steel-hot: #4a5360;
+        --deck: #1a120c;
+        --teak: #8b5a2b;
+        --orange: #ff4d14;
+        --orange-hot: #ff7a3d;
+        --bilge: #1a5c48;
+        --bilge-hot: #2d8a6a;
+        --brass: #c4a05a;
+        --flood: #c5d4e3;
+        --ink: #e8eef4;
+        --mute: #8a96a3;
+        --rule: rgba(255, 77, 20, 0.28);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Lexend", "Trebuchet MS", sans-serif;
+        color: var(--mute);
+        background:
+          radial-gradient(ellipse at 78% 8%, rgba(197, 212, 227, 0.14), transparent 38%),
+          repeating-linear-gradient(
+            90deg,
+            rgba(139, 90, 43, 0.11) 0 3px,
+            transparent 3px 18px
+          ),
+          repeating-linear-gradient(
+            0deg,
+            rgba(58, 66, 76, 0.35) 0 2px,
+            transparent 2px 28px
+          ),
+          var(--navy);
+        background-attachment: fixed;
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass); }
+      .yard {
+        width: min(1240px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 18px 0 80px;
+      }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--bilge-hot);
+        text-decoration: none;
+        border-bottom: 2px solid var(--bilge);
+        padding-bottom: 3px;
+        margin: 16px 0 14px;
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr 220px;
+        gap: 28px;
+        align-items: center;
+        padding: 8px 0 22px;
+        border-bottom: 6px solid var(--orange);
+        margin: 0 0 18px;
+      }
+      .mast h1 {
+        font-family: "DM Serif Display", "Times New Roman", serif;
+        font-weight: 400;
+        font-size: clamp(44px, 8vw, 86px);
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 0.82;
+        color: var(--ink);
+        text-shadow: 0 0 28px rgba(197, 212, 227, 0.22);
+      }
+      .lede {
+        max-width: 68em;
+        line-height: 1.64;
+        font-size: 16px;
+        margin: 12px 0 0;
+        color: var(--flood);
+      }
+      .lede strong {
+        color: var(--orange-hot);
+        font-family: "DM Serif Display", serif;
+        font-weight: 400;
+      }
+      .lede em { font-style: italic; color: var(--brass); }
+      .lede code, code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        color: var(--bilge-hot);
+      }
+      .port {
+        width: 210px;
+        height: 210px;
+        border-radius: 50%;
+        border: 12px solid var(--brass);
+        background:
+          radial-gradient(circle at 36% 30%, #c5d4e3 0, #4a5360 42%, #071422 100%);
+        box-shadow:
+          inset 0 0 0 10px rgba(7, 20, 34, 0.35),
+          0 0 0 6px #6e5428,
+          0 18px 0 rgba(0, 0, 0, 0.34),
+          0 0 40px rgba(197, 212, 227, 0.28);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        cursor: pointer;
+        color: var(--ink);
+        text-align: center;
+        position: relative;
+      }
+      .port::before {
+        content: "";
+        position: absolute;
+        inset: 26px;
+        border-radius: 50%;
+        border: 3px dashed rgba(196, 160, 90, 0.45);
+      }
+      .port.alarm {
+        border-color: var(--orange);
+        box-shadow:
+          inset 0 0 0 10px rgba(26, 92, 72, 0.4),
+          0 0 0 6px var(--bilge),
+          0 18px 0 rgba(0, 0, 0, 0.34),
+          0 0 48px rgba(255, 77, 20, 0.42);
+      }
+      .port .k {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        z-index: 1;
+      }
+      .port .v {
+        font-family: "DM Serif Display", serif;
+        font-size: 26px;
+        margin: 8px 0 6px;
+        line-height: 0.9;
+        z-index: 1;
+      }
+      .keel {
+        height: 18px;
+        margin: 0 0 16px;
+        background:
+          linear-gradient(180deg, #8b5a2b 0%, #5e3c1a 46%, #3a2410 100%);
+        border-radius: 2px;
+        box-shadow: inset 0 6px 0 rgba(196, 160, 90, 0.18), 0 8px 0 rgba(0, 0, 0, 0.22);
+        position: relative;
+      }
+      .keel::after {
+        content: "";
+        position: absolute;
+        left: 18%;
+        top: -5px;
+        width: 22px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--brass);
+        box-shadow: 90px 0 0 var(--orange), 240px 0 0 var(--bilge);
+      }
+      .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 16px; }
+      .tags a, .tags span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid var(--rule);
+        padding: 5px 8px;
+        color: var(--mute);
+        background: var(--steel);
+        clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+      }
+      .tags a { color: var(--brass); border-color: var(--brass); }
+      .cousin-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 0 0 16px;
+        padding: 10px 12px;
+        border: 1px dashed var(--bilge);
+        background: rgba(26, 92, 72, 0.16);
+      }
+      .cousin-strip .label {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--bilge-hot);
+        width: 100%;
+      }
+      .cousin-strip a {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+      }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; }
+      .chip {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid var(--rule);
+        background: var(--deck);
+        color: var(--mute);
+        padding: 7px 9px;
+        cursor: pointer;
+        clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+      }
+      .chip b { display: block; color: var(--ink); font-weight: 600; }
+      .chip.on { border-color: var(--orange); color: var(--ink); background: #3a1a10; }
+      .chip.hold { border-color: var(--brass); background: #2a2210; }
+      .booth {
+        display: grid;
+        grid-template-columns: 220px 1fr 250px;
+        gap: 12px;
+        margin: 0 0 16px;
+      }
+      .case, .chase, .quoins {
+        border: 1px solid var(--rule);
+        background: var(--deck);
+        padding: 14px;
+      }
+      .case { border-left: 6px solid var(--orange); }
+      .chase { border-top: 6px solid var(--brass); }
+      .quoins { border-right: 6px solid var(--bilge); }
+      .case h3, .chase h3, .quoins h3 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin: 0 0 10px;
+      }
+      .sort {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 8px 0;
+        border-bottom: 1px dotted rgba(255, 77, 20, 0.4);
+        font-family: "DM Serif Display", serif;
+        color: var(--ink);
+      }
+      .sort .n { font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--orange); }
+      .sort.on { color: var(--brass); }
+      .sort.hit { color: var(--orange-hot); }
+      .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .galley-card {
+        border: 1px solid var(--rule);
+        background: #12202c;
+        padding: 12px 14px;
+        min-height: 210px;
+      }
+      .galley-card.version { box-shadow: inset 6px 0 0 var(--brass); }
+      .galley-card.head { box-shadow: inset 6px 0 0 var(--orange); }
+      .galley-card h2 {
+        font-family: "DM Serif Display", serif;
+        font-size: 22px;
+        margin: 0 0 8px;
+        color: var(--ink);
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.58;
+        white-space: pre-wrap;
+        margin: 0;
+        color: var(--flood);
+      }
+      .dials { display: grid; gap: 8px; }
+      .dial {
+        border: 1px solid var(--brass);
+        background: linear-gradient(180deg, #c4a05a, #8b5a2b);
+        color: var(--navy);
+        padding: 10px 12px;
+        cursor: pointer;
+        text-align: left;
+      }
+      .dial .k {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #3a2410;
+      }
+      .dial .l { font-family: "DM Serif Display", serif; font-size: 18px; }
+      .dial.missing { opacity: 0.55; border-style: dashed; background: var(--steel); color: var(--mute); }
+      .dial.on { box-shadow: inset 0 0 0 2px var(--bilge); }
+      .score {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 18px;
+        border: 1px solid var(--rule);
+        margin: 0 0 12px;
+        background: var(--deck);
+        color: var(--ink);
+      }
+      .score.hold { box-shadow: inset 8px 0 0 var(--brass); }
+      .score.alarm { box-shadow: inset 8px 0 0 var(--orange); }
+      .score-badge {
+        font-family: "DM Serif Display", serif;
+        font-size: 24px;
+        color: var(--brass);
+      }
+      .score em { font-style: italic; color: var(--orange-hot); }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+      button.act-btn {
+        font-family: "DM Serif Display", serif;
+        font-size: 15px;
+        border: 1px solid var(--brass);
+        background: #24180c;
+        color: var(--flood);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      button.act-btn:hover { background: var(--brass); color: var(--navy); }
+      .galley-tray {
+        border: 2px dashed var(--orange);
+        background:
+          repeating-linear-gradient(
+            135deg,
+            #071422 0 10px,
+            #12202c 10px 20px
+          );
+        min-height: 88px;
+        padding: 16px;
+        margin: 0 0 16px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--ink);
+      }
+      .galley-tray.on { border-color: var(--bilge-hot); background: #0e2e24; }
+      .log {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        border: 1px solid var(--rule);
+        padding: 12px 14px;
+        margin: 0 0 16px;
+        background: var(--deck);
+        min-height: 92px;
+      }
+      .log .ok { color: var(--brass); }
+      .log .warn { color: var(--orange-hot); }
+      .log .hit { color: var(--bilge-hot); }
+      .lane-marks {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin: 0 0 16px;
+      }
+      .mark {
+        border: 1px solid var(--rule);
+        padding: 10px;
+        background: var(--deck);
+        min-height: 96px;
+      }
+      .mark .t {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .mark .e { font-size: 13px; margin: 6px 0 4px; color: var(--ink); }
+      .mark .s {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--orange);
+      }
+      .mark.hit { border-color: var(--orange); }
+      .mark.match { border-color: var(--brass); }
+      .mark.late { border-color: var(--bilge); }
+      .clinic {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin: 0 0 16px;
+      }
+      .panel {
+        border: 1px solid var(--rule);
+        padding: 14px 16px;
+        background: var(--deck);
+      }
+      .panel h3 {
+        font-family: "DM Serif Display", serif;
+        font-size: 18px;
+        margin: 0 0 10px;
+        color: var(--ink);
+      }
+      label.tog {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 6px 0;
+        font-size: 14px;
+        color: var(--flood);
+      }
+      select, textarea {
+        width: 100%;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: #12202c;
+        color: var(--ink);
+        border: 1px solid var(--rule);
+        padding: 8px;
+      }
+      textarea { min-height: 160px; resize: vertical; }
+      table.obs {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin: 0 0 16px;
+        background: var(--deck);
+        color: var(--flood);
+      }
+      table.obs th, table.obs td {
+        border: 1px solid var(--rule);
+        padding: 7px 8px;
+        text-align: left;
+      }
+      table.obs th {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--brass);
+        background: #24180c;
+      }
+      table.obs tr.hit td { color: var(--orange-hot); font-weight: 700; }
+      .sec {
+        font-family: "DM Serif Display", serif;
+        font-size: 24px;
+        margin: 28px 0 10px;
+        color: var(--ink);
+      }
+      .brief p { line-height: 1.62; color: var(--flood); }
+      .stayoff { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stayoff span {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid var(--rule);
+        padding: 4px 7px;
+      }
+      footer {
+        margin-top: 28px;
+        padding-top: 14px;
+        border-top: 6px solid var(--orange);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+      }
+      #booth-out {
+        font-size: 14px;
+        color: var(--orange-hot);
+        min-height: 2.4em;
+        margin: 8px 0 0;
+      }
+      @media (max-width: 860px) {
+        .mast, .booth, .clinic, .lane-marks, .pair { grid-template-columns: 1fr; }
+        .port { width: 100%; height: 180px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="yard">
+      <a class="catalog chrome" href="/">03:50 / hermes catalog #253 / #93154</a>
+      <header class="mast">
+        <div>
+          <h1>Scuttle</h1>
+          <p class="lede">
+            A <strong>NAVAL DAMAGE-CONTROL SCUTTLE</strong> / shipyard booth /
+            weathered steel plate / signal orange / deep navy / teak deck grain /
+            bilge green accents / brass porthole rim / cool floodlight. On a
+            transient SSH blip, remote-session warm-up should
+            <em>reattach</em> to a still-healthy remote daemon. Instead
+            <code>channel_closed_no_socket</code> →
+            <code>bridge_startup_timeout</code> issues
+            <code>server.shutdown</code> and SIGKILLs every tracked child —
+            <em>scuttled</em>. Score scuttled or admit moored.
+          </p>
+        </div>
+        <button class="port" id="plate" type="button" aria-label="Scuttle porthole: moored vs scuttled">
+          <div class="k" id="plate-seed">moored · #93154</div>
+          <div class="v" id="plate-word">MOORED</div>
+          <div class="k">porthole rim</div>
+        </button>
+      </header>
+      <div class="keel" aria-hidden="true"></div>
+
+      <div class="tags chrome">
+        <a href="https://github.com/anthropics/claude-code/issues/93154">#93154</a>
+        <span>OPEN</span>
+        <span>bug</span>
+        <span>has repro</span>
+        <span>platform:macos</span>
+        <span>platform:linux</span>
+        <span>area:core</span>
+        <span>03:50</span>
+      </div>
+      <div class="cousin-strip chrome" aria-label="cousin-not-primary">
+        <div class="label">cousin-not-primary</div>
+        <a href="https://github.com/anthropics/claude-code/issues/85567">#85567</a>
+        <a href="https://github.com/anthropics/claude-code/issues/92687">#92687</a>
+        <a href="https://github.com/anthropics/claude-code/issues/49790">#49790</a>
+        <a href="https://github.com/anthropics/claude-code/issues/84468">#84468</a>
+        <a href="https://github.com/anthropics/claude-code/issues/50982">#50982</a>
+        <a href="https://github.com/anthropics/claude-code/issues/34255">#34255</a>
+      </div>
+      <div class="chips" id="chips"></div>
+
+      <section class="booth" aria-label="Shipyard booth">
+        <article class="case">
+          <h3>Plates · weathered steel</h3>
+          <div class="sort on"><span class="n">berth</span><span>MOORED</span></div>
+          <div class="sort hit"><span class="n">flood</span><span>SCUTTLED</span></div>
+          <div class="sort hit"><span class="n">kill</span><span>42 groups</span></div>
+          <div class="sort"><span class="n">lag</span><span>104s alive</span></div>
+          <div class="sort"><span class="n">cli</span><span>ccd-cli 10</span></div>
+        </article>
+        <article class="chase">
+          <h3>Damage board · reattach vs shutdown</h3>
+          <div class="pair">
+            <div class="galley-card version">
+              <h2 id="version-title">reattach path</h2>
+              <pre class="mono" id="version-card">ordinary  reuse running daemon
+takeover  SIGTERM-first
+children  orphaned, surviving
+result    should stay moored</pre>
+            </div>
+            <div class="galley-card head">
+              <h2 id="head-title">RPC shutdown</h2>
+              <pre class="mono" id="head-card">drop      channel_closed_no_socket
+warmup    bridge_startup_timeout
+rpc       server.shutdown
+blast     42 process groups</pre>
+            </div>
+          </div>
+        </article>
+        <article class="quoins">
+          <h3>Gauges · bilge well</h3>
+          <div class="dials">
+            <button class="dial" id="dial-version" type="button"><div class="k">drop</div><div class="l">channel_closed_no_socket</div></button>
+            <button class="dial" id="dial-head" type="button"><div class="k">warmup</div><div class="l">bridge_startup_timeout</div></button>
+            <button class="dial" id="dial-auto" type="button"><div class="k">stop</div><div class="l">server.shutdown</div></button>
+            <button class="dial missing" id="dial-pin" type="button"><div class="k">kill</div><div class="l">42 child groups</div></button>
+          </div>
+        </article>
+      </section>
+
+      <table class="obs" aria-label="Published reconnect table">
+        <thead>
+          <tr>
+            <th>check</th>
+            <th>source</th>
+            <th>outcome</th>
+            <th>next step</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>channel drop</td><td>client</td><td>channel_closed_no_socket</td><td>warm-up</td></tr>
+          <tr class="hit"><td>warm-up</td><td>bridge</td><td>bridge_startup_timeout</td><td>failure branch</td></tr>
+          <tr class="hit"><td>liveness</td><td>server.ping / daemon.lock</td><td>never probed</td><td>server --stop</td></tr>
+          <tr><td>evidence</td><td>104s after drop</td><td>reaping exit 0</td><td>killed 42 groups</td></tr>
+        </tbody>
+      </table>
+
+      <div class="score hold" id="score">
+        <div id="score-line">admit <em>moored</em> — warm-up REATTACHES to a still-healthy remote daemon</div>
+        <div class="score-badge" id="score-badge">MOORED</div>
+      </div>
+
+      <div class="actions chrome">
+        <button class="act-btn" id="walk-chase" type="button">Walk the yard</button>
+        <button class="act-btn" id="admit-moored" type="button">Admit moored</button>
+        <button class="act-btn" id="score-scuttled" type="button">Score scuttled</button>
+        <button class="act-btn" id="pin-moored" type="button">Pin idle moored</button>
+        <button class="act-btn" id="pin-scuttled" type="button">Pin seeded scuttled</button>
+        <button class="act-btn" id="pin-path" type="button">Pin scuttle</button>
+        <button class="act-btn" id="cast-plate" type="button">Sound the well</button>
+        <button class="act-btn" id="lock-chase" type="button">Flood the hold</button>
+        <button class="act-btn" id="pull-proof" type="button">Read the lock</button>
+        <button class="act-btn" id="reset-moored" type="button">Reset the berth</button>
+      </div>
+      <div class="galley-tray" id="galley-tray">Berth tray for fixtures — rest a JSON card on the teak. Keys: M moored · S scuttled · W walk.</div>
+      <pre class="log" id="log"></pre>
+      <div class="lane-marks" id="timeline-markers"></div>
+
+      <div class="clinic">
+        <section class="panel">
+          <h3>Yard gauges</h3>
+          <label class="tog"><input id="tog-version" type="checkbox" /> reattach / reuse running daemon</label>
+          <label class="tog"><input id="tog-head" type="checkbox" /> no liveness probe</label>
+          <label class="tog"><input id="tog-auto" type="checkbox" /> warm-up failure</label>
+          <label class="tog"><input id="tog-cache" type="checkbox" /> server.shutdown issued</label>
+          <label class="tog"><input id="tog-latest" type="checkbox" /> SIGKILL children</label>
+          <label class="tog"><input id="tog-pin" type="checkbox" /> channel_closed_no_socket</label>
+          <label>
+            Path
+            <select id="sound-path">
+              <option value="moored">moored</option>
+              <option value="scuttled">scuttled</option>
+              <option value="scuttle">scuttle</option>
+              <option value="reattach">reattach</option>
+              <option value="server-shutdown">server-shutdown</option>
+              <option value="bridge-startup-timeout">bridge-startup-timeout</option>
+              <option value="channel-closed-no-socket">channel-closed-no-socket</option>
+              <option value="sigkill-children">sigkill-children</option>
+              <option value="warm-up-failure">warm-up-failure</option>
+              <option value="no-liveness-probe">no-liveness-probe</option>
+              <option value="takeover-path-exists">takeover-path-exists</option>
+              <option value="has-repro">has-repro</option>
+              <option value="hold">hold</option>
+            </select>
+          </label>
+          <button class="act-btn" id="score-booth" type="button" style="margin-top:10px">Score this berth</button>
+          <p id="booth-out"></p>
+        </section>
+        <section class="panel">
+          <h3>Fixture JSON</h3>
+          <textarea id="probe-input" spellcheck="false"></textarea>
+        </section>
+      </div>
+
+      <section class="brief chrome">
+        <h2 class="sec">Research brief</h2>
+        <p>
+          Primary
+          <a href="https://github.com/anthropics/claude-code/issues/93154">anthropics/claude-code#93154</a>
+          (OPEN, bug, has repro, platform:macos, platform:linux, area:core).
+          Title:
+          <code>Remote SSH daemon destroys all running sessions on transient reconnect instead of reattaching</code>.
+          Facts from the issue body only. Filed 2026-09-09 by gofanly-reviewer.
+        </p>
+        <p>
+          On a transient SSH blip, remote-session warm-up should REATTACH to
+          a still-healthy remote daemon. Instead the client reports
+          <code>channel_closed_no_socket</code>, warm-up fails
+          <code>bridge_startup_timeout</code>, and
+          <code>RemoteServerController</code> issues
+          <code>server --stop</code> / <code>server.shutdown</code> without
+          checking daemon liveness.
+        </p>
+        <p>
+          The daemon SIGKILLs every tracked child process group — no SIGTERM
+          stage, no grace, no active-session guard. Blast radius in the
+          report: 10 live <code>ccd-cli</code> sessions / 42 process groups.
+          Evidence: daemon still healthy 104s after the drop (reaping exit
+          code 0) in the same second shutdown arrives; then
+          <code>cleanup: closed 1 connection(s), killed 42 child process group(s)</code>.
+        </p>
+        <p>
+          Control: another daemon for a different account ran continuously
+          2 days with zero shutdowns — destructive stop is specifically the
+          warm-up failure branch; ordinary reconnect already reuses a
+          running daemon. The same binary already has a non-destructive
+          takeover path (SIGTERM-first; children orphaned and surviving).
+          No reuse/reattach/grace flag; no env gate; no drain/detach/reload
+          RPC; docs cover host/port/identity only.
+        </p>
+        <p>
+          Requested (narrative only): probe with <code>server.ping</code> /
+          <code>daemon.lock</code> (pid, instanceId, startedAt) before
+          destroy; if stop is required, use takeover semantics or an
+          active-session guard.
+        </p>
+        <h2 class="sec">Why Scuttle is not a clone</h2>
+        <p>
+          This is specifically: REMOTE SSH DAEMON DESTROYS ALL RUNNING
+          SESSIONS ON TRANSIENT RECONNECT INSTEAD OF REATTACHING.
+        </p>
+        <p>
+          <strong>NOT Stopcock/#93143</strong> (Streamable HTTP MCP ~6min hard seat).
+          <strong>NOT Parergon/#93122</strong> (stealth idle over an open <code>/btw</code> side chat).
+          <strong>NOT Stereotype/#93108</strong> (plugin update version-string-only).
+          <strong>NOT Midden/#93081</strong> (WorktreePool partial-remove GC remound loop).
+          <strong>NOT Guillotine/#92974</strong> (background-mode Deny-only permission dialog).
+          <strong>NOT Clepsydra</strong> (OTel).
+          <strong>NOT Fusee</strong> (cron).
+          <strong>NOT Procrustes</strong> (MCP palette).
+          <strong>NOT Reed</strong> (MCP contacts).
+          <strong>NOT Quench</strong> (hard kill spend).
+          <strong>NOT Wildcat/#92399</strong> / <strong>NOT Snatch</strong> / <strong>NOT Deadman</strong>.
+        </p>
+        <p>
+          Cousin cite-only, labeled cousin-not-primary: #85567 #92687 #49790 #84468 #50982 #34255. Do not clone.
+        </p>
+        <p>
+          NOT a clone of Claude Code. NOT a live patch to anthropics/claude-code.
+          NOT an exploit. NOT a live Claude session. NOT leftover woodworking.
+        </p>
+        <p>
+          Hypothesis only (NON-BINDING): warm-up failure branch may select
+          destructive <code>server.shutdown</code> instead of the existing
+          reattach/reuse path. Invite verify against #93154 text only. Do
+          NOT implement a fix in anthropics/claude-code.
+        </p>
+        <p>
+          Stay off:
+          <span class="stayoff">
+            <span>Stopcock/#93143 already shipped</span>
+            <span>Parergon/#93122 already shipped</span>
+            <span>Stereotype/#93108 already shipped</span>
+            <span>Midden/#93081 already shipped</span>
+            <span>Guillotine/#92974 already shipped</span>
+            <span>Clepsydra already shipped</span>
+            <span>Fusee already shipped</span>
+            <span>Wildcat/#92399 already shipped</span>
+            <span>cousins cite only</span>
+          </span>
+        </p>
+      </section>
+
+      <footer class="chrome">
+        03:50 / hermes catalog #253 / #93154 · scuttle · score scuttled or admit moored · no live Claude · ?embed=1 hides chrome
+      </footer>
+    </main>
+    <script type="module">
+      import {
+        SCUTTLE_WALK,
+        classify,
+        scoreWalk,
+        scoreGate,
+      } from "./scuttle.mjs";
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["moored", "reattach", "hold"]);
+      const CHIPS = [
+        "moored",
+        "scuttled",
+        "scuttle",
+        "reattach",
+        "server-shutdown",
+        "bridge-startup-timeout",
+        "channel-closed-no-socket",
+        "sigkill-children",
+        "warm-up-failure",
+        "no-liveness-probe",
+        "takeover-path-exists",
+        "has-repro",
+        "hold",
+        "cousins",
+        "fixtures",
+        "walk"
+      ];
+      const PEGS = [
+        { seed: "moored", name: "moored", note: "idle · reattach", hold: true },
+        { seed: "scuttled", name: "scuttled", note: "#93154 shutdown" },
+        { seed: "scuttle", name: "scuttle", note: "path word" },
+        { seed: "reattach", name: "reattach", note: "ordinary reuse", hold: true },
+        { seed: "server-shutdown", name: "server-shutdown", note: "server --stop" },
+        { seed: "bridge-startup-timeout", name: "bridge-startup-timeout", note: "warm-up fail" },
+        { seed: "channel-closed-no-socket", name: "channel-closed-no-socket", note: "brief drop" },
+        { seed: "sigkill-children", name: "sigkill-children", note: "42 groups" },
+        { seed: "warm-up-failure", name: "warm-up-failure", note: "failure branch" },
+        { seed: "no-liveness-probe", name: "no-liveness-probe", note: "no ping/lock" },
+        { seed: "takeover-path-exists", name: "takeover-path-exists", note: "SIGTERM-first" },
+        { seed: "has-repro", name: "has-repro", note: "4534d864 · 2.1.260" },
+        { seed: "hold", name: "hold", note: "HOLD alias", hold: true },
+        { seed: "cousins", name: "cousins", note: "cite cousins" },
+        { seed: "fixtures", name: "fixtures", note: "row list" },
+        { seed: "walk", name: "walk", note: "published walk" }
+      ];
+
+      const FALLBACKS = {
+        moored: {
+          seed: "moored",
+          hubCount: "MOORED",
+          daemonAlive: true,
+          reattach: true,
+          livenessProbe: true,
+          shutdownIssued: false,
+          sigkillChildren: false,
+          log: [
+            "[idle] scuttle moored — warm-up REATTACHES to a still-healthy remote daemon",
+            "[idle] ordinary reconnect already reuses a running daemon; children stay alive"
+          ]
+        },
+        scuttled: {
+          seed: "scuttled",
+          hubCount: "SCUTTLED",
+          daemonAlive: true,
+          reattach: false,
+          livenessProbe: false,
+          shutdownIssued: true,
+          sigkillChildren: true,
+          warmupFailure: true,
+          channelClosed: true,
+          childrenKilled: 42,
+          log: [
+            "[seed] #93154 scuttled — warm-up failure issues server.shutdown with no liveness probe",
+            "[seed] channel_closed_no_socket → bridge_startup_timeout → killed 42 groups"
+          ]
+        },
+        scuttle: { seed: "scuttle", preferSeed: true, hubCount: "SCUTTLE", scuttle: true, log: ["[scuttle] a brief network blip that SIGKILLs every healthy remote session instead of reattaching is not a moored ship — it is a scuttle"] },
+        reattach: { seed: "reattach", preferSeed: true, hubCount: "REATTACH", reattach: true, daemonAlive: true, log: ["[reattach] ordinary reconnect already reuses a running daemon"] },
+        "server-shutdown": { seed: "server-shutdown", preferSeed: true, hubCount: "SERVER-SHUTDOWN", shutdownIssued: true, log: ["[server-shutdown] RemoteServerController issues server --stop / server.shutdown"] },
+        "bridge-startup-timeout": { seed: "bridge-startup-timeout", preferSeed: true, hubCount: "BRIDGE-STARTUP-TIMEOUT", warmupFailure: true, log: ["[bridge-startup-timeout] warm-up fails bridge_startup_timeout"] },
+        "channel-closed-no-socket": { seed: "channel-closed-no-socket", preferSeed: true, hubCount: "CHANNEL-CLOSED-NO-SOCKET", channelClosed: true, log: ["[channel-closed-no-socket] brief SSH drop; client channel_closed_no_socket"] },
+        "sigkill-children": { seed: "sigkill-children", preferSeed: true, hubCount: "SIGKILL-CHILDREN", sigkillChildren: true, childrenKilled: 42, log: ["[sigkill-children] cleanup killed 42 child process group(s); 10 live ccd-cli"] },
+        "warm-up-failure": { seed: "warm-up-failure", preferSeed: true, hubCount: "WARM-UP-FAILURE", warmupFailure: true, shutdownIssued: true, log: ["[warm-up-failure] destructive stop is specifically the warm-up failure branch"] },
+        "no-liveness-probe": { seed: "no-liveness-probe", preferSeed: true, hubCount: "NO-LIVENESS-PROBE", livenessProbe: false, log: ["[no-liveness-probe] no server.ping / daemon.lock before destroy"] },
+        "takeover-path-exists": { seed: "takeover-path-exists", preferSeed: true, hubCount: "TAKEOVER-PATH-EXISTS", takeoverPathExists: true, log: ["[takeover-path-exists] same binary already has SIGTERM-first takeover"] },
+        "has-repro": { seed: "has-repro", preferSeed: true, hubCount: "HAS-REPRO", log: ["[has-repro] claude-ssh 4534d864 · ccd-cli 2.1.260 · Linux x86-64 · 42 groups"] },
+        hold: { seed: "hold", preferSeed: true, hubCount: "HOLD", daemonAlive: true, reattach: true, log: ["[hold] admit moored — warm-up REATTACHES to a still-healthy remote daemon"] },
+        cousins: { seed: "cousins", preferSeed: true, hubCount: "COUSINS", log: ["[cousins] cousin-not-primary #85567 #92687 #49790 #84468 #50982 #34255"] },
+        fixtures: { seed: "fixtures", preferSeed: true, hubCount: "FIXTURES", log: ["[fixtures] moored / scuttled / scuttle / server-shutdown"] },
+        walk: { seed: "walk", preferSeed: true, hubCount: "WALK", log: ["[walk] moored → channel-closed-no-socket → bridge-startup-timeout → server-shutdown → sigkill-children → scuttled → scuttle"] }
+      };
+
+      function tone(seed) {
+        return HOLD.has(seed) ? "hold" : "alarm";
+      }
+
+      function linesFor(probe) {
+        if (probe && Array.isArray(probe.log) && probe.log.length) return probe.log;
+        return FALLBACKS.moored.log;
+      }
+
+      function renderChips(active) {
+        const root = document.getElementById("chips");
+        root.innerHTML = "";
+        PEGS.forEach((peg) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "chip";
+          if (peg.seed === active) btn.classList.add("on");
+          if (peg.hold) btn.classList.add("hold");
+          btn.innerHTML = "<b>" + peg.name + "</b>" + peg.note;
+          btn.addEventListener("click", () => loadSeed(peg.seed));
+          root.appendChild(btn);
+        });
+      }
+
+      function renderMarkers() {
+        const root = document.getElementById("timeline-markers");
+        const scored = scoreWalk({ rows: SCUTTLE_WALK });
+        root.innerHTML = scored.rows.map((row) => {
+          const cls = row.verdict === "scuttled" ? "hit" : row.verdict === "scuttle" ? "late" : "match";
+          return (
+            "<article class=\"mark " + cls + "\">" +
+              "<div class=\"t\">" + (row.t || row.event) + "</div>" +
+              "<div class=\"e\">" + (row.event || "—") + "</div>" +
+              "<div class=\"s\">" + (row.verdict || "—") + "</div>" +
+            "</article>"
+          );
+        }).join("");
+      }
+
+      function apply(probe) {
+        const seed = classify(probe);
+        const scored = Array.isArray(probe.rows)
+          ? scoreWalk(probe)
+          : scoreGate(probe);
+        const kind = tone(seed);
+        document.getElementById("plate-seed").textContent = seed + " · #93154";
+        document.getElementById("plate-word").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        document.getElementById("plate").className = "port" + (kind === "alarm" ? " alarm" : "");
+        document.getElementById("score").className = "score " + kind;
+        document.getElementById("score-badge").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        const line = document.getElementById("score-line");
+        if (HOLD.has(seed)) {
+          line.innerHTML = "admit <em>moored</em> — warm-up REATTACHES to a still-healthy remote daemon";
+        } else if (seed === "scuttled") {
+          line.innerHTML = "score <em>scuttled</em> — server.shutdown with no liveness probe; SIGKILL 42 groups";
+        } else if (seed === "scuttle") {
+          line.innerHTML = "score <em>scuttle</em> — a brief network blip that SIGKILLs is not a moored ship";
+        } else {
+          line.innerHTML = "score <em>" + seed + "</em> — published #93154 row on the scuttle booth";
+        }
+        const log = document.getElementById("log");
+        log.innerHTML = linesFor(probe).map((row) => {
+          const cls = /idle|moored|hold|reattach/.test(row) ? "ok" : /104|42|shutdown|SIGKILL|channel_closed/.test(row) ? "warn" : "hit";
+          return '<span class="' + cls + '">' + row + "</span>";
+        }).join("\n");
+        const reattach = probe.reattach === true || scored.reattach === true;
+        const noProbe = probe.livenessProbe === false || scored.livenessProbe === false;
+        const fail = probe.warmupFailure === true || scored.warmupFailure === true;
+        const stop = probe.shutdownIssued === true || scored.shutdownIssued === true;
+        const kill = probe.sigkillChildren === true || scored.sigkillChildren === true;
+        const drop = probe.channelClosed === true || scored.channelClosed === true;
+        document.getElementById("version-title").textContent = HOLD.has(seed)
+          ? "reattach path"
+          : "reattach path · unused";
+        document.getElementById("head-title").textContent = HOLD.has(seed)
+          ? "daemon still healthy"
+          : "RPC shutdown · scuttled";
+        document.getElementById("version-card").textContent =
+          "ordinary  reuse running daemon\n" +
+          "takeover  SIGTERM-first\n" +
+          "children  orphaned, surviving\n" +
+          "result     " + (reattach || HOLD.has(seed) ? "should stay moored" : "unused on failure");
+        document.getElementById("head-card").textContent =
+          "drop      channel_closed_no_socket\n" +
+          "warmup    bridge_startup_timeout\n" +
+          "rpc       server.shutdown\n" +
+          "blast     " + (kill || !HOLD.has(seed) ? "42 process groups" : "children still live");
+        document.getElementById("dial-version").className = drop && !HOLD.has(seed) ? "dial on" : "dial";
+        document.getElementById("dial-head").className = fail && !HOLD.has(seed) ? "dial on" : "dial";
+        document.getElementById("dial-auto").className = stop && !HOLD.has(seed) ? "dial on" : "dial";
+        document.getElementById("dial-pin").className = kill && !HOLD.has(seed) ? "dial missing" : "dial";
+        renderChips(seed);
+        const selectable = CHIPS.filter((name) => name !== "cousins" && name !== "fixtures" && name !== "walk");
+        document.getElementById("sound-path").value = selectable.includes(seed) ? seed : "scuttled";
+        document.getElementById("tog-version").checked = reattach;
+        document.getElementById("tog-head").checked = noProbe && !HOLD.has(seed);
+        document.getElementById("tog-auto").checked = fail;
+        document.getElementById("tog-cache").checked = stop;
+        document.getElementById("tog-latest").checked = kill;
+        document.getElementById("tog-pin").checked = drop;
+        document.getElementById("probe-input").value = JSON.stringify({
+          seed,
+          reattach: probe.reattach ?? null,
+          livenessProbe: probe.livenessProbe ?? null,
+          warmupFailure: probe.warmupFailure ?? null,
+          shutdownIssued: probe.shutdownIssued ?? null,
+          sigkillChildren: probe.sigkillChildren ?? null
+        }, null, 2);
+      }
+
+      function probeFromToggles() {
+        const reattach = document.getElementById("tog-version").checked;
+        const noProbe = document.getElementById("tog-head").checked;
+        const fail = document.getElementById("tog-auto").checked;
+        const stop = document.getElementById("tog-cache").checked;
+        const kill = document.getElementById("tog-latest").checked;
+        const drop = document.getElementById("tog-pin").checked;
+        return {
+          reattach,
+          livenessProbe: !noProbe,
+          warmupFailure: fail,
+          shutdownIssued: stop,
+          sigkillChildren: kill,
+          channelClosed: drop,
+          daemonAlive: true,
+          childrenKilled: kill ? 42 : 0,
+          cue: (stop && kill) || fail ? "scuttled" : "moored"
+        };
+      }
+
+      async function loadSeed(seed) {
+        const file = seed === "scuttled" ? "93154" : seed === "fixtures" ? "fixtures" : seed;
+        try {
+          const res = await fetch("data/" + file + ".json");
+          if (res.ok) {
+            apply(await res.json());
+            return;
+          }
+        } catch (_) {}
+        apply(FALLBACKS[seed] || FALLBACKS.moored);
+      }
+
+      function soundFromForm() {
+        let probe;
+        try {
+          probe = JSON.parse(document.getElementById("probe-input").value);
+        } catch (_) {
+          probe = { seed: document.getElementById("sound-path").value };
+        }
+        const toggled = probeFromToggles();
+        Object.assign(probe, toggled);
+        delete probe.preferSeed;
+        delete probe.seed;
+        const scored = scoreGate(probe);
+        probe.seed = scored.verdict;
+        probe.hubCount = scored.verdict.toUpperCase();
+        apply(Object.assign({}, FALLBACKS[scored.verdict] || {}, probe, {
+          seed: scored.verdict,
+          log: probe.log || (FALLBACKS[scored.verdict] && FALLBACKS[scored.verdict].log)
+        }));
+        const out = document.getElementById("booth-out");
+        if (scored.verdict === "moored" || scored.verdict === "hold" || scored.verdict === "reattach") {
+          out.textContent = "admit moored — warm-up REATTACHES to a still-healthy remote daemon.";
+        } else if (scored.verdict === "scuttle") {
+          out.textContent = "scuttle — a brief network blip that SIGKILLs is not a moored ship.";
+        } else {
+          out.textContent = "score scuttled — server.shutdown with no liveness probe; SIGKILL 42 groups.";
+        }
+      }
+
+      document.getElementById("walk-chase").addEventListener("click", () => loadSeed("scuttled"));
+      document.getElementById("admit-moored").addEventListener("click", () => loadSeed("moored"));
+      document.getElementById("score-scuttled").addEventListener("click", () => loadSeed("scuttled"));
+      document.getElementById("pin-moored").addEventListener("click", () => loadSeed("moored"));
+      document.getElementById("pin-scuttled").addEventListener("click", () => loadSeed("scuttled"));
+      document.getElementById("pin-path").addEventListener("click", () => loadSeed("scuttle"));
+      document.getElementById("cast-plate").addEventListener("click", () => loadSeed("scuttle"));
+      document.getElementById("lock-chase").addEventListener("click", () => loadSeed("server-shutdown"));
+      document.getElementById("pull-proof").addEventListener("click", () => loadSeed("sigkill-children"));
+      document.getElementById("reset-moored").addEventListener("click", () => loadSeed("moored"));
+      document.getElementById("score-booth").addEventListener("click", soundFromForm);
+      document.getElementById("plate").addEventListener("click", () => {
+        const current = document.getElementById("plate-word").textContent;
+        loadSeed(current === "MOORED" || current === "HOLD" || current === "REATTACH" ? "scuttled" : "moored");
+      });
+      document.getElementById("dial-version").addEventListener("click", () => loadSeed("channel-closed-no-socket"));
+      document.getElementById("dial-head").addEventListener("click", () => loadSeed("bridge-startup-timeout"));
+      document.getElementById("dial-auto").addEventListener("click", () => loadSeed("server-shutdown"));
+      document.getElementById("dial-pin").addEventListener("click", () => loadSeed("sigkill-children"));
+      document.getElementById("sound-path").addEventListener("change", () => {
+        loadSeed(document.getElementById("sound-path").value);
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.target.matches("textarea, input, select")) return;
+        if (event.key === "m" || event.key === "M") loadSeed("moored");
+        if (event.key === "s" || event.key === "S") loadSeed("scuttled");
+        if (event.key === "w" || event.key === "W") loadSeed("walk");
+      });
+
+      const tray = document.getElementById("galley-tray");
+      document.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        tray.classList.add("on");
+      });
+      document.addEventListener("dragleave", () => tray.classList.remove("on"));
+      document.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        tray.classList.remove("on");
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (!file) return;
+        try {
+          apply(JSON.parse(await file.text()));
+        } catch (_) {}
+      });
+
+      renderMarkers();
+      apply(FALLBACKS.moored);
+    </script>
+  </body>
+</html>
