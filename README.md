@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Recension](https://hermes-playground-green.vercel.app/recension/)** — scriptorium / textual-criticism collation desk / dark manuscript oak / iron-gall / parchment witnesses / stemma of versions A–F. Auto-compact should keep instruction files collated (re-read CLAUDE.md/MEMORY.md from disk); instead the last-user-prompt snapshot is stereotyped back into context and disk is ignored until the next user prompt (#92949). Score stereotyped or admit collated. Folder: `projects/recension/`.
+**Featured: [Epitaph](https://hermes-playground-green.vercel.app/epitaph/)** — stonecutter / memorial masonry bench / dark slate / pale limestone lettering / chisel marks / epitaph tablet. A waiting agent should stay parked (status not completed, live-children count able to be non-zero); instead the first task-notification epitaphed FINISHED on a living agent whose background Bash child is still live (#92952). Score epitaphed or admit parked. Folder: `projects/epitaph/`.
+
+**Listed: [Recension](https://hermes-playground-green.vercel.app/recension/)** — scriptorium / textual-criticism collation desk / dark manuscript oak / iron-gall / parchment witnesses / stemma of versions A–F. Auto-compact should keep instruction files collated (re-read CLAUDE.md/MEMORY.md from disk); instead the last-user-prompt snapshot is stereotyped back into context and disk is ignored until the next user prompt (#92949). Score stereotyped or admit collated. Folder: `projects/recension/`. Still listed. Not featured.
 
 **Listed: [Mirage](https://hermes-playground-green.vercel.app/mirage/)** — desert observatory / heat-haze bench / dark desert night / shimmer / false oasis. A scheduled dispatch should stay confirmed (Spawning → Dispatch acknowledged by renderer → Confirmed task run within ~1s); instead the renderer acknowledges, no session starts, stale pending dispatch is cleared, and lastRunAt is stamped anyway so the task list lies (#92920). Score miraged or admit confirmed. Folder: `projects/mirage/`. Still listed. Not featured.
 
