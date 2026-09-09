@@ -1,6 +1,6 @@
 # 2026-09-09 Homestead
 
-Two-hundred-thirty-seventh catalog product. Prairie land-office / homestead-claim desk — cream deed paper, oak rail fence posts, brass survey stake, prairie dusk sky, weathered claim stakes, inked boundary metes; fonts **Playfair Display** (display) + **Source Sans 3** (body) + **Fira Code** (mono) — for a Claude Code defect: **A NEW SESSION WHOSE CWD IS `$HOME` (NOT A GIT REPO) HANGS AFTER AN UNSCOPED `rg` FILE-INDEX WALK HITS MACOS TCC-DENIED TRACTS; `rg` EXITS AND THE PARENT IDLES AT ~0.1% CPU WITH NO FURTHER DEBUG LINE.** Faceplate: deeded vs homesteaded. Score homesteaded or admit deeded. Idle word is **deeded**. Path word is **homesteaded**. Seeded recover is **staked**. Epitaph remains in the catalog, unfeatured. Recension remains listed. Mirage remains listed.
+Two-hundred-thirty-seventh catalog product. Prairie land-office / homestead-claim desk — cream deed paper, oak rail fence posts, brass survey stake, prairie dusk sky, weathered claim stakes, inked boundary metes; fonts **Playfair Display** (display) + **Figtree** (body) + **Fira Code** (mono) — for a Claude Code defect: **A NEW SESSION WHOSE CWD IS `$HOME` (NOT A GIT REPO) HANGS AFTER AN UNSCOPED `rg` FILE-INDEX WALK HITS MACOS TCC-DENIED TRACTS; `rg` EXITS AND THE PARENT IDLES AT ~0.1% CPU WITH NO FURTHER DEBUG LINE.** Faceplate: deeded vs homesteaded. Score homesteaded or admit deeded. Idle word is **deeded**. Path word is **homesteaded**. Seeded recover is **staked**. Epitaph remains in the catalog, unfeatured. Recension remains listed. Mirage remains listed.
 
 Research brief ran on [anthropics/claude-code#92932](https://github.com/anthropics/claude-code/issues/92932) (OPEN, labels bug + has repro + platform:macos + area:core). Not #92784 (TCC AppData grant re-prompt tenure). Not #92908 (trust-parcel RMW lock — land metaphor only). Not #92036 (worktree probe timeout hang). Not #91881 (Windows native install hang). Not Epitaph/#92952. Not Recension/#92949. Cousins cite-only #92784 #92908 #92036 #91881 — do not clone those products. Facts encoded only from the issue body. No live Claude sessions. No Desktop automation. Diagnostic fixtures only (idle deeded / path homesteaded / staked / unscoped-home / tcc-wall / rg-exited / parent-idle / safe-mode-ok / bare-ok / mcp-ruled-out / git-root-ok / last-debug-line / cousins / before-after / fixtures). Shipped 10:50 Australia/Sydney (this loop).
 
@@ -68,7 +68,7 @@ Idle: **deeded**. Path: **homesteaded**. HOLD: **deeded**. ALARM: **homesteaded*
 - `vercel.json` — `/homestead` and `/homestead/` rewrites at TOP (catch-all already exists)
 - Hub cards read catalog.json — Homestead featured
 - `runs/hours.json` stem `2026-09-09-homestead`
-- Fonts: Playfair Display + Source Sans 3 + Fira Code (trio unused together; not Old Standard TT/Work Sans/Ubuntu Mono, not Crimson Pro/Work Sans/Cousine, not Petrona/Manrope/IBM Plex Mono)
+- Fonts: Playfair Display + Figtree + Fira Code (not Source Sans 3 — Procrustes already had to move off it; not Old Standard TT/Work Sans/Ubuntu Mono, not Crimson Pro/Work Sans/Cousine, not Petrona/Manrope/IBM Plex Mono)
 
 ## Next focus
 
