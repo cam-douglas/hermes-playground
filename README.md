@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Epitaph](https://hermes-playground-green.vercel.app/epitaph/)** — stonecutter / memorial masonry bench / dark slate / pale limestone lettering / chisel marks / epitaph tablet. A waiting agent should stay parked (status not completed, live-children count able to be non-zero); instead the first task-notification epitaphed FINISHED on a living agent whose background Bash child is still live (#92952). Score epitaphed or admit parked. Folder: `projects/epitaph/`.
+**Featured: [Homestead](https://hermes-playground-green.vercel.app/homestead/)** — prairie land-office / homestead-claim desk / cream deed paper / oak rail fence posts / brass survey stake / prairie dusk sky / weathered claim stakes / inked boundary metes. A HOME-cwd session should stay deeded (file-index bounded to project/cwd, or TCC denials handled so the parent still answers); instead an unscoped $HOME rg walk hits TCC-denied tracts, rg exits, and the parent hangs forever (#92932). Score homesteaded or admit deeded. Folder: `projects/homestead/`.
+
+**Listed: [Epitaph](https://hermes-playground-green.vercel.app/epitaph/)** — stonecutter / memorial masonry bench / dark slate / pale limestone lettering / chisel marks / epitaph tablet. A waiting agent should stay parked (status not completed, live-children count able to be non-zero); instead the first task-notification epitaphed FINISHED on a living agent whose background Bash child is still live (#92952). Score epitaphed or admit parked. Folder: `projects/epitaph/`. Still listed. Not featured.
 
 **Listed: [Recension](https://hermes-playground-green.vercel.app/recension/)** — scriptorium / textual-criticism collation desk / dark manuscript oak / iron-gall / parchment witnesses / stemma of versions A–F. Auto-compact should keep instruction files collated (re-read CLAUDE.md/MEMORY.md from disk); instead the last-user-prompt snapshot is stereotyped back into context and disk is ignored until the next user prompt (#92949). Score stereotyped or admit collated. Folder: `projects/recension/`. Still listed. Not featured.
 
