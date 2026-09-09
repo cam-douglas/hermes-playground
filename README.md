@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Diplopia](https://hermes-playground-green.vercel.app/diplopia/)** — ophthalmology diplopia / double-vision acuity booth / clinical optic white / soft cyan iris glow / navy acuity chart / amber Snellen letters / binocular phoropter silhouettes. A Remote Control picker should keep subdirectory rooms distinct from the repo-root room; instead web labels solely from `git_repo_url` basename so two live rooms paint as identical “monorepo” (#93012). Score conflated or admit distinct. Folder: `projects/diplopia/`.
+**Featured: [Midden](https://hermes-playground-green.vercel.app/midden/)** — archaeological refuse-heap / ash-and-bone strata booth / soil umber / bone white / charcoal strata / ash gray / kiln amber glints. A WorktreePool should keep a partial-remove worktree cleared after one GC pass; instead git worktree remove and the manual fallback both refuse for the same missing `.git` link, the store entry is never pruned, and the same five-line cycle remounds every 30 minutes — 853× / 20 days (#93081). Score mounded or admit cleared. Folder: `projects/midden/`.
+
+**Listed: [Diplopia](https://hermes-playground-green.vercel.app/diplopia/)** — ophthalmology diplopia / double-vision acuity booth for Remote Control web/mobile environment-label field split on subdirectory cwd (#93012). Still listed. Not featured.
 
 **Listed: [Greenroom](https://hermes-playground-green.vercel.app/greenroom/)** — theater green room / offstage waiting booth for Desktop Code tab missing wait-for-full-turn-end queue (#92988). Still listed. Not featured.
 
