@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Flashpan](https://hermes-playground-green.vercel.app/flashpan/)** — flintlock flash-pan / priming-pan booth / warm brass / iron lockplate / damp powder / flint-steel sparks that flash without discharge. `lastRunAt` should stay primed (stamp only when a session transcript is born by birth time); instead the pan powder flashes — lastRunAt fresh, stamp-clusters within &lt;1s, zero new session births, Run now launches nothing, no error/failed-run (#93015). Score flashed or admit primed. Folder: `projects/flashpan/`.
+**Featured: [Diplopia](https://hermes-playground-green.vercel.app/diplopia/)** — ophthalmology diplopia / double-vision acuity booth / clinical optic white / soft cyan iris glow / navy acuity chart / amber Snellen letters / binocular phoropter silhouettes. A Remote Control picker should keep subdirectory rooms distinct from the repo-root room; instead web labels solely from `git_repo_url` basename so two live rooms paint as identical “monorepo” (#93012). Score conflated or admit distinct. Folder: `projects/diplopia/`.
+
+**Listed: [Greenroom](https://hermes-playground-green.vercel.app/greenroom/)** — theater green room / offstage waiting booth for Desktop Code tab missing wait-for-full-turn-end queue (#92988). Still listed. Not featured.
+
+**Listed: [Flashpan](https://hermes-playground-green.vercel.app/flashpan/)** — flintlock flash-pan / priming-pan booth / warm brass / iron lockplate / damp powder / flint-steel sparks that flash without discharge. `lastRunAt` should stay primed (stamp only when a session transcript is born by birth time); instead the pan powder flashes — lastRunAt fresh, stamp-clusters within &lt;1s, zero new session births, Run now launches nothing, no error/failed-run (#93015). Score flashed or admit primed. Folder: `projects/flashpan/`. Still listed. Not featured.
 
 **Listed: [Secateurs](https://hermes-playground-green.vercel.app/secateurs/)** — garden bypass-shears / pruning booth / steel blades / wooden handles / cane-and-rule strip. A Read of large instruction/rule files should stay unshorn (whole file, or showing lines X–Y of Z); instead a silent tip-cut shears the unread tail so guardrails vanish with no operator notice (#92979). Score sheared or admit unshorn. Folder: `projects/secateurs/`. Still listed. Not featured.
 
