@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Ferrule](https://hermes-playground-green.vercel.app/ferrule/)** — metalwork / plumbing / cable-clamp ferrule booth / brushed steel / gunmetal / copper / oil-black bench / cyan instrument LEDs. The OAuth callback should stay ephemeral (OS-assigned port 0 / CLI-parity); instead Desktop ferrules the listener to TCP 53280 so a Hyper-V excluded range refuses the bind with EACCES and consent never opens (#92968). Score ferruled or admit ephemeral. Folder: `projects/ferrule/`.
+**Featured: [Palinode](https://hermes-playground-green.vercel.app/palinode/)** — scriptorium retract / palinode booth / wax tablet / iron stylus / scraped vellum leaf / retract strip / ink pot / ruling lines / warm parchment + iron-gall. MEMORY.md should keep newest corrections emended (truncate oldest/top); instead overflow truncates from the bottom so newest supersessions are shed unretracted while the text they correct stays authoritative (#92998). Score unretracted or admit emended. Folder: `projects/palinode/`.
+
+**Listed: [Ferrule](https://hermes-playground-green.vercel.app/ferrule/)** — metalwork / plumbing / cable-clamp ferrule booth / brushed steel / gunmetal / copper / oil-black bench / cyan instrument LEDs. The OAuth callback should stay ephemeral (OS-assigned port 0 / CLI-parity); instead Desktop ferrules the listener to TCP 53280 so a Hyper-V excluded range refuses the bind with EACCES and consent never opens (#92968). Score ferruled or admit ephemeral. Folder: `projects/ferrule/`. Still listed. Not featured.
 
 **Listed: [Interlock](https://hermes-playground-green.vercel.app/interlock/)** — plant-floor safety INTERLOCK booth / machine-guard lockout / safety yellow / machine graphite / red E-stop / cool steel / hazard stripes. A folder should stay passable for Dispatch (busy-check = turn in flight, not attached-CLI); instead a UI-warmed idle session interlocks the cwd via exclusiveCwd so start_code_task fails already-active (#92976). Score interlocked or admit passable. Folder: `projects/interlock/`. Still listed. Not featured.
 
