@@ -388,13 +388,14 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /NOT leftover woodworking/i);
 });
 
-test("catalog #241 features Palinode; Ferrule stays listed unfeatured", () => {
+test("catalog lists Palinode unfeatured after Secateurs #242", () => {
   const catalog = readCatalog();
-  assert.equal(catalog.products.length, 241);
-  assert.equal(catalog.products[0].name, "Palinode");
-  assert.equal(catalog.products[0].slug, "palinode");
-  assert.equal(catalog.products[0].featured, true);
-  assert.equal(catalog.products[0].href, "/palinode/");
+  assert.equal(catalog.products.length, 242);
+  assert.equal(catalog.products[0].slug, "secateurs");
+  const palinode = catalog.products.find((row) => row.slug === "palinode");
+  assert.ok(palinode);
+  assert.equal(palinode.featured, false);
+  assert.equal(palinode.href, "/palinode/");
   const ferrule = catalog.products.find((row) => row.slug === "ferrule");
   assert.ok(ferrule);
   assert.equal(ferrule.featured, false);
