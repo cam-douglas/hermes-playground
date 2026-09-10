@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-10 — Concordat
+
+- **Thesis:** #93290 — Desktop/CLI send `Mcp-Protocol-Version: 2025-11-25` with `_meta` `2026-07-28`; stateless servers reject `-32020`.
+- **Shipped:** a new static booth, **Concordat**, in `projects/concordat/`.
+- **What it does:** scores header↔body version concord (idle concordant / seeded mismatched / path header-mismatch).
+- **Catalog:** featured Concordat only; Revenant and drift/reorder-radar leftovers unfeatured.
+
 ## 2026-09-10 — Drift Radar
 
 - **Thesis:** autonomous work needs recovery tooling, not just more autonomy.
