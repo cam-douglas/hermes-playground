@@ -1,0 +1,38 @@
+{
+  "source": "mux-path",
+  "issue": 93398,
+  "note": "Mux path from #93398. srt-mux-<pid>-<n>.sock is the unix socket behind the SOCKS5 proxy the Bash sandbox filters network through. When the SOCKS client dies mid-stream the relay's accepted socket stays open. Path word is mux.",
+  "seed": "mux",
+  "verdict": "mux",
+  "preferSeed": true,
+  "spinning": true,
+  "mux": true,
+  "socks5": true,
+  "paths": [
+    {
+      "id": "listener",
+      "sock": "srt-mux-<pid>-<n>.sock",
+      "role": "unix SOCKS5 proxy for sandbox network",
+      "result": "1 fd — listener only when healthy"
+    },
+    {
+      "id": "accepted-peer",
+      "sock": "srt-mux-37591-0.sock",
+      "role": "accepted relay socket after kill -9 mid-stream",
+      "result": "left open; kqueue reports writable; sendto EPIPE"
+    },
+    {
+      "id": "write-loop",
+      "calls": ["kevent64", "__sendto", "__ulock_wake"],
+      "result": "busy-spin; 93% of the main thread; almost no JS"
+    }
+  ],
+  "cue": "spinning",
+  "hubCount": "MUX",
+  "boardText": "#93398 · mux path — srt-mux SOCKS5 accepted peer",
+  "log": [
+    "[mux] srt-mux-<pid>-<n>.sock is the unix SOCKS5 proxy for sandbox network",
+    "[mux] SOCKS client dies mid-stream — relay accepted socket stays open",
+    "[mux] write loop spins on EPIPE; kevent64 never sleeps"
+  ]
+}
