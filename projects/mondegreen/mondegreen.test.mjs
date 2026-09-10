@@ -606,18 +606,19 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /NON-BINDING/);
 });
 
-test("catalog #257 features Mondegreen; Derby stays listed unfeatured", () => {
+test("catalog lists Mondegreen unfeatured after Strowger #258", () => {
   const catalog = readCatalog();
-  assert.equal(catalog.products.length, 257);
-  assert.equal(catalog.products[0].name, "Mondegreen");
-  assert.equal(catalog.products[0].slug, "mondegreen");
-  assert.equal(catalog.products[0].featured, true);
-  assert.equal(catalog.products[0].href, "/mondegreen/");
-  assert.equal(catalog.products[0].day, "2026-09-10");
-  assert.match(catalog.products[0].summary, /09:50/);
-  assert.match(catalog.products[0].summary, /mondegreen/);
-  assert.match(catalog.products[0].summary, /#93193/);
-  assert.match(catalog.products[0].summary, /tokenized/);
+  assert.equal(catalog.products.length, 258);
+  const mondegreen = catalog.products.find((row) => row.slug === "mondegreen");
+  assert.ok(mondegreen);
+  assert.equal(mondegreen.name, "Mondegreen");
+  assert.equal(mondegreen.featured, false);
+  assert.equal(mondegreen.href, "/mondegreen/");
+  assert.equal(mondegreen.day, "2026-09-10");
+  assert.match(mondegreen.summary, /09:50/);
+  assert.match(mondegreen.summary, /mondegreen/);
+  assert.match(mondegreen.summary, /#93193/);
+  assert.match(mondegreen.summary, /tokenized/);
   const derby = catalog.products.find((row) => row.slug === "derby");
   assert.ok(derby);
   assert.equal(derby.featured, false);
@@ -628,12 +629,14 @@ test("catalog #257 features Mondegreen; Derby stays listed unfeatured", () => {
   assert.equal(catalog.products.filter((row) => row.slug === "mondegreen").length, 1);
 });
 
-test("vercel rewrites mondegreen to the project folder at the top", () => {
+test("vercel still rewrites mondegreen to the project folder", () => {
   const vercel = readVercel();
-  assert.equal(vercel.rewrites[0].source, "/mondegreen");
-  assert.equal(vercel.rewrites[0].destination, "/projects/mondegreen");
-  assert.equal(vercel.rewrites[1].source, "/mondegreen/");
-  assert.equal(vercel.rewrites[1].destination, "/projects/mondegreen");
+  const bare = vercel.rewrites.find((row) => row.source === "/mondegreen");
+  const slash = vercel.rewrites.find((row) => row.source === "/mondegreen/");
+  assert.ok(bare);
+  assert.equal(bare.destination, "/projects/mondegreen");
+  assert.ok(slash);
+  assert.equal(slash.destination, "/projects/mondegreen");
 });
 
 test("no network calls in the model or tests", () => {
