@@ -701,6 +701,8 @@ test("vercel rewrites cachet to the project folder at the top", () => {
   assert.equal(vercel.rewrites[0].destination, "/projects/cachet");
   assert.equal(vercel.rewrites[1].source, "/cachet/");
   assert.equal(vercel.rewrites[1].destination, "/projects/cachet");
+  assert.equal(vercel.rewrites[2].source, "/cachet/:path*");
+  assert.equal(vercel.rewrites[2].destination, "/projects/cachet/:path*");
 });
 
 test("no network calls in the model or tests", () => {
