@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Lucida
+
+- **Thesis:** #93429 — Desktop Code tab paste drops the image source path: pasted images never hit image-cache and no `[Image: source: path]` companion is injected (0/4 claude-desktop vs 4/4 cli).
+- **Shipped:** a new static booth, **Lucida**, in `projects/lucida/`.
+- **What it does:** scores camera-lucida plate traceability (idle traced / seeded pathless / path image-cache).
+- **Catalog:** featured Lucida only; Fomite, Snubber, Fosse, and Hibernacle unfeatured.
+
 ## 2026-09-11 — Snubber
 
 - **Thesis:** #93398 — Killed sandboxed command leaks its SOCKS socket; main thread then spins on EPIPE at 100%+ CPU.
