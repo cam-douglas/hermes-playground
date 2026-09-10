@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Cachet
+
+- **Thesis:** #93490 — Fable 5.1 `--resume` replays the session-start context message (SessionStart hook output + # Environment) as a plain string instead of the ARRAY + cache_control seal it was sent with, so the prompt-cache prefix stops matching and the folio is rewritten. Opus `--resume` still hits.
+- **Shipped:** a new static booth, **Cachet**, in `projects/cachet/`.
+- **What it does:** scores wax-cachet folio carriers after Fable resume (idle hit / seeded flattened / path string-carrier).
+- **Catalog:** featured Cachet only; Strobe, Counterfoil, Lucida, and Fomite unfeatured.
+
 ## 2026-09-11 — Strobe
 
 - **Thesis:** #93468 — ScheduleWakeup used off-label outside `/loop` (the only wakeup primitive; skills instruct a bounded idle wait) paints a spurious "Claude resuming /loop wakeup (...)" banner, truncates skills to "1 skill available", and may redeliver the prior prompt.
