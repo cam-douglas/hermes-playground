@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-10 — Scapegoat
+
+- **Thesis:** #93348 — claude-in-chrome: an UNGRANTED host makes executeScript-based tools hang their full timeout and blame the page, instead of denying.
+- **Shipped:** a new static booth, **Scapegoat**, in `projects/scapegoat/`.
+- **What it does:** scores host-grant honesty (idle honest / seeded scapegoated / path ungranted).
+- **Catalog:** featured Scapegoat only; Cartulary, Paraph, Appanage, Pontoon, Concordat, and Revenant unfeatured.
+
 ## 2026-09-10 — Cartulary
 
 - **Thesis:** #93331 — `~/.claude/.credentials.json` → `mcpOAuth` grows without bound because every session re-stores identical claude.ai connector tokens under a new session-scoped `serverUrl` (1,681 records / 906 KB, same token ×113).
