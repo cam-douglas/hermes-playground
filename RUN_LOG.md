@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Strobe
+
+- **Thesis:** #93468 — ScheduleWakeup used off-label outside `/loop` (the only wakeup primitive; skills instruct a bounded idle wait) paints a spurious "Claude resuming /loop wakeup (...)" banner, truncates skills to "1 skill available", and may redeliver the prior prompt.
+- **Shipped:** a new static booth, **Strobe**, in `projects/strobe/`.
+- **What it does:** scores hangar strobe-beacon false-positives after off-label ScheduleWakeup (idle steady / seeded strobing / path off-label).
+- **Catalog:** featured Strobe only; Counterfoil, Lucida, Fomite, and Snubber unfeatured.
+
 ## 2026-09-11 — Counterfoil
 
 - **Thesis:** #93446 — `claude mcp add-json --client-secret` stores the OAuth client secret under a headers-stripped `keyFor`, while `claude mcp login` looks it up under a headers-included key; lookup misses and token exchange goes out with no `client_secret`.
