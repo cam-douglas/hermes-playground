@@ -1,5 +1,19 @@
 # Run log
 
+## 2026-09-11 — Fosse
+
+- **Thesis:** #93358 — Cowork (Windows 10 22H2): all Plan9 shares fail with `Plan9 mount failed: invalid argument` after September 2026 cumulative — 4/4 → 0/4, host reports hr=0x0.
+- **Shipped:** a new static booth, **Fosse**, in `projects/fosse/`.
+- **What it does:** scores host-honest Plan9 attach vs guest 0/4 EINVAL (idle mounted / seeded fossed / path plan9).
+- **Catalog:** featured Fosse only; Hibernacle, Scapegoat, Cartulary, Paraph, Appanage, Pontoon, Concordat, and Revenant unfeatured.
+
+## 2026-09-11 — Hibernacle
+
+- **Thesis:** #93372 — Windows idle working-set trim storms majflt on first Enter after idle and a second Enter double-submits.
+- **Shipped:** a new static booth, **Hibernacle**, in `projects/hibernacle/`.
+- **What it does:** scores idle working-set warmth (idle warm / seeded paged-out / path majflt).
+- **Catalog:** listed unfeatured after Fosse ship.
+
 ## 2026-09-10 — Scapegoat
 
 - **Thesis:** #93348 — claude-in-chrome: an UNGRANTED host makes executeScript-based tools hang their full timeout and blame the page, instead of denying.
