@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snubber — hydraulic pulse-damper booth for #93398</title>
+    <meta
+      name="description"
+      content="Snubber — a hydraulic / pneumatic pulse-damper booth for Claude Code #93398: kill -9 mid-stream leaks the srt-mux accepted socket and the write loop busy-spins on EPIPE. Idle word is damped."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Outfit:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --iron: #16191d;
+        --fluid: #e09a14;
+        --copper: #b56a3a;
+        --steel: #8e99a4;
+        --pulse: #d4352a;
+        --air: #c5d4dc;
+        --oil: #1c2422;
+        --gauge: #f2e6c8;
+        --bench: #101316;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Outfit, "Avenir Next", sans-serif;
+        color: #c8c2b6;
+        background:
+          radial-gradient(ellipse at 72% 8%, rgba(224, 154, 20, 0.12), transparent 42%),
+          radial-gradient(circle at 8% 92%, rgba(181, 106, 58, 0.14), transparent 28%),
+          repeating-linear-gradient(
+            180deg,
+            transparent 0 17px,
+            rgba(197, 212, 220, 0.03) 17px 18px
+          ),
+          var(--iron);
+        background-attachment: fixed;
+      }
+      body::before {
+        content: "";
+        pointer-events: none;
+        position: fixed;
+        inset: 0;
+        background:
+          linear-gradient(90deg, transparent 0%, rgba(212, 53, 42, 0.05) 46%, transparent 100%);
+        animation: epipe-thrash 1.1s linear infinite;
+        opacity: 0;
+      }
+      body.spinning::before { opacity: 1; }
+      @keyframes epipe-thrash {
+        0% { transform: translateX(-8%); }
+        50% { transform: translateX(8%); }
+        100% { transform: translateX(-8%); }
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--air); }
+      .works {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 16px 0 76px;
+      }
+      .catalog {
+        display: inline-block;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--air);
+        text-decoration: none;
+        border-bottom: 2px solid var(--copper);
+        padding: 0 0 4px;
+        margin: 16px 0 18px;
+      }
+      .mast {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        align-items: end;
+        padding: 0 0 18px;
+        border-bottom: 1px solid var(--copper);
+        margin: 0 0 20px;
+      }
+      @media (max-width: 720px) {
+        .mast { grid-template-columns: 1fr; }
+      }
+      .mast h1 {
+        font-family: Fraunces, "Times New Roman", serif;
+        font-weight: 700;
+        font-size: clamp(52px, 10vw, 104px);
+        letter-spacing: -0.045em;
+        margin: 0;
+        line-height: 0.78;
+        color: var(--gauge);
+      }
+      .stake {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--fluid);
+        border: 1px solid var(--fluid);
+        padding: 10px 12px;
+        min-width: 148px;
+      }
+      .lede {
+        max-width: 76em;
+        line-height: 1.68;
+        font-size: 16px;
+        margin: 10px 0 0;
+        grid-column: 1 / -1;
+      }
+      .lede strong {
+        color: var(--gauge);
+        font-family: Fraunces, serif;
+        font-weight: 700;
+      }
+      .lede em { font-style: italic; color: var(--fluid); }
+      .lede code, code {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        color: var(--air);
+      }
+      .cut {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin: 0 0 16px;
+      }
+      .section {
+        background:
+          linear-gradient(180deg, #2a2218 0 8px, var(--bench) 8px);
+        border: 1px solid #2a3238;
+        border-bottom: 8px solid var(--copper);
+        min-height: 400px;
+        padding: 6px;
+        box-shadow: 0 28px 48px rgba(10, 12, 14, 0.7);
+      }
+      .section svg { width: 100%; height: auto; display: block; }
+      .survey {
+        display: grid;
+        grid-template-columns: minmax(150px, 200px) 1fr;
+        gap: 16px;
+        background: var(--oil);
+        border: 1px solid #2a3238;
+        padding: 16px;
+      }
+      @media (max-width: 860px) {
+        .survey { grid-template-columns: 1fr; }
+      }
+      .canister {
+        width: 132px;
+        height: 164px;
+        margin: 0 auto;
+        border: 0;
+        border-radius: 66px 66px 18px 18px;
+        background:
+          linear-gradient(180deg, var(--steel) 0 18%, var(--copper) 18% 42%, #6a3d24 42% 78%, var(--fluid) 78%);
+        box-shadow: inset 0 -22px 0 rgba(16, 19, 22, 0.35);
+        cursor: pointer;
+        color: var(--gauge);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 2px;
+        padding: 0 0 18px;
+      }
+      .canister.hold {
+        background:
+          linear-gradient(180deg, var(--air) 0 18%, #6d7a82 18% 46%, var(--oil) 46% 78%, var(--fluid) 78%);
+      }
+      .canister.drive {
+        animation: canister-kick 0.35s ease-in 3;
+      }
+      @keyframes canister-kick {
+        0%, 100% { transform: translateY(0) scaleY(1); }
+        50% { transform: translateY(6px) scaleY(0.96); }
+      }
+      .canister small {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .canister b {
+        font-family: Fraunces, serif;
+        font-size: 15px;
+      }
+      .score {
+        font-family: Fraunces, serif;
+        color: var(--gauge);
+        margin: 0 0 10px;
+      }
+      .score.hold .badge { color: var(--air); }
+      .score.alarm .badge { color: var(--pulse); }
+      .badge {
+        font-size: 30px;
+        letter-spacing: 0.04em;
+        display: block;
+      }
+      .score p { margin: 8px 0 0; font-family: Outfit, sans-serif; font-size: 15px; color: #c8c2b6; }
+      .score em { color: var(--fluid); font-style: italic; }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 12px 0;
+      }
+      button.act {
+        font-family: Outfit, sans-serif;
+        font-size: 13px;
+        background: transparent;
+        color: var(--gauge);
+        border: 1px solid var(--steel);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      button.act:hover, button.act.primary {
+        border-color: var(--fluid);
+        background: rgba(224, 154, 20, 0.16);
+      }
+      .toggles {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 12px;
+        margin: 10px 0 12px;
+        font-size: 13px;
+      }
+      .toggles label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+      .docket {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 13px;
+        background: var(--oil);
+        border-left: 5px solid var(--fluid);
+        padding: 12px 14px;
+        color: var(--gauge);
+        margin: 0 0 16px;
+      }
+      .docket.hold { border-color: var(--air); }
+      .docket.alarm { border-color: var(--pulse); }
+      .docket .dot { color: var(--fluid); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+      .chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        background: transparent;
+        color: #c8c2b6;
+        border: 1px solid rgba(142, 153, 164, 0.45);
+        padding: 5px 8px;
+        cursor: pointer;
+      }
+      .chip.on { color: var(--gauge); border-color: var(--fluid); }
+      .chip.hold { color: var(--air); }
+      .walk {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+        gap: 8px;
+        margin: 16px 0;
+      }
+      .peg {
+        background: var(--bench);
+        border: 1px solid #2a3238;
+        border-top: 3px solid var(--copper);
+        padding: 8px 9px;
+        min-height: 78px;
+      }
+      .peg .t { font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .peg .e { color: var(--gauge); font-size: 13px; margin: 4px 0; }
+      .peg.hit { border-top-color: var(--pulse); }
+      .peg.match { border-top-color: var(--air); }
+      .log {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        background: var(--oil);
+        padding: 12px;
+        min-height: 88px;
+        color: var(--gauge);
+      }
+      .log .ok { color: var(--air); }
+      .log .warn { color: var(--pulse); }
+      .notes {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #c8c2b6;
+      }
+      .notes h2 {
+        font-family: Fraunces, serif;
+        color: var(--gauge);
+        font-size: 28px;
+        margin: 28px 0 10px;
+      }
+      .drop {
+        border: 1px dashed var(--steel);
+        padding: 14px;
+        text-align: center;
+        font-size: 13px;
+        margin: 16px 0;
+      }
+      .drop.on { border-color: var(--fluid); color: var(--gauge); }
+      textarea {
+        width: 100%;
+        min-height: 110px;
+        background: var(--oil);
+        color: var(--gauge);
+        border: 1px solid #2a3238;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      footer { margin-top: 28px; font-size: 13px; color: #8f877c; }
+    </style>
+  </head>
+  <body>
+    <main class="works">
+      <p class="chrome catalog"><a href="/">Hermes playground · catalog #275</a></p>
+      <header class="mast">
+        <h1>Snubber</h1>
+        <div class="stake">pulse damper<br />srt-mux peer<br />2.1.267</div>
+        <p class="lede">
+          02:50 <strong>snubber</strong>: a hydraulic / pneumatic
+          pulse-damper booth for
+          <a href="https://github.com/anthropics/claude-code/issues/93398">#93398</a>.
+          Idle <em>damped</em> / seeded <em>spinning</em> / path
+          <em>mux</em>. Score snubber or admit damped.
+        </p>
+      </header>
+
+      <section class="cut">
+        <div class="section" aria-label="Hydraulic snubber canister, copper line, pressure gauge, mux manifold, EPIPE pulse">
+          <svg viewBox="0 0 880 440" role="img" aria-label="Hydraulic pulse-damper bench: snubber canister, copper tubing, pressure gauge, srt-mux manifold, leaked peer valves">
+            <rect width="880" height="440" fill="#16191d" />
+            <rect x="0" y="318" width="880" height="122" fill="#1c2422" />
+            <rect x="0" y="318" width="880" height="8" fill="#b56a3a" />
+            <ellipse cx="168" cy="210" rx="58" ry="96" fill="#8e99a4" />
+            <ellipse cx="168" cy="210" rx="46" ry="82" fill="#b56a3a" />
+            <ellipse cx="168" cy="210" rx="28" ry="54" fill="#1c2422" />
+            <rect x="154" y="96" width="28" height="38" fill="#8e99a4" />
+            <rect x="148" y="84" width="40" height="14" fill="#e09a14" />
+            <path d="M188 120 C 280 90, 340 140, 420 168" fill="none" stroke="#b56a3a" stroke-width="10" />
+            <path d="M188 120 C 280 90, 340 140, 420 168" fill="none" stroke="#e09a14" stroke-width="3" />
+            <circle cx="500" cy="176" r="62" fill="#101316" stroke="#8e99a4" stroke-width="8" />
+            <circle cx="500" cy="176" r="48" fill="#1c2422" />
+            <line id="needle" x1="500" y1="176" x2="500" y2="132" stroke="#d4352a" stroke-width="3" />
+            <circle cx="500" cy="176" r="6" fill="#e09a14" />
+            <text x="476" y="248" fill="#c5d4dc" font-family="IBM Plex Mono, monospace" font-size="11">EPIPE</text>
+            <rect x="620" y="148" width="220" height="92" fill="#101316" stroke="#8e99a4" />
+            <text x="636" y="170" fill="#e09a14" font-family="IBM Plex Mono, monospace" font-size="11">SRT-MUX MANIFOLD</text>
+            <text x="636" y="192" fill="#f2e6c8" font-family="Fraunces, serif" font-size="16" id="mux-read">listener only</text>
+            <text x="636" y="214" fill="#8e99a4" font-family="Outfit, sans-serif" font-size="12" id="fd-read">1 fd · peer closed</text>
+            <circle cx="652" cy="228" r="6" fill="#c5d4dc" id="peer-0" />
+            <circle cx="672" cy="228" r="6" fill="#2a3238" id="peer-1" />
+            <circle cx="692" cy="228" r="6" fill="#2a3238" id="peer-2" />
+            <circle cx="712" cy="228" r="6" fill="#2a3238" id="peer-3" />
+            <circle cx="732" cy="228" r="6" fill="#2a3238" id="peer-4" />
+            <circle cx="752" cy="228" r="6" fill="#2a3238" id="peer-5" />
+            <text x="24" y="36" fill="#f2e6c8" font-family="Fraunces, serif" font-size="20">hydraulic pulse-damper</text>
+            <text x="24" y="58" fill="#b56a3a" font-family="IBM Plex Mono, monospace" font-size="12">accumulator · copper line · mux manifold</text>
+            <text x="24" y="92" fill="#f2e6c8" font-family="IBM Plex Mono, monospace" font-size="16" id="board-word">DAMPED</text>
+            <rect x="28" y="338" width="200" height="78" fill="#101316" stroke="#8e99a4" />
+            <text x="40" y="360" fill="#c5d4dc" font-family="IBM Plex Mono, monospace" font-size="11">LISTENER</text>
+            <text x="40" y="382" fill="#f2e6c8" font-family="Fraunces, serif" font-size="16" id="listener-read">srt-mux listener</text>
+            <text x="40" y="402" fill="#8e99a4" font-family="Outfit, sans-serif" font-size="12" id="cpu-read">CPU quiet</text>
+            <rect x="248" y="338" width="220" height="78" fill="#101316" stroke="#b56a3a" />
+            <text x="260" y="360" fill="#e09a14" font-family="IBM Plex Mono, monospace" font-size="11">WRITE LOOP</text>
+            <text x="260" y="382" fill="#f2e6c8" font-family="Fraunces, serif" font-size="16" id="write-read">no EPIPE</text>
+            <text x="260" y="402" fill="#8e99a4" font-family="Outfit, sans-serif" font-size="12" id="kqueue-read">kevent sleeps</text>
+            <text x="500" y="370" fill="#f2e6c8" font-family="Fraunces, serif" font-size="18" id="void-read">canister quiet</text>
+            <text x="500" y="392" fill="#8e99a4" font-family="Outfit, sans-serif" font-size="12" id="mist-read">shock snubbed</text>
+            <text x="24" y="430" fill="#8e99a4" font-family="IBM Plex Mono, monospace" font-size="11">bench iron · hydraulic amber · copper · pulse crimson · compressed air</text>
+            <text x="560" y="430" fill="#c8c2b6" font-family="Outfit, sans-serif" font-size="12" id="bank-note">peer closed — mux listener only</text>
+          </svg>
+        </div>
+        <aside class="survey">
+          <button type="button" class="canister hold" id="mask" aria-label="Kick the snubber canister">
+            <small id="mask-seed">damped · #93398</small>
+            <b id="mask-word">DAMPED</b>
+          </button>
+          <div>
+            <div class="score hold" id="score">
+              <span class="badge" id="score-badge">DAMPED</span>
+              <p id="score-line">admit <em>damped</em> — peer closes clean; mux listener only; no EPIPE spin</p>
+            </div>
+            <div class="acts">
+              <button type="button" class="act primary" id="charge">Charge the accumulator</button>
+              <button type="button" class="act primary" id="score-snubber">Score snubber</button>
+              <button type="button" class="act" id="bleed">Bleed the line</button>
+              <button type="button" class="act" id="count-peers">Count the mux peers</button>
+              <button type="button" class="act" id="pin-damped">Pin idle damped</button>
+              <button type="button" class="act" id="pin-spinning">Pin seeded spinning</button>
+              <button type="button" class="act" id="pin-path">Pin mux</button>
+              <button type="button" class="act" id="vent">Vent the snubber</button>
+            </div>
+            <div class="toggles">
+              <label><input type="checkbox" id="tog-listener" /> Mux listener only</label>
+              <label><input type="checkbox" id="tog-kill" /> kill -9 mid-stream</label>
+              <label><input type="checkbox" id="tog-leak" /> Leaked accepted fd</label>
+              <label><input type="checkbox" id="tog-epipe" /> EPIPE write loop</label>
+              <label><input type="checkbox" id="tog-kevent" /> kevent64 spin</label>
+              <label><input type="checkbox" id="tog-cpu" /> CPU 128% peg</label>
+              <label><input type="checkbox" id="tog-four" /> Four sessions</label>
+            </div>
+            <button type="button" class="act" id="score-booth">Score the canister</button>
+            <p id="booth-out" class="notes"></p>
+          </div>
+        </aside>
+      </section>
+
+      <div class="docket hold" id="activity" aria-live="polite">
+        <span class="dot">●</span>
+        <span id="activity-text"> canister quiet — mux listener only; peer closed clean; no EPIPE</span>
+      </div>
+
+      <div class="chips" id="chips"></div>
+      <div class="walk" id="timeline-markers"></div>
+      <pre class="log" id="log"></pre>
+      <div class="drop" id="galley-tray">Lay a fixture JSON on the accumulator bench</div>
+      <textarea id="probe-input" spellcheck="false">{
+  "seed": "damped"
+}</textarea>
+
+      <section class="notes">
+        <h2>Published walk · #93398</h2>
+        <p>
+          Claude Code 2.1.226 at first report (2026-08-11); still on 2.1.267.
+          Filed by STRML 2026-09-10. macOS 26.6.1 (25G76), arm64.
+          A sandboxed Bash command SIGKILLed while it has a network
+          connection open leaks the accepted socket inside Claude Code.
+          The event loop writes to that dead socket forever, gets
+          <code>EPIPE</code> every time, and never closes it or backs off.
+          One leaked fd costs a full core. The reporter had four sessions
+          doing this. <code>srt-mux-&lt;pid&gt;-&lt;n&gt;.sock</code> is the
+          unix SOCKS5 proxy for sandbox network. Clean exits do not leak;
+          the connection must die without closing. Supersedes stale-closed
+          #85666 (has repro).
+        </p>
+        <p class="cousin-not-primary">
+          cousin-not-primary #85666.
+          Cite-only backups #93368 #93392 #93382 #93385 #93356 #93345.
+          Do not auto-pick.
+        </p>
+        <p>
+          Educational chips: listener-only · leaked-fd · epipe ·
+          kill-9 · socks5 · srt-mux · kevent64 · sendto.
+          NOT Fosse. NOT Hibernacle. NOT Scapegoat. NOT Cartulary. NOT Paraph. NOT Appanage. NOT Pontoon. NOT Concordat.
+          NOT leftover woodworking. Hypothesis NON-BINDING — encoded from the issue body only.
+        </p>
+      </section>
+      <footer class="chrome">
+        Diagnostic hydraulic / pneumatic pulse-damper booth only. No live Claude. No secrets. No network. Score snubber or admit damped.
+      </footer>
+    </main>
+    <script type="module">
+      import {
+        SNUBBER_WALK,
+        classify,
+        scoreWalk,
+        scoreGate,
+      } from "./snubber.mjs";
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["damped", "hold"]);
+      const PEGS = [
+        { seed: "damped", name: "damped", note: "idle HOLD", hold: true },
+        { seed: "spinning", name: "spinning", note: "#93398" },
+        { seed: "snubber", name: "snubber", note: "product" },
+        { seed: "mux", name: "mux", note: "path" },
+        { seed: "hold", name: "hold", note: "HOLD alias", hold: true },
+        { seed: "listener-only", name: "listener-only", note: "1 fd", hold: true },
+        { seed: "leaked-fd", name: "leaked-fd", note: "accepted peer" },
+        { seed: "epipe", name: "epipe", note: "[ 32 ]" },
+        { seed: "kill-9", name: "kill-9", note: "mid-stream" },
+        { seed: "socks5", name: "socks5", note: "sandbox proxy" },
+        { seed: "srt-mux", name: "srt-mux", note: "unix sock" },
+        { seed: "kevent64", name: "kevent64", note: "no sleep" },
+        { seed: "sendto", name: "sendto", note: "write loop" },
+        { seed: "int32-max", name: "int32-max", note: "7 hours" },
+        { seed: "four-sessions", name: "four-sessions", note: "four cores" },
+        { seed: "has-repro", name: "has-repro", note: "STRML" },
+        { seed: "cousins", name: "cousins", note: "#85666" },
+        { seed: "backups", name: "backups", note: "#93368" },
+        { seed: "walk", name: "walk", note: "published walk" }
+      ];
+
+      const FALLBACKS = {
+        damped: {
+          seed: "damped",
+          hubCount: "DAMPED",
+          damped: true,
+          listenerOnly: true,
+          fds: 1,
+          peerClosed: true,
+          spinning: false,
+          log: [
+            "[idle] canister damped — peer closes clean; mux listener only; no EPIPE spin"
+          ]
+        },
+        spinning: {
+          seed: "spinning",
+          hubCount: "SPINNING",
+          damped: false,
+          spinning: true,
+          kill9: true,
+          leakedFd: true,
+          peerGone: true,
+          epipe: true,
+          fds: 6,
+          keventSpin: true,
+          cpuPeg: true,
+          log: [
+            "[seed] #93398 spinning — kill -9 mid-stream on a limit-rate sandbox fetch",
+            "[seed] lsof srt-mux: listener 1 → 6 leaked accepted peers; CPU 6% → 128%",
+            "[seed] sendto [ 32 ] EPIPE forever; kevent64 returns immediately; no close, no backoff"
+          ]
+        },
+        snubber: { seed: "snubber", preferSeed: true, hubCount: "SNUBBER", spinning: true, mux: true, log: ["[snubber] score the canister that never snubbed the dead peer"] },
+        mux: { seed: "mux", preferSeed: true, hubCount: "MUX", spinning: true, mux: true, socks5: true, log: ["[mux] srt-mux unix SOCKS5 proxy — accepted peer left open"] },
+        hold: { seed: "hold", preferSeed: true, hubCount: "HOLD", damped: true, log: ["[hold] admit damped"] },
+        "listener-only": { seed: "listener-only", preferSeed: true, hubCount: "LISTENER-ONLY", listenerOnly: true, log: ["[listener] healthy session holds one srt-mux fd — the listener"] },
+        "leaked-fd": { seed: "leaked-fd", preferSeed: true, hubCount: "LEAKED-FD", leakedFd: true, log: ["[leak] before 1 listener; after 6 — one leaked fd per killed child"] },
+        epipe: { seed: "epipe", preferSeed: true, hubCount: "EPIPE", epipe: true, log: ["[epipe] sendto F=* [ 32 ] EPIPE; never closes or backs off"] },
+        "kill-9": { seed: "kill-9", preferSeed: true, hubCount: "KILL-9", kill9: true, log: ["[kill-9] SIGKILL while the limit-rate connection is still open"] },
+        socks5: { seed: "socks5", preferSeed: true, hubCount: "SOCKS5", socks5: true, log: ["[socks5] Bash sandbox filters network through the mux SOCKS5 proxy"] },
+        "srt-mux": { seed: "srt-mux", preferSeed: true, hubCount: "SRT-MUX", mux: true, log: ["[srt-mux] srt-mux-<pid>-<n>.sock — unix socket behind the proxy"] },
+        kevent64: { seed: "kevent64", preferSeed: true, hubCount: "KEVENT64", keventSpin: true, log: ["[kevent64] returns immediately instead of sleeping — a spin"] },
+        sendto: { seed: "sendto", preferSeed: true, hubCount: "SENDTO", epipe: true, log: ["[sendto] write loop; 20% of the main-thread sample"] },
+        "int32-max": { seed: "int32-max", preferSeed: true, hubCount: "INT32-MAX", int32Max: true, log: ["[int32-max] after seven hours CSW and SYSBSD saturated at INT32_MAX"] },
+        "four-sessions": { seed: "four-sessions", preferSeed: true, hubCount: "FOUR-SESSIONS", fourSessions: true, log: ["[four-sessions] four sessions; one leaked fd pegs a core each"] },
+        "has-repro": { seed: "has-repro", preferSeed: true, hubCount: "HAS-REPRO", log: ["[has-repro] Claude Code 2.1.226 then 2.1.267 · STRML · macOS 26.6.1 25G76 arm64"] },
+        cousins: { seed: "cousins", preferSeed: true, hubCount: "COUSINS", log: ["[cousins] cousin-not-primary #85666 stale-closed has repro"] },
+        backups: { seed: "backups", preferSeed: true, hubCount: "BACKUPS", log: ["[backups] cite-only #93368 #93392 #93382 #93385 #93356 #93345"] },
+        walk: { seed: "walk", preferSeed: true, hubCount: "WALK", log: ["[walk] damped → clean-exits → sandbox-on → limit-rate → kill-9 → leaked-fd → cpu-jump → sysbsd → epipe-spin → kevent64-spin → int32-max → four-sessions → spinning → mux → snubber"] }
+      };
+
+      function tone(seed) {
+        return HOLD.has(seed) ? "hold" : "alarm";
+      }
+
+      function renderChips(active) {
+        const root = document.getElementById("chips");
+        root.innerHTML = "";
+        PEGS.forEach((peg) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "chip";
+          if (peg.seed === active) btn.classList.add("on");
+          if (peg.hold) btn.classList.add("hold");
+          btn.innerHTML = "<b>" + peg.name + "</b> " + peg.note;
+          btn.addEventListener("click", () => loadSeed(peg.seed));
+          root.appendChild(btn);
+        });
+      }
+
+      function renderMarkers() {
+        const root = document.getElementById("timeline-markers");
+        const scored = scoreWalk({ rows: SNUBBER_WALK });
+        root.innerHTML = scored.rows.map((row) => {
+          const cls = row.verdict === "spinning" || row.verdict === "mux" ? "hit" : "match";
+          return (
+            "<article class=\"peg " + cls + "\">" +
+              "<div class=\"t\">" + (row.t || row.event) + "</div>" +
+              "<div class=\"e\">" + (row.event || "—") + "</div>" +
+              "<div class=\"s\">" + (row.verdict || "—") + "</div>" +
+            "</article>"
+          );
+        }).join("");
+      }
+
+      function apply(probe) {
+        const seed = classify(probe);
+        const scored = Array.isArray(probe.rows) ? scoreWalk(probe) : scoreGate(probe);
+        const kind = tone(seed);
+        const alarm = !HOLD.has(seed);
+        document.body.classList.toggle("spinning", alarm);
+        document.getElementById("mask-seed").textContent = seed + " · #93398";
+        document.getElementById("mask-word").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        document.getElementById("mask").className = "canister" + (kind === "hold" ? " hold" : "");
+        document.getElementById("score").className = "score " + kind;
+        document.getElementById("score-badge").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        const line = document.getElementById("score-line");
+        if (HOLD.has(seed)) {
+          line.innerHTML = "admit <em>damped</em> — peer closes clean; mux listener only; no EPIPE spin";
+        } else if (seed === "spinning" || seed === "snubber") {
+          line.innerHTML = "score <em>snubber</em> — kill -9 mid-stream; leaked accepted fd; write loop busy-spins on EPIPE";
+        } else if (seed === "mux") {
+          line.innerHTML = "score <em>mux</em> — srt-mux unix SOCKS5 proxy; accepted peer left open";
+        } else {
+          line.innerHTML = "score <em>" + seed + "</em> — published #93398 row on the accumulator bench";
+        }
+        const activity = document.getElementById("activity");
+        activity.className = "docket " + kind;
+        document.getElementById("activity-text").textContent = alarm
+          ? " canister spinning — leaked srt-mux peer; EPIPE thrash; gauge needle never settles"
+          : " canister quiet — mux listener only; peer closed clean; no EPIPE";
+        const log = document.getElementById("log");
+        const rows = probe.log || FALLBACKS.damped.log;
+        log.innerHTML = rows.map((row) => {
+          const cls = /idle|damped|hold|listener/.test(row) ? "ok" : "warn";
+          return '<span class="' + cls + '">' + row + "</span>";
+        }).join("\n");
+        renderChips(seed);
+        document.getElementById("tog-listener").checked = !alarm;
+        document.getElementById("tog-kill").checked = scored.kill9 === true && alarm;
+        document.getElementById("tog-leak").checked = scored.leakedFd === true && alarm;
+        document.getElementById("tog-epipe").checked = scored.epipe === true && alarm;
+        document.getElementById("tog-kevent").checked = scored.keventSpin === true && alarm;
+        document.getElementById("tog-cpu").checked = scored.cpuPeg === true && alarm;
+        document.getElementById("tog-four").checked = scored.fourSessions === true && alarm;
+        document.getElementById("probe-input").value = JSON.stringify({
+          seed,
+          kill9: probe.kill9 ?? null,
+          leakedFd: probe.leakedFd ?? null,
+          epipe: probe.epipe ?? null,
+          fds: probe.fds ?? null
+        }, null, 2);
+        document.getElementById("board-word").textContent = alarm ? "SPINNING" : "DAMPED";
+        document.getElementById("mux-read").textContent = alarm ? "accepted peers open" : "listener only";
+        document.getElementById("fd-read").textContent = alarm ? "6 fds · peer gone" : "1 fd · peer closed";
+        document.getElementById("listener-read").textContent = alarm ? "srt-mux leaked" : "srt-mux listener";
+        document.getElementById("cpu-read").textContent = alarm ? "CPU 128%" : "CPU quiet";
+        document.getElementById("write-read").textContent = alarm ? "EPIPE [ 32 ]" : "no EPIPE";
+        document.getElementById("kqueue-read").textContent = alarm ? "kevent64 never sleeps" : "kevent sleeps";
+        document.getElementById("void-read").textContent = alarm ? "dead peer thrash" : "canister quiet";
+        document.getElementById("mist-read").textContent = alarm ? "shock never snubbed" : "shock snubbed";
+        document.getElementById("bank-note").textContent = alarm
+          ? "peer gone — write loop busy-spins on EPIPE"
+          : "peer closed — mux listener only";
+        document.getElementById("needle").setAttribute("x2", alarm ? "538" : "500");
+        document.getElementById("needle").setAttribute("y2", alarm ? "148" : "132");
+        for (let i = 1; i <= 5; i += 1) {
+          document.getElementById("peer-" + i).setAttribute("fill", alarm ? "#d4352a" : "#2a3238");
+        }
+      }
+
+      function probeFromToggles() {
+        const kill = document.getElementById("tog-kill").checked;
+        const leak = document.getElementById("tog-leak").checked;
+        const epipe = document.getElementById("tog-epipe").checked;
+        const kevent = document.getElementById("tog-kevent").checked;
+        const cpu = document.getElementById("tog-cpu").checked;
+        const four = document.getElementById("tog-four").checked;
+        const spinning = kill || leak || epipe || kevent || cpu || four;
+        return {
+          damped: !spinning,
+          spinning,
+          listenerOnly: !spinning,
+          fds: spinning ? 6 : 1,
+          peerClosed: !spinning,
+          kill9: kill,
+          leakedFd: leak,
+          peerGone: leak,
+          epipe,
+          keventSpin: kevent,
+          cpuPeg: cpu,
+          fourSessions: four,
+          cue: spinning ? "spinning" : "damped"
+        };
+      }
+
+      async function loadSeed(seed) {
+        if (seed === "spinning") {
+          try {
+            const res = await fetch("data/spinning.json");
+            if (res.ok) {
+              apply(await res.json());
+              return;
+            }
+          } catch (_) {}
+        }
+        apply(FALLBACKS[seed] || FALLBACKS.damped);
+      }
+
+      function soundFromForm() {
+        const probe = probeFromToggles();
+        const scored = scoreGate(probe);
+        probe.seed = scored.verdict;
+        probe.hubCount = scored.verdict.toUpperCase();
+        apply(Object.assign({}, FALLBACKS[scored.verdict] || {}, probe, {
+          seed: scored.verdict,
+          log: (FALLBACKS[scored.verdict] && FALLBACKS[scored.verdict].log) || probe.log
+        }));
+        const out = document.getElementById("booth-out");
+        out.textContent = HOLD.has(scored.verdict)
+          ? "admit damped — peer closes clean; mux listener only; no EPIPE spin."
+          : scored.verdict === "mux"
+            ? "mux — srt-mux unix SOCKS5 proxy; accepted peer left open."
+            : "score snubber — kill -9 mid-stream; leaked accepted fd; EPIPE busy-spin.";
+      }
+
+      function kickCanister(seed) {
+        const spike = document.getElementById("mask");
+        spike.classList.add("drive");
+        setTimeout(() => spike.classList.remove("drive"), 900);
+        loadSeed(seed);
+      }
+
+      document.getElementById("charge").addEventListener("click", () => kickCanister("damped"));
+      document.getElementById("score-snubber").addEventListener("click", () => loadSeed("spinning"));
+      document.getElementById("bleed").addEventListener("click", () => loadSeed("spinning"));
+      document.getElementById("count-peers").addEventListener("click", () => loadSeed("mux"));
+      document.getElementById("pin-damped").addEventListener("click", () => loadSeed("damped"));
+      document.getElementById("pin-spinning").addEventListener("click", () => loadSeed("spinning"));
+      document.getElementById("pin-path").addEventListener("click", () => loadSeed("mux"));
+      document.getElementById("vent").addEventListener("click", () => loadSeed("damped"));
+      document.getElementById("score-booth").addEventListener("click", soundFromForm);
+      document.getElementById("mask").addEventListener("click", () => {
+        const current = document.getElementById("mask-word").textContent;
+        kickCanister(current === "DAMPED" || current === "HOLD" ? "spinning" : "damped");
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.target.matches("textarea, input, select")) return;
+        if (event.key === "d" || event.key === "D") loadSeed("damped");
+        if (event.key === "s" || event.key === "S") loadSeed("spinning");
+        if (event.key === "m" || event.key === "M") loadSeed("mux");
+      });
+
+      const tray = document.getElementById("galley-tray");
+      document.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        tray.classList.add("on");
+      });
+      document.addEventListener("dragleave", () => tray.classList.remove("on"));
+      document.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        tray.classList.remove("on");
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (!file) return;
+        try {
+          apply(JSON.parse(await file.text()));
+        } catch (_) {}
+      });
+
+      renderMarkers();
+      apply(FALLBACKS.damped);
+    </script>
+  </body>
+</html>
