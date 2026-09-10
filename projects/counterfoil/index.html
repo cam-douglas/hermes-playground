@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Counterfoil — cheque-counter booth for #93446</title>
+    <meta
+      name="description"
+      content="Counterfoil — a cheque-counter / ticket-stub / banker's counterfoil booth for Claude Code #93446: add-json --client-secret stores under a headers-stripped key. Idle word is matched."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,600;0,8..60,700;1,8..60,600&family=Libre+Franklin:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --green: #0d3b2e;
+        --green-deep: #08261d;
+        --paper: #f4efe6;
+        --crimson: #9b1b1b;
+        --brass: #b08d57;
+        --graphite: #2a2a28;
+        --rule: rgba(176, 141, 87, 0.45);
+        --ink: #1c1c1a;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Libre Franklin", "Gill Sans", sans-serif;
+        color: var(--graphite);
+        background:
+          radial-gradient(ellipse at 12% 8%, rgba(176, 141, 87, 0.18), transparent 36%),
+          repeating-linear-gradient(
+            180deg,
+            transparent 0 22px,
+            rgba(13, 59, 46, 0.04) 22px 23px
+          ),
+          var(--green);
+        background-attachment: fixed;
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--brass); }
+      .booth {
+        width: min(1080px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 18px 0 72px;
+      }
+      .catalog {
+        display: inline-block;
+        font-family: "Noto Sans Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brass);
+        text-decoration: none;
+        border: 1px solid var(--brass);
+        padding: 6px 10px;
+        margin: 10px 0 16px;
+        background: var(--green-deep);
+      }
+      .teller {
+        background: var(--green-deep);
+        border: 10px solid var(--brass);
+        box-shadow: inset 0 0 0 3px #8a6d3f, 0 18px 0 rgba(0, 0, 0, 0.18);
+        padding: 0;
+      }
+      .grille {
+        display: grid;
+        grid-template-columns: repeat(18, 1fr);
+        height: 54px;
+        background: linear-gradient(180deg, #c4a36a, var(--brass) 40%, #7a6238);
+        border-bottom: 4px solid #6a542f;
+      }
+      .grille span {
+        border-right: 3px solid #5c4928;
+        background: linear-gradient(90deg, transparent, rgba(13, 59, 46, 0.35), transparent);
+      }
+      .mast {
+        padding: 18px 22px 8px;
+        color: var(--paper);
+      }
+      .mast h1 {
+        font-family: "Source Serif 4", "Times New Roman", serif;
+        font-weight: 700;
+        font-size: clamp(40px, 8vw, 78px);
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 0.86;
+        color: var(--paper);
+      }
+      .serial {
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin: 8px 0 0;
+      }
+      .lede {
+        max-width: 72em;
+        line-height: 1.64;
+        font-size: 15px;
+        margin: 12px 0 0;
+        color: #d8d0c2;
+      }
+      .lede strong {
+        color: var(--paper);
+        font-family: "Source Serif 4", serif;
+        font-weight: 700;
+      }
+      .lede em { font-style: italic; color: var(--brass); }
+      .lede code, code {
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 12px;
+        color: #e8d9b0;
+      }
+      .desk {
+        margin: 16px 14px 18px;
+        background: var(--paper);
+        color: var(--ink);
+        border: 1px solid #d8cbb4;
+        box-shadow: 0 10px 0 rgba(0, 0, 0, 0.12);
+      }
+      .cheque {
+        display: grid;
+        grid-template-columns: 168px 14px 1fr 132px;
+        min-height: 240px;
+      }
+      @media (max-width: 820px) {
+        .cheque { grid-template-columns: 1fr; }
+        .perf { height: 14px; background-size: 12px 3px; }
+        .stamp-pad { justify-self: start; }
+      }
+      .stub {
+        padding: 16px 12px;
+        background:
+          repeating-linear-gradient(
+            135deg,
+            #efe6d4 0 8px,
+            #f4efe6 8px 16px
+          );
+        border-right: 0;
+      }
+      .stub small {
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+      .stub b {
+        display: block;
+        font-family: "Source Serif 4", serif;
+        font-size: 22px;
+        margin: 8px 0 10px;
+      }
+      .stub p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .perf {
+        background:
+          repeating-linear-gradient(
+            180deg,
+            var(--crimson) 0 3px,
+            transparent 3px 12px
+          );
+        background-color: var(--paper);
+      }
+      .face {
+        padding: 16px 18px;
+      }
+      .face h2 {
+        font-family: "Source Serif 4", serif;
+        font-size: 22px;
+        margin: 0 0 8px;
+      }
+      .keys {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      @media (max-width: 640px) {
+        .keys { grid-template-columns: 1fr; }
+      }
+      .keys article {
+        border: 1px dashed var(--green);
+        padding: 8px 10px;
+        background: #fffdf8;
+      }
+      .keys dt {
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+      .keys dd {
+        margin: 4px 0 0;
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 12px;
+        word-break: break-all;
+      }
+      .stamp-pad {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+        background: #ebe4d6;
+      }
+      .stamp {
+        width: 108px;
+        height: 108px;
+        border-radius: 50%;
+        border: 6px double var(--crimson);
+        background: #fffaf2;
+        color: var(--crimson);
+        cursor: pointer;
+        font-family: "Source Serif 4", serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+        box-shadow: 0 0 0 4px rgba(155, 27, 27, 0.08);
+      }
+      .stamp.hold {
+        border-color: var(--green);
+        color: var(--green);
+        box-shadow: 0 0 0 4px rgba(13, 59, 46, 0.1);
+      }
+      .stamp.thump { animation: thump 0.45s ease-in 2; }
+      @keyframes thump {
+        0%, 100% { transform: scale(1) rotate(-6deg); }
+        50% { transform: scale(0.94) rotate(4deg); }
+      }
+      .stamp small {
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+      }
+      .stamp b { font-size: 13px; line-height: 1.1; }
+      .score {
+        font-family: "Source Serif 4", serif;
+        margin: 0 14px 12px;
+        padding: 12px 16px;
+        background: #fffdf8;
+        border-left: 8px solid var(--green);
+      }
+      .score.alarm { border-left-color: var(--crimson); }
+      .score .badge {
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        color: var(--green);
+      }
+      .score.alarm .badge { color: var(--crimson); }
+      .score p { margin: 6px 0 0; font-family: "Libre Franklin", sans-serif; font-size: 15px; }
+      .actions, .pins {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 14px 10px;
+      }
+      button.act, button.pin {
+        font-family: "Libre Franklin", sans-serif;
+        font-size: 13px;
+        border: 1px solid var(--green);
+        background: var(--paper);
+        color: var(--green-deep);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      button.act { background: var(--green); color: var(--paper); }
+      button.act.alarm { background: var(--crimson); border-color: var(--crimson); }
+      .toggles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 0 14px 14px;
+        padding: 12px;
+        background: #ebe4d6;
+      }
+      @media (max-width: 720px) {
+        .toggles { grid-template-columns: 1fr 1fr; }
+      }
+      .toggles label {
+        font-size: 13px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .blotter-row {
+        margin: 0 14px 14px;
+        padding: 10px 12px;
+        border-top: 3px solid var(--brass);
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 12px;
+        background: #e7dfd0;
+      }
+      .docket {
+        margin: 0 14px 12px;
+        padding: 8px 12px;
+        font-size: 14px;
+        background: var(--green-deep);
+        color: var(--paper);
+      }
+      .docket.alarm { background: var(--crimson); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 14px 12px; }
+      .chip {
+        border: 1px solid var(--brass);
+        background: var(--green-deep);
+        color: var(--paper);
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+        cursor: pointer;
+      }
+      .chip.on { background: var(--brass); color: var(--green-deep); }
+      .chip.hold { border-color: #d8cbb4; }
+      .walk {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 6px;
+        margin: 0 14px 12px;
+      }
+      .peg {
+        background: #fffdf8;
+        border: 1px solid #d8cbb4;
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+      .peg.hit { border-color: var(--crimson); color: var(--crimson); }
+      .peg .t { font-family: "Noto Sans Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+      .log {
+        margin: 0 14px 12px;
+        padding: 12px;
+        background: #1c1c1a;
+        color: #e8d9b0;
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        min-height: 72px;
+      }
+      .log .ok { color: #c9d7c4; }
+      .log .warn { color: #e8b4b0; }
+      .drop {
+        margin: 0 14px 10px;
+        border: 1px dashed var(--brass);
+        padding: 10px;
+        text-align: center;
+        color: var(--brass);
+        font-size: 13px;
+      }
+      .drop.on { background: rgba(176, 141, 87, 0.12); }
+      textarea {
+        width: calc(100% - 28px);
+        margin: 0 14px 16px;
+        min-height: 110px;
+        font-family: "Noto Sans Mono", monospace;
+        font-size: 12px;
+        background: #fffdf8;
+        color: var(--ink);
+        border: 1px solid #d8cbb4;
+        padding: 10px;
+      }
+      .notes {
+        padding: 0 22px 18px;
+        color: #d8d0c2;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .notes h2 {
+        font-family: "Source Serif 4", serif;
+        color: var(--paper);
+        font-size: 22px;
+      }
+      .cousin-not-primary { color: var(--brass); }
+      footer {
+        padding: 0 22px 18px;
+        color: var(--brass);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="booth">
+      <a class="catalog chrome" href="/">Catalog · #278 · 05:50</a>
+      <div class="teller">
+        <div class="grille" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <header class="mast">
+          <h1>Counterfoil</h1>
+          <p class="serial">cheque-counter · ticket-stub · brass grille · dating stamp · ledger blotter</p>
+          <p class="lede">
+            <strong>#93446</strong> · medley56 · Claude Code 2.1.197 (confirmed 2.1.267).
+            <code>claude mcp add-json</code> with a non-empty <code>headers</code> field
+            files the <code>--client-secret</code> under a <em>headers-stripped</em>
+            <code>keyFor</code>, while <code>claude mcp login</code> presents the cheque
+            under a <em>headers-included</em> serial. Idle <strong>matched</strong> /
+            seeded <strong>skewed</strong> / path <strong>headers-hash</strong>.
+            Score counterfoil or admit matched.
+          </p>
+        </header>
+
+        <div class="desk">
+          <div class="cheque">
+            <aside class="stub">
+              <small>banker's stub</small>
+              <b id="stub-word">MATCHED</b>
+              <p id="stub-read">store + login share one serial with headers on the blotter</p>
+              <p id="perf-read" style="margin-top:10px">perforation seated</p>
+            </aside>
+            <div class="perf" title="perforation"></div>
+            <section class="face">
+              <h2 id="face-title">Pay to the order of the grille</h2>
+              <p id="face-read">full config incl. headers hashed on both sides</p>
+              <div class="keys">
+                <article>
+                  <dl>
+                    <dt>store serial</dt>
+                    <dd id="store-read">github|same</dd>
+                  </dl>
+                </article>
+                <article>
+                  <dl>
+                    <dt>login serial</dt>
+                    <dd id="login-read">github|same</dd>
+                  </dl>
+                </article>
+              </div>
+              <p id="header-read"><code>X-MCP-Toolsets</code> carried on both slips</p>
+            </section>
+            <div class="stamp-pad">
+              <button class="stamp hold" id="mask" type="button">
+                <small id="mask-seed">matched · #93446</small>
+                <b id="mask-word">MATCHED</b>
+              </button>
+            </div>
+          </div>
+
+          <div class="score hold" id="score">
+            <div class="badge" id="score-badge">MATCHED</div>
+            <p id="score-line">admit <em>matched</em> — store + login use same keyFor with full config incl. headers</p>
+          </div>
+
+          <div class="actions">
+            <button class="act" id="stamp-stub" type="button">Stamp the stub</button>
+            <button class="act alarm" id="score-counterfoil" type="button">Score counterfoil</button>
+            <button class="act alarm" id="tear-perf" type="button">Tear the perforation</button>
+            <button class="act" id="audit-grille" type="button">Audit the grille</button>
+            <button class="act" id="score-booth" type="button">Score the blotter</button>
+          </div>
+          <div class="pins">
+            <button class="pin" id="pin-matched" type="button">Pin idle matched</button>
+            <button class="pin" id="pin-skewed" type="button">Pin seeded skewed</button>
+            <button class="pin" id="pin-path" type="button">Pin headers-hash</button>
+            <button class="pin" id="clear-blotter" type="button">Clear the blotter</button>
+          </div>
+
+          <div class="toggles">
+            <label><input type="checkbox" id="tog-store" checked /> store with headers</label>
+            <label><input type="checkbox" id="tog-login" checked /> login with headers</label>
+            <label><input type="checkbox" id="tog-addjson" /> add-json path</label>
+            <label><input type="checkbox" id="tog-mcpadd" checked /> mcp add path</label>
+            <label><input type="checkbox" id="tog-toolsets" checked /> X-MCP-Toolsets</label>
+            <label><input type="checkbox" id="tog-nosecret" /> token-exchange no secret</label>
+          </div>
+
+          <div class="blotter-row" id="bench-note">ledger blotter matched — one serial on stub and cheque</div>
+          <div class="docket hold" id="activity" aria-live="polite">
+            <span id="activity-text"> stub matched — brass grille sees the same serial the dating stamp filed</span>
+          </div>
+          <div class="chips" id="chips"></div>
+          <div class="walk" id="timeline-markers"></div>
+          <pre class="log" id="log"></pre>
+          <div class="drop" id="galley-tray">Lay a fixture JSON on the ledger blotter</div>
+          <textarea id="probe-input" spellcheck="false">{
+  "seed": "matched"
+}</textarea>
+        </div>
+
+        <section class="notes">
+          <h2>Published walk · #93446</h2>
+          <p>
+            Claude Code 2.1.197 · filed by medley56 2026-09-10. Defective
+            <code>add-json</code> path confirmed unchanged in the 2.1.267
+            linux-x64 binary. Ubuntu/Debian Linux; VS Code devcontainer.
+            Labels: bug, has repro, platform:linux, area:auth, area:mcp.
+            Store serial <code>github|1eea5f274543f247</code> hashed with
+            empty headers. Login serial <code>github|01759ec9120e7ef8</code>
+            hashed with <code>X-MCP-Toolsets: default,actions</code>.
+          </p>
+          <p class="cousin-not-primary">
+            cousin-not-primary #67528 #89969 #84839.
+            Cite-only backups #93458 #92264 #86531 #93403 #93445 #93405 #93402 #93426.
+            Do not auto-pick. Different defect from unbounded mcpOAuth accretion
+            and from issuer %22.
+          </p>
+          <p>
+            Educational chips: add-json · client-secret · keyFor · headers-stripped ·
+            headers-included · token-exchange · no-secret · github-mcp · stale-67528.
+            NOT Lucida. NOT Fomite. NOT Cartulary. NOT Paraph. NOT Snubber. NOT Fosse.
+            NOT Hibernacle. NOT Scapegoat. NOT Appanage. NOT Pontoon. NOT Concordat.
+            NOT Vernier. NOT leftover woodworking.
+            Hypothesis NON-BINDING — encoded from the issue body only.
+          </p>
+        </section>
+        <footer class="chrome">
+          Diagnostic cheque-counter / ticket-stub booth only. No live Claude. No secrets. No network. Score counterfoil or admit matched.
+        </footer>
+      </div>
+    </div>
+    <script type="module">
+      import {
+        COUNTERFOIL_WALK,
+        STORE_KEY_PUBLISHED,
+        LOOKUP_KEY_PUBLISHED,
+        classify,
+        scoreWalk,
+        scoreGate,
+      } from "./counterfoil.mjs";
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["matched", "hold"]);
+      const PEGS = [
+        { seed: "matched", name: "matched", note: "idle HOLD", hold: true },
+        { seed: "skewed", name: "skewed", note: "#93446" },
+        { seed: "counterfoil", name: "counterfoil", note: "product" },
+        { seed: "headers-hash", name: "headers-hash", note: "path" },
+        { seed: "hold", name: "hold", note: "HOLD alias", hold: true },
+        { seed: "add-json", name: "add-json", note: "persist then strip" },
+        { seed: "client-secret", name: "client-secret", note: "saveMcpClientSecret" },
+        { seed: "keyFor", name: "keyFor", note: "{type,url,headers}" },
+        { seed: "headers-stripped", name: "headers-stripped", note: "1eea5f27" },
+        { seed: "headers-included", name: "headers-included", note: "01759ec9" },
+        { seed: "token-exchange", name: "token-exchange", note: "after browser" },
+        { seed: "no-secret", name: "no-secret", note: "lookup miss" },
+        { seed: "github-mcp", name: "github-mcp", note: "reject text" },
+        { seed: "stale-67528", name: "stale-67528", note: "closed stale" },
+        { seed: "has-repro", name: "has-repro", note: "medley56" },
+        { seed: "cousins", name: "cousins", note: "#67528" },
+        { seed: "backups", name: "backups", note: "#93458" },
+        { seed: "walk", name: "walk", note: "published walk" }
+      ];
+
+      const FALLBACKS = {
+        matched: {
+          seed: "matched",
+          hubCount: "MATCHED",
+          matched: true,
+          storeHeaders: true,
+          lookupHeaders: true,
+          skewed: false,
+          log: [
+            "[idle] stub matched — store + login use same keyFor with full config incl. headers"
+          ]
+        },
+        skewed: {
+          seed: "skewed",
+          hubCount: "SKEWED",
+          matched: false,
+          skewed: true,
+          addJson: true,
+          headersStripped: true,
+          storeHeaders: false,
+          headersIncluded: true,
+          lookupMiss: true,
+          noSecret: true,
+          tokenExchange: true,
+          githubMcp: true,
+          storeKey: STORE_KEY_PUBLISHED,
+          lookupKey: LOOKUP_KEY_PUBLISHED,
+          log: [
+            "[seed] #93446 skewed — add-json stores github|1eea5f274543f247 (headers:{})",
+            "[seed] login looks up github|01759ec9120e7ef8 (X-MCP-Toolsets)",
+            "[seed] token exchange goes out with no client_secret"
+          ]
+        },
+        counterfoil: { seed: "counterfoil", preferSeed: true, hubCount: "COUNTERFOIL", skewed: true, headersHash: true, log: ["[counterfoil] score the stub filed under a different serial than the cheque at the grille"] },
+        "headers-hash": { seed: "headers-hash", preferSeed: true, hubCount: "HEADERS-HASH", skewed: true, headersHash: true, headersStripped: true, log: ["[headers-hash] keyFor hashes {type,url,headers}; add-json drops headers on store"] },
+        hold: { seed: "hold", preferSeed: true, hubCount: "HOLD", matched: true, log: ["[hold] admit matched"] },
+        "add-json": { seed: "add-json", preferSeed: true, hubCount: "ADD-JSON", addJson: true, log: ["[add-json] persists full config then stores secret on rebuilt {type,url}"] },
+        "client-secret": { seed: "client-secret", preferSeed: true, hubCount: "CLIENT-SECRET", clientSecret: true, log: ["[client-secret] --client-secret / saveMcpClientSecret"] },
+        keyFor: { seed: "keyFor", preferSeed: true, hubCount: "KEYFOR", keyFor: true, log: ["[keyFor] shared keyFor(serverName, cfg) hashing {type,url,headers}"] },
+        "headers-stripped": { seed: "headers-stripped", preferSeed: true, hubCount: "HEADERS-STRIPPED", headersStripped: true, log: ["[headers-stripped] store github|1eea5f274543f247 hashed with headers:{}"] },
+        "headers-included": { seed: "headers-included", preferSeed: true, hubCount: "HEADERS-INCLUDED", headersIncluded: true, log: ["[headers-included] login github|01759ec9120e7ef8 hashed with X-MCP-Toolsets"] },
+        "token-exchange": { seed: "token-exchange", preferSeed: true, hubCount: "TOKEN-EXCHANGE", tokenExchange: true, log: ["[token-exchange] request after browser OAuth"] },
+        "no-secret": { seed: "no-secret", preferSeed: true, hubCount: "NO-SECRET", noSecret: true, log: ["[no-secret] lookup miss; exchange goes out with no client_secret"] },
+        "github-mcp": { seed: "github-mcp", preferSeed: true, hubCount: "GITHUB-MCP", githubMcp: true, log: ["[github-mcp] The client_id and/or client_secret passed are incorrect."] },
+        "stale-67528": { seed: "stale-67528", preferSeed: true, hubCount: "STALE-67528", stale: true, log: ["[stale-67528] same defect closed stale 2026-07-22"] },
+        "has-repro": { seed: "has-repro", preferSeed: true, hubCount: "HAS-REPRO", log: ["[has-repro] 2.1.197 · medley56 · confirmed 2.1.267 · Ubuntu/Debian · VS Code devcontainer"] },
+        cousins: { seed: "cousins", preferSeed: true, hubCount: "COUSINS", log: ["[cousins] cousin-not-primary #67528 #89969 #84839"] },
+        backups: { seed: "backups", preferSeed: true, hubCount: "BACKUPS", log: ["[backups] cite-only #93458 #92264 #86531 #93403 #93445 #93405 #93402 #93426"] },
+        walk: { seed: "walk", preferSeed: true, hubCount: "WALK", log: ["[walk] matched → add-json-persist → save-secret-stripped → store-key → mcp-login → lookup-key → lookup-miss → token-exchange → github-reject → skewed → headers-hash → counterfoil"] }
+      };
+
+      function tone(seed) {
+        return HOLD.has(seed) ? "hold" : "alarm";
+      }
+
+      function renderChips(active) {
+        const root = document.getElementById("chips");
+        root.innerHTML = "";
+        PEGS.forEach((peg) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "chip";
+          if (peg.seed === active) btn.classList.add("on");
+          if (peg.hold) btn.classList.add("hold");
+          btn.innerHTML = "<b>" + peg.name + "</b> " + peg.note;
+          btn.addEventListener("click", () => loadSeed(peg.seed));
+          root.appendChild(btn);
+        });
+      }
+
+      function renderMarkers() {
+        const root = document.getElementById("timeline-markers");
+        const scored = scoreWalk({ rows: COUNTERFOIL_WALK });
+        root.innerHTML = scored.rows.map((row) => {
+          const cls = row.verdict === "skewed" || row.verdict === "headers-hash" ? "hit" : "match";
+          return (
+            "<article class=\"peg " + cls + "\">" +
+              "<div class=\"t\">" + (row.t || row.event) + "</div>" +
+              "<div class=\"e\">" + (row.event || "—") + "</div>" +
+              "<div class=\"s\">" + (row.verdict || "—") + "</div>" +
+            "</article>"
+          );
+        }).join("");
+      }
+
+      function apply(probe) {
+        const seed = classify(probe);
+        const scored = Array.isArray(probe.rows) ? scoreWalk(probe) : scoreGate(probe);
+        const kind = tone(seed);
+        const alarm = !HOLD.has(seed);
+        document.getElementById("mask-seed").textContent = seed + " · #93446";
+        document.getElementById("mask-word").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        document.getElementById("mask").className = "stamp" + (kind === "hold" ? " hold" : "");
+        document.getElementById("score").className = "score " + kind;
+        document.getElementById("score-badge").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        const line = document.getElementById("score-line");
+        if (HOLD.has(seed)) {
+          line.innerHTML = "admit <em>matched</em> — store + login use same keyFor with full config incl. headers";
+        } else if (seed === "skewed" || seed === "counterfoil") {
+          line.innerHTML = "score <em>counterfoil</em> — headers-stripped store vs headers-included lookup; no client_secret";
+        } else if (seed === "headers-hash") {
+          line.innerHTML = "score <em>headers-hash</em> — keyFor hashes {type,url,headers}; add-json drops headers on store";
+        } else {
+          line.innerHTML = "score <em>" + seed + "</em> — published #93446 row on the ledger blotter";
+        }
+        const activity = document.getElementById("activity");
+        activity.className = "docket " + kind;
+        document.getElementById("activity-text").textContent = alarm
+          ? " stub skewed — dating stamp filed one serial; brass grille asks for another"
+          : " stub matched — brass grille sees the same serial the dating stamp filed";
+        const log = document.getElementById("log");
+        const rows = probe.log || FALLBACKS.matched.log;
+        log.innerHTML = rows.map((row) => {
+          const cls = /idle|matched|hold/.test(row) ? "ok" : "warn";
+          return '<span class="' + cls + '">' + row + "</span>";
+        }).join("\n");
+        renderChips(seed);
+        document.getElementById("tog-store").checked = scored.storeHeaders === true && !alarm;
+        document.getElementById("tog-login").checked = scored.lookupHeaders !== false;
+        document.getElementById("tog-addjson").checked = scored.addJson === true && alarm;
+        document.getElementById("tog-mcpadd").checked = !alarm;
+        document.getElementById("tog-toolsets").checked = true;
+        document.getElementById("tog-nosecret").checked = scored.noSecret === true && alarm;
+        document.getElementById("probe-input").value = JSON.stringify({
+          seed,
+          headersStripped: probe.headersStripped ?? null,
+          headersIncluded: probe.headersIncluded ?? null,
+          lookupMiss: probe.lookupMiss ?? null,
+          noSecret: probe.noSecret ?? null
+        }, null, 2);
+        document.getElementById("stub-word").textContent = alarm ? "SKEWED" : "MATCHED";
+        document.getElementById("stub-read").textContent = alarm
+          ? "stub serial filed without headers"
+          : "store + login share one serial with headers on the blotter";
+        document.getElementById("perf-read").textContent = alarm ? "perforation torn — stub ≠ cheque" : "perforation seated";
+        document.getElementById("face-title").textContent = alarm ? "Payee rejected at the grille" : "Pay to the order of the grille";
+        document.getElementById("face-read").textContent = alarm
+          ? "login hashes X-MCP-Toolsets; store hashed empty headers"
+          : "full config incl. headers hashed on both sides";
+        document.getElementById("store-read").textContent = alarm ? STORE_KEY_PUBLISHED : "github|same";
+        document.getElementById("login-read").textContent = alarm ? LOOKUP_KEY_PUBLISHED : "github|same";
+        document.getElementById("header-read").innerHTML = alarm
+          ? "<code>X-MCP-Toolsets</code> present at login only"
+          : "<code>X-MCP-Toolsets</code> carried on both slips";
+        document.getElementById("bench-note").textContent = alarm
+          ? "ledger blotter skewed — counterfoil serial does not match the cheque"
+          : "ledger blotter matched — one serial on stub and cheque";
+      }
+
+      function probeFromToggles() {
+        const store = document.getElementById("tog-store").checked;
+        const login = document.getElementById("tog-login").checked;
+        const addJson = document.getElementById("tog-addjson").checked;
+        const mcpAdd = document.getElementById("tog-mcpadd").checked;
+        const nosecret = document.getElementById("tog-nosecret").checked;
+        const skewed = addJson || nosecret || !store || (login && !store);
+        return {
+          matched: !skewed,
+          skewed,
+          storeHeaders: store && !skewed,
+          lookupHeaders: login,
+          addJson,
+          mcpAdd: mcpAdd && !skewed,
+          headersStripped: !store || addJson,
+          headersIncluded: login && skewed,
+          lookupMiss: skewed,
+          noSecret: nosecret || skewed,
+          tokenExchange: nosecret || skewed,
+          cue: skewed ? "skewed" : "matched"
+        };
+      }
+
+      async function loadSeed(seed) {
+        if (seed === "skewed") {
+          try {
+            const res = await fetch("data/skewed.json");
+            if (res.ok) {
+              apply(await res.json());
+              return;
+            }
+          } catch (_) {}
+        }
+        apply(FALLBACKS[seed] || FALLBACKS.matched);
+      }
+
+      function soundFromForm() {
+        const probe = probeFromToggles();
+        const scored = scoreGate(probe);
+        probe.seed = scored.verdict;
+        probe.hubCount = scored.verdict.toUpperCase();
+        apply(Object.assign({}, FALLBACKS[scored.verdict] || {}, probe, {
+          seed: scored.verdict,
+          log: (FALLBACKS[scored.verdict] && FALLBACKS[scored.verdict].log) || probe.log
+        }));
+      }
+
+      function thumpStamp(seed) {
+        const knob = document.getElementById("mask");
+        knob.classList.add("thump");
+        setTimeout(() => knob.classList.remove("thump"), 900);
+        loadSeed(seed);
+      }
+
+      document.getElementById("stamp-stub").addEventListener("click", () => thumpStamp("matched"));
+      document.getElementById("score-counterfoil").addEventListener("click", () => loadSeed("skewed"));
+      document.getElementById("tear-perf").addEventListener("click", () => loadSeed("skewed"));
+      document.getElementById("audit-grille").addEventListener("click", () => loadSeed("headers-hash"));
+      document.getElementById("pin-matched").addEventListener("click", () => loadSeed("matched"));
+      document.getElementById("pin-skewed").addEventListener("click", () => loadSeed("skewed"));
+      document.getElementById("pin-path").addEventListener("click", () => loadSeed("headers-hash"));
+      document.getElementById("clear-blotter").addEventListener("click", () => loadSeed("matched"));
+      document.getElementById("score-booth").addEventListener("click", soundFromForm);
+      document.getElementById("mask").addEventListener("click", () => {
+        const current = document.getElementById("mask-word").textContent;
+        thumpStamp(current === "MATCHED" || current === "HOLD" ? "skewed" : "matched");
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.target.matches("textarea, input, select")) return;
+        if (event.key === "m" || event.key === "M") loadSeed("matched");
+        if (event.key === "s" || event.key === "S") loadSeed("skewed");
+        if (event.key === "h" || event.key === "H") loadSeed("headers-hash");
+      });
+
+      const tray = document.getElementById("galley-tray");
+      document.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        tray.classList.add("on");
+      });
+      document.addEventListener("dragleave", () => tray.classList.remove("on"));
+      document.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        tray.classList.remove("on");
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (!file) return;
+        try {
+          apply(JSON.parse(await file.text()));
+        } catch (_) {}
+      });
+
+      renderMarkers();
+      apply(FALLBACKS.matched);
+    </script>
+  </body>
+</html>
