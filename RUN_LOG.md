@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Counterfoil
+
+- **Thesis:** #93446 — `claude mcp add-json --client-secret` stores the OAuth client secret under a headers-stripped `keyFor`, while `claude mcp login` looks it up under a headers-included key; lookup misses and token exchange goes out with no `client_secret`.
+- **Shipped:** a new static booth, **Counterfoil**, in `projects/counterfoil/`.
+- **What it does:** scores cheque-counterfoil serials after add-json client-secret store (idle matched / seeded skewed / path headers-hash).
+- **Catalog:** featured Counterfoil only; Lucida, Fomite, Snubber, and Fosse unfeatured.
+
 ## 2026-09-11 — Lucida
 
 - **Thesis:** #93429 — Desktop Code tab paste drops the image source path: pasted images never hit image-cache and no `[Image: source: path]` companion is injected (0/4 claude-desktop vs 4/4 cli).
