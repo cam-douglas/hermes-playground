@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Drift Radar — a local-first recovery console for autonomous work." />
+    <title>Drift Radar</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #050816;
+        --panel: rgba(16, 21, 36, 0.82);
+        --panel-2: rgba(10, 14, 25, 0.82);
+        --line: rgba(148, 163, 184, 0.16);
+        --text: #e8f1ff;
+        --muted: #9eb0d2;
+        --accent: #8b5cf6;
+        --accent-2: #22d3ee;
+        --good: #34d399;
+        --warn: #fbbf24;
+        --bad: #fb7185;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(139, 92, 246, 0.20), transparent 28%),
+          radial-gradient(circle at 88% 0%, rgba(34, 211, 238, 0.13), transparent 24%),
+          linear-gradient(180deg, #050816 0%, #090d18 100%);
+        color: var(--text);
+      }
+      a { color: inherit; }
+      button, input, select { font: inherit; }
+      .wrap { width: min(1280px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 48px; }
+      .topbar {
+        display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+        margin-bottom: 18px; color: var(--muted); font-size: 14px;
+      }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px;
+        border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,0.03);
+      }
+      .dot { width: 9px; height: 9px; border-radius: 999px; background: var(--warn); box-shadow: 0 0 18px rgba(251, 191, 36, 0.7); }
+      .hero {
+        position: relative; overflow: hidden; padding: 44px; border: 1px solid var(--line); border-radius: 30px;
+        background: linear-gradient(180deg, rgba(18, 24, 40, 0.96), rgba(10, 14, 24, 0.9));
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
+      }
+      .hero::after {
+        content: ""; position: absolute; inset: auto -8% -40% auto; width: 380px; height: 380px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.16), transparent 60%); pointer-events: none;
+      }
+      .eyebrow {
+        display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 999px;
+        border: 1px solid rgba(139, 92, 246, 0.28); background: rgba(139, 92, 246, 0.12);
+        color: #e8ddff; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase;
+      }
+      h1 { margin: 18px 0 14px; font-size: clamp(42px, 7vw, 88px); line-height: 0.94; letter-spacing: -0.06em; }
+      .lede { max-width: 920px; font-size: clamp(18px, 2.1vw, 22px); color: #d6e3f9; }
+      .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 14px;
+        border: 1px solid var(--line); background: rgba(255,255,255,0.04); text-decoration: none; color: var(--text);
+        cursor: pointer;
+      }
+      .btn.primary { background: linear-gradient(135deg, var(--accent), #4f46e5); border-color: transparent; }
+      .btn.ghost { background: transparent; }
+      .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; margin-top: 20px; }
+      .card, .section {
+        border-radius: 24px; border: 1px solid var(--line); background: var(--panel);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+      }
+      .card { grid-column: span 4; padding: 22px; }
+      .section { grid-column: span 12; padding: 24px 22px; background: var(--panel-2); }
+      .card h2, .section h2 { margin: 0 0 12px; font-size: 20px; }
+      .card p, .section p { margin: 0; color: var(--muted); }
+      .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+      .metric {
+        padding: 16px; border-radius: 18px; border: 1px solid rgba(148,163,184,0.14); background: rgba(255,255,255,0.03);
+      }
+      .metric strong { display: block; font-size: 28px; color: white; }
+      .metric span { color: var(--muted); font-size: 13px; }
+      .toolbar {
+        display: grid; grid-template-columns: 1.2fr repeat(3, minmax(0, 0.8fr)) auto; gap: 10px; margin-top: 16px;
+      }
+      .field {
+        width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(148,163,184,0.16);
+        background: rgba(255,255,255,0.03); color: var(--text);
+      }
+      .field::placeholder { color: #7f92b8; }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+      .chip {
+        padding: 8px 10px; border-radius: 999px; border: 1px solid rgba(148,163,184,0.16);
+        background: rgba(255,255,255,0.03); color: #d5e0f4; font-size: 12px; cursor: pointer;
+      }
+      .chip.active { background: linear-gradient(135deg, rgba(139, 92, 246, 0.92), rgba(79, 70, 229, 0.92)); border-color: transparent; }
+      .layout { display: grid; grid-template-columns: 1.45fr 0.95fr; gap: 18px; }
+      .table-wrap { overflow: auto; border-radius: 20px; border: 1px solid rgba(148,163,184,0.12); }
+      table { width: 100%; border-collapse: collapse; min-width: 1020px; }
+      th, td { padding: 13px 14px; text-align: left; border-bottom: 1px solid rgba(148,163,184,0.10); }
+      th { color: #c9d9f5; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255,255,255,0.03); }
+      td { color: #edf3ff; vertical-align: top; }
+      tr.drifting { background: linear-gradient(90deg, rgba(251,191,36,0.08), transparent 42%); }
+      tr.blocked { background: linear-gradient(90deg, rgba(251,113,133,0.10), transparent 40%); }
+      .step-name { font-weight: 700; }
+      .muted { color: var(--muted); }
+      .status {
+        display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; font-size: 12px;
+        border: 1px solid rgba(148,163,184,0.18);
+      }
+      .status.on-track { background: rgba(52,211,153,0.08); color: #bbf7d0; }
+      .status.drifting { background: rgba(251,191,36,0.08); color: #fef08a; }
+      .status.blocked { background: rgba(251,113,133,0.12); color: #fecdd3; }
+      .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+      .mini {
+        padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.16);
+        background: rgba(255,255,255,0.03); color: var(--text); cursor: pointer;
+      }
+      .sidebar { display: grid; gap: 14px; align-content: start; }
+      .panel {
+        padding: 18px; border-radius: 20px; border: 1px solid rgba(148,163,184,0.14); background: rgba(255,255,255,0.03);
+      }
+      .panel h3 { margin: 0 0 10px; font-size: 18px; }
+      .queue { display: grid; gap: 10px; }
+      .queue-item {
+        padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(148,163,184,0.12);
+      }
+      .queue-item strong { color: white; }
+      .queue-item p { margin: 6px 0 0; color: var(--muted); }
+      .form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+      .form-grid .field { padding: 11px 12px; }
+      .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+      .footer {
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 18px; color: var(--muted); font-size: 14px;
+      }
+      .checklist { display: grid; gap: 10px; }
+      .check-item { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .check-item strong { color: white; }
+      .note { font-size: 13px; color: var(--muted); }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .tag {
+        padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.03); border: 1px solid rgba(148,163,184,0.14);
+        color: #dbe7fb; font-size: 12px;
+      }
+      .bar {
+        height: 10px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,0.08); margin-top: 10px;
+      }
+      .fill {
+        height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); width: 40%;
+      }
+      @media (max-width: 1080px) {
+        .card { grid-column: span 12; }
+        .layout { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 900px) {
+        .hero { padding: 28px; }
+        .summary-grid, .form-grid { grid-template-columns: 1fr; }
+        .toolbar { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="pill"><span class="dot"></span><span>autonomous run recovery console</span></div>
+        <div class="pill" id="clock"></div>
+      </div>
+
+      <main class="hero">
+        <div class="eyebrow">Drift Radar</div>
+        <h1>Catch drift before the loop turns into a dead end.</h1>
+        <p class="lede">
+          A local-first recovery console for autonomous work. It tracks what the agent intended, what actually happened,
+          which blocker is in the way, and the safest next move before the run wastes more time.
+        </p>
+        <div class="cta-row">
+          <a class="btn primary" href="#dashboard">Open dashboard</a>
+          <a class="btn" href="#add-step">Add a run step</a>
+          <a class="btn ghost" href="/">Back to catalogue</a>
+        </div>
+      </main>
+
+      <div class="grid">
+        <section class="card">
+          <h2>Problem</h2>
+          <p>Agents have plenty of forward motion, but weak recovery. When they stall, humans need a clean view of drift and blocker type.</p>
+        </section>
+        <section class="card">
+          <h2>Users</h2>
+          <p>Supervising operators, coding agents, support teams, and anyone running long tasks that need a restart plan.</p>
+        </section>
+        <section class="card">
+          <h2>Workflow</h2>
+          <p>Record the intended step, classify the blocker, rank recovery priority, then choose continue, reframe, escalate, or reset.</p>
+        </section>
+
+        <section class="section" id="dashboard">
+          <h2>Dashboard</h2>
+          <div class="summary-grid" id="summary-grid"></div>
+          <div class="toolbar">
+            <input id="search" class="field" placeholder="Search step, objective, blocker, owner, or note" />
+            <select id="status-filter" class="field"></select>
+            <select id="blocker-filter" class="field"></select>
+            <select id="sort-filter" class="field"></select>
+            <button id="reset-demo" class="btn">Reset demo</button>
+          </div>
+          <div class="chips" id="owner-chips"></div>
+        </section>
+
+        <section class="section">
+          <div class="layout">
+            <div>
+              <h2>Run steps</h2>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Step</th>
+                      <th>Observed</th>
+                      <th>Blocker</th>
+                      <th>Confidence</th>
+                      <th>Drift</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="steps-body"></tbody>
+                </table>
+              </div>
+            </div>
+            <aside class="sidebar">
+              <div class="panel">
+                <h3>Recovery queue</h3>
+                <div class="queue" id="queue"></div>
+              </div>
+              <div class="panel">
+                <h3>Triage checklist</h3>
+                <div class="checklist" id="checklist"></div>
+                <div class="tag-row">
+                  <span class="tag">localStorage persistence</span>
+                  <span class="tag">deterministic drift score</span>
+                  <span class="tag">handoff-ready recovery packet</span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="section" id="add-step">
+          <h2>Add run step</h2>
+          <p>Capture a new step with the current blocker so the recovery view can rank it alongside the rest of the run.</p>
+          <div class="form-grid">
+            <input class="field" id="new-name" placeholder="Step name" />
+            <input class="field" id="new-objective" placeholder="Intended outcome" />
+            <input class="field" id="new-observed" placeholder="Observed state" />
+            <input class="field" id="new-blocker" placeholder="Blocker type" />
+            <input class="field" id="new-owner" placeholder="Owner" />
+            <input class="field" id="new-confidence" type="number" min="0" max="100" placeholder="Confidence" />
+            <input class="field" id="new-next" placeholder="Next action" />
+            <input class="field" id="new-note" placeholder="Notes" />
+          </div>
+          <div class="form-actions">
+            <button id="add-item" class="btn primary">Add step</button>
+            <button id="seed-fill" class="btn">Load sample run</button>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>Product notes</h2>
+          <div class="footer">
+            <span>Architecture: static HTML/CSS/JS, no backend, local persistence.</span>
+            <span>Data model: objective, observed state, blocker type, owner, confidence, and drift score.</span>
+            <span>Deployment: ship to Vercel as a self-contained product folder.</span>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'drift-radar.steps';
+
+      const seedItems = [
+        {
+          id: 'dr-001',
+          name: 'Ship current feature',
+          objective: 'Push the finished prototype and deploy it live',
+          observed: 'Awaiting final verification and Git/Vercel handoff',
+          blocker: 'none',
+          owner: 'agent',
+          confidence: 88,
+          nextAction: 'Commit, push, deploy, and verify the live page',
+          note: 'Terminal tools and deployment helper are available'
+        },
+        {
+          id: 'dr-002',
+          name: 'Validate browser output',
+          objective: 'Confirm the page actually renders in a browser',
+          observed: 'Static HTML loaded locally, but no live verification yet',
+          blocker: 'tool-failure',
+          owner: 'agent',
+          confidence: 61,
+          nextAction: 'Open the local page and inspect the DOM outcome',
+          note: 'Render checks should happen before shipping'
+        },
+        {
+          id: 'dr-003',
+          name: 'Clarify recovery path',
+          objective: 'Produce a concise recovery packet for stalled runs',
+          observed: 'Recovery checklist exists, but packet export is not wired',
+          blocker: 'scope-creep',
+          owner: 'operator',
+          confidence: 54,
+          nextAction: 'Distill the last good step and the next safe action',
+          note: 'A useful loop needs a crisp restart plan'
+        },
+        {
+          id: 'dr-004',
+          name: 'Sync memories',
+          objective: 'Store the thesis, ship, and tomorrow focus in durable memory',
+          observed: 'Memory notes are ready for end-of-run update',
+          blocker: 'none',
+          owner: 'agent',
+          confidence: 91,
+          nextAction: 'Record what shipped, what broke, and what to do tomorrow',
+          note: 'Memory should stay sparse and auditable'
+        },
+        {
+          id: 'dr-005',
+          name: 'Catalog structure',
+          objective: 'Keep each product in its own folder and linked from the hub',
+          observed: 'Reorder Radar exists; Drift Radar is being added now',
+          blocker: 'none',
+          owner: 'repo',
+          confidence: 96,
+          nextAction: 'Link both product pages from the root catalogue',
+          note: 'The repo should stay navigable as it grows'
+        },
+        {
+          id: 'dr-006',
+          name: 'Research signal',
+          objective: 'Ground the day's thesis in current GitHub trends',
+          observed: 'Terminal tools, local AI, and agent harnesses are trending',
+          blocker: 'none',
+          owner: 'research',
+          confidence: 84,
+          nextAction: 'Translate the trend into one sharp product wedge',
+          note: 'Inspirations are inputs, not outputs'
+        }
+      ];
+
+      const blockerWeights = {
+        none: 0,
+        'data-mismatch': 14,
+        'tool-failure': 24,
+        'approval-needed': 11,
+        'scope-creep': 27,
+        'stale-context': 20,
+        'waiting-on-input': 16
+      };
+
+      const state = {
+        items: loadItems(),
+        search: '',
+        status: 'all',
+        blocker: 'all',
+        sort: 'drift-desc',
+        owner: 'all'
+      };
+
+      function cloneSeed() {
+        return JSON.parse(JSON.stringify(seedItems));
+      }
+
+      function loadItems() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return cloneSeed();
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) && parsed.length ? parsed : cloneSeed();
+        } catch {
+          return cloneSeed();
+        }
+      }
+
+      function saveItems() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+      }
+
+      function uid() {
+        return 'dr-' + Math.random().toString(36).slice(2, 8);
+      }
+
+      function clamp(n, min, max) {
+        return Math.min(max, Math.max(min, n));
+      }
+
+      function calc(item) {
+        const blockerWeight = blockerWeights[item.blocker] ?? 10;
+        const driftScore = clamp(Math.round((100 - item.confidence) * 0.72 + blockerWeight), 0, 100);
+        let status = 'on-track';
+        if (driftScore >= 70 || (item.blocker !== 'none' && item.confidence <= 55)) status = 'blocked';
+        else if (driftScore >= 35) status = 'drifting';
+        return { driftScore, status };
+      }
+
+      function formatPct(v) {
+        return `${v}%`;
+      }
+
+      function formatNow() {
+        return new Date().toISOString().replace('T', ' ').replace('Z', ' UTC');
+      }
+
+      function render() {
+        saveItems();
+        document.getElementById('clock').textContent = formatNow();
+
+        const items = state.items
+          .map(item => ({ ...item, ...calc(item) }))
+          .filter(item => {
+            const query = state.search.trim().toLowerCase();
+            const matchesQuery = !query || [item.name, item.objective, item.observed, item.blocker, item.owner, item.note, item.nextAction].join(' ').toLowerCase().includes(query);
+            const matchesStatus = state.status === 'all' || item.status === state.status;
+            const matchesBlocker = state.blocker === 'all' || item.blocker === state.blocker;
+            const matchesOwner = state.owner === 'all' || item.owner === state.owner;
+            return matchesQuery && matchesStatus && matchesBlocker && matchesOwner;
+          })
+          .sort((a, b) => {
+            if (state.sort === 'drift-desc') return b.driftScore - a.driftScore;
+            if (state.sort === 'confidence-asc') return a.confidence - b.confidence;
+            if (state.sort === 'confidence-desc') return b.confidence - a.confidence;
+            if (state.sort === 'name-asc') return a.name.localeCompare(b.name);
+            return a.owner.localeCompare(b.owner);
+          });
+
+        const calculated = state.items.map(item => ({ ...item, ...calc(item) }));
+        const blocked = calculated.filter(item => item.status === 'blocked').length;
+        const drifting = calculated.filter(item => item.status === 'drifting').length;
+        const avgConfidence = calculated.reduce((sum, item) => sum + item.confidence, 0) / Math.max(calculated.length, 1);
+        const avgDrift = calculated.reduce((sum, item) => sum + item.driftScore, 0) / Math.max(calculated.length, 1);
+
+        document.getElementById('summary-grid').innerHTML = [
+          { value: state.items.length, label: 'steps tracked' },
+          { value: blocked, label: 'blocked steps' },
+          { value: drifting, label: 'drifting steps' },
+          { value: `${Math.round(avgConfidence)}%`, label: 'avg confidence' }
+        ].map(m => `<div class="metric"><strong>${m.value}</strong><span>${m.label}</span></div>`).join('');
+
+        const statuses = ['all', 'on-track', 'drifting', 'blocked'];
+        document.getElementById('status-filter').innerHTML = statuses.map(s => `<option value="${s}" ${state.status === s ? 'selected' : ''}>${s === 'all' ? 'All statuses' : s === 'on-track' ? 'On track' : s === 'drifting' ? 'Drifting' : 'Blocked'}</option>`).join('');
+
+        const blockers = ['all', ...new Set(state.items.map(i => i.blocker))];
+        document.getElementById('blocker-filter').innerHTML = blockers.map(b => `<option value="${b}" ${state.blocker === b ? 'selected' : ''}>${b === 'all' ? 'All blockers' : b}</option>`).join('');
+
+        const sortModes = [
+          ['drift-desc', 'Sort: highest drift'],
+          ['confidence-asc', 'Sort: lowest confidence'],
+          ['confidence-desc', 'Sort: highest confidence'],
+          ['name-asc', 'Sort: name'],
+          ['owner-asc', 'Sort: owner']
+        ];
+        document.getElementById('sort-filter').innerHTML = sortModes.map(([value, label]) => `<option value="${value}" ${state.sort === value ? 'selected' : ''}>${label}</option>`).join('');
+
+        const owners = ['all', ...new Set(state.items.map(i => i.owner))];
+        document.getElementById('owner-chips').innerHTML = owners.map(owner => `<button class="chip ${state.owner === owner ? 'active' : ''}" data-owner="${owner}">${owner === 'all' ? 'All owners' : owner}</button>`).join('');
+
+        document.getElementById('steps-body').innerHTML = items.map(item => {
+          const cls = item.status === 'blocked' ? 'blocked' : item.status === 'drifting' ? 'drifting' : '';
+          return `
+            <tr class="${cls}">
+              <td>
+                <div class="step-name">${item.name}</div>
+                <div class="muted">${item.objective}</div>
+              </td>
+              <td>
+                <div>${item.observed}</div>
+                <div class="muted">${item.nextAction}</div>
+              </td>
+              <td>${item.blocker}</td>
+              <td>${formatPct(item.confidence)}</td>
+              <td>${item.driftScore}</td>
+              <td><span class="status ${item.status}">${item.status.replace('-', ' ')}</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="mini" data-action="evidence" data-id="${item.id}">+ evidence</button>
+                  <button class="mini" data-action="unblock" data-id="${item.id}">unblock</button>
+                  <button class="mini" data-action="resolve" data-id="${item.id}">resolve</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        const queue = calculated
+          .filter(item => item.status !== 'on-track')
+          .sort((a, b) => b.driftScore - a.driftScore)
+          .slice(0, 5);
+
+        document.getElementById('queue').innerHTML = queue.length ? queue.map(item => `
+          <div class="queue-item">
+            <strong>${item.name}</strong>
+            <p>${item.driftScore}% drift • blocker: ${item.blocker}. Next: ${item.nextAction}</p>
+          </div>
+        `).join('') : `<div class="queue-item"><strong>No urgent drift</strong><p>The current filter shows nothing that needs immediate recovery.</p></div>`;
+
+        document.getElementById('checklist').innerHTML = [
+          ['Find the last good step', 'Anchor the recovery packet in the last verified state.'],
+          ['Classify the blocker', 'Distinguish tool failure, missing input, or pure scope drift.'],
+          ['Choose the next move', 'Continue, reframe, escalate, or reset instead of guessing.'],
+          ['Persist the decision', 'Keep the run memory local so the next handoff starts clean.']
+        ].map(([title, detail]) => `<div class="check-item"><strong>${title}</strong><span class="note">${detail}</span></div>`).join('');
+
+        document.getElementById('summary-grid').dataset.avgDrift = avgDrift.toFixed(1);
+      }
+
+      function updateItem(id, fn) {
+        const item = state.items.find(x => x.id === id);
+        if (!item) return;
+        fn(item);
+        render();
+      }
+
+      function setFilter(key, value) {
+        state[key] = value;
+        render();
+      }
+
+      document.getElementById('search').addEventListener('input', e => {
+        state.search = e.target.value;
+        render();
+      });
+      document.getElementById('status-filter').addEventListener('change', e => setFilter('status', e.target.value));
+      document.getElementById('blocker-filter').addEventListener('change', e => setFilter('blocker', e.target.value));
+      document.getElementById('sort-filter').addEventListener('change', e => setFilter('sort', e.target.value));
+
+      document.getElementById('owner-chips').addEventListener('click', e => {
+        const button = e.target.closest('button[data-owner]');
+        if (!button) return;
+        state.owner = button.dataset.owner;
+        render();
+      });
+
+      document.getElementById('steps-body').addEventListener('click', e => {
+        const button = e.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        const id = button.dataset.id;
+        if (action === 'evidence') {
+          updateItem(id, item => {
+            item.confidence = clamp(item.confidence + 7, 0, 100);
+            item.observed = item.observed || 'Evidence captured';
+          });
+        }
+        if (action === 'unblock') {
+          updateItem(id, item => {
+            item.blocker = 'none';
+            item.confidence = clamp(item.confidence + 2, 0, 100);
+            item.observed = item.objective;
+          });
+        }
+        if (action === 'resolve') {
+          updateItem(id, item => {
+            item.blocker = 'none';
+            item.confidence = 97;
+            item.observed = item.objective;
+            item.nextAction = 'Archive the step and continue the run';
+          });
+        }
+      });
+
+      document.getElementById('add-item').addEventListener('click', () => {
+        const name = document.getElementById('new-name').value.trim();
+        if (!name) return;
+        const item = {
+          id: uid(),
+          name,
+          objective: document.getElementById('new-objective').value.trim() || 'No objective supplied',
+          observed: document.getElementById('new-observed').value.trim() || 'No observed state supplied',
+          blocker: document.getElementById('new-blocker').value.trim() || 'waiting-on-input',
+          owner: document.getElementById('new-owner').value.trim() || 'agent',
+          confidence: clamp(Number(document.getElementById('new-confidence').value || 50), 0, 100),
+          nextAction: document.getElementById('new-next').value.trim() || 'Decide the next recovery move',
+          note: document.getElementById('new-note').value.trim() || ''
+        };
+        state.items = [item, ...state.items];
+        ['new-name', 'new-objective', 'new-observed', 'new-blocker', 'new-owner', 'new-confidence', 'new-next', 'new-note'].forEach(id => document.getElementById(id).value = '');
+        render();
+      });
+
+      document.getElementById('seed-fill').addEventListener('click', () => {
+        state.items = cloneSeed();
+        render();
+      });
+
+      document.getElementById('reset-demo').addEventListener('click', () => {
+        state.items = cloneSeed();
+        state.search = '';
+        state.status = 'all';
+        state.blocker = 'all';
+        state.sort = 'drift-desc';
+        state.owner = 'all';
+        document.getElementById('search').value = '';
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>
