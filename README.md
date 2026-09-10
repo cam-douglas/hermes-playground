@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Strowger](https://hermes-playground-green.vercel.app/strowger/)** — Strowger automatic telephone exchange / step-by-step switchboard booth / brass selectors / bakelite dials / directory board / trunk lamp / night ink / brass contact / bakelite amber / pale directory card / cut-trunk scarlet. Desktop should keep SendMessage trunked (peers addressable; notify_when_idle intact); instead `--disallowedTools SendMessage` cuts the trunk while ListAgents still lists peers and documents SendMessage as the address — six mechanisms dead (#93218). Score strowger or admit trunked. Folder: `projects/strowger/`.
+**Featured: [Mortmain](https://hermes-playground-green.vercel.app/mortmain/)** — medieval muniment-room / dead-hand charter booth / dark parchment / wax seals / iron chest drawers. Tracked `.claude` paths should stay freehold (git can check them out; tree matches HEAD; no phantom authorship); instead sandbox `denyWithinAllow` freezes writes under tracked `.claude/skills`, `.claude/hooks`, `.claude/settings.json` so switch leaves a half-updated tree that looks like deliberate WIP (#93173). Score mortmain or admit freehold. Folder: `projects/mortmain/`.
+
+**Listed: [Strowger](https://hermes-playground-green.vercel.app/strowger/)** — Strowger automatic telephone exchange / step-by-step switchboard booth / brass selectors / bakelite dials / directory board / trunk lamp / night ink / brass contact / bakelite amber / pale directory card / cut-trunk scarlet. Desktop should keep SendMessage trunked (peers addressable; notify_when_idle intact); instead `--disallowedTools SendMessage` cuts the trunk while ListAgents still lists peers and documents SendMessage as the address — six mechanisms dead (#93218). Score strowger or admit trunked. Folder: `projects/strowger/`. Still listed. Not featured.
 
 **Listed: [Mondegreen](https://hermes-playground-green.vercel.app/mondegreen/)** — lyric-mishearing / ballad-sheet studio booth for isolation:worktree Bash substring-hears git inside legitimate (#93193). Still listed. Not featured.
 
