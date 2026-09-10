@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-10 — Appanage
+
+- **Thesis:** #93307 — bundled `code-review` skill fork dispatches finder/verifier Agent children with no `model`; they inherit the parent `claude-fable-5-1` tier; model-initiated invoke has no cost gate; SessionStart policy cannot reach children inside the fork.
+- **Shipped:** a new static booth, **Appanage**, in `projects/appanage/`.
+- **What it does:** scores child-model routing (idle routed / seeded inherited / path cascade).
+- **Catalog:** featured Appanage only; Pontoon, Concordat, and Revenant unfeatured.
+
 ## 2026-09-10 — Pontoon
 
 - **Thesis:** #93288 — Desktop restart / onQuitCleanup washes every Remote Control session bridge; sidebar still looks intact; phone list empty.
