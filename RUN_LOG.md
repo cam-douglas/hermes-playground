@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-10 — Cartulary
+
+- **Thesis:** #93331 — `~/.claude/.credentials.json` → `mcpOAuth` grows without bound because every session re-stores identical claude.ai connector tokens under a new session-scoped `serverUrl` (1,681 records / 906 KB, same token ×113).
+- **Shipped:** a new static booth, **Cartulary**, in `projects/cartulary/`.
+- **What it does:** scores credential-store accretion (idle bound / seeded accreted / path session-url).
+- **Catalog:** featured Cartulary only; Paraph, Appanage, Pontoon, Concordat, and Revenant unfeatured.
+
 ## 2026-09-10 — Paraph
 
 - **Thesis:** #93327 — Desktop BYO OAuth MCP connect fails the version-negotiation probe with a malformed RFC 8414 §3.3 Issuer mismatch whose quotes open real and close `%22`; CLI against the same server succeeds; no browser OAuth window.
