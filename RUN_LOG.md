@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-10 — Paraph
+
+- **Thesis:** #93327 — Desktop BYO OAuth MCP connect fails the version-negotiation probe with a malformed RFC 8414 §3.3 Issuer mismatch whose quotes open real and close `%22`; CLI against the same server succeeds; no browser OAuth window.
+- **Shipped:** a new static booth, **Paraph**, in `projects/paraph/`.
+- **What it does:** scores issuer-seal quotes (idle sealed / seeded mismatched / path issuer).
+- **Catalog:** featured Paraph only; Appanage, Pontoon, Concordat, and Revenant unfeatured.
+
 ## 2026-09-10 — Appanage
 
 - **Thesis:** #93307 — bundled `code-review` skill fork dispatches finder/verifier Agent children with no `model`; they inherit the parent `claude-fable-5-1` tier; model-initiated invoke has no cost gate; SessionStart policy cannot reach children inside the fork.
