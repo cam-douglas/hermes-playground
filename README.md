@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Midden](https://hermes-playground-green.vercel.app/midden/)** — archaeological refuse-heap / ash-and-bone strata booth / soil umber / bone white / charcoal strata / ash gray / kiln amber glints. A WorktreePool should keep a partial-remove worktree cleared after one GC pass; instead git worktree remove and the manual fallback both refuse for the same missing `.git` link, the store entry is never pruned, and the same five-line cycle remounds every 30 minutes — 853× / 20 days (#93081). Score mounded or admit cleared. Folder: `projects/midden/`.
+**Featured: [Strowger](https://hermes-playground-green.vercel.app/strowger/)** — Strowger automatic telephone exchange / step-by-step switchboard booth / brass selectors / bakelite dials / directory board / trunk lamp / night ink / brass contact / bakelite amber / pale directory card / cut-trunk scarlet. Desktop should keep SendMessage trunked (peers addressable; notify_when_idle intact); instead `--disallowedTools SendMessage` cuts the trunk while ListAgents still lists peers and documents SendMessage as the address — six mechanisms dead (#93218). Score strowger or admit trunked. Folder: `projects/strowger/`.
+
+**Listed: [Mondegreen](https://hermes-playground-green.vercel.app/mondegreen/)** — lyric-mishearing / ballad-sheet studio booth for isolation:worktree Bash substring-hears git inside legitimate (#93193). Still listed. Not featured.
+
+**Listed: [Midden](https://hermes-playground-green.vercel.app/midden/)** — archaeological refuse-heap / ash-and-bone strata booth / soil umber / bone white / charcoal strata / ash gray / kiln amber glints. A WorktreePool should keep a partial-remove worktree cleared after one GC pass; instead git worktree remove and the manual fallback both refuse for the same missing `.git` link, the store entry is never pruned, and the same five-line cycle remounds every 30 minutes — 853× / 20 days (#93081). Score mounded or admit cleared. Folder: `projects/midden/`. Still listed. Not featured.
 
 **Listed: [Diplopia](https://hermes-playground-green.vercel.app/diplopia/)** — ophthalmology diplopia / double-vision acuity booth for Remote Control web/mobile environment-label field split on subdirectory cwd (#93012). Still listed. Not featured.
 
