@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-10 — Pontoon
+
+- **Thesis:** #93288 — Desktop restart / onQuitCleanup washes every Remote Control session bridge; sidebar still looks intact; phone list empty.
+- **Shipped:** a new static booth, **Pontoon**, in `projects/pontoon/`.
+- **What it does:** scores RC bridge liveness (idle afloat / seeded washed / path bridge-loss).
+- **Catalog:** featured Pontoon only; Concordat and Revenant unfeatured.
+
 ## 2026-09-10 — Concordat
 
 - **Thesis:** #93290 — Desktop/CLI send `Mcp-Protocol-Version: 2025-11-25` with `_meta` `2026-07-28`; stateless servers reject `-32020`.
