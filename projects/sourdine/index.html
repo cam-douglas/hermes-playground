@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sourdine — concert-hall practice-mute booth for #93531</title>
+    <meta
+      name="description"
+      content="Sourdine — a concert-hall practice-mute / brass-mute booth for Claude Code #93531: MessageDisplay no longer fires for text between tool calls. Idle word is voiced."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --velvet: #1a1218;
+        --brass: #C9A227;
+        --stage: #F2C14E;
+        --wine: #6B2D3C;
+        --sheet: #EDE6D9;
+        --ink: #120e12;
+        --glow: rgba(242, 193, 78, 0.22);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Outfit", "Segoe UI", sans-serif;
+        color: var(--sheet);
+        background:
+          radial-gradient(ellipse at 50% -8%, rgba(242, 193, 78, 0.18), transparent 42%),
+          radial-gradient(circle at 8% 88%, rgba(107, 45, 60, 0.35), transparent 36%),
+          radial-gradient(circle at 94% 12%, rgba(201, 162, 39, 0.08), transparent 28%),
+          linear-gradient(180deg, #120e12 0%, #1a1218 46%, #24141c 100%);
+        background-attachment: fixed;
+      }
+      body.embed .chrome { display: none; }
+      body.rake::after {
+        content: "";
+        pointer-events: none;
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at 50% 28%, rgba(242, 193, 78, 0.34), transparent 58%);
+        animation: lamp-wash 0.8s ease-out 1;
+      }
+      @keyframes lamp-wash {
+        0% { opacity: 0.95; }
+        100% { opacity: 0; }
+      }
+      a { color: var(--stage); }
+      .house {
+        width: min(1160px, calc(100% - 18px));
+        margin: 0 auto;
+        padding: 16px 0 80px;
+      }
+      .catalog {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brass);
+        text-decoration: none;
+        border: 1px solid rgba(201, 162, 39, 0.5);
+        padding: 6px 10px;
+        margin: 8px 0 14px;
+        background: var(--ink);
+      }
+      .booth {
+        background: linear-gradient(180deg, #22141c 0%, #1a1218 100%);
+        border: 1px solid rgba(201, 162, 39, 0.22);
+        box-shadow: 0 0 90px rgba(107, 45, 60, 0.18);
+        position: relative;
+        overflow: hidden;
+      }
+      .curtains {
+        height: 64px;
+        display: grid;
+        grid-template-columns: 1fr 180px 1fr;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #6B2D3C 0 18px,
+            #4e2130 18px 22px
+          );
+        box-shadow: inset 0 -18px 28px rgba(18, 14, 18, 0.55);
+      }
+      .swag {
+        background:
+          radial-gradient(ellipse at 50% 120%, transparent 42%, rgba(18, 14, 18, 0.45) 43%, transparent 70%),
+          linear-gradient(180deg, #7a3546, #4a1d2a);
+      }
+      .lamp-well {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        background: #1a1218;
+      }
+      .lamp {
+        width: 28px;
+        height: 36px;
+        border-radius: 50% 50% 8px 8px;
+        background: radial-gradient(circle at 50% 40%, #fff4c8, var(--stage) 46%, #C9A227);
+        box-shadow: 0 12px 36px var(--glow), 0 0 24px var(--stage);
+        position: relative;
+      }
+      .lamp::before {
+        content: "";
+        position: absolute;
+        top: -14px;
+        left: 12px;
+        width: 4px;
+        height: 16px;
+        background: var(--brass);
+      }
+      .lamp.alarm {
+        background: radial-gradient(circle at 50% 40%, #f7d98a, var(--wine));
+        box-shadow: 0 12px 40px rgba(107, 45, 60, 0.55);
+      }
+      .mast { padding: 10px 24px 8px; }
+      .mast h1 {
+        font-family: "Cormorant Garamond", "Times New Roman", serif;
+        font-weight: 700;
+        font-size: clamp(52px, 9vw, 104px);
+        letter-spacing: -0.03em;
+        margin: 0;
+        line-height: 0.78;
+        color: var(--stage);
+        text-shadow: 0 0 32px rgba(242, 193, 78, 0.28);
+      }
+      .serial {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+        margin: 10px 0 0;
+      }
+      .lede {
+        max-width: 78em;
+        line-height: 1.64;
+        font-size: 15px;
+        margin: 12px 0 0;
+        color: #d8cfc0;
+      }
+      .lede strong {
+        color: var(--sheet);
+        font-family: "Cormorant Garamond", serif;
+        font-weight: 700;
+        font-size: 1.08em;
+      }
+      .lede em { font-style: italic; color: var(--stage); }
+      .lede code, code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--brass);
+      }
+      .pit {
+        margin: 16px 14px 18px;
+        background: var(--ink);
+        border: 1px solid rgba(201, 162, 39, 0.18);
+      }
+      .stage-face {
+        display: grid;
+        grid-template-columns: 1fr 200px 1fr;
+        min-height: 340px;
+      }
+      @media (max-width: 820px) {
+        .stage-face { grid-template-columns: 1fr; }
+        .curtains { grid-template-columns: 1fr 90px 1fr; }
+      }
+      .wing {
+        padding: 16px 14px;
+        background:
+          linear-gradient(180deg, rgba(107, 45, 60, 0.18), transparent 40%),
+          repeating-linear-gradient(
+            180deg,
+            rgba(237, 230, 217, 0.03) 0 14px,
+            transparent 14px 28px
+          );
+        border-right: 1px solid rgba(201, 162, 39, 0.12);
+      }
+      .wing small {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .wing b {
+        display: block;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 30px;
+        margin: 8px 0 10px;
+        color: var(--sheet);
+      }
+      .wing p { margin: 0; font-size: 13px; line-height: 1.45; color: #d8cfc0; }
+      .phrase-bar {
+        margin-top: 16px;
+        height: 10px;
+        background: rgba(18, 14, 18, 0.8);
+        border: 1px solid rgba(201, 162, 39, 0.28);
+        position: relative;
+      }
+      .phrase-bar span {
+        display: block;
+        height: 100%;
+        width: 18%;
+        background: var(--brass);
+        box-shadow: 0 0 10px var(--brass);
+      }
+      .phrase-bar.lag span { width: 78%; background: var(--wine); }
+      .mute-well {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+          radial-gradient(circle at 50% 38%, rgba(242, 193, 78, 0.16), transparent 62%),
+          radial-gradient(circle at 50% 100%, rgba(107, 45, 60, 0.28), transparent 48%);
+      }
+      .mute-well button {
+        width: 158px;
+        height: 176px;
+        border: 0;
+        cursor: pointer;
+        color: var(--ink);
+        font-family: "Cormorant Garamond", serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+        clip-path: ellipse(46% 50% at 50% 50%);
+        background:
+          radial-gradient(circle at 38% 28%, #f4e2a0, var(--brass) 52%, #8a6d16);
+        box-shadow: 0 0 0 10px rgba(18, 14, 18, 0.55), 0 0 42px rgba(201, 162, 39, 0.28);
+      }
+      .mute-well button.alarm {
+        background: radial-gradient(circle at 38% 28%, #c9848e, var(--wine) 56%, #3a1520);
+        color: var(--sheet);
+        box-shadow: 0 0 0 10px rgba(107, 45, 60, 0.28), 0 0 48px rgba(107, 45, 60, 0.4);
+      }
+      .mute-well button.stamp { animation: mute-press 0.34s ease-in 1; }
+      @keyframes mute-press {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(0.9); }
+      }
+      .mute-well small {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+      }
+      .mute-well b { font-size: 18px; line-height: 1.05; }
+      .readout { padding: 16px 18px; }
+      .readout h2 {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 26px;
+        margin: 0 0 8px;
+        color: var(--stage);
+      }
+      .gauges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      @media (max-width: 640px) {
+        .gauges { grid-template-columns: 1fr; }
+      }
+      .gauges article {
+        border: 1px dashed rgba(201, 162, 39, 0.28);
+        padding: 8px 10px;
+        background: rgba(26, 18, 24, 0.7);
+      }
+      .gauges dt {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #d8cfc0;
+      }
+      .gauges dd {
+        margin: 4px 0 0;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        word-break: break-word;
+        color: var(--brass);
+      }
+      .compare {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .compare span {
+        flex: 1;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+        border: 1px solid rgba(237, 230, 217, 0.14);
+        background: #22141c;
+      }
+      .compare span.on { background: var(--brass); color: var(--ink); }
+      .compare span.miss { background: #2a151c; color: var(--stage); }
+      .score {
+        font-family: "Cormorant Garamond", serif;
+        margin: 0 14px 12px;
+        padding: 12px 16px;
+        background: rgba(18, 14, 18, 0.78);
+        border-left: 8px solid var(--brass);
+      }
+      .score.alarm { border-left-color: var(--wine); }
+      .score .badge {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        color: var(--brass);
+      }
+      .score.alarm .badge { color: #e8b4be; }
+      .score p { margin: 6px 0 0; font-family: "Outfit", sans-serif; font-size: 15px; }
+      .actions, .pins {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 14px 10px;
+      }
+      button.act, button.pin {
+        font-family: "Outfit", sans-serif;
+        font-size: 13px;
+        border: 1px solid var(--sheet);
+        background: var(--ink);
+        color: var(--sheet);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      button.act { background: #2a1a14; border-color: var(--brass); color: var(--stage); }
+      button.act.alarm { background: var(--wine); border-color: var(--wine); color: var(--sheet); }
+      .toggles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 0 14px 14px;
+        padding: 12px;
+        background: rgba(201, 162, 39, 0.06);
+      }
+      @media (max-width: 720px) {
+        .toggles { grid-template-columns: 1fr 1fr; }
+      }
+      .toggles label {
+        font-size: 13px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .folio {
+        margin: 0 14px 14px;
+        padding: 12px;
+        background: #22141c;
+        color: var(--sheet);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .folio .shape { color: var(--brass); }
+      .folio.lag .shape { color: #e8b4be; }
+      .rail-note {
+        margin: 0 14px 14px;
+        padding: 10px 12px;
+        border-top: 3px solid var(--brass);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: rgba(201, 162, 39, 0.08);
+        color: var(--sheet);
+      }
+      .docket {
+        margin: 0 14px 12px;
+        padding: 8px 12px;
+        font-size: 14px;
+        background: #2a1a14;
+        color: var(--stage);
+      }
+      .docket.alarm { background: #2a151c; color: #e8b4be; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 14px 12px; }
+      .chip {
+        border: 1px solid rgba(237, 230, 217, 0.22);
+        background: var(--ink);
+        color: var(--sheet);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+        cursor: pointer;
+      }
+      .chip.on { background: var(--brass); color: var(--ink); }
+      .chip.hold { border-color: rgba(242, 193, 78, 0.75); }
+      .walk {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 6px;
+        margin: 0 14px 12px;
+      }
+      .peg {
+        background: rgba(18, 14, 18, 0.78);
+        border: 1px solid rgba(237, 230, 217, 0.12);
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+      .peg.lag { border-color: var(--wine); color: var(--stage); }
+      .peg .t { font-family: "JetBrains Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+      .log {
+        margin: 0 14px 12px;
+        padding: 12px;
+        background: var(--ink);
+        color: var(--brass);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        min-height: 72px;
+      }
+      .log .ok { color: #d8cfc0; }
+      .log .warn { color: #e8b4be; }
+      .drop {
+        margin: 0 14px 10px;
+        border: 1px dashed var(--sheet);
+        padding: 10px;
+        text-align: center;
+        color: #d8cfc0;
+        font-size: 13px;
+      }
+      .drop.on { background: rgba(107, 45, 60, 0.18); }
+      textarea {
+        width: calc(100% - 28px);
+        margin: 0 14px 16px;
+        min-height: 110px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        background: var(--ink);
+        color: var(--sheet);
+        border: 1px solid rgba(237, 230, 217, 0.18);
+        padding: 10px;
+      }
+      .notes {
+        padding: 0 22px 18px;
+        color: #d8cfc0;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .notes h2 {
+        font-family: "Cormorant Garamond", serif;
+        color: var(--stage);
+        font-size: 28px;
+      }
+      .cousin-not-primary { color: #e8b4be; }
+      footer {
+        padding: 0 22px 18px;
+        color: #d8cfc0;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="house">
+      <a class="catalog chrome" href="/">Catalog · #285 · 13:50</a>
+      <div class="booth">
+        <div class="curtains" aria-hidden="true">
+          <div class="swag"></div>
+          <div class="lamp-well"><span class="lamp" id="stage-lamp"></span></div>
+          <div class="swag"></div>
+        </div>
+        <header class="mast">
+          <h1>Sourdine</h1>
+          <p class="serial">concert-hall practice mute · brass mute · velvet curtain</p>
+          <p class="lede">
+            <strong>#93531</strong> · Liv3wir3d · Claude Code 2.1.267 (VS Code, Windows).
+            Mid-turn prose between tool calls is replaced server-side by
+            summarized thinking blocks tagged
+            <code>block_kind: narration</code>
+            and shown with a <code>(summarized)</code> label.
+            <code>MessageDisplay</code> no longer fires for those updates.
+            Only the first message of a turn and the final answer still
+            reach the hook. Original prose is not stored.
+            Idle <strong>voiced</strong> / seeded <strong>muted</strong> /
+            path <strong>mid-narration</strong>.
+            Phrase: <em>when mid-turn prose is replaced by summarized narration that the hall still hears while MessageDisplay stays silent, score sourdine or admit voiced.</em>
+          </p>
+        </header>
+
+        <div class="pit">
+          <div class="stage-face">
+            <aside class="wing">
+              <small>house left · attack</small>
+              <b id="wax-word">VOICED</b>
+              <p id="wax-read">booth idle — MessageDisplay fires for first+final</p>
+              <div class="phrase-bar" id="read-meter"><span></span></div>
+              <p id="wax-note" style="margin-top:10px">attack and cadence still speak — mute is open</p>
+            </aside>
+            <div class="mute-well">
+              <button id="mask" type="button">
+                <small id="mask-seed">voiced · #93531</small>
+                <b id="mask-word">VOICED</b>
+              </button>
+            </div>
+            <section class="readout">
+              <h2 id="face-title">Sourdine keeps the phrase voiced</h2>
+              <p id="face-read">first fires · final fires · mute open</p>
+              <div class="gauges">
+                <article>
+                  <dl>
+                    <dt>attack / cadence</dt>
+                    <dd id="read-gauge">voiced — first+final still reach MessageDisplay</dd>
+                  </dl>
+                </article>
+                <article>
+                  <dl>
+                    <dt>mid-phrase mute</dt>
+                    <dd id="write-gauge">open — hook hears the same phrase as the hall</dd>
+                  </dl>
+                </article>
+              </div>
+              <div class="compare" id="model-chip">
+                <span id="opus-chip" class="on">hall · hears the phrase</span>
+                <span id="fable-chip">hook · voiced</span>
+              </div>
+            </section>
+          </div>
+
+          <div class="score hold" id="score">
+            <div class="badge" id="score-badge">VOICED</div>
+            <p id="score-line">admit <em>voiced</em> — MessageDisplay fires for opening text + final answer as expected</p>
+          </div>
+
+          <div class="actions">
+            <button class="act" id="seat-hall" type="button">Seat the hall</button>
+            <button class="act alarm" id="score-sourdine-btn" type="button">Score sourdine</button>
+            <button class="act" id="sound-mute" type="button">Sound the mute</button>
+            <button class="act alarm" id="compare-layers" type="button">Compare hall / hook</button>
+            <button class="act" id="score-booth" type="button">Score the stand</button>
+          </div>
+          <div class="pins">
+            <button class="pin" id="pin-voiced" type="button">Pin idle voiced</button>
+            <button class="pin" id="pin-muted" type="button">Pin seeded muted</button>
+            <button class="pin" id="pin-path" type="button">Pin mid-narration</button>
+            <button class="pin" id="clear-stand" type="button">Clear the stand</button>
+          </div>
+
+          <div class="toggles">
+            <label><input type="checkbox" id="tog-first" /> first text fires</label>
+            <label><input type="checkbox" id="tog-narration" /> (summarized) on stage</label>
+            <label><input type="checkbox" id="tog-silent" /> hook silent mid-turn</label>
+            <label><input type="checkbox" id="tog-final" /> final answer fires</label>
+            <label><input type="checkbox" id="tog-block" /> block_kind narration</label>
+            <label><input type="checkbox" id="tog-env" /> env flag no effect</label>
+          </div>
+
+          <div class="folio" id="folio-strip">
+            MessageDisplay · <span class="shape" id="folio-shape">voiced · first · final</span>
+          </div>
+          <div class="rail-note" id="bench-note">booth voiced — hall and hook agree</div>
+          <div class="docket hold" id="activity" aria-live="polite">
+            <span id="activity-text"> booth voiced — mute open, attack and cadence speak</span>
+          </div>
+          <div class="chips" id="chips"></div>
+          <div class="walk" id="timeline-markers"></div>
+          <pre class="log" id="log"></pre>
+          <div class="drop" id="galley-tray">Lay a fixture JSON on the music stand</div>
+          <textarea id="probe-input" spellcheck="false">{
+  "seed": "voiced"
+}</textarea>
+        </div>
+
+        <section class="notes">
+          <h2>Published walk · #93531</h2>
+          <p>
+            Claude Code 2.1.267 (VS Code extension) · last working 2.1.266 ·
+            filed by Liv3wir3d 2026-09-11. Labels: bug, has repro,
+            platform:windows, platform:vscode, area:hooks, regression.
+            Register an http <code>MessageDisplay</code> hook at
+            <code>http://localhost:8765/hooks/message</code>. Give Claude a
+            multi-step task that writes findings between tool calls. Trivial
+            batched tool calls may not repro; short announcements come back
+            as empty narration blocks. Timeline (UTC): 03:14:03 first text
+            fires — “I'll start by locating the folder…”. Then four
+            <code>(summarized)</code> narration rows at 03:14:08, 03:14:11,
+            03:14:16, 03:14:23 with no hook. 03:14:35 final answer fires.
+            <code>CLAUDE_CODE_ENABLE_NARRATION=0</code> does not restore
+            MessageDisplay. Feedback ID
+            <code>043a59d5-4228-4590-a7cc-c6903546840f</code>.
+          </p>
+          <p class="cousin-not-primary">
+            cousin-not-primary #88646 #82001 #85773 #88338.
+            Cite-only backups #93475 #93439 #93438 #93466 #93495 #93529 #93508.
+            Do not auto-pick. Different mechanism from Forksink SessionStart
+            fork drop, Foxfire idle Remote Control paint-without-turn, and
+            Pentimento overwrite lag.
+            This booth is specifically MessageDisplay going silent for
+            narration blocks between tool calls.
+          </p>
+          <p>
+            Educational chips: first-fires · mid-summarized · hook-silent ·
+            final-fires · narration · summarized · block-kind · tts-silent ·
+            redaction-miss · env-no-effect · trivial-no-repro · multi-step ·
+            http-hook · has-repro · cousins · backups · walk.
+            NOT Forksink. NOT Foxfire. NOT Pentimento. NOT Vinculum.
+            NOT Cachet. NOT Strobe. NOT Sump. NOT Spillway.
+            NOT Quietus. NOT Rubric. NOT Recension. NOT Afterimage.
+            Hypothesis NON-BINDING — encoded from the issue text only.
+          </p>
+        </section>
+        <footer class="chrome">
+          Diagnostic concert-hall practice-mute / sourdine booth only. No live Claude. No secrets. No network. Score sourdine or admit voiced.
+        </footer>
+      </div>
+    </div>
+    <script type="module">
+      import {
+        SOURDINE_WALK,
+        classify,
+        scoreWalk,
+        scoreGate,
+      } from "./sourdine.mjs";
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["voiced", "hold"]);
+      const PEGS = [
+        { seed: "voiced", name: "voiced", note: "idle HOLD", hold: true },
+        { seed: "muted", name: "muted", note: "#93531" },
+        { seed: "sourdine", name: "sourdine", note: "product" },
+        { seed: "mid-narration", name: "mid-narration", note: "path" },
+        { seed: "hold", name: "hold", note: "HOLD alias", hold: true },
+        { seed: "first-fires", name: "first-fires", note: "03:14:03", hold: true },
+        { seed: "mid-summarized", name: "mid-summarized", note: "(summarized)" },
+        { seed: "hook-silent", name: "hook-silent", note: "no hook" },
+        { seed: "final-fires", name: "final-fires", note: "03:14:35", hold: true },
+        { seed: "narration", name: "narration", note: "block_kind" },
+        { seed: "summarized", name: "summarized", note: "on stage" },
+        { seed: "block-kind", name: "block-kind", note: "narration" },
+        { seed: "tts-silent", name: "tts-silent", note: "read-aloud" },
+        { seed: "redaction-miss", name: "redaction-miss", note: "keys shown" },
+        { seed: "env-no-effect", name: "env-no-effect", note: "NARRATION=0" },
+        { seed: "trivial-no-repro", name: "trivial-no-repro", note: "batched" },
+        { seed: "multi-step", name: "multi-step", note: "needed" },
+        { seed: "http-hook", name: "http-hook", note: ":8765" },
+        { seed: "has-repro", name: "has-repro", note: "Liv3wir3d" },
+        { seed: "cousins", name: "cousins", note: "#88646" },
+        { seed: "backups", name: "backups", note: "#93475" },
+        { seed: "walk", name: "walk", note: "published walk" }
+      ];
+
+      const FALLBACKS = {
+        voiced: {
+          seed: "voiced",
+          hubCount: "VOICED",
+          voiced: true,
+          muted: false,
+          firstFired: true,
+          finalFired: true,
+          hookSilent: false,
+          narrationShown: false,
+          log: [
+            "[idle] booth voiced — MessageDisplay fires for opening text + final answer as expected"
+          ]
+        },
+        muted: {
+          seed: "muted",
+          hubCount: "MUTED",
+          voiced: false,
+          muted: true,
+          firstFired: true,
+          finalFired: true,
+          hookSilent: true,
+          narrationShown: true,
+          blockKindNarration: true,
+          midTurn: true,
+          originalLost: true,
+          envNoEffect: true,
+          ttsSilent: true,
+          redactionMiss: true,
+          log: [
+            "[seed] #93531 muted — Claude Code 2.1.267 VS Code extension; Windows; http MessageDisplay hook",
+            "[seed] 03:14:03 first text fires; four (summarized) narration rows with no hook; 03:14:35 final fires",
+            "[seed] original prose is not stored; CLAUDE_CODE_ENABLE_NARRATION=0 does not restore MessageDisplay"
+          ]
+        },
+        sourdine: { seed: "sourdine", preferSeed: true, hubCount: "SOURDINE", muted: true, firstFired: true, finalFired: true, hookSilent: true, narrationShown: true, blockKindNarration: true, envNoEffect: true, log: ["[sourdine] score the concert-hall practice mute whose attack and cadence still speak through MessageDisplay while the mid-phrase is muted from hooks"] },
+        "mid-narration": { seed: "mid-narration", preferSeed: true, hubCount: "MID-NARRATION", muted: true, blockKindNarration: true, midTurn: true, hookSilent: true, narrationShown: true, originalLost: true, log: ["[mid-narration] block_kind: narration between tool calls never reaches MessageDisplay"] },
+        hold: { seed: "hold", preferSeed: true, hubCount: "HOLD", voiced: true, log: ["[hold] admit voiced"] },
+        "first-fires": { seed: "first-fires", preferSeed: true, hubCount: "FIRST-FIRES", firstFired: true, log: ["[first-fires] 03:14:03 I'll start by locating the folder… — text, MessageDisplay yes"] },
+        "mid-summarized": { seed: "mid-summarized", preferSeed: true, hubCount: "MID-SUMMARIZED", narrationShown: true, blockKindNarration: true, log: ["[mid-summarized] (summarized) narration rows on stage"] },
+        "hook-silent": { seed: "hook-silent", preferSeed: true, hubCount: "HOOK-SILENT", hookSilent: true, log: ["[hook-silent] MessageDisplay never called for narration blocks"] },
+        "final-fires": { seed: "final-fires", preferSeed: true, hubCount: "FINAL-FIRES", finalFired: true, log: ["[final-fires] 03:14:35 final answer — text, MessageDisplay yes"] },
+        narration: { seed: "narration", preferSeed: true, hubCount: "NARRATION", blockKindNarration: true, log: ["[narration] thinking blocks tagged block_kind: narration"] },
+        summarized: { seed: "summarized", preferSeed: true, hubCount: "SUMMARIZED", narrationShown: true, log: ["[summarized] UI shows (summarized) while original prose is not stored"] },
+        "block-kind": { seed: "block-kind", preferSeed: true, hubCount: "BLOCK-KIND", blockKindNarration: true, log: ["[block-kind] server summaries of the prose between tool calls, not the model's own reasoning"] },
+        "tts-silent": { seed: "tts-silent", preferSeed: true, hubCount: "TTS-SILENT", ttsSilent: true, log: ["[tts-silent] read-aloud hooks go silent mid-turn"] },
+        "redaction-miss": { seed: "redaction-miss", preferSeed: true, hubCount: "REDACTION-MISS", redactionMiss: true, log: ["[redaction-miss] redaction hooks cannot catch narration the user still sees"] },
+        "env-no-effect": { seed: "env-no-effect", preferSeed: true, hubCount: "ENV-NO-EFFECT", envNoEffect: true, log: ["[env-no-effect] CLAUDE_CODE_ENABLE_NARRATION=0 does not restore MessageDisplay"] },
+        "trivial-no-repro": { seed: "trivial-no-repro", preferSeed: true, hubCount: "TRIVIAL-NO-REPRO", trivialNoRepro: true, log: ["[trivial-no-repro] batched tool calls with no prose between them do not reproduce"] },
+        "multi-step": { seed: "multi-step", preferSeed: true, hubCount: "MULTI-STEP", multiStep: true, log: ["[multi-step] multi-step task needed: read four files one at a time and narrate between them"] },
+        "http-hook": { seed: "http-hook", preferSeed: true, hubCount: "HTTP-HOOK", httpHook: true, log: ["[http-hook] http MessageDisplay hook at http://localhost:8765/hooks/message"] },
+        "has-repro": { seed: "has-repro", preferSeed: true, hubCount: "HAS-REPRO", log: ["[has-repro] 2.1.267 · Liv3wir3d · Windows · VS Code extension · last working 2.1.266"] },
+        cousins: { seed: "cousins", preferSeed: true, hubCount: "COUSINS", log: ["[cousins] cousin-not-primary #88646 #82001 #85773 #88338"] },
+        backups: { seed: "backups", preferSeed: true, hubCount: "BACKUPS", log: ["[backups] cite-only #93475 #93439 #93438 #93466 #93495 #93529 #93508"] },
+        walk: { seed: "walk", preferSeed: true, hubCount: "WALK", log: ["[walk] voiced → first-fires → mid-summarized → hook-silent → final-fires → mid-narration → sourdine"] }
+      };
+
+      function tone(seed) {
+        return HOLD.has(seed) ? "hold" : "alarm";
+      }
+
+      function paintLamp(alarm) {
+        const lamp = document.getElementById("stage-lamp");
+        lamp.className = alarm ? "lamp alarm" : "lamp";
+      }
+
+      function renderChips(active) {
+        const root = document.getElementById("chips");
+        root.innerHTML = "";
+        PEGS.forEach((peg) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "chip";
+          if (peg.seed === active) btn.classList.add("on");
+          if (peg.hold) btn.classList.add("hold");
+          btn.innerHTML = "<b>" + peg.name + "</b> " + peg.note;
+          btn.addEventListener("click", () => loadSeed(peg.seed));
+          root.appendChild(btn);
+        });
+      }
+
+      function renderMarkers() {
+        const root = document.getElementById("timeline-markers");
+        const scored = scoreWalk({ rows: SOURDINE_WALK });
+        root.innerHTML = scored.rows.map((row) => {
+          const cls = row.verdict === "muted" || row.verdict === "mid-narration" ? "lag" : "";
+          return (
+            "<article class=\"peg " + cls + "\">" +
+              "<div class=\"t\">" + (row.t || row.event) + "</div>" +
+              "<div class=\"e\">" + (row.event || "—") + "</div>" +
+              "<div class=\"s\">" + (row.verdict || "—") + "</div>" +
+            "</article>"
+          );
+        }).join("");
+      }
+
+      function apply(probe) {
+        const seed = classify(probe);
+        const scored = Array.isArray(probe.rows) ? scoreWalk(probe) : scoreGate(probe);
+        const kind = tone(seed);
+        const alarm = !HOLD.has(seed);
+        document.getElementById("mask-seed").textContent = seed + " · #93531";
+        document.getElementById("mask-word").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        document.getElementById("mask").className = alarm ? "alarm" : "";
+        document.getElementById("score").className = "score " + kind;
+        document.getElementById("score-badge").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        const line = document.getElementById("score-line");
+        if (HOLD.has(seed)) {
+          line.innerHTML = "admit <em>voiced</em> — MessageDisplay fires for opening text + final answer as expected";
+        } else if (seed === "muted" || seed === "sourdine") {
+          line.innerHTML = "score <em>sourdine</em> — attack and cadence still speak; mid-phrase narration never calls MessageDisplay";
+        } else if (seed === "mid-narration") {
+          line.innerHTML = "score <em>mid-narration</em> — block_kind narration between tool calls is muted from the hook";
+        } else {
+          line.innerHTML = "score <em>" + seed + "</em> — published #93531 row on the stand";
+        }
+        const activity = document.getElementById("activity");
+        activity.className = "docket " + kind;
+        document.getElementById("activity-text").textContent = alarm
+          ? " booth muted — hall hears summarized narration, hook stays silent"
+          : " booth voiced — mute open, attack and cadence speak";
+        const log = document.getElementById("log");
+        const rows = probe.log || FALLBACKS.voiced.log;
+        log.innerHTML = rows.map((row) => {
+          const cls = /idle|voiced|hold/.test(row) ? "ok" : "warn";
+          return '<span class="' + cls + '">' + row + "</span>";
+        }).join("\n");
+        renderChips(seed);
+        document.getElementById("tog-first").checked = scored.firstFired === true && !alarm;
+        document.getElementById("tog-narration").checked = scored.narrationShown === true && alarm;
+        document.getElementById("tog-silent").checked = scored.hookSilent === true && alarm;
+        document.getElementById("tog-final").checked = scored.finalFired === true && !alarm;
+        document.getElementById("tog-block").checked = scored.blockKindNarration === true && alarm;
+        document.getElementById("tog-env").checked = scored.envNoEffect === true && alarm;
+        document.getElementById("probe-input").value = JSON.stringify({
+          seed,
+          firstFired: probe.firstFired ?? null,
+          narrationShown: probe.narrationShown ?? null,
+          hookSilent: probe.hookSilent ?? null,
+          finalFired: probe.finalFired ?? null,
+          blockKindNarration: probe.blockKindNarration ?? null,
+          envNoEffect: probe.envNoEffect ?? null
+        }, null, 2);
+        document.getElementById("wax-word").textContent = alarm ? "MUTED" : "VOICED";
+        document.getElementById("wax-read").textContent = alarm
+          ? "booth muted — hall hears narration, hook silent"
+          : "booth idle — MessageDisplay fires for first+final";
+        document.getElementById("wax-note").textContent = alarm
+          ? "sourdine in; mid-phrase never reaches the hook"
+          : "attack and cadence still speak — mute is open";
+        document.getElementById("read-meter").className = "phrase-bar" + (alarm ? " lag" : "");
+        document.getElementById("face-title").textContent = alarm ? "Sourdine mutes the mid-phrase from the hook" : "Sourdine keeps the phrase voiced";
+        document.getElementById("face-read").textContent = alarm
+          ? "first fires · (summarized) · hook silent · final fires"
+          : "first fires · final fires · mute open";
+        document.getElementById("read-gauge").textContent = alarm ? "attack+cadence still speak — first+final fire" : "voiced — first+final still reach MessageDisplay";
+        document.getElementById("write-gauge").textContent = alarm ? "mute in · hook silent mid-narration" : "open — hook hears the same phrase as the hall";
+        document.getElementById("opus-chip").className = alarm ? "on" : "on";
+        document.getElementById("opus-chip").textContent = alarm ? "hall · hears (summarized)" : "hall · hears the phrase";
+        document.getElementById("fable-chip").className = alarm ? "miss" : "";
+        document.getElementById("fable-chip").textContent = alarm
+          ? "hook · mid-narration silent"
+          : "hook · voiced";
+        document.getElementById("folio-strip").className = "folio" + (alarm ? " lag" : "");
+        document.getElementById("folio-shape").textContent = alarm
+          ? "muted · block_kind narration · hook silent"
+          : "voiced · first · final";
+        document.getElementById("bench-note").textContent = alarm
+          ? "booth muted — mid-narration after tool calls"
+          : "booth voiced — hall and hook agree";
+        paintLamp(alarm);
+      }
+
+      function probeFromToggles() {
+        const firstFired = document.getElementById("tog-first").checked;
+        const narrationShown = document.getElementById("tog-narration").checked;
+        const hookSilent = document.getElementById("tog-silent").checked;
+        const finalFired = document.getElementById("tog-final").checked;
+        const blockKindNarration = document.getElementById("tog-block").checked;
+        const envNoEffect = document.getElementById("tog-env").checked;
+        const muted = narrationShown || hookSilent || blockKindNarration || envNoEffect;
+        return {
+          voiced: !muted,
+          muted,
+          firstFired: firstFired && !muted,
+          finalFired: finalFired && !muted,
+          hookSilent,
+          narrationShown,
+          blockKindNarration,
+          envNoEffect,
+          cue: muted ? "muted" : "voiced"
+        };
+      }
+
+      async function loadSeed(seed) {
+        if (seed === "muted") {
+          try {
+            const res = await fetch("data/muted.json");
+            if (res.ok) {
+              apply(await res.json());
+              return;
+            }
+          } catch (_) {}
+        }
+        apply(FALLBACKS[seed] || FALLBACKS.voiced);
+      }
+
+      function soundFromForm() {
+        const probe = probeFromToggles();
+        const scored = scoreGate(probe);
+        probe.seed = scored.verdict;
+        probe.hubCount = scored.verdict.toUpperCase();
+        apply(Object.assign({}, FALLBACKS[scored.verdict] || {}, probe, {
+          seed: scored.verdict,
+          log: (FALLBACKS[scored.verdict] && FALLBACKS[scored.verdict].log) || probe.log
+        }));
+      }
+
+      function stampPress(seed) {
+        const knob = document.getElementById("mask");
+        knob.classList.add("stamp");
+        document.body.classList.add("rake");
+        setTimeout(() => {
+          knob.classList.remove("stamp");
+          document.body.classList.remove("rake");
+        }, 900);
+        loadSeed(seed);
+      }
+
+      document.getElementById("seat-hall").addEventListener("click", () => stampPress("voiced"));
+      document.getElementById("score-sourdine-btn").addEventListener("click", () => loadSeed("muted"));
+      document.getElementById("sound-mute").addEventListener("click", () => loadSeed("voiced"));
+      document.getElementById("compare-layers").addEventListener("click", () => loadSeed("mid-narration"));
+      document.getElementById("pin-voiced").addEventListener("click", () => loadSeed("voiced"));
+      document.getElementById("pin-muted").addEventListener("click", () => loadSeed("muted"));
+      document.getElementById("pin-path").addEventListener("click", () => loadSeed("mid-narration"));
+      document.getElementById("clear-stand").addEventListener("click", () => loadSeed("voiced"));
+      document.getElementById("score-booth").addEventListener("click", soundFromForm);
+      document.getElementById("mask").addEventListener("click", () => {
+        const current = document.getElementById("mask-word").textContent;
+        stampPress(current === "VOICED" || current === "HOLD" ? "muted" : "voiced");
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.target.matches("textarea, input, select")) return;
+        if (event.key === "v" || event.key === "V") loadSeed("voiced");
+        if (event.key === "m" || event.key === "M") loadSeed("muted");
+        if (event.key === "n" || event.key === "N") loadSeed("mid-narration");
+      });
+
+      const tray = document.getElementById("galley-tray");
+      document.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        tray.classList.add("on");
+      });
+      document.addEventListener("dragleave", () => tray.classList.remove("on"));
+      document.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        tray.classList.remove("on");
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (!file) return;
+        try {
+          apply(JSON.parse(await file.text()));
+        } catch (_) {}
+      });
+
+      renderMarkers();
+      apply(FALLBACKS.voiced);
+    </script>
+  </body>
+</html>
