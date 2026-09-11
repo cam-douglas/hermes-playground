@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Foxfire
+
+- **Thesis:** #93502 — Remote Control message paints in idle CLI composer but never starts a turn. Dim composer text only; no transcript user row; no queue-operation; session stays idle until local Escape/retype.
+- **Shipped:** a new static booth, **Foxfire**, in `projects/foxfire/`.
+- **What it does:** scores marsh-lantern glow after idle Remote Control paint-without-turn (idle kindled / seeded painted / path never-turns).
+- **Catalog:** featured Foxfire only; Pentimento, Vinculum, Cachet, Strobe, and Counterfoil unfeatured.
+
 ## 2026-09-11 — Pentimento
 
 - **Thesis:** #93482 — Cowork `device_commit_files` reports overwrite success (`{"written":[path],"rejected":[]}`) with a fresh mtime, but on-disk content lags exactly one commit. Create is clean. Second identical commit lands.
