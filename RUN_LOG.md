@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Compline
+
+- **Thesis:** #93549 — remote-control: routine sessions are never sent end_session on completion, and when it is sent the harness exits non-zero. Print-resume child stays resident holding a concurrent-session slot; archive path exits non-zero and flips UI to cancelled while API stays SUCCEEDED.
+- **Shipped:** a new static booth, **Compline**, in `projects/compline/`.
+- **What it does:** scores cloister / evening-office / compline after a silent completion (idle closed / seeded lingering / path unrung).
+- **Catalog:** featured Compline only; Cipherlock, Attainder, Sourdine, Forksink, and Foxfire unfeatured.
+
 ## 2026-09-11 — Cipherlock
 
 - **Thesis:** #93537 — macOS: concurrent claude processes zero MCP OAuth entries in shared Keychain blob despite valid refresh tokens. Notion/atlassian blanked; Slack may stay intact. Distinct from #91009.
