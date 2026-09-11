@@ -482,7 +482,6 @@ test("ticket, horizon, header, bisect, bundle, and readBooth mark the empty expa
     emptied: true,
     bearerEmpty: true,
     http401: true,
-    emptyExpand: true,
     ticket: SAMPLE_TICKET,
     horizon: SAMPLE_HORIZON,
   });

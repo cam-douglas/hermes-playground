@@ -1358,7 +1358,9 @@ export function fingerprint(input) {
   const result = analyze(input);
   return [
     result.verdict,
-    result.tokenPresent || result.stamped ? "ticket=stamped" : "ticket=emptied",
+    result.emptied || result.bearerEmpty || result.verdict === "emptied" || result.verdict === "nullarbor"
+      ? "ticket=emptied"
+      : "ticket=stamped",
     result.http401 || result.emptied ? "horizon=401" : "horizon=200",
     result.bearerEmpty || result.emptied ? "header=empty" : "header=expanded",
     result.bisect260 || result.emptied ? "bisect=failed-260" : "bisect=connected",
