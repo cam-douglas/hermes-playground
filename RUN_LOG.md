@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Cathead
+
+- **Thesis:** #93624 — macOS teammate spawn `fork failed: Device not configured` (ENXIO). TmuxBackend `split-window … -- cat` then `respawn-pane -k` races xnu `ptmx_clone` / `ptmx_get_ioctl` at a 16-slot boundary; grow skipped; vector never shrinks.
+- **Shipped:** a new static booth, **Cathead**, in `projects/cathead/`.
+- **What it does:** scores bow cathead / anchor-timber after a ptmx-race (idle seated / seeded raced / path ptmx-race).
+- **Catalog:** featured Cathead only; Anachronism, Nullarbor, Petard, Aposiopesis, Disseisin, Analepsis, and Monstrance unfeatured.
+
 ## 2026-09-12 — Anachronism
 
 - **Thesis:** #93585 — Cloud session checks out stale local branch when a commit is pushed between container pre-warm and session start. Harness DID re-fetch and detach HEAD on the new tip, then `git checkout <branch>` resolved the pre-warm local; `origin/<branch>` rewritten to the old sha so status lies up to date. SessionStart hooks ran on the stale checkout.
