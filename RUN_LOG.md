@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Anachronism
+
+- **Thesis:** #93585 — Cloud session checks out stale local branch when a commit is pushed between container pre-warm and session start. Harness DID re-fetch and detach HEAD on the new tip, then `git checkout <branch>` resolved the pre-warm local; `origin/<branch>` rewritten to the old sha so status lies up to date. SessionStart hooks ran on the stale checkout.
+- **Shipped:** a new static booth, **Anachronism**, in `projects/anachronism/`.
+- **What it does:** scores film continuity / slate chronometer after a prewarm-latch (idle tip / seeded stale / path prewarm-latch).
+- **Catalog:** featured Anachronism only; Nullarbor, Petard, Aposiopesis, Disseisin, Analepsis, Monstrance, and Compline unfeatured.
+
 ## 2026-09-11 — Nullarbor
 
 - **Thesis:** #93595 — Plugin HTTP MCP `${VAR}` header expansion resolves to empty in 2.1.260 (works in 2.1.247 / 2.1.223) — bearer token never sent. Direct POST: expanded → 200; literal unexpanded `${VAR}` → 403; `Bearer ` empty → 401. 2.1.260 matches the empty case. Reproduces from a plain shell; desktop happens to bundle 2.1.260.

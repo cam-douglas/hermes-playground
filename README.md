@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Nullarbor](https://hermes-playground-green.vercel.app/nullarbor/)** — Nullarbor Plain / empty saltbush expanse / blank ticket booth / horizon codes / Eyre mile-posts / brass stamp blotter / Teko + Hind + Fira Mono. A plugin HTTP MCP `Authorization: Bearer ${VAR}` should stay stamped (`${VAR}` expands from process env; Bearer present; `claude mcp list` Connected; expanded POST → 200); instead 2.1.260 empties the header so the ticket matches `Bearer ` → HTTP 401, not literal unexpanded `${VAR}` which is 403 (#93595). Score nullarbor or admit stamped. Folder: `projects/nullarbor/`.
+**Featured: [Anachronism](https://hermes-playground-green.vercel.app/anachronism/)** — film continuity / slate chronometer booth / clapperboard timestamps / darkroom chronometer / sprocket rail / dual clocks (pre-warm 09:03 vs session 09:12) / reflog strip / Spectral + Figtree + IBM Plex Mono. A Claude Code on the web session should stay on tip (HEAD at remote tip as of session start; checkout -B / reset --hard onto FETCH_HEAD; SessionStart hooks see the new commit); instead the harness fetches the new tip then `git checkout` rolls the pre-warm local and rewrites `origin/<branch>` so status lies up to date (#93585). Score anachronism or admit tip. Folder: `projects/anachronism/`.
+
+**Listed: [Nullarbor](https://hermes-playground-green.vercel.app/nullarbor/)** — Nullarbor Plain / empty-bearer booth for #93595. Still listed. Not featured.
 
 **Listed: [Petard](https://hermes-playground-green.vercel.app/petard/)** — siege petard / powder-charge booth for #93607. Still listed. Not featured.
 
