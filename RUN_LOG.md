@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Nullarbor
+
+- **Thesis:** #93595 — Plugin HTTP MCP `${VAR}` header expansion resolves to empty in 2.1.260 (works in 2.1.247 / 2.1.223) — bearer token never sent. Direct POST: expanded → 200; literal unexpanded `${VAR}` → 403; `Bearer ` empty → 401. 2.1.260 matches the empty case. Reproduces from a plain shell; desktop happens to bundle 2.1.260.
+- **Shipped:** a new static booth, **Nullarbor**, in `projects/nullarbor/`.
+- **What it does:** scores Nullarbor Plain / empty-bearer after an empty-expand (idle stamped / seeded emptied / path empty-expand).
+- **Catalog:** featured Nullarbor only; Petard, Aposiopesis, Disseisin, Analepsis, Monstrance, Compline, and Cipherlock unfeatured.
+
 ## 2026-09-11 — Petard
 
 - **Thesis:** #93607 — Bash tool (Linux): pkill -f / pgrep -f match the tool's own bash -c … eval wrapper (exit 144, phantom PIDs); 2.1.214 guard covers only the CLI process. procps-ng / BusyBox exclude only pkill itself, not the parent wrapper. macOS ancestors OK. Bracket idiom only helps cross-call.

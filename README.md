@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Petard](https://hermes-playground-green.vercel.app/petard/)** — siege petard / powder-charge / sapper trench booth / fuse rail / argv mirror / wrapper silhouette / Cinzel + Exo 2 + Fira Code. A Linux Bash-tool `pkill -f` should stay standing (wrapper still alive; `still alive` prints); instead the charge hoists the sapper because the pattern sits in `/bin/bash -c … eval` argv — Exit 144, phantom PIDs; 2.1.214 guards only `$CLAUDE_PID` (#93607). Score petard or admit standing. Folder: `projects/petard/`.
+**Featured: [Nullarbor](https://hermes-playground-green.vercel.app/nullarbor/)** — Nullarbor Plain / empty saltbush expanse / blank ticket booth / horizon codes / Eyre mile-posts / brass stamp blotter / Teko + Hind + Fira Mono. A plugin HTTP MCP `Authorization: Bearer ${VAR}` should stay stamped (`${VAR}` expands from process env; Bearer present; `claude mcp list` Connected; expanded POST → 200); instead 2.1.260 empties the header so the ticket matches `Bearer ` → HTTP 401, not literal unexpanded `${VAR}` which is 403 (#93595). Score nullarbor or admit stamped. Folder: `projects/nullarbor/`.
+
+**Listed: [Petard](https://hermes-playground-green.vercel.app/petard/)** — siege petard / powder-charge booth for #93607. Still listed. Not featured.
 
 **Listed: [Aposiopesis](https://hermes-playground-green.vercel.app/aposiopesis/)** — manuscript speech-break booth for #93588. Still listed. Not featured.
 
