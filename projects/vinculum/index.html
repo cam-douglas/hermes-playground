@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vinculum — chain-forge bench for #93485</title>
+    <meta
+      name="description"
+      content="Vinculum — a chain-forge / binder's vinculum bench for Claude Code #93485: local agent mode hardlinks workspace files into its session upload cache. Idle word is solitary."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400;0,600;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --iron: #1a1f2a;
+        --brass: #b8956c;
+        --linen: #e8dfd0;
+        --soot: #0d1016;
+        --rust: #8b3a2a;
+        --gauge: #3d6b4f;
+        --iron-soft: #242a38;
+        --ash: #8a8378;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Karla", "Gill Sans", sans-serif;
+        color: var(--linen);
+        background:
+          radial-gradient(ellipse at 18% 12%, rgba(184, 149, 108, 0.12), transparent 40%),
+          radial-gradient(circle at 86% 88%, rgba(139, 58, 42, 0.16), transparent 36%),
+          repeating-linear-gradient(
+            90deg,
+            transparent 0 46px,
+            rgba(184, 149, 108, 0.03) 46px 47px
+          ),
+          var(--soot);
+        background-attachment: fixed;
+      }
+      body.embed .chrome { display: none; }
+      body.strike::after {
+        content: "";
+        pointer-events: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(184, 149, 108, 0.14);
+        animation: forge-strike 0.5s ease-out 1;
+      }
+      @keyframes forge-strike {
+        0% { opacity: 0.8; }
+        100% { opacity: 0; }
+      }
+      a { color: var(--brass); }
+      .yard {
+        width: min(1140px, calc(100% - 20px));
+        margin: 0 auto;
+        padding: 16px 0 72px;
+      }
+      .catalog {
+        display: inline-block;
+        font-family: "Source Code Pro", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brass);
+        text-decoration: none;
+        border: 1px solid var(--brass);
+        padding: 6px 10px;
+        margin: 10px 0 16px;
+        background: var(--iron);
+      }
+      .anvil-bed {
+        background: var(--iron);
+        border: 1px solid rgba(184, 149, 108, 0.28);
+        box-shadow: 0 0 0 10px rgba(13, 16, 22, 0.85), 0 24px 0 rgba(139, 58, 42, 0.18);
+        overflow: hidden;
+      }
+      .cord {
+        height: 12px;
+        background: repeating-linear-gradient(
+          90deg,
+          var(--linen) 0 10px,
+          var(--brass) 10px 14px,
+          var(--iron-soft) 14px 22px
+        );
+      }
+      .chain {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 8px;
+        padding: 14px 16px 0;
+      }
+      .link {
+        height: 14px;
+        border: 2px solid var(--brass);
+        border-radius: 999px;
+        background: transparent;
+      }
+      .link.solitary { border-color: var(--gauge); }
+      .link.twin { border-color: var(--rust); background: rgba(139, 58, 42, 0.35); }
+      .mast { padding: 18px 22px 8px; }
+      .mast h1 {
+        font-family: "Libre Baskerville", "Times New Roman", serif;
+        font-weight: 700;
+        font-size: clamp(44px, 7vw, 84px);
+        letter-spacing: -0.02em;
+        margin: 0;
+        line-height: 0.9;
+        color: var(--brass);
+      }
+      .serial {
+        font-family: "Source Code Pro", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gauge);
+        margin: 8px 0 0;
+      }
+      .lede {
+        max-width: 74em;
+        line-height: 1.64;
+        font-size: 15px;
+        margin: 12px 0 0;
+        color: var(--ash);
+      }
+      .lede strong {
+        color: var(--linen);
+        font-family: "Libre Baskerville", serif;
+        font-weight: 700;
+      }
+      .lede em { font-style: italic; color: var(--brass); }
+      .lede code, code {
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        color: var(--gauge);
+      }
+      .hearth {
+        margin: 16px 14px 18px;
+        background: var(--soot);
+        border: 1px solid rgba(184, 149, 108, 0.28);
+      }
+      .forge-face {
+        display: grid;
+        grid-template-columns: 1fr 168px 1fr;
+        min-height: 278px;
+      }
+      @media (max-width: 820px) {
+        .forge-face { grid-template-columns: 1fr; }
+      }
+      .tongs {
+        padding: 16px 14px;
+        background:
+          repeating-linear-gradient(
+            180deg,
+            rgba(184, 149, 108, 0.05) 0 8px,
+            transparent 8px 16px
+          );
+        border-right: 1px solid rgba(184, 149, 108, 0.18);
+      }
+      .tongs small {
+        font-family: "Source Code Pro", monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .tongs b {
+        display: block;
+        font-family: "Libre Baskerville", serif;
+        font-size: 24px;
+        margin: 8px 0 10px;
+        color: var(--linen);
+      }
+      .tongs p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ash); }
+      .meter {
+        margin-top: 14px;
+        height: 10px;
+        background: rgba(61, 107, 79, 0.18);
+        border: 1px solid rgba(61, 107, 79, 0.45);
+      }
+      .meter span {
+        display: block;
+        height: 100%;
+        width: 18%;
+        background: var(--gauge);
+      }
+      .meter.twin span { width: 72%; background: var(--rust); }
+      .knob-well {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 42%, rgba(184, 149, 108, 0.18), transparent 62%);
+      }
+      .knob-well button {
+        width: 132px;
+        height: 132px;
+        border-radius: 18% 18% 42% 42%;
+        border: 6px double var(--brass);
+        background: var(--iron-soft);
+        color: var(--linen);
+        cursor: pointer;
+        font-family: "Libre Baskerville", serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+        box-shadow: 0 10px 0 rgba(13, 16, 22, 0.7);
+      }
+      .knob-well button.alarm {
+        border-color: var(--rust);
+        background: var(--rust);
+        color: var(--linen);
+      }
+      .knob-well button.stamp { animation: hammer-down 0.32s ease-in 1; }
+      @keyframes hammer-down {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(0.92) translateY(6px); }
+      }
+      .knob-well small {
+        font-family: "Source Code Pro", monospace;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+      }
+      .knob-well b { font-size: 15px; line-height: 1.1; }
+      .readout { padding: 16px 18px; }
+      .readout h2 {
+        font-family: "Libre Baskerville", serif;
+        font-size: 22px;
+        margin: 0 0 8px;
+        color: var(--linen);
+      }
+      .gauges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      @media (max-width: 640px) {
+        .gauges { grid-template-columns: 1fr; }
+      }
+      .gauges article {
+        border: 1px dashed rgba(184, 149, 108, 0.35);
+        padding: 8px 10px;
+        background: rgba(26, 31, 42, 0.7);
+      }
+      .gauges dt {
+        font-family: "Source Code Pro", monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .gauges dd {
+        margin: 4px 0 0;
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        word-break: break-word;
+        color: var(--gauge);
+      }
+      .compare {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .compare span {
+        flex: 1;
+        font-family: "Source Code Pro", monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+        border: 1px solid rgba(232, 223, 208, 0.16);
+        background: var(--iron-soft);
+      }
+      .compare span.on { background: var(--gauge); color: var(--linen); }
+      .compare span.miss { background: var(--rust); color: var(--linen); }
+      .score {
+        font-family: "Libre Baskerville", serif;
+        margin: 0 14px 12px;
+        padding: 12px 16px;
+        background: rgba(26, 31, 42, 0.9);
+        border-left: 8px solid var(--gauge);
+      }
+      .score.alarm { border-left-color: var(--rust); }
+      .score .badge {
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        color: var(--gauge);
+      }
+      .score.alarm .badge { color: var(--rust); }
+      .score p { margin: 6px 0 0; font-family: "Karla", sans-serif; font-size: 15px; }
+      .actions, .pins {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 14px 10px;
+      }
+      button.act, button.pin {
+        font-family: "Karla", sans-serif;
+        font-size: 13px;
+        border: 1px solid var(--brass);
+        background: var(--iron);
+        color: var(--linen);
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      button.act { background: var(--gauge); border-color: var(--gauge); }
+      button.act.alarm { background: var(--rust); border-color: var(--rust); color: var(--linen); }
+      .toggles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 0 14px 14px;
+        padding: 12px;
+        background: rgba(61, 107, 79, 0.08);
+      }
+      @media (max-width: 720px) {
+        .toggles { grid-template-columns: 1fr 1fr; }
+      }
+      .toggles label {
+        font-size: 13px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .folio-strip {
+        margin: 0 14px 14px;
+        padding: 12px;
+        background: var(--iron-soft);
+        color: var(--linen);
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .folio-strip .shape { color: var(--brass); }
+      .folio-strip.twin .shape { color: #e8b4a8; }
+      .rail-note {
+        margin: 0 14px 14px;
+        padding: 10px 12px;
+        border-top: 3px solid var(--brass);
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        background: rgba(184, 149, 108, 0.1);
+        color: var(--linen);
+      }
+      .docket {
+        margin: 0 14px 12px;
+        padding: 8px 12px;
+        font-size: 14px;
+        background: var(--gauge);
+        color: var(--linen);
+      }
+      .docket.alarm { background: var(--rust); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 14px 12px; }
+      .chip {
+        border: 1px solid rgba(184, 149, 108, 0.35);
+        background: var(--iron);
+        color: var(--linen);
+        font-family: "Source Code Pro", monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+        cursor: pointer;
+      }
+      .chip.on { background: var(--gauge); color: var(--linen); }
+      .chip.hold { border-color: rgba(184, 149, 108, 0.75); }
+      .walk {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 6px;
+        margin: 0 14px 12px;
+      }
+      .peg {
+        background: rgba(26, 31, 42, 0.9);
+        border: 1px solid rgba(184, 149, 108, 0.2);
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+      .peg.twin { border-color: var(--rust); color: #e8b4a8; }
+      .peg .t { font-family: "Source Code Pro", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+      .log {
+        margin: 0 14px 12px;
+        padding: 12px;
+        background: var(--soot);
+        color: var(--brass);
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        min-height: 72px;
+      }
+      .log .ok { color: #9ec9a8; }
+      .log .warn { color: #e8b4a8; }
+      .drop {
+        margin: 0 14px 10px;
+        border: 1px dashed var(--brass);
+        padding: 10px;
+        text-align: center;
+        color: var(--ash);
+        font-size: 13px;
+      }
+      .drop.on { background: rgba(184, 149, 108, 0.12); }
+      textarea {
+        width: calc(100% - 28px);
+        margin: 0 14px 16px;
+        min-height: 110px;
+        font-family: "Source Code Pro", monospace;
+        font-size: 12px;
+        background: var(--iron);
+        color: var(--linen);
+        border: 1px solid rgba(184, 149, 108, 0.28);
+        padding: 10px;
+      }
+      .notes {
+        padding: 0 22px 18px;
+        color: var(--ash);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .notes h2 {
+        font-family: "Libre Baskerville", serif;
+        color: var(--brass);
+        font-size: 24px;
+      }
+      .cousin-not-primary { color: var(--brass); }
+      footer {
+        padding: 0 22px 18px;
+        color: var(--gauge);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="yard">
+      <a class="catalog chrome" href="/">Catalog · #281 · 09:50</a>
+      <div class="anvil-bed">
+        <div class="cord" aria-hidden="true"></div>
+        <div class="chain" id="chain" aria-hidden="true">
+          <span class="link solitary"></span><span class="link solitary"></span><span class="link solitary"></span>
+          <span class="link solitary"></span><span class="link solitary"></span><span class="link solitary"></span>
+          <span class="link solitary"></span><span class="link solitary"></span><span class="link solitary"></span>
+          <span class="link solitary"></span><span class="link solitary"></span><span class="link solitary"></span>
+        </div>
+        <header class="mast">
+          <h1>Vinculum</h1>
+          <p class="serial">chain-forge · binder's bench · brass nlink gauges</p>
+          <p class="lede">
+            <strong>#93485</strong> · GBalunis · Claude Desktop 1.49585.0 (win32 x64, Windows 11 25H2).
+            Local agent mode does <em>not</em> copy files into a session upload cache.
+            It forges hard links from the workspace into
+            <code>%APPDATA%\Claude\local-agent-mode-sessions\...\uploads\</code>.
+            The cloud file bridge then refuses any file with <code>nlink &gt; 1</code>.
+            Idle <strong>solitary</strong> / seeded <strong>twinlinked</strong> /
+            path <strong>bridge-refuse</strong>.
+            Phrase: <em>when local agent mode hardlinks a workspace file into the session upload cache and the cloud file bridge refuses nlink &gt; 1, score vinculum or admit solitary.</em>
+          </p>
+        </header>
+
+        <div class="hearth">
+          <div class="forge-face">
+            <aside class="tongs">
+              <small>binder's vinculum bench</small>
+              <b id="wax-word">SOLITARY</b>
+              <p id="wax-read">anvil idle — nlink=1, no Claude-owned alias</p>
+              <div class="meter" id="read-meter"><span></span></div>
+              <p id="wax-note" style="margin-top:10px">cloud file bridge accepts the solitary inode</p>
+            </aside>
+            <div class="knob-well">
+              <button id="mask" type="button">
+                <small id="mask-seed">solitary · #93485</small>
+                <b id="mask-word">SOLITARY</b>
+              </button>
+            </div>
+            <section class="readout">
+              <h2 id="face-title">Vinculum holds a solitary file</h2>
+              <p id="face-read">nlink=1 · no alias · bridge accepts</p>
+              <div class="gauges">
+                <article>
+                  <dl>
+                    <dt>nlink gauge</dt>
+                    <dd id="read-gauge">1 — solitary</dd>
+                  </dl>
+                </article>
+                <article>
+                  <dl>
+                    <dt>alias cord</dt>
+                    <dd id="write-gauge">none in the upload cache</dd>
+                  </dl>
+                </article>
+              </div>
+              <div class="compare" id="model-chip">
+                <span id="opus-chip" class="on">local idle · no manufactured bond</span>
+                <span id="fable-chip">cloud bridge · accept</span>
+              </div>
+            </section>
+          </div>
+
+          <div class="score hold" id="score">
+            <div class="badge" id="score-badge">SOLITARY</div>
+            <p id="score-line">admit <em>solitary</em> — nlink=1, no Claude-owned alias, cloud bridge accepts</p>
+          </div>
+
+          <div class="actions">
+            <button class="act" id="strike-vinculum" type="button">Strike the vinculum</button>
+            <button class="act alarm" id="score-vinculum-btn" type="button">Score vinculum</button>
+            <button class="act" id="gauge-nlink" type="button">Gauge the nlink</button>
+            <button class="act alarm" id="compare-modes" type="button">Compare local / cloud</button>
+            <button class="act" id="score-booth" type="button">Score the bench</button>
+          </div>
+          <div class="pins">
+            <button class="pin" id="pin-solitary" type="button">Pin idle solitary</button>
+            <button class="pin" id="pin-twinlinked" type="button">Pin seeded twinlinked</button>
+            <button class="pin" id="pin-path" type="button">Pin bridge-refuse</button>
+            <button class="pin" id="clear-forge" type="button">Clear the forge</button>
+          </div>
+
+          <div class="toggles">
+            <label><input type="checkbox" id="tog-local" /> local agent mode</label>
+            <label><input type="checkbox" id="tog-hardlink" /> hardlink into uploads</label>
+            <label><input type="checkbox" id="tog-alias" /> Claude-owned alias</label>
+            <label><input type="checkbox" id="tog-cloud" /> cloud session</label>
+            <label><input type="checkbox" id="tog-nlink" /> nlink &gt; 1</label>
+            <label><input type="checkbox" id="tog-refuse" /> bridge refuse</label>
+          </div>
+
+          <div class="folio-strip" id="folio-strip">
+            workspace file · <span class="shape" id="folio-shape">nlink=1 · no local-agent-mode-sessions alias</span>
+          </div>
+          <div class="rail-note" id="bench-note">forge solitary — linen cord unbound; brass gauge at one</div>
+          <div class="docket hold" id="activity" aria-live="polite">
+            <span id="activity-text"> forge solitary — binder's bench keeps the workspace file unbound</span>
+          </div>
+          <div class="chips" id="chips"></div>
+          <div class="walk" id="timeline-markers"></div>
+          <pre class="log" id="log"></pre>
+          <div class="drop" id="galley-tray">Lay a fixture JSON on the anvil</div>
+          <textarea id="probe-input" spellcheck="false">{
+  "seed": "solitary"
+}</textarea>
+        </div>
+
+        <section class="notes">
+          <h2>Published walk · #93485</h2>
+          <p>
+            Claude Desktop 1.49585.0 · filed by GBalunis 2026-09-10. Labels: bug,
+            has repro, platform:windows, area:cowork. Windows 11 25H2,
+            OS Build 26200.9445; Cowork cloud session linked to a desktop
+            device; OneDrive-synced folder, 4,195 files.
+            Local agent mode creates hard links into
+            <code>%APPDATA%\Claude\local-agent-mode-sessions\...\uploads\</code>
+            and never cleans them up. A full-tree <code>fsutil hardlink list</code>
+            found 20 workspace files carrying 52 alias entries. A skill file
+            used by a recurring local scheduled task reached 26 links.
+            Representative: <code>context\stack.md</code> at 2 links.
+            Cloud file bridge: <code>file is hardlinked (nlink &gt; 1) — refused to avoid reading through a link alias; copy the file to break the link and retry</code>.
+            Workaround: delete the alias entries under the Claude upload cache
+            (safe: data survives while one link remains).
+          </p>
+          <p class="cousin-not-primary">
+            cousin-not-primary #50268 CLOSED.
+            Cite-only backups #93458 #93482 #93475 #93439 #93438 #93466.
+            Do not auto-pick. Different mechanism from Cachet folio-seal,
+            Strobe hangar-beacon wakeup, and Procrustes MCP cull.
+            This booth is specifically local-mode hardlink / cloud bridge-refuse.
+          </p>
+          <p>
+            Educational chips: nlink-one · nlink-rise · hardlink · alias ·
+            upload-cache · local-mode · cloud-bridge · accumulate ·
+            session-end · write-through · workaround · fsutil.
+            NOT Cachet. NOT Strobe. NOT Counterfoil. NOT Lucida. NOT Fomite.
+            NOT Snubber. NOT Fosse. NOT Hibernacle. NOT Paraph. NOT Procrustes.
+            Hypothesis NON-BINDING — encoded from the issue text only.
+          </p>
+        </section>
+        <footer class="chrome">
+          Diagnostic chain-forge / binder's vinculum bench only. No live Claude. No secrets. No network. Score vinculum or admit solitary.
+        </footer>
+      </div>
+    </div>
+    <script type="module">
+      import {
+        VINCULUM_WALK,
+        classify,
+        scoreWalk,
+        scoreGate,
+      } from "./vinculum.mjs";
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD = new Set(["solitary", "hold"]);
+      const PEGS = [
+        { seed: "solitary", name: "solitary", note: "idle HOLD", hold: true },
+        { seed: "twinlinked", name: "twinlinked", note: "#93485" },
+        { seed: "vinculum", name: "vinculum", note: "product" },
+        { seed: "bridge-refuse", name: "bridge-refuse", note: "path" },
+        { seed: "hold", name: "hold", note: "HOLD alias", hold: true },
+        { seed: "nlink-one", name: "nlink-one", note: "nlink=1" },
+        { seed: "nlink-rise", name: "nlink-rise", note: "nlink>1" },
+        { seed: "hardlink", name: "hardlink", note: "fs.link" },
+        { seed: "alias", name: "alias", note: "Claude-owned" },
+        { seed: "upload-cache", name: "upload-cache", note: "uploads/" },
+        { seed: "local-mode", name: "local-mode", note: "local agent" },
+        { seed: "cloud-bridge", name: "cloud-bridge", note: "cloud refuse" },
+        { seed: "accumulate", name: "accumulate", note: "26 links" },
+        { seed: "session-end", name: "session-end", note: "never cleaned" },
+        { seed: "write-through", name: "write-through", note: "same inode" },
+        { seed: "workaround", name: "workaround", note: "delete aliases" },
+        { seed: "fsutil", name: "fsutil", note: "hardlink list" },
+        { seed: "has-repro", name: "has-repro", note: "GBalunis" },
+        { seed: "cousins", name: "cousins", note: "#50268" },
+        { seed: "backups", name: "backups", note: "#93458" },
+        { seed: "walk", name: "walk", note: "published walk" }
+      ];
+
+      const FALLBACKS = {
+        solitary: {
+          seed: "solitary",
+          hubCount: "SOLITARY",
+          solitary: true,
+          twinlinked: false,
+          nlink: 1,
+          nlinkOne: true,
+          log: [
+            "[idle] forge solitary — nlink=1, no Claude-owned alias in local-agent-mode-sessions/.../uploads/"
+          ]
+        },
+        twinlinked: {
+          seed: "twinlinked",
+          hubCount: "TWINLINKED",
+          solitary: false,
+          twinlinked: true,
+          localMode: true,
+          hardlink: true,
+          alias: true,
+          uploadCache: true,
+          nlink: 2,
+          nlinkRise: true,
+          cloud: true,
+          bridgeRefuse: true,
+          log: [
+            "[seed] #93485 twinlinked — Claude Desktop 1.49585.0 Windows 11; local agent mode hardlinks, does not copy",
+            "[seed] 20 workspace files carrying 52 alias entries; every alias pointed into local-agent-mode-sessions/.../uploads/",
+            "[seed] cloud file bridge refuses nlink > 1; skill file reached 26 links, one per run; never cleaned up"
+          ]
+        },
+        vinculum: { seed: "vinculum", preferSeed: true, hubCount: "VINCULUM", twinlinked: true, hardlink: true, alias: true, log: ["[vinculum] score the bond that local mode forged into the upload cache"] },
+        "bridge-refuse": { seed: "bridge-refuse", preferSeed: true, hubCount: "BRIDGE-REFUSE", twinlinked: true, hardlink: true, alias: true, cloud: true, bridgeRefuse: true, nlink: 2, log: ["[bridge-refuse] local mode manufactured the exact condition cloud mode is designed to reject"] },
+        hold: { seed: "hold", preferSeed: true, hubCount: "HOLD", solitary: true, log: ["[hold] admit solitary"] },
+        "nlink-one": { seed: "nlink-one", preferSeed: true, hubCount: "NLINK-ONE", nlinkOne: true, log: ["[nlink-one] nlink=1 — solitary inode"] },
+        "nlink-rise": { seed: "nlink-rise", preferSeed: true, hubCount: "NLINK-RISE", nlinkRise: true, log: ["[nlink-rise] nlink rises to 2 after one local session; skill file reached 26"] },
+        hardlink: { seed: "hardlink", preferSeed: true, hubCount: "HARDLINK", hardlink: true, log: ["[hardlink] local agent mode creates a hard link, not a copy, into the session upload cache"] },
+        alias: { seed: "alias", preferSeed: true, hubCount: "ALIAS", alias: true, log: ["[alias] every alias pointed into local-agent-mode-sessions/.../uploads/"] },
+        "upload-cache": { seed: "upload-cache", preferSeed: true, hubCount: "UPLOAD-CACHE", uploadCache: true, log: ["[upload-cache] %APPDATA%\\\\Claude\\\\local-agent-mode-sessions\\\\...\\\\uploads\\\\"] },
+        "local-mode": { seed: "local-mode", preferSeed: true, hubCount: "LOCAL-MODE", localMode: true, log: ["[local-mode] local agent mode Cowork session with a connected folder"] },
+        "cloud-bridge": { seed: "cloud-bridge", preferSeed: true, hubCount: "CLOUD-BRIDGE", cloud: true, log: ["[cloud-bridge] cloud file bridge refuses any file with nlink > 1"] },
+        accumulate: { seed: "accumulate", preferSeed: true, hubCount: "ACCUMULATE", accumulate: true, log: ["[accumulate] 20 files / 52 aliases; recurring task 26 links, one per run"] },
+        "session-end": { seed: "session-end", preferSeed: true, hubCount: "SESSION-END", sessionEnd: true, log: ["[session-end] links are never removed when the session ends"] },
+        "write-through": { seed: "write-through", preferSeed: true, hubCount: "WRITE-THROUGH", writeThrough: true, log: ["[write-through] true hard links: a write to the cached alias writes through to the original"] },
+        workaround: { seed: "workaround", preferSeed: true, hubCount: "WORKAROUND", workaround: true, log: ["[workaround] delete alias entries under the Claude upload cache; data survives while one link remains"] },
+        fsutil: { seed: "fsutil", preferSeed: true, hubCount: "FSUTIL", fsutil: true, log: ["[fsutil] fsutil hardlink list found 20 workspace files carrying 52 alias entries"] },
+        "has-repro": { seed: "has-repro", preferSeed: true, hubCount: "HAS-REPRO", log: ["[has-repro] 1.49585.0 · GBalunis · win32 x64 · Windows 11 25H2 · 20 files / 52 aliases"] },
+        cousins: { seed: "cousins", preferSeed: true, hubCount: "COUSINS", log: ["[cousins] cousin-not-primary #50268 CLOSED"] },
+        backups: { seed: "backups", preferSeed: true, hubCount: "BACKUPS", log: ["[backups] cite-only #93458 #93482 #93475 #93439 #93438 #93466"] },
+        walk: { seed: "walk", preferSeed: true, hubCount: "WALK", log: ["[walk] solitary → local-session → hardlink → nlink-rise → accumulate → cloud-default → bridge-refuse → sibling-ok → vinculum"] }
+      };
+
+      function tone(seed) {
+        return HOLD.has(seed) ? "hold" : "alarm";
+      }
+
+      function paintLinks(alarm) {
+        const links = document.querySelectorAll("#chain .link");
+        links.forEach((link, index) => {
+          link.className = "link";
+          if (alarm) {
+            if (index >= 1) link.classList.add("twin");
+            else link.classList.add("solitary");
+          } else {
+            link.classList.add("solitary");
+          }
+        });
+      }
+
+      function renderChips(active) {
+        const root = document.getElementById("chips");
+        root.innerHTML = "";
+        PEGS.forEach((peg) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "chip";
+          if (peg.seed === active) btn.classList.add("on");
+          if (peg.hold) btn.classList.add("hold");
+          btn.innerHTML = "<b>" + peg.name + "</b> " + peg.note;
+          btn.addEventListener("click", () => loadSeed(peg.seed));
+          root.appendChild(btn);
+        });
+      }
+
+      function renderMarkers() {
+        const root = document.getElementById("timeline-markers");
+        const scored = scoreWalk({ rows: VINCULUM_WALK });
+        root.innerHTML = scored.rows.map((row) => {
+          const cls = row.verdict === "twinlinked" || row.verdict === "bridge-refuse" ? "twin" : "";
+          return (
+            "<article class=\"peg " + cls + "\">" +
+              "<div class=\"t\">" + (row.t || row.event) + "</div>" +
+              "<div class=\"e\">" + (row.event || "—") + "</div>" +
+              "<div class=\"s\">" + (row.verdict || "—") + "</div>" +
+            "</article>"
+          );
+        }).join("");
+      }
+
+      function apply(probe) {
+        const seed = classify(probe);
+        const scored = Array.isArray(probe.rows) ? scoreWalk(probe) : scoreGate(probe);
+        const kind = tone(seed);
+        const alarm = !HOLD.has(seed);
+        document.getElementById("mask-seed").textContent = seed + " · #93485";
+        document.getElementById("mask-word").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        document.getElementById("mask").className = alarm ? "alarm" : "";
+        document.getElementById("score").className = "score " + kind;
+        document.getElementById("score-badge").textContent = (probe.hubCount || seed).toString().toUpperCase();
+        const line = document.getElementById("score-line");
+        if (HOLD.has(seed)) {
+          line.innerHTML = "admit <em>solitary</em> — nlink=1, no Claude-owned alias, cloud bridge accepts";
+        } else if (seed === "twinlinked" || seed === "vinculum") {
+          line.innerHTML = "score <em>vinculum</em> — local agent mode hardlinked into upload cache, nlink&gt;1";
+        } else if (seed === "bridge-refuse") {
+          line.innerHTML = "score <em>bridge-refuse</em> — cloud file bridge refuses nlink &gt; 1";
+        } else {
+          line.innerHTML = "score <em>" + seed + "</em> — published #93485 row on the forge";
+        }
+        const activity = document.getElementById("activity");
+        activity.className = "docket " + kind;
+        document.getElementById("activity-text").textContent = alarm
+          ? " forge twinlinked — local mode bound the workspace file into the upload cache"
+          : " forge solitary — binder's bench keeps the workspace file unbound";
+        const log = document.getElementById("log");
+        const rows = probe.log || FALLBACKS.solitary.log;
+        log.innerHTML = rows.map((row) => {
+          const cls = /idle|solitary|hold/.test(row) ? "ok" : "warn";
+          return '<span class="' + cls + '">' + row + "</span>";
+        }).join("\n");
+        renderChips(seed);
+        document.getElementById("tog-local").checked = scored.localMode === true && alarm;
+        document.getElementById("tog-hardlink").checked = scored.hardlink === true && alarm;
+        document.getElementById("tog-alias").checked = scored.alias === true && alarm;
+        document.getElementById("tog-cloud").checked = scored.cloud === true || seed === "cloud-bridge";
+        document.getElementById("tog-nlink").checked = scored.nlinkRise === true && alarm;
+        document.getElementById("tog-refuse").checked = scored.bridgeRefuse === true && alarm;
+        document.getElementById("probe-input").value = JSON.stringify({
+          seed,
+          localMode: probe.localMode ?? null,
+          hardlink: probe.hardlink ?? null,
+          alias: probe.alias ?? null,
+          nlink: probe.nlink ?? null,
+          bridgeRefuse: probe.bridgeRefuse ?? null
+        }, null, 2);
+        document.getElementById("wax-word").textContent = alarm ? "TWINLINKED" : "SOLITARY";
+        document.getElementById("wax-read").textContent = alarm
+          ? "anvil bound — hardlink into uploads, nlink>1"
+          : "anvil idle — nlink=1, no Claude-owned alias";
+        document.getElementById("wax-note").textContent = alarm
+          ? "cloud file bridge refuses nlink > 1"
+          : "cloud file bridge accepts the solitary inode";
+        document.getElementById("read-meter").className = "meter" + (alarm ? " twin" : "");
+        document.getElementById("face-title").textContent = alarm ? "Vinculum forged a twin link" : "Vinculum holds a solitary file";
+        document.getElementById("face-read").textContent = alarm
+          ? "nlink>1 · Claude-owned alias · bridge refuse"
+          : "nlink=1 · no alias · bridge accepts";
+        document.getElementById("read-gauge").textContent = alarm ? "2+ — twinlinked (skill file 26)" : "1 — solitary";
+        document.getElementById("write-gauge").textContent = alarm ? "52 aliases / 20 files" : "none in the upload cache";
+        document.getElementById("opus-chip").className = seed === "local-mode" || scored.localMode === true ? (alarm ? "miss" : "on") : "on";
+        document.getElementById("opus-chip").textContent = alarm && scored.localMode === true
+          ? "local mode · manufactured bond"
+          : "local idle · no manufactured bond";
+        document.getElementById("fable-chip").className = alarm ? "miss" : "";
+        document.getElementById("fable-chip").textContent = alarm
+          ? "cloud bridge · refuse"
+          : "cloud bridge · accept";
+        document.getElementById("folio-strip").className = "folio-strip" + (alarm ? " twin" : "");
+        document.getElementById("folio-shape").textContent = alarm
+          ? "nlink>1 · alias in local-agent-mode-sessions/.../uploads/"
+          : "nlink=1 · no local-agent-mode-sessions alias";
+        document.getElementById("bench-note").textContent = alarm
+          ? "forge twinlinked — bridge-refuse after local hardlink"
+          : "forge solitary — linen cord unbound; brass gauge at one";
+        paintLinks(alarm);
+      }
+
+      function probeFromToggles() {
+        const localMode = document.getElementById("tog-local").checked;
+        const hardlink = document.getElementById("tog-hardlink").checked;
+        const alias = document.getElementById("tog-alias").checked;
+        const cloud = document.getElementById("tog-cloud").checked;
+        const nlinkRise = document.getElementById("tog-nlink").checked;
+        const bridgeRefuse = document.getElementById("tog-refuse").checked;
+        const twinlinked = localMode || hardlink || alias || nlinkRise || bridgeRefuse;
+        return {
+          solitary: !twinlinked,
+          twinlinked,
+          localMode,
+          hardlink,
+          alias,
+          uploadCache: hardlink || alias,
+          cloud,
+          nlink: nlinkRise || twinlinked ? 2 : 1,
+          nlinkOne: !nlinkRise && !twinlinked,
+          nlinkRise: nlinkRise || twinlinked,
+          bridgeRefuse: bridgeRefuse || (cloud && twinlinked),
+          cue: twinlinked ? "twinlinked" : "solitary"
+        };
+      }
+
+      async function loadSeed(seed) {
+        if (seed === "twinlinked") {
+          try {
+            const res = await fetch("data/twinlinked.json");
+            if (res.ok) {
+              apply(await res.json());
+              return;
+            }
+          } catch (_) {}
+        }
+        apply(FALLBACKS[seed] || FALLBACKS.solitary);
+      }
+
+      function soundFromForm() {
+        const probe = probeFromToggles();
+        const scored = scoreGate(probe);
+        probe.seed = scored.verdict;
+        probe.hubCount = scored.verdict.toUpperCase();
+        apply(Object.assign({}, FALLBACKS[scored.verdict] || {}, probe, {
+          seed: scored.verdict,
+          log: (FALLBACKS[scored.verdict] && FALLBACKS[scored.verdict].log) || probe.log
+        }));
+      }
+
+      function stampPress(seed) {
+        const knob = document.getElementById("mask");
+        knob.classList.add("stamp");
+        document.body.classList.add("strike");
+        setTimeout(() => {
+          knob.classList.remove("stamp");
+          document.body.classList.remove("strike");
+        }, 900);
+        loadSeed(seed);
+      }
+
+      document.getElementById("strike-vinculum").addEventListener("click", () => stampPress("solitary"));
+      document.getElementById("score-vinculum-btn").addEventListener("click", () => loadSeed("twinlinked"));
+      document.getElementById("gauge-nlink").addEventListener("click", () => loadSeed("solitary"));
+      document.getElementById("compare-modes").addEventListener("click", () => loadSeed("bridge-refuse"));
+      document.getElementById("pin-solitary").addEventListener("click", () => loadSeed("solitary"));
+      document.getElementById("pin-twinlinked").addEventListener("click", () => loadSeed("twinlinked"));
+      document.getElementById("pin-path").addEventListener("click", () => loadSeed("bridge-refuse"));
+      document.getElementById("clear-forge").addEventListener("click", () => loadSeed("solitary"));
+      document.getElementById("score-booth").addEventListener("click", soundFromForm);
+      document.getElementById("mask").addEventListener("click", () => {
+        const current = document.getElementById("mask-word").textContent;
+        stampPress(current === "SOLITARY" || current === "HOLD" ? "twinlinked" : "solitary");
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.target.matches("textarea, input, select")) return;
+        if (event.key === "s" || event.key === "S") loadSeed("solitary");
+        if (event.key === "t" || event.key === "T") loadSeed("twinlinked");
+        if (event.key === "b" || event.key === "B") loadSeed("bridge-refuse");
+      });
+
+      const tray = document.getElementById("galley-tray");
+      document.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        tray.classList.add("on");
+      });
+      document.addEventListener("dragleave", () => tray.classList.remove("on"));
+      document.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        tray.classList.remove("on");
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (!file) return;
+        try {
+          apply(JSON.parse(await file.text()));
+        } catch (_) {}
+      });
+
+      renderMarkers();
+      apply(FALLBACKS.solitary);
+    </script>
+  </body>
+</html>

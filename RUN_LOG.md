@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Vinculum
+
+- **Thesis:** #93485 — Cowork local agent mode hardlinks workspace files into its session upload cache (`%APPDATA%\Claude\local-agent-mode-sessions\...\uploads\`), and the cloud file bridge then refuses to read them (`nlink > 1`).
+- **Shipped:** a new static booth, **Vinculum**, in `projects/vinculum/`.
+- **What it does:** scores chain-forge nlink bonds after local-mode hardlink (idle solitary / seeded twinlinked / path bridge-refuse).
+- **Catalog:** featured Vinculum only; Cachet, Strobe, Counterfoil, Lucida, and Fomite unfeatured.
+
 ## 2026-09-11 — Cachet
 
 - **Thesis:** #93490 — Fable 5.1 `--resume` replays the session-start context message (SessionStart hook output + # Environment) as a plain string instead of the ARRAY + cache_control seal it was sent with, so the prompt-cache prefix stops matching and the folio is rewritten. Opus `--resume` still hits.

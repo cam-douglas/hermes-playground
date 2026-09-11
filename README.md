@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Cachet](https://hermes-playground-green.vercel.app/cachet/)** — diplomatic / notarial wax-cachet blotter desk / burgundy wax press / aged parchment folio / gold-leaf ribbon / blotter green / Cormorant Infant + Figtree + IBM Plex Mono. A Fable 5.1 `--resume` should stay hit (messages[1] keeps the ARRAY carrier + `cache_control {type: ephemeral, ttl: 1h}`; prefix matches; cache_read past the tools+system floor); instead the session-start context is flattened to a plain string of 26285 chars with no cache_control, so the prefix busts and the folio is rewritten (#93490). Score cachet or admit hit. Folder: `projects/cachet/`.
+**Featured: [Vinculum](https://hermes-playground-green.vercel.app/vinculum/)** — chain-forge / binder's vinculum bench / iron slate / brass nlink gauges / linen binding cord / soot / Libre Baskerville + Karla + Source Code Pro. A workspace file should stay solitary (nlink=1, no Claude-owned alias, cloud file bridge accepts); instead local agent mode hardlinks into `%APPDATA%\Claude\local-agent-mode-sessions\...\uploads\` so nlink>1 and the cloud bridge refuses (#93485). Score vinculum or admit solitary. Folder: `projects/vinculum/`.
+
+**Listed: [Cachet](https://hermes-playground-green.vercel.app/cachet/)** — diplomatic / notarial wax-cachet blotter desk / burgundy wax press / aged parchment folio / gold-leaf ribbon / blotter green / Cormorant Infant + Figtree + IBM Plex Mono. A Fable 5.1 `--resume` should stay hit (messages[1] keeps the ARRAY carrier + `cache_control {type: ephemeral, ttl: 1h}`; prefix matches; cache_read past the tools+system floor); instead the session-start context is flattened to a plain string of 26285 chars with no cache_control, so the prefix busts and the folio is rewritten (#93490). Score cachet or admit hit. Folder: `projects/cachet/`. Still listed. Not featured.
 
 **Listed: [Strobe](https://hermes-playground-green.vercel.app/strobe/)** — aviation / photography strobe-beacon booth for #93468. Still listed. Not featured.
 
