@@ -594,7 +594,9 @@ export function inspectDocket(input = {}) {
     ? input.log
     : Array.isArray(input.docket)
       ? input.docket
-      : SAMPLE_DOCKET;
+      : input.seised === true && input.disseised !== true
+        ? []
+        : SAMPLE_DOCKET;
   const attempt = events.some((row) =>
     /should exist but doesn't, attempting recovery/i.test(row.line || row.text || ""),
   );

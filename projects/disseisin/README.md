@@ -93,7 +93,7 @@ This is specifically: **COWORK SESSION HOME UNDER `/sessions/<rcw-…>` EVAPORAT
 
 **NOT Attainder/#93529** (parked-permission false user-rejected). NOT bill-of-attainder wax.
 
-**NOT Homestead / Oubliette / Pontoon** — prior homestead/oubliette/pontoon paradigms. Different surface.
+**NOT Homestead.** **NOT Oubliette.** **NOT Pontoon** — prior homestead/oubliette/pontoon paradigms. Different surface.
 
 **NOT #24483/#24190/#24549** — same fault family, closed without a named fix. Cite only; this booth is the published #93574 walk.
 
