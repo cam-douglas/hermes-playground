@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Monadnock
+
+- **Thesis:** #93703 — Desktop-app worktree session rooted inside a git submodule branches from local `main` instead of `refs/remotes/origin/main` and does not fetch first. If local main is behind, the session silently starts on old code. Measured: month-old base, 204 commits behind origin/main. CLI does not have this problem. Same desktop app is correct at the superproject. Reflog spelling differs: desktop records a raw SHA; CLI records a ref name. `worktree.baseRef` unset; documented `fresh` default should apply. Expected: Created from refs/remotes/origin/main.
+- **Shipped:** a new static booth, **Monadnock**, in `projects/monadnock/`.
+- **What it does:** scores geological monadnock / residual mountain / trig survey after a submodule-base (idle fresh / seeded residual / path submodule-base).
+- **Catalog:** featured Monadnock only; Rider, Followspot, Calends, Weir, Irons, Cathead, Anachronism, and Nullarbor unfeatured.
+
 ## 2026-09-12 — Rider
 
 - **Thesis:** #93683 — A planning directive is appended to essentially every tool result as a `type=attachment` entry. It is not in any user configuration. Five user corrections do not stick because the rider is re-injected on the next tool call. 195 injections / 138 reproductions / 5 corrections. No documented opt-out. Outranks explicit user instruction. Wrong trust boundary (instruction in the tool-result channel).
