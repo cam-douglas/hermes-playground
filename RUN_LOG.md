@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Pentimento
+
+- **Thesis:** #93482 — Cowork `device_commit_files` reports overwrite success (`{"written":[path],"rejected":[]}`) with a fresh mtime, but on-disk content lags exactly one commit. Create is clean. Second identical commit lands.
+- **Shipped:** a new static booth, **Pentimento**, in `projects/pentimento/`.
+- **What it does:** scores conservation-atelier underpainting after overwrite lag (idle flushed / seeded lagged / path one-behind).
+- **Catalog:** featured Pentimento only; Vinculum, Cachet, Strobe, Counterfoil, and Lucida unfeatured.
+
 ## 2026-09-11 — Vinculum
 
 - **Thesis:** #93485 — Cowork local agent mode hardlinks workspace files into its session upload cache (`%APPDATA%\Claude\local-agent-mode-sessions\...\uploads\`), and the cloud file bridge then refuses to read them (`nlink > 1`).
