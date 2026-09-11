@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Sourdine
+
+- **Thesis:** #93531 — MessageDisplay no longer fires for text between tool calls (regression). Mid-turn prose is replaced by summarized `block_kind: narration` blocks shown as `(summarized)`; only first+final still reach the hook.
+- **Shipped:** a new static booth, **Sourdine**, in `projects/sourdine/`.
+- **What it does:** scores concert-hall practice-mute attack/phrase/cadence after narration mute (idle voiced / seeded muted / path mid-narration).
+- **Catalog:** featured Sourdine only; Forksink, Foxfire, Pentimento, Vinculum, and Cachet unfeatured.
+
 ## 2026-09-11 — Forksink
 
 - **Thesis:** #93458 — SessionStart hook additionalContext silently dropped when source=fork (rewind); startup/compact inject normally. Hook ran, exit 0, valid JSON, but the model never received the text.
