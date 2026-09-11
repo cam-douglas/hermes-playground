@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Aposiopesis
+
+- **Thesis:** #93588 — 2.1.268: statusLine command is never invoked when cwd is a git repo (works in a non-git cwd) — regression from 2.1.267. Git clone and git worktree never spawn; rail stays empty with no error and no debug line. cwd=$HOME still renders. Concurrent 2.1.267 still invokes. Workspace trust is not the discriminator. Git-cwd vs project-level settings/hooks remains confounded.
+- **Shipped:** a new static booth, **Aposiopesis**, in `projects/aposiopesis/`.
+- **What it does:** scores manuscript speech-break after a git-cwd mute (idle raised / seeded furled / path git-cwd-mute).
+- **Catalog:** featured Aposiopesis only; Disseisin, Analepsis, Monstrance, Compline, Cipherlock, Attainder, and Sourdine unfeatured.
+
 ## 2026-09-11 — Disseisin
 
 - **Thesis:** #93574 — Cowork loses a session's home directory on VM restart, and the connected folder goes with it. Recovery looks for `/sessions/<rcw-…>`, fails when the home is gone, and the UI still presents the folder as connected while every tool call fails. Pair ~30× across 14 days aligned with VM starts. Host disk-low ruled out.
