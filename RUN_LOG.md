@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Analepsis
+
+- **Thesis:** #93569 — Desktop: older turns get re-delivered behind a `background_tasks_redelivered` marker and rendered last, so the feed ends on a turn from hours earlier. Transcript on disk is complete and ordered; the React tree moves the 18:32–19:24 stretch after 22:30. Working marker sticks because the list ends on a task notification rather than a result.
+- **Shipped:** a new static booth, **Analepsis**, in `projects/analepsis/`.
+- **What it does:** scores manuscript flashback / collation after a marker splice (idle ordered / seeded redelivered / path marker-misorder).
+- **Catalog:** featured Analepsis only; Monstrance, Compline, Cipherlock, Attainder, Sourdine, Forksink, and Foxfire unfeatured.
+
 ## 2026-09-11 — Monstrance
 
 - **Thesis:** #93563 — Artifact tool cannot read live artifacts in Cowork: read path binds to native WebFetch, which Cowork substitutes with mcp__workspace__web_fetch. Refusal falsely blames a WebFetch deny rule that does not exist; publish needs force: true. Creating session can publish without read; a later session cannot.
