@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Rider
+
+- **Thesis:** #93683 — A planning directive is appended to essentially every tool result as a `type=attachment` entry. It is not in any user configuration. Five user corrections do not stick because the rider is re-injected on the next tool call. 195 injections / 138 reproductions / 5 corrections. No documented opt-out. Outranks explicit user instruction. Wrong trust boundary (instruction in the tool-result channel).
+- **Shipped:** a new static booth, **Rider**, in `projects/rider/`.
+- **What it does:** scores parliamentary clerk desk / bill-rider after an attachment-rider (idle plain / seeded ridden / path attachment-rider).
+- **Catalog:** featured Rider only; Followspot, Calends, Weir, Irons, Cathead, Anachronism, and Nullarbor unfeatured.
+
 ## 2026-09-12 — Calends
 
 - **Thesis:** #93687 — Desktop Scheduled Tasks missed-run catch-up fires without re-validating day-of-week (and possibly date) of the cron. Five weekly tasks (Fri-only, Wed-only×2, Mon-only, Thu-only) all fired ~12:15–12:19 AM local on a Friday. Misfires report `status: succeeded`. No disable-catch-up setting.
