@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Disseisin
+
+- **Thesis:** #93574 — Cowork loses a session's home directory on VM restart, and the connected folder goes with it. Recovery looks for `/sessions/<rcw-…>`, fails when the home is gone, and the UI still presents the folder as connected while every tool call fails. Pair ~30× across 14 days aligned with VM starts. Host disk-low ruled out.
+- **Shipped:** a new static booth, **Disseisin**, in `projects/disseisin/`.
+- **What it does:** scores court-of-novel-disseisin / freehold manor-roll after a VM-home evaporation (idle seised / seeded disseised / path home-evaporated).
+- **Catalog:** featured Disseisin only; Analepsis, Monstrance, Compline, Cipherlock, Attainder, Sourdine, and Forksink unfeatured.
+
 ## 2026-09-11 — Analepsis
 
 - **Thesis:** #93569 — Desktop: older turns get re-delivered behind a `background_tasks_redelivered` marker and rendered last, so the feed ends on a turn from hours earlier. Transcript on disk is complete and ordered; the React tree moves the 18:32–19:24 stretch after 22:30. Working marker sticks because the list ends on a task notification rather than a result.
