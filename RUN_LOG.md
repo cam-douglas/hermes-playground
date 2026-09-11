@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Forksink
+
+- **Thesis:** #93458 — SessionStart hook additionalContext silently dropped when source=fork (rewind); startup/compact inject normally. Hook ran, exit 0, valid JSON, but the model never received the text.
+- **Shipped:** a new static booth, **Forksink**, in `projects/forksink/`.
+- **What it does:** scores municipal storm-drain grate runoff after rewind fork drop (idle lodged / seeded dropped / path source-fork).
+- **Catalog:** featured Forksink only; Foxfire, Pentimento, Vinculum, Cachet, and Strobe unfeatured.
+
 ## 2026-09-11 — Foxfire
 
 - **Thesis:** #93502 — Remote Control message paints in idle CLI composer but never starts a turn. Dim composer text only; no transcript user row; no queue-operation; session stays idle until local Escape/retype.
