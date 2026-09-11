@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Calends](https://hermes-playground-green.vercel.app/calends/)** — stone calendar / fasti booth / weekday-marker tablet / catch-up hand / nundinal letters / kalends date / acta diurna / Cinzel + Figtree + Fira Code. Catch-up should only strike a time whose weekday matches the cron (calendar day correct); instead Desktop’s missed-run hand walks the clock and skips the DOW mark so five weekly plaques ring together on a Friday (#93687). Score calends or admit due. Folder: `projects/calends/`.
+**Featured: [Rider](https://hermes-playground-green.vercel.app/rider/)** — parliamentary clerk desk / bill-rider booth / clerk blotter / house instruction / staple / wax well / trust channel / Libre Baskerville + Source Sans 3 + IBM Plex Mono. A tool result should stay plain (payload only; user instruction prevails; no rider); instead a planning directive is stapled on as `type=attachment` and rides past the user's instruction with no kill switch (#93683). Score rider or admit plain. Folder: `projects/rider/`.
+
+**Listed: [Followspot](https://hermes-playground-green.vercel.app/followspot/)** — theatrical followspot / stage booth for #93714. Still listed. Not featured.
+
+**Listed: [Calends](https://hermes-playground-green.vercel.app/calends/)** — stone calendar / fasti booth / weekday-marker tablet / catch-up hand / nundinal letters / kalends date / acta diurna / Cinzel + Figtree + Fira Code. Catch-up should only strike a time whose weekday matches the cron (calendar day correct); instead Desktop’s missed-run hand walks the clock and skips the DOW mark so five weekly plaques ring together on a Friday (#93687). Score calends or admit due. Folder: `projects/calends/`. Still listed. Not featured.
 
 **Listed: [Weir](https://hermes-playground-green.vercel.app/weir/)** — mill weir / millrace booth / weir crest / rust gates / MCP millstone / miller's ledger / Fraunces + Manrope + Source Code Pro. Additional domains / All domains should admit the sandbox PUT (millrace open); after the 2.1.266 VM cut the gates stay shut — 403 at egress, host never reached — while `request_upload_url` still turns the MCP millstone (#93589). Score weir or admit flowing. Folder: `projects/weir/`. Still listed. Not featured.
 
