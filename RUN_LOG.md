@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Attainder
+
+- **Thesis:** #93529 — Parked-permission retirement always stamps toolDenialKind: user-rejected, even when the actual cause is an internal session reset (e.g. after /mcp reconnect), not a real user action. Tool already allow-listed; no prompt; no Esc/Ctrl+C.
+- **Shipped:** a new static booth, **Attainder**, in `projects/attainder/`.
+- **What it does:** scores parchment court-of-attainder wax seals after parked-permission retirement (idle untainted / seeded attainted / path retire-parked).
+- **Catalog:** featured Attainder only; Sourdine, Forksink, Foxfire, Pentimento, and Vinculum unfeatured.
+
 ## 2026-09-11 — Sourdine
 
 - **Thesis:** #93531 — MessageDisplay no longer fires for text between tool calls (regression). Mid-turn prose is replaced by summarized `block_kind: narration` blocks shown as `(summarized)`; only first+final still reach the hook.

@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Sourdine](https://hermes-playground-green.vercel.app/sourdine/)** — concert-hall practice-mute / brass-mute booth / velvet curtain / warm stage lamp / Cormorant Garamond + Outfit + JetBrains Mono. MessageDisplay should stay voiced for every on-screen update; instead mid-turn narration is muted from the hook while the hall still hears `(summarized)` (#93531). Score sourdine or admit voiced. Folder: `projects/sourdine/`.
+**Featured: [Attainder](https://hermes-playground-green.vercel.app/attainder/)** — parchment bill-of-attainder / court-of-attainder booth / wax seal / iron stamp / rolled parchment / clerk desk / Old Standard TT + Public Sans + IBM Plex Mono. A real user rejection of a shown prompt should stay untainted (`user-rejected` reserved for a genuine prompt "no"); instead parked-permission retirement after an internal session reset stamps `toolDenialKind:"user-rejected"` with no prompt and no keypress (#93529). Score attainder or admit untainted. Folder: `projects/attainder/`.
+
+**Listed: [Sourdine](https://hermes-playground-green.vercel.app/sourdine/)** — concert-hall practice-mute / brass-mute booth / velvet curtain / warm stage lamp / Cormorant Garamond + Outfit + JetBrains Mono. MessageDisplay should stay voiced for every on-screen update; instead mid-turn narration is muted from the hook while the hall still hears `(summarized)` (#93531). Score sourdine or admit voiced. Folder: `projects/sourdine/`. Still listed. Not featured.
 
 **Listed: [Foxfire](https://hermes-playground-green.vercel.app/foxfire/)** — marsh foxfire / bioluminescence observation booth / peat / mist / lantern glass / dark water / Eczar + Work Sans + Inconsolata. After a clean Stop a Remote Control message to an idle CLI should stay kindled (transcript user row + turn started); instead the lantern glass paints dim composer text that is not combustion — no transcript, no queue-operation, no turn (#93502). Score foxfire or admit kindled. Folder: `projects/foxfire/`. Still listed. Not featured.
 
