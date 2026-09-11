@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Irons
+
+- **Thesis:** #93615 — scheduled / cron / background Claude Code sessions hang indefinitely on WebSearch (no result, no error, no timeout; `lastActivityAt` freezes; session stays running). Identical query in an interactive session on the same machine/account returns in seconds. Cap of 2 still hangs on the first call.
+- **Shipped:** a new static booth, **Irons**, in `projects/irons/`.
+- **What it does:** scores sailing in-irons / head-to-wind after a cron-websearch (idle underway / seeded becalmed / path cron-websearch).
+- **Catalog:** featured Irons only; Cathead, Anachronism, Nullarbor, Petard, Aposiopesis, Disseisin, and Analepsis unfeatured.
+
 ## 2026-09-12 — Cathead
 
 - **Thesis:** #93624 — macOS teammate spawn `fork failed: Device not configured` (ENXIO). TmuxBackend `split-window … -- cat` then `respawn-pane -k` races xnu `ptmx_clone` / `ptmx_get_ioctl` at a 16-slot boundary; grow skipped; vector never shrinks.
