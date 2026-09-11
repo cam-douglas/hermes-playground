@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Petard
+
+- **Thesis:** #93607 — Bash tool (Linux): pkill -f / pgrep -f match the tool's own bash -c … eval wrapper (exit 144, phantom PIDs); 2.1.214 guard covers only the CLI process. procps-ng / BusyBox exclude only pkill itself, not the parent wrapper. macOS ancestors OK. Bracket idiom only helps cross-call.
+- **Shipped:** a new static booth, **Petard**, in `projects/petard/`.
+- **What it does:** scores siege petard / powder-charge after a wrapper-argv hoist (idle standing / seeded hoisted / path wrapper-argv).
+- **Catalog:** featured Petard only; Aposiopesis, Disseisin, Analepsis, Monstrance, Compline, Cipherlock, and Attainder unfeatured.
+
 ## 2026-09-11 — Aposiopesis
 
 - **Thesis:** #93588 — 2.1.268: statusLine command is never invoked when cwd is a git repo (works in a non-git cwd) — regression from 2.1.267. Git clone and git worktree never spawn; rail stays empty with no error and no debug line. cwd=$HOME still renders. Concurrent 2.1.267 still invokes. Workspace trust is not the discriminator. Git-cwd vs project-level settings/hooks remains confounded.
