@@ -673,13 +673,13 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /#93570|#93618|#93622|#93652/);
 });
 
-test("catalog lists Weir unfeatured after Calends", () => {
+test("catalog lists Weir unfeatured after Followspot", () => {
   const catalog = readCatalog();
   const hub = readHubCatalog();
-  assert.equal(catalog.products.length, 299);
-  assert.equal(hub.products.length, 299);
-  assert.equal(catalog.products[0].name, "Calends");
-  assert.equal(catalog.products[0].slug, "calends");
+  assert.equal(catalog.products.length, 300);
+  assert.equal(hub.products.length, 300);
+  assert.equal(catalog.products[0].name, "Followspot");
+  assert.equal(catalog.products[0].slug, "followspot");
   assert.equal(catalog.products[0].featured, true);
   const weir = catalog.products.find((row) => row.slug === "weir");
   assert.ok(weir);
