@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-11 — Cipherlock
+
+- **Thesis:** #93537 — macOS: concurrent claude processes zero MCP OAuth entries in shared Keychain blob despite valid refresh tokens. Notion/atlassian blanked; Slack may stay intact. Distinct from #91009.
+- **Shipped:** a new static booth, **Cipherlock**, in `projects/cipherlock/`.
+- **What it does:** scores vault / bank-safe / cipher-lock combination after concurrent Keychain wipe (idle sealed / seeded blanked / path concurrent-write).
+- **Catalog:** featured Cipherlock only; Attainder, Sourdine, Forksink, Foxfire, and Pentimento unfeatured.
+
 ## 2026-09-11 — Attainder
 
 - **Thesis:** #93529 — Parked-permission retirement always stamps toolDenialKind: user-rejected, even when the actual cause is an internal session reset (e.g. after /mcp reconnect), not a real user action. Tool already allow-listed; no prompt; no Esc/Ctrl+C.
