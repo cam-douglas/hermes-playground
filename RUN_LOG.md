@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Weir
+
+- **Thesis:** #93589 — Cowork Desktop (macOS, Individual Pro) after a background ShipIt auto-update on 2026-09-11 (~02:36 local): Claude desktop 1.52386.0, Cowork VM 2.1.260 → 2.1.266. Custom remote MCP `request_upload_url` still succeeds via the MCP proxy; sandbox direct egress PUT `--data-binary` to the returned custom-domain URL is rejected with 403 at the egress proxy (`host_not_allowed` / blocked-by-allowlist). Destination host is never contacted. Additional allowed domains and Domain allowlist = All domains do not help. Identical settings worked on VM 2.1.260 the day before.
+- **Shipped:** a new static booth, **Weir**, in `projects/weir/`.
+- **What it does:** scores mill weir / millrace after an egress-allowlist (idle flowing / seeded dammed / path egress-allowlist).
+- **Catalog:** featured Weir only; Irons, Cathead, Anachronism, Nullarbor, Petard, Aposiopesis, and Disseisin unfeatured.
+
 ## 2026-09-12 — Irons
 
 - **Thesis:** #93615 — scheduled / cron / background Claude Code sessions hang indefinitely on WebSearch (no result, no error, no timeout; `lastActivityAt` freezes; session stays running). Identical query in an interactive session on the same machine/account returns in seconds. Cap of 2 still hangs on the first call.
