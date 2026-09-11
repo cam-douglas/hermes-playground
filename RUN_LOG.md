@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Calends
+
+- **Thesis:** #93687 — Desktop Scheduled Tasks missed-run catch-up fires without re-validating day-of-week (and possibly date) of the cron. Five weekly tasks (Fri-only, Wed-only×2, Mon-only, Thu-only) all fired ~12:15–12:19 AM local on a Friday. Misfires report `status: succeeded`. No disable-catch-up setting.
+- **Shipped:** a new static booth, **Calends**, in `projects/calends/`.
+- **What it does:** scores stone calendar / fasti after a catchup-dow (idle due / seeded misfired / path catchup-dow).
+- **Catalog:** featured Calends only; Weir, Irons, Cathead, Anachronism, Nullarbor, Petard, and Aposiopesis unfeatured.
+
 ## 2026-09-12 — Weir
 
 - **Thesis:** #93589 — Cowork Desktop (macOS, Individual Pro) after a background ShipIt auto-update on 2026-09-11 (~02:36 local): Claude desktop 1.52386.0, Cowork VM 2.1.260 → 2.1.266. Custom remote MCP `request_upload_url` still succeeds via the MCP proxy; sandbox direct egress PUT `--data-binary` to the returned custom-domain URL is rejected with 403 at the egress proxy (`host_not_allowed` / blocked-by-allowlist). Destination host is never contacted. Additional allowed domains and Domain allowlist = All domains do not help. Identical settings worked on VM 2.1.260 the day before.

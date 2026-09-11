@@ -673,24 +673,28 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /#93570|#93618|#93622|#93652/);
 });
 
-test("catalog features Weir only; Irons unfeatured", () => {
+test("catalog lists Weir unfeatured after Calends", () => {
   const catalog = readCatalog();
   const hub = readHubCatalog();
-  assert.equal(catalog.products.length, 298);
-  assert.equal(hub.products.length, 298);
-  assert.equal(catalog.products[0].name, "Weir");
-  assert.equal(catalog.products[0].slug, "weir");
+  assert.equal(catalog.products.length, 299);
+  assert.equal(hub.products.length, 299);
+  assert.equal(catalog.products[0].name, "Calends");
+  assert.equal(catalog.products[0].slug, "calends");
   assert.equal(catalog.products[0].featured, true);
-  assert.equal(catalog.products[0].href, "/weir/");
-  assert.equal(catalog.products[0].day, "2026-09-12");
-  assert.match(catalog.products[0].summary, /03:50/);
-  assert.match(catalog.products[0].summary, /weir/);
-  assert.match(catalog.products[0].summary, /#93589/);
-  assert.match(catalog.products[0].summary, /\bflowing\b/);
-  assert.match(catalog.products[0].summary, /\bdammed\b/);
-  assert.match(catalog.products[0].summary, /egress-allowlist/);
-  assert.equal(hub.products[0].slug, "weir");
-  assert.equal(hub.products[0].featured, true);
+  const weir = catalog.products.find((row) => row.slug === "weir");
+  assert.ok(weir);
+  assert.equal(weir.featured, false);
+  assert.equal(weir.href, "/weir/");
+  assert.equal(weir.day, "2026-09-12");
+  assert.match(weir.summary, /03:50/);
+  assert.match(weir.summary, /weir/);
+  assert.match(weir.summary, /#93589/);
+  assert.match(weir.summary, /\bflowing\b/);
+  assert.match(weir.summary, /\bdammed\b/);
+  assert.match(weir.summary, /egress-allowlist/);
+  const hubWeir = hub.products.find((row) => row.slug === "weir");
+  assert.ok(hubWeir);
+  assert.equal(hubWeir.featured, false);
   const irons = catalog.products.find((row) => row.slug === "irons");
   assert.ok(irons);
   assert.equal(irons.featured, false);
@@ -702,14 +706,15 @@ test("catalog features Weir only; Irons unfeatured", () => {
   assert.ok(!catalog.products.some((row) => String(row.summary || "").includes("93589") && row.slug !== "weir"));
 });
 
-test("vercel rewrites weir to the project folder at the top", () => {
+test("vercel still rewrites weir to the project folder", () => {
   const vercel = readVercel();
-  assert.equal(vercel.rewrites[0].source, "/weir");
-  assert.equal(vercel.rewrites[0].destination, "/projects/weir");
-  assert.equal(vercel.rewrites[1].source, "/weir/");
-  assert.equal(vercel.rewrites[1].destination, "/projects/weir");
-  assert.equal(vercel.rewrites[2].source, "/weir/:path*");
-  assert.equal(vercel.rewrites[2].destination, "/projects/weir/:path*");
+  const sources = vercel.rewrites.filter((row) => String(row.source || "").startsWith("/weir"));
+  assert.equal(sources[0].source, "/weir");
+  assert.equal(sources[0].destination, "/projects/weir");
+  assert.equal(sources[1].source, "/weir/");
+  assert.equal(sources[1].destination, "/projects/weir");
+  assert.equal(sources[2].source, "/weir/:path*");
+  assert.equal(sources[2].destination, "/projects/weir/:path*");
 });
 
 test("no network calls in the model or tests", () => {
