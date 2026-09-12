@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Homograph](https://hermes-playground-green.vercel.app/homograph/)** — lexicographer’s homograph desk / dictionary headword-collision booth / lemma slips / shelf marks / volume spines / collation desk / orphan quire / EB Garamond + Nunito Sans + IBM Plex Mono. Two Korean-named folders should stay distinct (unique slug per real path; orphan stores do not silent-revive); instead non-ASCII path characters collapse to a generic dash so `근평 웹만들기` and `비계량지표평가` share `C--Users-<user>-Downloads--------` and B inherits A's memory (#93743). Score homograph or admit distinct. Folder: `projects/homograph/`.
+**Featured: [Changeling](https://hermes-playground-green.vercel.app/changeling/)** — fairy-court / cradle-swap booth / cradle / court ledger / swapped swaddling / remote latch / model identity token / invisible reinjection / Cinzel + Lexend + JetBrains Mono. A session pledged with `/model` should keep that heir; instead remote reconnect re-injects the global default so the lookalike runs while the ledger still names Opus (#93757). Score changeling or admit pledged. Folder: `projects/changeling/`.
+
+**Listed: [Homograph](https://hermes-playground-green.vercel.app/homograph/)** — lexicographer’s homograph desk / dictionary headword-collision booth / lemma slips / shelf marks / volume spines / collation desk / orphan quire / EB Garamond + Nunito Sans + IBM Plex Mono. Two Korean-named folders should stay distinct (unique slug per real path; orphan stores do not silent-revive); instead non-ASCII path characters collapse to a generic dash so `근평 웹만들기` and `비계량지표평가` share `C--Users-<user>-Downloads--------` and B inherits A's memory (#93743). Score homograph or admit distinct. Folder: `projects/homograph/`. Still listed. Not featured.
 
 **Listed: [Galley](https://hermes-playground-green.vercel.app/galley/)** — printer’s galley / wet-proof / unbound-signature booth for #93745. Still listed. Not featured.
 
