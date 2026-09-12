@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Rescript](https://hermes-playground-green.vercel.app/rescript/)** — imperial chancery / wax-seal / scrolled-rescript booth / disk charter / session scroll / wax press / hook quire / ink fingerprint / Big Shoulders Display + Atkinson Hyperlegible + Red Hat Mono. A disk charter should stay intact (merge the new model key into `~/.claude/settings.json`; hooks remain); instead `/model` save-as-default scrapes the entire parchment from the in-session scroll so 5 of 19 hooks vanish (#93742). Score rescript or admit intact. Folder: `projects/rescript/`.
+**Featured: [Homograph](https://hermes-playground-green.vercel.app/homograph/)** — lexicographer’s homograph desk / dictionary headword-collision booth / lemma slips / shelf marks / volume spines / collation desk / orphan quire / EB Garamond + Nunito Sans + IBM Plex Mono. Two Korean-named folders should stay distinct (unique slug per real path; orphan stores do not silent-revive); instead non-ASCII path characters collapse to a generic dash so `근평 웹만들기` and `비계량지표평가` share `C--Users-<user>-Downloads--------` and B inherits A's memory (#93743). Score homograph or admit distinct. Folder: `projects/homograph/`.
+
+**Listed: [Galley](https://hermes-playground-green.vercel.app/galley/)** — printer’s galley / wet-proof / unbound-signature booth for #93745. Still listed. Not featured.
+
+**Listed: [Rescript](https://hermes-playground-green.vercel.app/rescript/)** — imperial chancery / wax-seal / scrolled-rescript booth / disk charter / session scroll / wax press / hook quire / ink fingerprint / Big Shoulders Display + Atkinson Hyperlegible + Red Hat Mono. A disk charter should stay intact (merge the new model key into `~/.claude/settings.json`; hooks remain); instead `/model` save-as-default scrapes the entire parchment from the in-session scroll so 5 of 19 hooks vanish (#93742). Score rescript or admit intact. Folder: `projects/rescript/`. Still listed. Not featured.
 
 **Listed: [Monadnock](https://hermes-playground-green.vercel.app/monadnock/)** — trig survey booth for submodule worktrees that branch from stale local main instead of origin/main. Still listed. Not featured.
 

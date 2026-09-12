@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Homograph
+
+- **Thesis:** #93743 — Claude Code derives `~/.claude/projects/<slug>/` by collapsing non-ASCII path characters (e.g. Korean) into a generic `-`. Distinct folders can encode to the identical slug (same dash count), so a new project silently inherits/overwrites memory+session data of an unrelated — even deleted — project. Repro on Windows: folder A `…/근평 웹만들기` writes memory, delete A, folder B `…/비계량지표평가` loads A's Supabase HR-app memory into an unrelated HWP/PDF tool session. Both → `C--Users-<user>-Downloads--------`.
+- **Shipped:** a new static booth, **Homograph**, in `projects/homograph/`.
+- **What it does:** scores lexicographer’s homograph / dictionary headword-collision after a lossy-slug (idle distinct / seeded collided / path lossy-slug).
+- **Catalog:** featured Homograph only; Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Galley
 
 - **Thesis:** #93745 — Dirty-tree Stop hook fires when the working tree has uncommitted/untracked files at the moment the MAIN agent’s turn ends. With background subagents, a dirty tree at turn-end is the normal correct state (subagent writes for minutes, commits last). The hook cannot tell in-progress-by-design from abandoned mid-edit, so it fires every main turn for the whole subagent run. Stop exit 2 injects a synthetic user turn and re-invokes the model against the entire conversation. Acting on the message would race the subagent. Measured one session: 4 firings, $3.25, ~5.5M billable tokens; ~85% cache reads. The hook never fires for the subagents themselves — tax hits the main session (largest context) which is NOT writing. Stop payload already knows about background work elsewhere (`idle_prompt` / #93672 has `background_tasks`); this path does not skip when agents are live.
