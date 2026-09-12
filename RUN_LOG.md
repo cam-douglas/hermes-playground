@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Stet
+
+- **Thesis:** #93778 — Dictation: speaking after a manual edit discards the edit and resumes from the old text. Desktop Windows dictation restores its prior buffer over hand edits and Shift+Enter blank lines on mic resume. Not #91202 (cannot append second dictation), not #93165 (mic button disappears), not #93636 (audio no transcript), not #93782 (WSL paste).
+- **Shipped:** a new static booth, **Stet**, in `projects/stet/`.
+- **What it does:** scores copy-desk / blue-pencil / galley-proof margin-mark booth after a mic-resume-wipe (idle stetted / seeded rewound / path mic-resume-wipe).
+- **Catalog:** featured Stet only; Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Blindside
 
 - **Thesis:** #93786 — Work committed in subagent worktrees under `.claude/worktrees/` is invisible to the session's diff pane, and there is no way to select a compare ref. Pane reports "no changes" while several commits exist on a worktree branch; session stays on `main`. Not #65852 (undisclosed base) and not #52179 (uncommitted changes).
