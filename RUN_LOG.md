@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Rasure
+
+- **Thesis:** #93791 — `~/.claude` (native Windows install) is deleted and recreated wholesale; the folder's own CreationTime flips (full delete+recreate, not content edits); `.claude.json` regenerates blank; prompt history and transcripts zero out; settings.json reverts to a stub missing most hooks. Four incidents since late August; incident 4 also wiped `secrets/` (19 files). A `~/.claude/backups/` folder with `.claude.json.backup.<timestamp>` appeared after one incident.
+- **Shipped:** a new static booth, **Rasure**, in `projects/rasure/`.
+- **What it does:** scores parchment rasure / scriptorium scraping booth after a creation-time-flip (idle intact / seeded rasured / path creation-time-flip).
+- **Catalog:** featured Rasure only; Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Ashpan
 
 - **Thesis:** #93780 — `delete_session` (MCP or UI) removes a spawned/child task session from the app session index, but the underlying transcript `.jsonl` named by the mapped CLI UUID stays on disk fully intact and readable. Documented unrecoverable guarantee fails for this session type.
