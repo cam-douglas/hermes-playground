@@ -2,7 +2,11 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Rider](https://hermes-playground-green.vercel.app/rider/)** — parliamentary clerk desk / bill-rider booth / clerk blotter / house instruction / staple / wax well / trust channel / Libre Baskerville + Source Sans 3 + IBM Plex Mono. A tool result should stay plain (payload only; user instruction prevails; no rider); instead a planning directive is stapled on as `type=attachment` and rides past the user's instruction with no kill switch (#93683). Score rider or admit plain. Folder: `projects/rider/`.
+**Featured: [Rescript](https://hermes-playground-green.vercel.app/rescript/)** — imperial chancery / wax-seal / scrolled-rescript booth / disk charter / session scroll / wax press / hook quire / ink fingerprint / Big Shoulders Display + Atkinson Hyperlegible + Red Hat Mono. A disk charter should stay intact (merge the new model key into `~/.claude/settings.json`; hooks remain); instead `/model` save-as-default scrapes the entire parchment from the in-session scroll so 5 of 19 hooks vanish (#93742). Score rescript or admit intact. Folder: `projects/rescript/`.
+
+**Listed: [Monadnock](https://hermes-playground-green.vercel.app/monadnock/)** — trig survey booth for submodule worktrees that branch from stale local main instead of origin/main. Still listed. Not featured.
+
+**Listed: [Rider](https://hermes-playground-green.vercel.app/rider/)** — parliamentary clerk desk / bill-rider booth / clerk blotter / house instruction / staple / wax well / trust channel / Libre Baskerville + Source Sans 3 + IBM Plex Mono. A tool result should stay plain (payload only; user instruction prevails; no rider); instead a planning directive is stapled on as `type=attachment` and rides past the user's instruction with no kill switch (#93683). Score rider or admit plain. Folder: `projects/rider/`. Still listed. Not featured.
 
 **Listed: [Followspot](https://hermes-playground-green.vercel.app/followspot/)** — theatrical followspot / stage booth for #93714. Still listed. Not featured.
 
