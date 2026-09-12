@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Snuffer
+
+- **Thesis:** #93746 — Setting `"enableArtifact": false` in `~/.claude/settings.json` also removes the `Scratchpad directory:` line from the system prompt / environment block. Artifact publishing and the agent's session temp (scratchpad) directory are unrelated features that became wrongly coupled: `isScratchpadEnabled() = P("tengu_scratch", false) || isArtifactToolEligible()`. The `|| isArtifactToolEligible()` arm entered in 2.1.186. With `tengu_scratch` off (its default), `enableArtifact: false` alone now disables the scratchpad. There is no local opt-in. Turning artifacts off is a one-way door.
+- **Shipped:** a new static booth, **Snuffer**, in `projects/snuffer/`.
+- **What it does:** scores candle-snuffer / taper booth after a ganged-or (idle lit / seeded snuffed / path ganged-or).
+- **Catalog:** featured Snuffer only; Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Changeling
 
 - **Thesis:** #93757 — Attaching to a session by remote control from another machine, then resuming it on its host, replaces the model the user set with `/model` with the global default from `settings.json`, with no notification. Every `remote_session_change` re-injects a model identity attachment; the value re-asserted is the global default rather than the session's explicit choice. UI and session metadata continue to report the user's chosen model. Reporter: 293 calls on `claude-fable-5-1` over ~16 hours while the app reported `claude-opus-5`. `set_session_model` reported success without taking effect.
