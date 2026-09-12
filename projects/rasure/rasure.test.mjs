@@ -555,7 +555,6 @@ test("leaf, json, settings, secrets, backup, and readBooth mark the rasured leaf
   assert.equal(backup.stamp, "backup-stamp");
   const booth = readBooth({
     rasured: true,
-    creationTimeFlip: true,
     leaf: SAMPLE_LEAF,
     json: SAMPLE_JSON,
   });
