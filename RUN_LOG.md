@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Galley
+
+- **Thesis:** #93745 — Dirty-tree Stop hook fires when the working tree has uncommitted/untracked files at the moment the MAIN agent’s turn ends. With background subagents, a dirty tree at turn-end is the normal correct state (subagent writes for minutes, commits last). The hook cannot tell in-progress-by-design from abandoned mid-edit, so it fires every main turn for the whole subagent run. Stop exit 2 injects a synthetic user turn and re-invokes the model against the entire conversation. Acting on the message would race the subagent. Measured one session: 4 firings, $3.25, ~5.5M billable tokens; ~85% cache reads. The hook never fires for the subagents themselves — tax hits the main session (largest context) which is NOT writing. Stop payload already knows about background work elsewhere (`idle_prompt` / #93672 has `background_tasks`); this path does not skip when agents are live.
+- **Shipped:** a new static booth, **Galley**, in `projects/galley/`.
+- **What it does:** scores printer’s galley / wet-proof / unbound-signature after a stop-dirty (idle dry / seeded billed / path stop-dirty).
+- **Catalog:** featured Galley only; Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Monadnock
 
 - **Thesis:** #93703 — Desktop-app worktree session rooted inside a git submodule branches from local `main` instead of `refs/remotes/origin/main` and does not fetch first. If local main is behind, the session silently starts on old code. Measured: month-old base, 204 commits behind origin/main. CLI does not have this problem. Same desktop app is correct at the superproject. Reflog spelling differs: desktop records a raw SHA; CLI records a ref name. `worktree.baseRef` unset; documented `fresh` default should apply. Expected: Created from refs/remotes/origin/main.
