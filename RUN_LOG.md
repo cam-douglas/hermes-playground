@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Outrider
+
+- **Thesis:** #93776 — MCP servers configured with `headersHelper` issue the initial connect WITHOUT waiting for the helper. If the helper is still running the request goes with no Authorization → 401/403 → server marked "requires authentication" for the entire session. Helper is not cancelled; a valid token arrives 135ms later and is discarded. Documented 10s timeout never reached. Different subset of servers fails each launch.
+- **Shipped:** a new static booth, **Outrider**, in `projects/outrider/`.
+- **What it does:** scores cavalry outrider / dispatch-rider booth after an early-connect (idle credentialed / seeded outridden / path early-connect).
+- **Catalog:** featured Outrider only; Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Necrology
 
 - **Thesis:** #93774 — While switching an image-generation pipeline to a newly released provider model (released 3 days prior), Claude Code (claude-fable-5) fetched the provider's public /models listing once — the first attempt returned non-JSON and was retried — did not find the model id, and then told the user the model "does not exist on this provider" inside a blocking multiple-choice question, offering three older models as the only options. The user had to disprove it with a screenshot of the provider's own model page; a follow-up authenticated request to the provider's per-model endpoint resolved the id immediately. Expected: treat "absent from one listing response" as "not found via this endpoint" and cross-check before asserting non-existence.
