@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Deadkey
+
+- **Thesis:** #93788 — 2.1.269: all ESC-sequence keys (arrows, Home, End) dead in the composer; single-byte keys unaffected; 2.1.268 is fine. Fail silently; `cat -v` shows CSI intact; binary symlink swap proves build not session state.
+- **Shipped:** a new static booth, **Deadkey**, in `projects/deadkey/`.
+- **What it does:** scores typographic dead-key / typewriter platen booth after an esc-csi-dead (idle keyed / seeded deadkeyed / path esc-csi-dead).
+- **Catalog:** featured Deadkey only; Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Gleaner
 
 - **Thesis:** #93794 — Background `&` jobs in a Bash tool call are orphaned, not reaped: 39 `yes` processes pegged ~7 cores for 8h42m. They are reparented to PID 1 and keep running after the tool call, the subagent, and the session.
