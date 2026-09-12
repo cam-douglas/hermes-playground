@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Ashpan
+
+- **Thesis:** #93780 — `delete_session` (MCP or UI) removes a spawned/child task session from the app session index, but the underlying transcript `.jsonl` named by the mapped CLI UUID stays on disk fully intact and readable. Documented unrecoverable guarantee fails for this session type.
+- **Shipped:** a new static booth, **Ashpan**, in `projects/ashpan/`.
+- **What it does:** scores industrial grate / ashpan / foundry booth after an orphan-jsonl (idle swept / seeded ashpanned / path orphan-jsonl).
+- **Catalog:** featured Ashpan only; Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Outrider
 
 - **Thesis:** #93776 — MCP servers configured with `headersHelper` issue the initial connect WITHOUT waiting for the helper. If the helper is still running the request goes with no Authorization → 401/403 → server marked "requires authentication" for the entire session. Helper is not cancelled; a valid token arrives 135ms later and is discarded. Documented 10s timeout never reached. Different subset of servers fails each launch.
