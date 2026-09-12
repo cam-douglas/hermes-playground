@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Gleaner](https://hermes-playground-green.vercel.app/gleaner/)** — agricultural gleaner's field / leftover-harvest booth / wheat stubble / sickle basket / yes×39 / PPID-1 / pgid 40734 / 42141 / nice-5 / fd2 tasks/output / 8h42m / Yrsa + Mulish + IBM Plex Mono. The harvest should stay gleaned (process-group reaped when Bash call ends; no orphan PPID-1 spinners); instead `&` jobs were left spinning in the stubble (#93794). Score gleaner or admit gleaned. Folder: `projects/gleaner/`.
+**Featured: [Deadkey](https://hermes-playground-green.vercel.app/deadkey/)** — typographic dead-key / typewriter platen booth / carbon platen / ivory paper / mute-red ribbon / brass typebar / ESC-CSI chips / 0x7F / silent-fail / 2.1.268↔2.1.269 swap / Special Elite + IBM Plex Sans + IBM Plex Mono. The platen should stay keyed (CSI keys act; cursor moves); instead ESC-CSI never resolve on 2.1.269 (#93788). Score deadkey or admit keyed. Folder: `projects/deadkey/`.
+
+**Listed: [Gleaner](https://hermes-playground-green.vercel.app/gleaner/)** — agricultural gleaner's field / leftover-harvest booth / wheat stubble / sickle basket / yes×39 / PPID-1 / pgid 40734 / 42141 / nice-5 / fd2 tasks/output / 8h42m / Yrsa + Mulish + IBM Plex Mono. The harvest should stay gleaned (process-group reaped when Bash call ends; no orphan PPID-1 spinners); instead `&` jobs were left spinning in the stubble (#93794). Score gleaner or admit gleaned. Folder: `projects/gleaner/`. Still listed. Not featured.
 
 **Listed: [Schism](https://hermes-playground-green.vercel.app/schism/)** — ecclesiastical schism / twin-authority glass booth / twin pulpits / Resuming agent banner / dual-writer / Bodoni Moda + Plus Jakarta Sans + IBM Plex Mono. The choir should stay live (one in-process workflow agent; singular writer; addressable); instead SendMessage resumes a second copy from transcript while the original still runs (#93797). Score schism or admit live. Folder: `projects/schism/`. Still listed. Not featured.
 
