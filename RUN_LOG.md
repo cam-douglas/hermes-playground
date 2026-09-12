@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Schism
+
+- **Thesis:** #93797 — SendMessage to a LIVE Workflow agent resumes a second copy from its transcript ("Resuming agent") while the original keeps running inside the workflow. Two writers then work the same task and the same files.
+- **Shipped:** a new static booth, **Schism**, in `projects/schism/`.
+- **What it does:** scores ecclesiastical schism / twin-authority glass booth after a resume-while-live (idle live / seeded schismed / path resume-while-live).
+- **Catalog:** featured Schism only; Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Rasure
 
 - **Thesis:** #93791 — `~/.claude` (native Windows install) is deleted and recreated wholesale; the folder's own CreationTime flips (full delete+recreate, not content edits); `.claude.json` regenerates blank; prompt history and transcripts zero out; settings.json reverts to a stub missing most hooks. Four incidents since late August; incident 4 also wiped `secrets/` (19 files). A `~/.claude/backups/` folder with `.claude.json.backup.<timestamp>` appeared after one incident.
