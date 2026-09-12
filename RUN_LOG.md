@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Gleaner
+
+- **Thesis:** #93794 — Background `&` jobs in a Bash tool call are orphaned, not reaped: 39 `yes` processes pegged ~7 cores for 8h42m. They are reparented to PID 1 and keep running after the tool call, the subagent, and the session.
+- **Shipped:** a new static booth, **Gleaner**, in `projects/gleaner/`.
+- **What it does:** scores agricultural gleaner's field / leftover-harvest booth after an unreaped-ampersand (idle gleaned / seeded orphaned / path unreaped-ampersand).
+- **Catalog:** featured Gleaner only; Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Schism
 
 - **Thesis:** #93797 — SendMessage to a LIVE Workflow agent resumes a second copy from its transcript ("Resuming agent") while the original keeps running inside the workflow. Two writers then work the same task and the same files.
