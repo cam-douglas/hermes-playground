@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Solenoid
+
+- **Thesis:** #93754 — Desktop Settings toggle "Enable Remote Control for all sessions" flips visually but does nothing; even a direct `~/.claude/settings.json` edit with `remoteControlAtStartup` / `remoteControlEnabled` waits for the first `sendMessage` instead of arming at WarmLifecycle. Not #93764 (Scotia DECSTBM blank rows). Not #93288 (Pontoon restart wash). Not #93776 (Outrider early-connect).
+- **Shipped:** a new static booth, **Solenoid**, in `projects/solenoid/`.
+- **What it does:** scores industrial switchgear / solenoid-coil atelier booth after a warm-before-message (idle engaged / seeded inert / path warm-before-message).
+- **Catalog:** featured Solenoid only; Scotia, Canard, Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Scotia
 
 - **Thesis:** #93764 — DECSTBM renderer leaves 2–3 blank rows under the prompt on Linux (VTE / Black Box). Once the conversation fills the screen the TUI stops short; blank rows sit under the bottom block and stay empty. macOS 2.1.268 kitty/iTerm/Terminal.app stays flush. Not #93766 (Canard OneDrive-cwd spawn mislabel).
