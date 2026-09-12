@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Simulacrum
+
+- **Thesis:** #93751 — Claude in Chrome (1.0.92) via `mcp__claude-in-chrome__*` on Windows 11 / Edge: with no browser process running, `list_connected_browsers` still reports a connected local browser (`isLocal: true`, advancing `connectedAt`). `navigate` returns `"Navigated to <url>"` with a real tab id and does nothing. Opening a real browser leaves the registration byte-identical; `switch_browser` says "No other browsers available" while the dead registration is still served. Not the stale-name cache in #78096 — there is no browser behind it. `get_page_text` hangs ~45s on `document_idle`. Manual reconnect works once; silent failure returned ~90m later (extension dir rewritten — correlation only).
+- **Shipped:** a new static booth, **Simulacrum**, in `projects/simulacrum/`.
+- **What it does:** scores Baudrillard / hyperreality museum booth after a phantom-navigate (idle tethered / seeded hollow / path phantom-navigate).
+- **Catalog:** featured Simulacrum only; Solenoid, Scotia, Canard, Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Solenoid
 
 - **Thesis:** #93754 — Desktop Settings toggle "Enable Remote Control for all sessions" flips visually but does nothing; even a direct `~/.claude/settings.json` edit with `remoteControlAtStartup` / `remoteControlEnabled` waits for the first `sendMessage` instead of arming at WarmLifecycle. Not #93764 (Scotia DECSTBM blank rows). Not #93288 (Pontoon restart wash). Not #93776 (Outrider early-connect).
