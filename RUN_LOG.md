@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Changeling
+
+- **Thesis:** #93757 — Attaching to a session by remote control from another machine, then resuming it on its host, replaces the model the user set with `/model` with the global default from `settings.json`, with no notification. Every `remote_session_change` re-injects a model identity attachment; the value re-asserted is the global default rather than the session's explicit choice. UI and session metadata continue to report the user's chosen model. Reporter: 293 calls on `claude-fable-5-1` over ~16 hours while the app reported `claude-opus-5`. `set_session_model` reported success without taking effect.
+- **Shipped:** a new static booth, **Changeling**, in `projects/changeling/`.
+- **What it does:** scores fairy-court / cradle-swap after a remote-reattach (idle pledged / seeded swapped / path remote-reattach).
+- **Catalog:** featured Changeling only; Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Homograph
 
 - **Thesis:** #93743 — Claude Code derives `~/.claude/projects/<slug>/` by collapsing non-ASCII path characters (e.g. Korean) into a generic `-`. Distinct folders can encode to the identical slug (same dash count), so a new project silently inherits/overwrites memory+session data of an unrelated — even deleted — project. Repro on Windows: folder A `…/근평 웹만들기` writes memory, delete A, folder B `…/비계량지표평가` loads A's Supabase HR-app memory into an unrelated HWP/PDF tool session. Both → `C--Users-<user>-Downloads--------`.
