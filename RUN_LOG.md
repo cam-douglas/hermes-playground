@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Scotoma
+
+- **Thesis:** #93744 — Claude Code 2.1.268; macOS 15 / Opus 5. A goal set with `/goal <instruction>` is stored in the transcript only inside `<command-args>`. The Stop-condition evaluator appears not to read that field, so it repeatedly fires, cannot confirm the goal, and eventually reports its own condition as unachievable — while the goal text was present the whole time. Unattended session interrupted ~9 times; last firings produced no new work. Slash scan: `/clear` at line 7, `/goal` at line 12. Not a user Stop hook (fail-open telemetry shim). Cousins cite-only: #83266, #85182, #79981.
+- **Shipped:** a new static booth, **Scotoma**, in `projects/scotoma/`.
+- **What it does:** scores ophthalmology / Humphrey-style visual-field / perimetry booth after a command-args-blind (idle legible / seeded scotomized / path command-args-blind).
+- **Catalog:** featured Scotoma only; Aneroid, Simulacrum, Solenoid, Scotia, Canard, Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Aneroid
 
 - **Thesis:** #93901 — VS Code extension 2.1.269 (win32-x64); CLI 2.1.158; Windows 11 Enterprise; Opus 5 1M context; `autoCompactWindow: 500000` in settings.json. The context ring and hover are computed against the model's context window, not the configured one. `autoCompactWindow` does not appear in `webview/index.js` (0 hits) but appears 18 times in `bin/claude.exe`. Webview is handed `contextWindow: usageData.contextWindow - usageData.maxOutputTokens - 13000` then suppresses the ring while `U >= 50` against that wrong window. Ring first appears ~500k; auto-compaction fires almost immediately. Hover says `50% of context remaining until auto-compact` when none remains. Lowering `autoCompactWindow` to compact sooner can remove the warning entirely. Cousins cite-only: #90756, #91385.
