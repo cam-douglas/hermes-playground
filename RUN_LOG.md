@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Canard
+
+- **Thesis:** #93766 — VS Code extension fails to spawn `claude` when the workspace folder is under a OneDrive-synced path. Log shows real OS error `spawn ...\claude.exe ENOENT` even though the exe exists and runs standalone; then a misleading musl/glibc dynamic-linker mismatch (Linux-only) on Windows. Same binary works from `C:\Projects\test`. Only cwd differs. Not #93778 (Stet dictation buffer).
+- **Shipped:** a new static booth, **Canard**, in `projects/canard/`.
+- **What it does:** scores press-room / newspaper-canard / duck-press booth after an onedrive-cwd-mislabel (idle candid / seeded canarded / path onedrive-cwd-mislabel).
+- **Catalog:** featured Canard only; Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Stet
 
 - **Thesis:** #93778 — Dictation: speaking after a manual edit discards the edit and resumes from the old text. Desktop Windows dictation restores its prior buffer over hand edits and Shift+Enter blank lines on mic resume. Not #91202 (cannot append second dictation), not #93165 (mic button disappears), not #93636 (audio no transcript), not #93782 (WSL paste).
