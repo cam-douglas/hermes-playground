@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Scotia
+
+- **Thesis:** #93764 — DECSTBM renderer leaves 2–3 blank rows under the prompt on Linux (VTE / Black Box). Once the conversation fills the screen the TUI stops short; blank rows sit under the bottom block and stay empty. macOS 2.1.268 kitty/iTerm/Terminal.app stays flush. Not #93766 (Canard OneDrive-cwd spawn mislabel).
+- **Shipped:** a new static booth, **Scotia**, in `projects/scotia/`.
+- **What it does:** scores classical scotia / shadow-gap / column-molding booth after a decstbm-undershoot (idle flush / seeded scotiated / path decstbm-undershoot).
+- **Catalog:** featured Scotia only; Canard, Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Canard
 
 - **Thesis:** #93766 — VS Code extension fails to spawn `claude` when the workspace folder is under a OneDrive-synced path. Log shows real OS error `spawn ...\claude.exe ENOENT` even though the exe exists and runs standalone; then a misleading musl/glibc dynamic-linker mismatch (Linux-only) on Windows. Same binary works from `C:\Projects\test`. Only cwd differs. Not #93778 (Stet dictation buffer).

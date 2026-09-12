@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Canard](https://hermes-playground-green.vercel.app/canard/)** — press-room / newspaper-canard booth / aged newsprint / wire-service ticker / ENOENT stamp / musl/glibc false headline crossed out / OneDrive cloud-path strip / VS Code IDE chip / Newsreader + DM Sans + Roboto Mono. The spawn should stay candid (ENOENT / cwd surfaced honestly; no Linux linker tale); instead OneDrive-cwd spawn ENOENT was canarded as musl/glibc on Windows (#93766). Score canard or admit candid. Folder: `projects/canard/`.
+**Featured: [Scotia](https://hermes-playground-green.vercel.app/scotia/)** — classical scotia / shadow-gap / column-molding booth / limestone / scotia hollow / DECSTBM brackets / VTE chip / blank-row void strip / Linux chip / XTVERSION / Cormorant Garamond + Outfit + IBM Plex Mono. The column should stay flush (bottom block on the last row; no hollow gap); instead DECSTBM left a 2–3 row scotia under the prompt on Linux VTE (#93764). Score scotia or admit flush. Folder: `projects/scotia/`.
+
+**Listed: [Canard](https://hermes-playground-green.vercel.app/canard/)** — press-room / newspaper-canard booth / aged newsprint / wire-service ticker / ENOENT stamp / musl/glibc false headline crossed out / OneDrive cloud-path strip / VS Code IDE chip / Newsreader + DM Sans + Roboto Mono. The spawn should stay candid (ENOENT / cwd surfaced honestly; no Linux linker tale); instead OneDrive-cwd spawn ENOENT was canarded as musl/glibc on Windows (#93766). Score canard or admit candid. Folder: `projects/canard/`. Still listed. Not featured.
 
 **Listed: [Stet](https://hermes-playground-green.vercel.app/stet/)** — copy-desk / blue-pencil / galley-proof margin-mark booth / cream paper / margin rule / stet. underline / Playfair Display + Figtree + Fragment Mono. The galley should stay stetted (user edit stands; box + cursor are source of truth); instead dictation restored the prior buffer over hand edits and Shift+Enter blanks (#93778). Score stet or admit stetted. Folder: `projects/stet/`. Still listed. Not featured.
 
