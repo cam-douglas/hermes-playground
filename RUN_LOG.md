@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Blindside
+
+- **Thesis:** #93786 — Work committed in subagent worktrees under `.claude/worktrees/` is invisible to the session's diff pane, and there is no way to select a compare ref. Pane reports "no changes" while several commits exist on a worktree branch; session stays on `main`. Not #65852 (undisclosed base) and not #52179 (uncommitted changes).
+- **Shipped:** a new static booth, **Blindside**, in `projects/blindside/`.
+- **What it does:** scores sideline-scout / blind-side-tackle / peripheral-vision booth after a compare-ref-unreachable (idle sighted / seeded blindsided / path compare-ref-unreachable).
+- **Catalog:** featured Blindside only; Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Interdict
 
 - **Thesis:** #93798 — claude-in-chrome MCP server's generic "Prohibited actions" instructions govern unrelated Bash/SSH behavior for the rest of the session. Language is not scoped to browser actions; the model refuses a plain `rm` over SSH even after repeated explicit authorization; Chrome toggled off runs the command normally.
