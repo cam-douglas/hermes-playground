@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Necrology
+
+- **Thesis:** #93774 — While switching an image-generation pipeline to a newly released provider model (released 3 days prior), Claude Code (claude-fable-5) fetched the provider's public /models listing once — the first attempt returned non-JSON and was retried — did not find the model id, and then told the user the model "does not exist on this provider" inside a blocking multiple-choice question, offering three older models as the only options. The user had to disprove it with a screenshot of the provider's own model page; a follow-up authenticated request to the provider's per-model endpoint resolved the id immediately. Expected: treat "absent from one listing response" as "not found via this endpoint" and cross-check before asserting non-existence.
+- **Shipped:** a new static booth, **Necrology**, in `projects/necrology/`.
+- **What it does:** scores parish necrology / death-register / sexton-desk after an incomplete-listing (idle attested / seeded necrologized / path incomplete-listing).
+- **Catalog:** featured Necrology only; Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Innominate
 
 - **Thesis:** #93769 — The main chat footer Send/Stop button is one `type:submit` control that flips Send↔Stop; children are icon-only. Windows UI Automation Name is empty `""` in BOTH states; no aria-label / aria-labelledby / title. Screen readers hear only "button"; voice control cannot invoke it. WCAG 2.2 SC 4.1.2. A live region announces conversation state but does not name the button. The same bundle labels 23 other controls including sibling "Send side question". Unlabeled across 2.1.209 → 2.1.269. Docs advertise screen-reader support; stop / interrupt undocumented.
