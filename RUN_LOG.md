@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Aneroid
+
+- **Thesis:** #93901 — VS Code extension 2.1.269 (win32-x64); CLI 2.1.158; Windows 11 Enterprise; Opus 5 1M context; `autoCompactWindow: 500000` in settings.json. The context ring and hover are computed against the model's context window, not the configured one. `autoCompactWindow` does not appear in `webview/index.js` (0 hits) but appears 18 times in `bin/claude.exe`. Webview is handed `contextWindow: usageData.contextWindow - usageData.maxOutputTokens - 13000` then suppresses the ring while `U >= 50` against that wrong window. Ring first appears ~500k; auto-compaction fires almost immediately. Hover says `50% of context remaining until auto-compact` when none remains. Lowering `autoCompactWindow` to compact sooner can remove the warning entirely. Cousins cite-only: #90756, #91385.
+- **Shipped:** a new static booth, **Aneroid**, in `projects/aneroid/`.
+- **What it does:** scores aneroid-barometer / meteorological instrument-panel booth after a wrong-window-ring (idle calibrated / seeded aneroided / path wrong-window-ring).
+- **Catalog:** featured Aneroid only; Simulacrum, Solenoid, Scotia, Canard, Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Simulacrum
 
 - **Thesis:** #93751 — Claude in Chrome (1.0.92) via `mcp__claude-in-chrome__*` on Windows 11 / Edge: with no browser process running, `list_connected_browsers` still reports a connected local browser (`isLocal: true`, advancing `connectedAt`). `navigate` returns `"Navigated to <url>"` with a real tab id and does nothing. Opening a real browser leaves the registration byte-identical; `switch_browser` says "No other browsers available" while the dead registration is still served. Not the stale-name cache in #78096 — there is no browser behind it. `get_page_text` hangs ~45s on `document_idle`. Manual reconnect works once; silent failure returned ~90m later (extension dir rewritten — correlation only).
