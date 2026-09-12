@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-12 — Interdict
+
+- **Thesis:** #93798 — claude-in-chrome MCP server's generic "Prohibited actions" instructions govern unrelated Bash/SSH behavior for the rest of the session. Language is not scoped to browser actions; the model refuses a plain `rm` over SSH even after repeated explicit authorization; Chrome toggled off runs the command normally.
+- **Shipped:** a new static booth, **Interdict**, in `projects/interdict/`.
+- **What it does:** scores ecclesiastical interdict / papal-bull / diocese-seal booth after a chrome-prohibit-bleed (idle scoped / seeded interdicted / path chrome-prohibit-bleed).
+- **Catalog:** featured Interdict only; Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-12 — Deadkey
 
 - **Thesis:** #93788 — 2.1.269: all ESC-sequence keys (arrows, Home, End) dead in the composer; single-byte keys unaffected; 2.1.268 is fine. Fail silently; `cat -v` shows CSI intact; binary symlink swap proves build not session state.
