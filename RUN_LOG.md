@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Airlock
+
+- **Thesis:** #93862 — Claude Code 2.1.269 (native binary, latest); WSL2, NixOS 26.05; bubblewrap + socat. In the Linux/WSL2 Bash sandbox a command whose first action is a network call fails with connection refused on the proxy bridge. Later calls in the same command succeed. Cause: the two socat bridges (`TCP-LISTEN:3128` HTTP + `TCP-LISTEN:1080` SOCKS) start in the background and the user command runs at once, with no wait for the listeners. Measured: inner shell ready ~3 ms; port 3128 accepts ~15–30 ms later. Same symptom as closed-stale #62743 — cite only.
+- **Shipped:** a new static booth, **Airlock**, in `projects/airlock/`.
+- **What it does:** scores submarine / spacecraft pressure-lock booth after a socat-race (idle equalized / seeded blown / path socat-race).
+- **Catalog:** featured Airlock only; Scotoma, Aneroid, Simulacrum, Solenoid, Scotia, Canard, Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Scotoma
 
 - **Thesis:** #93744 — Claude Code 2.1.268; macOS 15 / Opus 5. A goal set with `/goal <instruction>` is stored in the transcript only inside `<command-args>`. The Stop-condition evaluator appears not to read that field, so it repeatedly fires, cannot confirm the goal, and eventually reports its own condition as unachievable — while the goal text was present the whole time. Unattended session interrupted ~9 times; last firings produced no new work. Slash scan: `/clear` at line 7, `/goal` at line 12. Not a user Stop hook (fail-open telemetry shim). Cousins cite-only: #83266, #85182, #79981.
