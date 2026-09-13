@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Feoffee](https://hermes-playground-green.vercel.app/feoffee/)** — medieval feoffment / livery-of-seisin / chancery chamber booth / letters patent of Full Disk Access / Documents demesne map / lord vs mesne vs rival-bundle lanes / oak panel / parchment / oxblood seal / brass / ink / moss / Cinzel + EB Garamond + Fira Code. The charter should stay vested (FDA vested through the child spawn chain; preview_start children can getcwd under Documents); instead named launch.json children hit getcwd EPERM / System Policy deny despite parent FDA (#93863). Score feoffee or admit vested. Folder: `projects/feoffee/`.
+**Featured: [Scissel](https://hermes-playground-green.vercel.app/scissel/)** — mint / coin-press / punch-and-scissel booth / slag floor / planchet silver / copper die / punch ink / hazard amber / scrap rust / hopper vs die vs scrap lanes / Oswald + IBM Plex Sans + IBM Plex Mono. The planchet should stay plenary (full command arrives via bash stdin; heredocs and `\\` survive); instead argv `-c` truncates at ~8203 and/or collapses `\\` (#93915). Score scissel or admit plenary. Folder: `projects/scissel/`.
+
+**Listed: [Feoffee](https://hermes-playground-green.vercel.app/feoffee/)** — medieval feoffment / livery-of-seisin / chancery chamber booth for #93863. Still listed. Not featured.
 
 **Listed: [Apograph](https://hermes-playground-green.vercel.app/apograph/)** — scriptorium / manuscript apograph booth for #93859. Still listed. Not featured.
 
