@@ -22,14 +22,14 @@ Fixtures record the published incident only. No session. No secrets. No exploit 
 | `bundle-frozen.json` | bundle-frozen | ClaudeCode.app Jul 14 inode 319832836. |
 | `live-versioned.json` | live-versioned | Running binary at `versions/2.1.263`. |
 | `has-repro.json` | has-repro | Published shape. |
-| `cousins.json` | cousins | Cite-only #76080 / #93747. |
+| `cousins.json` | cousins | Cite-only #76615 / #38722 / #76080 / #93747. |
 | `backups.json` | backups | Cite-only backups. Do not auto-pick. |
 | `fixtures.json` | fixtures | Limestone / basalt / mica gold. |
 | `walk.json` | walk | Published idle unitary → version-path-tcc → tessellated → tessera. |
 
 ## Cousins (cite only)
 
-#76080 (permission prompt shows version string as app name). #93747 (Desktop Documents EPERM / fragmented duplicate claude identities). Do not rebuild as separate booths.
+#76615, #38722 (stale-closed priors). #76080 (permission prompt shows version string as app name). #93747 (Desktop Documents EPERM / fragmented duplicate claude identities). Do not rebuild as separate booths.
 
 ## Backups (cite only — do NOT auto-pick or build)
 

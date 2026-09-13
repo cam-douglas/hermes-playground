@@ -516,9 +516,11 @@ test("mapPane encodes the published version-tile scree", () => {
 });
 
 test("cousins are cite-only; products stay distinct; backups stay data-only", () => {
-  assert.equal(COUSINS.length, 2);
-  assert.equal(COUSINS[0].issue, 76080);
-  assert.equal(COUSINS[1].issue, 93747);
+  assert.equal(COUSINS.length, 4);
+  assert.equal(COUSINS[0].issue, 76615);
+  assert.equal(COUSINS[1].issue, 38722);
+  assert.equal(COUSINS[2].issue, 76080);
+  assert.equal(COUSINS[3].issue, 93747);
   assert.ok(COUSINS.every((row) => row.citeOnly === true));
   assert.ok(NOT_PRODUCTS.includes("mojibake"));
   assert.ok(NOT_PRODUCTS.includes("scissel"));
@@ -554,7 +556,10 @@ test("cousins are cite-only; products stay distinct; backups stay data-only", ()
   assert.equal(BACKUPS[10].issue, 93925);
   assert.ok(BACKUPS.every((row) => row.citeOnly === true));
   assert.ok(!BACKUPS.some((row) => row.issue === 93929));
+  assert.ok(!BACKUPS.some((row) => row.issue === 76615));
+  assert.ok(!BACKUPS.some((row) => row.issue === 38722));
   assert.ok(!BACKUPS.some((row) => row.issue === 76080));
+  assert.ok(!BACKUPS.some((row) => row.issue === 93747));
   assert.equal(classify({ seed: "cousins", preferSeed: true }), "cousins");
   assert.equal(classify({ seed: "backups", preferSeed: true }), "backups");
 });
@@ -589,7 +594,7 @@ test("handle exposes published hypothesis and #93929 headline", () => {
   const result = handle(seedTessellated());
   assert.equal(result.published.issue, 93929);
   assert.equal(result.published.platform, "macos");
-  assert.deepEqual(result.published.cousins, [76080, 93747]);
+  assert.deepEqual(result.published.cousins, [76615, 38722, 76080, 93747]);
   assert.ok(result.published.backups.includes(93772));
   assert.ok(result.published.backups.includes(93924));
   assert.ok(result.published.backups.includes(93925));
@@ -620,7 +625,7 @@ test("living page is a mosaic / tesserae / privacy-pane booth, not mojibake or s
   assert.match(page, /\btessellated\b/);
   assert.match(page, /version-path-tcc/);
   assert.match(page, /Score tessera or admit unitary/i);
-  assert.match(page, /#76080|#93747|cousin/i);
+  assert.match(page, /#76615|#38722|#76080|#93747|cousin/i);
   assert.match(page, /#331/);
   assert.match(page, /#93929/);
   assert.match(page, /Admit unitary/);
@@ -765,7 +770,7 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /NON-BINDING/);
   assert.match(readme, /tessera|mosaic|tesserae|privacy-pane/i);
   assert.match(readme, /Score tessera or admit unitary/);
-  assert.match(readme, /#76080|#93747/);
+  assert.match(readme, /#76615|#38722|#76080|#93747/);
   assert.match(readme, /#93772|#93770|#93777|#93782|#93889|#93821|#93811|#93809|#93823|#93924|#93925/);
   assert.match(readme, /14:50/);
 });
