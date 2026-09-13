@@ -521,9 +521,9 @@ test("model has no static node: imports so the living page can score in-browser"
 
 test("living page is a temple cartouche booth, not court-roll or bay-window", () => {
   const page = readPage();
-  assert.match(page, /Cinzel Decorative|Cinzel\+Decorative|family=Cinzel/);
-  assert.match(page, /Karla/);
-  assert.match(page, /IBM Plex Mono|IBM\+Plex\+Mono/);
+  assert.match(page, /family=Cinzel/);
+  assert.match(page, /Outfit/);
+  assert.match(page, /Source Code Pro|Source\+Code\+Pro/);
   assert.match(page, /cartouche|diagrammed|section-poster|name-oval|false door|hieroglyph/i);
   assert.match(page, /#E8DFC8|#1B3A6B|#C9A227|#1A1510|#8B6914|#9C4A3C|#2A6F6A/i);
   assert.match(page, /\bdiagrammed\b/);
@@ -549,6 +549,9 @@ test("living page is a temple cartouche booth, not court-roll or bay-window", ()
   assert.doesNotMatch(page, /Fragment Mono|Fragment\+Mono/);
   assert.doesNotMatch(page, /Newsreader/);
   assert.doesNotMatch(page, /DM Sans|DM\+Sans/);
+  assert.doesNotMatch(page, /Karla/);
+  assert.doesNotMatch(page, /IBM Plex Mono|IBM\+Plex\+Mono/);
+  assert.doesNotMatch(page, /Cinzel Decorative|Cinzel\+Decorative/);
   assert.doesNotMatch(page, /Fraunces/);
   assert.doesNotMatch(page, /JetBrains Mono|JetBrains\+Mono/);
   assert.doesNotMatch(page, /Old Standard TT|Old\+Standard\+TT/);
@@ -597,15 +600,19 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /\bcartouche\b/);
   assert.match(readme, /section-poster/);
   assert.match(readme, /Cinzel/);
-  assert.match(readme, /Karla/);
-  assert.match(readme, /IBM Plex Mono/);
+  assert.match(readme, /Outfit/);
+  assert.match(readme, /Source Code Pro/);
+  assert.doesNotMatch(readme, /Karla/);
+  assert.doesNotMatch(readme, /IBM Plex Mono/);
+  assert.doesNotMatch(readme, /Cinzel Decorative/);
   assert.match(readme, /Why not a clone/i);
   assert.match(readme, /Research brief/i);
-  assert.match(readme, /NOT Attaint/i);
-  assert.match(readme, /NOT Oriel/i);
-  assert.match(readme, /NOT Anarthria/i);
-  assert.match(readme, /NOT Trismus/i);
-  assert.match(readme, /NOT Foundling/i);
+  assert.match(readme, /WRONG DIAGRAM TYPE/i);
+  assert.match(readme, /NOT Attaint\/#93821/);
+  assert.match(readme, /NOT Oriel\/#93809/);
+  assert.match(readme, /NOT Anarthria\/#93782/);
+  assert.match(readme, /NOT Trismus\/#93823/);
+  assert.match(readme, /NOT Foundling\/#93889/);
   assert.match(readme, /NOT Crasis/i);
   assert.match(readme, /NOT Tessera/i);
   assert.match(readme, /NOT Mojibake/i);
