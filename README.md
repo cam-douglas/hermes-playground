@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Apograph](https://hermes-playground-green.vercel.app/apograph/)** — scriptorium / manuscript apograph booth / stacked parchment leaves / session-ID wax seals / MB size chain / CLI lane vs Desktop lane / cream parchment / iron-gall brown / vermilion seal / Spectral + Source Sans 3 + IBM Plex Mono. The quire should stay singular (one conversation = one leaf; CLI appends in place); instead Desktop sidebar reopen forked a new session ID and a full transcript copy every time (#93859). Score apograph or admit singular. Folder: `projects/apograph/`.
+**Featured: [Feoffee](https://hermes-playground-green.vercel.app/feoffee/)** — medieval feoffment / livery-of-seisin / chancery chamber booth / letters patent of Full Disk Access / Documents demesne map / lord vs mesne vs rival-bundle lanes / oak panel / parchment / oxblood seal / brass / ink / moss / Cinzel + EB Garamond + Fira Code. The charter should stay vested (FDA vested through the child spawn chain; preview_start children can getcwd under Documents); instead named launch.json children hit getcwd EPERM / System Policy deny despite parent FDA (#93863). Score feoffee or admit vested. Folder: `projects/feoffee/`.
+
+**Listed: [Apograph](https://hermes-playground-green.vercel.app/apograph/)** — scriptorium / manuscript apograph booth for #93859. Still listed. Not featured.
 
 **Listed: [Airlock](https://hermes-playground-green.vercel.app/airlock/)** — submarine / spacecraft pressure-lock booth for #93862. Still listed. Not featured.
 
