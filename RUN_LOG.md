@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Oriel
+
+- **Thesis:** #93809 — Claude Code 2.1.268 on macOS Desktop app. When using expand/pop-out for a plan, OR when maximised within the app, plan text does NOT expand/reflow to fill the window width. A large empty margin remains on the right regardless of window size. Expected: plan text should reflow and use available window width. Related cite-only: #62543 CLOSED as duplicate/not-planned (Plan side panel: content stops expanding at a fixed width). Related cite-only: #57749 CLOSED feature (Plan mode panel: use available window width on Desktop — Windows-labeled but same narrow-column family). Reporter re-raises specifically for the pop-out/maximised-window case as deterministic wasted space. NOT Anarthria/#93782 (dictation-paste-drop). NOT Trismus/#93823 (UNUserNotification XPC lockjaw). NOT Stet/#93778 (composer dictation restore).
+- **Shipped:** a new static booth, **Oriel**, in `projects/oriel/`.
+- **What it does:** scores Gothic / Tudor oriel bay-window booth after a plan-no-reflow (idle reflowed / seeded oriel / path plan-no-reflow).
+- **Catalog:** featured Oriel only (#336); Anarthria, Trismus, Foundling, Crasis, Tessera, Mojibake, Scissel, Feoffee, Apograph, Airlock, Scotoma, Aneroid, Simulacrum, Solenoid, Scotia, Canard, Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Anarthria
 
 - **Thesis:** #93782 — Claude Code 2.1.269 silently drops Wispr Flow dictation paste (clipboard + simulated Ctrl+V) when running in the VS Code integrated terminal over Remote-WSL. Nothing appears in the prompt; the text is silently dropped. Same dictation works on 2.1.268 in that terminal, and on 2.1.269 in Windows Terminal / plain bash / PowerShell in the same VS Code terminal. Failure is exactly the intersection *2.1.269 × VS Code integrated terminal*. Ruled out: VS Code screen-reader mode, Claude Code voice mode, extension version, IDE integration, Wispr Flow version. Cousin cite-only: microsoft/vscode#282290 (Wispr/screen-reader detection — ruled out by reporter). NOT Trismus/#93823 (UNUserNotification XPC lockjaw). NOT Stet/#93778 (composer dictation restore). NOT Deadkey/#93788 (ESC-CSI).
