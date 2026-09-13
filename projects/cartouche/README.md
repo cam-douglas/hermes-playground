@@ -1,6 +1,6 @@
 # Cartouche
 
-An **Egyptian cartouche / name-oval / temple-relief booth** — gold-leaf oval, lapis field, limestone wall, hieroglyph chips, a false door that should open to a node-edge schematic and instead slams onto a three-column section-summary poster. Fonts **Cinzel Decorative** (display) + **Karla** (body) + **IBM Plex Mono** (chips). Palette: limestone `#E8DFC8`, lapis `#1B3A6B`, gold leaf `#C9A227`, ink `#1A1510`, cartouche stroke `#8B6914`, poster blush `#9C4A3C`, Nile teal `#2A6F6A`. NOT Attaint/#93821 (medieval court-roll attainder). NOT Oriel/#93809 (Gothic bay-window / stone sash). NOT Anarthria/#93782 (ENT voice clinic). NOT Trismus, Foundling, Crasis, Tessera, Mojibake, Scissel, Feoffee, Apograph, Airlock, Scotoma. Completely different UI/UX/metaphor. This is specifically: **WRONG DIAGRAM TYPE — SECTION-SUMMARY POSTER INSTEAD OF DATAFLOW WHEN THE SUBJECT IS PIPELINE DATA FLOW.**
+An **Egyptian cartouche / name-oval / temple-relief booth** — gold-leaf oval, lapis field, limestone wall, hieroglyph chips, a false door that should open to a node-edge schematic and instead slams onto a three-column section-summary poster. Fonts **Cinzel** (display) + **Outfit** (body) + **Source Code Pro** (chips). Palette: limestone `#E8DFC8`, lapis `#1B3A6B`, gold leaf `#C9A227`, ink `#1A1510`, cartouche stroke `#8B6914`, poster blush `#9C4A3C`, Nile teal `#2A6F6A`. NOT Attaint/#93821. NOT Oriel/#93809. NOT Anarthria/#93782. NOT Trismus/#93823. NOT Foundling/#93889. NOT Crasis, Tessera, Mojibake, Scissel, Feoffee, Apograph, Airlock, Scotoma. Completely different UI/UX/metaphor. This is specifically: **WRONG DIAGRAM TYPE — SECTION-SUMMARY POSTER INSTEAD OF DATAFLOW.**
 
 The relief should stay **diagrammed** (HOLD: nodes+edges / dataflow inferred from subject). Instead the booth was **cartouche** after a **section-poster**.
 
@@ -114,11 +114,11 @@ Novel paradigm: Egyptian cartouche / name-oval / temple relief — gold oval, la
 Do NOT rename Cartouche to any existing catalog slug. Catalog currently has 337 products; Cartouche is #338 after Attaint #337.
 Do NOT reuse idle unattainted / reflowed / articulate / limber / filiated / injective / unitary / verbatim / plenary or seeded attaint / oriel / anarthria / trismus / foundling / crased / tessellated / mojibaked / scisselled / unseised / apographed.
 
-Display here is **Cinzel Decorative**. Body is **Karla**. Mono is **IBM Plex Mono**.
+Display here is **Cinzel**. Body is **Outfit**. Mono is **Source Code Pro**.
 
 Different surface: wrong diagram type (section-summary poster vs dataflow) vs session-flag contamination vs plan-window no-reflow vs dictation paste swallow.
 
-Different UI: limestone / lapis / gold leaf / ink / cartouche stroke / poster blush / Nile teal / gold oval / false door / hieroglyph chips. Cinzel Decorative / Karla / IBM Plex Mono. NOT parchment court roll. NOT stone sash amber glass. NOT clinic teal.
+Different UI: limestone / lapis / gold leaf / ink / cartouche stroke / poster blush / Nile teal / gold oval / false door / hieroglyph chips. Cinzel / Outfit / Source Code Pro. NOT parchment court roll. NOT stone sash amber glass. NOT clinic teal.
 
 Different verbs: Admit diagrammed, Score cartouche, Walk section-poster, Compare diagrammed / cartouche, Pin idle diagrammed, Pin seeded cartouche, Pin section-poster, Open the oval.
 
