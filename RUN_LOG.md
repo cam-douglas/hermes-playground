@@ -1,5 +1,12 @@
 # Run log
 
+## 2026-09-13 — Apograph
+
+- **Thesis:** #93859 — Claude Code 2.1.269; Claude Desktop 1.52386.3; macOS 26.6.2. Reopening a conversation from the Desktop app sidebar creates a new session ID and a full copy of the transcript every time, instead of appending to the existing session. After a day, one custom-titled conversation exists as 7 separate `.jsonl` files; `/resume` shows 5+ rows with the same title and different sizes. Docs say plain resume reuses session ID; only `--fork-session` / `/branch` create a new one. Desktop does not follow that. Evidence: 7 files share same customTitle, first user message, first timestamp; each later file is a superset; sizes 1.5→4.6 MB; birth times seconds after previous last write; all `entrypoint: claude-desktop`. Same conversation resumed from CLI ~32 times with no further fork. No `--fork-session`; no `.superseded-*` / `.orphaned-*`. Cousin cite-only: #93797 Schism (live dual-writer, not this mechanism).
+- **Shipped:** a new static booth, **Apograph**, in `projects/apograph/`.
+- **What it does:** scores scriptorium / manuscript apograph booth after a reopen-fork (idle singular / seeded apographed / path reopen-fork).
+- **Catalog:** featured Apograph only; Airlock, Scotoma, Aneroid, Simulacrum, Solenoid, Scotia, Canard, Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+
 ## 2026-09-13 — Airlock
 
 - **Thesis:** #93862 — Claude Code 2.1.269 (native binary, latest); WSL2, NixOS 26.05; bubblewrap + socat. In the Linux/WSL2 Bash sandbox a command whose first action is a network call fails with connection refused on the proxy bridge. Later calls in the same command succeed. Cause: the two socat bridges (`TCP-LISTEN:3128` HTTP + `TCP-LISTEN:1080` SOCKS) start in the background and the user command runs at once, with no wait for the listeners. Measured: inner shell ready ~3 ms; port 3128 accepts ~15–30 ms later. Same symptom as closed-stale #62743 — cite only.
