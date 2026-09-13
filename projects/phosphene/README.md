@@ -117,7 +117,7 @@ Novel paradigm: ophthalmology / entoptic clinic / vitreous chamber / nested laye
 Do NOT rename Phosphene to any existing catalog slug. Catalog currently has 340 products; Phosphene is #341 after Parablepsis #340.
 Do NOT reuse idle diplomatic / demesned / diagrammed / unattainted / reflowed / articulate / limber / filiated / injective / unitary or seeded parablepsis / demesne / cartouche / attaint / oriel / anarthria / trismus / foundling / crasis / tessera / mojibake / latin1-edit-wipe / home-bind-overreach.
 
-Display here is **Syne**. Body is **Sora**. Mono is **JetBrains Mono**. Do NOT use IBM Plex Mono this ship.
+Display here is **Syne**. Body is **Sora**. Mono is **JetBrains Mono**.
 
 Different surface: layer-tree-walk (WindowServer CA re-walk while streaming) vs latin1-edit-wipe vs home-bind overreach vs wrong diagram type vs session-flag contamination vs plan-window no-reflow vs dictation paste swallow vs Humphrey command-args-blind.
 
