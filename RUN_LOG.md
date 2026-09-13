@@ -1,5 +1,13 @@
 # Run log
 
+## 2026-09-13 — Attaint
+
+- **Thesis:** #93821 — Cyber safeguard false-positives on closed-source release engineering: Fable 5.1 silently rerouted to Opus 4.8; one flag contaminates the whole session. Re-selecting `/model fable` does not clear it. Turning off "Switch models when a message is flagged" hard-stops the conversation. There is no path to continue on Fable 5.1. Legitimate own-software release engineering (strip symbols, minify, rename identifiers, leak-check own build) trips the classifier on surface vocabulary. Related cite-only cousin: #63751 (same class, open since 2026-05-29). Why Attaint: legal metaphor for one attainder staining the whole lineage — maps cleanly to one flag contaminating the session. NOT Oriel/#93809 (plan-window no-reflow). NOT Anarthria/#93782 (dictation-paste-drop). NOT Attainder/#93529 (parked-permission user-rejected stamp). NOT Fomite/#93423 (gitignore epidemiology).
+- **Shipped:** a new static booth, **Attaint**, in `projects/attaint/`.
+- **What it does:** scores medieval legal attainder / court-roll / corruption-of-blood booth after a session-attainder (idle unattainted / seeded attaint / path session-attainder). Score attaint or admit unattainted.
+- **Catalog:** featured Attaint only (#337); Oriel, Anarthria, Trismus, Foundling, Crasis, Tessera, Mojibake, Scissel, Feoffee, Apograph, Airlock, Scotoma, Aneroid, Simulacrum, Solenoid, Scotia, Canard, Stet, Blindside, Interdict, Simplex, Deadkey, Gleaner, Schism, Rasure, Ashpan, Outrider, Necrology, Innominate, Snuffer, Changeling, Homograph, Galley, Rescript, Monadnock, Rider, Followspot, Calends, Weir, Irons, and Cathead unfeatured.
+- **What broke:** nothing in this ship. Diagnostic booth only — no Claude Code patch.
+
 ## 2026-09-13 — Oriel
 
 - **Thesis:** #93809 — Claude Code 2.1.268 on macOS Desktop app. When using expand/pop-out for a plan, OR when maximised within the app, plan text does NOT expand/reflow to fill the window width. A large empty margin remains on the right regardless of window size. Expected: plan text should reflow and use available window width. Related cite-only: #62543 CLOSED as duplicate/not-planned (Plan side panel: content stops expanding at a fixed width). Related cite-only: #57749 CLOSED feature (Plan mode panel: use available window width on Desktop — Windows-labeled but same narrow-column family). Reporter re-raises specifically for the pop-out/maximised-window case as deterministic wasted space. NOT Anarthria/#93782 (dictation-paste-drop). NOT Trismus/#93823 (UNUserNotification XPC lockjaw). NOT Stet/#93778 (composer dictation restore).
