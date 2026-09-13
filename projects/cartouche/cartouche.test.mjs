@@ -621,7 +621,10 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /name-oval|false door|temple|hieroglyph|limestone/i);
   assert.match(readme, /Score cartouche or admit diagrammed/);
   assert.match(readme, /#93770|#93777|#93811|#93924|#93925|#93954|#93967|#93957|#93989|#93987/);
-  assert.match(readme, /11:50/);
+  assert.match(readme, /21:50/);
+  const runLog = readFileSync(fileURLToPath(new URL("../../RUN_LOG.md", import.meta.url)), "utf8");
+  assert.match(runLog, /## 2026-09-13 — Cartouche/);
+  assert.match(runLog, /21:50/);
   assert.match(readme, /Do NOT implement a fix/i);
 });
 
@@ -635,7 +638,11 @@ test("catalog features Cartouche only; Attaint unfeatured; product count 338", (
   assert.equal(catalog.products[0].featured, true);
   assert.equal(catalog.products[0].href, "/cartouche/");
   assert.equal(catalog.products[0].day, "2026-09-13");
-  assert.match(catalog.products[0].summary, /11:50 cartouche|#93772|Egyptian cartouche|name-oval|section-poster|diagrammed/i);
+  assert.equal(
+    catalog.products[0].summary,
+    "21:50 cartouche: an Egyptian cartouche / name-oval / temple-relief booth for #93772. Ask-for-diagram on a per-turn dataflow doc defaults to a section-summary poster (heading boxes) instead of nodes+edges. Idle diagrammed / seeded cartouche / path section-poster. Score cartouche or admit diagrammed.",
+  );
+  assert.equal(hub.products[0].summary, catalog.products[0].summary);
   assert.match(catalog.products[0].summary, /\bdiagrammed\b/);
   assert.match(catalog.products[0].summary, /\bcartouche\b/);
   assert.match(catalog.products[0].summary, /section-poster/);
