@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Foundling](https://hermes-playground-green.vercel.app/foundling/)** — foundling-hospital / parish-ward / foundling-wheel booth / linen wraps / brass name-tokens / abandoned cradle at the hatch / ward register / rose ribbon / Cormorant Garamond + Nunito Sans + IBM Plex Mono. The ward should stay filiated (parent subagent still on the register; background Bash bonded to a living agent); instead the subagent finished and `run_in_background` Bash was left at the hatch with no owner (#93889). Score foundling or admit filiated. Folder: `projects/foundling/`.
+**Featured: [Trismus](https://hermes-playground-green.vercel.app/trismus/)** — oral-surgery / lockjaw / trigeminal clinic booth / enamel chair / forceps tray / nerve chart / clamped jaw on the completion chime / steel instruments / clinical tile / Archivo Black + Figtree + IBM Plex Mono. The chair should stay limber (main thread free; notification post/close never blocks UI; jaw opens); instead a Code-tab terminal-done chime deadlocks the main thread inside `swift_addon.node` UNUserNotification XPC (add vs close) (#93823). Score trismus or admit limber. Folder: `projects/trismus/`.
+
+**Listed: [Foundling](https://hermes-playground-green.vercel.app/foundling/)** — foundling-hospital / parish-ward / foundling-wheel booth / linen wraps / brass name-tokens / abandoned cradle at the hatch / ward register / rose ribbon / Cormorant Garamond + Nunito Sans + IBM Plex Mono. The ward should stay filiated (parent subagent still on the register; background Bash bonded to a living agent); instead the subagent finished and `run_in_background` Bash was left at the hatch with no owner (#93889). Score foundling or admit filiated. Folder: `projects/foundling/`. Still listed. Not featured.
 
 **Listed: [Crasis](https://hermes-playground-green.vercel.app/crasis/)** — manuscript crasis / fused-ligature booth for #93960. Still listed. Not featured.
 
