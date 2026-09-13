@@ -425,7 +425,7 @@ export const VERSION_SCREE = Object.freeze([
 ]);
 export const PHRASE = "Score tessera or admit unitary.";
 export const DISTRIBUTION =
-  "The native installer runs each release from a version-named path (~/.local/share/claude/versions/<version>). macOS TCC attributes grants to the executable path, so every release registers a new client. System Settings then collects one permission row per release, labeled with a bare version number, in App Management and in Files & Folders. The updater deletes old binaries but leaves their rows behind, and users can't remove those rows one at a time: tccutil can't target a path, and the panes have no remove control. The signing identity is already stable (com.anthropic.claude-code, Q6L2SF6YDW). Only the path changes. Checked 2026-09-12 on Claude Code 2.1.263, macOS 27.0 (26A428): bundle ~/.local/share/claude/ClaudeCode.app/Contents/MacOS/claude inode=319832836 links=1 mtime=2026-07-14 23:48; live ~/.local/share/claude/versions/2.1.263 inode=336626048 links=1 mtime=2026-09-07 10:13. The stable ClaudeCode.app bundle is still frozen at Jul 14, with no hardlink to the live binary. Refiling of stale-closed #76615 (itself a follow-up to #38722). Cousins cite-only: #76080 (permission prompt shows version string as app name); #93747 (Desktop Documents EPERM / fragmented duplicate claude identities).";
+  "The native installer runs each release from a version-named path (~/.local/share/claude/versions/<version>). macOS TCC attributes grants to the executable path, so every release registers a new client. System Settings then collects one permission row per release, labeled with a bare version number, in App Management and in Files & Folders. The updater deletes old binaries but leaves their rows behind, and users can't remove those rows one at a time: tccutil can't target a path, and the panes have no remove control. The signing identity is already stable (com.anthropic.claude-code, Q6L2SF6YDW). Only the path changes. Checked 2026-09-12 on Claude Code 2.1.263, macOS 27.0 (26A428): bundle ~/.local/share/claude/ClaudeCode.app/Contents/MacOS/claude inode=319832836 links=1 mtime=2026-07-14 23:48; live ~/.local/share/claude/versions/2.1.263 inode=336626048 links=1 mtime=2026-09-07 10:13. The stable ClaudeCode.app bundle is still frozen at Jul 14, with no hardlink to the live binary. Refiling of stale-closed #76615 (itself a follow-up to #38722). Cousins cite-only: #76615, #38722 (stale-closed priors); #76080 (permission prompt shows version string as app name); #93747 (Desktop Documents EPERM / fragmented duplicate claude identities).";
 export const RULED_OUT = Object.freeze([
   "An unstable signing identity — signing identity is already stable (com.anthropic.claude-code, team Q6L2SF6YDW); only the path changes",
   "A missing ClaudeCode.app bundle — the bundle exists at ~/.local/share/claude/ClaudeCode.app/Contents/MacOS/claude but is frozen at Jul 14 (inode 319832836) with no hardlink to the live binary",
@@ -511,6 +511,21 @@ export const FINGERPRINT_LINES = Object.freeze([
 ]);
 
 export const COUSINS = Object.freeze([
+  {
+    issue: 76615,
+    title:
+      "[BUG] macOS App Management accumulates one permission row per release; stable signing identity defeated by version-named binary paths (follow-up to #38722)",
+    state: "CLOSED",
+    citeOnly: true,
+    why: "cite only — stale-closed prior of #93929; same version-named path TCC accumulation — do not rebuild as a separate booth",
+  },
+  {
+    issue: 38722,
+    title: "macOS App Management accumulates duplicate 'claude' entries after each auto-update",
+    state: "CLOSED",
+    citeOnly: true,
+    why: "cite only — stale-closed prior of #76615 / #93929; same App Management row accumulation — do not rebuild as a separate booth",
+  },
   {
     issue: 76080,
     title: "permission prompt shows version string as app name",
@@ -1259,7 +1274,7 @@ export function scoreWalk(input = {}) {
     rows: scored,
     phrase: HOLD.includes(verdict) ? "admit unitary" : "score tessera",
     note: headline
-      ? "version-named binary path → new TCC permission row every release; cousins #76080 and #93747 are cite-only."
+      ? "version-named binary path → new TCC permission row every release; cousins #76615, #38722, #76080 and #93747 are cite-only."
       : "published tessera walk scored against unitary vs tessellated",
   };
 }
