@@ -773,22 +773,26 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /12:50/);
 });
 
-test("catalog features Mojibake only; Scissel, Feoffee, Apograph unfeatured", () => {
+test("catalog features Tessera; Mojibake, Scissel, Feoffee, Apograph unfeatured", () => {
   const catalog = readCatalog();
   const hub = readHubCatalog();
-  assert.equal(catalog.products.length, 330);
-  assert.equal(hub.products.length, 330);
-  assert.equal(catalog.products[0].name, "Mojibake");
-  assert.equal(catalog.products[0].slug, "mojibake");
+  assert.equal(catalog.products.length, 331);
+  assert.equal(hub.products.length, 331);
+  assert.equal(catalog.products[0].name, "Tessera");
+  assert.equal(catalog.products[0].slug, "tessera");
   assert.equal(catalog.products[0].featured, true);
-  assert.equal(catalog.products[0].href, "/mojibake/");
-  assert.equal(catalog.products[0].day, "2026-09-13");
-  assert.match(catalog.products[0].summary, /12:50 mojibake|#93848|compositor|foul-proof|geta-tofu/i);
-  assert.match(catalog.products[0].summary, /\bverbatim\b/);
-  assert.match(catalog.products[0].summary, /\bmojibaked\b/);
-  assert.match(catalog.products[0].summary, /fffd-spall/);
-  assert.match(catalog.products[0].summary, /Score mojibake or admit verbatim/);
-  assert.equal(hub.products[0].slug, "mojibake");
+  assert.equal(catalog.products[0].href, "/tessera/");
+  const mojibake = catalog.products.find((row) => row.slug === "mojibake");
+  assert.ok(mojibake);
+  assert.equal(mojibake.featured, false);
+  assert.equal(mojibake.href, "/mojibake/");
+  assert.equal(mojibake.day, "2026-09-13");
+  assert.match(mojibake.summary, /12:50 mojibake|#93848|compositor|foul-proof|geta-tofu/i);
+  assert.match(mojibake.summary, /\bverbatim\b/);
+  assert.match(mojibake.summary, /\bmojibaked\b/);
+  assert.match(mojibake.summary, /fffd-spall/);
+  assert.match(mojibake.summary, /Score mojibake or admit verbatim/);
+  assert.equal(hub.products[0].slug, "tessera");
   assert.equal(hub.products[0].featured, true);
   const scissel = catalog.products.find((row) => row.slug === "scissel");
   assert.ok(scissel);
@@ -816,14 +820,15 @@ test("catalog features Mojibake only; Scissel, Feoffee, Apograph unfeatured", ()
   assert.ok(!catalog.products.some((row) => String(row.summary || "").includes("93848") && row.slug !== "mojibake"));
 });
 
-test("vercel rewrites mojibake to the project folder at the top", () => {
+test("vercel rewrites mojibake after tessera at the top", () => {
   const vercel = readVercel();
-  assert.equal(vercel.rewrites[0].source, "/mojibake");
-  assert.equal(vercel.rewrites[0].destination, "/projects/mojibake");
-  assert.equal(vercel.rewrites[1].source, "/mojibake/");
-  assert.equal(vercel.rewrites[1].destination, "/projects/mojibake");
-  assert.equal(vercel.rewrites[2].source, "/mojibake/:path*");
-  assert.equal(vercel.rewrites[2].destination, "/projects/mojibake/:path*");
+  assert.equal(vercel.rewrites[0].source, "/tessera");
+  assert.equal(vercel.rewrites[3].source, "/mojibake");
+  assert.equal(vercel.rewrites[3].destination, "/projects/mojibake");
+  assert.equal(vercel.rewrites[4].source, "/mojibake/");
+  assert.equal(vercel.rewrites[4].destination, "/projects/mojibake");
+  assert.equal(vercel.rewrites[5].source, "/mojibake/:path*");
+  assert.equal(vercel.rewrites[5].destination, "/projects/mojibake/:path*");
 });
 
 test("no network calls in the model or tests", () => {

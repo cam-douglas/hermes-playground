@@ -757,15 +757,15 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /11:50/);
 });
 
-test("catalog features Mojibake; Scissel, Feoffee, Apograph, Airlock, Scotoma, Aneroid, Canard unfeatured", () => {
+test("catalog features Tessera; Scissel, Feoffee, Apograph, Airlock, Scotoma, Aneroid, Canard unfeatured", () => {
   const catalog = readCatalog();
   const hub = readHubCatalog();
-  assert.equal(catalog.products.length, 330);
-  assert.equal(hub.products.length, 330);
-  assert.equal(catalog.products[0].name, "Mojibake");
-  assert.equal(catalog.products[0].slug, "mojibake");
+  assert.equal(catalog.products.length, 331);
+  assert.equal(hub.products.length, 331);
+  assert.equal(catalog.products[0].name, "Tessera");
+  assert.equal(catalog.products[0].slug, "tessera");
   assert.equal(catalog.products[0].featured, true);
-  assert.equal(catalog.products[0].href, "/mojibake/");
+  assert.equal(catalog.products[0].href, "/tessera/");
   const scissel = catalog.products.find((row) => row.slug === "scissel");
   assert.ok(scissel);
   assert.equal(scissel.featured, false);
@@ -776,7 +776,7 @@ test("catalog features Mojibake; Scissel, Feoffee, Apograph, Airlock, Scotoma, A
   assert.match(scissel.summary, /\bscisselled\b/);
   assert.match(scissel.summary, /argv-trunc/);
   assert.match(scissel.summary, /Score scissel or admit plenary/);
-  assert.equal(hub.products[0].slug, "mojibake");
+  assert.equal(hub.products[0].slug, "tessera");
   assert.equal(hub.products[0].featured, true);
   const feoffee = catalog.products.find((row) => row.slug === "feoffee");
   assert.ok(feoffee);
@@ -801,15 +801,16 @@ test("catalog features Mojibake; Scissel, Feoffee, Apograph, Airlock, Scotoma, A
   assert.ok(!catalog.products.some((row) => String(row.summary || "").includes("93915") && row.slug !== "scissel"));
 });
 
-test("vercel rewrites scissel after mojibake at the top", () => {
+test("vercel rewrites scissel after tessera and mojibake at the top", () => {
   const vercel = readVercel();
-  assert.equal(vercel.rewrites[0].source, "/mojibake");
-  assert.equal(vercel.rewrites[3].source, "/scissel");
-  assert.equal(vercel.rewrites[3].destination, "/projects/scissel");
-  assert.equal(vercel.rewrites[4].source, "/scissel/");
-  assert.equal(vercel.rewrites[4].destination, "/projects/scissel");
-  assert.equal(vercel.rewrites[5].source, "/scissel/:path*");
-  assert.equal(vercel.rewrites[5].destination, "/projects/scissel/:path*");
+  assert.equal(vercel.rewrites[0].source, "/tessera");
+  assert.equal(vercel.rewrites[3].source, "/mojibake");
+  assert.equal(vercel.rewrites[6].source, "/scissel");
+  assert.equal(vercel.rewrites[6].destination, "/projects/scissel");
+  assert.equal(vercel.rewrites[7].source, "/scissel/");
+  assert.equal(vercel.rewrites[7].destination, "/projects/scissel");
+  assert.equal(vercel.rewrites[8].source, "/scissel/:path*");
+  assert.equal(vercel.rewrites[8].destination, "/projects/scissel/:path*");
 });
 
 test("no network calls in the model or tests", () => {
