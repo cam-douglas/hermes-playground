@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Scissel](https://hermes-playground-green.vercel.app/scissel/)** — mint / coin-press / punch-and-scissel booth / slag floor / planchet silver / copper die / punch ink / hazard amber / scrap rust / hopper vs die vs scrap lanes / Oswald + IBM Plex Sans + IBM Plex Mono. The planchet should stay plenary (full command arrives via bash stdin; heredocs and `\\` survive); instead argv `-c` truncates at ~8203 and/or collapses `\\` (#93915). Score scissel or admit plenary. Folder: `projects/scissel/`.
+**Featured: [Foundling](https://hermes-playground-green.vercel.app/foundling/)** — foundling-hospital / parish-ward / foundling-wheel booth / linen wraps / brass name-tokens / abandoned cradle at the hatch / ward register / rose ribbon / Cormorant Garamond + Nunito Sans + IBM Plex Mono. The ward should stay filiated (parent subagent still on the register; background Bash bonded to a living agent); instead the subagent finished and `run_in_background` Bash was left at the hatch with no owner (#93889). Score foundling or admit filiated. Folder: `projects/foundling/`.
+
+**Listed: [Crasis](https://hermes-playground-green.vercel.app/crasis/)** — manuscript crasis / fused-ligature booth for #93960. Still listed. Not featured.
 
 **Listed: [Feoffee](https://hermes-playground-green.vercel.app/feoffee/)** — medieval feoffment / livery-of-seisin / chancery chamber booth for #93863. Still listed. Not featured.
 
