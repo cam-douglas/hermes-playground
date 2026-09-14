@@ -580,7 +580,7 @@ test("ungloved page is a tilting-yard gauntlet, not a porch or fasces aisle", ()
   assert.match(page, /\bgauntlet\b/);
   assert.match(page, /attach-mouse/);
   assert.match(page, /Score gauntlet or admit ungloved/i);
-  assert.match(page, /#360/);
+  assert.match(page, /#361/);
   assert.match(page, /#94029/);
   assert.match(page, /Admit ungloved/);
   assert.match(page, /Score gauntlet/);
@@ -708,11 +708,11 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(runLog, /21:50/);
 });
 
-test("catalog features Gauntlet only; Lychgate unfeatured; product count 360", () => {
+test("catalog features Gauntlet only; Lictor unfeatured; product count 361", () => {
   const catalog = readCatalog();
   const hub = readHubCatalog();
-  assert.equal(catalog.products.length, 360);
-  assert.equal(hub.products.length, 360);
+  assert.equal(catalog.products.length, 361);
+  assert.equal(hub.products.length, 361);
   assert.equal(catalog.products[0].name, "Gauntlet");
   assert.equal(catalog.products[0].slug, "gauntlet");
   assert.equal(catalog.products[0].featured, true);
@@ -730,6 +730,9 @@ test("catalog features Gauntlet only; Lychgate unfeatured; product count 360", (
   assert.match(catalog.products[0].summary, /#94029/);
   assert.equal(hub.products[0].slug, "gauntlet");
   assert.equal(hub.products[0].featured, true);
+  const lictor = catalog.products.find((row) => row.slug === "lictor");
+  assert.ok(lictor);
+  assert.equal(lictor.featured, false);
   const lychgate = catalog.products.find((row) => row.slug === "lychgate");
   assert.ok(lychgate);
   assert.equal(lychgate.featured, false);
