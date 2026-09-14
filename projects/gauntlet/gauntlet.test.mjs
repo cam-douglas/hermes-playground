@@ -722,28 +722,27 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(runLog, /21:50/);
 });
 
-test("catalog features Gauntlet only; Lictor unfeatured; product count 361", () => {
+test("catalog lists Gauntlet unfeatured after Agraphia; product count 362", () => {
   const catalog = readCatalog();
   const hub = readHubCatalog();
-  assert.equal(catalog.products.length, 361);
-  assert.equal(hub.products.length, 361);
-  assert.equal(catalog.products[0].name, "Gauntlet");
-  assert.equal(catalog.products[0].slug, "gauntlet");
+  assert.equal(catalog.products.length, 362);
+  assert.equal(hub.products.length, 362);
+  const gauntlet = catalog.products.find((row) => row.slug === "gauntlet");
+  assert.ok(gauntlet);
+  assert.equal(gauntlet.name, "Gauntlet");
+  assert.equal(gauntlet.featured, false);
+  assert.equal(gauntlet.href, "/gauntlet/");
+  assert.equal(gauntlet.day, "2026-09-14");
+  assert.match(gauntlet.summary, /\bungloved\b/);
+  assert.match(gauntlet.summary, /\bgauntlet\b/);
+  assert.match(gauntlet.summary, /attach-mouse/);
+  assert.match(gauntlet.summary, /Score gauntlet or admit ungloved/);
+  assert.match(gauntlet.summary, /#94029/);
+  assert.equal(catalog.products[0].slug, "agraphia");
   assert.equal(catalog.products[0].featured, true);
-  assert.equal(catalog.products[0].href, "/gauntlet/");
-  assert.equal(catalog.products[0].day, "2026-09-14");
-  assert.equal(
-    catalog.products[0].summary,
-    "21:50 gauntlet: a medieval tournament gauntlet / iron glove / riveted cuff / tilting-yard booth for #94029. Attached background sessions (`claude attach`) enable xterm mouse reporting unconditionally, ignoring CLAUDE_CODE_DISABLE_MOUSE and CLAUDE_CODE_DISABLE_MOUSE_CLICKS; direct launch honors DISABLE_MOUSE=1 (zero enables). Idle ungloved / seeded gauntlet / path attach-mouse. Score gauntlet or admit ungloved.",
-  );
-  assert.equal(hub.products[0].summary, catalog.products[0].summary);
-  assert.match(catalog.products[0].summary, /\bungloved\b/);
-  assert.match(catalog.products[0].summary, /\bgauntlet\b/);
-  assert.match(catalog.products[0].summary, /attach-mouse/);
-  assert.match(catalog.products[0].summary, /Score gauntlet or admit ungloved/);
-  assert.match(catalog.products[0].summary, /#94029/);
-  assert.equal(hub.products[0].slug, "gauntlet");
-  assert.equal(hub.products[0].featured, true);
+  const hubGauntlet = hub.products.find((row) => row.slug === "gauntlet");
+  assert.ok(hubGauntlet);
+  assert.equal(hubGauntlet.featured, false);
   const lictor = catalog.products.find((row) => row.slug === "lictor");
   assert.ok(lictor);
   assert.equal(lictor.featured, false);
@@ -765,16 +764,18 @@ test("catalog features Gauntlet only; Lictor unfeatured; product count 361", () 
   );
 });
 
-test("vercel rewrites gauntlet to the project folder at the top", () => {
+test("vercel rewrites gauntlet after agraphia", () => {
   const vercel = readVercel();
-  assert.equal(vercel.rewrites[0].source, "/gauntlet");
-  assert.equal(vercel.rewrites[0].destination, "/projects/gauntlet");
-  assert.equal(vercel.rewrites[1].source, "/gauntlet/");
-  assert.equal(vercel.rewrites[1].destination, "/projects/gauntlet");
-  assert.equal(vercel.rewrites[2].source, "/gauntlet/:path*");
-  assert.equal(vercel.rewrites[2].destination, "/projects/gauntlet/:path*");
-  assert.equal(vercel.rewrites[3].source, "/lictor");
-  assert.equal(vercel.rewrites[3].destination, "/projects/lictor");
+  assert.equal(vercel.rewrites[0].source, "/agraphia");
+  assert.equal(vercel.rewrites[0].destination, "/projects/agraphia");
+  assert.equal(vercel.rewrites[3].source, "/gauntlet");
+  assert.equal(vercel.rewrites[3].destination, "/projects/gauntlet");
+  assert.equal(vercel.rewrites[4].source, "/gauntlet/");
+  assert.equal(vercel.rewrites[4].destination, "/projects/gauntlet");
+  assert.equal(vercel.rewrites[5].source, "/gauntlet/:path*");
+  assert.equal(vercel.rewrites[5].destination, "/projects/gauntlet/:path*");
+  assert.equal(vercel.rewrites[6].source, "/lictor");
+  assert.equal(vercel.rewrites[6].destination, "/projects/lictor");
 });
 
 test("no network calls in the model or tests", () => {
