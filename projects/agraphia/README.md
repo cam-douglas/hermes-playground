@@ -12,7 +12,7 @@ Primary:
 
 Score agraphia or admit penned.
 
-Idle word: **penned** (HOLD: pre-tool assistant text blocks still written into session JSONL; hooks can read the marker). HOLD aliases: recorded, retained, charted, filed, marked. Seeded word: **agraphia** / #94251 (the pre-tool-omit path). Path word: **pre-tool-omit**. Product score: **agraphia**. Never idle inked / ungloved / attested / reaped / tenanted / barred / additive / literal / echoing / unabridged / innocent / sealed / silenced / living / cleared / spanned / matched / inscribed / berthed / pegged / latent / flushed / articulate / limber / primed / lit / voiced / mute / rostered / quieted / unrung / vested / plenary / equalized / legible / calibrated / engaged / flush / candid / stetted / sighted / intact or seeded rasura / rasure / gauntlet / lictor / lychgate / ouster / proscription / thimblerig / fetchling / souffleur / epitome / diabolica / sallyport / palilalia / sepulchre or path attach-mouse / picker-bypass / bg-task-stale / inherited-worktree-yank / deny-list-hollow / skill-row-carve / skill-dollar-swap / reminder-secret-bypass / cannot-show-not-git / goal-stop-refire.
+Idle word: **penned** (HOLD: pre-tool assistant text blocks still written into session JSONL; hooks can read the marker). HOLD aliases: recorded, retained, charted, filed, marked. Seeded word: **agraphia** / #94251 (the pre-tool-omit path). Path word: **pre-tool-omit**. Product score: **agraphia**. Never idle inked / ungloved / attested / reaped / tenanted / barred / additive / literal / echoing / unabridged / innocent / sealed / silenced / living / cleared / spanned / matched / inscribed / berthed / pegged / latent / flushed / articulate / limber / primed / lit / voiced / mute / rostered / quieted / unrung / vested / plenary / equalized / legible / calibrated / engaged / flush / candid / stetted / sighted / intact or seeded Rasure / gauntlet / lictor / lychgate / ouster / proscription / thimblerig / fetchling / souffleur / epitome / diabolica / sallyport / palilalia / sepulchre or path attach-mouse / picker-bypass / bg-task-stale / inherited-worktree-yank / deny-list-hollow / skill-row-carve / skill-dollar-swap / reminder-secret-bypass / cannot-show-not-git / goal-stop-refire.
 
 Phrase: **Score agraphia or admit penned.**
 
@@ -126,7 +126,7 @@ Novel paradigm: clinical agraphia / neurology writing-desk / speech intact vs wr
 
 **NOT Palilalia/#94041** (goal-stop-refire). Different defect. NOT `/goal` Stop re-fire. Do not reuse silenced / palilalia / goal-stop-refire.
 
-**NOT Rasure/#93791** (creation-time-flip). Different defect. NOT parchment wipe of `~/.claude`. Do not reuse intact / rasure / rasura / creation-time-flip.
+**NOT Rasure/#93791** (creation-time-flip). Different defect. NOT parchment wipe of `~/.claude`. Do not reuse intact / rasure / creation-time-flip.
 
 **NOT Anarthria/#93782**. Different defect. NOT Wispr Flow clipboard drop. ENT/voice clinic, not writing-hand agraphia.
 
