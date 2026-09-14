@@ -254,6 +254,7 @@ test("booth fixtures flip literal vs fetchling vs skill-dollar-swap", () => {
   assert.equal(classify(readData("silent-corruption.json")), "silent-corruption");
   assert.equal(classify(readData("landing.json")), "landing");
   assert.equal(classify(readData("cousins.json")), "cousins");
+  assert.deepEqual(readData("cousins.json").issues, [79859, 82175, 89978, 91957, 92457]);
   assert.equal(classify(readData("backups.json")), "backups");
   assert.equal(classify(readData("walk.json")), "walk");
   assert.equal(classify(readData("has-repro.json")), "has-repro");
@@ -495,8 +496,15 @@ test("mapDesk encodes the published open swap", () => {
   assert.equal(clear.holdingLane, "face-value");
 });
 
-test("cousins stay empty (none published); products stay distinct; backups stay data-only", () => {
-  assert.equal(COUSINS.length, 0);
+test("cousins cite #79859 #82175 #89978 #91957 #92457 only; products stay distinct; backups stay data-only", () => {
+  assert.equal(COUSINS.length, 5);
+  assert.equal(COUSINS[0].issue, 79859);
+  assert.equal(COUSINS[1].issue, 82175);
+  assert.equal(COUSINS[2].issue, 89978);
+  assert.equal(COUSINS[3].issue, 91957);
+  assert.equal(COUSINS[4].issue, 92457);
+  assert.ok(COUSINS.every((row) => row.citeOnly === true));
+  assert.ok(COUSINS.every((row) => /args|Bash|do not conflate/i.test(row.why)));
   assert.ok(NOT_PRODUCTS.includes("souffleur"));
   assert.ok(NOT_PRODUCTS.includes("epitome"));
   assert.ok(NOT_PRODUCTS.includes("aphonia"));
@@ -508,6 +516,7 @@ test("cousins stay empty (none published); products stay distinct; backups stay 
   assert.ok(BACKUPS.every((row) => row.citeOnly === true));
   assert.ok(!BACKUPS.some((row) => row.issue === 94065));
   assert.ok(!BACKUPS.some((row) => row.issue === 94031));
+  assert.ok(!BACKUPS.some((row) => [79859, 82175, 89978, 91957, 92457].includes(row.issue)));
   assert.equal(classify({ seed: "cousins", preferSeed: true }), "cousins");
   assert.equal(classify({ seed: "backups", preferSeed: true }), "backups");
 });
@@ -546,7 +555,7 @@ test("handle exposes published hypothesis and #94065 headline", () => {
   const result = handle(seedFetchling());
   assert.equal(result.published.issue, 94065);
   assert.equal(result.published.platform, "windows");
-  assert.deepEqual(result.published.cousins, []);
+  assert.deepEqual(result.published.cousins, [79859, 82175, 89978, 91957, 92457]);
   assert.ok(result.published.backups.includes(94029));
   assert.ok(result.published.backups.includes(94064));
   assert.ok(!result.published.backups.includes(94065));
@@ -638,6 +647,7 @@ test("literal page is a twilight coin-ledger desk, not a theatre prompt-corner",
   assert.match(page, /NOT Aphonia/i);
   assert.match(page, /NOT Sourdine/i);
   assert.match(page, /NOT Anarthria/i);
+  assert.match(page, /#79859|#82175|#89978|#91957|#92457/);
   assert.doesNotMatch(page, /fetch\(/);
 });
 
@@ -667,6 +677,8 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /NOT Aphonia\/#92409/);
   assert.match(readme, /NOT Sourdine\/#93531/);
   assert.match(readme, /NOT Anarthria\/#93782/);
+  assert.match(readme, /#79859|#82175|#89978|#91957|#92457/);
+  assert.match(readme, /do NOT rebuild|do not conflate/i);
   assert.match(readme, /hermes-playground-green\.vercel\.app\/fetchling/);
   assert.match(readme, /node --test projects\/fetchling\/fetchling\.test\.mjs/);
   assert.match(readme, /NON-BINDING/);

@@ -44,7 +44,9 @@
  * NOT Aphonia/#92409. NOT Sourdine/#93531. NOT Anarthria/#93782.
  * NOT Trismus. NOT Quietus. NOT Followspot. NOT Greenroom.
  * NOT Aside. NOT Ambo.
- * Cousins: none published on the issue — do not invent numbers.
+ * Cousins cite-only (args/Bash surfaces — do NOT rebuild / do NOT
+ * conflate with #94065 Skill-load path): #79859, #82175, #89978,
+ * #91957, #92457.
  * Fetchling is specifically: `$N` tokens silently swapped for
  * conversation fragments on the Skill path while CLAUDE.md
  * keeps face value. A fetchling is a shadow / doppelganger-
@@ -387,7 +389,43 @@ export const FINGERPRINT_LINES = Object.freeze([
   "skill-path-corrupt",
 ]);
 
-export const COUSINS = Object.freeze([]);
+export const COUSINS = Object.freeze([
+  {
+    issue: 79859,
+    title: "Skill tool args bash-style $N against SKILL.md prose",
+    state: "OPEN",
+    citeOnly: true,
+    why: "Cite only — Skill tool args surface, not the #94065 Skill-load content path. Do not rebuild. Do not conflate.",
+  },
+  {
+    issue: 82175,
+    title: "Skill tool args corrupts $1/$2 in code examples",
+    state: "OPEN",
+    citeOnly: true,
+    why: "Cite only — Skill tool args surface, not the #94065 Skill-load content path. Do not rebuild. Do not conflate.",
+  },
+  {
+    issue: 89978,
+    title: "Bash tool strips dollar amounts from message content",
+    state: "OPEN",
+    citeOnly: true,
+    why: "Cite only — Bash tool surface, not the #94065 Skill-load content path. Do not rebuild. Do not conflate.",
+  },
+  {
+    issue: 91957,
+    title: "Skill args silently rewrites literal dollar figures in SKILL.md",
+    state: "OPEN",
+    citeOnly: true,
+    why: "Cite only — Skill args surface, not the #94065 Skill-load content path. Do not rebuild. Do not conflate.",
+  },
+  {
+    issue: 92457,
+    title: "Skill/command argument substitution off-by-one / limited to $0/$1",
+    state: "OPEN",
+    citeOnly: true,
+    why: "Cite only — Skill/command argument substitution, not the #94065 Skill-load content path. Do not rebuild. Do not conflate.",
+  },
+]);
 
 export const BACKUPS = Object.freeze([
   { issue: 94029, title: "backup #94029 claude attach ignores DISABLE_MOUSE", state: "OPEN", citeOnly: true, why: "Cite only — next focus only — do not auto-pick as this ship" },
@@ -1199,7 +1237,7 @@ export function scoreWalk(input = {}) {
     rows: scored,
     phrase: HOLD.includes(verdict) ? "admit literal" : "score fetchling",
     note: headline
-      ? "Skill-tool load swaps $1–$19 for conversation fragments; $20+ intact; CLAUDE.md $10 intact. No published cousins on the issue."
+      ? "Skill-tool load swaps $1–$19 for conversation fragments; $20+ intact; CLAUDE.md $10 intact. Cousins cite-only (args/Bash surfaces): #79859 #82175 #89978 #91957 #92457 — do not rebuild, do not conflate."
       : "published fetchling walk scored against literal vs fetchling",
   };
 }

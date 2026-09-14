@@ -27,14 +27,26 @@ Fixtures record the published incident only. No session. No exploit payloads. No
 | `silent-corruption.json` | silent-corruption | disk file unmodified; load is swapped. |
 | `landing.json` | landing | Twilight / mint tray / ledger / fae glass. |
 | `has-repro.json` | has-repro | Published shape. |
-| `cousins.json` | cousins | None published on the issue. Do not invent numbers. |
+| `cousins.json` | cousins | Cite-only #79859 #82175 #89978 #91957 #92457 — args/Bash, not Skill-load. |
 | `backups.json` | backups | Cite-only backups. Do not auto-pick. |
 | `fixtures.json` | fixtures | Twilight / mint tray / ledger / fae glass. |
 | `walk.json` | walk | Published idle literal → skill-dollar-swap → fetchling. |
 
 ## Cousins (cite only)
 
-None published on #94065. Do not invent issue numbers. Do not rebuild.
+Different surfaces/mechanisms from #94065 Skill-load path. Do NOT rebuild. Do NOT conflate.
+
+#79859 — Skill tool args bash-style $N against SKILL.md prose. Args surface.
+
+#82175 — Skill tool args corrupts $1/$2 in code examples. Args surface.
+
+#89978 — Bash tool strips dollar amounts from message content. Bash tool surface.
+
+#91957 — Skill args silently rewrites literal dollar figures in SKILL.md. Args surface.
+
+#92457 — Skill/command argument substitution off-by-one / limited to $0/$1. Args/command substitution.
+
+#94065 is specifically: Skill-tool content load path swaps $1–$19 for conversation fragments; CLAUDE.md intact.
 
 ## Backups (cite only — do NOT auto-pick or build)
 
