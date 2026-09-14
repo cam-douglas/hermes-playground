@@ -338,7 +338,7 @@ test("has-repro fingerprints encode the published sallyport proof", () => {
   assert.equal(result.published.host, HOST);
   assert.match(
     fingerprint(seedSallyport()),
-    /sallyport\|kind=reminder-secret-bypass\|ref=mtime\|path=reminder-secret-bypass\|cue=sallyport/,
+    /sallyport\|kind=reminder-secret-bypass\|ref=mtime\|path=reminder-secret-bypass\|cue=reminder-secret-bypass/,
   );
   assert.equal(classify({ seed: "has-repro", preferSeed: true }), "has-repro");
 });
