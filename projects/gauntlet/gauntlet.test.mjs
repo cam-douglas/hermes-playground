@@ -252,7 +252,7 @@ test("booth fixtures flip ungloved vs gauntlet vs attach-mouse", () => {
   assert.equal(classify(readData("disable-clicks.json")), "disable-clicks");
   assert.equal(classify(readData("landing.json")), "landing");
   assert.equal(classify(readData("cousins.json")), "cousins");
-  assert.deepEqual(readData("cousins.json").issues, [73443, 73320]);
+  assert.deepEqual(readData("cousins.json").issues, [91142, 73443, 66957, 71687, 73320]);
   assert.equal(classify(readData("backups.json")), "backups");
   assert.equal(classify(readData("walk.json")), "walk");
   assert.equal(classify(readData("has-repro.json")), "has-repro");
@@ -482,12 +482,17 @@ test("mapLists encodes the published gloved lists", () => {
   assert.equal(clear.holdingLane, "released");
 });
 
-test("cousins cite #73443 #73320 only; products stay distinct; backups stay data-only", () => {
-  assert.equal(COUSINS.length, 2);
-  assert.equal(COUSINS[0].issue, 73443);
-  assert.equal(COUSINS[0].state, "CLOSED");
-  assert.equal(COUSINS[1].issue, 73320);
-  assert.equal(COUSINS[1].state, "OPEN");
+test("cousins cite #91142 #73443 #66957 #71687 #73320 only; products stay distinct; backups stay data-only", () => {
+  assert.equal(COUSINS.length, 5);
+  assert.equal(COUSINS[0].issue, 91142);
+  assert.equal(COUSINS[0].state, "OPEN");
+  assert.equal(COUSINS[1].issue, 73443);
+  assert.equal(COUSINS[1].state, "CLOSED");
+  assert.equal(COUSINS[2].issue, 66957);
+  assert.equal(COUSINS[2].state, "CLOSED");
+  assert.equal(COUSINS[3].issue, 71687);
+  assert.equal(COUSINS[4].issue, 73320);
+  assert.equal(COUSINS[4].state, "OPEN");
   assert.ok(COUSINS.every((row) => row.citeOnly === true));
   assert.ok(COUSINS.every((row) => /do not conflate/i.test(row.why)));
   assert.ok(NOT_PRODUCTS.includes("lictor"));
@@ -505,7 +510,10 @@ test("cousins cite #73443 #73320 only; products stay distinct; backups stay data
   assert.equal(BACKUPS[7].issue, 94256);
   assert.ok(BACKUPS.every((row) => row.citeOnly === true));
   assert.ok(!BACKUPS.some((row) => row.issue === 94029));
+  assert.ok(!BACKUPS.some((row) => row.issue === 91142));
   assert.ok(!BACKUPS.some((row) => row.issue === 73443));
+  assert.ok(!BACKUPS.some((row) => row.issue === 66957));
+  assert.ok(!BACKUPS.some((row) => row.issue === 71687));
   assert.ok(!BACKUPS.some((row) => row.issue === 73320));
   assert.equal(classify({ seed: "cousins", preferSeed: true }), "cousins");
   assert.equal(classify({ seed: "backups", preferSeed: true }), "backups");
@@ -545,7 +553,7 @@ test("handle exposes published hypothesis and #94029 headline", () => {
   const result = handle(seedGauntlet());
   assert.equal(result.published.issue, 94029);
   assert.equal(result.published.platform, "linux");
-  assert.deepEqual(result.published.cousins, [73443, 73320]);
+  assert.deepEqual(result.published.cousins, [91142, 73443, 66957, 71687, 73320]);
   assert.ok(result.published.backups.includes(93987));
   assert.ok(result.published.backups.includes(94256));
   assert.ok(!result.published.backups.includes(94029));
@@ -649,7 +657,10 @@ test("ungloved page is a tilting-yard gauntlet, not a porch or fasces aisle", ()
   assert.match(page, /NOT Epitome/i);
   assert.match(page, /NOT Diabolica/i);
   assert.match(page, /NOT Sallyport/i);
+  assert.match(page, /#91142/);
   assert.match(page, /#73443/);
+  assert.match(page, /#66957/);
+  assert.match(page, /#71687/);
   assert.match(page, /#73320/);
   assert.doesNotMatch(page, /fetch\(/);
 });
@@ -685,7 +696,10 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /NOT Epitome\/#94032/);
   assert.match(readme, /NOT Diabolica\/#94040/);
   assert.match(readme, /NOT Sallyport\/#94082/);
+  assert.match(readme, /#91142/);
   assert.match(readme, /#73443/);
+  assert.match(readme, /#66957/);
+  assert.match(readme, /#71687/);
   assert.match(readme, /#73320/);
   assert.match(readme, /do NOT rebuild|do not conflate/i);
   assert.match(readme, /hermes-playground-green\.vercel\.app\/gauntlet/);
@@ -759,6 +773,8 @@ test("vercel rewrites gauntlet to the project folder at the top", () => {
   assert.equal(vercel.rewrites[1].destination, "/projects/gauntlet");
   assert.equal(vercel.rewrites[2].source, "/gauntlet/:path*");
   assert.equal(vercel.rewrites[2].destination, "/projects/gauntlet/:path*");
+  assert.equal(vercel.rewrites[3].source, "/lictor");
+  assert.equal(vercel.rewrites[3].destination, "/projects/lictor");
 });
 
 test("no network calls in the model or tests", () => {
