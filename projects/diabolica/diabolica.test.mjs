@@ -518,8 +518,8 @@ test("model has no static node: imports so the innocent page can score in-browse
 test("innocent page is a parchment court, not fortress or clinic or tomb or lyric booth", () => {
   const page = readPage();
   assert.match(page, /family=Fraunces|Fraunces/);
-  assert.match(page, /family=Figtree|Figtree/);
-  assert.match(page, /IBM\+Plex\+Mono|IBM Plex Mono/);
+  assert.match(page, /family=Nunito\+Sans|Nunito Sans/);
+  assert.match(page, /Fira\+Code|Fira Code/);
   assert.match(page, /diabolica|innocent|cannot-show-not-git|writ|balance|candle|parchment|probatio/i);
   assert.match(page, /#E8D5A8|#120C08|#A31D2B|#E6A23C|#5A5348|#C9A227|#1C1108/i);
   assert.match(page, /\binnocent\b/);
@@ -547,6 +547,8 @@ test("innocent page is a parchment court, not fortress or clinic or tomb or lyri
   assert.doesNotMatch(page, /family=Libre\+Baskerville|Libre Baskerville/);
   assert.doesNotMatch(page, /family=DM\+Sans|DM Sans/);
   assert.doesNotMatch(page, /JetBrains Mono|JetBrains\+Mono/);
+  assert.doesNotMatch(page, /family=Figtree|Figtree/);
+  assert.doesNotMatch(page, /IBM\+Plex|IBM Plex/);
   assert.doesNotMatch(page, /family=Cardo|Cardo/);
   assert.doesNotMatch(page, /family=Cinzel|Cinzel/);
   assert.doesNotMatch(page, /family=Cormorant|Cormorant/);
@@ -578,8 +580,10 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(readme, /\bdiabolica\b/);
   assert.match(readme, /cannot-show-not-git/);
   assert.match(readme, /Fraunces/);
-  assert.match(readme, /Figtree/);
-  assert.match(readme, /IBM Plex Mono/);
+  assert.match(readme, /Nunito Sans/);
+  assert.match(readme, /Fira Code/);
+  assert.doesNotMatch(readme, /Figtree/);
+  assert.doesNotMatch(readme, /IBM Plex/);
   assert.doesNotMatch(readme, /Newsreader/);
   assert.doesNotMatch(readme, /Public Sans/);
   assert.doesNotMatch(readme, /Libre Baskerville/);
