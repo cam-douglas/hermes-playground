@@ -75,7 +75,7 @@ What happened (from the issue text — do not invent):
 
 Problem found: PICKER-BYPASS — desktop Code-tab model picker changes the session model without entering the Pre/PostModelSwitch dispatch path; CLI `/model` still attests both; the magistrate sits, the lictor never precedes.
 
-Why Lictor: A Roman *lictor* walks ahead of a magistrate with the fasces (a bundle of iron rods and an axe). The chair is not taken until the herald has raised the rods (PreModelSwitch) and then attested the seat (PostModelSwitch). The desktop picker lets the magistrate sit from a side door — no horn, no tablet row, no chance for the rods to block. Proscription/#94202 was a hollow outlaw list (Cinzel marble senate). Rescript/#93742 was a scraped charter on `/model` save. Changeling/#93757 was a swapped heir on reconnect. Lychgate/#94059 was a stale parish roll. This booth is specifically picker-bypass on the desktop model picker — different problem, UI, UX, metaphor. NOT a Claude Code patch — educational diagnostic booth only.
+Why Lictor: A Roman *lictor* walks ahead of a magistrate with the fasces (a bundle of iron rods and an axe). The chair is not taken until the herald has raised the rods (PreModelSwitch) and then attested the seat (PostModelSwitch). The desktop picker lets the magistrate sit from a side door — no horn, no tablet row, no chance for the rods to block. Proscription/#94202 was a hollow outlaw list (marble-lintel senate). Rescript/#93742 was a scraped charter on `/model` save. Changeling/#93757 was a swapped heir on reconnect. Lychgate/#94059 was a stale parish roll. This booth is specifically picker-bypass on the desktop model picker — different problem, UI, UX, metaphor. NOT a Claude Code patch — educational diagnostic booth only.
 
 Why this solution: attested catalog page + node diagnostic encoding idle **attested** / seeded **lictor** / path **picker-bypass** so operators can score whether the booth is **lictor** or already **attested**. Not a Claude Code patch.
 
@@ -91,13 +91,13 @@ Desired (from the issue, scoring narrative only — DO NOT implement a Claude Co
 
 This is specifically: **DESKTOP CODE-TAB MODEL PICKER BYPASSES PREMODELSWITCH AND POSTMODELSWITCH — CLI /MODEL STILL DISPATCHES BOTH; THE MAGISTRATE SITS WITHOUT THE LICTOR.**
 
-Novel paradigm: Roman lictor / fasces / magistrate-procession / wax-tablet ledger / iron-rod bundle / curule-chair / torch-lit forum aisle — imperial purple, brass, parchment, iron, marble white, torch. New issue, new paradigm (picker-bypass), new UI/UX/fonts/colors, new scoring vocabulary. A herald-and-fasces aisle, not a parish porch, bailiff desk, or Cinzel marble senate.
+Novel paradigm: Roman lictor / fasces / magistrate-procession / wax-tablet ledger / iron-rod bundle / curule-chair / torch-lit forum aisle — imperial purple, brass, parchment, iron, marble white, torch. New issue, new paradigm (picker-bypass), new UI/UX/fonts/colors, new scoring vocabulary. A herald-and-fasces aisle, not a parish porch, bailiff desk, or outlaw-list senate.
 
 **NOT Lychgate/#94059** (bg-task-stale). Different defect. NOT parish lychgate porch. Do not reuse reaped / lychgate / bg-task-stale.
 
 **NOT Ouster/#94221** (inherited-worktree-yank). Different defect. NOT Georgian bailiff desk. Do not reuse tenanted / ouster / inherited-worktree-yank.
 
-**NOT Proscription/#94202** (deny-list-hollow). Different defect. NOT Cinzel marble senate / wax-tablet forum. Do not reuse barred / proscription / deny-list-hollow.
+**NOT Proscription/#94202** (deny-list-hollow). Different defect. NOT outlaw-list senate / wax-tablet forum. Do not reuse barred / proscription / deny-list-hollow.
 
 **NOT Rescript/#93742** (/model save wipes settings). Related model-switch surface, different defect (charter scraped). Do not rebuild. Do not conflate.
 
