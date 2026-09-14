@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Souffleur — prompt-corner booth for #94031</title>
+    <meta
+      name="description"
+      content="Souffleur — a theatre-wings prompt-corner booth for Claude desktop #94031. Idle word is echoing."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --stage: #0D0B0F;
+        --cream: #F5EFE0;
+        --amber: #E8B84A;
+        --crimson: #7A1F2B;
+        --charcoal: #2A2428;
+        --slate: #6E7A86;
+        --rose: #C45B6A;
+        --hush: rgba(245, 239, 224, 0.55);
+        --hair: rgba(245, 239, 224, 0.14);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Literata, "Iowan Old Style", Georgia, serif;
+        color: var(--cream);
+        background-color: var(--stage);
+        background-image:
+          radial-gradient(ellipse at 50% 0%, rgba(232, 184, 74, 0.14), transparent 42%),
+          radial-gradient(ellipse at 8% 80%, rgba(122, 31, 43, 0.28), transparent 34%),
+          radial-gradient(ellipse at 92% 70%, rgba(196, 91, 106, 0.12), transparent 32%),
+          repeating-linear-gradient(180deg, rgba(42, 36, 40, 0.55) 0 2px, transparent 2px 7px);
+        background-attachment: fixed;
+      }
+      body.embed .chrome { display: none; }
+      a { color: var(--amber); }
+      .house {
+        width: min(1080px, calc(100% - 22px));
+        margin: 0 auto;
+        padding: 20px 0 64px;
+      }
+      .chrome {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-family: "DM Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      h1 {
+        margin: 8px 0 4px;
+        font-family: "Playfair Display", "Playfair", Georgia, serif;
+        font-size: clamp(3.4rem, 9vw, 6.6rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 0.84;
+      }
+      .phrase {
+        max-width: 38em;
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 1.2rem;
+        font-style: italic;
+        color: var(--amber);
+      }
+      .score-plate {
+        margin: 16px 0 20px;
+        padding: 16px 18px;
+        border: 1px solid var(--amber);
+        background: linear-gradient(180deg, rgba(42, 36, 40, 0.92), rgba(13, 11, 15, 0.88));
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+      }
+      .score-plate.hold { box-shadow: inset 0 -6px 0 var(--amber); }
+      .score-plate.alarm { box-shadow: inset 0 -6px 0 var(--rose); }
+      .score-plate strong {
+        font-family: "DM Mono", ui-monospace, monospace;
+        letter-spacing: 0.16em;
+        font-size: 13px;
+      }
+      .score-plate p { margin: 0; max-width: 44em; }
+      .stage {
+        display: grid;
+        grid-template-columns: 0.82fr 1.36fr 0.82fr;
+        min-height: 480px;
+        border: 10px solid #1a1214;
+        outline: 2px solid var(--crimson);
+        background: #120e11;
+        position: relative;
+        overflow: hidden;
+      }
+      .curtain-rail {
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 38px;
+        background:
+          repeating-linear-gradient(90deg, #7A1F2B 0 18px, #5e1720 18px 22px);
+        z-index: 3;
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+      }
+      .curtain-drop {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 38px;
+        height: 0;
+        background:
+          repeating-linear-gradient(90deg, #7A1F2B 0 28px, #641823 28px 34px);
+        transition: height 0.5s ease;
+        z-index: 2;
+        pointer-events: none;
+      }
+      body.hushed .curtain-drop { height: 42%; }
+      .col {
+        position: relative;
+        padding: 52px 14px 18px;
+        z-index: 1;
+      }
+      .wing {
+        background:
+          linear-gradient(180deg, rgba(122, 31, 43, 0.18), transparent 28%),
+          repeating-linear-gradient(180deg, #1a1518 0 16px, #221c20 16px 17px);
+      }
+      .prompt-corner {
+        background:
+          radial-gradient(ellipse at 50% 78%, rgba(232, 184, 74, 0.16), transparent 46%),
+          #161014;
+        border-left: 1px solid rgba(232, 184, 74, 0.18);
+        border-right: 1px solid rgba(232, 184, 74, 0.18);
+      }
+      .col h2 {
+        margin: 0 0 8px;
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 1.4rem;
+        color: var(--cream);
+      }
+      .badge {
+        display: inline-block;
+        font-family: "DM Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border: 1px solid var(--amber);
+        color: var(--amber);
+        background: rgba(13, 11, 15, 0.7);
+      }
+      .badge.open { background: var(--rose); color: var(--cream); border-color: var(--rose); }
+      .cue-script {
+        margin-top: 12px;
+        padding: 16px 16px 20px;
+        background: var(--cream);
+        color: #2A2428;
+        min-height: 210px;
+        box-shadow: 0 16px 0 rgba(0, 0, 0, 0.28);
+        position: relative;
+      }
+      .cue-script::after {
+        content: "";
+        position: absolute;
+        right: 14px;
+        top: 12px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--amber);
+        box-shadow: 0 0 10px var(--amber);
+      }
+      body.hushed .cue-script::after { background: var(--rose); box-shadow: none; }
+      .cue-script p { margin: 0 0 8px; font-size: 14px; }
+      .cue-latin {
+        font-family: "Playfair Display", Georgia, serif;
+        font-style: italic;
+        font-size: 1.12rem;
+      }
+      .whisper-stream {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-height: 2.6em;
+        margin: 10px 0 8px;
+      }
+      .letter-chip {
+        font-family: "DM Mono", ui-monospace, monospace;
+        font-size: 13px;
+        min-width: 1.6em;
+        text-align: center;
+        padding: 4px 6px;
+        background: #2A2428;
+        color: var(--amber);
+      }
+      body.hushed .letter-chip {
+        background: #6E7A86;
+        color: #F5EFE0;
+        opacity: 0.35;
+      }
+      .prompt-box { width: 100%; height: auto; display: block; margin: 8px 0; }
+      .footlight-bar {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 0 0;
+      }
+      .footlight {
+        width: 18px;
+        height: 10px;
+        border-radius: 10px 10px 2px 2px;
+        background: var(--amber);
+        box-shadow: 0 0 12px rgba(232, 184, 74, 0.7);
+      }
+      body.hushed .footlight {
+        background: var(--slate);
+        box-shadow: none;
+      }
+      .marks { display: grid; gap: 7px; margin-top: 10px; }
+      .mark {
+        padding: 7px 8px;
+        border: 1px dashed var(--amber);
+        font-family: "DM Mono", ui-monospace, monospace;
+        font-size: 11px;
+        color: var(--hush);
+      }
+      body.hushed .mark {
+        border-style: solid;
+        border-color: var(--rose);
+        color: var(--cream);
+        background: rgba(196, 91, 106, 0.14);
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 18px 0;
+      }
+      button {
+        font-family: Literata, Georgia, serif;
+        font-size: 13px;
+        padding: 8px 12px;
+        border: 1px solid var(--cream);
+        background: rgba(42, 36, 40, 0.88);
+        color: var(--cream);
+        cursor: pointer;
+      }
+      button:hover { background: rgba(122, 31, 43, 0.45); }
+      button.primary { background: var(--cream); color: #2A2428; }
+      button.alarm { background: var(--rose); color: var(--cream); border-color: var(--rose); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 16px; }
+      .chip {
+        font-family: "DM Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 5px 8px;
+        border: 1px solid var(--hair);
+        background: transparent;
+        color: var(--cream);
+      }
+      .chip.hold { border-color: var(--amber); color: var(--amber); }
+      .chip.on { background: var(--cream); color: #2A2428; border-color: var(--cream); }
+      .brief, .probe {
+        background: rgba(42, 36, 40, 0.78);
+        border: 1px solid var(--hair);
+        padding: 16px 18px;
+        margin: 14px 0;
+      }
+      .brief h2, .probe h2 {
+        font-family: "Playfair Display", Georgia, serif;
+        margin: 0 0 8px;
+      }
+      .log div { font-family: "DM Mono", ui-monospace, monospace; font-size: 12px; margin: 4px 0; }
+      .log .ok { color: var(--amber); }
+      .log .warn { color: var(--rose); }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        font-family: "DM Mono", ui-monospace, monospace;
+        font-size: 12px;
+        border: 1px solid var(--crimson);
+        background: #2A2428;
+        color: var(--cream);
+        padding: 10px;
+      }
+      .timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+      .letter {
+        padding: 10px;
+        background: rgba(42, 36, 40, 0.74);
+        border: 1px solid var(--hair);
+        font-size: 12px;
+      }
+      .letter.lag { border-color: var(--rose); }
+      .letter .t { font-family: "DM Mono", ui-monospace, monospace; color: var(--amber); }
+      footer.chrome { margin-top: 28px; }
+      @media (max-width: 860px) {
+        .stage { grid-template-columns: 1fr; }
+        .timeline { grid-template-columns: 1fr 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="house">
+      <div class="chrome">
+        <a href="/">← catalog</a>
+        <span>#354 · anthropics/claude-code#94031</span>
+      </div>
+      <h1>Souffleur</h1>
+      <p class="phrase">Score souffleur or admit echoing.</p>
+      <div id="score" class="score-plate hold">
+        <div>
+          <strong id="score-badge">ECHOING</strong>
+          <p id="score-line">admit <em>echoing</em> — prompt-corner whispers each letter; wings open; footlights amber</p>
+        </div>
+        <span id="proof-chip" class="badge">wings open</span>
+      </div>
+
+      <section class="stage" id="sheet" aria-label="Theatre prompt-corner house">
+        <div class="curtain-rail" aria-hidden="true"></div>
+        <div class="curtain-drop" aria-hidden="true"></div>
+        <div class="col wing" id="wings-col">
+          <span class="badge">wings</span>
+          <h2>Wings</h2>
+          <p>App-switch exit. The house should admit <em>echoing</em> when the souffleur still whispers after return. Instead the prompt-corner goes hush.</p>
+          <svg class="prompt-box" viewBox="0 0 180 150" role="img" aria-label="Dark theatre wing with hanging drape">
+            <rect x="8" y="10" width="164" height="130" fill="#2A2428" />
+            <path d="M20 10 Q50 80 20 140" fill="#7A1F2B" />
+            <path d="M48 10 Q78 90 48 140" fill="#5e1720" />
+            <text x="70" y="80" fill="#E8B84A" font-size="9" font-family="DM Mono, monospace">EXIT</text>
+            <text x="70" y="96" fill="#C45B6A" font-size="8" font-family="DM Mono, monospace">Cmd-Tab</text>
+          </svg>
+          <p id="true-head">The house stays stage-black — wings open, cue-script heard, footlights amber</p>
+        </div>
+        <div class="col prompt-corner" id="prompt-col">
+          <span id="prompt-chip" class="badge">prompt-corner</span>
+          <h2>Prompt-corner</h2>
+          <p>A theatre souffleur whispers each typed letter from the hole in the stage. After the 11 September 2026 desktop update to <code>1.52386.3</code>, the whisper dies on focus return.</p>
+          <div class="cue-script" id="folio">
+            <p class="cue-latin">souffleur — prompter in the wings</p>
+            <p id="folio-body">Idle: the cue-script stays heard. Each typed character is announced. The rest of the house still speaks either way.</p>
+            <div class="whisper-stream" id="whisper" aria-live="polite">
+              <span class="letter-chip">c</span>
+              <span class="letter-chip">u</span>
+              <span class="letter-chip">e</span>
+            </div>
+            <p id="folio-sig" class="cue-latin">echo · each letter announced</p>
+          </div>
+        </div>
+        <div class="col wing" id="lights-col">
+          <span id="lights-chip" class="badge">footlights amber</span>
+          <h2>Footlights</h2>
+          <p>VO nav, headings, Claude replies, and “finished responding” still announce. Only typing echo is lost. Quit+relaunch restores until the next switch.</p>
+          <svg class="prompt-box" viewBox="0 0 200 120" role="img" aria-label="Footlights under a dropped curtain">
+            <rect x="10" y="8" width="180" height="54" fill="#7A1F2B" />
+            <rect class="curtain-drop" x="10" y="8" width="180" height="20" fill="#5e1720" />
+            <circle class="footlight" cx="36" cy="92" r="8" fill="#E8B84A" />
+            <circle class="footlight" cx="68" cy="92" r="8" fill="#E8B84A" />
+            <circle class="footlight" cx="100" cy="92" r="8" fill="#E8B84A" />
+            <circle class="footlight" cx="132" cy="92" r="8" fill="#E8B84A" />
+            <circle class="footlight" cx="164" cy="92" r="8" fill="#E8B84A" />
+          </svg>
+          <div class="footlight-bar" aria-hidden="true">
+            <span class="footlight"></span>
+            <span class="footlight"></span>
+            <span class="footlight"></span>
+            <span class="footlight"></span>
+            <span class="footlight"></span>
+          </div>
+          <div class="marks" id="marks"></div>
+        </div>
+      </section>
+
+      <div class="controls">
+        <button id="keep-echoing" class="primary" type="button">Admit echoing</button>
+        <button id="score-souffleur-btn" class="alarm" type="button">Score souffleur</button>
+        <button id="walk-the-path" type="button">Walk app-switch-echo-loss</button>
+        <button id="compare-echoing-souffleur" type="button">Compare echoing / souffleur</button>
+        <button id="pin-echoing" type="button">Pin idle echoing</button>
+        <button id="pin-souffleur" type="button">Pin seeded souffleur</button>
+        <button id="pin-path" type="button">Pin app-switch-echo-loss</button>
+        <button id="open-wings" type="button">Open the wings</button>
+        <button id="score-booth" type="button">Score booth</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="timeline" id="timeline-markers"></div>
+      <div class="log" id="log" aria-live="polite"></div>
+
+      <section class="brief">
+        <h2>Research brief</h2>
+        <p>
+          Blind user relies entirely on VoiceOver. Since the Claude
+          desktop app updated on 11 September 2026 to version
+          <code>1.52386.3</code> (Electron 44.2.0), VoiceOver no longer
+          echoes typed characters in the prompt box after switching to
+          another app and returning to Claude.
+        </p>
+        <p>
+          The rest of VoiceOver still works: VO navigation, headings and
+          controls, Claude replies, and the “finished responding”
+          announcement. Only typing echo is lost, so many typing
+          mistakes follow. Quit+reopen restores typing echo until the
+          next app switch. This never happened before this update
+          (regression). Typing echo still works in Chrome, Terminal, and
+          other Electron apps on the same Mac — specific to this Claude
+          desktop version. Affects regular chat and Cowork sessions.
+        </p>
+        <p>
+          Workarounds that FAILED: VO Shift Down/Up interact cycle; VO
+          off/on (Cmd F5×2); Escape leave + VO Space re-enter. Only
+          quit+relaunch works; the fault returns on the next app switch.
+          Environment: macOS 26.5.2 (build 25F84), Claude Max; form
+          Platform/Terminal fields N/A. Resembles the long-standing
+          Chromium/Electron VoiceOver typing-echo fault
+          (electron/electron#13203) but newly triggered by app switch
+          after this app version — possibly an Electron/Chromium
+          focus-restore change. Related VoiceOver report (cousin
+          cite-only): #87977 (navigation jumps — different symptom).
+        </p>
+        <p>
+          Primary:
+          <a href="https://github.com/anthropics/claude-code/issues/94031">anthropics/claude-code#94031</a>
+          (OPEN). Labels: bug, has repro, platform:macos, area:a11y, area:desktop.
+        </p>
+        <p>
+          Cousins cite-only: #87977 navigation jumps (different
+          symptom); #87978; #91058; #86697; electron/electron#13203.
+        </p>
+        <p>
+          NOT Epitome/#94032. NOT Diabolica/#94040. NOT Sallyport/#94082.
+          NOT Palilalia/#94041. NOT Sepulchre/#94055. NOT Sneck/#94052.
+          NOT Drawbridge/#94049. NOT Chirograph/#94045. NOT Titulus.
+          NOT Derelict. NOT Vestry. NOT Mondegreen. NOT Afterimage/#92596.
+          NOT Phosphene. NOT Scotoma. NOT Scrim. NOT Aphonia/#92409.
+          NOT Sourdine/#93531. NOT Anarthria/#93782. NOT Trismus.
+          NOT Quietus. NOT Followspot. NOT Greenroom. NOT Aside. NOT Ambo.
+          This booth is specifically APP-SWITCH-ECHO-LOSS (typing echo
+          dies after focus leave + return; the rest of the house still
+          speaks).
+        </p>
+        <p id="docket-body">Idle: the souffleur still whispers. Score souffleur or admit echoing.</p>
+        <p id="copy-body">A prompt-corner that should admit echoing. Score souffleur or admit echoing.</p>
+        <p id="slip-body">Idle: each typed character is announced after focus return.</p>
+        <p id="rival-body">Positive control: voiced-echo / cued / announced / prompt-heard / wings-open.</p>
+        <p id="dateline-body">App switch plus a lost whisper. Score souffleur or admit echoing.</p>
+        <p id="chart-lede">Echoing house. Wings open. Footlights amber.</p>
+        <p id="chart-stack">voiced-echo · cued · announced · prompt-heard · wings-open</p>
+      </section>
+
+      <section class="probe">
+        <h2>Probe</h2>
+        <textarea id="probe-input" spellcheck="false"></textarea>
+      </section>
+      <footer class="chrome">
+        Diagnostic booth only. No Claude Code patch. Score souffleur or admit echoing.
+      </footer>
+    </div>
+    <script type="module">
+      import {
+        SOUFFLEUR_WALK,
+        ECHO_SHAPES,
+        classify,
+        mapHouse,
+        scoreGate,
+        scoreWalk,
+      } from "./souffleur.mjs";
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD_UI = new Set([
+        "echoing",
+        "hold",
+        "voiced-echo",
+        "cued",
+        "announced",
+        "prompt-heard",
+        "wings-open",
+      ]);
+      const STORE = "souffleur-score";
+      const PEGS = [
+        { seed: "echoing", name: "echoing", note: "idle HOLD", hold: true },
+        { seed: "souffleur", name: "souffleur", note: "#94031" },
+        { seed: "app-switch-echo-loss", name: "app-switch-echo-loss", note: "path" },
+        { seed: "hold", name: "hold", note: "HOLD alias", hold: true },
+        { seed: "voiced-echo", name: "voiced-echo", note: "letters heard", hold: true },
+        { seed: "cued", name: "cued", note: "cue whispered", hold: true },
+        { seed: "announced", name: "announced", note: "VO echo", hold: true },
+        { seed: "prompt-heard", name: "prompt-heard", note: "box heard", hold: true },
+        { seed: "wings-open", name: "wings-open", note: "return holds", hold: true },
+        { seed: "typing-echo-lost", name: "typing-echo-lost", note: "no letter echo" },
+        { seed: "focus-return-mute", name: "focus-return-mute", note: "after Cmd-Tab" },
+        { seed: "quit-relaunch-only", name: "quit-relaunch-only", note: "curtain down" },
+        { seed: "vo-nav-still-works", name: "vo-nav-still-works", note: "house speaks" },
+        { seed: "electron-cousin", name: "electron-cousin", note: "electron#13203" },
+        { seed: "has-repro", name: "has-repro", note: "published shape" },
+        { seed: "cousins", name: "cousins", note: "#87977" },
+        { seed: "backups", name: "backups", note: "#94029" },
+        { seed: "walk", name: "walk", note: "published walk" }
+      ];
+
+      const FALLBACKS = {
+        echoing: {
+          seed: "echoing",
+          hubCount: "ECHOING",
+          echoing: true,
+          souffleur: false,
+          appSwitchEchoLoss: false,
+          log: ["[idle] booth on echoing — prompt-corner whispers each letter; wings open; footlights amber"]
+        },
+        souffleur: {
+          seed: "souffleur",
+          preferSeed: true,
+          hubCount: "SOUFFLEUR",
+          echoing: false,
+          souffleur: true,
+          appSwitchEchoLoss: true,
+          typingEchoLost: true,
+          focusReturnMute: true,
+          quitRelaunchOnly: true,
+          voNavStillWorks: true,
+          electronCousin: true,
+          log: [
+            "[seed] #94031 souffleur — typing echo gone after app switch + return",
+            "[seed] VO nav / headings / replies still announce",
+            "[seed] quit+relaunch restores until the next switch"
+          ]
+        },
+        "app-switch-echo-loss": {
+          seed: "app-switch-echo-loss",
+          preferSeed: true,
+          hubCount: "APP-SWITCH-ECHO-LOSS",
+          souffleur: true,
+          appSwitchEchoLoss: true,
+          event: "app-switch-echo-loss",
+          log: ["[app-switch-echo-loss] focus leave + return kills typing echo; 1.52386.3 / Electron 44.2.0"]
+        },
+        hold: { seed: "hold", preferSeed: true, hubCount: "HOLD", echoing: true, log: ["[hold] admit echoing"] },
+        "voiced-echo": { seed: "voiced-echo", preferSeed: true, hubCount: "VOICED-ECHO", echoing: true, log: ["[voiced-echo] each typed character is announced"] },
+        cued: { seed: "cued", preferSeed: true, hubCount: "CUED", echoing: true, log: ["[cued] the souffleur still whispers the cue"] },
+        announced: { seed: "announced", preferSeed: true, hubCount: "ANNOUNCED", echoing: true, log: ["[announced] VoiceOver echoes the prompt box"] },
+        "prompt-heard": { seed: "prompt-heard", preferSeed: true, hubCount: "PROMPT-HEARD", echoing: true, log: ["[prompt-heard] the prompt box stays heard after return"] },
+        "wings-open": { seed: "wings-open", preferSeed: true, hubCount: "WINGS-OPEN", echoing: true, log: ["[wings-open] exit and return still hold the whisper"] },
+        "typing-echo-lost": { seed: "typing-echo-lost", preferSeed: true, hubCount: "TYPING-ECHO-LOST", typingEchoLost: true, log: ["[typing-echo-lost] nothing announced while typing after return"] },
+        "focus-return-mute": { seed: "focus-return-mute", preferSeed: true, hubCount: "FOCUS-RETURN-MUTE", focusReturnMute: true, log: ["[focus-return-mute] Cmd-Tab back; the souffleur stops whispering"] },
+        "quit-relaunch-only": { seed: "quit-relaunch-only", preferSeed: true, hubCount: "QUIT-RELAUNCH-ONLY", quitRelaunchOnly: true, log: ["[quit-relaunch-only] only quit+reopen restores; fault returns on next switch"] },
+        "vo-nav-still-works": { seed: "vo-nav-still-works", preferSeed: true, hubCount: "VO-NAV-STILL-WORKS", voNavStillWorks: true, log: ["[vo-nav-still-works] VO keys, headings, replies, finished-responding still announce"] },
+        "electron-cousin": { seed: "electron-cousin", preferSeed: true, hubCount: "ELECTRON-COUSIN", electronCousin: true, log: ["[electron-cousin] cite-only electron/electron#13203"] },
+        "has-repro": { seed: "has-repro", preferSeed: true, hubCount: "HAS-REPRO", log: ["[has-repro] macOS 26.5.2 25F84 · 1.52386.3 · Electron 44.2.0 · Claude Max"] },
+        cousins: { seed: "cousins", preferSeed: true, hubCount: "COUSINS", log: ["[cousins] cite-only #87977 #87978 #91058 #86697 electron/electron#13203"] },
+        backups: { seed: "backups", preferSeed: true, hubCount: "BACKUPS", log: ["[backups] cite-only #94029 #93987 #93924 #93770 #93777 #94059 #94053 #94174 #94151 #94065 #94064"] },
+        walk: { seed: "walk", preferSeed: true, hubCount: "WALK", log: ["[walk] echoing → app-switch-echo-loss → souffleur"] }
+      };
+
+      function paintMarks(alarm) {
+        document.getElementById("marks").innerHTML = ECHO_SHAPES.map((row) => (
+          '<div class="mark"><b>' + row.id + "</b> " + (alarm ? row.lost : "wings open · cue-script heard") + "</div>"
+        )).join("");
+      }
+
+      function paintChips(active) {
+        document.getElementById("chips").innerHTML = PEGS.map((peg) => (
+          '<button type="button" class="chip' +
+            (peg.hold ? " hold" : "") +
+            (peg.seed === active ? " on" : "") +
+            '" data-seed="' + peg.seed + '"><b>' + peg.name + "</b> " + peg.note + "</button>"
+        )).join("");
+      }
+
+      function paintPegs() {
+        document.getElementById("timeline-markers").innerHTML = SOUFFLEUR_WALK.map((row) => (
+          '<article class="letter' + (row.t === "idle" ? "" : " lag") + '">' +
+            '<div class="t">' + row.t + "</div>" +
+            '<div class="e">' + row.event + "</div>" +
+            '<div class="s">' + row.cue + "</div>" +
+          "</article>"
+        )).join("");
+      }
+
+      function apply(ticket) {
+        const seed = ticket.seed || classify(ticket);
+        const scored = scoreGate(ticket);
+        const alarm = !HOLD_UI.has(scored.verdict) && !HOLD_UI.has(seed);
+        const hold = !alarm;
+        document.body.classList.toggle("hushed", alarm);
+        document.getElementById("sheet").classList.toggle("hushed", alarm);
+        document.getElementById("score").className = "score-plate " + (hold ? "hold" : "alarm");
+        document.getElementById("score-badge").textContent = (ticket.hubCount || scored.verdict || seed).toString().toUpperCase();
+        document.getElementById("score-line").innerHTML = hold
+          ? "admit <em>echoing</em> — prompt-corner whispers each letter; wings open; footlights amber"
+          : "score <em>souffleur</em> — app-switch-echo-loss; typing echo gone after return, house still speaks";
+        document.getElementById("true-head").textContent = hold
+          ? "The house stays stage-black — wings open, cue-script heard, footlights amber"
+          : "The booth is souffleur — the prompter stops whispering each typed letter";
+        document.getElementById("prompt-chip").textContent = hold ? "prompt-corner" : "prompt hushed";
+        document.getElementById("prompt-chip").className = "badge" + (hold ? "" : " open");
+        document.getElementById("lights-chip").textContent = hold ? "footlights amber" : "footlights dim";
+        document.getElementById("lights-chip").className = "badge" + (hold ? "" : " open");
+        document.getElementById("proof-chip").textContent = hold ? "wings open" : "wings exited";
+        document.getElementById("folio-body").textContent = hold
+          ? "Idle: the cue-script stays heard. Each typed character is announced. The rest of the house still speaks either way."
+          : "Hushed: after Cmd-Tab leave and return, nothing is announced while typing. VO nav still works. Quit+relaunch restores until the next switch.";
+        document.getElementById("folio-sig").textContent = hold
+          ? "echo · each letter announced"
+          : "lost echo · 1.52386.3 · Electron 44.2.0";
+        document.getElementById("whisper").innerHTML = hold
+          ? '<span class="letter-chip">c</span><span class="letter-chip">u</span><span class="letter-chip">e</span>'
+          : '<span class="letter-chip">—</span><span class="letter-chip">—</span><span class="letter-chip">—</span>';
+        document.getElementById("docket-body").textContent = hold
+          ? "Idle: the souffleur still whispers. Score souffleur or admit echoing."
+          : "Seeded #94031: focus leave + return kills typing echo; VO nav still works.";
+        document.getElementById("copy-body").textContent = hold
+          ? "A prompt-corner that should admit echoing. Score souffleur or admit echoing."
+          : "typing-echo-lost, focus-return-mute, vo-nav-still-works, quit-relaunch-only, electron-cousin.";
+        document.getElementById("slip-body").textContent = hold
+          ? "Idle: each typed character is announced after focus return."
+          : "app-switch-echo-loss: the whisper dies; failed VO interact / VO off-on / Escape+VO Space.";
+        document.getElementById("rival-body").textContent = hold
+          ? "Positive control: voiced-echo / cued / announced / prompt-heard / wings-open."
+          : "Aphonia was a missing SendMessage; Sourdine was mid-narration hush; Souffleur is typing-echo loss after app switch.";
+        document.getElementById("dateline-body").textContent = hold
+          ? "App switch plus a lost whisper. Score souffleur or admit echoing."
+          : "macOS 26.5.2 25F84 · 1.52386.3 · Electron 44.2.0 · Claude Max.";
+        document.getElementById("chart-lede").textContent = hold
+          ? "Echoing house. Wings open. Footlights amber."
+          : "Souffleur house. Wings exited. Footlights dim.";
+        document.getElementById("chart-stack").textContent = hold
+          ? "voiced-echo · cued · announced · prompt-heard · wings-open"
+          : "typing-echo-lost · focus-return-mute · app-switch-echo-loss";
+        const lines = Array.isArray(ticket.log) ? ticket.log : [scored.phrase];
+        document.getElementById("log").innerHTML = lines.map((line) => (
+          '<div class="' + (hold ? "ok" : "warn") + '">' + line + "</div>"
+        )).join("");
+        document.getElementById("probe-input").value = JSON.stringify(ticket, null, 2);
+        paintMarks(alarm);
+        paintChips(seed);
+        try { localStorage.setItem(STORE, seed); } catch {}
+        void mapHouse({ echoing: hold, souffleur: alarm, appSwitchEchoLoss: alarm });
+      }
+
+      function loadSeed(name) {
+        apply(FALLBACKS[name] || FALLBACKS.echoing);
+      }
+
+      paintPegs();
+
+      document.getElementById("keep-echoing").addEventListener("click", () => loadSeed("echoing"));
+      document.getElementById("score-souffleur-btn").addEventListener("click", () => loadSeed("souffleur"));
+      document.getElementById("walk-the-path").addEventListener("click", () => {
+        const walk = scoreWalk({ rows: SOUFFLEUR_WALK });
+        apply({
+          seed: "souffleur",
+          preferSeed: true,
+          hubCount: "SOUFFLEUR",
+          souffleur: true,
+          appSwitchEchoLoss: true,
+          log: ["[walk] echoing → app-switch-echo-loss → " + walk.verdict]
+        });
+      });
+      document.getElementById("compare-echoing-souffleur").addEventListener("click", () => {
+        const idle = scoreGate(FALLBACKS.echoing);
+        const seeded = scoreGate(FALLBACKS.souffleur);
+        apply({
+          ...FALLBACKS.souffleur,
+          log: [
+            "[compare] echoing verdict " + idle.verdict,
+            "[compare] souffleur verdict " + seeded.verdict,
+            "[compare] Score souffleur or admit echoing."
+          ]
+        });
+      });
+      document.getElementById("pin-echoing").addEventListener("click", () => loadSeed("echoing"));
+      document.getElementById("pin-souffleur").addEventListener("click", () => loadSeed("souffleur"));
+      document.getElementById("pin-path").addEventListener("click", () => loadSeed("app-switch-echo-loss"));
+      document.getElementById("open-wings").addEventListener("click", () => loadSeed("echoing"));
+      document.getElementById("score-booth").addEventListener("click", () => {
+        try {
+          apply(JSON.parse(document.getElementById("probe-input").value));
+        } catch {
+          loadSeed("echoing");
+        }
+      });
+      document.getElementById("chips").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-seed]");
+        if (btn) loadSeed(btn.getAttribute("data-seed"));
+      });
+
+      let start = "echoing";
+      try { start = localStorage.getItem(STORE) || "echoing"; } catch {}
+      loadSeed(FALLBACKS[start] ? start : "echoing");
+    </script>
+  </body>
+</html>
