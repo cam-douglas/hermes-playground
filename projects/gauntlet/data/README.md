@@ -28,7 +28,7 @@ Fixtures record the published incident only. No session. No exploit payloads. No
 | `disable-clicks.json` | disable-clicks | CLAUDE_CODE_DISABLE_MOUSE_CLICKS=1 ignored on attach. |
 | `landing.json` | landing | Tilting-yard / iron glove / riveted cuff. |
 | `has-repro.json` | has-repro | Published shape. |
-| `cousins.json` | cousins | Cite-only #73443 #73320. |
+| `cousins.json` | cousins | Cite-only #91142 #73443 #66957 #71687 #73320. |
 | `backups.json` | backups | Cite-only backups. Do not auto-pick. |
 | `fixtures.json` | fixtures | Tilting-yard / iron glove / riveted cuff. |
 | `walk.json` | walk | Published idle ungloved → attach-mouse → gauntlet. |
@@ -38,7 +38,13 @@ Fixtures record the published incident only. No session. No exploit payloads. No
 
 Different surface from #94029 attach-mouse. Do NOT rebuild. Do NOT conflate.
 
-#73443 — closed 2026-08-17. Footer nav re-enabled mouse; same stated root cause. Distinct cousin.
+#91142 — attach enables NO mouse modes on Windows (inverse symptom, same code path). Distinct cousin.
+
+#73443 — closed 2026-08-17. Footer nav re-enabled mouse ignoring DISABLE_MOUSE. Distinct cousin.
+
+#66957 — original Linux PRIMARY middle-click, closed pointing at DISABLE_MOUSE=1 which doesn't reach attach. Distinct cousin.
+
+#71687 — docs gap (mouse vars only on fullscreen page). Distinct cousin.
 
 #73320 — DO_NOT_TRACK silently disables mouse clicks. Different mechanism. Distinct cousin.
 

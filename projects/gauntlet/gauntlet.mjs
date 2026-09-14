@@ -43,8 +43,13 @@
  * NOT Souffleur/#94031. NOT Epitome/#94032. NOT Diabolica/#94040.
  * NOT Sallyport/#94082. NOT Palilalia/#94041. NOT Sepulchre.
  * Cousins cite-only (do NOT rebuild / do NOT conflate):
- * #73443 — closed; footer nav re-enabled mouse; related mouse
- *   opt-out history. Same stated root cause.
+ * #91142 — open; attach enables NO mouse modes on Windows
+ *   (inverse symptom, same code path).
+ * #73443 — closed; footer nav re-enabled mouse ignoring
+ *   DISABLE_MOUSE; related mouse opt-out history.
+ * #66957 — closed; original Linux PRIMARY middle-click, closed
+ *   pointing at DISABLE_MOUSE=1 which doesn't reach attach.
+ * #71687 — docs gap (mouse vars only on fullscreen page).
  * #73320 — open; DO_NOT_TRACK silently disables mouse clicks;
  *   different mechanism. Direct-launch with DISABLE_MOUSE=1 is
  *   the working control.
@@ -373,12 +378,36 @@ export const FINGERPRINT_LINES = Object.freeze([
 
 export const COUSINS = Object.freeze([
   {
+    issue: 91142,
+    title:
+      "Attach to background session never enables mouse tracking",
+    state: "OPEN",
+    citeOnly: true,
+    why: "Cite only — attach enables NO mouse modes on Windows (inverse symptom, same code path). Do not rebuild. Do not conflate.",
+  },
+  {
     issue: 73443,
     title:
-      "footer nav re-enabled mouse; background/attached sessions ignored CLAUDE_CODE_DISABLE_MOUSE / CLAUDE_CODE_DISABLE_MOUSE_CLICKS",
+      "footer nav re-enabled mouse ignoring DISABLE_MOUSE; background/attached sessions ignored CLAUDE_CODE_DISABLE_MOUSE / CLAUDE_CODE_DISABLE_MOUSE_CLICKS",
     state: "CLOSED",
     citeOnly: true,
-    why: "Cite only — closed 2026-08-17. Same stated root cause (attached sessions ignored mouse opt-outs). Related mouse opt-out history. Either that fix regressed or never covered claude attach. Do not rebuild. Do not conflate.",
+    why: "Cite only — closed 2026-08-17. Footer nav re-enabled mouse ignoring DISABLE_MOUSE. Same stated root cause (attached sessions ignored mouse opt-outs). Either that fix regressed or never covered claude attach. Do not rebuild. Do not conflate.",
+  },
+  {
+    issue: 66957,
+    title:
+      "Linux PRIMARY middle-click paste swallowed; closed pointing at CLAUDE_CODE_DISABLE_MOUSE=1",
+    state: "CLOSED",
+    citeOnly: true,
+    why: "Cite only — original Linux PRIMARY middle-click report, closed pointing at DISABLE_MOUSE=1 which doesn't reach attach. Do not rebuild. Do not conflate.",
+  },
+  {
+    issue: 71687,
+    title:
+      "docs gap: mouse opt-out vars documented only on the fullscreen page, not the env-vars reference",
+    state: "CLOSED",
+    citeOnly: true,
+    why: "Cite only — docs gap (mouse vars only on fullscreen page). Do not rebuild. Do not conflate.",
   },
   {
     issue: 73320,
@@ -1207,7 +1236,7 @@ export function scoreWalk(input = {}) {
     rows: scored,
     phrase: HOLD.includes(verdict) ? "admit ungloved" : "score gauntlet",
     note: headline
-      ? "Attach ignores DISABLE_MOUSE / DISABLE_MOUSE_CLICKS. Cousins cite-only: #73443 #73320 — do not rebuild, do not conflate."
+      ? "Attach ignores DISABLE_MOUSE / DISABLE_MOUSE_CLICKS. Cousins cite-only: #91142 #73443 #66957 #71687 #73320 — do not rebuild, do not conflate."
       : "published gauntlet walk scored against ungloved vs gauntlet",
   };
 }
