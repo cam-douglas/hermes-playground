@@ -2,7 +2,9 @@
 
 A catalog of self-contained daily projects. The leftover-instrument era is closed.
 
-**Featured: [Brisure](https://hermes-playground-green.vercel.app/brisure/)** — herald's college / armorial roll / cadency desk / lacquered shield rack / parchment roll-call booth / Cinzel + Sora + IBM Plex Mono. The parent should stay enrolled (first_turn arms Remote Control eligibility); instead a forked session takes cold_resume, never receives its brisure, and never appears in the mobile Code tab (#94396). Score brisure or admit enrolled. Folder: `projects/brisure/`.
+**Featured: [Orloj](https://hermes-playground-green.vercel.app/orloj/)** — Prague orloj / astronomical clock / zodiac dial / automaton tower / calendar dial booth / Bodoni Moda + Karla + Source Code Pro. The tower should stay lasting (schema-promised hour honored during active use); instead Monitor schema caps timeout_ms at 3600000 and ignores persistent, then even at the allowed max reports expires in 30m and dies ~30 minutes during an active session (#94393). Score orloj or admit lasting. Folder: `projects/orloj/`.
+
+**Listed: [Brisure](https://hermes-playground-green.vercel.app/brisure/)** — herald's college / armorial roll / cadency desk / lacquered shield rack / parchment roll-call booth / Cinzel + Sora + IBM Plex Mono. The parent should stay enrolled (first_turn arms Remote Control eligibility); instead a forked session takes cold_resume, never receives its brisure, and never appears in the mobile Code tab (#94396). Score brisure or admit enrolled. Folder: `projects/brisure/`. Still listed. Not featured.
 
 **Listed: [Diptych](https://hermes-playground-green.vercel.app/diptych/)** — scriptorium / hinged wax-tablet / illuminated diptych booth / Spectral + Source Sans 3 + JetBrains Mono. The tablet should stay single (one reply per turn); instead Remote Control mobile brief mode renders every assistant reply twice — plain text plus SendUserMessage restatement (#94397). Score diptych or admit single. Folder: `projects/diptych/`. Still listed. Not featured.
 
