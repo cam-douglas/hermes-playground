@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Freshet — floodplain booth for #94430</title>
+    <meta
+      name="description"
+      content="Freshet — a river-stage / staff-gauge / flood-crest / floodplain booth for Claude Code #94430. Idle word is buoyed."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=DM+Sans:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --pool: #0B1C2C;
+        --brass: #C4A35A;
+        --foam: #E8F1F5;
+        --crest: #E09F3E;
+        --slate: #3D5A6C;
+        --silt: #8B7355;
+        --mist: rgba(196, 163, 90, 0.2);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "DM Sans", "Segoe UI", sans-serif;
+        color: var(--foam);
+        background-color: var(--pool);
+        background-image:
+          radial-gradient(ellipse at 18% 88%, rgba(61, 90, 108, 0.55), transparent 42%),
+          radial-gradient(ellipse at 82% 12%, rgba(224, 159, 62, 0.14), transparent 34%),
+          linear-gradient(180deg, #0B1C2C 0%, #102536 46%, #163044 100%);
+        background-attachment: fixed;
+      }
+      body.embed .booth-nav { display: none; }
+      body.buoyed .flood-crest { transform: translateY(42px); opacity: 0.35; }
+      body.buoyed .river-fill { height: 28%; }
+      body.buoyed .life-chip { background: var(--brass); color: var(--pool); }
+      body.freshet .flood-crest { transform: translateY(-6px); opacity: 1; filter: drop-shadow(0 0 14px var(--crest)); }
+      body.freshet .river-fill { height: 78%; }
+      body.freshet .life-chip { background: var(--crest); color: var(--pool); }
+      body.init-flood .flood-crest { transform: translateY(-14px); }
+      body.init-flood .river-fill { height: 88%; }
+      body.init-flood .no-messages-plaque { outline: 2px solid var(--crest); }
+      a { color: var(--brass); }
+      .booth {
+        width: min(1140px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 20px 0 88px;
+      }
+      .booth-nav {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .levee {
+        margin: 16px 0 8px;
+        height: 76px;
+        border-radius: 4px 4px 40% 40% / 4px 4px 22px 22px;
+        background: linear-gradient(180deg, #3D5A6C 0%, #0B1C2C 100%);
+        border: 1px solid rgba(196, 163, 90, 0.4);
+        overflow: hidden;
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: clamp(2.8rem, 9vw, 5.8rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 0.9;
+        color: var(--foam);
+      }
+      .phrase {
+        max-width: 46em;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: 1.2rem;
+        font-style: italic;
+        color: var(--brass);
+      }
+      .score-plate {
+        margin: 16px 0 18px;
+        padding: 16px 18px;
+        background: var(--slate);
+        color: var(--foam);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        border-left: 8px solid var(--brass);
+        border-radius: 2px 22px 4px 2px;
+      }
+      .score-plate.hold { outline: 2px solid var(--brass); }
+      .score-plate.alarm { outline: 2px solid var(--crest); }
+      .score-plate strong {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        letter-spacing: 0.12em;
+        font-size: 13px;
+        color: var(--crest);
+      }
+      .score-plate p { margin: 0; max-width: 52em; }
+      .reach {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.7fr) minmax(340px, 1.3fr);
+        gap: 14px;
+        min-height: 640px;
+      }
+      .gauge-bay, .stage-notes { padding: 18px 16px; }
+      .gauge-bay {
+        background:
+          linear-gradient(180deg, rgba(61, 90, 108, 0.35), transparent 40%),
+          #102536;
+        border-radius: 8px 72px 8px 8px;
+        position: relative;
+        border: 1px solid rgba(196, 163, 90, 0.28);
+      }
+      .stage-notes {
+        background: rgba(232, 241, 245, 0.04);
+        border: 1px solid rgba(196, 163, 90, 0.22);
+        border-radius: 4px 4px 28px 4px;
+      }
+      .gauge-bay h2, .stage-notes h2 {
+        margin: 0 0 8px;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--foam);
+      }
+      .gauge-bay p, .stage-notes p { margin: 0 0 10px; font-size: 13px; color: #9BB0BC; }
+      .channel-well {
+        position: relative;
+        min-height: 440px;
+        background: #07141f;
+        border-radius: 6px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 1px solid rgba(196, 163, 90, 0.25);
+      }
+      .river-fill {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 28%;
+        background:
+          linear-gradient(180deg, rgba(232, 241, 245, 0.18), transparent 18%),
+          linear-gradient(180deg, #3D5A6C, #0B1C2C);
+        transition: height 0.45s ease;
+        z-index: 1;
+      }
+      .staff-gauge, .crest-mark, .event-spool, .window-viewport, .flood-crest, .no-messages-plaque {
+        display: block;
+      }
+      .staff-gauge {
+        position: absolute;
+        left: 10px;
+        top: 16px;
+        width: 22%;
+        z-index: 6;
+      }
+      .event-spool {
+        position: absolute;
+        right: 8px;
+        top: 18px;
+        width: 28%;
+        z-index: 6;
+      }
+      .window-viewport {
+        position: absolute;
+        left: 30%;
+        top: 28px;
+        width: 40%;
+        z-index: 5;
+      }
+      .flood-crest {
+        position: absolute;
+        left: 8%;
+        bottom: 18%;
+        width: 84%;
+        z-index: 4;
+        transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
+      }
+      .no-messages-plaque {
+        position: absolute;
+        left: 28%;
+        bottom: 38px;
+        width: 44%;
+        z-index: 7;
+      }
+      .crest-mark {
+        position: absolute;
+        right: 10px;
+        bottom: 72px;
+        width: 18%;
+        z-index: 7;
+      }
+      .badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border: 1px solid var(--brass);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .badge.open { border-color: var(--crest); color: var(--crest); }
+      .badge.intact { border-color: var(--brass); color: var(--brass); }
+      .marks { display: grid; gap: 6px; font-size: 12px; margin-top: 10px; }
+      .mark { padding: 6px 8px; background: rgba(196, 163, 90, 0.08); border-left: 3px solid var(--brass); }
+      .usage-rail { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+      .toggle {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        background: var(--pool);
+        color: var(--foam);
+        border: 1px solid var(--brass);
+        padding: 6px 12px;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .toggle.on { background: var(--crest); color: var(--pool); }
+      .life-chip {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        padding: 8px 14px;
+        background: var(--brass);
+        color: var(--pool);
+        display: inline-block;
+        margin: 8px 0;
+        border-radius: 2px;
+        transition: background 0.3s ease, color 0.3s ease;
+      }
+      .path-viz {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 12px 0;
+      }
+      .path-card {
+        padding: 10px 12px;
+        border: 1px solid rgba(196, 163, 90, 0.18);
+        background: rgba(11, 28, 44, 0.45);
+        font-size: 12px;
+        border-radius: 0 16px 0 0;
+      }
+      .path-card h3 {
+        margin: 0 0 6px;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: 1.05rem;
+        color: var(--brass);
+      }
+      .evidence {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 10px;
+        margin: 12px 0;
+      }
+      .evidence th, .evidence td {
+        text-align: left;
+        padding: 6px 5px;
+        border-bottom: 1px solid rgba(232, 241, 245, 0.12);
+        vertical-align: top;
+      }
+      .evidence th { color: var(--brass); letter-spacing: 0.06em; }
+      .evidence tr.orphan td { color: var(--crest); }
+      .watch-roll { display: grid; gap: 6px; margin: 12px 0; }
+      .roll-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        background: rgba(196, 163, 90, 0.1);
+        color: var(--foam);
+        font-size: 12px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      .roll-row.gap {
+        background: transparent;
+        color: var(--crest);
+        border: 1px dashed var(--brass);
+      }
+      .stations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 18px 0;
+      }
+      .station {
+        padding: 12px 14px;
+        background: rgba(16, 37, 54, 0.72);
+        border-top: 3px solid var(--brass);
+        border-radius: 0 0 0 18px;
+      }
+      .station h2 {
+        margin: 0 0 4px;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: 1.08rem;
+        font-weight: 700;
+        color: var(--foam);
+      }
+      .station p { margin: 0; font-size: 12px; color: #9BB0BC; }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0;
+      }
+      .controls button {
+        font-family: "DM Sans", sans-serif;
+        font-size: 13px;
+        padding: 8px 12px;
+        border: 1px solid var(--brass);
+        background: var(--pool);
+        color: var(--foam);
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .controls button.primary { background: var(--brass); color: var(--pool); border-color: var(--brass); }
+      .controls button.alarm { background: var(--crest); color: var(--pool); border-color: var(--crest); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
+      .chip {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+        border: 1px solid var(--mist);
+        background: rgba(16, 37, 54, 0.72);
+        color: var(--foam);
+        cursor: pointer;
+        border-radius: 2px 10px 2px 2px;
+      }
+      .chip.hold { border-color: var(--brass); }
+      .chip.on { border-color: var(--crest); box-shadow: inset 0 0 0 1px var(--crest); }
+      .chip b { display: block; letter-spacing: 0.06em; color: var(--brass); }
+      .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .letter {
+        padding: 8px;
+        background: var(--slate);
+        color: var(--foam);
+        font-size: 12px;
+        border-radius: 0 12px 0 0;
+      }
+      .letter.lag { outline: 1px solid var(--crest); }
+      .letter .t { font-family: "IBM Plex Mono", monospace; color: var(--brass); }
+      .log { margin: 12px 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; }
+      .log .ok { color: var(--brass); }
+      .log .warn { color: var(--crest); }
+      .brief, .probe {
+        margin-top: 22px;
+        padding: 16px;
+        background: rgba(16, 37, 54, 0.5);
+        border-top: 1px solid var(--brass);
+      }
+      .brief h2, .probe h2 {
+        font-family: Fraunces, "Times New Roman", serif;
+        font-weight: 700;
+        color: var(--foam);
+      }
+      .brief p { max-width: 74em; line-height: 1.55; color: #9BB0BC; }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        background: var(--pool);
+        color: var(--foam);
+        border: 1px solid var(--brass);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .glyph {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 11px;
+        color: var(--brass);
+      }
+      @media (max-width: 860px) {
+        .reach, .stations, .timeline, .path-viz { grid-template-columns: 1fr; }
+        .gauge-bay { border-radius: 12px; }
+        .evidence { font-size: 9px; }
+      }
+    </style>
+  </head>
+  <body class="buoyed">
+    <div class="booth">
+      <nav class="booth-nav">
+        <a href="/">Catalog hub</a>
+        <span>#385 · #94430 · init-flood</span>
+      </nav>
+      <div class="levee" aria-hidden="true">
+        <svg viewBox="0 0 1080 76" width="100%" height="76" role="img" aria-label="Floodplain levee">
+          <path d="M0 48 Q180 28 360 50 T720 42 T1080 56 L1080 76 L0 76 Z" fill="#3D5A6C"/>
+          <path d="M0 58 Q220 70 540 52 T1080 66" fill="none" stroke="#C4A35A" stroke-width="2"/>
+          <text x="540" y="36" text-anchor="middle" fill="#C4A35A" font-size="18" font-family="Fraunces">freshet · 00:50 · staff gauge overtopped</text>
+        </svg>
+      </div>
+      <p class="phrase">Score freshet or admit buoyed.</p>
+      <h1>Freshet</h1>
+      <p class="phrase" id="true-head">The gauge stays buoyed — conversation still findable / messages above the waterline</p>
+
+      <div class="score-plate hold" id="score">
+        <div>
+          <strong id="score-badge">BUOYED</strong>
+          <p id="score-line">admit <em>buoyed</em> — conversation still findable above the waterline</p>
+        </div>
+        <span class="badge intact" id="proof-chip">messages above stage</span>
+      </div>
+
+      <section class="reach" id="sheet">
+        <div class="gauge-bay">
+          <h2>Staff gauge</h2>
+          <div class="channel-well" id="signature-well">
+            <div class="river-fill" aria-hidden="true"></div>
+            <svg class="staff-gauge" viewBox="0 0 80 280" role="img" aria-label="Staff gauge">
+              <rect x="28" y="8" width="18" height="264" fill="#C4A35A"/>
+              <rect x="18" y="8" width="10" height="264" fill="#8B7355"/>
+              <g fill="#0B1C2C" font-size="7" font-family="IBM Plex Mono">
+                <text x="50" y="36">2000</text>
+                <text x="50" y="96">1500</text>
+                <text x="50" y="156">1000</text>
+                <text x="50" y="216">500</text>
+                <text x="50" y="266">0</text>
+              </g>
+              <line x1="18" y1="28" x2="52" y2="28" stroke="#0B1C2C"/>
+              <line x1="18" y1="88" x2="52" y2="88" stroke="#0B1C2C"/>
+              <line x1="18" y1="148" x2="52" y2="148" stroke="#0B1C2C"/>
+              <line x1="18" y1="208" x2="52" y2="208" stroke="#0B1C2C"/>
+            </svg>
+            <svg class="event-spool" viewBox="0 0 140 110" role="img" aria-label="Event spool">
+              <circle cx="70" cy="52" r="40" fill="#3D5A6C" stroke="#C4A35A"/>
+              <circle cx="70" cy="52" r="14" fill="#0B1C2C"/>
+              <path d="M30 52 H110" stroke="#E09F3E" stroke-width="2"/>
+              <text x="70" y="100" text-anchor="middle" fill="#C4A35A" font-size="8" font-family="IBM Plex Mono">spool · 60s</text>
+            </svg>
+            <svg class="window-viewport" viewBox="0 0 200 90" role="img" aria-label="Window viewport of 2000">
+              <rect x="8" y="10" width="184" height="58" fill="#0B1C2C" stroke="#C4A35A"/>
+              <rect x="14" y="16" width="48" height="46" fill="#3D5A6C"/>
+              <rect x="68" y="16" width="48" height="46" fill="#3D5A6C"/>
+              <rect x="122" y="16" width="64" height="46" fill="#8B7355"/>
+              <text x="100" y="82" text-anchor="middle" fill="#E8F1F5" font-size="8" font-family="IBM Plex Mono">window · 2000</text>
+            </svg>
+            <svg class="flood-crest" viewBox="0 0 320 70" role="img" aria-label="Flood crest">
+              <path d="M0 40 C40 10 80 58 120 28 C160 4 200 52 240 22 C280 8 300 36 320 18 L320 70 L0 70 Z" fill="#E09F3E"/>
+              <text x="160" y="56" text-anchor="middle" fill="#0B1C2C" font-size="9" font-family="IBM Plex Mono">crest · init-flood</text>
+            </svg>
+            <svg class="no-messages-plaque" viewBox="0 0 220 56" role="img" aria-label="No messages yet plaque">
+              <rect x="4" y="4" width="212" height="48" fill="#0B1C2C" stroke="#E09F3E"/>
+              <text x="110" y="24" text-anchor="middle" fill="#E8F1F5" font-size="10" font-family="Fraunces">No messages yet</text>
+              <text x="110" y="42" text-anchor="middle" fill="#C4A35A" font-size="7" font-family="IBM Plex Mono">conversation under the flood</text>
+            </svg>
+            <svg class="crest-mark" viewBox="0 0 80 70" role="img" aria-label="Crest mark">
+              <path d="M8 50 L40 10 L72 50 Z" fill="#E09F3E"/>
+              <text x="40" y="62" text-anchor="middle" fill="#C4A35A" font-size="7" font-family="IBM Plex Mono">HW</text>
+            </svg>
+          </div>
+          <span class="badge" id="glass-chip">messages above stage</span>
+          <div class="usage-rail">
+            <button type="button" class="toggle" id="usage-toggle">gauge buoyed · above waterline</button>
+            <div class="usage-read" id="usage-read">Conversation still findable above the waterline</div>
+          </div>
+          <div class="life-chip" id="leaf-chip">surfaced · not init-flood</div>
+          <div class="glyph" id="fresh-glyph">CLI 2.1.272 · desktop 1.52386.6 · --bg --remote-control</div>
+        </div>
+        <aside class="stage-notes">
+          <span class="badge" id="skill-chip">Floodplain gauge</span>
+          <h2>Stage log</h2>
+          <p id="rule-a">Keep the 2,000-event window from filling with control foam</p>
+          <p id="rule-b">Browser tabs stay quiet; desktop should not timer-reinitialize</p>
+          <p id="folio-sig">buoyed · surfaced · sounding</p>
+          <table class="evidence" id="evidence-table">
+            <thead>
+              <tr>
+                <th>lane</th>
+                <th>role</th>
+                <th>content</th>
+                <th>live</th>
+              </tr>
+            </thead>
+            <tbody id="evidence-body"></tbody>
+          </table>
+          <div class="glyph" id="fresh-left">initialize · 60s · window 2000</div>
+          <div class="watch-roll" id="watch-roll">
+            <div class="roll-row"><span>GAUGE · staff stage</span><span>ABOVE</span></div>
+            <div class="roll-row"><span>WINDOW · 2000 events</span><span>HOLDS TALK</span></div>
+            <div class="roll-row" id="life-row"><span>PLAQUE · No messages yet</span><span>BUOYED</span></div>
+          </div>
+          <div class="path-viz">
+            <article class="path-card" id="schema-card">
+              <h3>keep paging / exclude noise</h3>
+              <p>Sound the bed until user/assistant events. Do not count control chatter toward the 2,000.</p>
+            </article>
+            <article class="path-card" id="init-flood-card">
+              <h3>init-flood</h3>
+              <p>Timer initialize every 60s. system/init+status surge. Plaque lies empty. Load earlier 8×500.</p>
+            </article>
+          </div>
+          <div class="marks" id="marks"></div>
+        </aside>
+      </section>
+
+      <div class="stations">
+        <article class="station" id="gauge">
+          <h2>gauge</h2>
+          <p>Conversation still findable / messages above the waterline</p>
+        </article>
+        <article class="station" id="crest-mark">
+          <h2>crest-mark</h2>
+          <p>Desktop 1.52386.6 sends initialize ×3 + get_workspace_diff every 60s; 1.44121.4 was ≤20/hr</p>
+        </article>
+        <article class="station" id="event-spool">
+          <h2>event-spool</h2>
+          <p>CLI appends system/init + system/status; ~14 events/min, ~800+/hr; nothing typed</p>
+        </article>
+        <article class="station" id="window-viewport">
+          <h2>window-viewport</h2>
+          <p>Transcript loader pages newest 2,000 events (4×500) then stops</p>
+        </article>
+        <article class="station" id="no-messages-plaque">
+          <h2>no-messages-plaque</h2>
+          <p>No messages yet even though user/assistant events exist older on disk and server</p>
+        </article>
+        <article class="station" id="load-earlier">
+          <h2>load-earlier</h2>
+          <p>Load earlier messages, 8 clicks × 500 to surface the conversation; browser tabs do not poll</p>
+        </article>
+      </div>
+
+      <div class="controls">
+        <button id="keep-buoyed" class="primary" type="button">Admit buoyed</button>
+        <button id="score-freshet-btn" class="alarm" type="button">Score freshet</button>
+        <button id="walk-the-path" type="button">Walk init-flood</button>
+        <button id="compare-buoyed-freshet" type="button">Compare buoyed / freshet</button>
+        <button id="pin-buoyed" type="button">Pin idle buoyed</button>
+        <button id="pin-freshet" type="button">Pin seeded freshet</button>
+        <button id="pin-path" type="button">Pin init-flood</button>
+        <button id="stamp-drown" type="button">Stamp window-drown</button>
+        <button id="load-earlier-btn" type="button">Load earlier</button>
+        <button id="score-booth" type="button">Score booth</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="timeline" id="timeline-markers"></div>
+      <div class="log" id="log" aria-live="polite"></div>
+
+      <section class="brief">
+        <h2>Research brief</h2>
+        <p>
+          The desktop app re-sends initialize (and
+          get_workspace_diff) to a Remote Control session
+          every 60 seconds while that session is on screen.
+          Every minute the CLI receives a burst of
+          control_request subtype=initialize (2–3 of them)
+          followed by one get_workspace_diff. The CLI answers
+          each initialize with a control_response and emits a
+          fresh system/init and system/status into the
+          session event log. That is ~14 events per minute,
+          ~800+ events per hour, with nothing typed.
+        </p>
+        <p>
+          The transcript loader only looks at the newest
+          2,000 events and gives up. When a session is
+          opened it fetches four pages of 500, then stops.
+          If those 2,000 are all control/system noise, the
+          view shows No messages yet plus a Load earlier
+          messages button; each click loads 500 more. For
+          one published session the conversation only
+          appears after 8 clicks. Browser tabs do not poll;
+          only desktop. Regression: desktop 1.44121.4 ≤20
+          init/hr; 1.46388.1 → 120/hr; 1.52386.6 → 180/hr.
+        </p>
+        <p>
+          Primary:
+          <a href="https://github.com/anthropics/claude-code/issues/94430">anthropics/claude-code#94430</a>
+          (OPEN). Labels: bug, has repro, platform:windows,
+          regression, area:desktop, area:agent-view. Claude
+          Code CLI 2.1.272 hosting --bg --remote-control;
+          desktop app 1.52386.6 (bundles 2.1.270); Windows
+          11 Pro 26200; Opus 5. Hypothesis (issue text,
+          NON-BINDING): either stop timer re-initialize, or
+          do not append system/init+status on control
+          re-init, or keep paging until conversation events
+          / exclude control noise from the window.
+        </p>
+        <p>
+          Desired (narrative only): desktop should not
+          re-initialize on a timer; a refresh should not
+          append system/init + system/status; the loader
+          should keep paging or exclude control chatter from
+          the 2,000-event window.
+        </p>
+        <p>
+          Cite-only related (do NOT rebuild / do NOT conflate):
+          #94396 (fork never Remote Control eligible),
+          #94397 (mobile brief echo),
+          #94451 (known_marketplaces never repaired once invalid),
+          #94452 (directory marketplace dead installLocation),
+          #93490 (resume flatten).
+          Anti-confusion paradigms: Kintsugi/#94451,
+          Cenotaph/#94452, Stratum/#94417, Tmesis/#86198,
+          Vedette/#94392, Orloj/#94393, Brisure/#94396,
+          Diptych/#94397, Vizard/#94398, Treacle/#94344,
+          Somnus/#94415, Cresset/#94420, Dictabelt/#94406,
+          Lemure/#94410, Cancellans/#94400, Arras/#94348,
+          Cachet/#93490, Stereotype.
+          This booth is specifically desktop Remote Control
+          initialize every 60s drowning the 2,000-event window.
+        </p>
+        <p>
+          NOT Kintsugi. NOT Cenotaph. NOT Stratum. NOT Tmesis.
+          NOT #94451. NOT #94396. This booth is specifically
+          INIT-FLOOD (timer initialize; system/init+status
+          surge; plaque No messages yet).
+        </p>
+        <p id="docket-body">Idle: keep talk above the waterline. Score freshet or admit buoyed.</p>
+        <p id="copy-body">A floodplain booth that should admit buoyed. Score freshet or admit buoyed.</p>
+        <p id="slip-body">Idle: messages above stage; surfaced.</p>
+        <p id="rival-body">Positive control: buoyed / surfaced / charted / sounding.</p>
+        <p id="dateline-body">Deep pool plus gauge brass. Score freshet or admit buoyed.</p>
+        <p id="chart-lede">Stage low. Talk above the waterline. No window-drown.</p>
+        <p id="chart-stack">buoyed · surfaced · charted · sounding</p>
+      </section>
+
+      <section class="probe">
+        <h2>Probe</h2>
+        <textarea id="probe-input" spellcheck="false"></textarea>
+      </section>
+      <footer class="booth-nav">
+        Diagnostic booth only. No Claude Code patch. Score freshet or admit buoyed.
+      </footer>
+    </div>
+    <script type="module">
+      import {
+        EVIDENCE_ROWS,
+        LEDGER_NAMES,
+        FRESHET_WALK,
+        classify,
+        diagnose,
+        mapFreshet,
+        scoreGate,
+        scoreWalk,
+      } from "./freshet.mjs";
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD_UI = new Set(["buoyed", "surfaced", "charted", "sounding"]);
+      const STORE = "freshet-score";
+      const PEGS = [
+        { seed: "buoyed", name: "buoyed", note: "idle HOLD", hold: true },
+        { seed: "freshet", name: "freshet", note: "#94430" },
+        { seed: "init-flood", name: "init-flood", note: "path" },
+        { seed: "surfaced", name: "surfaced", note: "HOLD alias", hold: true },
+        { seed: "charted", name: "charted", note: "HOLD alias", hold: true },
+        { seed: "sounding", name: "sounding", note: "HOLD alias", hold: true },
+        { seed: "initialize-cadence", name: "initialize-cadence", note: "60s" },
+        { seed: "window-drown", name: "window-drown", note: "2000" },
+        { seed: "no-messages-yet", name: "no-messages-yet", note: "plaque" },
+        { seed: "desktop-poll", name: "desktop-poll", note: "desktop only" },
+        { seed: "browser-quiet", name: "browser-quiet", note: "no browser poll" },
+        { seed: "system-init", name: "system-init", note: "CLI append" },
+        { seed: "load-earlier", name: "load-earlier", note: "8×500" },
+        { seed: "has-repro", name: "has-repro", note: "published shape" },
+        { seed: "cousins", name: "cousins", note: "cite-only family" },
+        { seed: "backups", name: "backups", note: "next focus only" },
+        { seed: "walk", name: "walk", note: "published walk" },
+        { seed: "closed", name: "closed", note: "issue remains OPEN" }
+      ];
+
+      const FALLBACKS = {
+        buoyed: {
+          seed: "buoyed",
+          hubCount: "BUOYED",
+          buoyed: true,
+          freshet: false,
+          initFlood: false,
+          log: ["[idle] booth on buoyed — conversation still findable / messages above the waterline"]
+        },
+        freshet: {
+          seed: "freshet",
+          preferSeed: true,
+          hubCount: "FRESHET",
+          buoyed: false,
+          freshet: true,
+          initFlood: true,
+          initializeCadence: true,
+          windowDrown: true,
+          noMessagesYet: true,
+          desktopPoll: true,
+          systemInit: true,
+          loadEarlier: true,
+          log: [
+            "[seed] #94430 freshet — desktop re-sends initialize every 60s",
+            "[seed] system/init+status flood; 2,000-event window drowns",
+            "[seed] plaque No messages yet; Load earlier 8×500"
+          ]
+        },
+        "init-flood": {
+          seed: "init-flood",
+          preferSeed: true,
+          hubCount: "INIT-FLOOD",
+          freshet: true,
+          initFlood: true,
+          event: "init-flood",
+          log: ["[init-flood] window drowned; cite-only cousins #94396 #94397 #94451 #94452 #93490"]
+        },
+        surfaced: { seed: "surfaced", preferSeed: true, hubCount: "SURFACED", buoyed: true, log: ["[surfaced] admit buoyed"] },
+        charted: { seed: "charted", preferSeed: true, hubCount: "CHARTED", buoyed: true, log: ["[charted] staff gauge still reads talk"] },
+        sounding: { seed: "sounding", preferSeed: true, hubCount: "SOUNDING", buoyed: true, log: ["[sounding] the bed is still measurable"] },
+        "initialize-cadence": { seed: "initialize-cadence", preferSeed: true, hubCount: "INITIALIZE-CADENCE", initializeCadence: true, log: ["[initialize-cadence] desktop re-sends initialize every 60s"] },
+        "window-drown": { seed: "window-drown", preferSeed: true, hubCount: "WINDOW-DROWN", windowDrown: true, log: ["[window-drown] newest 2,000 events then stop"] },
+        "no-messages-yet": { seed: "no-messages-yet", preferSeed: true, hubCount: "NO-MESSAGES-YET", noMessagesYet: true, log: ["[no-messages-yet] plaque while conversation sits under the flood"] },
+        "desktop-poll": { seed: "desktop-poll", preferSeed: true, hubCount: "DESKTOP-POLL", desktopPoll: true, log: ["[desktop-poll] only the desktop app polls"] },
+        "browser-quiet": { seed: "browser-quiet", preferSeed: true, hubCount: "BROWSER-QUIET", log: ["[browser-quiet] a plain browser tab does not timer-reinitialize"] },
+        "system-init": { seed: "system-init", preferSeed: true, hubCount: "SYSTEM-INIT", systemInit: true, log: ["[system-init] CLI appends system/init + system/status"] },
+        "load-earlier": { seed: "load-earlier", preferSeed: true, hubCount: "LOAD-EARLIER", loadEarlier: true, log: ["[load-earlier] eight clicks of 500 to surface the conversation"] },
+        "has-repro": { seed: "has-repro", preferSeed: true, hubCount: "HAS-REPRO", log: ["[has-repro] CLI 2.1.272 · desktop 1.52386.6 · --bg --remote-control"] },
+        cousins: { seed: "cousins", preferSeed: true, hubCount: "COUSINS", log: ["[cousins] cite-only #94396 #94397 #94451 #94452 #93490"] },
+        backups: { seed: "backups", preferSeed: true, hubCount: "BACKUPS", log: ["[backups] cite-only #94458 #93924 #93770 #93777 #94151 #94496 #94499 #94522 #94520 #94509 #94507 #94547 #94546 #94530 #94516"] },
+        walk: { seed: "walk", preferSeed: true, hubCount: "WALK", log: ["[walk] buoyed → init-flood → freshet"] },
+        closed: { seed: "closed", preferSeed: true, hubCount: "CLOSED", log: ["[closed] #94430 remains OPEN — cite only; this booth is init-flood"] },
+        landing: { seed: "landing", preferSeed: true, hubCount: "LANDING", log: ["[landing] river-stage / staff-gauge / flood-crest / floodplain"] },
+        fixtures: { seed: "fixtures", preferSeed: true, hubCount: "FIXTURES", log: ["[fixtures] staff gauge / crest mark / event spool"] }
+      };
+
+      function paintEvidence() {
+        document.getElementById("evidence-body").innerHTML = EVIDENCE_ROWS.map((row) => (
+          '<tr class="' + (row.drowned ? "orphan" : "") + '">' +
+            "<td>" + row.lane + "</td>" +
+            "<td>" + row.role + "</td>" +
+            "<td>" + String(row.content).replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</td>" +
+            "<td>" + (row.live ? "yes" : "no") + "</td>" +
+          "</tr>"
+        )).join("");
+      }
+
+      function paintMarks(alarm) {
+        document.getElementById("marks").innerHTML = LEDGER_NAMES.map((row) => (
+          '<div class="mark"><b>' + row.id + "</b> " + (alarm ? row.lost : "buoyed · surfaced") + "</div>"
+        )).join("");
+      }
+
+      function paintChips(active) {
+        document.getElementById("chips").innerHTML = PEGS.map((peg) => (
+          '<button type="button" class="chip' +
+            (peg.hold ? " hold" : "") +
+            (peg.seed === active ? " on" : "") +
+            '" data-seed="' + peg.seed + '"><b>' + peg.name + "</b> " + peg.note + "</button>"
+        )).join("");
+      }
+
+      function paintPegs() {
+        document.getElementById("timeline-markers").innerHTML = FRESHET_WALK.map((row) => (
+          '<article class="letter' + (row.t === "idle" ? "" : " lag") + '">' +
+            '<div class="t">' + row.t + "</div>" +
+            '<div class="e">' + row.event + "</div>" +
+            '<div class="s">' + row.cue + "</div>" +
+          "</article>"
+        )).join("");
+      }
+
+      function apply(ticket) {
+        const seed = ticket.seed || classify(ticket);
+        const scored = scoreGate(ticket);
+        const alarm = !HOLD_UI.has(scored.verdict) && !HOLD_UI.has(seed);
+        const hold = !alarm;
+        document.body.classList.toggle("buoyed", hold);
+        document.body.classList.toggle("freshet", alarm);
+        document.body.classList.toggle("init-flood", alarm);
+        document.getElementById("sheet").classList.toggle("init-flood", alarm);
+        document.getElementById("score").className = "score-plate " + (hold ? "hold" : "alarm");
+        document.getElementById("score-badge").textContent = (ticket.hubCount || scored.verdict || seed).toString().toUpperCase();
+        document.getElementById("score-line").innerHTML = hold
+          ? "admit <em>buoyed</em> — conversation still findable above the waterline"
+          : "score <em>freshet</em> — init-flood; 2,000-event window drowned";
+        document.getElementById("true-head").textContent = hold
+          ? "The gauge stays buoyed — conversation still findable / messages above the waterline"
+          : "The booth is freshet — initialize flood drowned the 2,000-event window";
+        document.getElementById("skill-chip").textContent = hold ? "Floodplain gauge" : "init-flood gauge";
+        document.getElementById("skill-chip").className = "badge" + (hold ? "" : " open");
+        document.getElementById("glass-chip").textContent = hold ? "messages above stage" : "plaque No messages yet";
+        document.getElementById("glass-chip").className = "badge" + (hold ? "" : " open");
+        document.getElementById("proof-chip").textContent = hold ? "messages above stage" : "window-drown";
+        document.getElementById("proof-chip").className = "badge" + (hold ? " intact" : " open");
+        document.getElementById("folio-sig").textContent = hold
+          ? "buoyed · surfaced · sounding"
+          : "freshet · init-flood · window-drown";
+        document.getElementById("rule-a").textContent = hold
+          ? "Keep the 2,000-event window from filling with control foam"
+          : "newest 2,000 events are all initialize / system/init / system/status";
+        document.getElementById("rule-b").textContent = hold
+          ? "Browser tabs stay quiet; desktop should not timer-reinitialize"
+          : "desktop polls every 60s; browser tabs do not";
+        document.getElementById("docket-body").textContent = hold
+          ? "Idle: keep talk above the waterline. Score freshet or admit buoyed."
+          : "Seeded #94430: initialize flood; plaque No messages yet.";
+        document.getElementById("copy-body").textContent = hold
+          ? "A floodplain booth that should admit buoyed. Score freshet or admit buoyed."
+          : "initialize-cadence, window-drown, no-messages-yet, desktop-poll.";
+        document.getElementById("slip-body").textContent = hold
+          ? "Idle: messages above stage; surfaced."
+          : "init-flood: window drowned; Load earlier 8×500.";
+        document.getElementById("rival-body").textContent = hold
+          ? "Positive control: buoyed / surfaced / charted / sounding."
+          : "Cite-only cousins #94396 #94397 #94451 #94452 #93490.";
+        document.getElementById("dateline-body").textContent = hold
+          ? "Deep pool plus gauge brass. Score freshet or admit buoyed."
+          : "2.1.272 · desktop 1.52386.6 · --bg --remote-control · Windows.";
+        document.getElementById("chart-lede").textContent = hold
+          ? "Stage low. Talk above the waterline. No window-drown."
+          : "Freshet case. Window drowned. Plaque No messages yet.";
+        document.getElementById("chart-stack").textContent = hold
+          ? "buoyed · surfaced · charted · sounding"
+          : "initialize-cadence · window-drown · init-flood · freshet";
+        document.getElementById("fresh-glyph").innerHTML = hold
+          ? "CLI 2.1.272 · desktop 1.52386.6 · --bg --remote-control"
+          : "initialize every 60s · 2,000-event window drowned<br /><em>synthetic example-data</em>";
+        document.getElementById("leaf-chip").textContent = hold
+          ? "surfaced · not init-flood"
+          : "window-drown · init-flood gauge";
+        const lifeRow = document.getElementById("life-row");
+        lifeRow.className = "roll-row" + (hold ? "" : " gap");
+        lifeRow.innerHTML = hold
+          ? "<span>PLAQUE · No messages yet</span><span>BUOYED</span>"
+          : "<span>PLAQUE · No messages yet</span><span>LIES EMPTY · WINDOW-DROWN</span>";
+        const usage = document.getElementById("usage-toggle");
+        usage.classList.toggle("on", alarm);
+        usage.textContent = alarm ? "gauge gap · freshet" : "gauge buoyed · above waterline";
+        document.getElementById("usage-read").textContent = alarm
+          ? "init-flood left the 2,000-event window drowned"
+          : "Conversation still findable above the waterline";
+        const lines = Array.isArray(ticket.log) ? ticket.log : [scored.phrase];
+        document.getElementById("log").innerHTML = lines.map((line) => (
+          '<div class="' + (hold ? "ok" : "warn") + '">' + line + "</div>"
+        )).join("");
+        document.getElementById("probe-input").value = JSON.stringify(ticket, null, 2);
+        paintMarks(alarm);
+        paintChips(seed);
+        try { localStorage.setItem(STORE, seed); } catch {}
+        void mapFreshet({ buoyed: hold, freshet: alarm, initFlood: alarm });
+        void diagnose(ticket);
+      }
+
+      function loadSeed(name) {
+        apply(FALLBACKS[name] || FALLBACKS.buoyed);
+      }
+
+      paintEvidence();
+      paintPegs();
+
+      document.getElementById("keep-buoyed").addEventListener("click", () => loadSeed("buoyed"));
+      document.getElementById("score-freshet-btn").addEventListener("click", () => loadSeed("freshet"));
+      document.getElementById("walk-the-path").addEventListener("click", () => {
+        const walk = scoreWalk({ rows: FRESHET_WALK });
+        apply({
+          seed: "freshet",
+          preferSeed: true,
+          hubCount: "FRESHET",
+          freshet: true,
+          initFlood: true,
+          log: ["[walk] buoyed → init-flood → " + walk.verdict]
+        });
+      });
+      document.getElementById("compare-buoyed-freshet").addEventListener("click", () => {
+        const idle = scoreGate(FALLBACKS.buoyed);
+        const seeded = scoreGate(FALLBACKS.freshet);
+        apply({
+          ...FALLBACKS.freshet,
+          log: [
+            "[compare] buoyed verdict " + idle.verdict,
+            "[compare] freshet verdict " + seeded.verdict,
+            "[compare] Score freshet or admit buoyed."
+          ]
+        });
+      });
+      document.getElementById("pin-buoyed").addEventListener("click", () => loadSeed("buoyed"));
+      document.getElementById("pin-freshet").addEventListener("click", () => loadSeed("freshet"));
+      document.getElementById("pin-path").addEventListener("click", () => loadSeed("init-flood"));
+      document.getElementById("stamp-drown").addEventListener("click", () => loadSeed("window-drown"));
+      document.getElementById("load-earlier-btn").addEventListener("click", () => loadSeed("load-earlier"));
+      document.getElementById("score-booth").addEventListener("click", () => {
+        try {
+          apply(JSON.parse(document.getElementById("probe-input").value));
+        } catch {
+          loadSeed("buoyed");
+        }
+      });
+      document.getElementById("chips").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-seed]");
+        if (btn) loadSeed(btn.getAttribute("data-seed"));
+      });
+      document.getElementById("usage-toggle").addEventListener("click", () => {
+        const on = document.getElementById("usage-toggle").classList.contains("on");
+        loadSeed(on ? "buoyed" : "window-drown");
+      });
+      document.getElementById("signature-well").addEventListener("click", () => {
+        const open = document.body.classList.contains("freshet");
+        loadSeed(open ? "buoyed" : "freshet");
+      });
+
+      let start = "buoyed";
+      try { start = localStorage.getItem(STORE) || "buoyed"; } catch {}
+      loadSeed(FALLBACKS[start] ? start : "buoyed");
+    </script>
+  </body>
+</html>
