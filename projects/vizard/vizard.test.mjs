@@ -5,54 +5,74 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   ALARM,
-  ARGUMENTS_EXAMPLE,
+  BACKUPS,
+  BOOTH_STATIONS,
+  BUILD,
+  CHANGELING_CITE,
   CHIPS,
-  CLI,
-  COMMAND_FILE,
-  COMPANION_WORK,
+  CODE_BUILD,
   COUSINS,
-  DESKTOP,
-  DESKTOP_BUILT,
+  DESKTOP_BUILD,
+  DISTRIBUTION,
+  EXPECTED,
+  FALLBACK_MODEL,
   FEATURED_ISSUE,
+  FIELD_MARKS,
   FINGERPRINT_LINES,
   FORBIDDEN_IDLE,
   FORBIDDEN_SEED,
   HOLD,
+  HOLD_ALIASES,
+  HOST,
+  HOST_OS,
   IDLE_WORD,
+  INTERMITTENT,
   ISSUE_URL,
   LABELS,
+  LEDGER_NAMES,
+  MOBILE_SURFACE,
   NOT_PRODUCTS,
-  OS,
   PATH_WORD,
   PHRASE,
-  PLANNING_SKILL,
-  PROJECT_MARK,
-  REMOTE_SPAWN,
+  PLATFORM,
+  POSITIVE_CONTROL_WALK,
+  PRODUCT_WORD,
+  REPRO_DAY,
+  RULED_OUT,
+  SAMPLE_VIZARD_PROOF,
   SEEDED_WORD,
-  SHELL,
   STATE,
+  SURFACE,
+  SYNTHETIC_BACKGROUND,
+  SYNTHETIC_OPUS_FALLBACK,
+  SYNTHETIC_PLEDGED,
   TITLE,
-  VERDICTS,
   VIZARD_WALK,
+  VERDICTS,
   analyze,
   classify,
   decide,
+  diagnose,
   emptyTicket,
+  evaluateLifecycle,
   fingerprint,
   handle,
+  inspectBackgroundForeground,
+  inspectExistingSession,
+  inspectExplicitChoice,
+  inspectNoTurnInFlight,
+  inspectOpusFallback,
+  mapVizard,
+  readBooth,
   score,
+  scoreBackgroundReset,
   scoreGate,
   scoreWalk,
-  seedArgumentsUnsent,
-  seedBuiltInPlanMode,
-  seedClientSideIntercept,
-  seedCompanionWork,
-  seedNoRoundTrip,
-  seedPrecedence,
-  seedProjectCommand,
-  seedReadOnlyWrongMode,
-  seedRemoteControlDesktop,
-  seedUnmasked,
+  seedBackgroundReset,
+  seedExistingSession,
+  seedOpusFallback,
+  seedPledged,
+  seedProduct,
   seedVizard,
 } from "./vizard.mjs";
 
@@ -76,6 +96,12 @@ function readCatalog() {
   );
 }
 
+function readHubCatalog() {
+  return JSON.parse(
+    readFileSync(fileURLToPath(new URL("../../hub/catalog.json", import.meta.url)), "utf8"),
+  );
+}
+
 function readVercel() {
   return JSON.parse(
     readFileSync(fileURLToPath(new URL("../../vercel.json", import.meta.url)), "utf8"),
@@ -86,492 +112,638 @@ function modelPath() {
   return fileURLToPath(new URL("./vizard.mjs", import.meta.url));
 }
 
-test("idle unmasked is a hold; project /plan wins with (project)", () => {
-  const result = analyze(seedUnmasked());
-  assert.equal(result.verdict, "unmasked");
-  assert.equal(result.idleWord, "unmasked");
-  assert.equal(IDLE_WORD, "unmasked");
+const CATALOG_SUMMARY =
+  "06:50 vizard: an elizabethan vizard / half-mask / masque-ball / looking-glass booth for #94398. Remote Control (mobile): a model chosen on an existing session does not survive backgrounding — reopen and the indicator reads Opus 4.8 again (every time). Idle pledged / seeded vizard / path background-reset. Score vizard or admit pledged.";
+
+test("idle pledged is a hold; session model choice survives lifecycle", () => {
+  const result = analyze(seedPledged());
+  assert.equal(result.verdict, "pledged");
+  assert.equal(result.idleWord, "pledged");
+  assert.equal(IDLE_WORD, "pledged");
   assert.equal(result.hold, true);
   assert.equal(result.alarm, false);
-  assert.equal(result.unmasked, true);
-  assert.equal(result.phrase, "admit unmasked");
-  assert.equal(result.projectCommandWins, true);
-  assert.equal(result.descriptionShowsProject, true);
-  assert.equal(result.builtInPlanMode, false);
+  assert.equal(result.pledged, true);
+  assert.equal(result.phrase, "admit pledged");
+  assert.equal(result.vizard, false);
+  assert.equal(result.backgroundReset, false);
+  assert.ok(HOLD_ALIASES.includes("held"));
+  assert.ok(HOLD_ALIASES.includes("chosen"));
+  assert.ok(HOLD_ALIASES.includes("sticky-model"));
+  assert.ok(HOLD_ALIASES.includes("retained"));
+  assert.ok(HOLD_ALIASES.includes("masked-true"));
   for (const word of FORBIDDEN_IDLE) {
     assert.notEqual(result.idleWord, word);
     assert.notEqual(result.verdict, word);
   }
+  assert.notEqual(IDLE_WORD, "brisk");
+  assert.notEqual(IDLE_WORD, "cadence");
+  assert.notEqual(IDLE_WORD, "released");
+  assert.notEqual(IDLE_WORD, "verbatim");
+  assert.notEqual(IDLE_WORD, "quiet");
+  assert.notEqual(IDLE_WORD, "intact");
+  assert.notEqual(IDLE_WORD, "unmasked");
 });
 
-test("empty ticket and empty stdin classify unmasked", () => {
-  assert.equal(classify(emptyTicket()), "unmasked");
-  assert.equal(classify(""), "unmasked");
-  assert.equal(classify(null), "unmasked");
-  assert.equal(decide({}), "unmasked");
+test("empty ticket and empty stdin classify pledged", () => {
+  assert.equal(classify(emptyTicket()), "pledged");
+  assert.equal(classify(""), "pledged");
+  assert.equal(classify(null), "pledged");
+  assert.equal(decide({}), "pledged");
+  assert.equal(diagnose("").verdict, "pledged");
 });
 
-test("#93190 seeded path scores vizard when Desktop intercepts /plan", () => {
+test("#94398 seeded path scores vizard when the mask slips to Opus 4.8", () => {
   const result = analyze(seedVizard());
   assert.equal(result.verdict, "vizard");
   assert.equal(result.seededWord, "vizard");
   assert.equal(SEEDED_WORD, "vizard");
+  assert.equal(PRODUCT_WORD, "vizard");
   assert.equal(result.hold, false);
   assert.equal(result.alarm, true);
   assert.equal(result.vizard, true);
   assert.equal(result.phrase, "score vizard");
-  assert.equal(result.builtInPlanMode, true);
-  assert.equal(result.slashStripped, true);
-  assert.equal(result.argumentsUnsent, true);
-  assert.equal(result.noRoundTrip, true);
-  assert.equal(result.clientSideIntercept, true);
+  assert.equal(result.backgroundReset, true);
+  assert.equal(result.opusFallback, true);
   for (const word of FORBIDDEN_SEED) {
     assert.notEqual(result.seededWord, word);
     assert.notEqual(result.verdict, word);
   }
+  assert.notEqual(SEEDED_WORD, "treacle");
+  assert.notEqual(SEEDED_WORD, "somnus");
+  assert.notEqual(SEEDED_WORD, "cresset");
+  assert.notEqual(SEEDED_WORD, "dictabelt");
+  assert.notEqual(SEEDED_WORD, "lemure");
+  assert.notEqual(PATH_WORD, "streaming-stall");
+  assert.notEqual(PATH_WORD, "device-absent");
+  assert.notEqual(PATH_WORD, "hold-leak");
+  assert.notEqual(PATH_WORD, "segment-drop");
+  assert.notEqual(PATH_WORD, "orphan-tick");
 });
 
-test("path word is precedence; named precedence seed holds the path", () => {
-  assert.equal(PATH_WORD, "precedence");
-  const result = analyze(seedPrecedence());
-  assert.equal(result.verdict, "precedence");
-  assert.equal(result.pathWord, "precedence");
+test("educational lifecycle helper encodes published pledged vs background-reset paths", () => {
+  assert.equal(CODE_BUILD, "2.1.266");
+  assert.equal(DESKTOP_BUILD, "1.52386.6");
+  assert.equal(HOST_OS, "macOS 26.6.2 (Mac17,9)");
+  assert.equal(MOBILE_SURFACE, "Claude mobile app (iOS)");
+  assert.equal(FALLBACK_MODEL, "Opus 4.8");
+  assert.equal(REPRO_DAY, "2026-09-14");
+  assert.equal(INTERMITTENT, false);
+  assert.equal(SYNTHETIC_PLEDGED.survivesBackground, true);
+  assert.equal(SYNTHETIC_BACKGROUND.turnInFlight, false);
+  assert.equal(SYNTHETIC_OPUS_FALLBACK.indicator, "Opus 4.8");
+  const slipped = evaluateLifecycle({ backgrounded: true });
+  assert.equal(slipped.slipped, true);
+  assert.equal(slipped.synthetic, true);
+  const control = evaluateLifecycle({ pledged: true });
+  assert.equal(control.slipped, false);
+  const scored = scoreBackgroundReset({
+    vizard: true,
+    backgroundReset: true,
+    opusFallback: true,
+  });
+  assert.equal(scored.vizard, true);
+  assert.equal(scored.backgroundReset, true);
+  const quietPath = scoreBackgroundReset({ pledged: true });
+  assert.equal(quietPath.vizard, false);
+  assert.equal(quietPath.pledged, true);
+});
+
+test("inspectors mark opus-fallback and background-foreground", () => {
+  const fallback = inspectOpusFallback({ vizard: true, opusFallback: true });
+  assert.equal(fallback.stamp, "opus-fallback");
+  assert.equal(fallback.slipped, true);
+  const cycle = inspectBackgroundForeground({ vizard: true, backgroundForeground: true });
+  assert.equal(cycle.stamp, "background-foreground");
+  assert.equal(cycle.cycle, true);
+  const scored = scoreGate({
+    vizard: true,
+    backgroundReset: true,
+    opusFallback: true,
+    cue: "vizard",
+  });
+  assert.equal(scored.verdict, "vizard");
+  const open = inspectOpusFallback({ pledged: true, vizard: false });
+  assert.equal(open.stamp, "chosen-face");
+});
+
+test("path word is background-reset; booth seed holds the path", () => {
+  assert.equal(PATH_WORD, "background-reset");
+  const result = analyze(seedBackgroundReset());
+  assert.equal(result.verdict, "background-reset");
+  assert.equal(result.pathWord, "background-reset");
   assert.equal(result.hold, false);
-  assert.equal(classify(readData("precedence.json")), "precedence");
+  assert.equal(
+    classify({
+      seed: "background-reset",
+      preferSeed: true,
+      vizard: true,
+    }),
+    "background-reset",
+  );
+  assert.equal(classify({ seed: "opus-fallback", preferSeed: true }), "opus-fallback");
+  assert.equal(score(seedBackgroundReset()), "vizard");
 });
 
-test("HOLD includes unmasked / project-command / hold", () => {
-  assert.ok(HOLD.includes("unmasked"));
-  assert.ok(HOLD.includes("project-command"));
-  assert.ok(HOLD.includes("hold"));
-  const project = analyze(seedProjectCommand());
-  assert.equal(project.verdict, "project-command");
-  assert.equal(project.hold, true);
-  assert.equal(classify(readData("project-command.json")), "project-command");
-  assert.equal(classify(readData("hold.json")), "hold");
+test("HOLD includes pledged", () => {
+  assert.ok(HOLD.includes("pledged"));
+  assert.equal(HOLD.length, 1);
+  assert.equal(classify({ seed: "held", preferSeed: true }), "held");
+  assert.equal(classify({ seed: "chosen", preferSeed: true }), "chosen");
+  assert.equal(classify({ seed: "sticky-model", preferSeed: true }), "sticky-model");
+  assert.equal(classify({ seed: "retained", preferSeed: true }), "retained");
+  assert.equal(classify({ seed: "masked-true", preferSeed: true }), "masked-true");
 });
 
-test("alarm chips: plan mode, intercept, desktop, args, trip, readonly, work", () => {
-  const mode = analyze(seedBuiltInPlanMode());
-  assert.equal(mode.builtInPlanMode, true);
-  assert.equal(classify(readData("built-in-plan-mode.json")), "built-in-plan-mode");
-  const intercept = analyze(seedClientSideIntercept());
-  assert.equal(intercept.clientSideIntercept, true);
-  assert.equal(classify(readData("client-side-intercept.json")), "client-side-intercept");
-  const desktop = analyze(seedRemoteControlDesktop());
-  assert.equal(desktop.remoteControlDesktop, true);
-  assert.equal(classify(readData("remote-control-desktop.json")), "remote-control-desktop");
-  const args = analyze(seedArgumentsUnsent());
-  assert.equal(args.argumentsUnsent, true);
-  assert.equal(classify(readData("arguments-unsent.json")), "arguments-unsent");
-  const trip = analyze(seedNoRoundTrip());
-  assert.equal(trip.noRoundTrip, true);
-  assert.equal(classify(readData("no-round-trip.json")), "no-round-trip");
-  const readonly = analyze(seedReadOnlyWrongMode());
-  assert.equal(readonly.planModeReadOnly, true);
-  assert.equal(classify(readData("read-only-wrong-mode.json")), "read-only-wrong-mode");
-  const work = analyze(seedCompanionWork());
-  assert.equal(work.companionWork, true);
-  assert.equal(classify(readData("companion-work.json")), "companion-work");
+test("alarm chips: opus-fallback, background-reset, vizard", () => {
+  assert.equal(classify({ seed: "opus-fallback", preferSeed: true }), "opus-fallback");
+  assert.equal(classify(seedBackgroundReset()), "background-reset");
+  assert.equal(classify(seedProduct()), "vizard");
+  assert.equal(classify(seedOpusFallback()), "opus-fallback");
+  assert.equal(classify(seedExistingSession()), "existing-session");
+  assert.equal(classify({ seed: "explicit-choice", preferSeed: true }), "explicit-choice");
 });
 
-test("fixture toggle flips unmasked vs vizard", () => {
-  const unmasked = scoreGate(readData("unmasked.json"));
-  const vizard = scoreGate(readData("vizard.json"));
-  assert.equal(unmasked.verdict, "unmasked");
-  assert.equal(vizard.verdict, "vizard");
-  assert.notEqual(unmasked.verdict, vizard.verdict);
-  assert.equal(score(readData("unmasked.json")), "unmasked");
-  assert.equal(score(readData("vizard.json")), "vizard");
-  assert.equal(score(readData("93190.json")), "vizard");
-});
-
-test("key fixture rows score their named verdicts", () => {
-  assert.equal(classify(readData("built-in-plan-mode.json")), "built-in-plan-mode");
-  assert.equal(classify(readData("client-side-intercept.json")), "client-side-intercept");
-  assert.equal(classify(readData("remote-control-desktop.json")), "remote-control-desktop");
-  assert.equal(classify(readData("arguments-unsent.json")), "arguments-unsent");
-  assert.equal(classify(readData("no-round-trip.json")), "no-round-trip");
-  assert.equal(classify(readData("read-only-wrong-mode.json")), "read-only-wrong-mode");
-  assert.equal(classify(readData("companion-work.json")), "companion-work");
-  assert.equal(classify(readData("has-repro.json")), "has-repro");
-  assert.equal(classify(readData("hold.json")), "hold");
-  assert.equal(classify(readData("project-command.json")), "project-command");
+test("booth fixtures flip pledged vs vizard vs background-reset", () => {
+  const idle = scoreGate(seedPledged());
+  const seeded = scoreGate(seedVizard());
+  const pledged = readData("pledged.json");
+  const vizard = readData("vizard.json");
+  const issued = readData("94398.json");
+  const path = readData("background-reset.json");
+  assert.equal(idle.verdict, "pledged");
+  assert.equal(seeded.verdict, "vizard");
+  assert.notEqual(idle.verdict, seeded.verdict);
+  assert.equal(score(seedPledged()), "pledged");
+  assert.equal(score(seedVizard()), "vizard");
+  assert.equal(score({ seed: "background-reset", preferSeed: true }), "vizard");
+  assert.equal(pledged.backgroundReset, false);
+  assert.equal(pledged.pledged, true);
+  assert.equal(scoreGate(pledged).verdict, "pledged");
+  assert.equal(vizard.backgroundReset, true);
+  assert.equal(vizard.opusFallback, true);
+  assert.equal(classify(vizard), "vizard");
+  assert.equal(issued.issue, 94398);
+  assert.equal(classify(issued), "vizard");
+  assert.equal(path.paths.length, 3);
+  assert.match(path.paths[0].rule, /pledged|held|chosen|sticky-model|retained|masked-true/i);
+  assert.match(path.paths[1].result, /background-reset|opus-fallback|existing-session/i);
+  assert.equal(classify(path), "background-reset");
+  assert.equal(vizard.hubCount, "VIZARD");
+  assert.equal(vizard.issue, 94398);
+  assert.equal(vizard.vizard, true);
+  assert.equal(classify(readData("held.json")), "held");
+  assert.equal(classify(readData("chosen.json")), "chosen");
+  assert.equal(classify(readData("sticky-model.json")), "sticky-model");
+  assert.equal(classify(readData("retained.json")), "retained");
+  assert.equal(classify(readData("masked-true.json")), "masked-true");
+  assert.equal(classify(readData("opus-fallback.json")), "opus-fallback");
+  assert.equal(classify(readData("existing-session.json")), "existing-session");
+  assert.equal(classify(readData("explicit-choice.json")), "explicit-choice");
+  assert.equal(classify(readData("no-turn-in-flight.json")), "no-turn-in-flight");
+  assert.equal(classify(readData("background-foreground.json")), "background-foreground");
+  assert.equal(classify(readData("every-time.json")), "every-time");
+  assert.equal(classify(readData("desktop-too.json")), "desktop-too");
+  assert.equal(classify(readData("ios-mobile.json")), "ios-mobile");
+  assert.equal(classify(readData("landing.json")), "landing");
   assert.equal(classify(readData("cousins.json")), "cousins");
-  assert.equal(classify(readData("fixtures.json")), "fixtures");
-  assert.equal(classify(readData("chips.json")), "chips");
-  assert.equal(classify(readData("fingerprints.json")), "fingerprints");
+  assert.deepEqual(readData("cousins.json").issues, [89358, 90670]);
+  assert.equal(classify(readData("backups.json")), "backups");
   assert.equal(classify(readData("walk.json")), "walk");
+  assert.equal(classify(readData("has-repro.json")), "has-repro");
+  assert.equal(classify(readData("fixtures.json")), "fixtures");
+  assert.equal(classify(readData("closed.json")), "closed");
 });
 
-test("published vizard walk scores vizard after the hold floods", () => {
-  const night = scoreWalk({ rows: readData("walk.json").rows });
-  assert.equal(night.verdict, "vizard");
-  assert.ok(night.vizardCount >= 1);
-  const idle = night.rows.find((row) => row.event === "cue-unmasked");
-  assert.equal(idle.projectCommandWins, true);
-  assert.equal(idle.verdict, "unmasked");
-  const project = night.rows.find((row) => row.event === "project-command");
-  assert.equal(project.commandFile, ".claude/commands/plan.md");
-  const intercept = night.rows.find((row) => row.event === "client-side-intercept");
-  assert.equal(intercept.clientSideIntercept, true);
-  const mode = night.rows.find((row) => row.event === "built-in-plan-mode");
-  assert.equal(mode.builtInPlanMode, true);
-  const stripped = night.rows.find((row) => row.event === "slash-stripped");
-  assert.equal(stripped.slashStripped, true);
-  const args = night.rows.find((row) => row.event === "arguments-unsent");
-  assert.equal(args.argumentsExample, "foo bar");
-  const trip = night.rows.find((row) => row.event === "no-round-trip");
-  assert.equal(trip.noRoundTrip, true);
-  const mask = night.rows.find((row) => row.event === "vizard");
-  assert.equal(mask.builtInPlanMode, true);
-  const path = night.rows.find((row) => row.event === "precedence");
-  assert.equal(path.verdict, "precedence");
-});
-
-test("VIZARD_WALK constant matches the issue intercept walk", () => {
-  assert.equal(VIZARD_WALK[0].event, "cue-unmasked");
-  const project = VIZARD_WALK.find((row) => row.event === "project-command");
-  assert.equal(project.commandFile, ".claude/commands/plan.md");
-  assert.equal(project.planningSkill, "planning");
-  const cli = VIZARD_WALK.find((row) => row.event === "cli-project");
-  assert.equal(cli.argumentsExample, "foo bar");
-  const desktop = VIZARD_WALK.find((row) => row.event === "remote-control-desktop");
-  assert.equal(desktop.remoteSpawn, "claude --remote-control --spawn worktree");
-  const intercept = VIZARD_WALK.find((row) => row.event === "client-side-intercept");
-  assert.equal(intercept.noRoundTrip, true);
-  const mode = VIZARD_WALK.find((row) => row.event === "built-in-plan-mode");
-  assert.equal(mode.planModeReadOnly, true);
-  const work = VIZARD_WALK.find((row) => row.event === "companion-work");
-  assert.equal(work.companion, "/work <slug>");
-});
-
-test("issue constants encode only #93190 published facts", () => {
-  assert.equal(FEATURED_ISSUE, 93190);
-  assert.ok(ISSUE_URL.includes("93190"));
-  assert.match(TITLE, /Desktop app resolves \/plan to built-in plan mode/);
-  assert.equal(STATE, "OPEN");
-  assert.ok(LABELS.includes("bug"));
-  assert.ok(LABELS.includes("has repro"));
-  assert.ok(LABELS.includes("platform:windows"));
-  assert.ok(LABELS.includes("area:skills"));
-  assert.ok(LABELS.includes("area:desktop"));
-  assert.match(CLI, /2\.1\.266/);
-  assert.match(DESKTOP, /1\.49585\.0/);
-  assert.match(DESKTOP, /41ad1d/);
-  assert.equal(DESKTOP_BUILT, "2026-09-08");
-  assert.equal(OS, "Windows 11 Pro 23H2 22631.3155");
-  assert.equal(SHELL, "PowerShell");
-  assert.equal(COMMAND_FILE, ".claude/commands/plan.md");
-  assert.equal(PLANNING_SKILL, "planning");
-  assert.equal(COMPANION_WORK, "/work <slug>");
-  assert.equal(REMOTE_SPAWN, "claude --remote-control --spawn worktree");
-  assert.equal(ARGUMENTS_EXAMPLE, "foo bar");
-  assert.equal(PROJECT_MARK, "(project)");
-  assert.ok(FINGERPRINT_LINES.includes("/plan stripped"));
-  assert.match(PHRASE, /vizard over the project's command/);
-  assert.ok(HOLD.includes("unmasked"));
+test("chips include idle, seeded, path, and walk", () => {
+  assert.ok(CHIPS.includes("pledged"));
+  assert.ok(CHIPS.includes("vizard"));
+  assert.ok(CHIPS.includes("background-reset"));
+  assert.ok(CHIPS.includes("opus-fallback"));
+  assert.ok(CHIPS.includes("masked-true"));
+  assert.ok(CHIPS.includes("fixtures"));
+  assert.ok(CHIPS.includes("walk"));
   assert.ok(ALARM.includes("vizard"));
-  assert.ok(ALARM.includes("precedence"));
-  assert.ok(CHIPS.includes("client-side-intercept"));
+  assert.ok(ALARM.includes("background-reset"));
+  assert.ok(ALARM.includes("opus-fallback"));
   assert.ok(VERDICTS.includes("walk"));
+  assert.equal(classify({ seed: "fixtures", preferSeed: true }), "fixtures");
+  assert.equal(classify({ seed: "walk", preferSeed: true }), "walk");
 });
 
-test("forbidden idle list includes recent idle and seed words", () => {
+test("published vizard walk scores vizard after the idle hold", () => {
+  const booth = scoreWalk({ rows: VIZARD_WALK });
+  assert.equal(booth.verdict, "vizard");
+  assert.ok(booth.vizardCount >= 1);
+  const idle = booth.rows.find((row) => row.event === "masked-true");
+  assert.equal(idle.pledged, true);
+  assert.equal(idle.verdict, "pledged");
+  const cut = booth.rows.find((row) => row.event === "background-reset");
+  assert.equal(cut.backgroundReset, true);
+  const path = booth.rows.find(
+    (row) => row.event === "background-reset" && row.t === "path",
+  );
+  assert.equal(path.verdict, "background-reset");
+});
+
+test("VIZARD_WALK constant matches the issue dressing-table walk", () => {
+  assert.equal(VIZARD_WALK[0].event, "masked-true");
+  const cut = VIZARD_WALK.find((row) => row.event === "background-reset");
+  assert.equal(cut.backgroundReset || cut.opusFallback, true);
+  const path = VIZARD_WALK.find((row) => row.t === "path");
+  assert.equal(path.vizard, true);
+  const scoreRow = VIZARD_WALK.find((row) => row.event === "vizard");
+  assert.equal(scoreRow.vizard, true);
+  assert.equal(scoreRow.opusFallback, true);
+});
+
+test("positive control masked-true looking-glass stays pledged", () => {
+  const walk = scoreWalk({ rows: POSITIVE_CONTROL_WALK });
+  assert.equal(walk.verdict, "pledged");
+  const ok = walk.rows.find((row) => row.t === "hold");
+  assert.equal(ok.verdict, "pledged");
+  const hold = walk.rows.find((row) => row.event === "masked-true");
+  assert.equal(hold.pledged, true);
+  assert.equal(hold.verdict, "pledged");
+});
+
+test("issue constants encode only #94398 published facts", () => {
+  assert.equal(FEATURED_ISSUE, 94398);
+  assert.ok(ISSUE_URL.includes("94398"));
+  assert.match(TITLE, /Remote Control|Opus 4\.8|backgrounding/i);
+  assert.equal(STATE, "OPEN");
+  assert.match(PLATFORM, /ios/i);
+  assert.match(HOST, /1\.52386\.6|2\.1\.266|iOS|macOS 26\.6\.2/i);
+  assert.match(BUILD, /2\.1\.266|1\.52386\.6/);
+  assert.equal(SURFACE, "background-reset");
+  assert.deepEqual(
+    [...LABELS],
+    ["bug", "has repro", "platform:macos", "area:model", "platform:ios"],
+  );
+  assert.equal(FIELD_MARKS.length, 6);
+  assert.equal(LEDGER_NAMES.length, 6);
+  assert.ok(RULED_OUT.some((row) => /#89358/i.test(row)));
+  assert.ok(RULED_OUT.some((row) => /#90670/i.test(row)));
+  assert.ok(RULED_OUT.some((row) => /#93757|Changeling/i.test(row)));
+  assert.ok(EXPECTED.some((row) => /persists|lifecycle|Opus 4\.8/i.test(row)));
+  assert.match(
+    DISTRIBUTION,
+    /Opus 4\.8|backgrounding|2\.1\.266|2026-09-14|existing session/i,
+  );
+  assert.equal(BOOTH_STATIONS.length, 6);
+  assert.ok(FINGERPRINT_LINES.includes("background-reset"));
+  assert.ok(FINGERPRINT_LINES.includes("vizard"));
+  assert.equal(PHRASE, "Score vizard or admit pledged.");
+  assert.equal(SAMPLE_VIZARD_PROOF.backgroundReset, true);
+  assert.equal(SAMPLE_VIZARD_PROOF.names.length, 6);
+  assert.equal(SAMPLE_VIZARD_PROOF.synthetic, true);
+});
+
+test("has-repro fingerprints encode the published vizard proof", () => {
+  const result = handle(seedVizard());
+  assert.equal(result.published.platform, "ios");
+  assert.equal(result.published.surface, "background-reset");
+  assert.equal(result.published.host, HOST);
+  assert.match(
+    fingerprint(seedVizard()),
+    /vizard\|kind=background-reset\|ref=opus-fallback\|path=background-reset\|cue=background-reset/,
+  );
+  assert.equal(classify({ seed: "has-repro", preferSeed: true }), "has-repro");
+});
+
+test("forbidden idle list includes prior catalog words", () => {
   const required = [
-    "carrier",
-    "deadair",
-    "squelch",
-    "moored",
-    "scuttled",
-    "scuttle",
-    "open",
-    "seated",
-    "stopcock",
-    "preserved",
-    "discarded",
-    "fresh",
-    "stamped",
-    "cleared",
-    "mounded",
-    "distinct",
-    "conflated",
-    "held",
-    "steered",
-    "raised",
-    "fallen",
-    "sterling",
-    "primed",
-    "lodged",
-    "parergon",
-    "stereotype",
+    "brisk",
+    "cadence",
+    "released",
+    "verbatim",
+    "quiet",
+    "intact",
+    "unmasked",
+    "treacle",
+    "somnus",
+    "cresset",
+    "dictabelt",
+    "lemure",
+    "cancellans",
+    "arras",
+    "frangible",
+    "nameplate",
+    "matryoshka",
+    "dragnet",
+    "hold-leak",
+    "segment-drop",
+    "orphan-tick",
+    "device-absent",
+    "streaming-stall",
+    "phantom-prompt",
+    "chmod-failopen",
+    "header-rename",
+    "subst-nest",
+    "swapped",
+    "remote-reattach",
+    "precedence",
   ];
   for (const word of required) {
     assert.ok(FORBIDDEN_IDLE.includes(word), `missing forbidden idle ${word}`);
   }
 });
 
-test("restoring project precedence flips vizard to unmasked", () => {
+test("pledged booth flips vizard back when the looking-glass admits pledged", () => {
   const tape = {
-    projectCommandWins: true,
-    descriptionShowsProject: true,
-    argumentsRun: true,
-    builtInPlanMode: false,
-    slashStripped: false,
-    argumentsUnsent: false,
-    noRoundTrip: false,
-    clientSideIntercept: false,
-    cue: "unmasked",
+    pledged: true,
+    vizard: false,
+    backgroundReset: false,
+    cue: "pledged",
   };
-  assert.equal(scoreGate(tape).verdict, "unmasked");
-  tape.projectCommandWins = false;
-  tape.descriptionShowsProject = false;
-  tape.argumentsRun = false;
-  tape.builtInPlanMode = true;
-  tape.slashStripped = true;
-  tape.argumentsUnsent = true;
-  tape.noRoundTrip = true;
-  tape.clientSideIntercept = true;
+  assert.equal(scoreGate(tape).verdict, "pledged");
+  tape.pledged = false;
+  tape.vizard = true;
+  tape.backgroundReset = true;
   tape.cue = "vizard";
   assert.equal(scoreGate(tape).verdict, "vizard");
-  tape.projectCommandWins = true;
-  tape.descriptionShowsProject = true;
-  tape.argumentsRun = true;
-  tape.builtInPlanMode = false;
-  tape.slashStripped = false;
-  tape.argumentsUnsent = false;
-  tape.noRoundTrip = false;
-  tape.clientSideIntercept = false;
-  tape.cue = "unmasked";
-  assert.equal(scoreGate(tape).verdict, "unmasked");
+  tape.pledged = true;
+  tape.vizard = false;
+  tape.backgroundReset = false;
+  tape.cue = "pledged";
+  assert.equal(scoreGate(tape).verdict, "pledged");
 });
 
-test("cousins are cite-only; products stay distinct", () => {
-  const cousins = readData("cousins.json");
-  assert.equal(cousins.verdict, "cousins");
-  assert.deepEqual(
-    cousins.cousinsCiteOnly.map((row) => row.issue),
-    [82676, 89398, 85654, 68252, 68102, 29156, 28379, 92138],
-  );
-  assert.equal(COUSINS.length, 8);
-  assert.equal(COUSINS[0].issue, 82676);
-  assert.equal(COUSINS[7].issue, 92138);
+test("opus-fallback, background-foreground, and readBooth mark the vizard proof", () => {
+  const fallback = inspectOpusFallback({ vizard: true });
+  assert.equal(fallback.stamp, "opus-fallback");
+  const cycle = inspectBackgroundForeground({ vizard: true, backgroundForeground: true });
+  assert.equal(cycle.stamp, "background-foreground");
+  assert.equal(cycle.cycle, true);
+  const booth = readBooth({
+    vizard: true,
+    backgroundReset: true,
+    opusFallback: true,
+  });
+  assert.equal(booth.vizard, true);
+  assert.equal(booth.mark, "vizard");
+  const open = readBooth({
+    pledged: true,
+    vizard: false,
+    backgroundReset: false,
+  });
+  assert.equal(open.vizard, false);
+  assert.equal(open.mark, "pledged");
+  assert.equal(inspectExistingSession({ vizard: true, existingSession: true }).stamp, "existing-session");
+  assert.equal(inspectExplicitChoice({ vizard: true, explicitChoice: true }).stamp, "explicit-choice");
+  assert.equal(inspectNoTurnInFlight({ vizard: true, noTurnInFlight: true }).stamp, "no-turn-in-flight");
+});
+
+test("mapVizard encodes the published background-reset", () => {
+  const miss = mapVizard({ vizard: true, backgroundReset: true });
+  assert.equal(miss.stamp, "background-reset");
+  assert.equal(miss.holdingLane, "looking-glass");
+  assert.equal(miss.ribbon, "vizard");
+  const clear = mapVizard({ pledged: true, vizard: false });
+  assert.equal(clear.stamp, "masked-true");
+  assert.equal(clear.kindLane, "gilt-edge-vizard");
+  assert.equal(clear.holdingLane, "masked-true");
+});
+
+test("cousins stay cite-only; products stay distinct; backups stay data-only", () => {
+  assert.equal(COUSINS.length, 2);
+  assert.deepEqual(COUSINS.map((row) => row.issue), [89358, 90670]);
   assert.ok(COUSINS.every((row) => row.citeOnly === true));
-  assert.ok(NOT_PRODUCTS.includes("deadair"));
-  assert.ok(NOT_PRODUCTS.includes("scuttle"));
-  assert.ok(NOT_PRODUCTS.includes("stopcock"));
-  assert.ok(NOT_PRODUCTS.includes("parergon"));
-  assert.ok(NOT_PRODUCTS.includes("stereotype"));
-  assert.ok(NOT_PRODUCTS.includes("midden"));
-  assert.ok(NOT_PRODUCTS.includes("guillotine"));
-  assert.ok(NOT_PRODUCTS.includes("understudy"));
-  assert.ok(NOT_PRODUCTS.includes("mirage"));
-  assert.ok(NOT_PRODUCTS.includes("trompe"));
-  assert.ok(NOT_PRODUCTS.includes("homonym"));
-  assert.ok(NOT_PRODUCTS.includes("shibboleth"));
-  assert.equal(classify(cousins), "cousins");
-});
-
-test("has-repro encodes published windows desktop walk", () => {
-  const repro = readData("has-repro.json");
-  assert.equal(repro.verdict, "has-repro");
-  assert.match(repro.note, /2\.1\.266/);
-  assert.match(repro.note, /1\.49585\.0/);
-  assert.match(repro.note, /Windows 11 Pro 23H2/);
-  assert.equal(classify(repro), "has-repro");
+  assert.equal(CHANGELING_CITE.issue, 93757);
+  assert.equal(CHANGELING_CITE.citeOnly, true);
+  assert.ok(NOT_PRODUCTS.includes("treacle"));
+  assert.ok(NOT_PRODUCTS.includes("somnus"));
+  assert.ok(NOT_PRODUCTS.includes("cresset"));
+  assert.ok(NOT_PRODUCTS.includes("dictabelt"));
+  assert.ok(NOT_PRODUCTS.includes("lemure"));
+  assert.ok(NOT_PRODUCTS.includes("cancellans"));
+  assert.ok(NOT_PRODUCTS.includes("arras"));
+  assert.ok(NOT_PRODUCTS.includes("changeling"));
+  assert.equal(BACKUPS.length, 10);
+  assert.equal(BACKUPS[0].issue, 94397);
+  assert.equal(BACKUPS[9].issue, 94151);
+  assert.ok(BACKUPS.every((row) => row.citeOnly === true));
+  assert.ok(!BACKUPS.some((row) => row.issue === 94398));
+  assert.ok(!COUSINS.some((row) => row.issue === 94398));
+  assert.ok(!BACKUPS.some((row) => row.issue === 94336));
+  assert.equal(classify({ seed: "cousins", preferSeed: true }), "cousins");
+  assert.equal(classify({ seed: "backups", preferSeed: true }), "backups");
 });
 
 test("CLI scores fixtures without a server", () => {
-  const unmasked = spawnSync(
-    process.execPath,
-    [modelPath(), fileURLToPath(new URL("./data/unmasked.json", import.meta.url))],
-    { encoding: "utf8" },
-  );
-  const vizard = spawnSync(
+  const idle = spawnSync(process.execPath, [modelPath()], { encoding: "utf8" });
+  const seeded = spawnSync(
     process.execPath,
     [modelPath(), fileURLToPath(new URL("./data/vizard.json", import.meta.url))],
     { encoding: "utf8" },
   );
-  assert.equal(unmasked.status, 0, unmasked.stderr);
-  assert.equal(vizard.status, 0, vizard.stderr);
-  assert.equal(JSON.parse(unmasked.stdout).verdict, "unmasked");
-  assert.equal(JSON.parse(vizard.stdout).verdict, "vizard");
-});
-
-test("handle exposes published hypothesis and #93190 headline", () => {
-  const result = handle(readData("93190.json"));
-  assert.equal(result.published.issue, 93190);
-  assert.equal(result.published.cli, "Claude Code CLI 2.1.266");
-  assert.equal(result.published.desktop, "Claude Desktop Windows 1.49585.0 (41ad1d)");
-  assert.equal(result.published.commandFile, ".claude/commands/plan.md");
-  assert.equal(result.published.argumentsExample, "foo bar");
-  assert.deepEqual(result.published.cousins, [
-    82676, 89398, 85654, 68252, 68102, 29156, 28379, 92138,
-  ]);
-  assert.match(result.published.hypothesis, /hard-binds \/plan/);
-  assert.match(result.published.hypothesis, /NON-BINDING/);
-  assert.match(
-    fingerprint(seedVizard()),
-    /vizard\|project=lost\|mode=plan\|slash=stripped\|args=unsent\|trip=none/,
+  const pledgedFix = spawnSync(
+    process.execPath,
+    [modelPath(), fileURLToPath(new URL("./data/pledged.json", import.meta.url))],
+    { encoding: "utf8" },
   );
+  assert.equal(idle.status, 0, idle.stderr);
+  assert.equal(seeded.status, 0, seeded.stderr);
+  assert.equal(pledgedFix.status, 0, pledgedFix.stderr);
+  const idleOut = JSON.parse(idle.stdout);
+  const seededOut = JSON.parse(seeded.stdout);
+  const pledgedOut = JSON.parse(pledgedFix.stdout);
+  assert.equal(idleOut.verdict, "pledged");
+  assert.equal(idleOut.hold, true);
+  assert.equal(seededOut.verdict, "vizard");
+  assert.equal(seededOut.alarm, true);
+  assert.equal(pledgedOut.verdict, "pledged");
+  assert.equal(pledgedOut.hold, true);
+  assert.match(pledgedOut.phrase, /admit pledged/);
 });
 
-test("model has no static node: imports so the living page can score in-browser", () => {
+test("handle exposes published hypothesis and #94398 headline", () => {
+  const result = handle(seedVizard());
+  assert.equal(result.published.issue, 94398);
+  assert.equal(result.published.platform, "ios");
+  assert.deepEqual(result.published.cousins, [89358, 90670]);
+  assert.ok(result.published.backups.includes(94397));
+  assert.ok(result.published.backups.includes(94151));
+  assert.ok(!result.published.backups.includes(94398));
+  assert.ok(!result.published.backups.includes(94336));
+  assert.equal(result.published.changeling, 93757);
+  assert.match(
+    result.published.hypothesis,
+    /rehydrat|Opus 4\.8|NON-BINDING|#94398/i,
+  );
+  assert.match(result.published.hypothesis, /NON-BINDING/);
+  assert.match(result.published.hypothesis, /#94398/);
+  assert.equal(result.published.build, BUILD);
+});
+
+test("model has no static node: imports so the looking-glass can score in-browser", () => {
   const source = readFileSync(modelPath(), "utf8");
   assert.doesNotMatch(source, /^import .* from "node:/m);
   assert.match(source, /import\("node:fs"\)/);
-  assert.doesNotMatch(source, /fetch\(|https?:\/\/api\.|anthropic\.com\/v1/);
+  assert.doesNotMatch(source, /fetch\(/);
   assert.doesNotMatch(source, /new WebSocket|net\.connect|http\.request/);
 });
 
-test("living page is a masquerade atelier, not a radio studio or shipyard", () => {
+test("dressing-table is a vizard booth, not copper-kettle / moon-watch / iron-basket", () => {
   const page = readPage();
-  assert.match(page, /Cinzel/);
-  assert.match(page, /Karla/);
-  assert.match(page, /Azeret Mono/);
-  assert.match(page, /masquerade|atelier|vizard|filigree|velvet/i);
-  assert.match(page, /#2a0814|#3a0c1c|#4a1024/);
-  assert.match(page, /#7a1428|#6b1220|#8b1a30/);
-  assert.match(page, /#e6c36a|#dfc07a|#f0d78c|#e8c872/);
-  assert.match(page, /#f3ead6|#f7f0dc|#f4ecd8/);
-  assert.match(page, /unmasked/);
-  assert.match(page, /vizard/);
-  assert.match(page, /precedence/);
-  assert.match(page, /score vizard or admit unmasked/i);
-  assert.match(page, /cousin-not-primary/);
-  assert.match(page, /06:50/);
-  assert.match(page, /#255/);
-  assert.match(page, /#93190/);
-  assert.match(page, /\.claude\/commands\/plan\.md/);
-  assert.match(page, /\(project\)/);
-  assert.match(page, /1\.49585\.0/);
-  assert.match(page, /2\.1\.266/);
-  assert.match(page, /foo bar/);
-  assert.doesNotMatch(page, /Oswald/);
-  assert.doesNotMatch(page, /Source Sans 3/);
-  assert.doesNotMatch(page, /Share Tech Mono/);
-  assert.doesNotMatch(page, /DM Serif Display/);
-  assert.doesNotMatch(page, /Lexend/);
-  assert.doesNotMatch(page, /JetBrains Mono/);
-  assert.doesNotMatch(page, /Literata/);
-  assert.doesNotMatch(page, /IBM Plex Mono/);
-  assert.doesNotMatch(page, /Instrument Serif/);
-  assert.doesNotMatch(page, /Schibsted Grotesk/);
-  assert.doesNotMatch(page, /Fragment Mono/);
-  assert.doesNotMatch(page, /Alegreya/);
-  assert.doesNotMatch(page, /Noto Sans Mono/);
-  assert.doesNotMatch(page, /Fraunces/);
-  assert.doesNotMatch(page, /Atkinson Hyperlegible/);
-  assert.doesNotMatch(page, /Cormorant Garamond/);
-  assert.doesNotMatch(page, /Spectral/);
-  assert.doesNotMatch(page, /Newsreader|Manrope|Figtree|Playfair|Outfit|Cardo|Bitter|Roboto Mono/);
-  assert.doesNotMatch(page, /#ff4d14/);
-  assert.doesNotMatch(page, /#071422/);
-  assert.doesNotMatch(page, /#1a5c48/);
-  assert.doesNotMatch(page, /#c4a05a/);
-  assert.doesNotMatch(page, /#d0121a/);
-  assert.doesNotMatch(page, /#e8a317/);
-  assert.doesNotMatch(page, /#6ee87a/);
-  assert.doesNotMatch(page, /#121212/);
-  assert.doesNotMatch(page, /#b87333/);
-  assert.doesNotMatch(page, /#c9a227/);
-  assert.doesNotMatch(page, /#2d6a5a/);
-  assert.doesNotMatch(page, /ON.?AIR|vu-meter|copper mic/i);
-  assert.doesNotMatch(page, /porthole|bilge|teak|floodlight|shipyard/i);
-  assert.doesNotMatch(page, /iron-gall|vermilion rubric|marginalia/i);
-  assert.doesNotMatch(page, /letterpress|stereotype-plate|newsprint/i);
-  assert.doesNotMatch(page, /refuse-heap|ash-and-bone|kiln amber/i);
-  assert.doesNotMatch(page, /phoropter|Snellen|ophthalmology/i);
-  assert.doesNotMatch(page, /green room/i);
-  assert.doesNotMatch(page, /flintlock|priming-pan|damp powder/i);
-  assert.doesNotMatch(page, /dark oak|steel uprights|crimson rope/i);
-  assert.doesNotMatch(page, /water-clock|fusee dial|deck sheave/i);
-  assert.doesNotMatch(page, /brass plumbing|copper-pipe|valve wheel|verdigris/i);
-  assert.doesNotMatch(page, /\bcarrier\b/);
-  assert.doesNotMatch(page, /\bdeadair\b/);
-  assert.doesNotMatch(page, /\bsquelch\b/);
-  assert.doesNotMatch(page, /\bmoored\b/);
-  assert.doesNotMatch(page, /\bscuttled\b/);
-  assert.doesNotMatch(page, /\bpreserved\b/);
-  assert.doesNotMatch(page, /\bdiscarded\b/);
-  assert.doesNotMatch(page, /\bfresh\b/);
-  assert.doesNotMatch(page, /\bstamped\b/);
-  assert.doesNotMatch(page, /\bcleared\b/);
-  assert.doesNotMatch(page, /\bmounded\b/);
-  assert.doesNotMatch(page, /\bdistinct\b/);
-  assert.doesNotMatch(page, /\bconflated\b/);
-  assert.doesNotMatch(page, /\bheld\b/);
-  assert.doesNotMatch(page, /\bsteered\b/);
-  assert.doesNotMatch(page, /\braised\b/);
-  assert.doesNotMatch(page, /\bfallen\b/);
-  assert.doesNotMatch(page, /\bscaffold\b/);
-  assert.doesNotMatch(page, /\bsterling\b/);
-  assert.doesNotMatch(page, /\bdebased\b/);
-  assert.doesNotMatch(page, /\bprimed\b/);
-  assert.doesNotMatch(page, /\bflashed\b/);
-  assert.doesNotMatch(page, /\blodged\b/);
-  assert.doesNotMatch(page, /\bbypassed\b/);
-  assert.doesNotMatch(page, /\bgreenroomed\b/);
-  assert.doesNotMatch(page, /\bdiplopic\b/);
-  assert.doesNotMatch(page, /\bseated\b/);
-  assert.doesNotMatch(page, /\bstopcock\b/);
-  assert.match(page, /NOT Dead Air/i);
-  assert.match(page, /NOT Scuttle/i);
-  assert.match(page, /NOT Stopcock/i);
-  assert.match(page, /NOT Parergon/i);
-  assert.match(page, /NOT Stereotype/i);
-  assert.match(page, /NOT Midden/i);
-  assert.match(page, /NOT Guillotine/i);
-  assert.match(page, /NOT Understudy/i);
-  assert.match(page, /NOT Mirage/i);
-  assert.match(page, /NOT Trompe/i);
-  assert.match(page, /NOT Homonym/i);
-  assert.match(page, /NOT Shibboleth/i);
+  assert.match(page, /family=Lora|Lora/);
+  assert.match(page, /family=Public\+Sans|Public Sans/);
+  assert.match(page, /IBM\+Plex\+Mono|IBM Plex Mono/);
+  assert.match(
+    page,
+    /vizard|pledged|background-reset|gilt-edge-vizard|half-mask|masque-ball|velvet-ribbon|looking-glass|dressing-table/i,
+  );
+  assert.match(page, /#2A1830|#C9A227|#F4E8D0|#1A1220|#8B2942|#C5CBD3/i);
+  assert.match(page, /\bpledged\b/);
+  assert.match(page, /\bvizard\b/);
+  assert.match(page, /background-reset/);
+  assert.match(page, /Score vizard or admit pledged/i);
+  assert.match(page, /#376/);
+  assert.match(page, /#94398/);
+  assert.match(page, /Admit pledged/);
+  assert.match(page, /Score vizard/);
+  assert.match(page, /Walk background-reset/);
+  assert.match(page, /Compare pledged \/ vizard/);
+  assert.match(page, /Pin idle pledged/);
+  assert.match(page, /Pin seeded vizard/);
+  assert.match(page, /Pin background-reset/);
+  assert.match(page, /Stamp opus-fallback/);
+  assert.match(page, /Score booth/);
+  assert.match(page, /vizard-score/);
+  assert.match(
+    page,
+    /1\.52386\.6|2\.1\.266|Opus 4\.8|Mac17,9|2026-09-14/i,
+  );
+  assert.match(page, /gilt-edge-vizard|half-mask|masque-ball|velvet-ribbon|looking-glass|dressing-table/i);
+  assert.match(
+    page,
+    /<svg[\s\S]*class="gilt-edge-vizard"|class="half-mask"|class="looking-glass"|class="velvet-ribbon"|class="dressing-table"/i,
+  );
+  assert.doesNotMatch(page, /family=Cormorant\+Infant|Cormorant Infant/);
+  assert.doesNotMatch(page, /family=Nunito\+Sans|Nunito Sans/);
+  assert.doesNotMatch(page, /family=Fraunces|Fraunces/);
+  assert.doesNotMatch(page, /family=Figtree|Figtree/);
+  assert.doesNotMatch(page, /Source\+Code\+Pro|Source Code Pro/);
+  assert.doesNotMatch(page, /family=Cinzel|Cinzel/);
+  assert.doesNotMatch(page, /family=Karla|Karla/);
+  assert.doesNotMatch(page, /#4C1E0A|#C46A2B|#F8EBD4|#7A3514|#D4A84B/);
+  assert.doesNotMatch(page, /#12162E|#F3EBDD|#C5CDD8|#8B6FCF|#2E9A96/);
+  assert.doesNotMatch(page, /#E07020|#2A2E33|#E8E4DC|#0E1218|#F0C14A|#3D6F8C/);
+  assert.doesNotMatch(page, /copper-kettle|treacle-well|sticky-ladle|wax-paper-twist|enamel-scale|molasses-pour/);
+  assert.doesNotMatch(page, /moon-watch|nursery-desk|absent-chip|cadence-dial|sleep-ledger/);
+  assert.doesNotMatch(page, /iron-basket|ember-snuff|gnome-dial|battlement|hold-ledger/);
+  assert.doesNotMatch(page, /wax-belt|stenotype|steel-drum|gooseneck-mic|live-stylus/);
+  assert.doesNotMatch(page, /admit brisk|Score treacle|idle brisk/i);
+  assert.doesNotMatch(page, /admit cadence|Score somnus|idle cadence/i);
+  assert.doesNotMatch(page, /admit released|Score cresset|idle released/i);
+  assert.doesNotMatch(page, /admit verbatim|Score dictabelt|idle verbatim/i);
+  assert.doesNotMatch(page, /\btreacle\b/);
+  assert.doesNotMatch(page, /\bsomnus\b/);
+  assert.doesNotMatch(page, /\bcresset\b/);
+  assert.doesNotMatch(page, /\bdictabelt\b/);
+  assert.doesNotMatch(page, /\blemure\b/);
+  assert.doesNotMatch(page, /streaming-stall/);
+  assert.doesNotMatch(page, /device-absent/);
+  assert.doesNotMatch(page, /hold-leak/);
+  assert.doesNotMatch(page, /segment-drop/);
+  assert.doesNotMatch(page, /orphan-tick/);
+  assert.match(page, /NOT Treacle/i);
+  assert.match(page, /NOT Somnus/i);
+  assert.match(page, /NOT Cresset/i);
+  assert.match(page, /NOT Dictabelt/i);
+  assert.match(page, /NOT Lemure/i);
+  assert.match(page, /NOT Changeling/i);
+  assert.match(page, /#89358/);
+  assert.match(page, /#90670/);
+  assert.match(page, /#93757/);
+  assert.doesNotMatch(page, /fetch\(/);
+  assert.match(page, /body\.embed/);
 });
 
 test("README states the thesis, anti-clone, and how to score", () => {
   const readme = readReadme();
   assert.match(readme, /Vizard/);
-  assert.match(readme, /#93190/);
-  assert.match(readme, /unmasked/);
-  assert.match(readme, /vizard/);
-  assert.match(readme, /precedence/);
-  assert.match(readme, /Cinzel/);
-  assert.match(readme, /Karla/);
-  assert.match(readme, /Azeret Mono/);
+  assert.match(readme, /#94398/);
+  assert.match(readme, /\bpledged\b/);
+  assert.match(readme, /\bvizard\b/);
+  assert.match(readme, /background-reset/);
+  assert.match(readme, /Lora/);
+  assert.match(readme, /Public Sans/);
+  assert.match(readme, /IBM Plex Mono/);
+  assert.doesNotMatch(readme, /Cormorant Infant/);
+  assert.doesNotMatch(readme, /Nunito Sans/);
+  assert.doesNotMatch(readme, /Fraunces/);
+  assert.doesNotMatch(readme, /Figtree/);
+  assert.doesNotMatch(readme, /Cinzel/);
+  assert.doesNotMatch(readme, /Karla/);
   assert.match(readme, /Why not a clone/i);
-  assert.match(readme, /NOT Dead Air/i);
-  assert.match(readme, /NOT Scuttle/i);
-  assert.match(readme, /NOT Stopcock/i);
-  assert.match(readme, /NOT Parergon/i);
-  assert.match(readme, /NOT Stereotype/i);
-  assert.match(readme, /NOT Midden/i);
-  assert.match(readme, /NOT Guillotine/i);
+  assert.match(readme, /Research brief/i);
+  assert.match(readme, /1\.52386\.6|Opus 4\.8|2\.1\.266|2026-09-14/i);
+  assert.match(readme, /NOT #89358/);
+  assert.match(readme, /NOT #90670/);
+  assert.match(readme, /NOT Changeling\/#93757/);
+  assert.match(readme, /NOT Treacle\/#94344/);
+  assert.match(readme, /NOT Somnus\/#94415/);
+  assert.match(readme, /NOT Cresset\/#94420/);
+  assert.match(readme, /NOT Dictabelt\/#94406/);
+  assert.match(readme, /#89358/);
+  assert.match(readme, /#90670/);
+  assert.match(readme, /do NOT rebuild|do not conflate/i);
   assert.match(readme, /hermes-playground-green\.vercel\.app\/vizard/);
   assert.match(readme, /node --test projects\/vizard\/vizard\.test\.mjs/);
-  assert.match(readme, /NOT leftover woodworking/i);
   assert.match(readme, /NON-BINDING/);
+  assert.match(readme, /half-mask|masque-ball|looking-glass|gilt-edge|velvet ribbon/i);
+  assert.match(readme, /Score vizard or admit pledged/);
+  assert.match(readme, /#94397|#94396|#94151/);
+  assert.match(readme, /06:50/);
+  assert.match(readme, /Do NOT implement a fix/i);
+  assert.doesNotMatch(readme, /copper kettle|treacle-well|sticky-ladle|night-nursery|moon-watch|iron fire-basket|wax-belt|stenotype/);
+  const runLog = readFileSync(
+    fileURLToPath(new URL("../../RUN_LOG.md", import.meta.url)),
+    "utf8",
+  );
+  assert.match(runLog, /## 2026-09-15 — Vizard/);
+  assert.match(runLog, /06:50/);
 });
 
-test("catalog #255 features Vizard; Dead Air stays listed unfeatured", () => {
+test("catalog features Vizard only; Treacle unfeatured; product count 376", () => {
   const catalog = readCatalog();
-  assert.equal(catalog.products.length, 255);
+  const hub = readHubCatalog();
+  assert.equal(catalog.products.length, 376);
+  assert.equal(hub.products.length, 376);
   assert.equal(catalog.products[0].name, "Vizard");
   assert.equal(catalog.products[0].slug, "vizard");
   assert.equal(catalog.products[0].featured, true);
   assert.equal(catalog.products[0].href, "/vizard/");
-  assert.equal(catalog.products[0].day, "2026-09-10");
+  assert.equal(catalog.products[0].day, "2026-09-15");
+  assert.equal(catalog.products[0].summary, CATALOG_SUMMARY);
+  assert.equal(hub.products[0].summary, catalog.products[0].summary);
+  assert.match(catalog.products[0].summary, /\bpledged\b/);
+  assert.match(catalog.products[0].summary, /\bvizard\b/);
+  assert.match(catalog.products[0].summary, /background-reset/);
+  assert.match(catalog.products[0].summary, /Score vizard or admit pledged/);
+  assert.match(catalog.products[0].summary, /#94398/);
   assert.match(catalog.products[0].summary, /06:50/);
-  assert.match(catalog.products[0].summary, /vizard/);
-  assert.match(catalog.products[0].summary, /#93190/);
-  assert.match(catalog.products[0].summary, /unmasked/);
-  const deadair = catalog.products.find((row) => row.slug === "deadair");
-  assert.ok(deadair);
-  assert.equal(deadair.featured, false);
-  const scuttle = catalog.products.find((row) => row.slug === "scuttle");
-  assert.ok(scuttle);
-  assert.equal(scuttle.featured, false);
+  assert.equal(hub.products[0].slug, "vizard");
+  assert.equal(hub.products[0].featured, true);
+  const treacle = catalog.products.find((row) => row.slug === "treacle");
+  assert.ok(treacle);
+  assert.equal(treacle.featured, false);
+  const somnus = catalog.products.find((row) => row.slug === "somnus");
+  assert.ok(somnus);
+  assert.equal(somnus.featured, false);
+  const cresset = catalog.products.find((row) => row.slug === "cresset");
+  assert.ok(cresset);
+  assert.equal(cresset.featured, false);
   assert.equal(catalog.products.filter((row) => row.featured).length, 1);
+  assert.equal(
+    catalog.products.filter((row) => row.slug === "vizard" && row.featured).length,
+    1,
+  );
+  assert.ok(
+    !catalog.products.some(
+      (row) => String(row.summary || "").includes("94398") && row.slug !== "vizard",
+    ),
+  );
 });
 
 test("vercel rewrites vizard to the project folder at the top", () => {
@@ -580,12 +752,25 @@ test("vercel rewrites vizard to the project folder at the top", () => {
   assert.equal(vercel.rewrites[0].destination, "/projects/vizard");
   assert.equal(vercel.rewrites[1].source, "/vizard/");
   assert.equal(vercel.rewrites[1].destination, "/projects/vizard");
+  assert.equal(vercel.rewrites[2].source, "/vizard/:path*");
+  assert.equal(vercel.rewrites[2].destination, "/projects/vizard/:path*");
+  assert.equal(vercel.rewrites[3].source, "/treacle");
+  assert.equal(vercel.rewrites[3].destination, "/projects/treacle");
+});
+
+test("no leftover clone / copper-kettle / moon-watch content", () => {
+  const page = readPage();
+  const readme = readReadme();
+  const source = readFileSync(modelPath(), "utf8");
+  for (const blob of [page, readme]) {
+    assert.doesNotMatch(blob, /copper-kettle|treacle-well|sticky-ladle|moon-watch|iron-basket|ember-snuff|wax-belt|stenotype/i);
+  }
+  assert.doesNotMatch(source, /copper jam kettle|moon-watch desk|iron fire-basket|wax-belt stenotype/i);
 });
 
 test("no network calls in the model or tests", () => {
   const source = readFileSync(modelPath(), "utf8");
   assert.doesNotMatch(source, /fetch\(/);
-  assert.doesNotMatch(source, /https?:\/\/api\.anthropic/);
-  assert.doesNotMatch(source, /\bcurl\b/);
+  assert.doesNotMatch(source, /new WebSocket|net\.connect|http\.request/);
   assert.doesNotMatch(source, /https?:\/\/[^\s"']*anthropic\.com\/v1/);
 });
