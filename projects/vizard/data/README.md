@@ -1,33 +1,54 @@
 # Vizard fixtures
 
-Diagnostic JSON only. No live Claude sessions. Encoded from #93190 issue facts: Desktop app resolves `/plan` to built-in plan mode; CLI correctly resolves it to the project's `/plan` command. Score vizard or admit unmasked.
+Diagnostic JSON only. No Claude sessions. Encoded from #94398 issue facts: Remote Control (mobile) — a model chosen on an existing session does not survive backgrounding. Reopen and the indicator reads Opus 4.8 again (every time). Desktop 1.52386.6; CLI 2.1.266; iOS; macOS 26.6.2. Score vizard or admit pledged.
 
-Idle word: **unmasked**. Seeded word: **vizard**. Path word: **precedence**. HOLD: **unmasked** / **project-command** / **hold**. ALARM: **vizard** / **precedence** / **built-in-plan-mode** / **client-side-intercept** / **remote-control-desktop** / **arguments-unsent** / **no-round-trip** / **read-only-wrong-mode** / **companion-work** / **has-repro** / **cousins** / **fixtures** / **chips** / **fingerprints** / **walk**. Primary: [anthropics/claude-code#93190](https://github.com/anthropics/claude-code/issues/93190).
+Idle word: **pledged**. Path word: **background-reset**. Seeded loss: **vizard**. Product: **vizard**. HOLD: **pledged**. ALARM: **vizard** / **background-reset** / **opus-fallback**. Primary: [anthropics/claude-code#94398](https://github.com/anthropics/claude-code/issues/94398).
 
-Fixtures record the published incident only. No live session. No secrets. No exploit payloads. No network to Anthropic. No live Claude. No patch to anthropics/claude-code. Not Dead Air/#93155 (silent 900s API stall). Not Scuttle/#93154 (remote SSH warm-up-failure `server.shutdown`). Not Stopcock/#93143 (Streamable HTTP MCP ~6min hard seat). Not Parergon/#93122 (stealth idle over `/btw` aside). Not Stereotype/#93108 (plugin update version-string-only freshness). Not Midden/#93081 (WorktreePool partial-remove GC remound). Not Guillotine/#92974 / Understudy / Mirage / Trompe / Homonym / Shibboleth / leftover woodworking / mm-slider. Different paradigm: Desktop client-side `/plan` intercept vs CLI project-command precedence.
+Fixtures record the published incident only. Lifecycle reconstructions are **synthetic example-data** labeled as such — not live session dumps. No session. No exploit payloads. No network to Anthropic. No Claude. No patch to anthropics/claude-code. Do NOT implement a fix.
 
 | File | Verdict | What it scores |
 |---|---|---|
-| `unmasked.json` | unmasked | Idle booth. HOLD: CLI-style precedence; project `/plan` wins. |
-| `vizard.json` | vizard | Seeded #93190 path. ALARM: built-in plan mode; `/plan` stripped; args unsent. |
-| `93190.json` | vizard | Primary fixture alias for #93190. |
-| `precedence.json` | precedence | Path word: project commands must outrank built-ins on every surface. |
-| `hold.json` | hold | HOLD alias: admit unmasked. |
-| `project-command.json` | project-command | HOLD: `.claude/commands/plan.md` invokes a planning skill. |
-| `walk.json` | walk | Published idle → project-command → CLI → Remote Control → intercept → vizard → precedence. |
-| `built-in-plan-mode.json` | built-in-plan-mode | Permission mode flips to Plan. |
-| `client-side-intercept.json` | client-side-intercept | Intercept appears entirely client-side in Desktop. |
-| `remote-control-desktop.json` | remote-control-desktop | `claude --remote-control --spawn worktree`. |
-| `arguments-unsent.json` | arguments-unsent | `foo bar` left unsent in composer. |
-| `no-round-trip.json` | no-round-trip | Server-side CLI resolution never runs. |
-| `read-only-wrong-mode.json` | read-only-wrong-mode | Plan mode is read-only; project `/plan` may write. |
-| `companion-work.json` | companion-work | Companion `/work <slug>` executes a plan. |
-| `has-repro.json` | has-repro | CLI 2.1.266 + Desktop 1.49585.0 (41ad1d) walk. |
-| `cousins.json` | cousins | Cite-only #82676 #89398 #85654 #68252 #68102 #29156 #28379 #92138. |
-| `fixtures.json` | fixtures | Row list for the vizard booth. |
-| `chips.json` | chips | Chip list matching verdicts. |
-| `fingerprints.json` | fingerprints | Fingerprint samples for unmasked vs vizard. |
+| `pledged.json` | pledged | Idle looking-glass. HOLD: session model choice survives lifecycle. |
+| `vizard.json` | vizard | Seeded #94398 path and product. ALARM: the mask slips. |
+| `94398.json` | vizard | Same seeded path under the issue number. |
+| `background-reset.json` | background-reset | Path: background→foreground resets the chip to Opus 4.8. |
+| `held.json` | held | HOLD alias: the chosen face stays held. |
+| `chosen.json` | chosen | HOLD alias: the model chosen for this session stays. |
+| `sticky-model.json` | sticky-model | HOLD alias: the chip stays on the pledged model. |
+| `retained.json` | retained | HOLD alias: the session record keeps the choice. |
+| `masked-true.json` | masked-true | HOLD alias: the vizard stays on the pledged face. |
+| `opus-fallback.json` | opus-fallback | Indicator reads Opus 4.8 after reopen. |
+| `existing-session.json` | existing-session | Session already running; not a spawn-time chip miss. |
+| `explicit-choice.json` | explicit-choice | Model selected explicitly for this session. |
+| `no-turn-in-flight.json` | no-turn-in-flight | No turn between the correct state and the wrong one. |
+| `background-foreground.json` | background-foreground | Only event is background then reopen. |
+| `every-time.json` | every-time | Repeated across several sessions on 2026-09-14. |
+| `desktop-too.json` | desktop-too | Same reset later observed on desktop. |
+| `ios-mobile.json` | ios-mobile | Claude mobile app (iOS) with a macOS host. |
+| `landing.json` | landing | Vizard / half-mask / masque-ball / looking-glass. |
+| `has-repro.json` | has-repro | Published shape. |
+| `cousins.json` | cousins | Cite-only cousins. |
+| `backups.json` | backups | Cite-only backups. Do not auto-pick. |
+| `fixtures.json` | fixtures | Pledged desk / background-reset desk / opus-fallback chip. |
+| `walk.json` | walk | Published idle pledged → background-reset → vizard. |
+| `closed.json` | closed | #94398 remains OPEN — cite only; not this booth. |
 
-Clip any file onto `projects/vizard/index.html`. Buttons load the seeded path. The living page admits **unmasked** / idle booth / #93190.
+## Cousins (cite only)
 
-The booth reconstructs the reporter’s Desktop `/plan` intercept walk from the published #93190 body. This atelier booth does not run Claude.
+Do NOT rebuild. Do NOT conflate.
+
+#89358 — pinned model overridden mid-session by a conservative switch (Linux). DIFFERENT.
+
+#90670 — new-session model chip ignored at spawn. DIFFERENT (session here is already running).
+
+Changeling/#93757 — reconnect reinjects the global default. DIFFERENT (not this booth).
+
+#94398 is specifically: Remote Control mobile background lifecycle reset to Opus 4.8.
+
+## Backups (cite only — do NOT auto-pick or build)
+
+#94397 #94396 #94393 #94392 #86198 #94417 #93924 #93770 #93777 #94151
+
+Drop any file onto `projects/vizard/index.html`. Buttons load the seeded path. The looking-glass admits **pledged** / idle desk / #94398.
+
+Probes are diagnostic reconstructions of the issue's published facts. This booth does not run Claude.
