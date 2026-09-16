@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detent — mouse-dead booth for #94565</title>
+    <meta
+      name="description"
+      content="Detent — a mechanical detent / ratchet / hit-test / notched-wheel atelier booth for Claude Code #94565. Idle word is notched."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Figtree:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --graphite: #101418;
+        --brass: #DBA046;
+        --oil: #245E62;
+        --spark: #FF6B35;
+        --bone: #F3EDE2;
+        --notch: #6E2C3A;
+        --mist: rgba(219, 160, 70, 0.2);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: Figtree, "Segoe UI", sans-serif;
+        color: var(--bone);
+        background-color: var(--graphite);
+        background-image:
+          radial-gradient(ellipse at 12% 8%, rgba(36, 94, 98, 0.28), transparent 36%),
+          radial-gradient(ellipse at 88% 12%, rgba(255, 107, 53, 0.12), transparent 32%),
+          repeating-linear-gradient(135deg, rgba(219, 160, 70, 0.04) 0 2px, transparent 2px 14px),
+          linear-gradient(180deg, #101418 0%, #161B20 48%, #1A1512 100%);
+        background-attachment: fixed;
+      }
+      body.embed .booth-nav { display: none; }
+      body.notched .detent-pin { transform: translateY(18px); }
+      body.notched .mouse-dead { opacity: 0; }
+      body.notched .click-pawl { opacity: 1; }
+      body.notched .life-chip { background: var(--oil); color: var(--bone); }
+      body.deaf-click .detent-pin { transform: translateY(0); filter: saturate(0.6); }
+      body.deaf-click .mouse-dead { opacity: 1; filter: drop-shadow(0 0 16px var(--spark)); }
+      body.deaf-click .click-pawl { opacity: 0.28; }
+      body.deaf-click .life-chip { background: var(--notch); color: var(--bone); }
+      body.mouse-dead .detent-pin { transform: translateY(-4px) rotate(-8deg); }
+      body.mouse-dead .mouse-dead { opacity: 1; }
+      body.mouse-dead .hit-plate { outline: 2px solid var(--spark); }
+      a { color: var(--brass); }
+      .booth {
+        width: min(1140px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 20px 0 88px;
+      }
+      .booth-nav {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+      .atelier-cap {
+        margin: 16px 0 8px;
+        height: 86px;
+        border-radius: 0;
+        background:
+          linear-gradient(180deg, rgba(36, 94, 98, 0.3), transparent 50%),
+          repeating-linear-gradient(90deg, #1A1F24 0 22px, #14181C 22px 44px);
+        border: 1px solid rgba(219, 160, 70, 0.36);
+        overflow: hidden;
+      }
+      h1 {
+        margin: 6px 0 0;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: clamp(2.8rem, 9vw, 5.6rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 0.9;
+        color: var(--bone);
+      }
+      .phrase {
+        max-width: 46em;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: 1.25rem;
+        font-style: italic;
+        color: var(--brass);
+      }
+      .score-plate {
+        margin: 16px 0 18px;
+        padding: 16px 18px;
+        background: #161B20;
+        color: var(--bone);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        border-left: 8px solid var(--oil);
+      }
+      .score-plate.hold { outline: 2px solid var(--oil); }
+      .score-plate.alarm { outline: 2px solid var(--spark); border-left-color: var(--notch); }
+      .score-plate strong {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        letter-spacing: 0.12em;
+        font-size: 13px;
+        color: var(--brass);
+      }
+      .score-plate p { margin: 0; max-width: 52em; }
+      .yard {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.75fr) minmax(340px, 1.25fr);
+        gap: 14px;
+        min-height: 640px;
+      }
+      .bench-bay, .workshop-notes { padding: 18px 16px; }
+      .bench-bay {
+        background:
+          linear-gradient(210deg, rgba(36, 94, 98, 0.22), transparent 46%),
+          #161B20;
+        position: relative;
+        border: 1px solid rgba(219, 160, 70, 0.32);
+      }
+      .workshop-notes {
+        background: rgba(243, 237, 226, 0.04);
+        border: 1px solid rgba(255, 107, 53, 0.18);
+        border-radius: 0 28px 0 0;
+      }
+      .bench-bay h2, .workshop-notes h2 {
+        margin: 0 0 8px;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--bone);
+      }
+      .bench-bay p, .workshop-notes p { margin: 0 0 10px; font-size: 13px; color: #C9BFAE; }
+      .ratchet-well {
+        position: relative;
+        min-height: 460px;
+        background:
+          radial-gradient(ellipse at 50% 70%, rgba(36, 94, 98, 0.28), transparent 46%),
+          linear-gradient(160deg, #101418 0%, #181C20 55%, #1C1714 100%);
+        overflow: hidden;
+        cursor: pointer;
+        border: 1px solid rgba(219, 160, 70, 0.22);
+      }
+      .ratchet-wheel, .detent-pin, .click-pawl, .hit-plate, .notched-dial, .mouse-dead {
+        display: block;
+      }
+      .ratchet-wheel {
+        position: absolute;
+        left: 22%;
+        top: 12%;
+        width: 56%;
+        z-index: 3;
+        transition: transform 0.5s ease;
+      }
+      .detent-pin {
+        position: absolute;
+        left: 46%;
+        top: 6%;
+        width: 10%;
+        z-index: 6;
+        transition: transform 0.45s cubic-bezier(0.4, 0.1, 0.2, 1), filter 0.35s ease;
+      }
+      .click-pawl {
+        position: absolute;
+        left: 62%;
+        top: 28%;
+        width: 22%;
+        z-index: 5;
+        transition: opacity 0.35s ease;
+      }
+      .mouse-dead {
+        position: absolute;
+        left: 24%;
+        top: 16%;
+        width: 52%;
+        z-index: 8;
+        opacity: 0;
+        transition: opacity 0.4s ease, filter 0.4s ease;
+        pointer-events: none;
+      }
+      .hit-plate {
+        position: absolute;
+        left: 8%;
+        bottom: 8%;
+        width: 42%;
+        z-index: 4;
+      }
+      .notched-dial {
+        position: absolute;
+        right: 6%;
+        bottom: 10%;
+        width: 28%;
+        z-index: 4;
+      }
+      .badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border: 1px solid var(--oil);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .badge.open { border-color: var(--spark); color: var(--spark); }
+      .badge.intact { border-color: var(--oil); color: var(--oil); }
+      .marks { display: grid; gap: 6px; font-size: 12px; margin-top: 10px; }
+      .mark { padding: 6px 8px; background: rgba(110, 44, 58, 0.16); border-left: 3px solid var(--brass); }
+      .usage-rail { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+      .toggle {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        background: var(--graphite);
+        color: var(--bone);
+        border: 1px solid var(--brass);
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+      .toggle.on { background: var(--notch); color: var(--bone); }
+      .life-chip {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        padding: 8px 14px;
+        background: var(--oil);
+        color: var(--bone);
+        display: inline-block;
+        margin: 8px 0;
+        transition: background 0.3s ease, color 0.3s ease;
+      }
+      .path-viz {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 12px 0;
+      }
+      .path-card {
+        padding: 10px 12px;
+        border: 1px solid rgba(219, 160, 70, 0.18);
+        background: rgba(16, 20, 24, 0.55);
+        font-size: 12px;
+      }
+      .path-card h3 {
+        margin: 0 0 6px;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: 1.1rem;
+        color: var(--brass);
+      }
+      .evidence {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 10px;
+        margin: 12px 0;
+      }
+      .evidence th, .evidence td {
+        text-align: left;
+        padding: 6px 5px;
+        border-bottom: 1px solid rgba(243, 237, 226, 0.12);
+        vertical-align: top;
+      }
+      .evidence th { color: var(--brass); letter-spacing: 0.06em; }
+      .evidence tr.orphan td { color: var(--spark); }
+      .model-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0;
+      }
+      .model-chip {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 10px;
+        padding: 5px 8px;
+        border: 1px solid var(--brass);
+        color: var(--brass);
+      }
+      .model-chip.shadow { border-color: var(--spark); color: var(--spark); }
+      .watch-roll { display: grid; gap: 6px; margin: 12px 0; }
+      .roll-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        background: rgba(36, 94, 98, 0.22);
+        color: var(--bone);
+        font-size: 12px;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+      }
+      .roll-row.gap {
+        background: transparent;
+        color: var(--spark);
+        border: 1px dashed var(--brass);
+      }
+      .stations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 18px 0;
+      }
+      .station {
+        padding: 12px 14px;
+        background: rgba(22, 27, 32, 0.86);
+        border-top: 3px solid var(--notch);
+      }
+      .station h2 {
+        margin: 0 0 4px;
+        font-family: Fraunces, "Times New Roman", serif;
+        font-size: 1.12rem;
+        font-weight: 700;
+        color: var(--bone);
+      }
+      .station p { margin: 0; font-size: 12px; color: #C9BFAE; }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 14px 0;
+      }
+      .controls button {
+        font-family: Figtree, sans-serif;
+        font-size: 13px;
+        padding: 8px 12px;
+        border: 1px solid var(--brass);
+        background: var(--graphite);
+        color: var(--bone);
+        cursor: pointer;
+      }
+      .controls button.primary { background: var(--oil); color: var(--bone); border-color: var(--oil); }
+      .controls button.alarm { background: var(--notch); color: var(--bone); border-color: var(--notch); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
+      .chip {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+        border: 1px solid var(--mist);
+        background: rgba(22, 27, 32, 0.86);
+        color: var(--bone);
+        cursor: pointer;
+      }
+      .chip.hold { border-color: var(--oil); }
+      .chip.on { border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass); }
+      .chip b { display: block; letter-spacing: 0.06em; color: var(--brass); }
+      .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .letter {
+        padding: 8px;
+        background: #161B20;
+        color: var(--bone);
+        font-size: 12px;
+      }
+      .letter.lag { outline: 1px solid var(--spark); }
+      .letter .t { font-family: "JetBrains Mono", monospace; color: var(--brass); }
+      .log { margin: 12px 0; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; }
+      .log .ok { color: var(--oil); }
+      .log .warn { color: var(--spark); }
+      .brief, .probe {
+        margin-top: 22px;
+        padding: 16px;
+        background: rgba(22, 27, 32, 0.55);
+        border-top: 1px solid var(--brass);
+      }
+      .brief h2, .probe h2 {
+        font-family: Fraunces, "Times New Roman", serif;
+        font-weight: 700;
+        color: var(--bone);
+      }
+      .brief p { max-width: 74em; line-height: 1.55; color: #C9BFAE; }
+      textarea {
+        width: 100%;
+        min-height: 160px;
+        background: var(--graphite);
+        color: var(--bone);
+        border: 1px solid var(--brass);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        padding: 10px;
+      }
+      .glyph {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        color: var(--brass);
+      }
+      @media (max-width: 860px) {
+        .yard, .stations, .timeline, .path-viz { grid-template-columns: 1fr; }
+        .evidence { font-size: 9px; }
+      }
+    </style>
+  </head>
+  <body class="notched">
+    <div class="booth">
+      <nav class="booth-nav">
+        <a href="/">Catalog hub</a>
+        <span>#388 · #94565 · mouse-dead</span>
+      </nav>
+      <div class="atelier-cap" aria-hidden="true">
+        <svg viewBox="0 0 1080 86" width="100%" height="86" role="img" aria-label="Notched-wheel atelier lintel">
+          <rect x="0" y="54" width="1080" height="32" fill="#245E62"/>
+          <rect x="160" y="16" width="760" height="38" fill="#DBA046"/>
+          <circle cx="220" cy="35" r="12" fill="#101418"/>
+          <circle cx="540" cy="35" r="12" fill="#101418"/>
+          <circle cx="860" cy="35" r="12" fill="#101418"/>
+          <rect x="40" y="22" width="8" height="32" fill="#FF6B35"/>
+          <text x="540" y="42" text-anchor="middle" fill="#101418" font-size="18" font-family="Fraunces">detent · 21:10 · the pin never seats</text>
+        </svg>
+      </div>
+      <p class="phrase">Score detent or admit notched.</p>
+      <h1>Detent</h1>
+      <p class="phrase" id="true-head">The ratchet stays notched — click seats in the detent; session opens</p>
+
+      <div class="score-plate hold" id="score">
+        <div>
+          <strong id="score-badge">NOTCHED</strong>
+          <p id="score-line">admit <em>notched</em> — click seats in the detent; hit-test finds the row</p>
+        </div>
+        <span class="badge intact" id="proof-chip">pin seated</span>
+      </div>
+
+      <section class="yard" id="sheet">
+        <div class="bench-bay">
+          <h2>Ratchet bench</h2>
+          <div class="ratchet-well" id="signature-well">
+            <svg class="ratchet-wheel" viewBox="0 0 200 200" role="img" aria-label="Ratchet wheel">
+              <circle cx="100" cy="100" r="78" fill="none" stroke="#DBA046" stroke-width="8"/>
+              <circle cx="100" cy="100" r="18" fill="#245E62"/>
+              <path d="M100 22 L108 48 L92 48 Z" fill="#DBA046"/>
+              <path d="M178 100 L152 108 L152 92 Z" fill="#DBA046"/>
+              <path d="M100 178 L92 152 L108 152 Z" fill="#DBA046"/>
+              <path d="M22 100 L48 92 L48 108 Z" fill="#DBA046"/>
+              <path d="M155 45 L148 68 L132 56 Z" fill="#6E2C3A"/>
+              <text x="100" y="196" text-anchor="middle" fill="#DBA046" font-size="9" font-family="JetBrains Mono">ratchet-wheel</text>
+            </svg>
+            <svg class="detent-pin" viewBox="0 0 40 90" role="img" aria-label="Detent pin">
+              <rect x="14" y="0" width="12" height="54" fill="#FF6B35"/>
+              <circle cx="20" cy="64" r="10" fill="#DBA046"/>
+              <text x="20" y="86" text-anchor="middle" fill="#DBA046" font-size="6" font-family="JetBrains Mono">detent-pin</text>
+            </svg>
+            <svg class="click-pawl" viewBox="0 0 90 70" role="img" aria-label="Click pawl">
+              <path d="M8 40 L54 12 L70 28 L28 52 Z" fill="#245E62"/>
+              <circle cx="16" cy="44" r="6" fill="#F3EDE2"/>
+              <text x="45" y="66" text-anchor="middle" fill="#DBA046" font-size="7" font-family="JetBrains Mono">click-pawl</text>
+            </svg>
+            <svg class="mouse-dead" viewBox="0 0 200 200" role="img" aria-label="Mouse-dead overlay">
+              <circle cx="100" cy="100" r="78" fill="none" stroke="#FF6B35" stroke-width="6" stroke-dasharray="8 6"/>
+              <text x="100" y="96" text-anchor="middle" fill="#FF6B35" font-size="12" font-family="JetBrains Mono">DEAF</text>
+              <text x="100" y="114" text-anchor="middle" fill="#FF6B35" font-size="10" font-family="JetBrains Mono">CLICK</text>
+              <text x="100" y="190" text-anchor="middle" fill="#6E2C3A" font-size="8" font-family="JetBrains Mono">mouse-dead</text>
+            </svg>
+            <svg class="hit-plate" viewBox="0 0 160 80" role="img" aria-label="Hit-test plate">
+              <rect x="4" y="8" width="152" height="52" fill="#161B20" stroke="#DBA046"/>
+              <rect x="12" y="16" width="136" height="10" fill="#245E62"/>
+              <rect x="12" y="30" width="136" height="10" fill="#101418"/>
+              <rect x="12" y="44" width="136" height="10" fill="#245E62"/>
+              <text x="80" y="76" text-anchor="middle" fill="#DBA046" font-size="7" font-family="JetBrains Mono">hit-plate</text>
+            </svg>
+            <svg class="notched-dial" viewBox="0 0 110 90" role="img" aria-label="Notched dial">
+              <circle cx="55" cy="40" r="28" fill="none" stroke="#F3EDE2" stroke-width="4"/>
+              <path d="M55 12 L58 24 L52 24 Z" fill="#FF6B35"/>
+              <text x="55" y="46" text-anchor="middle" fill="#DBA046" font-size="8" font-family="JetBrains Mono">index</text>
+              <text x="55" y="84" text-anchor="middle" fill="#DBA046" font-size="7" font-family="JetBrains Mono">notched-dial</text>
+            </svg>
+          </div>
+          <span class="badge" id="glass-chip">pin seated</span>
+          <div class="usage-rail">
+            <button type="button" class="toggle" id="usage-toggle">pin notched · row indexed</button>
+            <div class="usage-read" id="usage-read">Click seats in the detent; hit-test finds the row</div>
+          </div>
+          <div class="life-chip" id="leaf-chip">engaged · not mouse-dead</div>
+          <div class="glyph" id="fresh-glyph">CLI 2.1.271 · macOS Terminal.app · tui fullscreen</div>
+        </div>
+        <aside class="workshop-notes">
+          <span class="badge" id="skill-chip">Notched-wheel atelier</span>
+          <h2>Bench log</h2>
+          <p id="rule-a">Left click on a claude agents session row should open that session</p>
+          <p id="rule-b">Do not lose the detent after shared mouse dispatch</p>
+          <p id="folio-sig">notched · engaged · seated-click</p>
+          <table class="evidence evidence-table" id="evidence-table">
+            <thead>
+              <tr>
+                <th>row</th>
+                <th>left click</th>
+                <th>keyboard</th>
+                <th>live</th>
+              </tr>
+            </thead>
+            <tbody id="evidence-body"></tbody>
+          </table>
+          <div class="model-chips" id="model-chips">
+            <span class="model-chip">2.1.270 · click seats</span>
+            <span class="model-chip shadow">2.1.271 · deaf-click</span>
+            <span class="model-chip shadow">2.1.272 · still dead</span>
+            <span class="model-chip">arrows + Enter · keyboard-ok</span>
+          </div>
+          <div class="glyph" id="fresh-left">elementKey · hover scope · shared dispatch</div>
+          <div class="watch-roll" id="watch-roll">
+            <div class="roll-row"><span>PIN · detent</span><span>NOTCHED</span></div>
+            <div class="roll-row"><span>KEYS · arrows + Enter</span><span>OK</span></div>
+            <div class="roll-row" id="life-row"><span>CLICK · session row</span><span>NOTCHED</span></div>
+          </div>
+          <div class="path-viz">
+            <article class="path-card" id="schema-card">
+              <h3>hit-test seats the row</h3>
+              <p>Shared mouse dispatch should still resolve the click to the session node so the detent clicks and the row opens.</p>
+            </article>
+            <article class="path-card" id="mouse-dead-card">
+              <h3>mouse-dead</h3>
+              <p>Click position resolved to a node in a separate step. Hover scope / elementKey added. Only clicking regressed.</p>
+            </article>
+          </div>
+          <div class="marks" id="marks"></div>
+        </aside>
+      </section>
+
+      <div class="stations">
+        <article class="station" id="ratchet-wheel">
+          <h2>ratchet-wheel</h2>
+          <p>Click seats in the detent; hit-test finds the row; session opens</p>
+        </article>
+        <article class="station" id="detent-pin">
+          <h2>detent-pin</h2>
+          <p>Shared mouse dispatch resolves click to a node in a separate step</p>
+        </article>
+        <article class="station" id="click-pawl">
+          <h2>click-pawl</h2>
+          <p>Left click on claude agents session row does nothing</p>
+        </article>
+        <article class="station" id="hit-plate">
+          <h2>hit-plate</h2>
+          <p>Hover scope / elementKey added; hit-test misses the row</p>
+        </article>
+        <article class="station" id="notched-dial">
+          <h2>notched-dial</h2>
+          <p>Fullscreen macOS Terminal.app; 2.1.270 works; 2.1.271/2.1.272 broken</p>
+        </article>
+        <article class="station" id="index-seat">
+          <h2>index-seat</h2>
+          <p>Row onClick unchanged; only clicking regressed; keyboard-ok</p>
+        </article>
+      </div>
+
+      <div class="controls">
+        <button id="keep-notched" class="primary" type="button">Admit notched</button>
+        <button id="score-detent-btn" class="alarm" type="button">Score detent</button>
+        <button id="walk-the-path" type="button">Walk mouse-dead</button>
+        <button id="compare-notched-deaf" type="button">Compare notched / deaf-click</button>
+        <button id="pin-notched" type="button">Pin idle notched</button>
+        <button id="pin-deaf" type="button">Pin seeded deaf-click</button>
+        <button id="pin-path" type="button">Pin mouse-dead</button>
+        <button id="stamp-cut" type="button">Stamp hit-test</button>
+        <button id="score-booth" type="button">Score booth</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="timeline" id="timeline-markers"></div>
+      <div class="log" id="log" aria-live="polite"></div>
+
+      <section class="brief">
+        <h2>Research brief</h2>
+        <p>
+          Since 2.1.271, left clicking a session row in
+          the claude agents list no longer opens that
+          session. Nothing happens on click. Keyboard
+          navigation (arrows + Enter) still works.
+          Rolling back to 2.1.270 restores clicking
+          immediately. 2.1.272 is still affected.
+        </p>
+        <p>
+          Environment: Claude Code broken in 2.1.271 and
+          2.1.272, works in 2.1.270. Native installer.
+          macOS Darwin 25.5.0. Apple Terminal.app,
+          TERM=xterm-256color, Use Option as Meta key
+          enabled. TUI mode fullscreen via
+          "tui": "fullscreen" in ~/.claude/settings.json.
+          Steps: have background sessions; run claude
+          agents; left click any session row (Pinned,
+          Ready for review, Working, Completed). Expected:
+          the clicked session opens. Actual: the click is
+          ignored.
+        </p>
+        <p>
+          Primary:
+          <a href="https://github.com/anthropics/claude-code/issues/94565">anthropics/claude-code#94565</a>
+          (OPEN). Labels: bug, has repro, platform:macos,
+          area:tui, regression, area:agent-view. The
+          2.1.271 changelog mentions adding mouse support
+          to the /config panel but no change to the agents
+          view. Comparing 2.1.270 and 2.1.271 bundles, the
+          session row's own onClick looks unchanged, while
+          the shared mouse dispatch changed: the click
+          position is now resolved to a node in a separate
+          step, and a new hover scope / elementKey
+          mechanism was added. That shared hit testing
+          change looks like the likely cause, since only
+          clicking regressed. Workaround: pin 2.1.270 with
+          DISABLE_AUTOUPDATER=1. Hypothesis (issue text,
+          NON-BINDING): invite verify against #94565 text
+          only. Do not claim a root cause in Claude Code
+          source you have not seen.
+        </p>
+        <p>
+          Desired (narrative only): left click on a
+          claude agents session row opens that session,
+          and hit-test / detent feedback returns on
+          fullscreen macOS Terminal.app.
+        </p>
+        <p>
+          Issue text names no cousin tickets. Backups
+          (cite only; do not auto-pick): #94564, #94553,
+          #94560, #93924, #93770, #93777, #94151.
+          Anti-confusion paradigms: Prosopon/#94575,
+          Slipway/#94458, Freshet/#94430, Kintsugi/#94451,
+          Cenotaph/#94452, Stratum/#94417, Tmesis/#86198,
+          Vedette/#94392, Orloj/#94393, Brisure/#94396,
+          Diptych/#94397, Vizard/#94398, Cathead/#93624.
+          This booth is specifically the deaf click /
+          missing detent after shared mouse dispatch.
+        </p>
+        <p>
+          NOT Prosopon. NOT Slipway. NOT Cathead.
+          NOT #94575. NOT #94458. This booth is
+          specifically MOUSE-DEAD (session-row left-click
+          ignored after 2.1.271 shared hit-test; keyboard
+          still works).
+        </p>
+        <p id="docket-body">Idle: keep the pin seated in the notch. Score detent or admit notched.</p>
+        <p id="copy-body">A notched-wheel atelier that should admit notched. Score detent or admit notched.</p>
+        <p id="slip-body">Idle: pin seated; engaged.</p>
+        <p id="rival-body">Positive control: notched / engaged / indexed / seated-click.</p>
+        <p id="dateline-body">Graphite plus brass. Score detent or admit notched.</p>
+        <p id="chart-lede">Pin seated. Keys ok. No mouse-dead.</p>
+        <p id="chart-stack">notched · engaged · indexed · seated-click</p>
+      </section>
+
+      <section class="probe">
+        <h2>Probe</h2>
+        <textarea id="probe-input" spellcheck="false"></textarea>
+      </section>
+      <footer class="booth-nav">
+        Diagnostic booth only. No Claude Code patch. Score detent or admit notched.
+      </footer>
+    </div>
+    <script type="module">
+      import {
+        DETENT_WALK,
+        EVIDENCE_ROWS,
+        LEDGER_NAMES,
+        classify,
+        diagnose,
+        mapDetent,
+        scoreGate,
+        scoreWalk,
+      } from "./detent.mjs";
+
+      if (new URLSearchParams(location.search).get("embed") === "1") {
+        document.body.classList.add("embed");
+      }
+
+      const HOLD_UI = new Set(["notched", "engaged", "indexed", "seated-click"]);
+      const STORE = "detent-score";
+      const PEGS = [
+        { seed: "notched", name: "notched", note: "idle HOLD", hold: true },
+        { seed: "deaf-click", name: "deaf-click", note: "#94565" },
+        { seed: "mouse-dead", name: "mouse-dead", note: "path" },
+        { seed: "engaged", name: "engaged", note: "HOLD alias", hold: true },
+        { seed: "indexed", name: "indexed", note: "HOLD alias", hold: true },
+        { seed: "seated-click", name: "seated-click", note: "HOLD alias", hold: true },
+        { seed: "hit-test", name: "hit-test", note: "miss" },
+        { seed: "hover-scope", name: "hover-scope", note: "scope" },
+        { seed: "element-key", name: "element-key", note: "elementKey" },
+        { seed: "fullscreen-tui", name: "fullscreen-tui", note: "full" },
+        { seed: "row-onclick", name: "row-onclick", note: "unchanged" },
+        { seed: "keyboard-ok", name: "keyboard-ok", note: "arrows" },
+        { seed: "shared-dispatch", name: "shared-dispatch", note: "2.1.271" },
+        { seed: "has-repro", name: "has-repro", note: "published shape" },
+        { seed: "cousins", name: "cousins", note: "none from issue" },
+        { seed: "backups", name: "backups", note: "next focus only" },
+        { seed: "walk", name: "walk", note: "published walk" },
+        { seed: "closed", name: "closed", note: "issue remains OPEN" }
+      ];
+
+      const FALLBACKS = {
+        notched: {
+          seed: "notched",
+          hubCount: "NOTCHED",
+          notched: true,
+          deafClick: false,
+          mouseDead: false,
+          log: ["[idle] booth on notched — click seats in the detent; session opens"]
+        },
+        "deaf-click": {
+          seed: "deaf-click",
+          preferSeed: true,
+          hubCount: "DEAF-CLICK",
+          notched: false,
+          deafClick: true,
+          mouseDead: true,
+          hitTest: true,
+          hoverScope: true,
+          elementKey: true,
+          fullscreenTui: true,
+          rowOnclick: true,
+          keyboardOk: true,
+          sharedDispatch: true,
+          log: [
+            "[seed] #94565 deaf-click — left click on claude agents row is ignored",
+            "[seed] shared mouse dispatch resolves click to a node in a separate step",
+            "[seed] keyboard arrows + Enter still work; 2.1.270 restores click"
+          ]
+        },
+        "mouse-dead": {
+          seed: "mouse-dead",
+          preferSeed: true,
+          hubCount: "MOUSE-DEAD",
+          deafClick: true,
+          mouseDead: true,
+          event: "mouse-dead",
+          log: ["[mouse-dead] hit-test/detent feedback gone on fullscreen Terminal.app"]
+        },
+        engaged: { seed: "engaged", preferSeed: true, hubCount: "ENGAGED", notched: true, log: ["[engaged] admit notched"] },
+        indexed: { seed: "indexed", preferSeed: true, hubCount: "INDEXED", notched: true, log: ["[indexed] the wheel is still indexed"] },
+        "seated-click": { seed: "seated-click", preferSeed: true, hubCount: "SEATED-CLICK", notched: true, log: ["[seated-click] the click still seats"] },
+        "hit-test": { seed: "hit-test", preferSeed: true, hubCount: "HIT-TEST", hitTest: true, log: ["[hit-test] click resolved separately; row not found"] },
+        "hover-scope": { seed: "hover-scope", preferSeed: true, hubCount: "HOVER-SCOPE", hoverScope: true, log: ["[hover-scope] elementKey mechanism added in 2.1.271"] },
+        "element-key": { seed: "element-key", preferSeed: true, hubCount: "ELEMENT-KEY", elementKey: true, log: ["[element-key] shared mouse dispatch added elementKey"] },
+        "fullscreen-tui": { seed: "fullscreen-tui", preferSeed: true, hubCount: "FULLSCREEN-TUI", fullscreenTui: true, log: ["[fullscreen-tui] Apple Terminal.app; tui fullscreen"] },
+        "row-onclick": { seed: "row-onclick", preferSeed: true, hubCount: "ROW-ONCLICK", rowOnclick: true, log: ["[row-onclick] session row onClick looks unchanged"] },
+        "keyboard-ok": { seed: "keyboard-ok", preferSeed: true, hubCount: "KEYBOARD-OK", keyboardOk: true, log: ["[keyboard-ok] arrows + Enter still open the session"] },
+        "shared-dispatch": { seed: "shared-dispatch", preferSeed: true, hubCount: "SHARED-DISPATCH", sharedDispatch: true, log: ["[shared-dispatch] 2.1.271 resolves click to a node in a separate step"] },
+        "has-repro": { seed: "has-repro", preferSeed: true, hubCount: "HAS-REPRO", log: ["[has-repro] CLI 2.1.271 · macOS Terminal.app · tui fullscreen · claude agents"] },
+        cousins: { seed: "cousins", preferSeed: true, hubCount: "COUSINS", log: ["[cousins] issue text names no cousin tickets"] },
+        backups: { seed: "backups", preferSeed: true, hubCount: "BACKUPS", log: ["[backups] cite-only #94564 #94553 #94560 #93924 #93770 #93777 #94151"] },
+        walk: { seed: "walk", preferSeed: true, hubCount: "WALK", log: ["[walk] notched → mouse-dead → deaf-click"] },
+        closed: { seed: "closed", preferSeed: true, hubCount: "CLOSED", log: ["[closed] #94565 remains OPEN — cite only; this booth is mouse-dead"] },
+        landing: { seed: "landing", preferSeed: true, hubCount: "LANDING", log: ["[landing] mechanical detent / ratchet / hit-test / notched-wheel atelier"] },
+        fixtures: { seed: "fixtures", preferSeed: true, hubCount: "FIXTURES", log: ["[fixtures] ratchet wheel / detent pin / click pawl"] }
+      };
+
+      function paintEvidence() {
+        document.getElementById("evidence-body").innerHTML = EVIDENCE_ROWS.map((row) => (
+          '<tr class="' + (row.deafClick ? "orphan" : "") + '">' +
+            "<td>" + row.lane + "</td>" +
+            "<td>" + row.click + "</td>" +
+            "<td>" + row.keyboard + "</td>" +
+            "<td>" + (row.live ? "yes" : "no") + "</td>" +
+          "</tr>"
+        )).join("");
+      }
+
+      function paintMarks(alarm) {
+        document.getElementById("marks").innerHTML = LEDGER_NAMES.map((row) => (
+          '<div class="mark"><b>' + row.id + "</b> " + (alarm ? row.lost : "notched · engaged") + "</div>"
+        )).join("");
+      }
+
+      function paintChips(active) {
+        document.getElementById("chips").innerHTML = PEGS.map((peg) => (
+          '<button type="button" class="chip' +
+            (peg.hold ? " hold" : "") +
+            (peg.seed === active ? " on" : "") +
+            '" data-seed="' + peg.seed + '"><b>' + peg.name + "</b> " + peg.note + "</button>"
+        )).join("");
+      }
+
+      function paintPegs() {
+        document.getElementById("timeline-markers").innerHTML = DETENT_WALK.map((row) => (
+          '<article class="letter' + (row.t === "idle" ? "" : " lag") + '">' +
+            '<div class="t">' + row.t + "</div>" +
+            '<div class="e">' + row.event + "</div>" +
+            '<div class="s">' + row.cue + "</div>" +
+          "</article>"
+        )).join("");
+      }
+
+      function apply(ticket) {
+        const seed = ticket.seed || classify(ticket);
+        const scored = scoreGate(ticket);
+        const alarm = !HOLD_UI.has(scored.verdict) && !HOLD_UI.has(seed);
+        const hold = !alarm;
+        document.body.classList.toggle("notched", hold);
+        document.body.classList.toggle("deaf-click", alarm);
+        document.body.classList.toggle("mouse-dead", alarm);
+        document.getElementById("sheet").classList.toggle("mouse-dead", alarm);
+        document.getElementById("score").className = "score-plate " + (hold ? "hold" : "alarm");
+        document.getElementById("score-badge").textContent = (ticket.hubCount || scored.verdict || seed).toString().toUpperCase();
+        document.getElementById("score-line").innerHTML = hold
+          ? "admit <em>notched</em> — click seats in the detent; hit-test finds the row"
+          : "score <em>detent</em> — mouse-dead; deaf-click; keyboard-ok";
+        document.getElementById("true-head").textContent = hold
+          ? "The ratchet stays notched — click seats in the detent; session opens"
+          : "The booth is deaf-click — the pin never seated after shared dispatch";
+        document.getElementById("skill-chip").textContent = hold ? "Notched-wheel atelier" : "mouse-dead bench";
+        document.getElementById("skill-chip").className = "badge" + (hold ? "" : " open");
+        document.getElementById("glass-chip").textContent = hold ? "pin seated" : "deaf-click";
+        document.getElementById("glass-chip").className = "badge" + (hold ? "" : " open");
+        document.getElementById("proof-chip").textContent = hold ? "pin seated" : "hit-test miss";
+        document.getElementById("proof-chip").className = "badge" + (hold ? " intact" : " open");
+        document.getElementById("folio-sig").textContent = hold
+          ? "notched · engaged · seated-click"
+          : "deaf-click · mouse-dead · hit-test";
+        document.getElementById("rule-a").textContent = hold
+          ? "Left click on a claude agents session row should open that session"
+          : "shared mouse dispatch resolves click to a node in a separate step";
+        document.getElementById("rule-b").textContent = hold
+          ? "Do not lose the detent after shared mouse dispatch"
+          : "left click ignored; keyboard arrows + Enter still work";
+        document.getElementById("docket-body").textContent = hold
+          ? "Idle: keep the pin seated in the notch. Score detent or admit notched."
+          : "Seeded #94565: mouse-dead; deaf-click; keyboard-ok.";
+        document.getElementById("copy-body").textContent = hold
+          ? "A notched-wheel atelier that should admit notched. Score detent or admit notched."
+          : "hit-test, hover-scope, element-key, deaf-click.";
+        document.getElementById("slip-body").textContent = hold
+          ? "Idle: pin seated; engaged."
+          : "mouse-dead: pin never seated; keyboard still indexes.";
+        document.getElementById("rival-body").textContent = hold
+          ? "Positive control: notched / engaged / indexed / seated-click."
+          : "Issue text names no cousin tickets.";
+        document.getElementById("dateline-body").textContent = hold
+          ? "Graphite plus brass. Score detent or admit notched."
+          : "2.1.271 · macOS Terminal.app · tui fullscreen · claude agents.";
+        document.getElementById("chart-lede").textContent = hold
+          ? "Pin seated. Keys ok. No mouse-dead."
+          : "Deaf-click case. Hit-test miss. Keyboard still works.";
+        document.getElementById("chart-stack").textContent = hold
+          ? "notched · engaged · indexed · seated-click"
+          : "hit-test · hover-scope · mouse-dead · deaf-click";
+        document.getElementById("fresh-glyph").innerHTML = hold
+          ? "CLI 2.1.271 · macOS Terminal.app · tui fullscreen"
+          : "elementKey · hover scope · shared dispatch<br /><em>synthetic example-data</em>";
+        document.getElementById("leaf-chip").textContent = hold
+          ? "engaged · not mouse-dead"
+          : "deaf-click · mouse-dead bench";
+        const lifeRow = document.getElementById("life-row");
+        lifeRow.className = "roll-row" + (hold ? "" : " gap");
+        lifeRow.innerHTML = hold
+          ? "<span>CLICK · session row</span><span>NOTCHED</span>"
+          : "<span>CLICK · session row</span><span>DEAF · MOUSE-DEAD</span>";
+        const usage = document.getElementById("usage-toggle");
+        usage.classList.toggle("on", alarm);
+        usage.textContent = alarm ? "pin gap · deaf-click" : "pin notched · row indexed";
+        document.getElementById("usage-read").textContent = alarm
+          ? "mouse-dead left the pin hanging above the notch"
+          : "Click seats in the detent; hit-test finds the row";
+        const lines = Array.isArray(ticket.log) ? ticket.log : [scored.phrase];
+        document.getElementById("log").innerHTML = lines.map((line) => (
+          '<div class="' + (hold ? "ok" : "warn") + '">' + line + "</div>"
+        )).join("");
+        document.getElementById("probe-input").value = JSON.stringify(ticket, null, 2);
+        paintMarks(alarm);
+        paintChips(seed);
+        try { localStorage.setItem(STORE, seed); } catch {}
+        void mapDetent({ notched: hold, deafClick: alarm, mouseDead: alarm });
+        void diagnose(ticket);
+      }
+
+      function loadSeed(name) {
+        apply(FALLBACKS[name] || FALLBACKS.notched);
+      }
+
+      paintEvidence();
+      paintPegs();
+
+      document.getElementById("keep-notched").addEventListener("click", () => loadSeed("notched"));
+      document.getElementById("score-detent-btn").addEventListener("click", () => loadSeed("deaf-click"));
+      document.getElementById("walk-the-path").addEventListener("click", () => {
+        const walk = scoreWalk({ rows: DETENT_WALK });
+        apply({
+          seed: "deaf-click",
+          preferSeed: true,
+          hubCount: "DEAF-CLICK",
+          deafClick: true,
+          mouseDead: true,
+          log: ["[walk] notched → mouse-dead → " + walk.verdict]
+        });
+      });
+      document.getElementById("compare-notched-deaf").addEventListener("click", () => {
+        const idle = scoreGate(FALLBACKS.notched);
+        const seeded = scoreGate(FALLBACKS["deaf-click"]);
+        apply({
+          ...FALLBACKS["deaf-click"],
+          log: [
+            "[compare] notched verdict " + idle.verdict,
+            "[compare] deaf-click verdict " + seeded.verdict,
+            "[compare] Score detent or admit notched."
+          ]
+        });
+      });
+      document.getElementById("pin-notched").addEventListener("click", () => loadSeed("notched"));
+      document.getElementById("pin-deaf").addEventListener("click", () => loadSeed("deaf-click"));
+      document.getElementById("pin-path").addEventListener("click", () => loadSeed("mouse-dead"));
+      document.getElementById("stamp-cut").addEventListener("click", () => loadSeed("hit-test"));
+      document.getElementById("score-booth").addEventListener("click", () => {
+        try {
+          apply(JSON.parse(document.getElementById("probe-input").value));
+        } catch {
+          loadSeed("notched");
+        }
+      });
+      document.getElementById("chips").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-seed]");
+        if (btn) loadSeed(btn.getAttribute("data-seed"));
+      });
+      document.getElementById("usage-toggle").addEventListener("click", () => {
+        const on = document.getElementById("usage-toggle").classList.contains("on");
+        loadSeed(on ? "notched" : "hit-test");
+      });
+      document.getElementById("signature-well").addEventListener("click", () => {
+        const open = document.body.classList.contains("deaf-click");
+        loadSeed(open ? "notched" : "deaf-click");
+      });
+
+      let start = "notched";
+      try { start = localStorage.getItem(STORE) || "notched"; } catch {}
+      loadSeed(FALLBACKS[start] ? start : "notched");
+    </script>
+  </body>
+</html>
