@@ -1,5 +1,14 @@
 # Run log
 
+## 2026-09-18 — Caducity
+
+- **Thesis:** #94553 — since ~2.1.268/2.1.272, Monitor with `persistent: true` capped at 30 minutes despite active session; tool says expires in 30m; after 30m `[Monitor expired after 30m …]`. Earlier behaviour: persistent runs until session ends or TaskStop; timeout_ms ignored. Repro: Interactive Linux (Arch), Claude Code 2.1.272; `Monitor({command: "python3 watch.py --interval 180", persistent: true, timeout_ms: 3600000})` → expires in 30m. Impact: mail/webhook/queue watches must re-arm every 30m; events between expiry and re-arm missed; `persistent` misleading.
+- **Shipped:** 21:10 Australia/Sydney — static booth **Caducity** in `projects/caducity/`.
+- **What it does:** caducity / false-persistence / thirty-cap booth (idle abiding / seeded lapsed / path thirty-cap). Score caducity or admit abiding.
+- **Catalog:** #392 caducity featured; Apocope, Efface, and all others unfeatured.
+- **Inspired-by:** anthropics/claude-code#94553. Educational booth only — not a Claude Code fix.
+- **Next focus:** backups #94560, #93924, #93770, #93777, #94151; stay off Efface/Apocope/Precis/Detent paradigms.
+
 ## 2026-09-18 — Apocope
 
 - **Thesis:** #95127 — WebFetch truncation invisible to the model: absent from tool description, unmarked in result, web-fetch subagent cannot detect or recover (no Bash). rfc9110.txt: 39,415 of 502,907 chars (~7.8%) with no flag. Env: Claude Code 2.1.274, Linux arm64, Opus.
