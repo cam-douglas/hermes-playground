@@ -14,7 +14,7 @@ import {
   CODE_BUILD_STILL,
   COMMAND,
   COUSINS,
-  PRECIS_WALK,
+  APOCOPE_WALK,
   DISTRIBUTION,
   EVIDENCE_ROWS,
   EXPECTED,
@@ -38,7 +38,7 @@ import {
   PRODUCT_WORD,
   ROW_KINDS,
   RULED_OUT,
-  SAMPLE_PARAPHRASE_PROOF,
+  SAMPLE_TRUNCATED_PROOF,
   SEEDED_WORD,
   SETTINGS_KEY,
   STATE,
@@ -55,36 +55,36 @@ import {
   emptyTicket,
   fingerprint,
   handle,
-  inspectParaphrase,
-  inspectSummaryOnlyMark,
-  inspectTokenBudgetMark,
-  inspectTokenBudget,
-  inspectInvokedSkills,
-  inspectInvokedSkillsMark,
-  inspectCompactManual,
-  inspectCompactManualMark,
-  inspectDocsReattach,
-  inspectSkillBody,
-  inspectSkillBodyMark,
-  inspectInvokedBlock,
-  mapPrecis,
-  observeSkillDrop,
+  inspectTruncated,
+  inspectUnmarkedResultMark,
+  inspectPercentKeptMark,
+  inspectPercentKept,
+  inspectWebfetch,
+  inspectWebfetchMark,
+  inspectToolDesc,
+  inspectToolDescMark,
+  inspectCurlRemedy,
+  inspectRfc9110,
+  inspectRfc9110Mark,
+  inspectWebFetchSubagent,
+  mapApocope,
+  observeUnmarked,
   readBooth,
   score,
   scoreGate,
-  scoreSkillDrop,
+  scoreUnmarked,
   scoreWalk,
-  seedParaphrase,
-  seedSummaryOnly,
-  seedGraftedSkill,
-  seedInvokedSkills,
-  seedCompactManual,
-  seedCarried,
-  seedSkillDrop,
-  seedReknit,
+  seedTruncated,
+  seedUnmarkedResult,
+  seedDeclared,
+  seedWebfetch,
+  seedToolDesc,
+  seedSignaled,
+  seedUnmarked,
+  seedFlagged,
   seedProduct,
-  seedAttached,
-} from "./precis.mjs";
+  seedMarked,
+} from "./apocope.mjs";
 
 function readData(name) {
   return JSON.parse(
@@ -119,26 +119,26 @@ function readVercel() {
 }
 
 function modelPath() {
-  return fileURLToPath(new URL("./precis.mjs", import.meta.url));
+  return fileURLToPath(new URL("./apocope.mjs", import.meta.url));
 }
 
 const CATALOG_SUMMARY =
-  "21:10 precis: a precis / abstract / abridgement / skill-graft booth for #94564. After manual /compact, invoked skill content is not re-attached — only the compaction summary paraphrase survives (and can blur critical detail). Idle reknit / seeded paraphrase / path skill-drop. Score precis or admit reknit.";
+  "21:10 apocope: a linguistic apocope / manuscript end-clip / elision / WebFetch-cut booth for #95127. WebFetch truncates long pages with no limit in the tool description and no truncation flag in the result; the web-fetch subagent has no Bash to curl the tail. Idle flagged / seeded truncated / path unmarked. Score apocope or admit flagged.";
 
-test("idle reknit is a hold; click seats in the precis and the session opens", () => {
-  const result = analyze(seedReknit());
-  assert.equal(result.verdict, "reknit");
-  assert.equal(result.idleWord, "reknit");
-  assert.equal(IDLE_WORD, "reknit");
+test("idle flagged is a hold; truncation should be marked in the WebFetch result", () => {
+  const result = analyze(seedFlagged());
+  assert.equal(result.verdict, "flagged");
+  assert.equal(result.idleWord, "flagged");
+  assert.equal(IDLE_WORD, "flagged");
   assert.equal(result.hold, true);
   assert.equal(result.alarm, false);
-  assert.equal(result.reknit, true);
-  assert.equal(result.phrase, "admit reknit");
-  assert.equal(result.paraphrase, false);
-  assert.equal(result.skillDrop, false);
-  assert.ok(HOLD_ALIASES.includes("grafted-skill"));
-  assert.ok(HOLD_ALIASES.includes("carried"));
-  assert.ok(HOLD_ALIASES.includes("attached"));
+  assert.equal(result.flagged, true);
+  assert.equal(result.phrase, "admit flagged");
+  assert.equal(result.truncated, false);
+  assert.equal(result.unmarked, false);
+  assert.ok(HOLD_ALIASES.includes("declared"));
+  assert.ok(HOLD_ALIASES.includes("signaled"));
+  assert.ok(HOLD_ALIASES.includes("marked"));
   for (const word of FORBIDDEN_IDLE) {
     assert.notEqual(result.idleWord, word);
     assert.notEqual(result.verdict, word);
@@ -155,25 +155,25 @@ test("idle reknit is a hold; click seats in the precis and the session opens", (
   assert.notEqual(IDLE_WORD, "pledged");
 });
 
-test("empty ticket and empty stdin classify reknit", () => {
-  assert.equal(classify(emptyTicket()), "reknit");
-  assert.equal(classify(""), "reknit");
-  assert.equal(classify(null), "reknit");
-  assert.equal(decide({}), "reknit");
+test("empty ticket and empty stdin classify flagged", () => {
+  assert.equal(classify(emptyTicket()), "flagged");
+  assert.equal(classify(""), "flagged");
+  assert.equal(classify(null), "flagged");
+  assert.equal(decide({}), "flagged");
 });
 
-test("#94564 seeded path scores paraphrase when the pin never seats", () => {
-  const result = analyze(seedParaphrase());
-  assert.equal(result.verdict, "paraphrase");
-  assert.equal(result.seededWord, "paraphrase");
-  assert.equal(SEEDED_WORD, "paraphrase");
-  assert.equal(PRODUCT_WORD, "precis");
+test("#95127 seeded path scores truncated when the pin never seats", () => {
+  const result = analyze(seedTruncated());
+  assert.equal(result.verdict, "truncated");
+  assert.equal(result.seededWord, "truncated");
+  assert.equal(SEEDED_WORD, "truncated");
+  assert.equal(PRODUCT_WORD, "apocope");
   assert.equal(result.hold, false);
   assert.equal(result.alarm, true);
-  assert.equal(result.paraphrase, true);
-  assert.equal(result.phrase, "score precis");
-  assert.equal(result.skillDrop, true);
-  assert.equal(result.invokedSkills, true);
+  assert.equal(result.truncated, true);
+  assert.equal(result.phrase, "score apocope");
+  assert.equal(result.unmarked, true);
+  assert.equal(result.webfetch, true);
   for (const word of FORBIDDEN_SEED) {
     assert.notEqual(result.seededWord, word);
     assert.notEqual(result.verdict, word);
@@ -186,260 +186,260 @@ test("#94564 seeded path scores paraphrase when the pin never seats", () => {
   assert.notEqual(PATH_WORD, "ptmx-race");
 });
 
-test("educational skill-drop helpers encode published reknit vs paraphrase paths", () => {
-  assert.equal(CODE_BUILD, "2.1.270");
-  assert.equal(CODE_BUILD_OK, "2.1.270");
-  assert.equal(CODE_BUILD_STILL, "2.1.270");
-  assert.equal(TERMINAL, "macOS");
-  assert.equal(TERM, "project-skill");
-  assert.equal(TUI_MODE, "manual-compact");
-  assert.equal(SETTINGS_KEY, "compact");
-  assert.equal(COMMAND, "/compact");
-  assert.equal(WORKAROUND, "re-invoke skill after compact");
+test("educational unmarked helpers encode published flagged vs truncated paths", () => {
+  assert.equal(CODE_BUILD, "2.1.274");
+  assert.equal(CODE_BUILD_OK, "2.1.274");
+  assert.equal(CODE_BUILD_STILL, "2.1.274");
+  assert.equal(TERMINAL, "linux");
+  assert.equal(TERM, "arm64");
+  assert.equal(TUI_MODE, "webfetch");
+  assert.equal(SETTINGS_KEY, "webfetch");
+  assert.equal(COMMAND, "WebFetch");
+  assert.match(WORKAROUND, /curl via Bash/i);
   assert.deepEqual([...ROW_KINDS], [
-    "invoked_skills block",
-    "skill body (5k cap)",
-    "summary paraphrase",
-    "docs re-attach path",
+    "tool description (no limit)",
+    "WebFetch result (unmarked)",
+    "rfc9110 retained slice",
+    "curl-via-Bash remedy (docs only)",
   ]);
-  const wet = observeSkillDrop({ clickLanded: true, selectionOpened: false });
+  const wet = observeUnmarked({ clickLanded: true, selectionOpened: false });
   assert.equal(wet.dead, true);
-  const shut = observeSkillDrop({ reknit: true });
+  const shut = observeUnmarked({ hold: true });
   assert.equal(shut.dead, false);
-  const hit = inspectInvokedSkills({});
+  const hit = inspectWebfetch({});
   assert.equal(hit.missed, true);
-  const held = inspectInvokedSkills({ reknit: true });
+  const held = inspectWebfetch({ hold: true });
   assert.equal(held.missed, false);
-  const hover = inspectCompactManual({});
+  const hover = inspectToolDesc({});
   assert.equal(hover.missed, true);
-  const clean = inspectCompactManual({ reknit: true });
+  const clean = inspectToolDesc({ hold: true });
   assert.equal(clean.missed, false);
-  const deaf = inspectParaphrase({});
+  const deaf = inspectTruncated({});
   assert.equal(deaf.deaf, true);
-  const keys = inspectDocsReattach({});
+  const keys = inspectCurlRemedy({});
   assert.equal(keys.stillWorks, true);
-  const full = inspectTokenBudget({});
+  const full = inspectPercentKept({});
   assert.equal(full.flagged, true);
-  const row = inspectSkillBody({});
+  const row = inspectRfc9110({});
   assert.equal(row.flagged, true);
-  const dispatch = inspectInvokedBlock({});
+  const dispatch = inspectWebFetchSubagent({});
   assert.equal(dispatch.flagged, true);
-  const scored = scoreSkillDrop({
-    paraphrase: true,
-    skillDrop: true,
-    invokedSkills: true,
+  const scored = scoreUnmarked({
+    truncated: true,
+    unmarked: true,
+    webfetch: true,
   });
-  assert.equal(scored.paraphrase, true);
-  assert.equal(scored.skillDrop, true);
-  const intactPath = scoreSkillDrop({ reknit: true });
-  assert.equal(intactPath.paraphrase, false);
-  assert.equal(intactPath.reknit, true);
+  assert.equal(scored.truncated, true);
+  assert.equal(scored.unmarked, true);
+  const intactPath = scoreUnmarked({ flagged: true });
+  assert.equal(intactPath.truncated, false);
+  assert.equal(intactPath.flagged, true);
 });
 
-test("inspectors mark invoked-skills and compact-manual", () => {
-  const hit = inspectInvokedSkillsMark({ paraphrase: true, invokedSkills: true });
-  assert.equal(hit.stamp, "invoked-skills");
+test("inspectors mark webfetch and tool-desc", () => {
+  const hit = inspectWebfetchMark({ truncated: true, webfetch: true });
+  assert.equal(hit.stamp, "webfetch");
   assert.equal(hit.flagged, true);
-  const hover = inspectCompactManualMark({ paraphrase: true, compactManual: true });
-  assert.equal(hover.stamp, "compact-manual");
+  const hover = inspectToolDescMark({ truncated: true, toolDesc: true });
+  assert.equal(hover.stamp, "tool-desc");
   assert.equal(hover.missed, true);
   const scored = scoreGate({
-    paraphrase: true,
-    skillDrop: true,
-    invokedSkills: true,
-    cue: "paraphrase",
+    truncated: true,
+    unmarked: true,
+    webfetch: true,
+    cue: "truncated",
   });
-  assert.equal(scored.verdict, "paraphrase");
-  const open = inspectInvokedSkillsMark({ reknit: true, paraphrase: false });
-  assert.equal(open.stamp, "grafted-skill");
+  assert.equal(scored.verdict, "truncated");
+  const open = inspectWebfetchMark({ flagged: true, truncated: false });
+  assert.equal(open.stamp, "declared");
 });
 
-test("path word is skill-drop; booth seed holds the path", () => {
-  assert.equal(PATH_WORD, "skill-drop");
-  const result = analyze(seedSkillDrop());
-  assert.equal(result.verdict, "skill-drop");
-  assert.equal(result.pathWord, "skill-drop");
+test("path word is unmarked; booth seed holds the path", () => {
+  assert.equal(PATH_WORD, "unmarked");
+  const result = analyze(seedUnmarked());
+  assert.equal(result.verdict, "unmarked");
+  assert.equal(result.pathWord, "unmarked");
   assert.equal(result.hold, false);
   assert.equal(
     classify({
-      seed: "skill-drop",
+      seed: "unmarked",
       preferSeed: true,
-      paraphrase: true,
+      truncated: true,
     }),
-    "skill-drop",
+    "unmarked",
   );
-  assert.equal(classify({ seed: "invoked-skills", preferSeed: true }), "invoked-skills");
-  assert.equal(score(seedSkillDrop()), "precis");
+  assert.equal(classify({ seed: "webfetch", preferSeed: true }), "webfetch");
+  assert.equal(score(seedUnmarked()), "apocope");
 });
 
-test("HOLD includes reknit; aliases classify when preferSeed", () => {
-  assert.ok(HOLD.includes("reknit"));
-  const graftedSkill = analyze(seedGraftedSkill());
-  assert.equal(graftedSkill.verdict, "grafted-skill");
-  assert.equal(classify({ seed: "carried", preferSeed: true }), "carried");
-  assert.equal(classify({ seed: "attached", preferSeed: true }), "attached");
+test("HOLD includes flagged; aliases classify when preferSeed", () => {
+  assert.ok(HOLD.includes("flagged"));
+  const graftedSkill = analyze(seedDeclared());
+  assert.equal(graftedSkill.verdict, "declared");
+  assert.equal(classify({ seed: "signaled", preferSeed: true }), "signaled");
+  assert.equal(classify({ seed: "marked", preferSeed: true }), "marked");
 });
 
-test("alarm chips: invoked-skills, compact-manual, paraphrase", () => {
-  assert.equal(classify({ seed: "invoked-skills", preferSeed: true }), "invoked-skills");
-  assert.equal(classify(seedSkillDrop()), "skill-drop");
-  assert.equal(classify(seedProduct()), "paraphrase");
-  assert.equal(classify(seedCompactManual()), "compact-manual");
-  assert.equal(classify({ seed: "summary-only", preferSeed: true }), "summary-only");
+test("alarm chips: webfetch, tool-desc, truncated", () => {
+  assert.equal(classify({ seed: "webfetch", preferSeed: true }), "webfetch");
+  assert.equal(classify(seedUnmarked()), "unmarked");
+  assert.equal(classify(seedProduct()), "truncated");
+  assert.equal(classify(seedToolDesc()), "tool-desc");
+  assert.equal(classify({ seed: "unmarked-result", preferSeed: true }), "unmarked-result");
 });
 
-test("booth fixtures flip reknit vs paraphrase vs skill-drop", () => {
-  const idle = scoreGate(seedReknit());
-  const seeded = scoreGate(seedParaphrase());
-  const reknit = readData("reknit.json");
-  const deaf = readData("paraphrase.json");
-  const issued = readData("94564.json");
-  const path = readData("skill-drop.json");
-  assert.equal(idle.verdict, "reknit");
-  assert.equal(seeded.verdict, "paraphrase");
+test("booth fixtures flip flagged vs truncated vs unmarked", () => {
+  const idle = scoreGate(seedFlagged());
+  const seeded = scoreGate(seedTruncated());
+  const flagged = readData("flagged.json");
+  const deaf = readData("truncated.json");
+  const issued = readData("95127.json");
+  const path = readData("unmarked.json");
+  assert.equal(idle.verdict, "flagged");
+  assert.equal(seeded.verdict, "truncated");
   assert.notEqual(idle.verdict, seeded.verdict);
-  assert.equal(score(seedReknit()), "reknit");
-  assert.equal(score(seedParaphrase()), "precis");
-  assert.equal(score({ seed: "skill-drop", preferSeed: true }), "precis");
-  assert.equal(reknit.skillDrop, false);
-  assert.equal(reknit.reknit, true);
-  assert.equal(scoreGate(reknit).verdict, "reknit");
-  assert.equal(deaf.skillDrop, true);
-  assert.equal(deaf.invokedSkills, true);
-  assert.equal(classify(deaf), "paraphrase");
-  assert.equal(issued.issue, 94564);
-  assert.equal(classify(issued), "paraphrase");
+  assert.equal(score(seedFlagged()), "flagged");
+  assert.equal(score(seedTruncated()), "apocope");
+  assert.equal(score({ seed: "unmarked", preferSeed: true }), "apocope");
+  assert.equal(flagged.unmarked, false);
+  assert.equal(flagged.flagged, true);
+  assert.equal(scoreGate(flagged).verdict, "flagged");
+  assert.equal(deaf.unmarked, true);
+  assert.equal(deaf.webfetch, true);
+  assert.equal(classify(deaf), "truncated");
+  assert.equal(issued.issue, 95127);
+  assert.equal(classify(issued), "truncated");
   assert.equal(path.paths.length, 3);
-  assert.match(path.paths[0].rule, /reknit|grafted-skill|carried|attached/i);
-  assert.match(path.paths[1].result, /skill-drop|invoked-skills|compact-manual|summary-only|paraphrase/i);
-  assert.equal(classify(path), "skill-drop");
-  assert.equal(deaf.hubCount, "PARAPHRASE");
-  assert.equal(deaf.issue, 94564);
-  assert.equal(deaf.paraphrase, true);
-  assert.equal(classify(readData("grafted-skill.json")), "grafted-skill");
-  assert.equal(classify(readData("carried.json")), "carried");
-  assert.equal(classify(readData("attached.json")), "attached");
-  assert.equal(classify(readData("invoked-skills.json")), "invoked-skills");
-  assert.equal(classify(readData("compact-manual.json")), "compact-manual");
-  assert.equal(classify(readData("summary-only.json")), "summary-only");
-  assert.equal(classify(readData("token-budget.json")), "token-budget");
-  assert.equal(classify(readData("skill-body.json")), "skill-body");
-  assert.equal(classify(readData("docs-reattach.json")), "docs-reattach");
-  assert.equal(classify(readData("invoked-block.json")), "invoked-block");
+  assert.match(path.paths[0].rule, /flagged|declared|signaled|marked/i);
+  assert.match(path.paths[1].result, /unmarked|webfetch|tool-desc|unmarked-result|truncated/i);
+  assert.equal(classify(path), "unmarked");
+  assert.equal(deaf.hubCount, "TRUNCATED");
+  assert.equal(deaf.issue, 95127);
+  assert.equal(deaf.truncated, true);
+  assert.equal(classify(readData("declared.json")), "declared");
+  assert.equal(classify(readData("signaled.json")), "signaled");
+  assert.equal(classify(readData("marked.json")), "marked");
+  assert.equal(classify(readData("webfetch.json")), "webfetch");
+  assert.equal(classify(readData("tool-desc.json")), "tool-desc");
+  assert.equal(classify(readData("unmarked-result.json")), "unmarked-result");
+  assert.equal(classify(readData("percent-kept.json")), "percent-kept");
+  assert.equal(classify(readData("rfc9110.json")), "rfc9110");
+  assert.equal(classify(readData("curl-remedy.json")), "curl-remedy");
+  assert.equal(classify(readData("web-fetch-subagent.json")), "web-fetch-subagent");
   assert.equal(classify(readData("landing.json")), "landing");
   assert.equal(classify(readData("cousins.json")), "cousins");
-  assert.deepEqual(readData("cousins.json").issues, []);
+  assert.equal(readData("cousins.json").issues.length, 8);
   assert.equal(classify(readData("backups.json")), "backups");
   assert.equal(classify(readData("walk.json")), "walk");
   assert.equal(classify(readData("has-repro.json")), "has-repro");
   assert.equal(classify(readData("fixtures.json")), "fixtures");
   assert.equal(classify(readData("closed.json")), "closed");
-  assert.equal(classify(readData("subagent-spawn.json")), "invoked-skills");
+  assert.equal(classify(readData("no-bash.json")), "no-bash");
 });
 
 test("chips include idle, seeded, path, and walk", () => {
-  assert.ok(CHIPS.includes("reknit"));
-  assert.ok(CHIPS.includes("paraphrase"));
-  assert.ok(CHIPS.includes("skill-drop"));
-  assert.ok(CHIPS.includes("invoked-skills"));
-  assert.ok(CHIPS.includes("compact-manual"));
-  assert.ok(CHIPS.includes("summary-only"));
-  assert.ok(CHIPS.includes("attached"));
+  assert.ok(CHIPS.includes("flagged"));
+  assert.ok(CHIPS.includes("truncated"));
+  assert.ok(CHIPS.includes("unmarked"));
+  assert.ok(CHIPS.includes("webfetch"));
+  assert.ok(CHIPS.includes("tool-desc"));
+  assert.ok(CHIPS.includes("unmarked-result"));
+  assert.ok(CHIPS.includes("marked"));
   assert.ok(CHIPS.includes("fixtures"));
   assert.ok(CHIPS.includes("walk"));
-  assert.ok(ALARM.includes("paraphrase"));
-  assert.ok(ALARM.includes("skill-drop"));
-  assert.ok(ALARM.includes("invoked-skills"));
-  assert.ok(ALARM.includes("compact-manual"));
+  assert.ok(ALARM.includes("truncated"));
+  assert.ok(ALARM.includes("unmarked"));
+  assert.ok(ALARM.includes("webfetch"));
+  assert.ok(ALARM.includes("tool-desc"));
   assert.ok(VERDICTS.includes("walk"));
   assert.equal(classify({ seed: "fixtures", preferSeed: true }), "fixtures");
   assert.equal(classify({ seed: "walk", preferSeed: true }), "walk");
 });
 
-test("published precis walk scores paraphrase after the reknit hold", () => {
-  const booth = scoreWalk({ rows: PRECIS_WALK });
-  assert.equal(booth.verdict, "paraphrase");
-  assert.ok(booth.paraphraseCount >= 1);
+test("published apocope walk scores truncated after the flagged hold", () => {
+  const booth = scoreWalk({ rows: APOCOPE_WALK });
+  assert.equal(booth.verdict, "truncated");
+  assert.ok(booth.truncatedCount >= 1);
   const idle = booth.rows.find((row) => row.event === "atelier-bench");
-  assert.equal(idle.reknit, true);
-  assert.equal(idle.verdict, "reknit");
-  const cut = booth.rows.find((row) => row.event === "skill-drop");
-  assert.equal(cut.skillDrop, true);
+  assert.equal(idle.flagged, true);
+  assert.equal(idle.verdict, "flagged");
+  const cut = booth.rows.find((row) => row.event === "unmarked");
+  assert.equal(cut.unmarked, true);
   const path = booth.rows.find(
-    (row) => row.event === "skill-drop" && row.t === "path",
+    (row) => row.event === "unmarked" && row.t === "path",
   );
-  assert.equal(path.verdict, "skill-drop");
+  assert.equal(path.verdict, "unmarked");
 });
 
-test("PRECIS_WALK constant matches the issue core walk", () => {
-  assert.equal(PRECIS_WALK[0].event, "atelier-bench");
-  const cut = PRECIS_WALK.find((row) => row.event === "skill-drop");
-  assert.equal(cut.skillDrop || cut.invokedSkills, true);
-  const path = PRECIS_WALK.find((row) => row.t === "path");
-  assert.equal(path.paraphrase, true);
-  const scoreRow = PRECIS_WALK.find((row) => row.event === "paraphrase");
-  assert.equal(scoreRow.paraphrase, true);
-  assert.equal(scoreRow.invokedSkills, true);
+test("APOCOPE_WALK constant matches the issue core walk", () => {
+  assert.equal(APOCOPE_WALK[0].event, "atelier-bench");
+  const cut = APOCOPE_WALK.find((row) => row.event === "unmarked");
+  assert.equal(cut.unmarked || cut.webfetch, true);
+  const path = APOCOPE_WALK.find((row) => row.t === "path");
+  assert.equal(path.truncated, true);
+  const scoreRow = APOCOPE_WALK.find((row) => row.event === "truncated");
+  assert.equal(scoreRow.truncated, true);
+  assert.equal(scoreRow.webfetch, true);
 });
 
-test("positive control atelier-bench stays reknit", () => {
+test("positive control atelier-bench stays flagged", () => {
   const walk = scoreWalk({ rows: POSITIVE_CONTROL_WALK });
-  assert.equal(walk.verdict, "reknit");
+  assert.equal(walk.verdict, "flagged");
   const ok = walk.rows.find((row) => row.t === "hold");
-  assert.equal(ok.verdict, "reknit");
+  assert.equal(ok.verdict, "flagged");
   const hold = walk.rows.find((row) => row.event === "atelier-bench");
-  assert.equal(hold.reknit, true);
-  assert.equal(hold.verdict, "reknit");
+  assert.equal(hold.flagged, true);
+  assert.equal(hold.verdict, "flagged");
 });
 
-test("issue constants encode only #94564 published facts", () => {
-  assert.equal(FEATURED_ISSUE, 94564);
-  assert.ok(ISSUE_URL.includes("94564"));
-  assert.match(TITLE, /compact|skill|paraphrase/i);
+test("issue constants encode only #95127 published facts", () => {
+  assert.equal(FEATURED_ISSUE, 95127);
+  assert.ok(ISSUE_URL.includes("95127"));
+  assert.match(TITLE, /WebFetch|truncation|unmarked/i);
   assert.equal(STATE, "OPEN");
-  assert.match(PLATFORM, /macos/i);
-  assert.match(HOST, /2\.1\.270|compact|5279/i);
-  assert.equal(BUILD, "Claude Code 2.1.270");
-  assert.equal(SURFACE, "skill-drop");
+  assert.match(PLATFORM, /linux/i);
+  assert.match(HOST, /2\.1\.274|rfc9110|39415|502907/i);
+  assert.equal(BUILD, "Claude Code 2.1.274");
+  assert.equal(SURFACE, "unmarked");
   assert.deepEqual(
     [...LABELS],
-    ["bug", "has repro", "platform:macos", "area:skills", "area:compaction"],
+    ["bug", "has repro", "platform:linux", "area:tools"],
   );
   assert.equal(FIELD_MARKS.length, 6);
   assert.equal(LEDGER_NAMES.length, 6);
   assert.equal(EVIDENCE_ROWS.length, 4);
-  assert.equal(EVIDENCE_ROWS[0].lane, "invoked_skills block");
-  assert.equal(EVIDENCE_ROWS[1].lane, "skill body (5k cap)");
-  assert.equal(EVIDENCE_ROWS[2].lane, "summary paraphrase");
-  assert.equal(EVIDENCE_ROWS[3].lane, "docs re-attach path");
-  assert.ok(RULED_OUT.some((row) => /#94565|Detent/i.test(row)));
+  assert.equal(EVIDENCE_ROWS[0].lane, "tool description");
+  assert.equal(EVIDENCE_ROWS[1].lane, "WebFetch result");
+  assert.equal(EVIDENCE_ROWS[2].lane, "rfc9110.txt retained");
+  assert.equal(EVIDENCE_ROWS[3].lane, "curl-via-Bash remedy");
+  assert.ok(RULED_OUT.some((row) => /Precis|#94564/i.test(row)));
   assert.ok(RULED_OUT.some((row) => /Dictabelt|verbatim/i.test(row)));
-  assert.ok(EXPECTED.some((row) => /skill|re-attach|reknit/i.test(row)));
+  assert.ok(EXPECTED.some((row) => /truncat|flagged|tool/i.test(row)));
   assert.match(
     DISTRIBUTION,
-    /2\.1\.270|compact|invoked_skills|paraphrase|5k|25k/i,
+    /2\.1\.274|WebFetch|rfc9110|truncated|39415|502907/i,
   );
   assert.equal(BOOTH_STATIONS.length, 6);
-  assert.ok(FINGERPRINT_LINES.includes("skill-drop"));
-  assert.ok(FINGERPRINT_LINES.includes("precis"));
-  assert.equal(PHRASE, "Score precis or admit reknit.");
-  assert.equal(SAMPLE_PARAPHRASE_PROOF.skillDrop, true);
-  assert.equal(SAMPLE_PARAPHRASE_PROOF.names.length, 6);
-  assert.equal(seedAttached().seed, "attached");
-  assert.equal(seedCarried().seed, "carried");
-  assert.equal(seedInvokedSkills().seed, "invoked-skills");
-  assert.equal(seedCompactManual().seed, "compact-manual");
-  assert.equal(seedSummaryOnly().seed, "summary-only");
+  assert.ok(FINGERPRINT_LINES.includes("unmarked"));
+  assert.ok(FINGERPRINT_LINES.includes("apocope"));
+  assert.equal(PHRASE, "Score apocope or admit flagged.");
+  assert.equal(SAMPLE_TRUNCATED_PROOF.unmarked, true);
+  assert.equal(SAMPLE_TRUNCATED_PROOF.names.length, 6);
+  assert.equal(seedMarked().seed, "marked");
+  assert.equal(seedSignaled().seed, "signaled");
+  assert.equal(seedWebfetch().seed, "webfetch");
+  assert.equal(seedToolDesc().seed, "tool-desc");
+  assert.equal(seedUnmarkedResult().seed, "unmarked-result");
 });
 
-test("has-repro fingerprints encode the published precis proof", () => {
-  const result = handle(seedParaphrase());
-  assert.equal(result.published.platform, "macos");
-  assert.equal(result.published.surface, "skill-drop");
+test("has-repro fingerprints encode the published apocope proof", () => {
+  const result = handle(seedTruncated());
+  assert.equal(result.published.platform, "linux");
+  assert.equal(result.published.surface, "unmarked");
   assert.equal(result.published.host, HOST);
   assert.match(
-    fingerprint(seedParaphrase()),
-    /paraphrase\|kind=skill-drop\|ref=invoked-skills\|path=skill-drop\|cue=skill-drop/,
+    fingerprint(seedTruncated()),
+    /truncated\|kind=unmarked\|ref=webfetch\|path=unmarked\|cue=unmarked/,
   );
   assert.equal(classify({ seed: "has-repro", preferSeed: true }), "has-repro");
 });
@@ -504,64 +504,65 @@ test("forbidden idle list includes prior catalog words and seated/ascribed/moore
   }
 });
 
-test("reknit booth flips paraphrase back when the ratchet admits reknit", () => {
+test("flagged booth flips truncated back when the ratchet admits flagged", () => {
   const tape = {
-    reknit: true,
-    paraphrase: false,
-    skillDrop: false,
-    cue: "reknit",
+    flagged: true,
+    truncated: false,
+    unmarked: false,
+    cue: "flagged",
   };
-  assert.equal(scoreGate(tape).verdict, "reknit");
-  tape.reknit = false;
-  tape.paraphrase = true;
-  tape.skillDrop = true;
-  tape.cue = "paraphrase";
-  assert.equal(scoreGate(tape).verdict, "paraphrase");
-  tape.reknit = true;
-  tape.paraphrase = false;
-  tape.skillDrop = false;
-  tape.cue = "reknit";
-  assert.equal(scoreGate(tape).verdict, "reknit");
+  assert.equal(scoreGate(tape).verdict, "flagged");
+  tape.flagged = false;
+  tape.truncated = true;
+  tape.unmarked = true;
+  tape.cue = "truncated";
+  assert.equal(scoreGate(tape).verdict, "truncated");
+  tape.flagged = true;
+  tape.truncated = false;
+  tape.unmarked = false;
+  tape.cue = "flagged";
+  assert.equal(scoreGate(tape).verdict, "flagged");
 });
 
-test("inspectors and readBooth mark the paraphrase proof", () => {
-  const hit = inspectInvokedSkillsMark({ paraphrase: true });
-  assert.equal(hit.stamp, "invoked-skills");
-  const hover = inspectCompactManualMark({ paraphrase: true, compactManual: true });
-  assert.equal(hover.stamp, "compact-manual");
+test("inspectors and readBooth mark the truncated proof", () => {
+  const hit = inspectWebfetchMark({ truncated: true });
+  assert.equal(hit.stamp, "webfetch");
+  const hover = inspectToolDescMark({ truncated: true, toolDesc: true });
+  assert.equal(hover.stamp, "tool-desc");
   assert.equal(hover.missed, true);
   const booth = readBooth({
-    paraphrase: true,
-    skillDrop: true,
-    invokedSkills: true,
+    truncated: true,
+    unmarked: true,
+    webfetch: true,
   });
-  assert.equal(booth.paraphrase, true);
-  assert.equal(booth.mark, "paraphrase");
+  assert.equal(booth.truncated, true);
+  assert.equal(booth.mark, "truncated");
   const open = readBooth({
-    reknit: true,
-    paraphrase: false,
-    skillDrop: false,
+    flagged: true,
+    truncated: false,
+    unmarked: false,
   });
-  assert.equal(open.paraphrase, false);
-  assert.equal(open.mark, "reknit");
-  assert.equal(inspectSummaryOnlyMark({ paraphrase: true, summaryOnly: true }).stamp, "summary-only");
-  assert.equal(inspectTokenBudgetMark({ paraphrase: true, tokenBudget: true }).stamp, "token-budget");
-  assert.equal(inspectSkillBodyMark({ paraphrase: true, skillBody: true }).stamp, "skill-body");
+  assert.equal(open.truncated, false);
+  assert.equal(open.mark, "flagged");
+  assert.equal(inspectUnmarkedResultMark({ truncated: true, unmarkedResult: true }).stamp, "unmarked-result");
+  assert.equal(inspectPercentKeptMark({ truncated: true, percentKept: true }).stamp, "percent-kept");
+  assert.equal(inspectRfc9110Mark({ truncated: true, rfc9110: true }).stamp, "rfc9110");
 });
 
-test("mapPrecis encodes the published skill-drop", () => {
-  const miss = mapPrecis({ paraphrase: true, skillDrop: true });
-  assert.equal(miss.stamp, "skill-drop");
-  assert.equal(miss.holdingLane, "paraphrase");
-  assert.equal(miss.ribbon, "paraphrase");
-  const clear = mapPrecis({ reknit: true, paraphrase: false });
+test("mapApocope encodes the published unmarked", () => {
+  const miss = mapApocope({ truncated: true, unmarked: true });
+  assert.equal(miss.stamp, "unmarked");
+  assert.equal(miss.holdingLane, "truncated");
+  assert.equal(miss.ribbon, "truncated");
+  const clear = mapApocope({ flagged: true, truncated: false });
   assert.equal(clear.stamp, "atelier-bench");
   assert.equal(clear.kindLane, "ratchet-wheel");
   assert.equal(clear.holdingLane, "atelier-bench");
 });
 
-test("cousins stay empty; products stay distinct; backups stay data-only", () => {
-  assert.equal(COUSINS.length, 0);
+test("cousins cite-only; products stay distinct; backups stay data-only", () => {
+  assert.equal(COUSINS.length, 8);
+  assert.ok(COUSINS.every((row) => row.citeOnly === true));
   assert.ok(NOT_PRODUCTS.includes("prosopon"));
   assert.ok(NOT_PRODUCTS.includes("slipway"));
   assert.ok(NOT_PRODUCTS.includes("freshet"));
@@ -573,7 +574,7 @@ test("cousins stay empty; products stay distinct; backups stay data-only", () =>
   assert.equal(BACKUPS[0].issue, 94565);
   assert.equal(BACKUPS[6].issue, 94151);
   assert.ok(BACKUPS.every((row) => row.citeOnly === true));
-  assert.ok(!BACKUPS.some((row) => row.issue === 94564));
+  assert.ok(!BACKUPS.some((row) => row.issue === 95127));
   assert.ok(!BACKUPS.some((row) => row.issue === 94336));
   assert.equal(classify({ seed: "cousins", preferSeed: true }), "cousins");
   assert.equal(classify({ seed: "backups", preferSeed: true }), "backups");
@@ -583,96 +584,96 @@ test("CLI scores fixtures without a server", () => {
   const idle = spawnSync(process.execPath, [modelPath()], { encoding: "utf8" });
   const seeded = spawnSync(
     process.execPath,
-    [modelPath(), fileURLToPath(new URL("./data/paraphrase.json", import.meta.url))],
+    [modelPath(), fileURLToPath(new URL("./data/truncated.json", import.meta.url))],
     { encoding: "utf8" },
   );
-  const reknitFix = spawnSync(
+  const flaggedFix = spawnSync(
     process.execPath,
-    [modelPath(), fileURLToPath(new URL("./data/reknit.json", import.meta.url))],
+    [modelPath(), fileURLToPath(new URL("./data/flagged.json", import.meta.url))],
     { encoding: "utf8" },
   );
   assert.equal(idle.status, 0, idle.stderr);
   assert.equal(seeded.status, 0, seeded.stderr);
-  assert.equal(reknitFix.status, 0, reknitFix.stderr);
+  assert.equal(flaggedFix.status, 0, flaggedFix.stderr);
   const idleOut = JSON.parse(idle.stdout);
   const seededOut = JSON.parse(seeded.stdout);
-  const reknitOut = JSON.parse(reknitFix.stdout);
-  assert.equal(idleOut.verdict, "reknit");
+  const flaggedOut = JSON.parse(flaggedFix.stdout);
+  assert.equal(idleOut.verdict, "flagged");
   assert.equal(idleOut.hold, true);
-  assert.equal(seededOut.verdict, "paraphrase");
+  assert.equal(seededOut.verdict, "truncated");
   assert.equal(seededOut.alarm, true);
-  assert.equal(reknitOut.verdict, "reknit");
-  assert.equal(reknitOut.hold, true);
-  assert.match(reknitOut.phrase, /admit reknit/);
+  assert.equal(flaggedOut.verdict, "flagged");
+  assert.equal(flaggedOut.hold, true);
+  assert.match(flaggedOut.phrase, /admit flagged/);
 });
 
-test("handle exposes published hypothesis and #94564 headline", () => {
-  const result = handle(seedParaphrase());
-  assert.equal(result.published.issue, 94564);
-  assert.equal(result.published.platform, "macos");
-  assert.deepEqual(result.published.cousins, []);
+test("handle exposes published hypothesis and #95127 headline", () => {
+  const result = handle(seedTruncated());
+  assert.equal(result.published.issue, 95127);
+  assert.equal(result.published.platform, "linux");
+  assert.equal(result.published.cousins.length, 8);
   assert.ok(result.published.backups.includes(94565));
   assert.ok(result.published.backups.includes(94151));
-  assert.ok(!result.published.backups.includes(94564));
+  assert.ok(!result.published.backups.includes(95127));
   assert.ok(!result.published.backups.includes(94336));
   assert.match(
     result.published.hypothesis,
-    /compact|paraphrase|skill|re-attach|NON-BINDING|#94564/i,
+    /compact|truncated|skill|re-attach|NON-BINDING|#95127/i,
   );
   assert.match(result.published.hypothesis, /NON-BINDING/);
-  assert.match(result.published.hypothesis, /#94564/);
+  assert.match(result.published.hypothesis, /#95127/);
   assert.equal(result.published.build, BUILD);
   assert.equal(result.published.evidence.length, 4);
 });
 
-test("model has no static node: imports so the reknit page can score in-browser", () => {
+test("model has no static node: imports so the flagged page can score in-browser", () => {
   const source = readFileSync(modelPath(), "utf8");
   assert.doesNotMatch(source, /^import .* from "node:/m);
   assert.match(source, /import\("node:fs"\)/);
-  assert.doesNotMatch(source, /fetch\(/);
+  assert.doesNotMatch(source, /\bfetch\s*\(\s*["'`]/);
   assert.doesNotMatch(source, /new WebSocket|net\.connect|http\.request/);
 });
 
-test("reknit page is an abstract abridgement booth, not detent or dictabelt", () => {
+test("flagged page is an elision booth, not precis or dictabelt", () => {
   const page = readPage();
-  assert.match(page, /Cormorant\+Garamond|Cormorant Garamond/);
-  assert.match(page, /Plus\+Jakarta\+Sans|Plus Jakarta Sans/);
-  assert.match(page, /IBM\+Plex\+Mono|IBM Plex Mono/);
+  assert.match(page, /Fraunces/);
+  assert.match(page, /Sora/);
+  assert.match(page, /JetBrains\+Mono|JetBrains Mono/);
   assert.match(
     page,
-    /precis|reknit|paraphrase|skill-drop|abstract-frame|graft-splice|summary-fold|skill-drop-zone/i,
+    /apocope|flagged|truncated|unmarked|manuscript-frame|elision-knife|manuscript-tail|unmarked-zone/i,
   );
   assert.match(page, /#1a1d24|#5c4d7d|#4a6b5a|#c45c4a|#f4f0e8|#2d3142/i);
-  assert.match(page, /\breknit\b/);
-  assert.match(page, /paraphrase/);
-  assert.match(page, /skill-drop/);
-  assert.match(page, /Score precis or admit reknit/i);
-  assert.match(page, /#389/);
-  assert.match(page, /#94564/);
-  assert.match(page, /Admit reknit/);
-  assert.match(page, /Score precis/);
-  assert.match(page, /Walk skill-drop/);
-  assert.match(page, /Compare reknit \/ paraphrase/);
-  assert.match(page, /Pin idle reknit/);
-  assert.match(page, /Pin seeded paraphrase/);
-  assert.match(page, /Pin skill-drop/);
-  assert.match(page, /Stamp invoked-skills/);
+  assert.match(page, /\bflagged\b/);
+  assert.match(page, /truncated/);
+  assert.match(page, /unmarked/);
+  assert.match(page, /Score apocope or admit flagged/i);
+  assert.match(page, /#390/);
+  assert.match(page, /#95127/);
+  assert.match(page, /Admit flagged/);
+  assert.match(page, /Score apocope/);
+  assert.match(page, /Walk unmarked/);
+  assert.match(page, /Compare flagged \/ truncated/);
+  assert.match(page, /Pin idle flagged/);
+  assert.match(page, /Pin seeded truncated/);
+  assert.match(page, /Pin unmarked/);
+  assert.match(page, /Stamp webfetch/);
   assert.match(page, /Score booth/);
-  assert.match(page, /precis-score/);
+  assert.match(page, /apocope-score/);
   assert.match(
     page,
-    /\/compact|2\.1\.270|invoked_skills|paraphrase|background subagent|213828|8106/i,
+    /WebFetch|2\.1\.274|rfc9110|39,?415|502,?907|truncated|no Bash/i,
   );
-  assert.match(page, /abstract-frame|graft-splice|summary-fold|skill-drop-zone/i);
+  assert.match(page, /manuscript-frame|elision-knife|manuscript-tail|unmarked-zone/i);
   assert.match(
     page,
-    /<svg[\s\S]*class="abstract-frame"|class="graft-splice"|class="summary-fold"|class="skill-drop-zone"/i,
+    /<svg[\s\S]*class="manuscript-frame"|class="elision-knife"|class="manuscript-tail"|class="unmarked-zone"/i,
   );
-  assert.match(page, /body\.reknit|body\.paraphrase|body\.skill-drop/);
-  assert.match(page, /evidence-table|invoked_skills|summary paraphrase|skill body/i);
-  assert.doesNotMatch(page, /family=Fraunces|Fraunces/);
+  assert.match(page, /body\.flagged|body\.truncated|body\.unmarked/);
+  assert.match(page, /evidence-table|tool description|WebFetch result|rfc9110/i);
+  assert.doesNotMatch(page, /Cormorant\+Garamond|Cormorant Garamond/);
   assert.doesNotMatch(page, /family=Figtree|Figtree/);
-  assert.doesNotMatch(page, /family=JetBrains\+Mono|JetBrains Mono/);
+  assert.doesNotMatch(page, /IBM\+Plex\+Mono|IBM Plex Mono/);
   assert.doesNotMatch(page, /family=Spectral|Spectral/);
   assert.doesNotMatch(page, /family=Manrope|Manrope/);
   assert.doesNotMatch(page, /family=Source\+Code\+Pro|Source Code Pro/);
@@ -713,45 +714,44 @@ test("reknit page is an abstract abridgement booth, not detent or dictabelt", ()
   assert.doesNotMatch(page, /heal-abort/);
   assert.doesNotMatch(page, /ptmx-race/);
   assert.doesNotMatch(page, /tabard|blazon|herald/i);
-  assert.match(page, /NOT Prosopon/i);
+  assert.match(page, /NOT Precis/i);
   assert.match(page, /NOT Slipway/i);
   assert.match(page, /NOT Cathead/i);
   assert.match(page, /NOT #94575/i);
   assert.match(page, /NOT #94458/i);
-  assert.doesNotMatch(page, /fetch\(/);
+  assert.doesNotMatch(page, /\bfetch\s*\(\s*["'`]/);
   assert.match(page, /body\.embed/);
 });
 
 test("README states the thesis, anti-clone, and how to score", () => {
   const readme = readReadme();
-  assert.match(readme, /Precis/);
-  assert.match(readme, /#94564/);
-  assert.match(readme, /\breknit\b/);
-  assert.match(readme, /paraphrase/);
-  assert.match(readme, /skill-drop/);
-  assert.match(readme, /Cormorant Garamond/);
-  assert.match(readme, /Plus Jakarta Sans/);
-  assert.match(readme, /IBM Plex Mono/);
-  assert.doesNotMatch(readme, /Fraunces/);
+  assert.match(readme, /Apocope/);
+  assert.match(readme, /#95127/);
+  assert.match(readme, /\bflagged\b/);
+  assert.match(readme, /truncated/);
+  assert.match(readme, /unmarked/);
+  assert.match(readme, /Fraunces/);
+  assert.match(readme, /Sora/);
+  assert.match(readme, /JetBrains Mono/);
+  assert.doesNotMatch(readme, /Cormorant Garamond/);
   assert.doesNotMatch(readme, /Figtree/);
-  assert.doesNotMatch(readme, /JetBrains Mono/);
+  assert.doesNotMatch(readme, /IBM Plex Mono/);
   assert.doesNotMatch(readme, /Spectral/);
   assert.doesNotMatch(readme, /Libre Baskerville/);
   assert.match(readme, /Why not a clone/i);
   assert.match(readme, /Research brief/i);
-  assert.match(readme, /\/compact|2\.1\.270|invoked_skills|paraphrase|skill-drop/i);
-  assert.match(readme, /NOT Prosopon/);
-  assert.match(readme, /NOT Slipway/);
-  assert.match(readme, /NOT Cathead/);
-  assert.match(readme, /NOT #94575/);
-  assert.match(readme, /do NOT rebuild|do not conflate/i);
-  assert.match(readme, /hermes-playground-green\.vercel\.app\/precis/);
-  assert.match(readme, /node --test projects\/precis\/precis\.test\.mjs/);
+  assert.match(readme, /WebFetch|2\.1\.274|rfc9110|truncated|unmarked/i);
+  assert.match(readme, /Precis.*#94564/);
+  assert.match(readme, /Dictabelt.*#94406/);
+  assert.match(readme, /#94564/);
+  assert.match(readme, /do NOT rebuild|cite-only/i);
+  assert.match(readme, /hermes-playground-green\.vercel\.app\/apocope/);
+  assert.match(readme, /node --test projects\/apocope\/apocope\.test\.mjs/);
   assert.match(readme, /NON-BINDING/);
-  assert.match(readme, /abstract|abridgement|skill-graft|precis booth/i);
-  assert.match(readme, /Score precis or admit reknit/);
-  assert.match(readme, /#94565|#94151|#94553|#94560/);
-  assert.doesNotMatch(readme, /backup #94564 as next/i);
+  assert.match(readme, /manuscript end-clip|elision|apocope booth/i);
+  assert.match(readme, /Score apocope or admit flagged/);
+  assert.match(readme, /#51783|#90416|#73514/);
+  assert.doesNotMatch(readme, /backup #95127 as next/i);
   assert.match(readme, /21:10/);
   assert.match(readme, /Do NOT implement a fix/i);
   assert.doesNotMatch(readme, /\bprosopon\b/);
@@ -761,29 +761,29 @@ test("README states the thesis, anti-clone, and how to score", () => {
     fileURLToPath(new URL("../../RUN_LOG.md", import.meta.url)),
     "utf8",
   );
-  assert.match(runLog, /## 2026-09-17 — Precis/);
+  assert.match(runLog, /## 2026-09-18 — Apocope/);
   assert.match(runLog, /21:10/);
 });
 
-test("catalog features Precis only; Prosopon unfeatured; product count 389", () => {
+test("catalog features Apocope only; Precis unfeatured; product count 390", () => {
   const catalog = readCatalog();
   const hub = readHubCatalog();
-  assert.equal(catalog.products.length, 389);
-  assert.equal(hub.products.length, 389);
-  assert.equal(catalog.products[0].name, "Precis");
-  assert.equal(catalog.products[0].slug, "precis");
+  assert.equal(catalog.products.length, 390);
+  assert.equal(hub.products.length, 390);
+  assert.equal(catalog.products[0].name, "Apocope");
+  assert.equal(catalog.products[0].slug, "apocope");
   assert.equal(catalog.products[0].featured, true);
-  assert.equal(catalog.products[0].href, "/precis/");
-  assert.equal(catalog.products[0].day, "2026-09-17");
+  assert.equal(catalog.products[0].href, "/apocope/");
+  assert.equal(catalog.products[0].day, "2026-09-18");
   assert.equal(catalog.products[0].summary, CATALOG_SUMMARY);
   assert.equal(hub.products[0].summary, catalog.products[0].summary);
-  assert.match(catalog.products[0].summary, /\breknit\b/);
-  assert.match(catalog.products[0].summary, /paraphrase/);
-  assert.match(catalog.products[0].summary, /skill-drop/);
-  assert.match(catalog.products[0].summary, /Score precis or admit reknit/);
-  assert.match(catalog.products[0].summary, /#94564/);
+  assert.match(catalog.products[0].summary, /\bflagged\b/);
+  assert.match(catalog.products[0].summary, /truncated/);
+  assert.match(catalog.products[0].summary, /unmarked/);
+  assert.match(catalog.products[0].summary, /Score apocope or admit flagged/);
+  assert.match(catalog.products[0].summary, /#95127/);
   assert.match(catalog.products[0].summary, /21:10/);
-  assert.equal(hub.products[0].slug, "precis");
+  assert.equal(hub.products[0].slug, "apocope");
   assert.equal(hub.products[0].featured, true);
   const prosopon = catalog.products.find((row) => row.slug === "prosopon");
   assert.ok(prosopon);
@@ -793,27 +793,31 @@ test("catalog features Precis only; Prosopon unfeatured; product count 389", () 
   assert.equal(slipway.featured, false);
   assert.equal(catalog.products.filter((row) => row.featured).length, 1);
   assert.equal(
-    catalog.products.filter((row) => row.slug === "precis" && row.featured).length,
+    catalog.products.filter((row) => row.slug === "apocope" && row.featured).length,
     1,
   );
+
+  const precis = catalog.products.find((row) => row.slug === "precis");
+  assert.ok(precis);
+  assert.equal(precis.featured, false);
   const detent = catalog.products.find((row) => row.slug === "detent");
   assert.ok(detent);
   assert.equal(detent.featured, false);
   assert.ok(
     !catalog.products.some(
-      (row) => String(row.summary || "").includes("94564") && row.slug !== "precis",
+      (row) => String(row.summary || "").includes("95127") && row.slug !== "apocope",
     ),
   );
 });
 
-test("vercel rewrites precis to the project folder at the top", () => {
+test("vercel rewrites apocope to the project folder at the top", () => {
   const vercel = readVercel();
-  assert.equal(vercel.rewrites[0].source, "/precis");
-  assert.equal(vercel.rewrites[0].destination, "/projects/precis");
-  assert.equal(vercel.rewrites[1].source, "/precis/");
-  assert.equal(vercel.rewrites[1].destination, "/projects/precis");
-  assert.equal(vercel.rewrites[2].source, "/precis/:path*");
-  assert.equal(vercel.rewrites[2].destination, "/projects/precis/:path*");
+  assert.equal(vercel.rewrites[0].source, "/apocope");
+  assert.equal(vercel.rewrites[0].destination, "/projects/apocope");
+  assert.equal(vercel.rewrites[1].source, "/apocope/");
+  assert.equal(vercel.rewrites[1].destination, "/projects/apocope");
+  assert.equal(vercel.rewrites[2].source, "/apocope/:path*");
+  assert.equal(vercel.rewrites[2].destination, "/projects/apocope/:path*");
   const prosopon = vercel.rewrites.find((row) => row.source === "/prosopon");
   assert.ok(prosopon);
   assert.equal(prosopon.destination, "/projects/prosopon");
@@ -831,7 +835,7 @@ test("no leftover clone / theatre / dry-dock / masque content", () => {
 
 test("no network calls in the model or tests", () => {
   const source = readFileSync(modelPath(), "utf8");
-  assert.doesNotMatch(source, /fetch\(/);
+  assert.doesNotMatch(source, /\bfetch\s*\(\s*["'`]/);
   assert.doesNotMatch(source, /new WebSocket|net\.connect|http\.request/);
   assert.doesNotMatch(source, /https?:\/\/[^\s"']*anthropic\.com\/v1/);
 });

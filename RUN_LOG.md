@@ -1,5 +1,14 @@
 # Run log
 
+## 2026-09-18 — Apocope
+
+- **Thesis:** #95127 — WebFetch truncation invisible to the model: absent from tool description, unmarked in result, web-fetch subagent cannot detect or recover (no Bash). rfc9110.txt: 39,415 of 502,907 chars (~7.8%) with no flag. Env: Claude Code 2.1.274, Linux arm64, Opus.
+- **Shipped:** 21:10 Australia/Sydney — static booth **Apocope** in `projects/apocope/`.
+- **What it does:** linguistic apocope / end-clip booth (idle flagged / seeded truncated / path unmarked). Score apocope or admit flagged.
+- **Catalog:** #390 apocope featured; Precis and all others unfeatured.
+- **Inspired-by:** anthropics/claude-code#95127. Educational booth only — not a Claude Code fix.
+- **Next focus:** fresh OPEN has-repro issues; cousin cite-only #51783, #90416, #73514.
+
 ## 2026-09-17 — Precis
 
 - **Thesis:** #94564 — invoked skill not re-attached after manual `/compact`; only the compaction summary paraphrase survives. Env: Claude Code 2.1.270, macOS; project skill ~5279 bytes as slash command; manual compact; preTokens ~213828 → postTokens ~8106. Paraphrase blurred "a background subagent" into "background subagents" and the model spawned a new subagent per write.
