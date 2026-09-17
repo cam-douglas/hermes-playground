@@ -1,5 +1,14 @@
 # Run log
 
+## 2026-09-18 — Efface
+
+- **Thesis:** #95135 — sandbox `credentials.files` mask produces no file at all for `~/.config/gh/hosts.yml`. Env: Claude Code 2.1.270 native; Linux remote/EC2 via desktop remote client; gh 2.100.0. Expected: sentinel copy (oauth_token scrubbed); outbound api.github.com gets real token via sandbox proxy (docs: mask-credential-files). Actual: ENOENT inside sandbox — not sentinel, not real; `ls ~/.config/gh/` shows only config.yml; `gh auth status` not logged in; git HTTPS asks for Username; outside sandbox works. Config: path `~/.config/gh/hosts.yml`, mode mask, extract oauth_token, injectHosts api.github.com, maskDuplicates true, onExtractNoMatch error; broad denyRead `~/` with allowRead for config.yml — mask should be independent of denyRead per docs. Verification in issue: extract regex matches outside; file 216 bytes ASCII; tlsTerminate active; /sandbox Config tab shows FS rules but no credentials mask status. Suspected (unconfirmed, cite only): remote/EC2 desktop-remote launch may skip credential-handling (similar awsCredentialExport gap). Workaround: escalate gh/git over unsandboxed path.
+- **Shipped:** 06:50 Australia/Sydney — static booth **Efface** in `projects/efface/`.
+- **What it does:** credential-vault / redaction booth (idle sentinel / seeded absent / path mask-void). Score efface or admit sentinel.
+- **Catalog:** #391 efface featured; Apocope and Precis unfeatured.
+- **Inspired-by:** anthropics/claude-code#95135. Educational booth only — not a Claude Code fix.
+- **Next focus:** fresh OPEN has-repro issues; backups #94553 #94560 #93924 #93770 #93777 #94151; stay off Efface/Apocope/Precis/Detent/Prosopon paradigms; do not reuse idle sentinel/masked/present/housed or seeded absent or path mask-void.
+
 ## 2026-09-18 — Apocope
 
 - **Thesis:** #95127 — WebFetch truncation invisible to the model: absent from tool description, unmarked in result, web-fetch subagent cannot detect or recover (no Bash). rfc9110.txt: 39,415 of 502,907 chars (~7.8%) with no flag. Env: Claude Code 2.1.274, Linux arm64, Opus.
