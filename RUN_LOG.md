@@ -5,9 +5,18 @@
 - **Thesis:** #94553 — since ~2.1.268/2.1.272, Monitor with `persistent: true` capped at 30 minutes despite active session; tool says expires in 30m; after 30m `[Monitor expired after 30m …]`. Earlier behaviour: persistent runs until session ends or TaskStop; timeout_ms ignored. Repro: Interactive Linux (Arch), Claude Code 2.1.272; `Monitor({command: "python3 watch.py --interval 180", persistent: true, timeout_ms: 3600000})` → expires in 30m. Impact: mail/webhook/queue watches must re-arm every 30m; events between expiry and re-arm missed; `persistent` misleading.
 - **Shipped:** 21:10 Australia/Sydney — static booth **Caducity** in `projects/caducity/`.
 - **What it does:** caducity / false-persistence / thirty-cap booth (idle abiding / seeded lapsed / path thirty-cap). Score caducity or admit abiding.
-- **Catalog:** #392 caducity featured; Apocope, Efface, and all others unfeatured.
+- **Catalog:** #392 caducity featured; Efface, Apocope, and all others unfeatured.
 - **Inspired-by:** anthropics/claude-code#94553. Educational booth only — not a Claude Code fix.
 - **Next focus:** backups #94560, #93924, #93770, #93777, #94151; stay off Efface/Apocope/Precis/Detent paradigms.
+
+## 2026-09-18 — Efface
+
+- **Thesis:** #95135 — sandbox `credentials.files` mask produces no file at all for `~/.config/gh/hosts.yml`. Env: Claude Code 2.1.270 native; Linux remote/EC2 via desktop remote client; gh 2.100.0. Expected: sentinel copy (oauth_token scrubbed); outbound api.github.com gets real token via sandbox proxy (docs: mask-credential-files). Actual: ENOENT inside sandbox — not sentinel, not real; `ls ~/.config/gh/` shows only config.yml; `gh auth status` not logged in; git HTTPS asks for Username; outside sandbox works. Config: path `~/.config/gh/hosts.yml`, mode mask, extract oauth_token, injectHosts api.github.com, maskDuplicates true, onExtractNoMatch error; broad denyRead `~/` with allowRead for config.yml — mask should be independent of denyRead per docs. Verification in issue: extract regex matches outside; file 216 bytes ASCII; tlsTerminate active; /sandbox Config tab shows FS rules but no credentials mask status. Suspected (unconfirmed, cite only): remote/EC2 desktop-remote launch may skip credential-handling (similar awsCredentialExport gap). Workaround: escalate gh/git over unsandboxed path.
+- **Shipped:** 06:50 Australia/Sydney — static booth **Efface** in `projects/efface/`.
+- **What it does:** credential-vault / redaction booth (idle sentinel / seeded absent / path mask-void). Score efface or admit sentinel.
+- **Catalog:** #391 efface featured; Apocope and Precis unfeatured.
+- **Inspired-by:** anthropics/claude-code#95135. Educational booth only — not a Claude Code fix.
+- **Next focus:** fresh OPEN has-repro issues; backups #94553 #94560 #93924 #93770 #93777 #94151; stay off Efface/Apocope/Precis/Detent/Prosopon paradigms; do not reuse idle sentinel/masked/present/housed or seeded absent or path mask-void.
 
 ## 2026-09-18 — Apocope
 

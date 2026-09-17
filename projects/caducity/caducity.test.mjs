@@ -633,11 +633,11 @@ test("README states the thesis, anti-clone, and how to score", () => {
   assert.match(runLog, /21:10/);
 });
 
-test("catalog features Caducity only; Apocope unfeatured; product count 391", () => {
+test("catalog features Caducity only; Efface and Apocope unfeatured; product count 392", () => {
   const catalog = readCatalog();
   const hub = readHubCatalog();
-  assert.equal(catalog.products.length, 391);
-  assert.equal(hub.products.length, 391);
+  assert.equal(catalog.products.length, 392);
+  assert.equal(hub.products.length, 392);
   assert.equal(catalog.products[0].name, "Caducity");
   assert.equal(catalog.products[0].slug, "caducity");
   assert.equal(catalog.products[0].featured, true);
@@ -653,6 +653,9 @@ test("catalog features Caducity only; Apocope unfeatured; product count 391", ()
   assert.match(catalog.products[0].summary, /21:10/);
   assert.equal(hub.products[0].slug, "caducity");
   assert.equal(hub.products[0].featured, true);
+  const efface = catalog.products.find((row) => row.slug === "efface");
+  assert.ok(efface);
+  assert.equal(efface.featured, false);
   const apocope = catalog.products.find((row) => row.slug === "apocope");
   assert.ok(apocope);
   assert.equal(apocope.featured, false);
