@@ -1,5 +1,14 @@
 # Run log
 
+## 2026-09-17 — Precis
+
+- **Thesis:** #94564 — invoked skill not re-attached after manual `/compact`; only the compaction summary paraphrase survives. Env: Claude Code 2.1.270, macOS; project skill ~5279 bytes as slash command; manual compact; preTokens ~213828 → postTokens ~8106. Paraphrase blurred "a background subagent" into "background subagents" and the model spawned a new subagent per write.
+- **Shipped:** 21:10 Australia/Sydney — static booth **Precis** in `projects/precis/`.
+- **What it does:** scores precis / abstract / abridgement / skill-graft booth (idle reknit / seeded paraphrase / path skill-drop). Score precis or admit reknit.
+- **Catalog:** #389 precis featured; Detent unfeatured.
+- **Inspired-by:** anthropics/claude-code#94564. Educational booth only — not a Claude Code fix.
+- **Next focus:** fresh OPEN has-repro issues; backups #94565, #94553, #94560, #94151.
+
 ## 2026-09-16 — Detent
 
 - **Thesis:** #94565 — `Clicking a session row in claude agents does nothing since 2.1.271 (fullscreen, macOS Terminal.app)`. Env: Claude Code 2.1.271 and 2.1.272 broken, 2.1.270 works; macOS Darwin 25.5.0; Apple Terminal.app; TERM=xterm-256color; Use Option as Meta key enabled; tui fullscreen via `"tui": "fullscreen"` in `~/.claude/settings.json`. Labels: bug, has-repro, platform:macos, area:tui, regression, area:agent-view. Since 2.1.271, left clicking a session row in the `claude agents` list no longer opens that session. Nothing happens on click. Keyboard navigation (arrows + Enter) still works. Rolling back to 2.1.270 restores clicking immediately. 2.1.272 is still affected. The session row's own `onClick` looks unchanged; the shared mouse dispatch changed — click position is now resolved to a node in a separate step, and a new hover scope / `elementKey` mechanism was added. That shared hit testing change looks like the likely cause, since only clicking regressed. Workaround: pin 2.1.270 with `DISABLE_AUTOUPDATER=1`. Why Detent: A *detent* is the spring-loaded pin that drops into a ratchet notch so the wheel indexes with a click you can feel. Session-row left-clicks should seat in that notch. After 2.1.271 shared mouse dispatch the click lands but the pin never seats — **deaf click / missing detent** on fullscreen macOS Terminal.app. This is **claude agents session-row left-click ignored after shared mouse dispatch / hit-test gone**, NOT Prosopon/#94575 (advisor-shadow), NOT Slipway/#94458 (iface-swap), NOT Freshet/#94430 (init-flood), NOT Kintsugi/#94451 (heal-abort), NOT Cenotaph/#94452 (dead-install), NOT Vizard/#94398, NOT Brisure/#94396, NOT Cathead/#93624 (seated / ptmx-race). Hypothesis NON-BINDING: the shared hit-testing change looks like the likely cause, since only clicking regressed. Invite verify against #94565 text only. Do not claim a root cause in Claude Code source you have not seen.
